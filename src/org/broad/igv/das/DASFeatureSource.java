@@ -1,0 +1,483 @@
+/*
+ * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
+ * Technology.  All Rights Reserved.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
+ * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+ * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
+ * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
+ * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+ * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
+ * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
+ * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+ */
+package org.broad.igv.das;
+
+import org.apache.log4j.Logger;
+import org.broad.igv.exceptions.DataLoadException;
+
+import org.broad.igv.feature.*;
+import org.broad.igv.track.FeatureSource;
+import org.broad.igv.track.tribble.CachingFeatureReader;
+import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
+import org.broad.tribble.iterators.CloseableTribbleIterator;
+import org.w3c.dom.*;
+import org.w3c.dom.traversal.DocumentTraversal;
+import org.w3c.dom.traversal.NodeFilter;
+import org.w3c.dom.traversal.TreeWalker;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
+
+//http://das.sanger.ac.uk/das/cosmic_mutations/features
+//http://genome.ucsc.edu/cgi-bin/das/hg18/features?segment=1:1,100000;type=refGene
+
+public class DASFeatureSource implements FeatureSource {
+
+    private static Logger log = Logger.getLogger(DASFeatureSource.class);
+    private static final IteratorWrapper EMPTY__ITERATOR = new IteratorWrapper(new ArrayList<Feature>().iterator());
+
+    private String path;
+    private String serverURL;
+    private boolean isValid = true;
+    private CachingFeatureReader reader;
+    //DasReader reader;
+    private int binSize = 250000;
+    private String type;
+    private String[] parameters;
+
+    public DASFeatureSource(ResourceLocator locator) throws MalformedURLException {
+        URL url = new URL(locator.getPath());
+        String host = url.getHost();
+        String protocol = url.getProtocol();
+        path = url.getPath();
+        serverURL = protocol + "://" + host + path;
+
+        String paramString = url.getQuery();
+        if (paramString != null) {
+            parameters = paramString.split(";");
+
+            for (String param : parameters) {
+                if (param.startsWith("type=")) {
+                    type = param.substring(5);
+                }
+            }
+        }
+
+        if (locator.getPath().contains("genome.ucsc.edu") && type == null) {
+            throw new DataLoadException("<html>Feature type is required for UCSC DAS tracks. <br>" +
+                    "See http://www.broadinstitute.org/igv/LoadData for more details.",
+                    locator.getPath());
+        }
+
+        //reader = new DasReader();
+        reader = new CachingFeatureReader(new DasReader());
+        reader.setBinSize(binSize);
+    }
+
+    public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
+        return reader.query(chr, start, end);
+    }
+
+    public List<LocusScore> getCoverageScores(String chr, int i, int i1, int zoom) {
+        return null;
+    }
+
+    public int getFeatureWindowSize() {
+        return binSize;
+    }
+
+    public void setFeatureWindowSize(int size) {
+        this.binSize = size;
+        reader.setBinSize(size);
+    }
+
+    public Class getFeatureClass() {
+        return BasicFeature.class;
+    }
+
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+
+    class DasReader implements org.broad.tribble.FeatureSource {
+
+
+        public CloseableTribbleIterator query(String chr, int start, int end, boolean contained) throws IOException {
+            return query(chr, start, end);
+        }
+
+        public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
+
+            String dasChr = chr.startsWith("chr") ? chr.substring(3, chr.length()) : chr;
+            int dasStart = start + 1;
+            int dasEnd = end;
+
+            if (isValid && !chr.equals("All")) {
+                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+                    List<Feature> features = gatherFeatures(dasChr, dasStart, dasEnd);
+                    if (features.size() < 1) {
+                        return EMPTY__ITERATOR;
+                    }
+                    return new IteratorWrapper(features.iterator());
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                }
+            }
+            return EMPTY__ITERATOR;
+        }
+
+        // TODO Iterating not permitted -- throw exception?
+
+        public CloseableTribbleIterator iterator() throws IOException {
+            return null;
+        }
+
+
+        /**
+         * Query for features in the given interval.  The coordinates are translated to DAS conventions.
+         * <p/>
+         * An end value <= 0 will result in a query for features over the whole chromosome.
+         *
+         * @param chr
+         * @param start
+         * @param end
+         * @return
+         */
+        private List<Feature> gatherFeatures(String chr, int start, int end) {
+            groupFeatureCache.clear();
+
+            List<Feature> features = new ArrayList<Feature>();
+            try {
+
+                String urlString = serverURL + "?" + "segment=" + chr;
+                if (end > 0) urlString += ":" + start + "," + end;
+
+                // Add parameters
+                if (parameters != null) {
+                    for (String param : parameters) {
+                        if (!param.startsWith("segment")) {
+                            urlString += ";" + param;
+                        }
+                    }
+                }
+
+                URL dataQuery = new URL(urlString);
+                Document dom = getDocument(dataQuery);
+                if (dom == null) {
+                    return Collections.emptyList();
+                }
+                parseDocument(dom, chr, features);
+                FeatureUtils.sortFeatureList(features);
+                return features;
+
+            } catch (IOException ioe) {
+                throw new DataLoadException("Failed to reconnect with server", serverURL);
+            }
+        }
+
+
+        private Document getDocument(URL query) {
+            InputStream is = null;
+            try {
+                is = IGVHttpUtils.openConnectionStream (query);
+                return createDocument(is);
+            } catch (Exception e) {
+                isValid = false;
+                log.error(e);
+                MessageUtils.showMessage("<html>The DAS Server: " + serverURL + " has returned an error or invalid data." +
+                        "<br>" + e.getMessage());
+                return null;
+            }
+            finally {
+                if (is != null) {
+                    try {
+                        is.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                }
+            }
+        }
+
+
+        private Document createDocument(InputStream inputStream)
+                throws ParserConfigurationException, IOException, SAXException {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setValidating(false);
+            DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+
+            documentBuilder.setEntityResolver(new EntityResolver() {
+                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                    log.debug("Ignoring " + publicId + ", " + systemId);
+                    return new InputSource(new StringReader(""));
+                }
+            });
+
+            /*BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            String nextLine;
+            while((nextLine = br.readLine()) != null) {
+                System.out.println("** " + nextLine);
+            }
+            */
+
+            Document dom = documentBuilder.parse(inputStream);
+            inputStream.close();
+            return dom;
+        }
+
+        public String getPath() {
+            return serverURL;
+        }
+
+        private void parseDocument(Document dasDoc, String chr, List<Feature> features) {
+
+            try {
+                DocumentTraversal traversal = (DocumentTraversal) dasDoc;
+                TreeWalker treewalker = traversal.createTreeWalker(
+                        dasDoc.getDocumentElement(), NodeFilter.SHOW_ELEMENT, null, true);
+                parseTree(treewalker, "FEATURE", chr, features);
+
+            } catch (Exception ex) {
+                log.error(ex);
+                throw new DataLoadException("Error loading DAS resource (" + ex.toString() + ")", getPath());
+            }
+        }
+
+        private List<Feature> parseTree(TreeWalker walker,
+                                        String tag,
+                                        String chr, List<Feature> features) {
+
+            Node parent = walker.getCurrentNode();
+            Node n = walker.firstChild();
+            while (n != null) {
+                if (((Element) n).getTagName().equalsIgnoreCase(tag)) {
+                    Feature f = getFeature(walker, chr);
+                    if (f != null) {
+                        features.add(f);
+                    }
+
+                    n = walker.nextSibling();
+                    continue;
+                }
+                parseTree(walker, tag, chr, features);
+                n = walker.nextSibling();
+            }
+            walker.setCurrentNode(parent);
+            return features;
+        }
+
+        private BasicFeature getFeature(TreeWalker walker, String chr) {
+
+            String id;
+            String label;
+
+            String type = "";
+            int start = 0;
+            int end = 0;
+            float score;
+            Strand strand = Strand.NONE;
+
+            int phase;
+            String description = null;
+            String link = null;
+            String group = null;
+            String groupLabel = null;
+            String groupLink = null;
+
+
+            Node featureNode = walker.getCurrentNode();
+
+            //GET THE FEATURE ATTRIBUTES
+            NamedNodeMap nnm = featureNode.getAttributes();
+            Node tmpNode = nnm.getNamedItem("id");
+            id = tmpNode.getTextContent();
+            tmpNode = nnm.getNamedItem("label");
+            label = tmpNode == null ? "" : tmpNode.getTextContent();
+
+            //GO THROUGH FEATURE NODES
+            for (Node n = walker.firstChild(); n != null;
+                 n = walker.nextSibling()) {
+
+                if (((Element) n).getTagName().equalsIgnoreCase("TYPE")) {
+                    type = n.getTextContent();
+                } else if (((Element) n).getTagName().equalsIgnoreCase("START")) {
+                    start = Integer.parseInt(n.getTextContent()) - 1;
+                } else if (((Element) n).getTagName().equalsIgnoreCase("END")) {
+                    end = Math.max(start + 1, Integer.parseInt(n.getTextContent()));
+                } else if (((Element) n).getTagName().equalsIgnoreCase("SCORE")) {
+                    String scoreString = n.getTextContent();
+                    if (!scoreString.equals("-")) score = Float.parseFloat(scoreString);
+                } else if (((Element) n).getTagName().equalsIgnoreCase("PHASE")) {
+                    String phaseString = n.getTextContent();
+                    if (!phaseString.equals("-")) phase = Integer.parseInt(n.getTextContent());
+                } else if (((Element) n).getTagName().equalsIgnoreCase("ORIENTATION")) {
+                    String orientation = n.getTextContent();
+                    if (orientation.equals("-")) {
+                        strand = Strand.NEGATIVE;
+                    } else if (orientation.equalsIgnoreCase("+")) {
+                        strand = Strand.POSITIVE;
+                    }
+                } else if (((Element) n).getTagName().equalsIgnoreCase("NOTE")) {
+                    if (description == null) {
+                        description = "<html>" + n.getTextContent();
+                    } else {
+                        description += ("<br>" + n.getTextContent());
+                    }
+                } else if (((Element) n).getTagName().equalsIgnoreCase("GROUP")) {
+                    nnm = n.getAttributes();
+                    tmpNode = nnm.getNamedItem("id");
+                    group = tmpNode.getTextContent();
+
+                    tmpNode = nnm.getNamedItem("label");
+                    if (tmpNode != null) {
+                        groupLabel = tmpNode.getTextContent();
+                    }
+
+                    NodeList linkNodes = ((Element) n).getElementsByTagName("LINK");
+                    if (linkNodes.getLength() > 0) {
+                        Node ln = linkNodes.item(0);
+                        Node hrefNode = ln.getAttributes().getNamedItem("href");
+                        if (hrefNode != null) {
+                            groupLink = hrefNode.getTextContent();
+                        }
+                    }
+                    // TODO  group Note elements
+
+                } else if (((Element) n).getTagName().equalsIgnoreCase("LINK")) {
+                    NamedNodeMap tmpnnm = n.getAttributes();
+                    Node tmpnode = tmpnnm.getNamedItem("href");
+                    link = tmpnode.getTextContent();
+                }
+
+            }
+
+            // TODO Rewind?  Why are we doing this?
+            walker.setCurrentNode(featureNode);
+
+
+            BasicFeature feature = null;
+            if (group != null) {
+                Exon exon = new Exon(chr, start, end, strand);
+
+                feature = groupFeatureCache.get(group);
+                if (feature == null) {
+                    feature = new BasicFeature(exon.getChr(), exon.getStart(), exon.getEnd(), exon.getStrand());
+                    feature.addExon(exon);
+                    if (groupLink != null) {
+                        feature.setURL(groupLink);
+                    }
+                    if (groupLabel != null) {
+                        feature.setName(groupLabel);
+                    } else {
+                        feature.setName(label);
+                    }
+                    groupFeatureCache.put(group, feature);
+                } else { // Seen before, just add the exon and exit
+                    feature.addExon(exon);
+                    return null;
+                }
+
+            } else {
+                feature = new BasicFeature(chr, start, end);
+                if (link != null) {
+                    feature.setURL(link);
+                }
+                feature.setIdentifier(id);
+                label = label.replace("?", " ");
+                feature.setName(label);
+                feature.setType(type);
+                feature.setStrand(strand);
+            }
+
+
+            if (description != null) {
+                description = description.replace("&nbsp;", "<br>");
+                description = description.replace("<br><br><br>", "<br>");
+                description = description.replace("<br><br>", "<br>");
+                description = description.replace(":", ":&nbsp;");
+                description = description.replace("?", " ");
+                description = description + "<br>TYPE:&nbsp;" + type;
+                feature.setDescription(description);
+            }
+
+
+            return feature;
+        }
+
+        public void close() throws IOException {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public List<String> getSequenceNames() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public Object getHeader() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
+
+    LRUCache<String, BasicFeature> groupFeatureCache = new LRUCache(10000);
+
+
+    static class IteratorWrapper<Feature> implements CloseableTribbleIterator {
+
+        private Iterator<Feature> iterator;
+
+        IteratorWrapper(Iterator<Feature> iterator) {
+            this.iterator = iterator;
+        }
+
+        public void close() {
+
+        }
+
+        public Iterator<Feature> iterator() {
+            return iterator;
+        }
+
+        public boolean hasNext() {
+            return iterator.hasNext();  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public Feature next() {
+            return iterator.next();
+        }
+
+        public void remove() {
+            iterator.remove();
+        }
+    }
+
+
+}

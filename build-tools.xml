@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright (c) 2007-2010 by The Broad Institute, Inc. and the Massachusetts Institute of Technology.
+  ~ All Rights Reserved.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL), Version 2.1 which
+  ~ is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR WARRANTIES OF
+  ~ ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
+  ~ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT
+  ~ OR OTHER DEFECTS, WHETHER OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR
+  ~ RESPECTIVE TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES OF
+  ~ ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES, ECONOMIC
+  ~ DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER THE BROAD OR MIT SHALL
+  ~ BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE
+  ~ FOREGOING.
+  -->
+
+<project name="igvtools" basedir="." default="create-zips">
+    <property name="tmp.dir" value="tmp"/>
+    <property name="main-class" value="org.broad.igv.tools.IgvTools"/>
+    <property name="title" value="IGVTools"/>
+    <property name="jarname" value="igvtools"/>
+    <property name="deploy.dir" value="igvtools-dist"/>
+    <property name="genome.dir" value="../server/web/resources/prod/"/>
+    <property name="version" value="v0.0"/>
+
+    <target name="extract-classes">
+        <unzip dest="${tmp.dir}">
+            <patternset>
+                <include name="**/*.class"/>
+            </patternset>
+            <fileset dir="lib">
+                <include name="**/*.jar"/>
+            </fileset>
+        </unzip>
+    </target>
+
+    <target name="init">
+        <path id="library.classpath">
+            <fileset id="jar.lib" dir="lib"/>
+        </path>
+        <echo message="Version ${version}"/>
+        <replace file="src/org/broad/igv/tools/IgvTools.java" token="@VERSION" value="${version}"/>
+
+    </target>
+
+    <target name="compile" depends="init">
+        <delete dir="${tmp.dir}"/>
+        <mkdir dir="${tmp.dir}"/>
+        <javac debug="true" defaultexcludes="false" deprecation="true"
+               destdir="${tmp.dir}" optimize="false" proceed="false"
+               srcdir="src">
+            <classpath refid="library.classpath"/>
+        </javac>
+    </target>
+
+    <target name="package-jar" depends="compile">
+        <antcall target="extract-classes"/>
+        <delete dir="${ant.project.name}-dist"/>
+        <mkdir dir="${ant.project.name}-dist"/>
+        <jar destfile="${ant.project.name}-dist/${jarname}.jar">
+            <classfileset dir="${tmp.dir}">
+                <root classname="${main-class}"/>
+                <root classname="org.apache.log4j.ConsoleAppender"/>
+                <rootfileset dir="${tmp.dir}" includes="ncsa/hdf/hdf5lib/exceptions/*.class"/>
+            </classfileset>
+            <fileset dir="src" includes="resources/**, log4j.properties"/>
+            <manifest>
+                <attribute name="Implementation-Title" value="${title}"/>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="create-zips" depends="cleanup, compile, package-jar">
+        <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
+            <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${genome.dir}" includes="genomes/*.genome" prefix="${title}"/>
+        </zip>
+        <zip destfile="${deploy.dir}/igvtools_nogenomes_${version}.zip" whenempty="fail" defaultexcludes="true">
+            <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="." includes="igvtools_readme.txt" prefix="${title}"/>
+        </zip>
+    </target>
+
+    <target name="deploy" depends="create-zips">
+        <copy todir="${deploy.dir}" overwrite="true">
+            <fileset dir="${ant.project.name}-dist" includes="*.zip"/>
+        </copy>
+    </target>
+
+    <target name="cleanup">
+        <delete quiet="true">
+            <fileset dir="${tmp.dir}"/>
+            <fileset dir="${ant.project.name}-dist"/>
+        </delete>
+    </target>
+
+</project>

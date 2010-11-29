@@ -1,0 +1,77 @@
+
+    General layout
+    [Header]
+    [Tiles]
+    [Datasets]
+    [Groups]
+    [Master Index]
+
+    Header
+    ------
+    magic number  (32 bit int)
+    version       (32 bit int
+    index position  (64 bit long)
+    index size (bytes)  (32 bit int)
+    header size (bytes) (32 bit int -- # of bytes for rest of header).
+    # of window functions
+    [window functions]
+    track type (string)
+    track line (string)
+    # of tracks
+    [track names]
+
+    FixedTile
+    ---------
+    Type
+    # Positions
+    Start location
+    Span
+    Data
+
+    Features
+    ---------
+    magic number    (32 bit int)  <= 'F','E', 'A', 'T'
+    format          (string)  <= bed, gff, other
+    [chr             (string)
+     start           (int)
+     rest of record  (string)]
+
+    FeatureIndex
+    ------------
+    
+
+    Dataset
+    -------
+    # attributes
+    [attribute key (string)
+     attribute value (string]
+    data type
+    tile width
+    # tiles
+    [tile position
+     tile size (bytes)]  <= THIS IS NOT NECCESSARY
+
+    Group
+    ------
+    # attributes
+    [attribute key (string)
+     attribute value (string]
+
+    Master Index
+    -----------
+    feature index position (long)  (-1 if no features)
+    # datasets
+    [dataset name (string)
+     position (long)
+     size in bytes (int)]    <= THIS IS NOT NECCESSARY
+    # groups
+    [group name
+     position (long)
+     size in bytes (int)]  <= THIS IS NOT NECCESSARY
+
+
+
+
+seek(long position)
+read(buffer, offset, length)
+length()  <==  Only used for testing end of file

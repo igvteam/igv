@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
+ * Technology.  All Rights Reserved.
+ *
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
+ * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+ * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
+ * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
+ * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+ * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
+ * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
+ * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+ */
+
+package org.broad.igv.util;
+
+import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: jrobinso
+ * Date: Jun 3, 2010
+ * Time: 5:21:14 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public class StringUtilsTest {
+    @Test
+
+    public void testBreakQuotedString() throws Exception {
+
+        long t0 = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            String quotedString = "abc,def,\"" + Math.random() + "\"";
+            List<String> tokens = StringUtils.breakQuotedString(quotedString, ',');
+            //assertEquals(3, tokens.size());
+        }
+        System.out.println("" + (System.currentTimeMillis() - t0));
+
+        t0 = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            String quotedString = "abc,def," + Math.random();
+            quotedString.split(",");
+            //assertEquals(3, tokens.size());
+        }
+        System.out.println("" + (System.currentTimeMillis() - t0));
+
+
+        t0 = System.currentTimeMillis();
+        String [] tokens = new String[10];
+        for (int i = 0; i < 100000; i++) {
+            String quotedString = "abc\tdef\t" + Math.random();
+            ParsingUtils.split(quotedString, tokens, '\t');
+            quotedString.split(",");
+            //assertEquals(3, tokens.size());
+        }
+        System.out.println("" + (System.currentTimeMillis() - t0));
+
+
+
+        t0 = System.currentTimeMillis();
+        for (int i = 0; i < 100000; i++) {
+            String quotedString = "abc\tdef\t" + Math.random();
+            ParsingUtils.split(quotedString, tokens, '\t');
+            quotedString.split(",");
+            //assertEquals(3, tokens.size());
+        }
+        System.out.println("" + (System.currentTimeMillis() - t0));
+    }
+}

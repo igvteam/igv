@@ -1,0 +1,896 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_20" class="java.beans.XMLDecoder"> 
+ <object class="com.jformdesigner.model.FormModel"> 
+  <void property="contentType"> 
+   <string>form/swing</string> 
+  </void> 
+  <void property="root"> 
+   <object class="com.jformdesigner.model.FormRoot"> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormContainer"> 
+      <string>javax.swing.JPanel</string> 
+      <object class="com.jformdesigner.model.FormLayoutManager"> 
+       <class>com.jformdesigner.runtime.NullLayout</class> 
+      </object> 
+      <void method="setProperty"> 
+       <string>toolTipText</string> 
+       <string>Used to completely define all the items associated with a genome</string> 
+      </void> 
+      <void method="setProperty"> 
+       <string>font</string> 
+       <object class="java.awt.Font"> 
+        <string>Tahoma</string> 
+        <int>2</int> 
+        <int>12</int> 
+       </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>maximumSize</string> 
+       <object class="java.awt.Dimension"> 
+        <int>900</int> 
+        <int>500</int> 
+       </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>minimumSize</string> 
+       <object class="java.awt.Dimension"> 
+        <int>400</int> 
+        <int>300</int> 
+       </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>preferredSize</string> 
+       <object class="java.awt.Dimension"> 
+        <int>700</int> 
+        <int>400</int> 
+       </object> 
+      </void> 
+      <void property="name"> 
+       <string>this</string> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>com.jformdesigner.runtime.NullLayout</class> 
+        </object> 
+        <void method="setProperty"> 
+         <string>border</string> 
+         <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+        </void> 
+        <void property="name"> 
+         <string>jPanel1</string> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>A cytoband data file</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>cytobandFileTextField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>135</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>608</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>label</string> 
+           <string>...</string> 
+          </void> 
+          <void property="name"> 
+           <string>cytobandFileButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>cytobandFileButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>725</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>130</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>50</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Gene File</string> 
+          </void> 
+          <void property="name"> 
+           <string>refFlatFileLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>170</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>label</string> 
+           <string>...</string> 
+          </void> 
+          <void property="name"> 
+           <string>refFlatFileButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>refFlatFileButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>725</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>165</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>50</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>The user-readable name of the genome</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>genomeDisplayNameTextField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>40</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>288</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Fasta file:</string> 
+          </void> 
+          <void property="name"> 
+           <string>fastaFileLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>100</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>label</string> 
+           <string>...</string> 
+          </void> 
+          <void property="name"> 
+           <string>fastaFileButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>fastaFileButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>725</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>95</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>50</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Cytoband File</string> 
+          </void> 
+          <void property="name"> 
+           <string>cytobandFileLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>135</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>A FASTA data file</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>fastaFileTextField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>100</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>608</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>A refFlat gene file</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>refFlatFileTextField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>170</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>608</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Name *</string> 
+          </void> 
+          <void property="name"> 
+           <string>genomeDisplayNameLabel</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>40</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>28</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Alias file</string> 
+          </void> 
+          <void property="name"> 
+           <string>refFlatFileLabel2</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>220</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>A refFlat gene file</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>chrAliasField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>220</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>608</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>29</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JButton</string> 
+          <void method="setProperty"> 
+           <string>label</string> 
+           <string>...</string> 
+          </void> 
+          <void property="name"> 
+           <string>chrAliasButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>chrAliasButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>725</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>220</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>50</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>The user-readable name of the genome</string> 
+          </void> 
+          <void property="name"> 
+           <string>idField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>5</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>148</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>ID *</string> 
+          </void> 
+          <void property="name"> 
+           <string>genomeDisplayNameLabel2</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>5</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>87</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>28</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>(unique id, e.g. hg18)</string> 
+          </void> 
+          <void property="name"> 
+           <string>label1</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>270</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>5</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>166</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>28</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JCheckBox</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Check if fasta file is a directory</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>font</string> 
+           <object class="java.awt.Font"> 
+            <string>Lucida Grande</string> 
+            <int>2</int> 
+            <int>13</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>sequenceDirectoryCB</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>105</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>75</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>546</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Supply a sequence URL if defining a web-hosted genome (optional, not common).  See user guide for more details. </string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>font</string> 
+           <object class="java.awt.Font"> 
+            <string>Lucida Grande</string> 
+            <int>2</int> 
+            <int>13</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>label2</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>275</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Sequence URL</string> 
+          </void> 
+          <void property="name"> 
+           <string>label3</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>15</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>295</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>height</string> 
+           <int>28</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>toolTipText</string> 
+           <string>A refFlat gene file</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>400</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>25</int> 
+            <int>28</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>sequenceURLField</string> 
+          </void> 
+         </object> 
+         <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+          <class>com.jformdesigner.runtime.NullConstraints</class> 
+          <void method="setProperty"> 
+           <string>x</string> 
+           <int>110</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>y</string> 
+           <int>295</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>width</string> 
+           <int>608</int> 
+          </void> 
+         </object> 
+        </void> 
+       </object> 
+       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+        <class>com.jformdesigner.runtime.NullConstraints</class> 
+        <void method="setProperty"> 
+         <string>width</string> 
+         <int>810</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>x</string> 
+         <int>10</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>y</string> 
+         <int>0</int> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormComponent"> 
+        <string>javax.swing.JLabel</string> 
+        <void method="setProperty"> 
+         <string>font</string> 
+         <object class="java.awt.Font"> 
+          <string>Lucida Sans Unicode</string> 
+          <int>2</int> 
+          <int>12</int> 
+         </object> 
+        </void> 
+        <void method="setProperty"> 
+         <string>text</string> 
+         <string>&lt;html&gt;* required.  &lt;br&gt;The sequence file (required) can be a FASTA file, a directory of FASTA files, or a zip of FASTA files. Optionally, specify a cytoband file to display the chromosome ideogram and an annotation file to display the gene track. See the documentation for descriptions of supported annotation formats.</string> 
+        </void> 
+        <void method="setProperty"> 
+         <string>verticalAlignment</string> 
+         <int>1</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>border</string> 
+         <object class="javax.swing.border.EmptyBorder"> 
+          <object class="java.awt.Insets"> 
+           <int>5</int> 
+           <int>25</int> 
+           <int>25</int> 
+           <int>5</int> 
+          </object> 
+         </object> 
+        </void> 
+        <void property="name"> 
+         <string>jLabel1</string> 
+        </void> 
+       </object> 
+       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+        <class>com.jformdesigner.runtime.NullConstraints</class> 
+        <void method="setProperty"> 
+         <string>y</string> 
+         <int>340</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>width</string> 
+         <int>785</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>x</string> 
+         <int>5</int> 
+        </void> 
+        <void method="setProperty"> 
+         <string>height</string> 
+         <int>150</int> 
+        </void> 
+       </object> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>size</string> 
+       <object class="java.awt.Dimension"> 
+        <int>845</int> 
+        <int>520</int> 
+       </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>25</int> 
+        <int>5</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+   </object> 
+  </void> 
+ </object> 
+</java> 

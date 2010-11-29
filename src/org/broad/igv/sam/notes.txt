@@ -1,0 +1,41 @@
+
+Goal:  Do interval queries on BAM files remotely by http.
+
+     reader = new SAMFileReader(url);
+
+     header = reader.getFileHeader()
+
+     reader.query(sequence, start, end, contained)
+
+
+
+Approach:  Use byte range request  for queries.
+
+                   RandomAccessStream
+                        / \
+                       /   \
+  RandomAccessHTTPStream    RandomAccessFileStream
+
+
+*  readHeader() -- just read from URL connection stream
+
+*  query -- replace RandomAccessFile in BlockCompressedInputStream with wrapper class
+
+     uses of RandomAccessFile:
+
+    - close();
+
+    - seek(compressedOffset);
+
+    - read(buffer, offset + bytesRead, length - bytesRead);
+
+    - length()
+          only used to test for EOF
+          mFile.length() == mFile.getFilePointer();
+
+*  index ???
+
+     Current implementation uses a MappedByteBuffer & file nio.  Its not obvious
+     how to map this to url streams.   Would it work to just copy the index file
+     to the client machine,  then use the current code on the copied tmp file?
+     Other ideas?  

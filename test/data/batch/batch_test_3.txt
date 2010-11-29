@@ -1,0 +1,12 @@
+snapshotDirectory /Users/jrobinso/tmp
+load http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_YRI.13.bam
+goto chr13:74,775,421-74,790,846
+snapshot
+goto chr13:77,167,670-77,183,095
+snapshot
+goto chr13:39,021,823-39,037,248
+snapshot
+goto chr13:39,029,466-39,029,585
+snapshot
+goto chr13:84,833,949-84,834,068
+snapshot

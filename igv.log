@@ -1,0 +1,5 @@
+INFO [2010-11-29 11:53:09,659]  [IGVMainFrame.java:2318] [main]  IGV Version @VERSION (@BUILD)@TIMESTAMP
+INFO [2010-11-29 11:53:10,405]  [IGVMainFrame.java:2323] [main]  Default User Directory: /Users/jrobinso
+INFO [2010-11-29 11:53:11,562]  [CommandListener.java:65] [Thread-6]  Listening on port 60151
+ERROR [2010-11-29 11:53:16,851]  [ReferenceFrame.java:545] [AWT-EventQueue-0]  Null chromosome: 
+ERROR [2010-11-29 11:53:16,965]  [ReferenceFrame.java:545] [AWT-EventQueue-0]  Null chromosome: 
