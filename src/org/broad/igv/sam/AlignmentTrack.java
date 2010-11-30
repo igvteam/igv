@@ -430,6 +430,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 ReferenceFrame frame = te.getFrame();
                 String locus1 = frame.getCurrentLocusString();
 
+                // Generate a locus string for the read mate.  Keep the window width (in base pairs) == to the current range
                 ReferenceFrame.Range range = frame.getCurrentRange();
                 int length = range.getLength();
                 int s2 = Math.max(0, mateStart - length / 2);
@@ -438,14 +439,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 String endStr = NumberFormat.getInstance().format(e2);
                 String mateLocus = mateChr + ":" + startStr + "-" + endStr;
 
-                String listName = locus1 + " <-> " + mateLocus;
-                GeneList geneList = new GeneList(listName, Arrays.asList(locus1, mateLocus));
-
                 Session currentSession = IGVMainFrame.getInstance().getSession();
-                if (!FrameManager.isGeneListMode()) {
-                    currentSession.setCurrentGeneList(geneList);
-                } else {
+
+                // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
+                if (FrameManager.isGeneListMode()) {
                     currentSession.addGene(mateLocus);
+                } else {
+                    String listName = locus1 + " <-> " + mateLocus;
+                    GeneList geneList = new GeneList(listName, Arrays.asList(locus1, mateLocus));
+                    currentSession.setCurrentGeneList(geneList);
                 }
                 IGVMainFrame.getInstance().resetFrames();
 
@@ -945,7 +947,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         menu.add(item);
     }
 
-        public void addMaxInsertSizeMenuItem(JPopupMenu menu) {
+    public void addMaxInsertSizeMenuItem(JPopupMenu menu) {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Set maximum insert size threshold ...");
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {

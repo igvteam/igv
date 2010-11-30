@@ -23,6 +23,7 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.lists.GeneList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,10 +62,12 @@ public class FrameManager {
 
     public static void setToDefaultFrame(String searchString) {
         frames.clear();
-        Locus locus = getLocus(searchString);
-        if (locus != null) {
-            defaultFrame.setInterval(locus);
-        }
+        if (searchString != null) {
+            Locus locus = getLocus(searchString);
+            if (locus != null) {
+                defaultFrame.setInterval(locus);
+            }
+         }
         frames.add(defaultFrame);
 
     }
@@ -92,16 +95,13 @@ public class FrameManager {
 
     public static Locus getLocus(String searchString) {
 
-
         NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
-        if(feature != null) {
+        if (feature != null) {
             return new Locus(
                     feature.getChr(),
                     feature.getStart() - FLANKING_REGION,
                     feature.getEnd() + FLANKING_REGION);
-        }
-
-        else {
+        } else {
             Locus locus = new Locus(searchString);
             String chr = locus.getChr();
             if (chr != null) {

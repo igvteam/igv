@@ -94,22 +94,14 @@ public class ReferenceFrame {
 
 
     public ReferenceFrame(String name) {
-        this();
         this.name = name;
-    }
-
-
-    /**
-     * Constructs ...
-     */
-    public ReferenceFrame() {
         Genome genome = getGenome();
-            this.chrName = genome == null ? "" : genome.getHomeChromosome();
+        this.chrName = genome == null ? "" : genome.getHomeChromosome();
     }
 
 
     public void setBounds(int x, int w) {
-        if(log.isDebugEnabled()) log.debug("Set bounds: " + name + "  " + x + " " + w);
+        if (log.isDebugEnabled()) log.debug("Set bounds: " + name + "  " + x + " " + w);
         this.pixelX = x;
         this.pixelWidth = w;
         computeLocationScale();
@@ -146,7 +138,7 @@ public class ReferenceFrame {
     private void setZoom(int newZoom) {
 
         // All  zoom events "release" the frame, enabling pan and zoom
-         end = -1;   // <= A lousy convention, means end is computed (free to float)
+        end = -1;   // <= A lousy convention, means end is computed (free to float)
 
         zoom = Math.min(maxZoom, newZoom);
         nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
@@ -309,7 +301,7 @@ public class ReferenceFrame {
 
         start = Math.max(0, start);
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
-        if(chromosome != null) {
+        if (chromosome != null) {
             end = Math.min(chromosome.getLength(), end);
         }
 
@@ -416,7 +408,7 @@ public class ReferenceFrame {
         setChromosomeName(name, false);
     }
 
-    
+
     public String getChrName() {
         return chrName;
     }
@@ -608,7 +600,6 @@ public class ReferenceFrame {
     }
 
 
-
     public void setInterval(String chr, int start, int end) {
         this.chrName = chr;
         this.origin = start;
@@ -618,8 +609,7 @@ public class ReferenceFrame {
             locationScaleValid = true;
         }
         imputeZoom(origin, end);
-     }
-
+    }
 
 
     public void reset() {

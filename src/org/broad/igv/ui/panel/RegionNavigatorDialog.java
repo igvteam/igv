@@ -273,7 +273,7 @@ public class RegionNavigatorDialog extends JDialog {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner Evaluation license - Damon May
+        // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -298,14 +298,6 @@ public class RegionNavigatorDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(null);
-
-            // JFormDesigner evaluation mark
-            dialogPane.setBorder(new javax.swing.border.CompoundBorder(
-                new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-                    "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-                    javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-                    java.awt.Color.red), dialogPane.getBorder())); dialogPane.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
-
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -398,7 +390,7 @@ public class RegionNavigatorDialog extends JDialog {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - Damon May
+    // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
@@ -421,7 +413,7 @@ public class RegionNavigatorDialog extends JDialog {
     private class CancelAction extends AbstractAction {
         private CancelAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Evaluation license - Damon May
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Cancel");
             putValue(SHORT_DESCRIPTION, "Clear search box");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -438,7 +430,7 @@ public class RegionNavigatorDialog extends JDialog {
     private class AddRegionAction extends AbstractAction {
         private AddRegionAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Evaluation license - Damon May
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Add Region");
             putValue(SHORT_DESCRIPTION, "Add a new region");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -462,7 +454,7 @@ public class RegionNavigatorDialog extends JDialog {
     private class RemoveSelectedRegionsAction extends AbstractAction {
         private RemoveSelectedRegionsAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Evaluation license - Damon May
+            // Generated using JFormDesigner non-commercial license
             putValue(NAME, "Remove");
             putValue(SHORT_DESCRIPTION, "Remove all selected regions");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents

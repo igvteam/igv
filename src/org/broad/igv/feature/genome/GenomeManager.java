@@ -1070,7 +1070,7 @@ public class GenomeManager {
 
         if ((refFlatFileName != null) && (refFlatFileName.trim().length() != 0)) {
             refFlatFile = new File(refFlatFileName);
-         }
+        }
 
         if ((chrAliasFileName != null) && (chrAliasFileName.trim().length() != 0)) {
             chrAliasFile = new File(chrAliasFileName);
@@ -1315,16 +1315,15 @@ public class GenomeManager {
                 frame.setChrName(getHomeChr());
             }
 
-        } else if (!startUp) {
-            // We don't know what chromosomes the new genome has, set to "all" (whole genome)
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                frame.setChrName(getHomeChr());
-            }
         }
-        for (ReferenceFrame frame : FrameManager.getFrames()) {
-            frame.computeMaxZoom();
-            frame.invalidateLocationScale();
-        }
+
+
+        // Reset the frame manager
+        FrameManager.setToDefaultFrame(null);
+        FrameManager.getDefaultFrame().setChrName(getHomeChr());
+        FrameManager.getDefaultFrame().computeMaxZoom();
+        FrameManager.getDefaultFrame().invalidateLocationScale();
+
         IGVMainFrame.getInstance().chromosomeChangeEvent();
         return genomeId;
     }
