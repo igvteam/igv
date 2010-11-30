@@ -400,6 +400,11 @@ public class ReferenceFrame {
             origin = 0;
             setZoom(0);
             computeMaxZoom();
+
+            //dhmay: if there's a RegionNavigatorDialog around, need to update it.
+            //Todo: Properly, there should be a way to register listeners to chromosome changes.
+            if (RegionNavigatorDialog.getActiveInstance() != null)
+                RegionNavigatorDialog.getActiveInstance().updateChromosomeDisplayed();
         }
     }
 

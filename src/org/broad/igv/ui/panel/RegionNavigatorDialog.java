@@ -1,23 +1,4 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
- * Technology.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
- */
-
-/*
  * Created by JFormDesigner on Tue Nov 16 14:34:59 PST 2010
  */
 
@@ -25,6 +6,7 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.ui.IGVMainFrame;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -53,11 +35,18 @@ public class RegionNavigatorDialog extends JDialog {
     private static final int TABLE_COLINDEX_END = 2;
     private static final int TABLE_COLINDEX_DESC = 3;
 
+    //The active instance of RegionNavigatorDialog (only one at a time)
+    public static RegionNavigatorDialog activeInstance;
+
 
     private DefaultTableModel regionTableModel;
     private List<RegionOfInterest> regions;
 
     private TableRowSorter<TableModel> regionTableRowSorter;
+
+    public static RegionNavigatorDialog getActiveInstance() {
+        return activeInstance;
+    }
 
     public RegionNavigatorDialog(Frame owner) {
         super(owner);
@@ -75,14 +64,16 @@ public class RegionNavigatorDialog extends JDialog {
     }
 
     /**
-     * Populate the table with the loaded regions
-     *
+     * Synchronize the regions ArrayList with the passed-in regionsCollection, and update UI
      * @param regionsCollection
      */
-    private void postInit(Collection<RegionOfInterest> regionsCollection) {
-        this.regions = new ArrayList<RegionOfInterest>(regionsCollection);
+    public void synchRegions(Collection<RegionOfInterest> regionsCollection)
+    {
+        regions = new ArrayList<RegionOfInterest>(regionsCollection != null ? regionsCollection :
+                new ArrayList<RegionOfInterest>());
         regionTableModel = (DefaultTableModel) regionTable.getModel();
-
+        while (regionTableModel.getRowCount() > 0)
+            regionTableModel.removeRow(0);
         regionTableModel.setRowCount(regions.size());
         for (int i = 0; i < regions.size(); i++) {
             RegionOfInterest region = regions.get(i);
@@ -94,34 +85,55 @@ public class RegionNavigatorDialog extends JDialog {
         }
 
 
-        //resize window if small number of regions.  By default, tables are initialized with 20
-        //rows.  Only bother resizing if we've got less than 15.  This is hacky and makes the table
-        //slightly too tall
-        if (regions.size() < 15) {
-            int newTableHeight = regions.size() * regionTable.getRowHeight();
-            //"extraHeight" is all the height contributed by the top and bottom regions.  There's probably
-            //a better way to calculate this.
-            //Table initially is 21 rows tall, including 1 row for header
-            int extraHeight = getHeight() - (21 * regionTable.getRowHeight());
 
-            int newDialogHeight = newTableHeight + extraHeight;
-            if (newDialogHeight < getHeight()) {
-                regionTable.setPreferredScrollableViewportSize(new Dimension(regionTable.getPreferredSize().width,
-                        newTableHeight));
-                setSize(getWidth(), newTableHeight + extraHeight);
-                update(getGraphics());
-            }
-        }
+
+        regionTableModel.fireTableDataChanged();
+    }
+
+    /**
+     * Populate the table with the loaded regions
+     *
+     * @param regionsCollection
+     */
+    private void postInit(Collection<RegionOfInterest> regionsCollection) {
+        this.regions = new ArrayList<RegionOfInterest>(regionsCollection);
+        regionTableModel = (DefaultTableModel) regionTable.getModel();
 
 
         regionTable.getSelectionModel().addListSelectionListener(new RegionTableSelectionListener());
         regionTableModel.addTableModelListener(new RegionTableModelListener());
 
+
+
         //custom row sorter required for displaying only a subset of rows
         regionTableRowSorter = new TableRowSorter<TableModel>(regionTableModel);
         regionTable.setRowSorter(regionTableRowSorter);
+        regionTableRowSorter.setRowFilter(new RegionRowFilter());
 
         textFieldSearch.getDocument().addDocumentListener(new SearchFieldDocumentListener());
+
+        checkBoxZoomWhenNav.setSelected(true);
+
+        activeInstance = this;
+        updateChromosomeDisplayed();
+
+        synchRegions(regionsCollection);
+
+        //resize window if small number of regions.  By default, tables are initialized with 20
+        //rows, and that can look ungainly for empty windows or windows with a few rows.
+        //This correction is rather hacky. Minimum size of 5 rows set.
+        int newTableHeight = Math.min(regions.size()+1,5) * regionTable.getRowHeight();
+        //This is quite hacky -- need to find the size of the other components programmatically somehow, since
+        //it will vary on different platforms
+        int extraHeight = 225;
+
+        int newDialogHeight = newTableHeight + extraHeight;
+        if (newDialogHeight < getHeight()) {
+            regionTable.setPreferredScrollableViewportSize(new Dimension(regionTable.getPreferredSize().width,
+                    newTableHeight));
+            setSize(getWidth(), newTableHeight + extraHeight);
+            update(getGraphics());
+        }
     }
 
     private class SearchFieldDocumentListener implements DocumentListener {
@@ -130,40 +142,55 @@ public class RegionNavigatorDialog extends JDialog {
         }
 
         public void insertUpdate(DocumentEvent e) {
-            showSearchedRegions();
+            regionTableModel.fireTableDataChanged();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            showSearchedRegions();
+            regionTableModel.fireTableDataChanged();
         }
     }
 
     /**
-     * Display only those regions whose descriptions match the search string entered by the user
+     * When chromosome that's displayed is changed, need to update displayed regions.  showSearchedRegions will do that
      */
-    private void showSearchedRegions() {
-        regionTableRowSorter.setRowFilter(new RegionRowFilter(textFieldSearch.getText()));
+    public void updateChromosomeDisplayed()
+    {
+//        regionTable.updateUI();
+//        showSearchedRegions();
+        regionTableModel.fireTableDataChanged();
     }
+
+
 
     /**
      * A row filter that shows only rows that contain filterString, case-insensitive
      */
     private class RegionRowFilter extends RowFilter<TableModel, Object> {
-        protected String filterStringLowercase;
 
-        public RegionRowFilter(String filterString) {
+        public RegionRowFilter() {
             super();
-            this.filterStringLowercase = filterString.toLowerCase();
         }
 
         public boolean include(RowFilter.Entry entry) {
-            String regionDesc = (String) entry.getValue(TABLE_COLINDEX_DESC);
+            //if table is empty, a non-region event is fed here.  Test for it and don't display
+            if (entry.getValue(TABLE_COLINDEX_CHR) == null)
+                return false;
+            
+            String filterStringLowercase = null;
+            if (textFieldSearch.getText() != null)
+                filterStringLowercase = textFieldSearch.getText().toLowerCase();
 
-            if (filterStringLowercase == null || filterStringLowercase.isEmpty() ||
-                    (regionDesc != null &&
-                            entry.getValue(TABLE_COLINDEX_DESC).toString().contains(filterStringLowercase)))
-                return true;
-            return false;
+            String regionDesc = (String) entry.getValue(TABLE_COLINDEX_DESC);
+            String chr = FrameManager.getDefaultFrame().getChrName();
+            //show only regions in the current chromosome
+            if (chr != null && !chr.isEmpty() && !entry.getValue(TABLE_COLINDEX_CHR).equals(chr))
+                return false;
+            //show only regions matching the search string (if specified)
+            if ((filterStringLowercase != null && !filterStringLowercase.isEmpty() &&
+                (regionDesc == null || !regionDesc.toLowerCase().contains(filterStringLowercase))))
+                return false;
+
+            return true;
         }
     }
 
@@ -173,10 +200,15 @@ public class RegionNavigatorDialog extends JDialog {
     private class RegionTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
             int rowIdx = e.getFirstRow();
+            //range checking because this method gets called after a clear event
+            if (rowIdx > regions.size()-1)
+                return;
             RegionOfInterest region = regions.get(rowIdx);
             switch (e.getColumn()) {
                 case TABLE_COLINDEX_DESC:
-                    region.setDescription(regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_DESC).toString());
+                    Object descObject = regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_DESC);
+                    if (descObject != null)
+                         region.setDescription(descObject.toString());
                     break;
                 case TABLE_COLINDEX_START:
                     //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
@@ -202,20 +234,36 @@ public class RegionNavigatorDialog extends JDialog {
         public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting()) {
                 int[] selectedRows = regionTable.getSelectedRows();
-                if (selectedRows != null && selectedRows.length == 1) {
-                    int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRows[0]);
-                    RegionOfInterest region = regions.get(selectedModelRow);
-                    log.debug("Nav to region " + region.getDescription() + "chr=" + region.getChr() +
-                            ", start=" + region.getStart() + ", end=" + region.getEnd());
+                if (selectedRows != null && selectedRows.length > 0
+                        && regions.size() >= selectedRows.length)  //dhmay: this is hacky. Bad things can happen with clear regions
+                {
+                    RegionOfInterest firstStartRegion = null;
+                    RegionOfInterest lastEndRegion = null;
 
-                    // Option (1), center on the region without changing resolution
-                    //FrameManager.getDefaultFrame().centerOnLocation(region.getChr(), region.getCenter());
+                    //Figure out which region has the first start and which has the last end
+                    for (int selectedRowIndex : selectedRows)
+                    {
+                        int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRowIndex);
+                        RegionOfInterest region = regions.get(selectedModelRow);
+                        if (firstStartRegion == null || region.getStart() < firstStartRegion.getStart())
+                            firstStartRegion = region;
+                        if (lastEndRegion == null || region.getEnd() > lastEndRegion.getEnd())
+                            lastEndRegion = region;
+                    }
 
-                    // Option (2), zoom and center on region, with an interval equal to the region length on
-                    // either side for context
-                    int start = region.getStart() - region.getLength();
-                    int end = region.getEnd() + region.getLength();
-                    FrameManager.getDefaultFrame().jumpTo(region.getChr(), start, end);
+                    if (checkBoxZoomWhenNav.isSelected())
+                    {
+                        // Option (1), zoom and center on group of selected regions, with an interval equal to
+                        // 20% of the length of the end regions on either side for context (dhmay reduced from 100%)
+                        int start = firstStartRegion.getStart() - (int) (0.2 * firstStartRegion.getLength());
+                        int end = lastEndRegion.getEnd() + (int) (0.2 * lastEndRegion.getLength());
+                        FrameManager.getDefaultFrame().jumpTo(FrameManager.getDefaultFrame().getChrName(), start, end);
+                    }
+                    else
+                    {
+                        // Option (2), center on the FIRST selected region without changing resolution
+                        FrameManager.getDefaultFrame().centerOnLocation(firstStartRegion.getCenter());
+                    }
 
                 }
             }
@@ -225,7 +273,7 @@ public class RegionNavigatorDialog extends JDialog {
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner non-commercial license
+        // Generated using JFormDesigner Evaluation license - Damon May
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
@@ -234,7 +282,13 @@ public class RegionNavigatorDialog extends JDialog {
         textFieldSearch = new JTextField();
         label1 = new JLabel();
         button1 = new JButton();
+        panel2 = new JPanel();
+        checkBoxZoomWhenNav = new JCheckBox();
+        buttonAddRegion = new JButton();
+        button2 = new JButton();
         cancelAction = new CancelAction();
+        addRegionAction = new AddRegionAction();
+        actionRemoveRegions = new RemoveSelectedRegionsAction();
 
         //======== this ========
         setTitle("Regions of Interest");
@@ -244,6 +298,14 @@ public class RegionNavigatorDialog extends JDialog {
         //======== dialogPane ========
         {
             dialogPane.setBorder(null);
+
+            // JFormDesigner evaluation mark
+            dialogPane.setBorder(new javax.swing.border.CompoundBorder(
+                new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
+                    "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
+                    javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
+                    java.awt.Color.red), dialogPane.getBorder())); dialogPane.addPropertyChangeListener(new java.beans.PropertyChangeListener(){public void propertyChange(java.beans.PropertyChangeEvent e){if("border".equals(e.getPropertyName()))throw new RuntimeException();}});
+
             dialogPane.setLayout(new BorderLayout());
 
             //======== contentPanel ========
@@ -255,25 +317,23 @@ public class RegionNavigatorDialog extends JDialog {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                            new Object[][]{
-                                    {null, null, null, null},
-                            },
-                            new String[]{
-                                    "Chr", "Start", "End", "Description"
-                            }
+                        new Object[][] {
+                            {null, null, null, null},
+                        },
+                        new String[] {
+                            "Chr", "Start", "End", "Description"
+                        }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[]{
-                                String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[] {
+                            String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[]{
-                                false, true, true, true
+                        boolean[] columnEditable = new boolean[] {
+                            false, true, true, true
                         };
-
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
-
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -286,7 +346,6 @@ public class RegionNavigatorDialog extends JDialog {
                         cm.getColumn(2).setPreferredWidth(100);
                         cm.getColumn(3).setPreferredWidth(200);
                     }
-                    regionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     regionTable.setAutoCreateRowSorter(true);
                     scrollPane1.setViewportView(regionTable);
                 }
@@ -295,6 +354,9 @@ public class RegionNavigatorDialog extends JDialog {
                 //======== panel1 ========
                 {
                     panel1.setLayout(new BorderLayout());
+
+                    //---- textFieldSearch ----
+                    textFieldSearch.setToolTipText("When navigating to a region, zoom to the region?");
                     panel1.add(textFieldSearch, BorderLayout.CENTER);
 
                     //---- label1 ----
@@ -303,8 +365,27 @@ public class RegionNavigatorDialog extends JDialog {
 
                     //---- button1 ----
                     button1.setAction(cancelAction);
-                    button1.setText("Clear");
+                    button1.setText("Clear Search");
                     panel1.add(button1, BorderLayout.EAST);
+
+                    //======== panel2 ========
+                    {
+                        panel2.setLayout(new BorderLayout());
+
+                        //---- checkBoxZoomWhenNav ----
+                        checkBoxZoomWhenNav.setText("Zoom when Navigating");
+                        panel2.add(checkBoxZoomWhenNav, BorderLayout.EAST);
+
+                        //---- buttonAddRegion ----
+                        buttonAddRegion.setAction(addRegionAction);
+                        panel2.add(buttonAddRegion, BorderLayout.WEST);
+
+                        //---- button2 ----
+                        button2.setAction(actionRemoveRegions);
+                        button2.setText("Remove Selected");
+                        panel2.add(button2, BorderLayout.CENTER);
+                    }
+                    panel1.add(panel2, BorderLayout.NORTH);
                 }
                 contentPanel.add(panel1, BorderLayout.SOUTH);
             }
@@ -317,7 +398,7 @@ public class RegionNavigatorDialog extends JDialog {
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner non-commercial license
+    // Generated using JFormDesigner Evaluation license - Damon May
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
@@ -326,26 +407,21 @@ public class RegionNavigatorDialog extends JDialog {
     private JTextField textFieldSearch;
     private JLabel label1;
     private JButton button1;
+    private JPanel panel2;
+    private JCheckBox checkBoxZoomWhenNav;
+    private JButton buttonAddRegion;
+    private JButton button2;
     private CancelAction cancelAction;
+    private AddRegionAction addRegionAction;
+    private RemoveSelectedRegionsAction actionRemoveRegions;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-    private class SaveAction extends AbstractAction {
-        private SaveAction() {
-            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
-            // JFormDesigner - End of action initialization  //GEN-END:initComponents
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            // TODO add your code here
-        }
-    }
 
     private class CancelAction extends AbstractAction {
         private CancelAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner non-commercial license
+            // Generated using JFormDesigner Evaluation license - Damon May
             putValue(NAME, "Cancel");
             putValue(SHORT_DESCRIPTION, "Clear search box");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
@@ -353,6 +429,66 @@ public class RegionNavigatorDialog extends JDialog {
 
         public void actionPerformed(ActionEvent e) {
             textFieldSearch.setText("");
+        }
+    }
+
+    /**
+     * Add a new RegionOfInterest for the current chromosome, with 0 start and end
+     */
+    private class AddRegionAction extends AbstractAction {
+        private AddRegionAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner Evaluation license - Damon May
+            putValue(NAME, "Add Region");
+            putValue(SHORT_DESCRIPTION, "Add a new region");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String chr = FrameManager.getDefaultFrame().getChrName();
+            if (chr == null || chr.isEmpty())
+                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                        "No chromosome is specified. Can't create a region without a chromosome.",
+                        "Error", JOptionPane.INFORMATION_MESSAGE);
+            else
+            {
+                RegionOfInterest newRegion = new RegionOfInterest(FrameManager.getDefaultFrame().getChrName(),
+                        0, 0, "");
+                IGVMainFrame.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
+            }
+        }
+    }
+
+    private class RemoveSelectedRegionsAction extends AbstractAction {
+        private RemoveSelectedRegionsAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner Evaluation license - Damon May
+            putValue(NAME, "Remove");
+            putValue(SHORT_DESCRIPTION, "Remove all selected regions");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int[] selectedRows = regionTable.getSelectedRows();
+            if (selectedRows != null && selectedRows.length > 0)
+            {
+                List<RegionOfInterest> selectedRegions = new ArrayList<RegionOfInterest>();
+
+                for (int selectedRowIndex : selectedRows)
+                {
+                    int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRowIndex);
+                    selectedRegions.add(regions.get(selectedModelRow));
+                }
+                regionTable.clearSelection();
+                IGVMainFrame.getInstance().getSession().removeRegionsOfInterest(selectedRegions);
+
+            }
+            else
+            {
+                //todo dhmay -- I don't fully understand this call.  Clean this up.
+                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), "No regions have been selected for removal.",
+                        "Error", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
     }
 }
