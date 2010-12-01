@@ -194,8 +194,10 @@
 
         <!-- Base directory -->
         <copy todir="${tmp.dir}/${src.archive.name}">
-            <fileset dir="${scripts.dir}/">
+             <fileset dir="${basedir}/">
                 <include name="build.xml"/>
+            </fileset>
+            <fileset dir="${scripts.dir}/">
                 <include name="readme_src.txt"/>
                 <include name="igv.sh"/>
                 <include name="igv.command"/>
