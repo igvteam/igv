@@ -1,0 +1,2 @@
+#!/bin/sh
+java -Xmx1500m  -jar `dirname $0`/igvtools.jar --gui

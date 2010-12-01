@@ -17,7 +17,8 @@
   ~ FOREGOING.
   -->
 
-<project name="igvtools" basedir="." default="create-zips">
+<project name="igvtools" basedir="../." default="create-zips">
+    <property name="scripts.dir" value="${basedir}/scripts"/>
     <property name="tmp.dir" value="tmp"/>
     <property name="main-class" value="org.broad.igv.tools.IgvTools"/>
     <property name="title" value="IGVTools"/>
@@ -77,22 +78,22 @@
     <target name="create-zips" depends="cleanup, compile, package-jar">
         <zip destfile="${deploy.dir}/igvtools_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
             <zipfileset dir="${genome.dir}" includes="genomes/*.genome" prefix="${title}"/>
         </zip>
         <zip destfile="${deploy.dir}/igvtools_nogenomes_${version}.zip" whenempty="fail" defaultexcludes="true">
             <zipfileset dir="${ant.project.name}-dist" includes="${jarname}.jar" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
-            <zipfileset dir="." includes="igvtools_readme.txt" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.command" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_gui.bat" filemode="755" prefix="${title}"/>
+            <zipfileset dir="${scripts.dir}" includes="igvtools_readme.txt" prefix="${title}"/>
         </zip>
     </target>
 
