@@ -77,6 +77,13 @@ public class TrackLoader {
 
     private static Logger log = Logger.getLogger(TrackLoader.class);
 
+    /**
+     * Switches on various attributes of locator (mainly locator path extension and whether the locator is indexed)
+     * to call the appropriate loading method.
+     *
+     * @param locator
+     * @return
+     */
     public List<Track> load(ResourceLocator locator) {
 
         try {
@@ -96,6 +103,7 @@ public class TrackLoader {
             }
 
             //TODO Why is this not inside of isIndexed?
+            //dhmay seconding this question -- this appears to be taken care of already in isIndexed()
             // Check for index
             boolean hasIndex = false;
             if (locator.isLocal()) {
@@ -103,7 +111,9 @@ public class TrackLoader {
                 hasIndex = indexFile.exists();
             }
 
+            //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
+
             if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
             } else
@@ -165,6 +175,7 @@ public class TrackLoader {
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks);
+            //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
             } else if (AbstractFeatureParser.getInstanceFor(locator) != null) {
                 loadFeatureFile(locator, newTracks);
             } else if (MutationParser.isMutationAnnotationFile(locator)) {
@@ -320,6 +331,7 @@ public class TrackLoader {
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
                 locator.getPath().endsWith(".bed.txt") ||
                 locator.getPath().endsWith(".bed.gz"))) {
+            //checkSize takes care of warning the user
             if (!checkSize(locator.getPath())) {
                 return;
             }

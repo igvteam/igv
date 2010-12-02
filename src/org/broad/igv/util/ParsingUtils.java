@@ -24,10 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
-import org.broad.igv.renderer.BarChartRenderer;
-import org.broad.igv.renderer.HeatmapRenderer;
-import org.broad.igv.renderer.LineplotRenderer;
-import org.broad.igv.renderer.ScatterplotRenderer;
+import org.broad.igv.renderer.*;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.util.MessageUtils;
@@ -402,6 +399,10 @@ public class ParsingUtils {
                     }
                     if (key.equals("name")) {
                         trackProperties.setName(value);
+                        //dhmay adding name check for TopHat junctions files
+                        if (value.equals("junctions")) {
+                            trackProperties.setRendererClass(SpliceJunctionRenderer.class);
+                        }
                     } else if (key.equals("description")) {
                         trackProperties.setDescription(value);
                     } else if (key.equals("itemrgb")) {

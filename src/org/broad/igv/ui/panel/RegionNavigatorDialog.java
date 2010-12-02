@@ -442,6 +442,10 @@ public class RegionNavigatorDialog extends JDialog {
                 JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
                         "No chromosome is specified. Can't create a region without a chromosome.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
+            else if (chr.equalsIgnoreCase("All"))
+                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                        "Regions cannot be created in the All Chromosomes view.",
+                        "Error", JOptionPane.INFORMATION_MESSAGE);
             else
             {
                 RegionOfInterest newRegion = new RegionOfInterest(FrameManager.getDefaultFrame().getChrName(),

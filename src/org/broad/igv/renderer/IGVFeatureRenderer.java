@@ -50,8 +50,8 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
      */
     public static final int NON_CODING_HEIGHT = 8;
     private static Logger log = Logger.getLogger(IGVFeatureRenderer.class);
-    private Font font;
-    private boolean drawBoundary = false;
+    protected Font font;
+    protected boolean drawBoundary = false;
 
 
     float viewLimitMin = Float.NaN;
@@ -60,8 +60,8 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
 
     // Use the max of these values to determine where
     // text should be drawn
-    private double lastFeatureLineMaxY = 0;
-    private double lastFeatureBoundsMaxY = 0;
+    protected double lastFeatureLineMaxY = 0;
+    protected double lastFeatureBoundsMaxY = 0;
     protected double lastRegionMaxY = 0;
 
     // Constants
@@ -565,7 +565,7 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
     // Declare this for efficiency.  Note: this makes getFeatureColor(...) not thread safe.
     private float[] colorComps = new float[3];
 
-    private Color getFeatureColor(IGVFeature feature, FeatureTrack track) {
+    protected Color getFeatureColor(IGVFeature feature, FeatureTrack track) {
         // Set color used to draw the feature
 
         Color color = null;
