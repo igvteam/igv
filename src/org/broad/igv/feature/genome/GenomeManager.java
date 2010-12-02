@@ -1289,6 +1289,7 @@ public class GenomeManager {
 
 
         // Reset the frame manager
+        FrameManager.reset(getHomeChr());
         IGVMainFrame.getInstance().chromosomeChangeEvent();
         return genomeId;
     }
