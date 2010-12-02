@@ -78,7 +78,7 @@ public class CommandListener implements Runnable {
 
                     while ((inputLine = in.readLine()) != null) {
                         Globals.batch = true;
-                        Globals.setSuppress(true);
+                        Globals.setSuppressMessages(true);
                         WaitCursorManager.CursorToken cursorToken = null;
                         try {
                             String cmd = inputLine;
@@ -103,7 +103,7 @@ public class CommandListener implements Runnable {
                                 out.println(cmdExe.execute(inputLine));
                             }
                         } finally {
-                            Globals.setSuppress(false);
+                            Globals.setSuppressMessages(false);
                             Globals.batch = false;
                             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
                         }
@@ -118,7 +118,7 @@ public class CommandListener implements Runnable {
                     log.error("Accept failed.", e);
                 } finally {
                     clientSocket.close();
-                    Globals.setSuppress(false);
+                    Globals.setSuppressMessages(false);
                 }
 
             }

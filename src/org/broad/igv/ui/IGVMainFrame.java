@@ -482,7 +482,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
     public void chromosomeChangeEvent(boolean updateCommandBar) {
         igvCommandBar.chromosomeChanged();
         repaintDataAndHeaderPanels(updateCommandBar);
-
+        FrameManager.reset(GenomeManager.getInstance().getHomeChr());
     }
 
     /**

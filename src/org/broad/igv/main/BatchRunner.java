@@ -27,8 +27,6 @@ import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 
 public class BatchRunner implements NamedRunnable {
@@ -49,7 +47,7 @@ public class BatchRunner implements NamedRunnable {
     public void run() {
         String inLine;
         CommandExecutor cmdExe = new CommandExecutor();
-        Globals.setSuppress(true);
+        Globals.setSuppressMessages(true);
         Globals.batch = true;
 
         WaitCursorManager.CursorToken cursorToken = null;
@@ -69,7 +67,7 @@ public class BatchRunner implements NamedRunnable {
         } catch (IOException ioe) {
             throw new DataLoadException(ioe.getMessage(), inputFile);
         } finally {
-            Globals.setSuppress(false);
+            Globals.setSuppressMessages(false);
             Globals.batch = false;
             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
             if (reader != null) {

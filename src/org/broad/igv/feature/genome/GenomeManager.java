@@ -35,7 +35,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -102,13 +101,8 @@ public class GenomeManager {
      */
     public Genome getGenome(String id) {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Enter getGenome: " + id);
-        }
-
         Genome genome = genomes.get(id);
         if (genome == null) {
-
             GenomeDescriptor genomeDescriptor = genomeDescriptorMap.get(id);
             if (genomeDescriptor == null) {
                 return null;
@@ -225,11 +219,6 @@ public class GenomeManager {
      */
     public void findGenomeAndLoad(String genome) throws IOException {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Enter findGenomeAndLoad: " + genome);
-        }
-
-
         LinkedHashSet<GenomeListItem> genomes = getAllGenomeArchives(null);
         for (GenomeListItem item : genomes) {
             if (item.getId().equalsIgnoreCase(genome)) {
@@ -239,10 +228,6 @@ public class GenomeManager {
                 }
                 break;
             }
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Exit findGenomeAndLoad");
         }
     }
 
@@ -273,7 +258,7 @@ public class GenomeManager {
 
 
     /**
-     * Loads a system IGV genome archive into IGV's local genome cache and
+     * Copies a system IGV genome archive into IGV's local genome cache and
      * then request it be loaded. If the genome is user-define it is loaded
      * directly from it's own location.
      *
@@ -583,8 +568,7 @@ public class GenomeManager {
      * Gets a list of all the server genome archive files that
      * IGV knows about.
      *
-     * @param excludedArchivesUrls The set of file location to exclude in the
-     *                             return list.
+     * @param excludedArchivesUrls The set of file location to exclude in the return list.
      * @return LinkedHashSet<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
@@ -914,7 +898,9 @@ public class GenomeManager {
             GenomeListItem defaultItem = getDefaultGenomeListItem();
             genomeListItems.add(defaultItem);
             Genome genome = loadGenome(defaultDes);
-            genomes.put(defaultDes.getId(), genome);
+            if (genome != null) {
+                genomes.put(defaultDes.getId(), genome);
+            }
         }
 
         return genomeListItems;
@@ -1260,20 +1246,15 @@ public class GenomeManager {
             IGVMainFrame.getInstance().getSession().getHistory().clear();
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Setting genome id: " + newGenome);
-        }
-
-        boolean startUp = (genomeId == null);
         boolean loadFailed = false;
 
         genomeId = newGenome;
-        if (!GenomeManager.getInstance().isGenomeLoaded(genomeId)) {
+        if (!isGenomeLoaded(genomeId)) {
             try {
                 if (log.isDebugEnabled()) {
                     log.debug("findGenomeAndLoad: " + genomeId);
                 }
-                GenomeManager.getInstance().findGenomeAndLoad(genomeId);
+                findGenomeAndLoad(genomeId);
             } catch (IOException e) {
                 log.error("Error loading genome: " + genomeId, e);
                 loadFailed = true;
@@ -1283,19 +1264,15 @@ public class GenomeManager {
         genome = getGenome(genomeId);
 
         if (genome == null || loadFailed) {
-            GenomeDescriptor defaultDesc = GenomeManager.getInstance().getDefaultGenomeDescriptor();
+            GenomeDescriptor defaultDesc = getDefaultGenomeDescriptor();
             String msg = "Could not locate genome: " + genomeId + ".  Loading " + defaultDesc.getName();
             MessageUtils.showMessage(msg);
             log.error("Could not locate genome: " + genomeId + ".  Loading " + defaultDesc.getName());
 
-            // The previously used genome is unavailable.   Load hg18, we are assuming that
-            // this is always available.  // TODO -- permit IGV starting with no selected genome
+            // The previously used genome is unavailable, load the default genome
             genomeId = defaultDesc.getId();
             try {
-                if (log.isDebugEnabled()) {
-                    log.debug("findGenomeAndLoad: " + genomeId);
-                }
-                GenomeManager.getInstance().findGenomeAndLoad(genomeId);
+                findGenomeAndLoad(genomeId);
             } catch (IOException e) {
                 log.error("Error loading genome: " + genomeId, e);
                 MessageUtils.showMessage("<html>Load of genome: " + genomeId + " failed." +
@@ -1304,44 +1281,22 @@ public class GenomeManager {
                 System.exit(-1);
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("Get genome id");
-            }
-            genome = GenomeManager.getInstance().getGenome(genomeId);
+            genome = getGenome(genomeId);
 
-
+            // Make this the default genome (genome loaded on startup)
             PreferenceManager.getInstance().setDefaultGenome(genomeId);
-            for (ReferenceFrame frame : FrameManager.getFrames()) {
-                frame.setChrName(getHomeChr());
-            }
-
         }
 
 
         // Reset the frame manager
-        FrameManager.setToDefaultFrame(null);
-        FrameManager.getDefaultFrame().setChrName(getHomeChr());
-        FrameManager.getDefaultFrame().computeMaxZoom();
-        FrameManager.getDefaultFrame().invalidateLocationScale();
-
         IGVMainFrame.getInstance().chromosomeChangeEvent();
         return genomeId;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getGenomeId() {
         return genomeId;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Genome getGenome() {
         return genome;
     }

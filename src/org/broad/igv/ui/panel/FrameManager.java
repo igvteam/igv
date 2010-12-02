@@ -117,5 +117,11 @@ public class FrameManager {
     }
 
 
+    public static void reset(String chr) {
+        setToDefaultFrame(null);
+        getDefaultFrame().setChrName(chr);
+        getDefaultFrame().computeMaxZoom();
+        getDefaultFrame().invalidateLocationScale();
+    }
 }
 

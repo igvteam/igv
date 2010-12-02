@@ -24,7 +24,6 @@ import org.broad.igv.exceptions.DataLoadException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,14 +41,12 @@ public class Globals {
     private static Logger logger = Logger.getLogger(Globals.class);
 
 
-    public static Color VERY_LIGHT_GREY = new Color(230, 230, 230);
-
     /**
      * CONSTANTS
      */
     final public static String CHR_ALL = "All";
     public static boolean headless = false;
-    public static boolean suppress = false;
+    public static boolean suppressMessages = false;
     public static boolean batch = false;
     /**
      * Field description
@@ -135,12 +132,12 @@ public class Globals {
         return headless;
     }
 
-    public static void setSuppress(boolean bool) {
-        suppress = bool;
+    public static void setSuppressMessages(boolean bool) {
+        suppressMessages = bool;
     }
 
-    public static boolean isSuppress() {
-        return suppress;
+    public static boolean isSuppressMessages() {
+        return suppressMessages;
     }
 
     public static String applicationString() {
@@ -219,20 +216,25 @@ public class Globals {
             // The IGV directory either doesn't exist or isn't writeable.  This situation can arise with Windows Vista
             // and Windows 7 due to a Java bug (http://bugs.sun.com/view_bug.do?bug_id=4787931)
             if (!(DEFAULT_IGV_DIRECTORY.exists() && DEFAULT_IGV_DIRECTORY.canRead() && canWrite(DEFAULT_IGV_DIRECTORY))) {
-                int option = JOptionPane.showConfirmDialog(null,
-                        "<html>The default IGV directory (" + DEFAULT_IGV_DIRECTORY + ") " +
-                                "cannot be accessed.  Click Yes to choose a new folder or No to exit.<br>" +
-                                "This folder will be used to store user preferences and cached genomes.",
-                        "IGV Directory Error", JOptionPane.YES_NO_OPTION);
+                if (isHeadless() || isSuppressMessages()) {
+                    System.err.println("Cannot write to igv directory: " + DEFAULT_IGV_DIRECTORY.getAbsolutePath());
+                    DEFAULT_IGV_DIRECTORY = (new File(".")).getParentFile();
+                } else {
+                    int option = JOptionPane.showConfirmDialog(null,
+                            "<html>The default IGV directory (" + DEFAULT_IGV_DIRECTORY + ") " +
+                                    "cannot be accessed.  Click Yes to choose a new folder or No to exit.<br>" +
+                                    "This folder will be used to store user preferences and cached genomes.",
+                            "IGV Directory Error", JOptionPane.YES_NO_OPTION);
 
-                if (option == JOptionPane.YES_OPTION) {
-                    final JFileChooser fc = new JFileChooser();
-                    fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    int retValue = fc.showOpenDialog(null);
-                    if (retValue == JFileChooser.APPROVE_OPTION) {
-                        DEFAULT_IGV_DIRECTORY = fc.getSelectedFile();
-                        Preferences prefs = Preferences.userNodeForPackage(Globals.class);
-                        prefs.put(IGV_DIR_USERPREF, DEFAULT_IGV_DIRECTORY.getAbsolutePath());
+                    if (option == JOptionPane.YES_OPTION) {
+                        final JFileChooser fc = new JFileChooser();
+                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int retValue = fc.showOpenDialog(null);
+                        if (retValue == JFileChooser.APPROVE_OPTION) {
+                            DEFAULT_IGV_DIRECTORY = fc.getSelectedFile();
+                            Preferences prefs = Preferences.userNodeForPackage(Globals.class);
+                            prefs.put(IGV_DIR_USERPREF, DEFAULT_IGV_DIRECTORY.getAbsolutePath());
+                        }
                     }
                 }
             }
@@ -243,7 +245,6 @@ public class Globals {
             } else if (!canWrite(DEFAULT_IGV_DIRECTORY)) {
                 throw new DataLoadException("Cannot write to user directory", DEFAULT_IGV_DIRECTORY.getAbsolutePath());
             }
-            System.out.println("IGV directory: " + DEFAULT_IGV_DIRECTORY);
         }
 
 
@@ -296,7 +297,7 @@ public class Globals {
     public static File getGeneListDirectory() {
         if (GENE_LIST_DIRECTORY == null) {
 
-             //Create the Genome Cache
+            //Create the Genome Cache
             GENE_LIST_DIRECTORY = new File(getIgvDirectory(), GENE_LIST_FOLDER_NAME);
             if (!GENE_LIST_DIRECTORY.exists()) {
                 GENE_LIST_DIRECTORY.mkdir();
