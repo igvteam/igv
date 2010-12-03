@@ -1,20 +1,20 @@
-/*
- * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
- * Technology.  All Rights Reserved.
- *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
- * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
- *
- * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
- * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
- * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
- * TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
- * OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
- * ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
- * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
- * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+/**
+ * Copyright (c) 2010-2011 by Fred Hutchinson Cancer Research Center.  All Rights Reserved.
+
+ * This software is licensed under the terms of the GNU Lesser General
+ * Public License (LGPL), Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+
+ * THE SOFTWARE IS PROVIDED "AS IS." FRED HUTCHINSON CANCER RESEARCH CENTER MAKES NO
+ * REPRESENTATIONS OR WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED,
+ * INCLUDING, WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS,
+ * WHETHER OR NOT DISCOVERABLE.  IN NO EVENT SHALL FRED HUTCHINSON CANCER RESEARCH
+ * CENTER OR ITS TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR
+ * ANY DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS,
+ * REGARDLESS OF  WHETHER FRED HUTCHINSON CANCER RESEARCH CENTER SHALL BE ADVISED,
+ * SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE
+ * FOREGOING.
  */
 package org.broad.igv.renderer;
 
@@ -24,34 +24,30 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.util.ColorUtilities;
-import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.awt.font.LineMetrics;
+import java.awt.geom.GeneralPath;
 import java.util.List;
 
 /**
- * Renderer for splice junctions
+ * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
+ * arc representing the depth of coverage
  *
- * @author Enter your name here...
- * @version Enter version here..., 08/10/24
+ * @author dhmay
  */
 public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     private static Logger log = Logger.getLogger(SpliceJunctionRenderer.class);
 
-
     //color for drawing all arcs
-    Color ARC_COLOR_POS = new Color(50, 50, 150, 140);
-    Color ARC_COLOR_NEG = new Color(150, 50, 50, 140);
+    Color ARC_COLOR_POS = new Color(50, 50, 150, 140); //transparent dull blue
+    Color ARC_COLOR_NEG = new Color(150, 50, 50, 140); //transparent dull red
 
-
-    //maximum depth that can be displayed
+    //maximum depth that can be displayed, due to track height limitations. Junctions with
+    //this depth and deeper will all look the same
     protected int MAX_DEPTH = 50;
-
 
     /**
      * Note:  assumption is that featureList is sorted by pStart position.
@@ -87,46 +83,35 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
             double trackRectangleMaxX = trackRectangle.getMaxX();
-            double trackRectangleY = trackRectangle.getY();
             double trackRectangleMaxY = trackRectangle.getMaxY();
 
             // Draw the lines that represent the bounds of
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
-
-            int lastFeatureEndedAtPixelX = -9999;
             int lastPixelEnd = -1;
             int occludedCount = 0;
             int maxOcclusions = 2;
 
             IGVFeature featureArray[] = featureList.toArray(new IGVFeature[featureList.size()]);
-            for (int i = 0; i < featureArray.length; i++) {
-
-                IGVFeature feature = featureArray[i];
-
-
-                // Get the pStart and pEnd of the entire feature  at extreme zoom levels the
+            for (IGVFeature feature : featureArray) {
+                // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-
-
                 double virtualPixelStart = Math.round((feature.getStart() - origin) / locScale);
                 double virtualPixelEnd = Math.round((feature.getEnd() - origin) / locScale);
-
-                boolean hasRegions = ((feature.getExons() != null) && (feature.getExons().size() > 0));
 
                 // If the any part of the feature fits in the
                 // Track rectangle draw it
                 if ((virtualPixelEnd >= trackRectangleX) && (virtualPixelStart <= trackRectangleMaxX)) {
 
                     //
-                    int pixelEnd = (int) virtualPixelEnd;//(int) Math.min(trackRectangleMaxX, virtualPixelEnd);
-                    int pixelStart = (int) virtualPixelStart;//(int) Math.max(trackRectangleX, virtualPixelStart);
+                    int displayPixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
+                    int displayPixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
 
 
-                    if (pixelEnd <= lastPixelEnd) {
+                    if (displayPixelEnd <= lastPixelEnd) {
                         if (occludedCount >= maxOcclusions) {
                             continue;
                         } else {
@@ -134,29 +119,29 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                         }
                     } else {
                         occludedCount = 0;
-                        lastPixelEnd = pixelEnd;
+                        lastPixelEnd = displayPixelEnd;
                     }
 
                     Color color = ARC_COLOR_POS;
+                    // Get the feature's direction, color appropriately
                     if (feature.getStrand() != null && feature.getStrand().equals(Strand.NEGATIVE))
                         color = ARC_COLOR_NEG;
 
-
                     Graphics2D g2D = context.getGraphic2DForColor(color);
 
-                    // Get the feature's direction
-                    Strand strand = feature.getStrand();
-
-                    // Draw block
-                    float score = 1;
+                    // Junction read depth is modeled as score in BasicFeature
+                    float depth = 1;
                     if (feature instanceof BasicFeature) {
                         BasicFeature bf = (BasicFeature) feature;
-                        score = bf.getScore();
+                        depth = bf.getScore();
                     }
 
-                    int pixelScore = Math.max(1,(int) ((Math.min(score, MAX_DEPTH) / MAX_DEPTH) * trackRectangle.getHeight()));
+                    //Transform the depth into a number of pixels to use as the arc width
+                    int pixelDepth = Math.max(1,(int)
+                            ((Math.min(depth, MAX_DEPTH) / MAX_DEPTH) * trackRectangle.getHeight()));
 
-                    drawFeatureBlock(pixelStart, pixelEnd, pixelScore, trackRectangle, strand, hasRegions, g2D);
+                    drawFeatureFilledArc((int) virtualPixelStart, (int) virtualPixelEnd, pixelDepth,
+                            trackRectangle, g2D, color);
 
                     // Determine the y offset of features based on strand type
 
@@ -166,25 +151,14 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
                     int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
 
-
-
-                    String name = feature.getName();
-                    if (name != null) {
-                        LineMetrics lineMetrics = font.getLineMetrics(name, g2D.getFontRenderContext());
-
-                    }
-
                     // If this is the highlight feature highlight it
                     if (getHighlightFeature() == feature) {
                         int yStart = pixelYCenter - BLOCK_HEIGHT / 2 - 1;
                         Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
-                        highlightGraphics.drawRect(pixelStart - 1, yStart, (pixelEnd - pixelStart + 2), BLOCK_HEIGHT + 2);
-
-
+                        highlightGraphics.drawRect(displayPixelStart - 1, yStart,
+                                (displayPixelEnd - displayPixelStart + 2), BLOCK_HEIGHT + 2);
                     }
-
                 }
-
             }
 
             if (drawBoundary) {
@@ -196,32 +170,46 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     }
 
     /**
-     *
-     * @param pixelStart
-     * @param pixelEnd
-     * @param pixelScore
+     * Draw a filled arc representing a single feature
+     * @param pixelStart the starting position of the feature, whether on-screen or not
+     * @param pixelEnd the ending position of the feature, whether on-screen or not
+     * @param pixelDepth the width of the arc, in pixels
      * @param trackRectangle
-     * @param strand
-     * @param hasRegions
-     * @param g
      */
-    final private void drawFeatureBlock(int pixelStart, int pixelEnd, int pixelScore,
-                                        Rectangle trackRectangle,
-                                        Strand strand, boolean hasRegions, Graphics2D g) {
+    final private void drawFeatureFilledArc(int pixelStart, int pixelEnd, int pixelDepth,
+                                        Rectangle trackRectangle, Graphics2D g2D, Color color) {
+        g2D.setColor(color);
 
-        Graphics2D g2D = (Graphics2D) g.create();
+        //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
+        //bottom arcs are simply the boundary points of the rectangles containing the arcs
 
-        int yOffset = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
+        int yArcBottom = (int) trackRectangle.getMaxY();
+        //Height of top of the arc
+        int topArcHeight = trackRectangle.height;
+        //Height of bottom of the arc
+        int bottomArcHeight = Math.max(Math.max(1,topArcHeight / 10), topArcHeight - pixelDepth);
 
-        int pixelWidth = Math.max(1,pixelEnd - pixelStart);
-        for (int i=0; i<pixelScore; i++)
-        {
-            g2D.drawArc(pixelStart, yOffset + i, pixelWidth, (int) trackRectangle.getHeight() - 2*i, 0, 180);
-        }
+        Rectangle topArcRect = new Rectangle(pixelStart, yArcBottom - topArcHeight,
+                pixelEnd - pixelStart, topArcHeight);
+        Rectangle bottomArcRect = new Rectangle(pixelStart, yArcBottom - bottomArcHeight,
+                pixelEnd - pixelStart, bottomArcHeight);
 
-        lastFeatureLineMaxY = yOffset + pixelScore;
+        GeneralPath arcPath = new GeneralPath();
+        arcPath.moveTo(topArcRect.getMaxX(), topArcRect.getMaxY());
+        arcPath.curveTo(topArcRect.getMaxX(), topArcRect.getMinY(), //Bezier 1
+                topArcRect.getMinX(), topArcRect.getMinY(),         //Bezier 2
+                topArcRect.getMinX(), topArcRect.getMaxY());        //Arc end
+        arcPath.curveTo(bottomArcRect.getMinX(), bottomArcRect.getMinY(), //Bezier 1
+                bottomArcRect.getMaxX(), bottomArcRect.getMinY(),         //Bezier 2
+                bottomArcRect.getMaxX(), bottomArcRect.getMaxY());        //Arc end
 
-        g2D.dispose();
+        //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
+        //give the arc a darker outline
+        g2D.draw(arcPath);
+        //Fill the arc
+        g2D.fill(arcPath);
+
+        lastFeatureLineMaxY = yArcBottom + pixelDepth;
     }
 
 
