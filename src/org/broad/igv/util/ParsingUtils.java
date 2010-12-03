@@ -399,7 +399,7 @@ public class ParsingUtils {
                     }
                     if (key.equals("name")) {
                         trackProperties.setName(value);
-                        //dhmay adding name check for TopHat junctions files
+                        //dhmay adding name check for TopHat junctions files. graphType is also checked.
                         if (value.equals("junctions")) {
                             trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                         }
@@ -440,6 +440,9 @@ public class ParsingUtils {
                             trackProperties.setRendererClass(LineplotRenderer.class);
                         } else if (value.equals("heatmap")) {
                             trackProperties.setRendererClass(HeatmapRenderer.class);
+                        } else if (value.equals("junction")) {
+                            //dhmay adding check for graphType=junction.  name is also checked
+                            trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                         }
                     } else if (key.toLowerCase().equals("viewlimits")) {
                         String[] limits = value.split(":");
