@@ -46,6 +46,9 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
+    //central horizontal line color
+    Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
+
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
     protected int MAX_DEPTH = 50;
@@ -130,11 +133,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                         depth = bf.getScore();
                     }
 
-                    //Transform the depth into a number of pixels to use as the arc width
-                    int pixelDepth = Math.max(1,(int)
-                            ((Math.min(depth, MAX_DEPTH) / MAX_DEPTH) * trackRectangle.getHeight()));
 
-                    drawFeatureFilledArc((int) virtualPixelStart, (int) virtualPixelEnd, pixelDepth,
+                    drawFeatureFilledArc((int) virtualPixelStart, (int) virtualPixelEnd, depth,
                             trackRectangle, context, feature.getStrand());
 
                     // Determine the y offset of features based on strand type
@@ -155,22 +155,23 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 }
             }
 
-            if (drawBoundary) {
-                Graphics2D g2D = context.getGraphic2DForColor(Color.LIGHT_GRAY);
-                g2D.drawLine((int) trackRectangleX, (int) trackRectangleMaxY - 1,
-                        (int) trackRectangleMaxX, (int) trackRectangleMaxY - 1);
-            }
+            //draw a central horizontal line
+                Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
+                g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
+                        (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
+
         }
     }
 
     /**
-     * Draw a filled arc representing a single feature
+     * Draw a filled arc representing a single feature. The thickness and height of the arc are proportional to the
+     * depth of coverage.  Some of this gets a bit arcane -- the result of lots of visual tweaking.
      * @param pixelStart the starting position of the feature, whether on-screen or not
      * @param pixelEnd the ending position of the feature, whether on-screen or not
-     * @param pixelDepth the width of the arc, in pixels
+     * @param depth coverage depth
      * @param trackRectangle
      */
-    final private void drawFeatureFilledArc(int pixelStart, int pixelEnd, int pixelDepth,
+    final private void drawFeatureFilledArc(int pixelStart, int pixelEnd, float depth,
                                         Rectangle trackRectangle, RenderContext context, Strand strand) {
         boolean isPositiveStrand = true;
         // Get the feature's direction, color appropriately
@@ -184,12 +185,21 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
         //bottom arcs are based on the boundary points of the rectangles containing the arcs
 
-        //Height of top of the arc
-        int outerArcHeight = trackRectangle.height/2;
-        //Height of bottom of the arc
-        int innerArcHeight = Math.max(Math.max(1,outerArcHeight / 3), outerArcHeight - pixelDepth);
+        //proportion of the maximum arc height used by a minimum-height arc
+        double minArcHeightProportion = 0.33;
 
-        int arcBeginY = (int)trackRectangle.getCenterY();
+        //Height of top of an arc of maximum depth
+        int maxPossibleArcHeight = (trackRectangle.height - 1)/2;
+
+        int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
+        float depthProportionOfMax = Math.min(1, depth / MAX_DEPTH);
+        int arcWidth = Math.max(1, (int) ((1-minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
+        int outerArcHeight = innerArcHeight + arcWidth;
+
+
+        //Height of bottom of the arc
+        int arcBeginY = (int)trackRectangle.getCenterY() +
+                (isPositiveStrand ? -1 : 1);
         int outerArcPeakY = isPositiveStrand ?
                 arcBeginY - outerArcHeight :
                 arcBeginY + outerArcHeight;
@@ -197,17 +207,20 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 arcBeginY - innerArcHeight :
                 arcBeginY + innerArcHeight;
         //dhmay: I don't really understand Bezier curves.  For some reason I have to put the Bezier control
-        //points farther out than I want the arcs to extend.  This multiplier seems about right
-        int outerBezierY = arcBeginY + (int) (1.3 * (outerArcPeakY - arcBeginY));
-        int innerBezierY = arcBeginY + (int) (1.3 * (innerArcPeakY - arcBeginY));        
+        //points farther up or down than I want the arcs to extend.  This multiplier seems about right
+        int outerBezierY = arcBeginY + (int) (1.5 * (outerArcPeakY - arcBeginY));
+        int innerBezierY = arcBeginY + (int) (1.5 * (innerArcPeakY - arcBeginY));
+
+        //Putting the Bezier control points slightly off to the sides of the arc 
+        int bezierXPad = 1;
 
         GeneralPath arcPath = new GeneralPath();
         arcPath.moveTo(pixelStart, arcBeginY);
-        arcPath.curveTo(pixelStart, outerBezierY, //Bezier 1
-                pixelEnd, outerBezierY,         //Bezier 2
+        arcPath.curveTo(pixelStart-bezierXPad, outerBezierY, //Bezier 1
+                pixelEnd+bezierXPad, outerBezierY,         //Bezier 2
                 pixelEnd, arcBeginY);        //Arc end
-        arcPath.curveTo(pixelEnd, innerBezierY, //Bezier 1
-                pixelStart, innerBezierY,         //Bezier 2
+        arcPath.curveTo(pixelEnd+bezierXPad, innerBezierY, //Bezier 1
+                pixelStart-bezierXPad, innerBezierY,         //Bezier 2
                 pixelStart, arcBeginY);        //Arc end
 
         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
@@ -217,7 +230,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         g2D.fill(arcPath);
 
         lastFeatureLineMaxY = Math.max(outerArcPeakY, arcBeginY);
-
     }
 
 
