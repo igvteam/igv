@@ -23,6 +23,7 @@ import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,7 @@ public class FrameManager {
             if (locus != null) {
                 defaultFrame.setInterval(locus);
             }
-         }
+        }
         frames.add(defaultFrame);
 
     }
@@ -81,13 +82,26 @@ public class FrameManager {
             frames.add(defaultFrame);
 
         } else {
+            List<String> lociNotFound = new ArrayList();
             for (String searchString : gl.getLoci()) {
                 Locus locus = getLocus(searchString);
-                if (locus != null) {
+                if (locus == null) {
+                    lociNotFound.add(searchString);
+                } else {
                     ReferenceFrame referenceFrame = new ReferenceFrame(searchString);
                     referenceFrame.setInterval(locus);
                     frames.add(referenceFrame);
                 }
+            }
+
+            if (lociNotFound.size() > 1) {
+                StringBuffer message = new StringBuffer();
+                message.append("<html>The following loci could not be found in the currently loaded annotation sets: <br>");
+                for (String s : lociNotFound) {
+                    message.append(s + " ");
+                }
+                MessageUtils.showMessage(message.toString());
+
             }
         }
     }
