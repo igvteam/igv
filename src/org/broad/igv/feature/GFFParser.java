@@ -278,13 +278,12 @@ public class GFFParser implements FeatureParser {
                     }
                 } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0) {
 
-                    Exon exon = new Exon(chromosome, start, end, strand);
-                    exon.setDescription(description);
-                    exon.setUTR(utrTerms.contains(featureType));
+                    String name = getName(attributes);
+                    int phase = -1;
                     String phaseString = tokens[7].trim();
                     if (!phaseString.equals(".")) {
                         try {
-                            exon.setPhase(Integer.parseInt(phaseString));
+                            phase = Integer.parseInt(phaseString);
 
                         } catch (NumberFormatException numberFormatException) {
 
@@ -293,10 +292,19 @@ public class GFFParser implements FeatureParser {
                         }
                     }
 
-                    exon.setName(getName(attributes));
-
-
+                    // Make a copy of the exon record for each parent
                     for (String pid : parentIds) {
+
+                        Exon exon = new Exon(chromosome, start, end, strand);
+                        exon.setDescription(description);
+                        exon.setUTR(utrTerms.contains(featureType));
+
+                        if (phase >= 0) {
+                            exon.setPhase(phase);
+
+                        }
+                        exon.setName(name);
+
                         if (featureType.equals("exon")) {
                             getGFF3Transcript(pid).addExon(exon);
                         } else if (featureType.equals("CDS")) {
@@ -307,6 +315,7 @@ public class GFFParser implements FeatureParser {
                             getGFF3Transcript(pid).setThreePrimeUTR(exon);
                         }
                     }
+
 
                 } else {
                     BasicFeature f = new BasicFeature(chromosome, start, end, strand);

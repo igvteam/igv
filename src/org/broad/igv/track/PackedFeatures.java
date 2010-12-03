@@ -84,7 +84,7 @@ public class PackedFeatures {
         };
 
         Feature firstFeature = iter.next();
-        getFeatures().add(firstFeature);
+        features.add(firstFeature);
         int totalCount = 1;
 
         LinkedHashMap<Integer, PriorityQueue<Feature>> bucketArray = new LinkedHashMap();
