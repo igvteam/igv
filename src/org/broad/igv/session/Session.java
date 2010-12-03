@@ -248,7 +248,7 @@ public class Session {
             //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
             if (RegionNavigatorDialog.getActiveInstance() != null && chr.equals(FrameManager.getDefaultFrame().getChrName()))
                 RegionNavigatorDialog.getActiveInstance().synchRegions(
-                        regionsOfInterest.get(chr));
+                        getAllRegionsOfInterest());
         }
 
         return result;
@@ -268,7 +268,7 @@ public class Session {
         //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
         if (RegionNavigatorDialog.getActiveInstance() != null && chr.equals(FrameManager.getDefaultFrame().getChrName()))
             RegionNavigatorDialog.getActiveInstance().synchRegions(
-                    regionsOfInterest.get(chr));
+                    getAllRegionsOfInterest());
     }
 
     public void clearRegionsOfInterest() {
@@ -278,7 +278,7 @@ public class Session {
             //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
             if (RegionNavigatorDialog.getActiveInstance() != null)
                 RegionNavigatorDialog.getActiveInstance().synchRegions(
-                        regionsOfInterest.get(FrameManager.getDefaultFrame().getChrName()));
+                        getAllRegionsOfInterest());
         }
 
     }

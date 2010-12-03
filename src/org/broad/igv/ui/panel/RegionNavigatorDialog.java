@@ -1,7 +1,21 @@
-/*
- * Created by JFormDesigner on Tue Nov 16 14:34:59 PST 2010
- */
+/**
+ * Copyright (c) 2010-2011 by Fred Hutchinson Cancer Research Center.  All Rights Reserved.
 
+ * This software is licensed under the terms of the GNU Lesser General
+ * Public License (LGPL), Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+
+ * THE SOFTWARE IS PROVIDED "AS IS." FRED HUTCHINSON CANCER RESEARCH CENTER MAKES NO
+ * REPRESENTATIONS OR WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED,
+ * INCLUDING, WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS,
+ * WHETHER OR NOT DISCOVERABLE.  IN NO EVENT SHALL FRED HUTCHINSON CANCER RESEARCH
+ * CENTER OR ITS TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR
+ * ANY DAMAGES OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR
+ * CONSEQUENTIAL DAMAGES, ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS,
+ * REGARDLESS OF  WHETHER FRED HUTCHINSON CANCER RESEARCH CENTER SHALL BE ADVISED,
+ * SHALL HAVE OTHER REASON TO KNOW, OR IN FACT SHALL KNOW OF THE POSSIBILITY OF THE
+ * FOREGOING.
+ */
 package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
@@ -10,9 +24,8 @@ import org.broad.igv.ui.IGVMainFrame;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Collection;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
@@ -64,6 +77,18 @@ public class RegionNavigatorDialog extends JDialog {
     }
 
     /**
+     * Synchronize the regionsArrayList with all regions for all chromosomes, and update UI
+     * @param regionsMap
+     */
+    public void synchRegions(Map<String, Collection<RegionOfInterest>> regionsMap)
+    {
+        List<RegionOfInterest> regionsCollection = new ArrayList<RegionOfInterest>();
+        for (Collection<RegionOfInterest> regionsForChr : regionsMap.values())
+                regionsCollection.addAll(regionsForChr);
+        synchRegions(regionsCollection);
+    }
+
+    /**
      * Synchronize the regions ArrayList with the passed-in regionsCollection, and update UI
      * @param regionsCollection
      */
@@ -84,9 +109,6 @@ public class RegionNavigatorDialog extends JDialog {
             regionTableModel.setValueAt(region.getChr(), i, TABLE_COLINDEX_CHR);
         }
 
-
-
-
         regionTableModel.fireTableDataChanged();
     }
 
@@ -99,11 +121,8 @@ public class RegionNavigatorDialog extends JDialog {
         this.regions = new ArrayList<RegionOfInterest>(regionsCollection);
         regionTableModel = (DefaultTableModel) regionTable.getModel();
 
-
         regionTable.getSelectionModel().addListSelectionListener(new RegionTableSelectionListener());
         regionTableModel.addTableModelListener(new RegionTableModelListener());
-
-
 
         //custom row sorter required for displaying only a subset of rows
         regionTableRowSorter = new TableRowSorter<TableModel>(regionTableModel);
@@ -113,6 +132,11 @@ public class RegionNavigatorDialog extends JDialog {
         textFieldSearch.getDocument().addDocumentListener(new SearchFieldDocumentListener());
 
         checkBoxZoomWhenNav.setSelected(true);
+
+        //If nav window is opened in All chr view, assume the user wants to see regions from all chrs.
+        //Otherwise, not
+        if ("All".equalsIgnoreCase(FrameManager.getDefaultFrame().getChrName()))
+            checkBoxShowAllChrs.setSelected(true);
 
         activeInstance = this;
         updateChromosomeDisplayed();
@@ -182,13 +206,20 @@ public class RegionNavigatorDialog extends JDialog {
 
             String regionDesc = (String) entry.getValue(TABLE_COLINDEX_DESC);
             String chr = FrameManager.getDefaultFrame().getChrName();
-            //show only regions in the current chromosome
-            if (chr != null && !chr.isEmpty() && !entry.getValue(TABLE_COLINDEX_CHR).equals(chr))
-                return false;
+
             //show only regions matching the search string (if specified)
             if ((filterStringLowercase != null && !filterStringLowercase.isEmpty() &&
                 (regionDesc == null || !regionDesc.toLowerCase().contains(filterStringLowercase))))
                 return false;
+
+            //if this checkbox is checked, show all chromosomes
+            if (checkBoxShowAllChrs.isSelected())
+                return true;
+
+            //show only regions in the current chromosome
+            if (chr != null && !chr.isEmpty() && !entry.getValue(TABLE_COLINDEX_CHR).equals(chr))
+                return false;
+
 
             return true;
         }
@@ -240,16 +271,25 @@ public class RegionNavigatorDialog extends JDialog {
                     RegionOfInterest firstStartRegion = null;
                     RegionOfInterest lastEndRegion = null;
 
+                    Set<String> selectedChrs = new HashSet<String>();
+
                     //Figure out which region has the first start and which has the last end
                     for (int selectedRowIndex : selectedRows)
                     {
                         int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRowIndex);
                         RegionOfInterest region = regions.get(selectedModelRow);
+                        selectedChrs.add(region.getChr());
                         if (firstStartRegion == null || region.getStart() < firstStartRegion.getStart())
                             firstStartRegion = region;
                         if (lastEndRegion == null || region.getEnd() > lastEndRegion.getEnd())
                             lastEndRegion = region;
                     }
+
+                    //If there are multiple chromosomes represented in the selection, do nothing.
+                    //Because what would we do? Maybe a status message should be displayed somehow, but a
+                    //dialog would get annoying.
+                    if (selectedChrs.size() > 1)
+                        return;
 
                     if (checkBoxZoomWhenNav.isSelected())
                     {
@@ -257,7 +297,7 @@ public class RegionNavigatorDialog extends JDialog {
                         // 20% of the length of the end regions on either side for context (dhmay reduced from 100%)
                         int start = firstStartRegion.getStart() - (int) (0.2 * firstStartRegion.getLength());
                         int end = lastEndRegion.getEnd() + (int) (0.2 * lastEndRegion.getLength());
-                        FrameManager.getDefaultFrame().jumpTo(FrameManager.getDefaultFrame().getChrName(), start, end);
+                        FrameManager.getDefaultFrame().jumpTo(selectedChrs.iterator().next(), start, end);
                     }
                     else
                     {
@@ -283,12 +323,15 @@ public class RegionNavigatorDialog extends JDialog {
         label1 = new JLabel();
         button1 = new JButton();
         panel2 = new JPanel();
-        checkBoxZoomWhenNav = new JCheckBox();
         buttonAddRegion = new JButton();
         button2 = new JButton();
+        panel3 = new JPanel();
+        checkBoxZoomWhenNav = new JCheckBox();
+        checkBoxShowAllChrs = new JCheckBox();
         cancelAction = new CancelAction();
         addRegionAction = new AddRegionAction();
         actionRemoveRegions = new RemoveSelectedRegionsAction();
+        showAllChromosomesCheckboxAction = new ShowAllChromosomesCheckboxAction();
 
         //======== this ========
         setTitle("Regions of Interest");
@@ -364,18 +407,29 @@ public class RegionNavigatorDialog extends JDialog {
                     {
                         panel2.setLayout(new BorderLayout());
 
-                        //---- checkBoxZoomWhenNav ----
-                        checkBoxZoomWhenNav.setText("Zoom when Navigating");
-                        panel2.add(checkBoxZoomWhenNav, BorderLayout.EAST);
-
                         //---- buttonAddRegion ----
                         buttonAddRegion.setAction(addRegionAction);
+                        buttonAddRegion.setText("Add");
                         panel2.add(buttonAddRegion, BorderLayout.WEST);
 
                         //---- button2 ----
                         button2.setAction(actionRemoveRegions);
                         button2.setText("Remove Selected");
                         panel2.add(button2, BorderLayout.CENTER);
+
+                        //======== panel3 ========
+                        {
+                            panel3.setLayout(new BorderLayout());
+
+                            //---- checkBoxZoomWhenNav ----
+                            checkBoxZoomWhenNav.setText("Zoom to Region");
+                            panel3.add(checkBoxZoomWhenNav, BorderLayout.CENTER);
+
+                            //---- checkBoxShowAllChrs ----
+                            checkBoxShowAllChrs.setAction(showAllChromosomesCheckboxAction);
+                            panel3.add(checkBoxShowAllChrs, BorderLayout.WEST);
+                        }
+                        panel2.add(panel3, BorderLayout.EAST);
                     }
                     panel1.add(panel2, BorderLayout.NORTH);
                 }
@@ -400,12 +454,15 @@ public class RegionNavigatorDialog extends JDialog {
     private JLabel label1;
     private JButton button1;
     private JPanel panel2;
-    private JCheckBox checkBoxZoomWhenNav;
     private JButton buttonAddRegion;
     private JButton button2;
+    private JPanel panel3;
+    private JCheckBox checkBoxZoomWhenNav;
+    private JCheckBox checkBoxShowAllChrs;
     private CancelAction cancelAction;
     private AddRegionAction addRegionAction;
     private RemoveSelectedRegionsAction actionRemoveRegions;
+    private ShowAllChromosomesCheckboxAction showAllChromosomesCheckboxAction;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
@@ -485,6 +542,20 @@ public class RegionNavigatorDialog extends JDialog {
                 JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), "No regions have been selected for removal.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             }
+        }
+    }
+
+    private class ShowAllChromosomesCheckboxAction extends AbstractAction {
+        private ShowAllChromosomesCheckboxAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner non-commercial license
+            putValue(NAME, "Show All Chrs");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            // TODO add your code here
+            synchRegions(regions);
         }
     }
 }
