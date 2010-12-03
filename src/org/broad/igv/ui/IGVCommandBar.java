@@ -1257,6 +1257,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     GeneListManager.addNewGeneList(gl);
                     owner.getSession().setCurrentGeneList(gl);
                     owner.updateGeneListMenu();
+                    owner.resetFrames();
                 }
             }
         };

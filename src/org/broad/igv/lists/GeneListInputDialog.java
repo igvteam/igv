@@ -30,7 +30,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
 public class GeneListInputDialog extends JDialog {
 

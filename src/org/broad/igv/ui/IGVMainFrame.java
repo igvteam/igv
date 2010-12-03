@@ -1282,6 +1282,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                     GeneListManager.addNewGeneList(gl);
                     session.setCurrentGeneList(gl);
                     updateGeneListMenu();
+                    resetFrames();
                 }
             }
         };
