@@ -423,10 +423,12 @@ public class RegionNavigatorDialog extends JDialog {
 
                             //---- checkBoxZoomWhenNav ----
                             checkBoxZoomWhenNav.setText("Zoom to Region");
+                            checkBoxZoomWhenNav.setToolTipText("When navigating to a region, change zoom level?");
                             panel3.add(checkBoxZoomWhenNav, BorderLayout.CENTER);
 
                             //---- checkBoxShowAllChrs ----
                             checkBoxShowAllChrs.setAction(showAllChromosomesCheckboxAction);
+                            checkBoxShowAllChrs.setToolTipText("View regions from all chromosomes (othrwise, current chromosome only)");
                             panel3.add(checkBoxShowAllChrs, BorderLayout.WEST);
                         }
                         panel2.add(panel3, BorderLayout.EAST);

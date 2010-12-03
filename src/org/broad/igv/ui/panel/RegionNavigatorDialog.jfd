@@ -318,6 +318,10 @@
                    <string>text</string> 
                    <string>Zoom to Region</string> 
                   </void> 
+                  <void method="setProperty"> 
+                   <string>toolTipText</string> 
+                   <string>When navigating to a region, change zoom level?</string> 
+                  </void> 
                   <void property="name"> 
                    <string>checkBoxZoomWhenNav</string> 
                   </void> 
@@ -338,6 +342,10 @@
                    <object class="com.jformdesigner.model.FormReference"> 
                     <string>showAllChromosomesCheckboxAction</string> 
                    </object> 
+                  </void> 
+                  <void method="setProperty"> 
+                   <string>toolTipText</string> 
+                   <string>View regions from all chromosomes (othrwise, current chromosome only)</string> 
                   </void> 
                   <void property="name"> 
                    <string>checkBoxShowAllChrs</string> 
