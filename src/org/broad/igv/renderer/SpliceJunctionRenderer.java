@@ -27,7 +27,8 @@ import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
-import java.awt.font.LineMetrics;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.GeneralPath;
 import java.util.List;
 
@@ -122,13 +123,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                         lastPixelEnd = displayPixelEnd;
                     }
 
-                    Color color = ARC_COLOR_POS;
-                    // Get the feature's direction, color appropriately
-                    if (feature.getStrand() != null && feature.getStrand().equals(Strand.NEGATIVE))
-                        color = ARC_COLOR_NEG;
-
-                    Graphics2D g2D = context.getGraphic2DForColor(color);
-
                     // Junction read depth is modeled as score in BasicFeature
                     float depth = 1;
                     if (feature instanceof BasicFeature) {
@@ -141,7 +135,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                             ((Math.min(depth, MAX_DEPTH) / MAX_DEPTH) * trackRectangle.getHeight()));
 
                     drawFeatureFilledArc((int) virtualPixelStart, (int) virtualPixelEnd, pixelDepth,
-                            trackRectangle, g2D, color);
+                            trackRectangle, context, feature.getStrand());
 
                     // Determine the y offset of features based on strand type
 
@@ -177,31 +171,42 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param trackRectangle
      */
     final private void drawFeatureFilledArc(int pixelStart, int pixelEnd, int pixelDepth,
-                                        Rectangle trackRectangle, Graphics2D g2D, Color color) {
-        g2D.setColor(color);
+                                        Rectangle trackRectangle, RenderContext context, Strand strand) {
+        boolean isPositiveStrand = true;
+        // Get the feature's direction, color appropriately
+        if (strand != null && strand.equals(Strand.NEGATIVE))
+            isPositiveStrand = false;
+
+        Color color = isPositiveStrand ? ARC_COLOR_POS : ARC_COLOR_NEG;
+
+        Graphics2D g2D = context.getGraphic2DForColor(color);
 
         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
         //bottom arcs are simply the boundary points of the rectangles containing the arcs
 
-        int yArcBottom = (int) trackRectangle.getMaxY();
         //Height of top of the arc
-        int topArcHeight = trackRectangle.height;
+        int outerArcHeight = trackRectangle.height;
         //Height of bottom of the arc
-        int bottomArcHeight = Math.max(Math.max(1,topArcHeight / 10), topArcHeight - pixelDepth);
+        int innerArcHeight = Math.max(Math.max(1,outerArcHeight / 10), outerArcHeight - pixelDepth);
 
-        Rectangle topArcRect = new Rectangle(pixelStart, yArcBottom - topArcHeight,
-                pixelEnd - pixelStart, topArcHeight);
-        Rectangle bottomArcRect = new Rectangle(pixelStart, yArcBottom - bottomArcHeight,
-                pixelEnd - pixelStart, bottomArcHeight);
+        int arcBeginY = isPositiveStrand ?
+                (int) trackRectangle.getMaxY() :
+                (int) trackRectangle.getMinY();
+        int outerArcPeakY = isPositiveStrand ?
+                arcBeginY - outerArcHeight :
+                arcBeginY + outerArcHeight;
+        int innerArcPeakY = isPositiveStrand ?
+                arcBeginY - innerArcHeight :
+                arcBeginY + innerArcHeight;
 
         GeneralPath arcPath = new GeneralPath();
-        arcPath.moveTo(topArcRect.getMaxX(), topArcRect.getMaxY());
-        arcPath.curveTo(topArcRect.getMaxX(), topArcRect.getMinY(), //Bezier 1
-                topArcRect.getMinX(), topArcRect.getMinY(),         //Bezier 2
-                topArcRect.getMinX(), topArcRect.getMaxY());        //Arc end
-        arcPath.curveTo(bottomArcRect.getMinX(), bottomArcRect.getMinY(), //Bezier 1
-                bottomArcRect.getMaxX(), bottomArcRect.getMinY(),         //Bezier 2
-                bottomArcRect.getMaxX(), bottomArcRect.getMaxY());        //Arc end
+        arcPath.moveTo(pixelStart, arcBeginY);
+        arcPath.curveTo(pixelStart, outerArcPeakY, //Bezier 1
+                pixelEnd, outerArcPeakY,         //Bezier 2
+                pixelEnd, arcBeginY);        //Arc end
+        arcPath.curveTo(pixelEnd, innerArcPeakY, //Bezier 1
+                pixelStart, innerArcPeakY,         //Bezier 2
+                pixelStart, arcBeginY);        //Arc end
 
         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
         //give the arc a darker outline
@@ -209,7 +214,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         //Fill the arc
         g2D.fill(arcPath);
 
-        lastFeatureLineMaxY = yArcBottom + pixelDepth;
+        lastFeatureLineMaxY = Math.max(outerArcPeakY, arcBeginY);
+
     }
 
 
