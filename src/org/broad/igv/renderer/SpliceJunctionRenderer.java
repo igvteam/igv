@@ -43,8 +43,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     private static Logger log = Logger.getLogger(SpliceJunctionRenderer.class);
 
     //color for drawing all arcs
-    Color ARC_COLOR_POS = new Color(50, 50, 150, 140); //transparent dull blue
-    Color ARC_COLOR_NEG = new Color(150, 50, 50, 140); //transparent dull red
+    Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
+    Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
 
     //maximum depth that can be displayed, due to track height limitations. Junctions with
     //this depth and deeper will all look the same
@@ -182,30 +182,32 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         Graphics2D g2D = context.getGraphic2DForColor(color);
 
         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
-        //bottom arcs are simply the boundary points of the rectangles containing the arcs
+        //bottom arcs are based on the boundary points of the rectangles containing the arcs
 
         //Height of top of the arc
-        int outerArcHeight = trackRectangle.height;
+        int outerArcHeight = trackRectangle.height/2;
         //Height of bottom of the arc
-        int innerArcHeight = Math.max(Math.max(1,outerArcHeight / 10), outerArcHeight - pixelDepth);
+        int innerArcHeight = Math.max(Math.max(1,outerArcHeight / 3), outerArcHeight - pixelDepth);
 
-        int arcBeginY = isPositiveStrand ?
-                (int) trackRectangle.getMaxY() :
-                (int) trackRectangle.getMinY();
+        int arcBeginY = (int)trackRectangle.getCenterY();
         int outerArcPeakY = isPositiveStrand ?
                 arcBeginY - outerArcHeight :
                 arcBeginY + outerArcHeight;
         int innerArcPeakY = isPositiveStrand ?
                 arcBeginY - innerArcHeight :
                 arcBeginY + innerArcHeight;
+        //dhmay: I don't really understand Bezier curves.  For some reason I have to put the Bezier control
+        //points farther out than I want the arcs to extend.  This multiplier seems about right
+        int outerBezierY = arcBeginY + (int) (1.3 * (outerArcPeakY - arcBeginY));
+        int innerBezierY = arcBeginY + (int) (1.3 * (innerArcPeakY - arcBeginY));        
 
         GeneralPath arcPath = new GeneralPath();
         arcPath.moveTo(pixelStart, arcBeginY);
-        arcPath.curveTo(pixelStart, outerArcPeakY, //Bezier 1
-                pixelEnd, outerArcPeakY,         //Bezier 2
+        arcPath.curveTo(pixelStart, outerBezierY, //Bezier 1
+                pixelEnd, outerBezierY,         //Bezier 2
                 pixelEnd, arcBeginY);        //Arc end
-        arcPath.curveTo(pixelEnd, innerArcPeakY, //Bezier 1
-                pixelStart, innerArcPeakY,         //Bezier 2
+        arcPath.curveTo(pixelEnd, innerBezierY, //Bezier 1
+                pixelStart, innerBezierY,         //Bezier 2
                 pixelStart, arcBeginY);        //Arc end
 
         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
