@@ -21,6 +21,7 @@ package org.broad.igv.util.stats;
 
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -31,27 +32,28 @@ import static org.junit.Assert.*;
  */
 public class KaplanMeierEstimatorTest {
 
+
+    /**
+     * http://www.mas.ncl.ac.uk/~nmf16/teaching/mas3311/week06.pdf
+     * [10 13* 18* 19 23* 30 36 38* 54* 56* 59 75 93 97 104* 107 107* 107*]
+     */
     @Test
-    public void test1() {
+    public void testCensured() {
+        int[] time = {10, 13, 18, 19, 23, 30, 36, 38, 54, 56, 59, 75, 93, 97, 104, 107, 107, 107};
+        boolean[] censured = {false, true, true, false, true, false, false, true, true, true, false,
+                false, false, false, true, false, true, true};
+        double [] expectedSurvivals = {1.00, 0.94, 0.88, 0.81, 0.75, 0.65, 0.56, 0.47, 0.37};
 
-        int[] survival = {1, 2, 3, 4, 5, 10, 12};
-        boolean[] alive = {false, true, true, false, true, false, true};
-
-        int[] expectedStarts = {0, 1, 4, 10,};
-        int[] expectedEnds = {1, 4, 10, 12};
-        int[] expectedDied = {1, 1, 1, 0};
-        int[] expectedCensured = {0, 2, 1, 1};
-        float[] expectedSurvivals = {1.0f, 0.85714287f, 0.64285713f, 0.32142857f};
-
-        List<KaplanMeierEstimator.Interval> intervals = KaplanMeierEstimator.compute(survival, alive);
-
+        List<KaplanMeierEstimator.Interval> intervals = KaplanMeierEstimator.compute(time, censured);
         for (int j = 0; j < intervals.size(); j++) {
             KaplanMeierEstimator.Interval interval = intervals.get(j);
-            assertEquals(expectedStarts[j], interval.getStart());
-            assertEquals(expectedEnds[j], interval.getEnd());
-            assertEquals(expectedDied[j], interval.getNumberDied());
-            assertEquals(expectedCensured[j], interval.getCensored().size());
-            assertEquals(expectedSurvivals[j], interval.getCumulativeSurvival(), 1.0e-6);
+            assertEquals(expectedSurvivals[j], interval.getCumulativeSurvival(), 0.01);
         }
+
     }
+
+
+   
+
+
 }

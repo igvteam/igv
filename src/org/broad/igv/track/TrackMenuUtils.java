@@ -27,6 +27,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.stats.KMPlotTest;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.renderer.*;
@@ -114,7 +115,7 @@ public class TrackMenuUtils {
         }
 
         ReferenceFrame frame = te.getFrame();
-        if(frame != null) {
+        if (frame != null) {
             addZoomItems(menu, frame);
         }
     }
@@ -126,7 +127,7 @@ public class TrackMenuUtils {
         zoomInItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-               frame.incrementZoom(1);
+                frame.incrementZoom(1);
             }
         });
         menu.add(zoomInItem);
@@ -270,6 +271,9 @@ public class TrackMenuUtils {
         menu.add(getTrackRenameItem(tracks));
 
         addTrackSettingsMenuItems(menu, false, tracks);
+
+        menu.addSeparator();
+        menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -669,7 +673,6 @@ public class TrackMenuUtils {
         refresh();
     }
 
-
     public static void renameTrack(final Collection<Track> selectedTracks) {
 
         if (selectedTracks.isEmpty()) {
@@ -919,6 +922,18 @@ public class TrackMenuUtils {
 
             public void action() {
                 changeTrackHeight(selectedTracks);
+            }
+        });
+        return item;
+    }
+
+    public static JMenuItem getChangeKMPlotItem(final Collection<Track> selectedTracks) {
+        // Change track height by attribute
+        JMenuItem item = new JMenuItem("Kaplan-Meier Plot...");
+        item.addActionListener(new TrackActionListener() {
+
+            public void action() {
+                KMPlotTest.openPlot(selectedTracks);
             }
         });
         return item;

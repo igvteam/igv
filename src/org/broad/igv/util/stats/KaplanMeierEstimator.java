@@ -40,12 +40,12 @@ public class KaplanMeierEstimator {
      * Return the kaplan-meier curve as a list of intervals.
      *
      * @param time times in ascending order
-     * @param alive array of boolean values indicating if the event is a death or censure
+     * @param censured array of boolean values indicating if the event is a death or censure
      * @return
      */
-    static List<Interval> compute(int[] time, boolean[] alive) {
+    static List<Interval> compute(int[] time, boolean[] censured) {
 
-        if (time.length != alive.length) {
+        if (time.length != censured.length) {
             // throw exception
         }
         if (time.length < 2) {
@@ -59,7 +59,7 @@ public class KaplanMeierEstimator {
         int endTime = 0;
         for (int i = 0; i < time.length; i++) {
             endTime = time[i];
-            if (alive[i] == false && endTime > startTime) {
+            if (censured[i] == false && endTime > startTime) {
                 intervals.add(new Interval(startTime, endTime));
                 startTime = endTime;
             }
@@ -79,17 +79,20 @@ public class KaplanMeierEstimator {
             int t = time[i];
 
             // Get interval
-            if(t > currentInterval.getEnd() || i == (time.length - 1)) {
+            if(t > currentInterval.getEnd()) {
                 float survivors = atRisk - currentInterval.getNumberDied();
-                cumulativeSurvival *= (survivors / atRisk);
+                float tmp = survivors / atRisk;
+                cumulativeSurvival *= tmp;
+                
                 atRisk -= currentInterval.getNumberDied();
             }
             while(intervalIter.hasNext() &&  t > currentInterval.getEnd()) {
                 currentInterval = intervalIter.next();
                 currentInterval.setCumulativeSurvival(cumulativeSurvival);
+                 
             }
 
-            if (alive[i] == false) {
+            if (censured[i] == false) {
                 currentInterval.incDied();
 
             } else {
