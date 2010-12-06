@@ -24,8 +24,10 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.track.WindowFunction;
+import org.broad.tribble.Feature;
 import org.junit.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -33,15 +35,27 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *
+ * Please create tests!!
+ *
  * @author jrobinso
  */
 public class FeatureUtilsTest {
+
+    static List<Feature> features;
 
     public FeatureUtilsTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+
+        features = new ArrayList();
+
+        for(int i=0; i<1000; i++) {
+            features.add(new TestFeature(i, i+5));
+        }
+
     }
 
     @AfterClass
@@ -114,6 +128,26 @@ public class FeatureUtilsTest {
     }
 
     /**
+     * Test of getAllFeaturesAt method, of class FeatureUtils.
+     *
+     * Queries the test list for features at position 500.
+     */
+    @Test
+    public void testGetAllFeaturesAt() {
+        System.out.println("getFeatureAt");
+        double position = 500.0;
+        double maxLength = 100;
+
+        List<Feature> result =   FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features, false);
+        assertEquals(6, result.size());
+        for(Feature f : result) {
+            assertTrue(position >= f.getStart() && position <= f.getEnd());
+        }
+
+
+    }
+
+    /**
      * Test of getIndexAfter method, of class FeatureUtils.
      */
     @Test
@@ -133,7 +167,7 @@ public class FeatureUtilsTest {
 
     }
 
-    class TestFeature implements LocusScore {
+    static class TestFeature implements LocusScore {
 
         private int start;
         private int end;

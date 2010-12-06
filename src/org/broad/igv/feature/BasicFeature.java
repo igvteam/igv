@@ -162,6 +162,7 @@ public class BasicFeature extends AbstractFeature {
         if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
             valueString.append("<br>" + identifier);
         }
+        valueString.append("<br>" + getLocusString());
         if (hasScore()) {
             valueString.append("<br>Score = " + score);
         }

@@ -24,6 +24,8 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.tribble.Feature;
+
 import java.util.*;
 
 /**
@@ -88,7 +90,7 @@ public class FeatureUtils {
     /**
      * Sort the feature list by ascending start value
      */
-    public static void sortFeatureList(List<? extends org.broad.tribble.Feature> features) {
+    public static void sortFeatureList(List<? extends Feature> features) {
 
         Collections.sort(features, new Comparator() {
 
@@ -100,15 +102,24 @@ public class FeatureUtils {
         });
     }
 
-    public static org.broad.tribble.Feature getFeatureAt(double position, double minWidth,
-                                                         List<? extends org.broad.tribble.Feature> features) {
+    public static Feature getFeatureAt(double position, double minWidth,
+                                       List<? extends Feature> features) {
         return getFeatureAt(position, minWidth, features, false);
 
     }
 
-    public static org.broad.tribble.Feature getFeatureAt(double position, double minWidth,
-                                                         List<? extends org.broad.tribble.Feature> features,
-                                                         boolean oneBased) {
+    /**
+     * Return a feature from the supplied list at the given position.
+     *
+     * @param position
+     * @param minWidth
+     * @param features
+     * @param oneBased
+     * @return
+     */
+    public static Feature getFeatureAt(double position, double minWidth,
+                                       List<? extends Feature> features,
+                                       boolean oneBased) {
 
         int startIdx = 0;
         int endIdx = features.size();
@@ -153,7 +164,7 @@ public class FeatureUtils {
      * @param features
      * @return
      */
-    public static org.broad.tribble.Feature getFeatureAfter(double position, List<? extends org.broad.tribble.Feature> features) {
+    public static Feature getFeatureAfter(double position, List<? extends Feature> features) {
 
         if (features.size() == 0 ||
                 features.get(features.size() - 1).getStart() <= position) {
@@ -188,7 +199,7 @@ public class FeatureUtils {
 
     }
 
-    public static org.broad.tribble.Feature getFeatureBefore(double position, List<? extends org.broad.tribble.Feature> features) {
+    public static Feature getFeatureBefore(double position, List<? extends Feature> features) {
 
         int index = getIndexBefore(position, features);
         while (index >= 0) {
@@ -202,7 +213,7 @@ public class FeatureUtils {
 
     }
 
-    public static org.broad.tribble.Feature getFeatureClosest(double position, List<? extends org.broad.tribble.Feature> features) {
+    public static Feature getFeatureClosest(double position, List<? extends org.broad.tribble.Feature> features) {
 
         org.broad.tribble.Feature f1 = getFeatureBefore(position, features);
         org.broad.tribble.Feature f2 = getFeatureAfter(position, features);
@@ -215,12 +226,12 @@ public class FeatureUtils {
     }
 
 
-    public static int getIndexBefore(double position, List<? extends org.broad.tribble.Feature> features) {
+    public static int getIndexBefore(double position, List<? extends Feature> features) {
 
         if (features.size() == 0) {
             return -1;
         }
-        if(features.get(features.size() - 1).getStart() <= position) {
+        if (features.get(features.size() - 1).getStart() <= position) {
             return features.size() - 1;
         }
         if (features.get(0).getStart() >= position) {
@@ -258,5 +269,46 @@ public class FeatureUtils {
             }
         }
         return -1;
+    }
+
+    /**
+     * Return a feature from the supplied list at the given position.
+     *
+     * @param position
+     * @param maxLength
+     * @param features
+     * @param oneBased
+     * @return
+     */
+    public static List<Feature> getAllFeaturesAt(double position,
+                                                 double maxLength,
+                                                 double minWidth,
+                                                 List<? extends org.broad.tribble.Feature> features,
+                                                 boolean oneBased) {
+
+        List<Feature> returnList = null;
+
+        double adjustedPosition = Math.max(0, position - maxLength);
+        int startIdx = getIndexBefore(adjustedPosition, features);
+        for (int idx = startIdx; idx < features.size(); idx++) {
+            Feature feature = features.get(idx);
+            int start = feature.getStart() - (int) (minWidth/2);
+
+            if (start > position) {
+                break;
+            }
+
+            int end = feature.getEnd() + (int) (minWidth/2);
+            if (oneBased) {
+                end += 1;
+            }
+
+            if (position >= start && position <= end) {
+                if (returnList == null) returnList = new ArrayList();
+                returnList.add(feature);
+            }
+        }
+
+        return returnList;
     }
 }

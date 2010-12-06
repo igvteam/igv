@@ -190,29 +190,29 @@ public class FeatureTrack extends AbstractTrack {
 
 
         if (showFeatures) {
-            // Reverse lookup, get mouse X position from mouse.  Consider refactoring to get it directly
-            //double scale = ViewManager.getDefaultViewContext().getScale();
-            //double origin = ViewManager.getDefaultViewContext().getOrigin();
-            //int x = (int) ((position - origin) / scale);
-            //if (x < EXPAND_ICON_BUFFER_WIDTH) {
-            //    if (EXPAND_BUTTON_RECT.contains(x, y)) {
-            //        return "<b><strong>Click to " + (isExpanded() ? " collapse track " : " expand track</strong></b>");
-            //    } else {
-            //        return "";
-            //    }
-            //}
 
-
-            Feature feature = getFeatureAt(chr, position, y, frame);
-
-            //getRenderer().setHighlightFeature(feature);
-            // Temporary ugliness util popup text can be supported on tribble feature
-            if (feature != null && feature instanceof IGVFeature) {
-                IGVFeature igvFeature = (IGVFeature) feature;
-                return igvFeature.getValueString(position, null);
-            } else {
+            List<Feature> allFeatures = getAllFeatureAt(chr, position, y, frame);
+            if(allFeatures == null) {
                 return "";
             }
+
+            StringBuffer buf = new StringBuffer();
+            boolean firstFeature = true;
+
+            for (Feature feature : allFeatures) {
+                if (feature != null && feature instanceof IGVFeature) {
+                    IGVFeature igvFeature = (IGVFeature) feature;
+                    String vs = igvFeature.getValueString(position, null);
+                    if (!firstFeature) {
+                        buf.append("<br>--------------<br>");
+                    }
+                    buf.append(vs);
+                    firstFeature = false;
+                }
+            }
+            if(!firstFeature) buf.append("<br>--------------<br>");
+            
+            return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
             List<LocusScore> scores = source.getCoverageScores(chr, (int) position - 10, (int) position + 10, zoom);
@@ -228,6 +228,44 @@ public class FeatureTrack extends AbstractTrack {
             }
 
         }
+    }
+
+    protected List<Feature> getAllFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
+
+        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+
+        if (packedFeatures == null) {
+            return null;
+        }
+
+        List<Feature> feature = null;
+        // Determine the level number (for expanded tracks.
+        int levelNumber = 0;
+        if (featureRects != null) {
+            for (int i = 0; i < featureRects.size(); i++) {
+                Rectangle r = featureRects.get(i);
+                if ((y >= r.y) && (y <= r.getMaxY())) {
+                    levelNumber = i;
+                    break;
+                }
+            }
+        }
+
+        int nLevels = this.getNumberOfFeatureLevels();
+        List<Feature> features = null;
+        if ((nLevels > 1) && (levelNumber < nLevels)) {
+            features = packedFeatures.getRows().get(levelNumber).features;
+        } else {
+            features = packedFeatures.getFeatures();
+        }
+        if (features != null) {
+
+            // give a 2 pixel window, otherwise very narrow features will be missed.
+            double bpPerPixel = frame.getScale();
+            double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
+            feature = FeatureUtils.getAllFeaturesAt(position, 10000, minWidth, features, true);
+        }
+        return feature;
     }
 
     protected Feature getFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
@@ -609,10 +647,9 @@ public class FeatureTrack extends AbstractTrack {
             }
         };
 
-        if(aSync) {
+        if (aSync) {
             LongRunningTask.submit(runnable);
-        }
-        else {
+        } else {
             runnable.run();
         }
 

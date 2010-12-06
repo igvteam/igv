@@ -402,6 +402,7 @@ public class ParsingUtils {
                         //dhmay adding name check for TopHat junctions files. graphType is also checked.
                         if (value.equals("junctions")) {
                             trackProperties.setRendererClass(SpliceJunctionRenderer.class);
+                            trackProperties.setHeight(60);
                         }
                     } else if (key.equals("description")) {
                         trackProperties.setDescription(value);
