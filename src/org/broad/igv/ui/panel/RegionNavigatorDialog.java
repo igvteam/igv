@@ -131,13 +131,6 @@ public class RegionNavigatorDialog extends JDialog {
 
         textFieldSearch.getDocument().addDocumentListener(new SearchFieldDocumentListener());
 
-        checkBoxZoomWhenNav.setSelected(true);
-
-        //If nav window is opened in All chr view, assume the user wants to see regions from all chrs.
-        //Otherwise, not
-        if ("All".equalsIgnoreCase(FrameManager.getDefaultFrame().getChrName()))
-            checkBoxShowAllChrs.setSelected(true);
-
         activeInstance = this;
         updateChromosomeDisplayed();
 
@@ -424,11 +417,13 @@ public class RegionNavigatorDialog extends JDialog {
                             //---- checkBoxZoomWhenNav ----
                             checkBoxZoomWhenNav.setText("Zoom to Region");
                             checkBoxZoomWhenNav.setToolTipText("When navigating to a region, change zoom level?");
+                            checkBoxZoomWhenNav.setSelected(true);
                             panel3.add(checkBoxZoomWhenNav, BorderLayout.CENTER);
 
                             //---- checkBoxShowAllChrs ----
                             checkBoxShowAllChrs.setAction(showAllChromosomesCheckboxAction);
                             checkBoxShowAllChrs.setToolTipText("View regions from all chromosomes (othrwise, current chromosome only)");
+                            checkBoxShowAllChrs.setSelected(true);
                             panel3.add(checkBoxShowAllChrs, BorderLayout.WEST);
                         }
                         panel2.add(panel3, BorderLayout.EAST);
