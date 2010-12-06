@@ -37,6 +37,7 @@ public class PackedFeatures {
     private List<Feature> features;
     private List<FeatureTrack.FeatureRow> rows;
     private static Logger log = Logger.getLogger(PackedFeatures.class);
+    private int maxFeatureLength = 0;
 
     PackedFeatures(String chr, int start, int end) {
         this.chr = chr;
@@ -85,12 +86,14 @@ public class PackedFeatures {
 
         Feature firstFeature = iter.next();
         features.add(firstFeature);
+        maxFeatureLength = firstFeature.getEnd() - firstFeature.getStart();
         int totalCount = 1;
 
         LinkedHashMap<Integer, PriorityQueue<Feature>> bucketArray = new LinkedHashMap();
 
         while (iter.hasNext()) {
             Feature feature = iter.next();
+            maxFeatureLength = Math.max(maxFeatureLength, feature.getEnd() - feature.getStart());
             features.add(feature);
 
             int bucketNumber = feature.getStart();
@@ -200,5 +203,9 @@ public class PackedFeatures {
 
     public List<FeatureTrack.FeatureRow> getRows() {
         return rows;
+    }
+
+    public int getMaxFeatureLength() {
+        return maxFeatureLength;
     }
 }

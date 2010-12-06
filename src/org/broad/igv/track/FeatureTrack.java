@@ -198,7 +198,8 @@ public class FeatureTrack extends AbstractTrack {
 
             StringBuffer buf = new StringBuffer();
             boolean firstFeature = true;
-
+            int maxNumber = 10;
+            int n = 1;
             for (Feature feature : allFeatures) {
                 if (feature != null && feature instanceof IGVFeature) {
                     IGVFeature igvFeature = (IGVFeature) feature;
@@ -208,7 +209,13 @@ public class FeatureTrack extends AbstractTrack {
                     }
                     buf.append(vs);
                     firstFeature = false;
+
+                    if(n > maxNumber) {
+                        buf.append("...");
+                        break;
+                    }
                 }
+                n++;
             }
             if(!firstFeature) buf.append("<br>--------------<br>");
             
@@ -233,6 +240,7 @@ public class FeatureTrack extends AbstractTrack {
     protected List<Feature> getAllFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
 
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+
 
         if (packedFeatures == null) {
             return null;
@@ -263,7 +271,10 @@ public class FeatureTrack extends AbstractTrack {
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
-            feature = FeatureUtils.getAllFeaturesAt(position, 10000, minWidth, features, true);
+            // The maximum length of all features in this collection. Used to insure we consider all features that
+            // might overlap the position (feature are sorted by start position, but length is variable)
+            int maxFeatureLength = packedFeatures.getMaxFeatureLength();
+            feature = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, features, true);
         }
         return feature;
     }
