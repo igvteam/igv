@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Computes the Kaplan-Meier survival curve
- *
+ * <p/>
  * Reference: http://cancerguide.org/scurve_km.html
  *
  * @author jrobinso
@@ -39,7 +39,7 @@ public class KaplanMeierEstimator {
     /**
      * Return the kaplan-meier curve as a list of intervals.
      *
-     * @param time times in ascending order
+     * @param time     times in ascending order
      * @param censured array of boolean values indicating if the event is a death or censure
      * @return
      */
@@ -64,10 +64,11 @@ public class KaplanMeierEstimator {
                 startTime = endTime;
             }
         }
-        if(endTime > startTime) {
-          intervals.add(new Interval(startTime, endTime));
+        if (endTime > startTime) {
+            intervals.add(new Interval(startTime, endTime));
         }
 
+        // init variables.  Initially everyone is at risk, and the cumulative survival is 1
         float atRisk = time.length;
         float cumulativeSurvival = 1;
         Iterator<Interval> intervalIter = intervals.iterator();
@@ -78,26 +79,27 @@ public class KaplanMeierEstimator {
 
             int t = time[i];
 
-            // Get interval
-            if(t > currentInterval.getEnd()) {
+            // If we have moved past the current interval compute the cumulative survival and adjust the # at risk
+            // for the start of the next interval.
+            if (t > currentInterval.getEnd()) {
+                atRisk -= currentInterval.getNumberCensured();
                 float survivors = atRisk - currentInterval.getNumberDied();
                 float tmp = survivors / atRisk;
                 cumulativeSurvival *= tmp;
-                
+
+                // Skip to the next interval
                 atRisk -= currentInterval.getNumberDied();
-            }
-            while(intervalIter.hasNext() &&  t > currentInterval.getEnd()) {
-                currentInterval = intervalIter.next();
-                currentInterval.setCumulativeSurvival(cumulativeSurvival);
-                 
+                while (intervalIter.hasNext() && t > currentInterval.getEnd()) {
+                    currentInterval = intervalIter.next();
+                    currentInterval.setCumulativeSurvival(cumulativeSurvival);
+                }
             }
 
-            if (censured[i] == false) {
-                currentInterval.incDied();
+            if (censured[i]) {
+                currentInterval.addCensure(time[i]);
 
             } else {
-                currentInterval.addCensure(time[i]);
-                atRisk--;
+                currentInterval.incDied();
             }
         }
         currentInterval.setCumulativeSurvival(cumulativeSurvival);
@@ -159,6 +161,10 @@ public class KaplanMeierEstimator {
 
         public void setCumulativeSurvival(float cumulativeSurvival) {
             this.cumulativeSurvival = cumulativeSurvival;
+        }
+
+        public int getNumberCensured() {
+            return censored.size();
         }
     }
 

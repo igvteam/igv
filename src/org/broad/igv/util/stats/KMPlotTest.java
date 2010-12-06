@@ -21,6 +21,7 @@ package org.broad.igv.util.stats;
 
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGVMainFrame;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -165,11 +166,11 @@ public class KMPlotTest {
                 PlotOrientation.VERTICAL, true, true, false);
         XYStepRenderer renderer = new XYStepRenderer();
         ((XYPlot) plot.getPlot()).setRenderer(renderer);
-
         ChartPanel plotPanel = new ChartPanel(plot);
 
 
         KMPlotFrame frame = new KMPlotFrame();
+        frame.setLocationRelativeTo(IGVMainFrame.getInstance());
         frame.setPlotPanel(plotPanel);
 
         frame.setVisible(true);
