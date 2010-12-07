@@ -90,62 +90,35 @@ public class Genome {
         }
 
         if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
-
-            for (int i = 0; i < 23; i++) {
-                chrAliasTable.put(String.valueOf(i), "chr" + i);
-                //chrLookupTable.put("Chr" + i, "chr" + i);
-            }
             chrAliasTable.put("23", "chrX");
             chrAliasTable.put("24", "chrY");
             chrAliasTable.put("chr23", "chrX");
             chrAliasTable.put("chr24", "chrY");
-            chrAliasTable.put("X", "chrX");
-            chrAliasTable.put("Y", "chrY");
-            chrAliasTable.put("M", "chrM");
             chrAliasTable.put("MT", "chrM");
         } else if (id.startsWith("mm")) {
-
-            for (int i = 0; i < 21; i++) {
-                chrAliasTable.put(String.valueOf(i), "chr" + i);
-                //chrLookupTable.put("Chr" + i, "chr" + i);
-            }
             chrAliasTable.put("21", "chrX");
             chrAliasTable.put("22", "chrY");
             chrAliasTable.put("chr21", "chrX");
             chrAliasTable.put("chr22", "chrY");
-            chrAliasTable.put("X", "chrX");
-            chrAliasTable.put("Y", "chrY");
-            chrAliasTable.put("M", "chrM");
             chrAliasTable.put("MT", "chrM");
         } else if (id.equals("b37")) {
-            for (int i = 0; i < 23; i++) {
-                chrAliasTable.put("chr" + i, String.valueOf(i));
-            }
-            chrAliasTable.put("chrX", "X");
-            chrAliasTable.put("chrY", "Y");
             chrAliasTable.put("chrM", "MT");
+            chrAliasTable.put("chrX", "23");
+            chrAliasTable.put("chrY", "24");
 
         }
-
     }
 
 
     public String getChromosomeAlias(String str) {
         if (chrAliasTable == null) {
             return str;
-        }
-
-        String chr = chrAliasTable.get(str);
-        if (chr == null) {
-            if (ucscGenomes.contains(id) && !str.startsWith("chr") || str.equals(Globals.CHR_ALL)) {
-                chr = "chr" + str;
-            } else {
-                chr = str;
+        } else {
+            if (chrAliasTable.containsKey(str)) {
+                return chrAliasTable.get(str);
             }
-
-            chrAliasTable.put(str, chr);
         }
-        return chr;
+        return str;
     }
 
     public void loadUserDefinedAliases() {
@@ -153,7 +126,7 @@ public class Genome {
         File aliasFile = new File(Globals.getGenomeCacheDirectory(), id + "_alias.tab");
 
         if (aliasFile.exists()) {
-            if(chrAliasTable == null) chrAliasTable = new HashMap();
+            if (chrAliasTable == null) chrAliasTable = new HashMap();
 
             BufferedReader br = null;
 
@@ -194,6 +167,19 @@ public class Genome {
         this.chromosomeNames = new LinkedList<String>(chromosomeMap.keySet());
         if (!chromosomesAreOrdered) {
             Collections.sort(chromosomeNames, new ChromosomeComparator());
+        }
+        // Update the chromosome alias table with common variations -- don't do for genomes with large #s of scallfolds
+        if (chromosomeNames.size() < 1000) {
+            if (chrAliasTable == null) {
+                chrAliasTable = new HashMap();
+            }
+            for (String name : chromosomeNames) {
+                if (name.startsWith("chr") || name.startsWith("Chr")) {
+                    chrAliasTable.put(name.substring(3), name);
+                } else {
+                    chrAliasTable.put("chr" + name, name);
+                }
+            }
         }
     }
 
