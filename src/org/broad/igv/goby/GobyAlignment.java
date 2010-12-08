@@ -126,7 +126,7 @@ public class GobyAlignment implements Alignment {
     }
 
     private byte[] buildBases() {
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         String genomeId = genome.getId();
 
         String reference = iterator.getReference();

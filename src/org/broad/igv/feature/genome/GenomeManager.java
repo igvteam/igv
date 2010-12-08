@@ -70,7 +70,7 @@ public class GenomeManager {
     final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     private static GenomeDescriptor DEFAULT;
     private String genomeId;
-    public Genome genome;
+    public Genome currentGenome;
 
 
     /**
@@ -1137,7 +1137,7 @@ public class GenomeManager {
     }
 
     public List<String> getChromosomeNames() {
-        return genome == null ? new ArrayList() : genome.getChromosomeNames();
+        return currentGenome == null ? new ArrayList() : currentGenome.getChromosomeNames();
     }
 
     /**
@@ -1261,9 +1261,9 @@ public class GenomeManager {
                 MessageUtils.showMessage("Load of genome: " + genomeId + " failed.");
             }
         }
-        genome = getGenome(genomeId);
+        currentGenome = getGenome(genomeId);
 
-        if (genome == null || loadFailed) {
+        if (currentGenome == null || loadFailed) {
             GenomeDescriptor defaultDesc = getDefaultGenomeDescriptor();
             String msg = "Could not locate genome: " + genomeId + ".  Loading " + defaultDesc.getName();
             MessageUtils.showMessage(msg);
@@ -1281,7 +1281,7 @@ public class GenomeManager {
                 System.exit(-1);
             }
 
-            genome = getGenome(genomeId);
+            currentGenome = getGenome(genomeId);
 
             // Make this the default genome (genome loaded on startup)
             PreferenceManager.getInstance().setDefaultGenome(genomeId);
@@ -1298,8 +1298,8 @@ public class GenomeManager {
         return genomeId;
     }
 
-    public Genome getGenome() {
-        return genome;
+    public Genome getCurrentGenome() {
+        return currentGenome;
     }
 
     /**
@@ -1308,7 +1308,7 @@ public class GenomeManager {
      * @return
      */
     public String getHomeChr() {
-        return genome == null ? Globals.CHR_ALL : genome.getHomeChromosome();
+        return currentGenome == null ? Globals.CHR_ALL : currentGenome.getHomeChromosome();
     }
 
 

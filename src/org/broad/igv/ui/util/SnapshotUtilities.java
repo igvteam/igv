@@ -30,6 +30,8 @@ import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.svg.SVGGraphics;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -353,4 +355,5 @@ public class SnapshotUtilities {
             logger.error(("Error creating: " + f.getAbsolutePath()), e);
         }
     }
+
 }

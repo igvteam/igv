@@ -223,7 +223,7 @@ public class RulerPanel extends JPanel {
 
         g.setFont(chrFont);
 
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome == null) {
             log.info("No genome found with id: " + genome.getId());
             PreferenceManager.getInstance().remove(PreferenceManager.DEFAULT_GENOME_KEY);
@@ -442,7 +442,7 @@ public class RulerPanel extends JPanel {
 
                 String chr = null;
                 if (isWholeGenomeView()) {
-                    Genome genome = GenomeManager.getInstance().getGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     Genome.ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
                     Genome.ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
 

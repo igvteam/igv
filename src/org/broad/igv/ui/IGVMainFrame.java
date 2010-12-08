@@ -1851,7 +1851,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
         IGVMainFrame.getInstance().getTrackManager().loadGeneTrack(gid);
 
 
-        for (Chromosome chr : GenomeManager.getInstance().getGenome().getChromosomes()) {
+        for (Chromosome chr : GenomeManager.getInstance().getCurrentGenome().getChromosomes()) {
             for (Cytoband cyto : chr.getCytobands()) {
                 FeatureDB.addFeature(cyto.getLongName(), cyto);
             }

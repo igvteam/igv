@@ -92,7 +92,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         String refName = record.getReferenceName();
 
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
 

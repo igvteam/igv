@@ -49,7 +49,7 @@ public class FeatureDB {
             return;
         }
 
-        Genome currentGenome = GenomeManager.getInstance().getGenome();
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
 
             if (feature.getName() != null && feature.getName().length() > 0) {

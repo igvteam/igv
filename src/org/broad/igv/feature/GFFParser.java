@@ -192,7 +192,7 @@ public class GFFParser implements FeatureParser {
         String line = null;
         try {
 
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
             Set<String> featuresToHide = new HashSet();
             while ((line = reader.readLine()) != null) {
 

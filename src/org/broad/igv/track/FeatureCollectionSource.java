@@ -140,7 +140,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
     protected void sampleGenomeFeatures() {
         List<Feature> chrAllFeatures = new ArrayList(1000);
-        Genome currentGenome = GenomeManager.getInstance().getGenome();
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         int sampleLength = (int) ((double) currentGenome.getLength() / (1000 * 700));
         int lastFeaturePosition = -1;
         for (String chr : currentGenome.getChromosomeNames()) {
@@ -185,7 +185,7 @@ public class FeatureCollectionSource implements FeatureSource {
         float[] values = new float[nBins];
         Arrays.fill(values, 0);
 
-        Genome currentGenome = GenomeManager.getInstance().getGenome();
+        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
         double step = ((double) currentGenome.getLength() / 1000) / nBins;
         for (int i = 0; i < nBins; i++) {
             starts[i] = (int) (i * step);
@@ -289,7 +289,7 @@ public class FeatureCollectionSource implements FeatureSource {
             float[] values = new float[nBins];
             Arrays.fill(values, 0);
 
-            Genome currentGenome = GenomeManager.getInstance().getGenome();
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             double step = ((double) currentGenome.getLength() / 1000) / nBins;
             for (int i = 0; i < nBins; i++) {
                 starts[i] = (int) (i * step);

@@ -94,7 +94,7 @@ public class RNAIDataSource implements DataSource {
             chrAllScores = new ArrayList(500);
             dataMap.put(Globals.CHR_ALL, chrAllScores);
         }
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         RNAIGeneScore genomeScore = new RNAIGeneScore(dpt);
         int genomeStart = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getStart());
         int genomeEnd = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getEnd());

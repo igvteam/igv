@@ -101,10 +101,11 @@ public class ReferenceFrame {
 
 
     public void setBounds(int x, int w) {
-        if (log.isDebugEnabled()) log.debug("Set bounds: " + name + "  " + x + " " + w);
         this.pixelX = x;
-        this.pixelWidth = w;
-        computeLocationScale();
+        if (w != pixelWidth) {
+            pixelWidth = w;
+            computeLocationScale();
+        }
     }
 
     public int getMidpoint() {
@@ -163,7 +164,7 @@ public class ReferenceFrame {
     public void zoomAndCenter(int newZoom) {
 
         // Zoom but remain centered about current center
-        double currentCenter = origin + ((getPixelWidth() / 2) * getScale());
+        double currentCenter = origin + ((pixelWidth / 2) * getScale());
 
         zoomTo(newZoom, currentCenter);
     }
@@ -190,7 +191,7 @@ public class ReferenceFrame {
 
                 // Adjust origin so newCenter is centered
                 double newOrigin = Math.round(
-                        newCenter - ((getPixelWidth() / 2) * newLocationScale));
+                        newCenter - ((pixelWidth / 2) * newLocationScale));
 
                 setOrigin(newOrigin);
 
@@ -243,18 +244,18 @@ public class ReferenceFrame {
                 setZoom(maxZoom);
             }
         }
-        double windowWidth = (getPixelWidth() * getScale()) / 2;
+        double windowWidth = (pixelWidth * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
     }
 
     public void centerOnLocation(double chrLocation) {
-        double windowWidth = (getPixelWidth() * getScale()) / 2;
+        double windowWidth = (pixelWidth * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
         recordHistory();
     }
 
     public boolean windowAtEnd() {
-        double windowLengthBP = getPixelWidth() * getScale();
+        double windowLengthBP = pixelWidth * getScale();
         return origin + windowLengthBP + 1 > getChromosomeLength();
 
     }
@@ -270,9 +271,9 @@ public class ReferenceFrame {
     public void setOrigin(double newOrigin) {
 
         // All movements "release" the frame, enabling pan and zoom
-        end = -1;   // <= A lousy convention, means end is computed (free to float)
+        //end = -1;   // <= A lousy convention, means end is computed (free to float)
 
-        int windowLengthBP = (int) (getPixelWidth() * getScale());
+        int windowLengthBP = (int) (pixelWidth * getScale());
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
             origin = Math.max(-1000, Math.min(newOrigin, getChromosomeLength() + 1000 - windowLengthBP));
         } else {
@@ -299,7 +300,6 @@ public class ReferenceFrame {
             setChromosomeName(chr);
         }
 
-        start = Math.max(0, start);
         Chromosome chromosome = genome == null ? null : genome.getChromosome(chr);
         if (chromosome != null) {
             end = Math.min(chromosome.getLength(), end);
@@ -313,13 +313,15 @@ public class ReferenceFrame {
                 setLocationScale(((double) (end - start)) / pixelWidth);
             }
             origin = start;
+            this.end = end;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Data panel width = " + getPixelWidth());
-            log.debug("New start = " + (int) getOrigin());
+            log.debug("Data panel width = " + pixelWidth);
+            log.debug("New start = " + (int) origin);
             log.debug("New end = " + (int) getEnd());
             log.debug("New center = " + (int) getCenter());
+            log.debug("Scale = " + locationScale);
         }
 
 
@@ -339,7 +341,7 @@ public class ReferenceFrame {
     }
 
     private Genome getGenome() {
-        return GenomeManager.getInstance().getGenome();
+        return GenomeManager.getInstance().getCurrentGenome();
     }
 
     public double getOrigin() {
@@ -347,11 +349,11 @@ public class ReferenceFrame {
     }
 
     public double getCenter() {
-        return origin + getScale() * getPixelWidth() / 2;
+        return origin + getScale() * pixelWidth / 2;
     }
 
     public double getEnd() {
-        return origin + getScale() * getPixelWidth();
+        return origin + getScale() * pixelWidth;
     }
 
     public int getZoom() {
@@ -458,11 +460,11 @@ public class ReferenceFrame {
             if (end < 0) {
                 double virtualPixelSize = getTilesTimesBinsPerTile();
 
-                double nPixel = Math.max(virtualPixelSize, getPixelWidth());
+                double nPixel = Math.max(virtualPixelSize, pixelWidth);
 
                 setLocationScale(((double) getChromosomeLength()) / nPixel);
             } else {
-                int w = getPixelWidth();
+                int w = pixelWidth;
                 setLocationScale((end - origin) / w);
             }
         }
@@ -480,7 +482,7 @@ public class ReferenceFrame {
         if (this.chrName.equals(Globals.CHR_ALL)) {
             minZoom = 0;
         } else {
-            minZoom = Math.max(0, (int) (Math.log((getPixelWidth() / binsPerTile)) / Globals.log2));
+            minZoom = Math.max(0, (int) (Math.log((pixelWidth / binsPerTile)) / Globals.log2));
 
             if (zoom < minZoom) {
                 zoom = minZoom;
@@ -582,7 +584,7 @@ public class ReferenceFrame {
 
     public Range getCurrentRange() {
         int start = 0;
-        int end = getPixelWidth();
+        int end = pixelWidth;
         int startLoc = (int) getChromosomePosition(start) + 1;
         int endLoc = (int) getChromosomePosition(end);
         Range range = new Range(getChrName(), startLoc, endLoc);
@@ -590,6 +592,7 @@ public class ReferenceFrame {
     }
 
     private void setLocationScale(double locationScale) {
+        System.out.println("Set location scale: " + locationScale + "  origin=" + origin + "  end=" + end);
         this.locationScale = locationScale;
         locationScaleValid = true;
 

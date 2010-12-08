@@ -398,7 +398,7 @@ public class GCTDatasetParser {
         dataset.setLongestFeatureMap(longestProbeMap);
 
         if ((dataset == null) || dataset.isEmpty()) {
-            String genome = GenomeManager.getInstance().getGenome().getId();
+            String genome = GenomeManager.getInstance().getCurrentGenome().getId();
             throw new ProbeMappingException(fn, genome);
         }
     }

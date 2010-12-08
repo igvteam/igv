@@ -39,8 +39,8 @@ public class RenderContext {
     private String genomeId;
     private Graphics2D graphics;
     private Map<Color, Graphics2D> graphicCacheByColor;
-    public ReferenceFrame referenceFrame;
-    DataPanel panel;
+    private ReferenceFrame referenceFrame;
+    private DataPanel panel;
 
     public RenderContext(String genomeId, DataPanel panel, Graphics2D graphics, ReferenceFrame referenceFrame) {
         this.genomeId = genomeId;
@@ -93,6 +93,16 @@ public class RenderContext {
         return referenceFrame.getZoom();
     }
 
+
+    public String getGenomeId() {
+        return genomeId;
+    }
+
+
+    public ReferenceFrame getReferenceFrame() {
+        return referenceFrame;
+    }
+
     /**
      * Release graphics objects
      *
@@ -112,11 +122,4 @@ public class RenderContext {
     }
 
 
-    public String getGenomeId() {
-        return genomeId;
-    }
-
-    public void setGenomeId(String genomeId) {
-        this.genomeId = genomeId;
-    }
 }

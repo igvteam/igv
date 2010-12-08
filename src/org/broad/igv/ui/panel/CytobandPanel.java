@@ -79,7 +79,7 @@ public class CytobandPanel extends JPanel {
         super.paintComponent(g);
 
 
-        if (frame.getChrName().equals(Globals.CHR_ALL)) {
+        if (frame.getChrName().equals(Globals.CHR_ALL) || getWidth() < 10) {
             //Graphics g2 = g.create();
             //g2.setFont(FontManager.getScalableFont(Font.ITALIC, 12));
             //String text = "Whole genome view.  To jump to a chromosome click on its label.";

@@ -312,7 +312,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             double h = expandedHeight;
             if (!isExpanded()) {
                 int visHeight = context.getVisibleRect().height;
-                collapsedHeight = Math.max(1, Math.min(expandedHeight, visHeight / dataManager.getMaxDepth(context.referenceFrame)));
+                collapsedHeight = Math.max(1, Math.min(expandedHeight, visHeight / dataManager.getMaxDepth(context.getReferenceFrame())));
                 h = collapsedHeight;
             }
 

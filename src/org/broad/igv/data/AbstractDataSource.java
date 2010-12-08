@@ -86,7 +86,7 @@ public abstract class AbstractDataSource implements DataSource {
 
 
     public int getChrLength(String chr) {
-        final Genome genome = GenomeManager.getInstance().getGenome();
+        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (chr.equals(Globals.CHR_ALL)) {
             return (int) (genome.getLength() / 1000);
         } else {

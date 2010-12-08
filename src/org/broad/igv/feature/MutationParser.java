@@ -107,7 +107,7 @@ public class MutationParser {
         try {
 
 
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             reader = ParsingUtils.openAsciiReader(locator);
 

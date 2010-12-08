@@ -71,7 +71,7 @@ public class AlignmentDataManager {
 
 
     private void initChrMap() {
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome != null) {
             Set<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {
@@ -165,7 +165,7 @@ public class AlignmentDataManager {
         final int start = (int) context.getOrigin();
         final int end = (int) context.getEndLocation() + 1;
 
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(context.referenceFrame.getName());
+        AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(genomeId, chr, start, end)) {
@@ -228,15 +228,15 @@ public class AlignmentDataManager {
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
                             alignmentRows, counts);
-                    loadedIntervalMap.put(context.referenceFrame.getName(), loadedInterval);
+                    loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 
 
                     if (coverageTrack != null) {
-                        coverageTrack.rescale(context.referenceFrame);
+                        coverageTrack.rescale(context.getReferenceFrame());
                     }
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
-                    context.getPanel().repaint();
+                    if(context.getPanel() != null) context.getPanel().repaint();
 
                     //TODO -- this has to be done after every load in every panel.  Centralize this somewhere?  Have
                     //TODO --  a "DataLoadRunnable"?

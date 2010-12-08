@@ -75,7 +75,7 @@ public class DRangerParser {
         int parseColumn = -1;
         String nextLine = null;
         try {
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             reader = ParsingUtils.openAsciiReader(locator);
             setColumns(reader.readLine());

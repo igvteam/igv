@@ -58,7 +58,7 @@ public class FreqData {
         this.logNormalized = ds.isLogNormalized();
 
         // Initialize bins.  We assume the data is not sparse.
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
         // 200 kb bin size
         int binSize = 200000;

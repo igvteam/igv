@@ -515,7 +515,7 @@ public class CachingQueryReader {
 
         public AlignmentCounts(String chr, int start, int end) {
 
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
             this.genomeId = genome.getId();
             String chrAlias = genome.getChromosomeAlias(chr);
             this.start = start;

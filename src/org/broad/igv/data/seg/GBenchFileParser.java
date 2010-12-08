@@ -108,7 +108,7 @@ public class GBenchFileParser implements SegFileParser {
             }
 
 
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             //
             //if (genome.getId().equals("hg18")) {

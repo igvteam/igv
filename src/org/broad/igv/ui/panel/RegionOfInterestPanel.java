@@ -23,6 +23,8 @@
  */
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.SequenceManager;
@@ -73,19 +75,10 @@ public class RegionOfInterestPanel extends JPanel {
         g.drawRect(0, 0, getWidth(), getHeight());
     }
 
-    Collection<RegionOfInterest> getRegions() {
-        return IGVMainFrame.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
-    }
 
     public void drawRegionsOfInterest(final Graphics2D g, int height) {
 
-        ReferenceFrame referenceFrame = frame;
         Collection<RegionOfInterest> regions = getRegions();
-
-        if (FrameManager.isGeneListMode()) {
-            g.setColor(RegionOfInterest.getBackgroundColor());
-            g.fillRect(0, 0, getWidth(), height);
-        }
 
         if (regions == null || regions.isEmpty()) {
             return;
@@ -94,18 +87,18 @@ public class RegionOfInterestPanel extends JPanel {
 
         for (RegionOfInterest regionOfInterest : regions) {
 
-            Integer regionStart = regionOfInterest.getStart();
-            if (regionStart == null) {
-                // skip - null starts are bad regions of interest
-                continue;
+            int regionStart = regionOfInterest.getStart();
+            int regionEnd = regionOfInterest.getEnd();
+
+            // This is ugly, but neccessary the way the "whole genome" is treated as another chromosome
+            if (frame.getChrName().equals(Globals.CHR_ALL)) {
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                regionStart = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionStart);
+                regionEnd = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionEnd);
             }
 
-            Integer regionEnd = regionOfInterest.getEnd();
-            if (regionEnd == null) {
-                regionEnd = regionStart;
-            }
-            int start = referenceFrame.getScreenPosition(regionStart);
-            int end = referenceFrame.getScreenPosition(regionEnd);
+            int start = frame.getScreenPosition(regionStart);
+            int end = frame.getScreenPosition(regionEnd);
             int regionWidth = Math.max(1, end - start);
 
             g.setColor(regionOfInterest.getBackgroundColor());
@@ -115,6 +108,12 @@ public class RegionOfInterestPanel extends JPanel {
     }
 
 
+    /**
+     * Return the region of interest at the screen pixel location.
+     *
+     * @param px
+     * @return
+     */
     RegionOfInterest getRegionOfInterest(int px) {
 
         double pos = frame.getChromosomePosition(px);
@@ -278,5 +277,14 @@ public class RegionOfInterestPanel extends JPanel {
             }
 
         }
+    }
+
+
+    /**
+     * A convenience method for returning the regions of interest for the current frame.
+     */
+
+    private  Collection<RegionOfInterest> getRegions() {
+        return IGVMainFrame.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
     }
 }

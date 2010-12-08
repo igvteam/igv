@@ -21,6 +21,7 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -91,13 +92,21 @@ public class DataPanelLayout implements LayoutManager {
             java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
             int h = container.getHeight();
 
-            for (int i=0; i<children.length; i++) {
+            for (int i = 0; i < children.length; i++) {
                 // TODO -- remove the need to cast
-                Component c = children[i] ;
+                Component c = children[i];
                 ReferenceFrame frame = frames.get(i);
                 c.setBounds(frame.pixelX, 0, frame.getPixelWidth(), h);
 
-                log.debug("Layout: " + frame.name +   "  x=" + frame.pixelX + "  w=" + frame.getPixelWidth());
+                if (c instanceof JComponent) {
+                    if (frame.getPixelWidth() > 5) {
+                        ((JComponent) c).setBorder(javax.swing.BorderFactory.createLineBorder(Color.gray));
+                    } else {
+                         ((JComponent) c).setBorder(null);
+                    }
+                }
+
+                log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getPixelWidth());
 
             }
         }

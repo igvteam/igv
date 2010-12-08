@@ -55,7 +55,7 @@ public class IndexedBEDFeatureSource implements FeatureSource {
 
     private void initChrMap() {
         if (featureIndex != null) {
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
             if (genome != null) {
                 Set<String> seqNames = featureIndex.getIndexedChromosomes();
                 if (seqNames != null) {

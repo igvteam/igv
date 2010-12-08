@@ -115,7 +115,7 @@ public class SegmentFileParser implements SegFileParser {
 
             String[] tokens = new String[headings.length];
 
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 

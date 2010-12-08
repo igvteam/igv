@@ -496,7 +496,7 @@ public class FeatureTrack extends AbstractTrack {
 
     private void renderExpandTool(RenderContext contect, Rectangle rect) {
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(contect.referenceFrame.getName());
+        PackedFeatures packedFeatures = packedFeaturesMap.get(contect.getReferenceFrame().getName());
 
         if (packedFeatures == null || packedFeatures.getRowCount() <= 1) {
             return;
@@ -550,7 +550,7 @@ public class FeatureTrack extends AbstractTrack {
         int start = (int) context.getOrigin();
         int end = (int) context.getEndLocation() + 1;
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(context.referenceFrame.getName());
+        PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
 
@@ -620,7 +620,7 @@ public class FeatureTrack extends AbstractTrack {
                     featuresLoading = true;
 
                     int maxEnd = end;
-                    Genome genome = GenomeManager.getInstance().getGenome();
+                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
                     if (genome != null) {
                         Chromosome c = genome.getChromosome(chr);
                         if (c != null) maxEnd = Math.max(c.getLength(), end);
@@ -633,17 +633,17 @@ public class FeatureTrack extends AbstractTrack {
                     // TODO -- implement source to return iterators
                     Iterator<Feature> iter = source.getFeatures(chr, start, end);
                     if (iter == null) {
-                        packedFeaturesMap.put(context.referenceFrame.getName(), new PackedFeatures(chr, expandedStart, expandedEnd));
+                        packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, expandedStart, expandedEnd));
                     } else {
-                        packedFeaturesMap.put(context.referenceFrame.getName(), new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName()));
+                        packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName()));
                     }
 
                     IGVMainFrame.getInstance().layoutMainPanel();
-                    context.getPanel().repaint();
+                    if(context.getPanel() != null) context.getPanel().repaint();
                 } catch (Throwable e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
-                    packedFeaturesMap.put(context.referenceFrame.getName(), new PackedFeatures(chr, start, end));
+                    packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, start, end));
                     String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
                     MessageUtils.showMessage(msg);
                     log.error(msg, e);
@@ -744,7 +744,7 @@ public class FeatureTrack extends AbstractTrack {
             if (f == null) {
                 int binSize = source.getFeatureWindowSize();
 
-                final Genome genome = GenomeManager.getInstance().getGenome();
+                final Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 if (forward == true) {
                     // Forward
                     int nextStart = packedFeatures.getEnd();

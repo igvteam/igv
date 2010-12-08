@@ -341,7 +341,7 @@ public class WiggleParser {
 
     private void changedChromosome(WiggleDataset dataset, String lastChr) {
 
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (startLocations != null && startLocations.size() > 0) {
 
             String convertedChr = genome.getChromosomeAlias(lastChr);

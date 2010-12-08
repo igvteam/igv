@@ -219,7 +219,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 if (f != null) {
-                    String chr = GenomeManager.getInstance().getGenome().getChromosomeAlias(f.getChr());
+                    String chr = GenomeManager.getInstance().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
                     if (!chr.equals(vc.getChrName())) {
                         int zoom = vc.getZoom();

@@ -425,7 +425,7 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         for (String trackName : ds.getDataHeadings()) {
-            Genome currentGenome = GenomeManager.getInstance().getGenome();
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
             String trackId = path + "_" + trackName;
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
@@ -455,7 +455,7 @@ public class TrackLoader {
         TrackType type = ds.getType();
         for (String trackName : ds.getDataHeadings()) {
 
-            Genome currentGenome = GenomeManager.getInstance().getGenome();
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
             String trackId = path + "_" + trackName;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
@@ -554,7 +554,7 @@ public class TrackLoader {
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
 
-            Genome currentGenome = GenomeManager.getInstance().getGenome();
+            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackId, ds);
 
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);

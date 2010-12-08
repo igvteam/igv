@@ -223,7 +223,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(heading);
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             int locationUnit = 1000;
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             // Compute the smallest concievable feature that could be viewed on the
             // largest screen.  Be conservative.   The smallest feature is one at

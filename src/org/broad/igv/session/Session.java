@@ -23,6 +23,7 @@ package org.broad.igv.session;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
@@ -216,7 +217,11 @@ public class Session {
     }
 
     public Collection<RegionOfInterest> getRegionsOfInterest(String chr) {
-        return regionsOfInterest.get(chr);
+        if (chr.equals(Globals.CHR_ALL)) {
+            return getAllRegionsOfInterest();
+        } else {
+            return regionsOfInterest.get(chr);
+        }
     }
 
 
@@ -232,16 +237,15 @@ public class Session {
      * Removes the regions of interest from the current chromosome.  returns global success/failure.
      * This method to remove multiple regions at once exists because, if you do them one at a time,
      * it throws the RegionNavigatorDialog table rows off.
+     *
      * @param rois
      */
     public boolean removeRegionsOfInterest(Collection<RegionOfInterest> rois) {
         String chr = FrameManager.getDefaultFrame().getChrName();
         Collection<RegionOfInterest> roiList = regionsOfInterest.get(chr);
         boolean result = true;
-        if (roiList != null)
-        {
-            for (RegionOfInterest roi : rois)
-            {
+        if (roiList != null) {
+            for (RegionOfInterest roi : rois) {
                 result = result && roiList.remove(roi);
             }
             //if there's a RegionNavigatorDialog around, need to update it.
@@ -367,7 +371,7 @@ public class Session {
                         return new Locus(feature.getChr(), feature.getStart(), feature.getEnd());
                     } else {
 
-                        Genome genome = GenomeManager.getInstance().getGenome();
+                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
                         if (genome.getChromosome(searchString) != null) {
                             // No dash, this is either a chromosome or an unkown search string
                             return new Locus(searchString, -1, -1);
@@ -380,8 +384,6 @@ public class Session {
         }
         return null;
     }
-
-
 
 
     /**

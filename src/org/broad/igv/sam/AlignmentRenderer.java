@@ -118,7 +118,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
                 if ((pixelEnd >= rect.getX()) && (pixelStart <= rect.getMaxX())) {
-                    Color alignmentColor = getAlignmentColor(alignment, locScale, context.referenceFrame.getCenter(), renderOptions);
+                    Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
 
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
@@ -140,7 +140,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             // Draw posA border around the center base
             if (locScale < 5 && renderOptions.shadeCenters) {
                 // Calculate center lines
-                double center = (int) (context.referenceFrame.getCenter() - origin);
+                double center = (int) (context.getReferenceFrame().getCenter() - origin);
                 int centerLeftP = (int) (center / locScale);
                 int centerRightP = (int) ((center + 1) / locScale);
                 float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);

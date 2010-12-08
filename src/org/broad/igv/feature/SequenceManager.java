@@ -183,17 +183,27 @@ public class SequenceManager {
         return chunk;
     }
 
-    private static byte[] readSequence(GenomeDescriptor genome, String chr, int start, int end, String location) {
+    /**
+     * Read and return the genomic sequence for the specified interval as a byte array.
+     * 
+     * @param genome
+     * @param chr
+     * @param start
+     * @param end
+     * @param path
+     * @return
+     */
+    private static byte[] readSequence(GenomeDescriptor genome, String chr, int start, int end, String path) {
 
-        if (location.startsWith("http://www.broadinstitute.org/igv/SequenceServlet") ||
-                location.startsWith("http://www.broadinstitute.org/igv/sequence")) {
-            return SequenceServletWrapper.readBytes(location, chr, start, end);
+        if (path.startsWith("http://www.broadinstitute.org/igv/SequenceServlet") ||
+                path.startsWith("http://www.broadinstitute.org/igv/sequence")) {
+            return SequenceServletWrapper.readBytes(path, chr, start, end);
         } else {
 
             SeekableStream is = null;
             try {
-                if (!location.endsWith("/")) {
-                    location = location + "/";
+                if (!path.endsWith("/")) {
+                    path = path + "/";
                 }
 
                 String fn = chr + ".txt";
@@ -201,7 +211,7 @@ public class SequenceManager {
                     fn = getChrFileName(fn);
                 }
 
-                String seqFile = location + fn;
+                String seqFile = path + fn;
 
                 is = IGVSeekableStreamFactory.getStreamFor(seqFile);
 
@@ -212,7 +222,8 @@ public class SequenceManager {
 
 
             } catch (Exception ex) {
-                ex.printStackTrace();
+                log.error("Error reading genome sequence from: " + path, ex);
+                return null;
             }
             finally {
                 if (is != null) {
@@ -223,8 +234,6 @@ public class SequenceManager {
                     }
                 }
             }
-
-            return null;
         }
     }
 

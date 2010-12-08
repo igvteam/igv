@@ -81,7 +81,7 @@ public class TDFDataSource implements DataSource {
         try {
             String dataGenome = rootGroup.getAttribute("genome");
             // TODO -- throw exception if data genome != current genome
-            genome = GenomeManager.getInstance().getGenome();
+            genome = GenomeManager.getInstance().getCurrentGenome();
         } catch (Exception e) {
             log.error("Unknown genome " + rootGroup.getAttribute("genome"));
             throw new RuntimeException("Unknown genome " + rootGroup.getAttribute("genome"));

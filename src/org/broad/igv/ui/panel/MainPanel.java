@@ -292,20 +292,31 @@ public class MainPanel extends JPanel {
             Insets insets = applicationHeaderView.getInsets();
             namePanelX = insets.left;
 
-
             attributePanelX = namePanelX + namePanelWidth + hgap;
             attributePanelWidth = calculateAttributeWidth();
 
             dataPanelX = attributePanelX + attributePanelWidth + hgap;
 
+            java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
             dataPanelWidth = applicationHeaderView.getWidth() - insets.right - dataPanelX;
 
-            java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
-            int x = 0;
-            int wc = (dataPanelWidth - (frames.size() - 1) * hgap) / frames.size();
-            for (ReferenceFrame frame : frames) {
-                frame.setBounds(x, wc);
-                x += wc + hgap;
+            if (frames.size() == 1) {
+                frames.get(0).setBounds(0, dataPanelWidth);
+            } else {
+
+                float gap = Math.min(1, 20.0f / ((int) (1.5 * frames.size()))) * hgap;
+                int x = 0;
+
+                // Width is in floating point because we need to fill data panel,  going straight to an "int" here
+                // would cause truncation
+                float wc = ((float) dataPanelWidth - (frames.size() - 1) * gap) / frames.size();
+                for (int i = 0; i < frames.size(); i++) {
+                    ReferenceFrame frame = frames.get(i);
+                    int nextX = (int) ((i + 1) * (wc + gap));
+                    int w = nextX - x;
+                    frame.setBounds(x, w);
+                    x = nextX;
+                }
             }
         }
     }
@@ -330,30 +341,30 @@ public class MainPanel extends JPanel {
         return namePanelWidth > 0;
     }
 
-    public  int getAttributePanelWidth() {
+    public int getAttributePanelWidth() {
         return attributePanelWidth;
     }
 
-    public  int getNamePanelX() {
+    public int getNamePanelX() {
         return namePanelX;
     }
 
 
-    public  int getNamePanelWidth() {
+    public int getNamePanelWidth() {
         return namePanelWidth;
     }
 
-    public  int getAttributePanelX() {
+    public int getAttributePanelX() {
         return attributePanelX;
     }
 
 
-    public  int getDataPanelX() {
+    public int getDataPanelX() {
         return dataPanelX;
     }
 
 
-    public  int getDataPanelWidth() {
+    public int getDataPanelWidth() {
         return dataPanelWidth;
     }
 
@@ -361,7 +372,7 @@ public class MainPanel extends JPanel {
     static class SplitPane extends JideSplitPane {
         @Override
         public void doLayout() {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Layout");
             }
             super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.

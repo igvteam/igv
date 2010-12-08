@@ -86,7 +86,7 @@ public abstract class DataTrack extends AbstractTrack {
 
         List<LocusScore> inViewScores = null;
 
-        LoadedDataInterval interval = loadedIntervalCache.get(context.referenceFrame.getName());
+        LoadedDataInterval interval = loadedIntervalCache.get(context.getReferenceFrame().getName());
         if (interval != null && interval.contains(chr, start, end, zoom)) {
             inViewScores = interval.getScores();
         } else {
@@ -124,7 +124,7 @@ public abstract class DataTrack extends AbstractTrack {
         try {
             featuresLoading = true;
             int maxEnd = end;
-            Genome genome = GenomeManager.getInstance().getGenome();
+            Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
             if (genome != null) {
                 Chromosome c = genome.getChromosome(chr);
@@ -136,7 +136,7 @@ public abstract class DataTrack extends AbstractTrack {
             int expandedEnd = Math.min(maxEnd, end + delta);
             List<LocusScore> inViewScores = getSummaryScores(chr, expandedStart, expandedEnd, zoom);
             LoadedDataInterval interval = new LoadedDataInterval(chr, start, end, zoom, inViewScores);
-            loadedIntervalCache.put(context.referenceFrame.getName(), interval);
+            loadedIntervalCache.put(context.getReferenceFrame().getName(), interval);
             return inViewScores;
 
         }

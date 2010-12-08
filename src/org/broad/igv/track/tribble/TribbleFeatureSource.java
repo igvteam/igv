@@ -81,7 +81,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     }
 
     private void init() {
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (genome != null) {
             Collection<String> seqNames = reader.getSequenceNames();
             if (seqNames != null)

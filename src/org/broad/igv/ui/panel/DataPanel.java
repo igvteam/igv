@@ -69,6 +69,7 @@ public class DataPanel extends JComponent {
 
     private ReferenceFrame frame;
     DataPanelContainer parent;
+    private DataPanelPainter painter;
 
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
@@ -79,6 +80,7 @@ public class DataPanel extends JComponent {
         setFocusable(true);
         setAutoscrolls(true);
         setToolTipText("Data panel");
+        painter = new DataPanelPainter();
     }
 
 
@@ -157,7 +159,6 @@ public class DataPanel extends JComponent {
                 this.applyMacPerformanceHints((Graphics2D) g);
             }
 
-
             graphics2D.setBackground(getBackground());
             graphics2D.clearRect(damageRect.x, damageRect.y, damageRect.width, damageRect.height);
 
@@ -179,7 +180,6 @@ public class DataPanel extends JComponent {
 
             int trackWidth = getWidth();
             int trackHeight = getHeight();
-            DataPanelPainter painter = new DataPanelPainter();
             painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect);
 
             // Compute mouse senstive regions

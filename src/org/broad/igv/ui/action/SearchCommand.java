@@ -67,7 +67,7 @@ public class SearchCommand implements Command {
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
         this.referenceFrame = referenceFrame;
         this.searchString = searchString.trim();
-        genome = GenomeManager.getInstance().getGenome();
+        genome = GenomeManager.getInstance().getCurrentGenome();
     }
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString, boolean recordHistory) {
@@ -161,7 +161,7 @@ public class SearchCommand implements Command {
                     } else {
 
                         // No dash, this is either a chromosome or an unkown search string
-                        Chromosome chromosome = GenomeManager.getInstance().getGenome().getChromosome(searchString);
+                        Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(searchString);
                         if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
                             referenceFrame.setChromosomeName(searchString, true);
                             IGVMainFrame.getInstance().repaintDataAndHeaderPanels();

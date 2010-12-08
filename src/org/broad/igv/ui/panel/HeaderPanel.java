@@ -79,7 +79,6 @@ public class HeaderPanel extends JPanel implements Transferable {
         if (FrameManager.isGeneListMode()) {
 
             JPanel geneListPanel = new JPanel();
-            geneListPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
             geneListPanel.setBackground(Color.white);
             geneListPanel.setMinimumSize(new java.awt.Dimension(700, 0));
             geneListPanel.setPreferredSize(new java.awt.Dimension(0, 0));
@@ -131,7 +130,7 @@ public class HeaderPanel extends JPanel implements Transferable {
             cytobandPanel.addMouseListener(nameMouseAdapater);
 
             JPanel topPanel = new JPanel();
-            topPanel.setBackground(Color.gray);
+            topPanel.setBackground(Color.lightGray);
             topPanel.setPreferredSize(new Dimension(500, 15));
 
             final MouseAdapter topMouseAdapter = new MouseAdapter() {
@@ -188,7 +187,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         } else {
 
             JPanel panel = new JPanel();
-            setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+            setBorder(javax.swing.BorderFactory.createLineBorder(Color.gray));
             panel.setBackground(new java.awt.Color(255, 255, 255));
             panel.setMinimumSize(new java.awt.Dimension(700, 0));
             panel.setPreferredSize(new java.awt.Dimension(0, 0));

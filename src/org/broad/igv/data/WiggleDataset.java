@@ -70,7 +70,7 @@ public class WiggleDataset implements Dataset {
     // TODO -- keep track of sortedness as data is loaded and skip this sort if unneccessary.
 
     public void sort(Set<String> unsortedChromosomes) {
-        Genome genome = GenomeManager.getInstance().getGenome();
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         for (String c : unsortedChromosomes) {
             String chr = genome.getChromosomeAlias(c);
 
