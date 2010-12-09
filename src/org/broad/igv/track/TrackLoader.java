@@ -99,7 +99,8 @@ public class TrackLoader {
             typeString = typeString.toLowerCase();
 
             if (typeString.endsWith(".tbi")) {
-                MessageUtils.showMessage("<html><b>Error:</b> Loading tabix index files (.tbi) is not supported.  Load the .gz file ");
+                MessageUtils.showMessage("<html><b>Error:</b>File type '.tbi' is not recognized.  If this is a 'tabix' index <br>" +
+                        " load the associated gzipped file, which should have an extension of '.gz'");
             }
 
             //TODO Why is this not inside of isIndexed?
