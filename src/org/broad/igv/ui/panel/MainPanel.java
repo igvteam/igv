@@ -35,7 +35,7 @@ import java.util.HashSet;
  * @author jrobinso
  * @date Sep 10, 2010
  */
-public class MainPanel extends JPanel {
+public class MainPanel extends JPanel implements Paintable {
 
     private static Logger log = Logger.getLogger(MainPanel.class);
 
@@ -51,7 +51,7 @@ public class MainPanel extends JPanel {
     private int dataPanelWidth;
 
 
-    public IGVPanel applicationHeaderView;
+    public IGVPanel applicationHeaderPanel;
     public HeaderPanelContainer headerPanelContainer;
     private TrackPanelScrollPane dataTrackScrollPane;
     private TrackPanelScrollPane featureTrackScrollPane;
@@ -81,7 +81,7 @@ public class MainPanel extends JPanel {
     public void doLayout() {
         layoutFrames();
         super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
-        applicationHeaderView.doLayout();
+        applicationHeaderPanel.doLayout();
         for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
             tsp.doLayout();
         }
@@ -94,14 +94,14 @@ public class MainPanel extends JPanel {
         setLayout(new java.awt.BorderLayout());
 
 
-        JPanel nameHeaderPanel = new NameHeaderPanel();
+        NameHeaderPanel nameHeaderPanel = new NameHeaderPanel();
         nameHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
         nameHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setLayout(null);
 
-        JPanel attributeHeaderPanel = new AttributeHeaderPanel();
+        AttributeHeaderPanel attributeHeaderPanel = new AttributeHeaderPanel();
         attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
         attributeHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         attributeHeaderPanel.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
@@ -120,14 +120,15 @@ public class MainPanel extends JPanel {
         headerScrollPane.setPreferredSize(new java.awt.Dimension(1021, 130));
         add(headerScrollPane, java.awt.BorderLayout.NORTH);
 
-        applicationHeaderView = new IGVPanel(this);
-        applicationHeaderView.add(nameHeaderPanel);
-        applicationHeaderView.add(attributeHeaderPanel);
-        applicationHeaderView.add(headerPanelContainer);
-        headerScrollPane.setViewportView(applicationHeaderView);
+        applicationHeaderPanel = new IGVPanel(this);
+        applicationHeaderPanel.add(nameHeaderPanel);
+        applicationHeaderPanel.add(attributeHeaderPanel);
+        applicationHeaderPanel.add(headerPanelContainer);
+        headerScrollPane.setViewportView(applicationHeaderPanel);
 
         dataTrackScrollPane = new TrackPanelScrollPane();
         dataTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 349));
+
         final TrackPanel dataTrackPanel = new TrackPanel(TrackManager.DATA_PANEL_NAME, this);
         dataTrackScrollPane.setViewportView(dataTrackPanel);
         trackManager.putScrollPane(TrackManager.DATA_PANEL_NAME, dataTrackScrollPane);
@@ -289,7 +290,7 @@ public class MainPanel extends JPanel {
     public void layoutFrames() {
         synchronized (getTreeLock()) {
 
-            Insets insets = applicationHeaderView.getInsets();
+            Insets insets = applicationHeaderPanel.getInsets();
             namePanelX = insets.left;
 
             attributePanelX = namePanelX + namePanelWidth + hgap;
@@ -298,7 +299,7 @@ public class MainPanel extends JPanel {
             dataPanelX = attributePanelX + attributePanelWidth + hgap;
 
             java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
-            dataPanelWidth = applicationHeaderView.getWidth() - insets.right - dataPanelX;
+            dataPanelWidth = applicationHeaderPanel.getWidth() - insets.right - dataPanelX;
 
             if (frames.size() == 1) {
                 frames.get(0).setBounds(0, dataPanelWidth);
@@ -378,5 +379,21 @@ public class MainPanel extends JPanel {
             super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
         }
     }
+
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        g.setColor(Color.lightGray);
+        g.fill(rect);
+
+        // Header
+        int width = applicationHeaderPanel.getWidth();
+        int height = applicationHeaderPanel.getHeight();
+
+        Rectangle headerRect = new Rectangle(0, 0, width, height);
+        applicationHeaderPanel.paintOffscreen(g, headerRect);
+
+    }
+
 
 }

@@ -69,14 +69,13 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
     public static void removeDropListenerFor(TrackNamePanel panel) {
         List<DropListener> removeThese = new ArrayList();
-        for(DropListener dl : dropListeners) {
-            if(dl.panel == panel) {
-               removeThese.add(dl);
+        for (DropListener dl : dropListeners) {
+            if (dl.panel == panel) {
+                removeThese.add(dl);
             }
         }
         dropListeners.removeAll(removeThese);
     }
-
 
 
     List<GroupExtent> groupExtents = new ArrayList();
@@ -167,6 +166,10 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
         }
     }
 
+
+    public void paintOffscreen(Graphics2D g, Rectangle nameRect) {
+    }
+
     private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {
         Rectangle rect = null;
         if (visibleRect != null) {
@@ -230,7 +233,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
 
     @Override
-    protected void openPopupMenu (TrackClickEvent te) {
+    protected void openPopupMenu(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
 
         // If there is a single selected track give it a chance to handle the click
@@ -343,6 +346,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
         }
         return null;
     }
+
 
     /**
      * Mouse adapter for the track name panel.  Supports multiple selection,
@@ -480,11 +484,10 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             }
             if (!isDragging) {
 
-                if(dragStart == null) {
+                if (dragStart == null) {
                     dragStart = e.getPoint();
-                    return;                  
-                }
-                else if(e.getPoint().distance(dragStart) < 5) {
+                    return;
+                } else if (e.getPoint().distance(dragStart) < 5) {
                     return;
                 }
 

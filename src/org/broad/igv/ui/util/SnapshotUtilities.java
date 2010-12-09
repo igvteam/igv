@@ -32,6 +32,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.ui.svg.SVGGraphics;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -160,19 +162,6 @@ public class SnapshotUtilities {
         return type;
     }
 
-    public static boolean isValidSnapshotFileType(SnapshotFileType type) {
-
-        boolean isValid = false;
-
-        if (SnapshotFileType.EPS.equals(type) ||
-                SnapshotFileType.PDF.equals(type) ||
-                SnapshotFileType.SVG.equals(type) ||
-                SnapshotFileType.PNG.equals(type) ||
-                SnapshotFileType.JPEG.equals(type)) {
-            isValid = true;
-        }
-        return isValid;
-    }
 
     /**
      * Snapshot file filter
@@ -233,7 +222,6 @@ public class SnapshotUtilities {
 
     public static void doComponentSnapshot(Component component, File file, SnapshotFileType type) {
 
-
         int width = component.getWidth();
         int height = component.getHeight();
 
@@ -246,19 +234,17 @@ public class SnapshotUtilities {
             //    exportScreenShotEPS(component, file, width, height);
             //    break;
             case PNG:
+
                 exportScreenShotPNG(component, file, width, height);
                 break;
             case SVG:
                 logger.debug("Exporting svg screenshot");
-                exportScreenshotSVG(component, file, width, height);
+                exportScreenshotSVG(component, file);
                 break;
-
         }
-
-
     }
 
-    private static void exportScreenshotSVG2(Component target, File selecteddFile, int width, int height) {
+    private static void exportScreenshotSVG2(Component target, File selecteddFile) {
         PrintWriter pw = null;
         try {
             pw = new PrintWriter(new FileWriter(selecteddFile));
@@ -284,7 +270,7 @@ public class SnapshotUtilities {
     }
 
 
-    private static void exportScreenshotSVG(Component target, File selecteddFile, int width, int height) {
+    private static void exportScreenshotSVG(Component target, File selectedFile) {
         // Get a DOMImplementation.
         try {
             logger.debug("Getting dom");
@@ -304,7 +290,7 @@ public class SnapshotUtilities {
             // Finally, stream out SVG to the standard output using
             // UTF-8 encoding.
             boolean useCSS = true; // we want to use CSS style attributes
-            Writer out = new BufferedWriter(new FileWriter(selecteddFile));
+            Writer out = new BufferedWriter(new FileWriter(selectedFile));
             //logger.info("Writing output");
             svgGenerator.stream(out, useCSS);
             //logger.info("Done");
@@ -337,6 +323,39 @@ public class SnapshotUtilities {
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
         Graphics g = image.createGraphics();
         target.paintAll(g);
+
+        if (selectedFile != null) {
+
+            if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
+                String correctedFilename = selectedFile.getAbsolutePath() + ".png";
+                selectedFile = new File(correctedFilename);
+            }
+            writeImage(image, selectedFile, "png");
+        }
+    }
+
+
+
+    public static void doComponentSnapshotOffscreen(Component target, File selectedFile, SnapshotFileType type) {
+
+        if(!(target instanceof Paintable)) {
+           // TODO -- message that target does not support this
+            return;
+        }
+
+        Rectangle rect = target.getBounds();
+        // translate to (0, 0) if neccessary
+        int dx = rect.x;
+        int dy = rect.y;
+        rect.x=0;
+        rect.y=0;
+        rect.width -= dx;
+        rect.height -= dy;
+
+        Paintable paintable = (Paintable) target;
+        BufferedImage image = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_BYTE_INDEXED);
+        Graphics2D g = image.createGraphics();
+        paintable.paintOffscreen(g, rect);
 
         if (selectedFile != null) {
 

@@ -44,7 +44,7 @@ import java.util.List;
  * @author jrobinso
  * @date Sep 8, 2010
  */
-public class DataPanelContainer extends TrackPanelComponent {
+public class DataPanelContainer extends TrackPanelComponent implements Paintable {
 
     private static Logger log = Logger.getLogger(DataPanelContainer.class);
 
@@ -102,6 +102,19 @@ public class DataPanelContainer extends TrackPanelComponent {
         for (Component c : this.getComponents()) {
             if (c instanceof DataPanel) {
                 ((DataPanel) c).setCurrentTool(regionOfInterestTool);
+            }
+        }
+    }
+
+    /**
+     * Paint to an offscreen graphic, e.g. a graphic for an image or svg file.
+     *
+     * @param g
+     * @param rect
+     */
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+        for (Component c : this.getComponents()) {
+            if (c instanceof DataPanel) {
             }
         }
     }

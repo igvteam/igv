@@ -35,7 +35,9 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGVMainFrame;
+
 import static org.broad.igv.ui.IGVMainFrame.getInstance;
+
 import org.broad.igv.ui.util.Packable;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -51,7 +53,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public class AttributeHeaderPanel extends JPanel  {
+public class AttributeHeaderPanel extends JPanel implements Paintable {
 
     private int attributeCount = 0;
     final static int MAXIMUM_FONT_SIZE = 10;
@@ -65,30 +67,64 @@ public class AttributeHeaderPanel extends JPanel  {
         setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
     }
 
-    @Override
-    public void setBounds(int i, int i1, int i2, int i3) {
-        super.setBounds(i, i1, i2, i3);    //To change body of overridden methods use File | Settings | File Templates.
-    }
 
     @Override
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
 
-        final Dimension size = getSize();
-
         // Don't want to destroy the components original graphics
         // context because of the border so we need to create one
         final Graphics2D graphics2 = (Graphics2D) graphics.create();
-        graphics2.setColor(getBackground());
-        graphics2.fillRect(0, 0, getWidth(), getHeight());
-        graphics2.setColor(Color.BLACK);
 
+        final int width = getWidth();
+        final int height = getHeight();
+
+        final List<String> keys = getVisibleAttributeKeys();
+
+
+        final int count = paint(graphics2, keys, width, height);
+
+
+        for (String key : keys) {
+
+            if (attributeCount != count) {
+                addMousableRegion(key);
+            }
+        }
+
+        //if (attributeCount != count) {
+        //    attributeCount = count;
+        //    doLayout();
+        //}
+    }
+
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        final int width = rect.width;
+        final int height = rect.height;
+
+        final List<String> keys = getVisibleAttributeKeys();
+
+        paint(g, keys, width, height);
+
+    }
+
+    private List<String> getVisibleAttributeKeys() {
         final List<String> keys = AttributeManager.getInstance().getAttributeKeys();
         Set<String> hiddenKeys = AttributeManager.getInstance().getHiddenAttributes();
         keys.removeAll(hiddenKeys);
+        return keys;
+    }
 
-         // Divide the remaining space to get column widths
+
+    private int paint(Graphics2D graphics2, List<String> keys, int width, int height) {
+        graphics2.setColor(getBackground());
+        graphics2.fillRect(0, 0, width, height);
+        graphics2.setColor(Color.BLACK);
+
+        // Divide the remaining space to get column widths
         int columnWidth = getAttributeColumnWidth();
 
         // Create font and font size
@@ -110,7 +146,7 @@ public class AttributeHeaderPanel extends JPanel  {
             }
 
             // Change the origin for the text
-            AffineTransform transform = AffineTransform.getTranslateInstance(0, size.height - COLUMN_BORDER_WIDTH);
+            AffineTransform transform = AffineTransform.getTranslateInstance(0, height - COLUMN_BORDER_WIDTH);
             graphics2.transform(transform);
 
             // Now rotate text counter-clockwise 90 degrees
@@ -124,31 +160,13 @@ public class AttributeHeaderPanel extends JPanel  {
             int x = 0;
             for (String key : keys) {
                 int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
-                x = columnLeftEdge
-                        + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
+                x = columnLeftEdge  + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
                 graphics2.drawString(key, 0, x);
             }
         }
-
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-
-                for (String key : keys) {
-
-                    if (attributeCount != count) {
-                        addMousableRegion(key);
-                    }
-                }
-
-                if (attributeCount != count) {
-                    attributeCount = count;
-                    doLayout();
-                }
-            }
-        });
-
+        return count;
     }
+
 
     /**
      * Method description
@@ -158,8 +176,6 @@ public class AttributeHeaderPanel extends JPanel  {
     public int getAttributeColumnWidth() {
         return ATTRIBUTE_COLUMN_WIDTH;
     }
-
-
 
     private static class Region extends JPanel {
 

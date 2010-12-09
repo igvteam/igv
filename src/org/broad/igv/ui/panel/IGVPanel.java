@@ -32,7 +32,7 @@ import java.awt.*;
  * A panel class specific to the IGV main window.  Lays out its components in a very specific way so that
  * children (i.e. name, attribute, and data panels) from all instances align vertically
  */
-public class IGVPanel extends JPanel {
+public class IGVPanel extends JPanel implements Paintable {
 
     Logger log = Logger.getLogger(IGVPanel.class);
 
@@ -50,7 +50,6 @@ public class IGVPanel extends JPanel {
         return parent == null ? 0 : parent.getHeight();
     }
 
-
     public JScrollPane getScrollPane() {
 
         JScrollPane scollpane = null;
@@ -62,7 +61,7 @@ public class IGVPanel extends JPanel {
         return scollpane;
     }
 
-        @Override
+    @Override
     public void doLayout() {
         synchronized (getTreeLock()) {
 
@@ -78,5 +77,30 @@ public class IGVPanel extends JPanel {
             children[2].doLayout();
         }
     }
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        int h = rect.height;
+
+        Component[] children = getComponents();
+        // name panel starts at offset=0
+
+        g.translate(mainPanel.getNamePanelX(), rect.y);
+        Rectangle nameRect = new Rectangle(0, 0, mainPanel.getNamePanelWidth(), h);
+        ((Paintable) children[0]).paintOffscreen(g, nameRect);
+
+        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
+        g.translate(dx, 0);
+        Rectangle attRect = new Rectangle(0, 0, mainPanel.getAttributePanelWidth(), h);
+        ((Paintable) children[1]).paintOffscreen(g, attRect);
+
+        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
+        g.translate(dx, 0);
+        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        ((Paintable) children[2]).paintOffscreen(g, dataRect);
+
+
+    }
+
 
 }

@@ -35,10 +35,11 @@ import java.util.*;
  * @author jrobinso
  * @date Sep 10, 2010
  */
-public class HeaderPanelContainer extends JComponent {
+public class HeaderPanelContainer extends JPanel implements Paintable {
 
     private Collection<ReferenceFrame> frames = new ArrayList();
 
+    JPanel contentPanel;
 
     public HeaderPanelContainer() {
 
@@ -71,17 +72,22 @@ public class HeaderPanelContainer extends JComponent {
         //    }
         //}
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new DataPanelLayout());
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new DataPanelLayout());
         for (ReferenceFrame f : frames) {
             HeaderPanel dp = new HeaderPanel(f);
-            panel.add(dp);
+            contentPanel.add(dp);
         }
-        add(panel, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
         invalidate();
     }
 
 
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+        for(Component c : contentPanel.getComponents()) {
+            System.out.println(c.getClass().getName() + " " + c.getBounds());
+        }
+    }
 }
 
 

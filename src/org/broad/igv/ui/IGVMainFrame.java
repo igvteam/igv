@@ -1319,7 +1319,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         igvCommandBar.setGeneListMode(FrameManager.isGeneListMode());
         mainPanel.revalidate();
-        mainPanel.applicationHeaderView.revalidate();
+        mainPanel.applicationHeaderPanel.revalidate();
         mainPanel.repaint();
     }
 
@@ -1789,6 +1789,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 isExportingSnapshot = true;
                 RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(false);
                 doComponentSnapshot(target, file, type);
+                //doComponentSnapshotOffscreen(mainPanel, file, type);
 
             } finally {
                 RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(doubleBuffered);

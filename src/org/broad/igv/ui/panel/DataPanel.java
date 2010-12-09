@@ -55,7 +55,7 @@ import java.util.List;
  *
  * @author jrobinso
  */
-public class DataPanel extends JComponent {
+public class DataPanel extends JComponent implements Paintable {
 
     private static Logger log = Logger.getLogger(DataPanel.class);
 
@@ -186,7 +186,6 @@ public class DataPanel extends JComponent {
             computeMousableRegions(groups);
 
 
-
             // If there is a partial ROI in progress draw it first
             if (currentTool instanceof RegionOfInterestTool) {
                 int startLoc = ((RegionOfInterestTool) currentTool).getRoiStart();
@@ -200,6 +199,34 @@ public class DataPanel extends JComponent {
             if (IGVMainFrame.getInstance().isShowRegionsOfInterestBarsOn()) {
                 drawAllRegions(g);
             }
+
+        } finally {
+
+            if (context != null) {
+                context.dispose();
+            }
+        }
+    }
+
+    /**
+     * Paint method designed to paint to an offscreen image
+     *
+     * @param g
+     * @param rect
+     */
+
+    public void paintOffscreen(final Graphics2D g, Rectangle rect) {
+
+        RenderContext context = null;
+        try {
+
+            String genomeId = GenomeManager.getInstance().getGenomeId();
+
+            context = new RenderContext(genomeId, null, g, frame);
+            final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
+            int trackWidth = rect.width;
+            int trackHeight = rect.height;
+            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), rect);
 
         } finally {
 

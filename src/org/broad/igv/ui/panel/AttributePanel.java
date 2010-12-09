@@ -142,6 +142,11 @@ public class AttributePanel extends TrackPanelComponent implements Packable {
         }
     }
 
+
+    public void paintOffscreen(Graphics2D g, Rectangle attRect) {
+    }
+    
+
     private Color getColor(String attKey, String attValue) {
 
         if (attValue == null || attValue.length() == 0) {

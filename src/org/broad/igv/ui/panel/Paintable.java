@@ -17,29 +17,16 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.ui.panel;
-
-import com.jidesoft.swing.JideBoxLayout;
-import com.jidesoft.swing.JideButton;
-import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
 import java.awt.*;
 
 /**
- * Name header panel.  Displayed in upper left corner
- *
  * @author jrobinso
+ * @date Dec 8, 2010
  */
-public class NameHeaderPanel extends JPanel implements Paintable {
+public interface Paintable  {
 
-
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
-        g.setColor(Color.white);
-        g.fill(rect);
-    }
+    void paintOffscreen(Graphics2D g, Rectangle rect);
 }
