@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -71,6 +72,12 @@ public class BEDFileParser extends UCSCParser {
 
         BasicFeature feature = new BasicFeature(chr, start, end);
 
+        //dhmay adding.  This is a hacky way to determine whether the BED file we're reading is a
+        //splice junction BED file.
+        //todo: some refactoring that allows this hack to be removed
+        if (trackProperties.getRendererClass().isAssignableFrom(SpliceJunctionRenderer.class))
+                feature.setType(BasicFeature.FEATURE_TYPE_SPLICEJUNCTION);
+
         // The rest of the columns are optional.  Stop parsing upon encountering
         // a non-expected value
 
@@ -93,7 +100,7 @@ public class BEDFileParser extends UCSCParser {
                 // Don't log, would just slow parsing down.
                 return feature;
             }
-        }
+        }                  
 
         // Strand
         if (tokenCount > 5) {

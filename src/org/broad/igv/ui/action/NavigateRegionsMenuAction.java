@@ -57,7 +57,7 @@ public class NavigateRegionsMenuAction extends MenuAction {
         UIUtilities.invokeOnEventThread(new Runnable() {
 
             public void run() {
-                Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
+//                Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
 //                if (regions == null || regions.isEmpty())
 //                {
 //                    //todo dhmay -- I don't fully understand this call.  Clean this up.
@@ -68,8 +68,7 @@ public class NavigateRegionsMenuAction extends MenuAction {
 //                {
                     if (RegionNavigatorDialog.getActiveInstance() == null)
                     {
-                        RegionNavigatorDialog regionNavDialog = new RegionNavigatorDialog(mainFrame,
-                                regions);
+                        RegionNavigatorDialog regionNavDialog = new RegionNavigatorDialog(mainFrame);
                     }
                     RegionNavigatorDialog.getActiveInstance().setVisible(true);
 //                }

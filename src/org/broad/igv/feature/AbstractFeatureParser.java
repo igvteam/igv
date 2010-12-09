@@ -54,7 +54,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     protected int startBase = 0;
 
     /* An object to collection track properties, if specified in the feature file. */
-    private TrackProperties trackProperties = null;
+    protected TrackProperties trackProperties = null;
 
     TrackType trackType;
 

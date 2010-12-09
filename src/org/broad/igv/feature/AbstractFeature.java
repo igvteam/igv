@@ -32,15 +32,15 @@ import java.util.Map;
 abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.Feature {
 
     private static Logger log = Logger.getLogger(AbstractFeature.class);
-    private Strand strand = Strand.NONE;
-    private String chromosome;
-    private int start = -1;
-    private int end = -1;
-    private String type = "";
+    protected Strand strand = Strand.NONE;
+    protected String chromosome;
+    protected int start = -1;
+    protected int end = -1;
+    protected String type = "";
     protected Color color;
     protected String description;
-    private Map<String, String> attributes;
-    private String name = "";
+    protected Map<String, String> attributes;
+    protected String name = "";
 
     /**
      * Constructs ...

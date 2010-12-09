@@ -37,8 +37,10 @@ import javax.swing.table.*;
  *         Navigation to the start of a region is done by selecting the appropriate row.
  *         <p/>
  *         This dialog is not intended to be persistent.  To view one of these, create it.
+ *
+ * todo: tell the regions observable that this object is toast, when it goes away
  */
-public class RegionNavigatorDialog extends JDialog {
+public class RegionNavigatorDialog extends JDialog implements Observer{
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
@@ -53,7 +55,7 @@ public class RegionNavigatorDialog extends JDialog {
 
 
     private DefaultTableModel regionTableModel;
-    private List<RegionOfInterest> regions;
+//    private List<RegionOfInterest> regions;
 
     private TableRowSorter<TableModel> regionTableRowSorter;
 
@@ -64,38 +66,26 @@ public class RegionNavigatorDialog extends JDialog {
     public RegionNavigatorDialog(Frame owner) {
         super(owner);
         initComponents();
+        postInit();
     }
 
     public RegionNavigatorDialog(Dialog owner) {
         super(owner);
         initComponents();
+        postInit();
     }
 
-    public RegionNavigatorDialog(Frame owner, Collection<RegionOfInterest> regions) {
-        this(owner);
-        postInit(regions);
-    }
-
-    /**
-     * Synchronize the regionsArrayList with all regions for all chromosomes, and update UI
-     * @param regionsMap
-     */
-    public void synchRegions(Map<String, Collection<RegionOfInterest>> regionsMap)
+    public void update(Observable observable, Object object)
     {
-        List<RegionOfInterest> regionsCollection = new ArrayList<RegionOfInterest>();
-        for (Collection<RegionOfInterest> regionsForChr : regionsMap.values())
-                regionsCollection.addAll(regionsForChr);
-        synchRegions(regionsCollection);
+        synchRegions();
     }
 
     /**
      * Synchronize the regions ArrayList with the passed-in regionsCollection, and update UI
-     * @param regionsCollection
      */
-    public void synchRegions(Collection<RegionOfInterest> regionsCollection)
+    public void synchRegions()
     {
-        regions = new ArrayList<RegionOfInterest>(regionsCollection != null ? regionsCollection :
-                new ArrayList<RegionOfInterest>());
+        List<RegionOfInterest> regions = retrieveRegionsAsList();
         regionTableModel = (DefaultTableModel) regionTable.getModel();
         while (regionTableModel.getRowCount() > 0)
             regionTableModel.removeRow(0);
@@ -112,13 +102,16 @@ public class RegionNavigatorDialog extends JDialog {
         regionTableModel.fireTableDataChanged();
     }
 
+    private List<RegionOfInterest> retrieveRegionsAsList()
+    {
+        return new ArrayList<RegionOfInterest>(IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest());
+    }
+
     /**
      * Populate the table with the loaded regions
      *
-     * @param regionsCollection
      */
-    private void postInit(Collection<RegionOfInterest> regionsCollection) {
-        this.regions = new ArrayList<RegionOfInterest>(regionsCollection);
+    private void postInit() {
         regionTableModel = (DefaultTableModel) regionTable.getModel();
 
         regionTable.getSelectionModel().addListSelectionListener(new RegionTableSelectionListener());
@@ -134,12 +127,14 @@ public class RegionNavigatorDialog extends JDialog {
         activeInstance = this;
         updateChromosomeDisplayed();
 
-        synchRegions(regionsCollection);
+        synchRegions();
+
+        IGVMainFrame.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20
         //rows, and that can look ungainly for empty windows or windows with a few rows.
         //This correction is rather hacky. Minimum size of 5 rows set.
-        int newTableHeight = Math.min(regions.size()+1,5) * regionTable.getRowHeight();
+        int newTableHeight = Math.min(regionTableModel.getRowCount()+1,5) * regionTable.getRowHeight();
         //This is quite hacky -- need to find the size of the other components programmatically somehow, since
         //it will vary on different platforms
         int extraHeight = 225;
@@ -224,9 +219,14 @@ public class RegionNavigatorDialog extends JDialog {
     private class RegionTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
             int rowIdx = e.getFirstRow();
-            //range checking because this method gets called after a clear event
+
+            List<RegionOfInterest> regions = retrieveRegionsAsList();
+
+            //range checking because this method gets called after a clear event, and we don't want to
+            //try to find an updated region then
             if (rowIdx > regions.size()-1)
                 return;
+
             RegionOfInterest region = regions.get(rowIdx);
             switch (e.getColumn()) {
                 case TABLE_COLINDEX_DESC:
@@ -257,6 +257,8 @@ public class RegionNavigatorDialog extends JDialog {
     private class RegionTableSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             if (!e.getValueIsAdjusting()) {
+                List<RegionOfInterest> regions = retrieveRegionsAsList();
+
                 int[] selectedRows = regionTable.getSelectedRows();
                 if (selectedRows != null && selectedRows.length > 0
                         && regions.size() >= selectedRows.length)  //dhmay: this is hacky. Bad things can happen with clear regions
@@ -523,6 +525,7 @@ public class RegionNavigatorDialog extends JDialog {
             if (selectedRows != null && selectedRows.length > 0)
             {
                 List<RegionOfInterest> selectedRegions = new ArrayList<RegionOfInterest>();
+                List<RegionOfInterest> regions = retrieveRegionsAsList();
 
                 for (int selectedRowIndex : selectedRows)
                 {
@@ -552,7 +555,7 @@ public class RegionNavigatorDialog extends JDialog {
 
         public void actionPerformed(ActionEvent e) {
             // TODO add your code here
-            synchRegions(regions);
+            synchRegions();
         }
     }
 }

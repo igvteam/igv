@@ -36,8 +36,8 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.panel.RegionNavigatorDialog;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.ObserverForObject;
 import org.broad.tribble.Feature;
 
 import java.util.*;
@@ -69,6 +69,9 @@ public class Session {
      * Map of chromosome -> regions of interest
      */
     private Map<String, Collection<RegionOfInterest>> regionsOfInterest;
+    //An Observable that notifies observers of changes to the regions of interest.  Its
+    //setChangedAndNotify() method should be called after any regions change.
+    private ObserverForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
     private static GeneList currentGeneList;
 
@@ -77,9 +80,12 @@ public class Session {
         log.debug("New session");
 
         this.filePath = filePath;
-        regionsOfInterest = new LinkedHashMap();
-        preferences = new HashMap();
-        colorScales = new HashMap();
+        regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
+        regionsOfInterestObservable =
+                new ObserverForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);
+
+        preferences = new HashMap<String, String>();
+        colorScales = new HashMap<TrackType, ContinuousColorScale>();
         history = new History(100);
 
         boolean resetRequired = FrameManager.getFrames().size() > 1;
@@ -216,6 +222,13 @@ public class Session {
         return referenceFrame;
     }
 
+    /**
+     * WARNING! This method should never be used for update of the regions collection.
+     * If this gets abused, this method could be changed to create a new Collection so that updates
+     * have no effect on the real one.
+     * @param chr
+     * @return
+     */
     public Collection<RegionOfInterest> getRegionsOfInterest(String chr) {
         if (chr.equals(Globals.CHR_ALL)) {
             return getAllRegionsOfInterest();
@@ -239,6 +252,7 @@ public class Session {
      * it throws the RegionNavigatorDialog table rows off.
      *
      * @param rois
+     * @return whether all specified regions were found for removal
      */
     public boolean removeRegionsOfInterest(Collection<RegionOfInterest> rois) {
         String chr = FrameManager.getDefaultFrame().getChrName();
@@ -248,13 +262,10 @@ public class Session {
             for (RegionOfInterest roi : rois) {
                 result = result && roiList.remove(roi);
             }
-            //if there's a RegionNavigatorDialog around, need to update it.
-            //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
-            if (RegionNavigatorDialog.getActiveInstance() != null && chr.equals(FrameManager.getDefaultFrame().getChrName()))
-                RegionNavigatorDialog.getActiveInstance().synchRegions(
-                        getAllRegionsOfInterest());
         }
 
+        //notify all observers that regions have changed.
+        regionsOfInterestObservable.setChangedAndNotify();
         return result;
     }
 
@@ -268,23 +279,16 @@ public class Session {
         }
         roiList.add(roi);
 
-        //if there's a RegionNavigatorDialog around, need to update it.
-        //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
-        if (RegionNavigatorDialog.getActiveInstance() != null && chr.equals(FrameManager.getDefaultFrame().getChrName()))
-            RegionNavigatorDialog.getActiveInstance().synchRegions(
-                    getAllRegionsOfInterest());
+        //notify all observers that regions have changed.
+        regionsOfInterestObservable.setChangedAndNotify();
     }
 
     public void clearRegionsOfInterest() {
         if (regionsOfInterest != null) {
             regionsOfInterest.clear();
-            //if there's a RegionNavigatorDialog around, need to update it.
-            //Properly, there should be a way to register listeners to regionsOfInterest.  Todo.
-            if (RegionNavigatorDialog.getActiveInstance() != null)
-                RegionNavigatorDialog.getActiveInstance().synchRegions(
-                        getAllRegionsOfInterest());
         }
-
+        //notify all observers that regions have changed.
+        regionsOfInterestObservable.setChangedAndNotify();
     }
 
     public void setFilePath(String filePath) {
@@ -425,7 +429,13 @@ public class Session {
 
     }
 
-
+    /**
+     * Allows access to the Observable that notifies of changes to the regions of interest
+     * @return
+     */
+    public ObserverForObject<Map<String, Collection<RegionOfInterest>>> getRegionsOfInterestObservable() {
+        return regionsOfInterestObservable;
+    }
 }
 
 
