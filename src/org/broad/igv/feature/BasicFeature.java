@@ -151,6 +151,7 @@ public class BasicFeature extends AbstractFeature {
             for (Exon exon : exons) {
                 if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
                     valueString.append(exon.getValueString(position, ignored) + "<br>");
+                    return valueString.toString();
                 }
             }
         }

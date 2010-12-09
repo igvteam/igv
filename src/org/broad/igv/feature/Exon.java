@@ -194,6 +194,7 @@ public class Exon extends AbstractFeature {
         if (aaNumber > 0) {
             msg += "<br>Amino acid number: " + aaNumber;
         }
+        if (description != null) msg +=  description;
         return msg;
     }
 
