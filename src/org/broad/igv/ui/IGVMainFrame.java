@@ -2212,11 +2212,17 @@ public class IGVMainFrame extends javax.swing.JFrame {
             // NOTE: Nothing to do if chr == all
             if (!FrameManager.isGeneListMode() && searchText != null && !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
                 igvCommandBar.searchByLocus(searchText);
+
+
             }
 
             setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
             //LRUCache.clearCaches();
             doRefresh();
+
+            //If there's a RegionNavigatorDialog, kill it.
+            //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+            RegionNavigatorDialog.destroyActiveInstance();
         } catch (Exception e) {
             String message = "Failed to load session! : " + sessionPath;
             MessageUtils.showAndLogErrorMessage(IGVMainFrame.this, message, log, e);

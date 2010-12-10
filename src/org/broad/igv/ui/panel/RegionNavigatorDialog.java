@@ -59,8 +59,24 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
     private TableRowSorter<TableModel> regionTableRowSorter;
 
+    /**
+     * Return the active RegionNavigatorDialog, or null if none.
+     * @return
+     */
     public static RegionNavigatorDialog getActiveInstance() {
         return activeInstance;
+    }
+
+    /**
+     * dispose the active instance and get rid of the pointer. Return whether or not there was an
+     * active instance
+     */
+    public static boolean destroyActiveInstance() {
+        if (activeInstance == null)
+            return false;
+        activeInstance.dispose();
+        activeInstance = null;
+        return true;
     }
 
     public RegionNavigatorDialog(Frame owner) {
