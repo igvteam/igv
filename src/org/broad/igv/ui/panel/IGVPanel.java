@@ -80,24 +80,7 @@ public class IGVPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        int h = rect.height;
-
-        Component[] children = getComponents();
-        // name panel starts at offset=0
-
-        g.translate(mainPanel.getNamePanelX(), rect.y);
-        Rectangle nameRect = new Rectangle(0, 0, mainPanel.getNamePanelWidth(), h);
-        ((Paintable) children[0]).paintOffscreen(g, nameRect);
-
-        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
-        g.translate(dx, 0);
-        Rectangle attRect = new Rectangle(0, 0, mainPanel.getAttributePanelWidth(), h);
-        ((Paintable) children[1]).paintOffscreen(g, attRect);
-
-        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
-        g.translate(dx, 0);
-        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
-        ((Paintable) children[2]).paintOffscreen(g, dataRect);
+        paint(g);
 
 
     }

@@ -228,6 +228,8 @@ public class DataPanel extends JComponent implements Paintable {
             int trackHeight = rect.height;
             painter.paint(groups, context, trackWidth, trackHeight, getBackground(), rect);
 
+            super.paintBorder(g);
+
         } finally {
 
             if (context != null) {

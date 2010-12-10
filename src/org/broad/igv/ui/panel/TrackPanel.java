@@ -447,4 +447,35 @@ public class TrackPanel extends IGVPanel {
             });
         }
     }
+
+
+    @Override
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        int h = rect.height;
+
+        Component[] children = getComponents();
+        // name panel starts at offset=0
+
+        g.translate(mainPanel.getNamePanelX(), 0);
+        
+        Rectangle nameRect = new Rectangle(children[0].getBounds());
+        nameRect.height = h;
+        g.setClip(nameRect);
+        ((Paintable) children[0]).paintOffscreen(g, nameRect);
+
+        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
+        g.translate(dx, 0);
+        Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
+        g.setClip(attRect);
+        ((Paintable) children[1]).paintOffscreen(g, attRect);
+
+        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
+        g.translate(dx, 0);
+        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        g.setClip(dataRect);
+        ((Paintable) children[2]).paintOffscreen(g, dataRect);
+
+
+    }
 }

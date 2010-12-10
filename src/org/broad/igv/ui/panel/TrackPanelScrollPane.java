@@ -91,4 +91,10 @@ public class TrackPanelScrollPane extends JideScrollPane {
         trackPanel.revalidate();
         //trackPanel.doLayout();
     }
+
+    public void printOffscreen(Graphics2D g, Rectangle tspRect) {
+
+        trackPanel.paintOffscreen(g, tspRect);
+
+    }
 }

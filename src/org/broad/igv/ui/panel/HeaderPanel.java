@@ -270,7 +270,6 @@ public class HeaderPanel extends JPanel implements Transferable {
         return dragAndDropPanelDataFlavor;
     }
 
-
     //private static final Cursor droppableCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     //private static final Cursor notDroppableCursor = Cursor.getDefaultCursor();
 

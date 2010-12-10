@@ -53,7 +53,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public class AttributeHeaderPanel extends JPanel implements Paintable {
+public class AttributeHeaderPanel extends JPanel {
 
     private int attributeCount = 0;
     final static int MAXIMUM_FONT_SIZE = 10;
@@ -99,17 +99,6 @@ public class AttributeHeaderPanel extends JPanel implements Paintable {
         //}
     }
 
-
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
-
-        final int width = rect.width;
-        final int height = rect.height;
-
-        final List<String> keys = getVisibleAttributeKeys();
-
-        paint(g, keys, width, height);
-
-    }
 
     private List<String> getVisibleAttributeKeys() {
         final List<String> keys = AttributeManager.getInstance().getAttributeKeys();

@@ -52,7 +52,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class TrackNamePanel extends TrackPanelComponent implements AdjustmentListener {
+public class TrackNamePanel extends TrackPanelComponent implements AdjustmentListener, Paintable {
 
     private static Logger log = Logger.getLogger(TrackNamePanel.class);
 
@@ -109,14 +109,27 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
     public void paintComponent(Graphics g) {
 
         super.paintComponent(g);
-
         removeMousableRegions();
+        Rectangle visibleRect = getVisibleRect();
+        paintImpl(g, visibleRect);
 
+
+    }
+
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+        g.setColor(Color.white);
+        g.fill(rect);
+        paintImpl(g, rect);
+        super.paintBorder(g);
+    }
+
+
+    private void paintImpl(Graphics g, Rectangle visibleRect) {
         // Get available tracks
         Collection<TrackGroup> groups = getGroups();
         boolean isGrouped = groups.size() > 1;
 
-        Rectangle visibleRect = getVisibleRect();
 
         if (!groups.isEmpty()) {
             final Graphics2D graphics2D = (Graphics2D) g.create();
@@ -164,10 +177,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
             }
         }
-    }
-
-
-    public void paintOffscreen(Graphics2D g, Rectangle nameRect) {
     }
 
     private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {

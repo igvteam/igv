@@ -29,6 +29,8 @@ import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 
 /**
@@ -386,12 +388,76 @@ public class MainPanel extends JPanel implements Paintable {
         g.setColor(Color.lightGray);
         g.fill(rect);
 
+
         // Header
         int width = applicationHeaderPanel.getWidth();
         int height = applicationHeaderPanel.getHeight();
 
         Rectangle headerRect = new Rectangle(0, 0, width, height);
         applicationHeaderPanel.paintOffscreen(g, headerRect);
+
+        // Now loop through track panel
+        Rectangle r = centerSplitPane.getBounds();
+
+
+        g.translate(0, r.y);
+
+        // Get the components of the center pane and sort by Y position.
+        Component[] components = centerSplitPane.getComponents();
+        Arrays.sort(components, new Comparator<Component>() {
+            public int compare(Component component, Component component1) {
+                return component.getY() - component1.getY();
+            }
+        });
+
+        int dy = components[0].getY();
+        for (Component c : components) {
+
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.translate(0, dy);
+
+            if (c instanceof TrackPanelScrollPane) {
+
+                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
+                int maxPanelHeight = 10000;
+                int panelHeight = Math.min(maxPanelHeight, tsp.getDataPanel().getHeight());
+
+                Rectangle tspRect = new Rectangle(tsp.getBounds());
+                tspRect.height = panelHeight;
+
+                g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
+                tsp.printOffscreen(g2d, tspRect);
+
+                dy += tspRect.height;
+
+            } else {
+                g2d.setClip(new Rectangle(0, 0, c.getWidth(), c.getHeight()));
+                c.paint(g2d);
+                dy += c.getHeight();          
+            }
+
+            g2d.dispose();
+
+        }
+
+    }
+
+    public int getOffscreenImageHeight() {
+        int height = centerSplitPane.getBounds().y;
+        int lastY = 0;
+        for (Component c : centerSplitPane.getComponents()) {
+
+
+            if (c instanceof TrackPanelScrollPane) {
+                DataPanelContainer dp = ((TrackPanelScrollPane) c).getDataPanel();
+                height += dp.getHeight();
+            } else {
+                height += c.getHeight();
+            }
+
+        }
+        return height + 50;
 
     }
 

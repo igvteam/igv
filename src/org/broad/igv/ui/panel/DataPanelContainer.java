@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -113,10 +114,28 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
      * @param rect
      */
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        // Get the components of the sort by X position.
+        Component[] components = getComponents();
+        Arrays.sort(components, new Comparator<Component>() {
+            public int compare(Component component, Component component1) {
+                return component.getX() - component1.getX();
+            }
+        });
+
         for (Component c : this.getComponents()) {
+
             if (c instanceof DataPanel) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                Rectangle clipRect = new Rectangle(c.getBounds());
+                clipRect.height = rect.height;
+                g2d.setClip(clipRect);
+                g2d.translate(c.getX(), 0);
+                ((DataPanel) c).paintOffscreen(g2d, rect);
+
             }
         }
+        super.paintBorder(g);
     }
 
 

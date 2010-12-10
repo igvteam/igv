@@ -35,7 +35,7 @@ import java.util.*;
  * @author jrobinso
  * @date Sep 10, 2010
  */
-public class HeaderPanelContainer extends JPanel implements Paintable {
+public class HeaderPanelContainer extends JPanel {
 
     private Collection<ReferenceFrame> frames = new ArrayList();
 
@@ -82,12 +82,6 @@ public class HeaderPanelContainer extends JPanel implements Paintable {
         invalidate();
     }
 
-
-    public void paintOffscreen(Graphics2D g, Rectangle rect) {
-        for(Component c : contentPanel.getComponents()) {
-            System.out.println(c.getClass().getName() + " " + c.getBounds());
-        }
-    }
 }
 
 
@@ -109,7 +103,6 @@ class HeaderDropTargetListener implements DropTargetListener {
      */
     //private static final Cursor droppableCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     //private static final Cursor notDroppableCursor = Cursor.getDefaultCursor();
-
     public HeaderDropTargetListener(HeaderPanelContainer sheet) {
         this.rootPanel = sheet;
     }
@@ -120,16 +113,16 @@ class HeaderDropTargetListener implements DropTargetListener {
     }
 
     public void dragOver(DropTargetDragEvent dtde) {
-      //  if (!this.rootPanel.getCursor().equals(droppableCursor)) {
-      //      this.rootPanel.setCursor(droppableCursor);
-      //  }
+        //  if (!this.rootPanel.getCursor().equals(droppableCursor)) {
+        //      this.rootPanel.setCursor(droppableCursor);
+        //  }
     }
 
     public void dropActionChanged(DropTargetDragEvent dtde) {
     }
 
     public void dragExit(DropTargetEvent dte) {
-      //  this.rootPanel.setCursor(notDroppableCursor);
+        //  this.rootPanel.setCursor(notDroppableCursor);
     }
 
     /**
@@ -182,14 +175,14 @@ class HeaderDropTargetListener implements DropTargetListener {
         boolean dropAdded = false;
 
 
-        for(ReferenceFrame frame : panels) {
-             if(frame.getMidpoint() > dropXLoc && !dropAdded) {
-                 orderedPanels.add(droppedFrame);
-                 dropAdded = true;
-             }
+        for (ReferenceFrame frame : panels) {
+            if (frame.getMidpoint() > dropXLoc && !dropAdded) {
+                orderedPanels.add(droppedFrame);
+                dropAdded = true;
+            }
             orderedPanels.add(frame);
         }
-        if(!dropAdded) {
+        if (!dropAdded) {
             orderedPanels.add(droppedFrame);
         }
 

@@ -28,11 +28,13 @@ package org.broad.igv.ui.util;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.ui.svg.SVGGraphics;
 import org.w3c.dom.DOMImplementation;
@@ -90,14 +92,10 @@ public class SnapshotUtilities {
      */
     public static BufferedImage getDeviceCompatibleImage(int width, int height) {
 
-        GraphicsEnvironment graphicsEnvironment =
-                GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice screenDevice =
-                graphicsEnvironment.getDefaultScreenDevice();
-        GraphicsConfiguration graphicConfiguration =
-                screenDevice.getDefaultConfiguration();
-        BufferedImage image =
-                graphicConfiguration.createCompatibleImage(width, height);
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice screenDevice = graphicsEnvironment.getDefaultScreenDevice();
+        GraphicsConfiguration graphicConfiguration = screenDevice.getDefaultConfiguration();
+        BufferedImage image = graphicConfiguration.createCompatibleImage(width, height);
 
         return image;
     }
@@ -303,7 +301,7 @@ public class SnapshotUtilities {
     private static void exportScreenShotJPEG(Component target, File selectedFile,
                                              int width, int height) {
 
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
+        BufferedImage image = getDeviceCompatibleImage(width, height); //  new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
         Graphics g = image.createGraphics();
         target.paintAll(g);
 
@@ -320,7 +318,7 @@ public class SnapshotUtilities {
     private static void exportScreenShotPNG(Component target, File selectedFile,
                                             int width, int height) {
 
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
+        BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics g = image.createGraphics();
         target.paintAll(g);
 
@@ -335,26 +333,61 @@ public class SnapshotUtilities {
     }
 
 
-
     public static void doComponentSnapshotOffscreen(Component target, File selectedFile, SnapshotFileType type) {
 
-        if(!(target instanceof Paintable)) {
-           // TODO -- message that target does not support this
+        if (!(target instanceof MainPanel)) {
+            // TODO -- message that target does not support this
             return;
         }
 
         Rectangle rect = target.getBounds();
+
+        int height = ((MainPanel) target).getOffscreenImageHeight();
+        rect.height = height;
+
         // translate to (0, 0) if neccessary
         int dx = rect.x;
         int dy = rect.y;
-        rect.x=0;
-        rect.y=0;
+        rect.x = 0;
+        rect.y = 0;
         rect.width -= dx;
         rect.height -= dy;
 
         Paintable paintable = (Paintable) target;
-        BufferedImage image = new BufferedImage(rect.width, rect.height, BufferedImage.TYPE_BYTE_INDEXED);
+
+
+        /*
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+
+
+        // Create an instance of org.w3c.dom.Document.
+        String svgNS = "http://www.w3.org/2000/svg";
+        Document document = domImpl.createDocument(svgNS, "svg", null);
+
+
+        // Create an instance of the SVG Generator.
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        //logger.info("Painting");
+        paintable.paintOffscreen(svgGenerator, rect);
+
+        // Finally, stream out SVG to the standard output using
+        // UTF-8 encoding.
+        boolean useCSS = true; // we want to use CSS style attributes
+        try {
+            Writer out = new BufferedWriter(new FileWriter(selectedFile));
+            //logger.info("Writing output");
+
+            svgGenerator.stream(out, useCSS);
+        }
+        catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        */
+
+
+        BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
         Graphics2D g = image.createGraphics();
+
         paintable.paintOffscreen(g, rect);
 
         if (selectedFile != null) {
@@ -365,6 +398,7 @@ public class SnapshotUtilities {
             }
             writeImage(image, selectedFile, "png");
         }
+
     }
 
     private static void writeImage(BufferedImage image, File f, String type) {

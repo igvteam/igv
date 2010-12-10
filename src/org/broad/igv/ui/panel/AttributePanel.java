@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class AttributePanel extends TrackPanelComponent implements Packable {
+public class AttributePanel extends TrackPanelComponent implements Packable, Paintable {
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
@@ -69,7 +69,22 @@ public class AttributePanel extends TrackPanelComponent implements Packable {
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
+        Rectangle visibleRect = getVisibleRect();
         removeMousableRegions();
+        paintOffscreen((Graphics2D) g, visibleRect);
+
+    }
+
+
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+
+        g.setColor(Color.white);
+        g.fill(rect);
+        paintImpl(g, rect);
+        super.paintBorder(g);
+    }
+
+    public void paintImpl(Graphics2D g, Rectangle visibleRect) {
 
         List<String> keys = AttributeManager.getInstance().getAttributeKeys();
         keys.removeAll(AttributeManager.getInstance().getHiddenAttributes());
@@ -79,7 +94,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable {
         }
 
         if (keys.size() > 0) {
-            Rectangle visibleRect = getVisibleRect();
 
 
             // Get the current tracks
@@ -142,10 +156,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable {
         }
     }
 
-
-    public void paintOffscreen(Graphics2D g, Rectangle attRect) {
-    }
-    
 
     private Color getColor(String attKey, String attValue) {
 
@@ -276,7 +286,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable {
     }
 
     // Packable interface
-
 
 
     private int calculatePackWidth() {
