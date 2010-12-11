@@ -609,6 +609,16 @@ public class AlignmentRenderer implements FeatureRenderer {
                     }
                 }
                 break;
+            case SAMPLE:
+                String sample = alignment.getSample();
+                if (sample != null) {
+                    c = readGroupColors.get(sample);
+                    if (c == null) {
+                        c = ColorUtilities.randomColor(readGroupColors.size() + 1);
+                        readGroupColors.put(sample, c);
+                    }
+                }
+                break;
 
             default:
                 if (renderOptions.shadeCenters && center >= alignment.getStart() && center <= alignment.getEnd()) {
