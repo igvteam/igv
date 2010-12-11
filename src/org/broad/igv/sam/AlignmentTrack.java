@@ -61,8 +61,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION;
+        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, READ_GROUP;
     }
+
 
     public static final int MIN_ALIGNMENT_SPACING = 10;
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
@@ -802,15 +803,27 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
+        JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
+        m4.setSelected(colorByOption == ColorOption.READ_GROUP);
+        m4.addActionListener(new TrackMenuUtils.TrackActionListener() {
+            public void action() {
+                setColorOption(ColorOption.READ_GROUP);
+                refresh();
+            }
+        });
+
         item.add(m1);
         item.add(m1a);
         item.add(m2);
         item.add(m3);
+        item.add(m4);
         group.add(m1);
         group.add(m1a);
         group.add(m2);
         group.add(m3);
+        group.add(m4);
         menu.add(item);
+
     }
 
 

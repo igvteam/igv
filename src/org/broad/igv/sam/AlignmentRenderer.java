@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class AlignmentRenderer implements FeatureRenderer {
 
-    private  static Map<Character, Color> nucleotideColors;
+    private static Map<Character, Color> nucleotideColors;
     // Static because all alignment tracks are in color space, or none are
     public static boolean colorSpace;
 
@@ -60,6 +60,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static final Color negStrandColor = new Color(110, 145, 225);
     private static final Color posStrandColor = new Color(165, 35, 39);
+
+    private static HashMap<String, Color> readGroupColors = new HashMap();
+
     PreferenceManager prefs;
 
     synchronized static private void initColorMap() {
@@ -433,11 +436,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // bases are considered mismatched by definition
                 boolean misMatch =
                         isSoftClipped ||
-                        (read[idx] != '=' &&
-                                reference != null &&
-                                idx < reference.length &&
-                                reference[idx] != 0 &&
-                                reference[idx] != read[idx]);
+                                (read[idx] != '=' &&
+                                        reference != null &&
+                                        idx < reference.length &&
+                                        reference[idx] != 0 &&
+                                        reference[idx] != read[idx]);
 
                 if (misMatch || showAllBases) {
                     char c = (char) read[loc - start];
@@ -596,6 +599,17 @@ public class AlignmentRenderer implements FeatureRenderer {
                     c = posStrandColor;
                 }
                 break;
+            case READ_GROUP:
+                String rg = alignment.getReadGroup();
+                if (rg != null) {
+                    c = readGroupColors.get(rg);
+                    if (c == null) {
+                        c = ColorUtilities.randomColor(readGroupColors.size() + 1);
+                        readGroupColors.put(rg, c);
+                    }
+                }
+                break;
+
             default:
                 if (renderOptions.shadeCenters && center >= alignment.getStart() && center <= alignment.getEnd()) {
                     if (locScale < 1) {
@@ -686,7 +700,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
     public static Map<Character, Color> getNucleotideColors() {
-        if(nucleotideColors == null) {
+        if (nucleotideColors == null) {
             initColorMap();
         }
         return nucleotideColors;
