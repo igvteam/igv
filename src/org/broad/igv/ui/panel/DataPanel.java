@@ -41,9 +41,7 @@ import org.broad.igv.ui.util.UIUtilities;
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -81,8 +79,38 @@ public class DataPanel extends JComponent implements Paintable {
         setAutoscrolls(true);
         setToolTipText("Data panel");
         painter = new DataPanelPainter();
+        //add a listener that kills the tooltip when we navigate away from tne window
+        addFocusListener(new DataPanelFocusListener(this));
     }
 
+    /**
+     * This class exists entirely to tell the ToolTip to go away when the DataPanel loses focus.
+     * Without this, the tooltip stays up and annoyingly visible even if another window is on top of IGV
+     *
+     * It's also necessary to let the tooltip manager know when we get focus back.  Otherwise, the
+     * tooltip won't display until you move the mouse out of the panel and back.
+     */
+    private class DataPanelFocusListener implements FocusListener
+    {
+        protected Component cmp;
+        public DataPanelFocusListener(Component cmp)
+        {
+            this.cmp = cmp;
+        }
+        public void focusGained(FocusEvent focusEvent) {
+            //This is a bit of a hack -- if the mouse is in the panel, generate a mouseEntered event to tell
+            // the tooltipmanager that the mouse is back, since we told it earlier that it went away when it hadn't
+            if (cmp.contains(getMousePosition()))
+                ToolTipManager.sharedInstance().mouseEntered(new MouseEvent(cmp, 0, 0,0,
+                        (int)getMousePosition().getX(), (int) getMousePosition().getY(), 0,false));
+
+        }
+
+        public void focusLost(FocusEvent focusEvent) {
+            //This is a bit hacky, but it works and shouldn't cause any harm
+            ToolTipManager.sharedInstance().mouseExited(new MouseEvent(cmp, 0, 0,0,0,0,0,true));
+        }
+    }
 
     /**
      * @return the panAndZoomTool
