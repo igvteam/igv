@@ -24,6 +24,7 @@ import com.jidesoft.swing.JidePopupMenu;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -319,6 +320,22 @@ public class TrackMenuUtils {
                 Feature f = t.getFeatureAtMousePosition(te);
                 if (f != null) {
                     featurePopupMenu.addSeparator();
+
+                    // If we are over an exon, copy its sequence instead of the entire feature.
+                    if (f instanceof IGVFeature) {
+                        double position = te.getChromosomePosition();
+                        Collection<Exon> exons = ((IGVFeature) f).getExons();
+                        if (exons != null) {
+                            for (Exon exon : exons) {
+                                if (position > exon.getStart() && position < exon.getEnd()) {
+                                    f = exon;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+
                     featurePopupMenu.add(getCopyDetailsItem(f, te));
                     featurePopupMenu.add(getCopySequenceItem(f));
                 }
