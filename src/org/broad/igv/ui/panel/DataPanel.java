@@ -100,7 +100,7 @@ public class DataPanel extends JComponent implements Paintable {
         public void focusGained(FocusEvent focusEvent) {
             //This is a bit of a hack -- if the mouse is in the panel, generate a mouseEntered event to tell
             // the tooltipmanager that the mouse is back, since we told it earlier that it went away when it hadn't
-            if (cmp.contains(getMousePosition()) && getMousePosition() != null)
+            if (getMousePosition() != null && cmp.contains(getMousePosition()))
                 ToolTipManager.sharedInstance().mouseEntered(new MouseEvent(cmp, 0, 0,0,
                         (int)getMousePosition().getX(), (int) getMousePosition().getY(), 0,false));
 
