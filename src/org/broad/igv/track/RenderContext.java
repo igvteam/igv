@@ -41,13 +41,15 @@ public class RenderContext {
     private Map<Color, Graphics2D> graphicCacheByColor;
     private ReferenceFrame referenceFrame;
     private DataPanel panel;
+    private Rectangle visibleRect;
 
-    public RenderContext(String genomeId, DataPanel panel, Graphics2D graphics, ReferenceFrame referenceFrame) {
+    public RenderContext(String genomeId, DataPanel panel, Graphics2D graphics, ReferenceFrame referenceFrame, Rectangle visibleRect) {
         this.genomeId = genomeId;
         this.graphics = graphics;
         this.panel = panel;
         this.graphicCacheByColor = new HashMap();
         this.referenceFrame = referenceFrame;
+        this.visibleRect = visibleRect;
     }
 
     public Graphics2D getGraphic2DForColor(Color color) {
@@ -78,7 +80,7 @@ public class RenderContext {
     }
 
     public Rectangle getVisibleRect() {
-        return panel.getVisibleRect();
+        return visibleRect;
     }
 
     public DataPanel getPanel() {

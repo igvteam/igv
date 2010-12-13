@@ -1845,7 +1845,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     updatedPreferenceMap.containsKey(PreferenceManager.PORT_NUMBER)) {
                 CommandListener.halt();
                 if (enablePortCB.isSelected()) {
-                    CommandListener.start();
+                    int port = Integer.parseInt(updatedPreferenceMap.get(PreferenceManager.PORT_NUMBER));
+                    CommandListener.start(port);
                 }
             }
 

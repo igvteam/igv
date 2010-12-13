@@ -210,11 +210,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
-        // Command listner thread
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED)) {
-            CommandListener.start();
-        }
-
         disableGraphicAccelerators();
 
         // Create the center split pane
@@ -1738,7 +1733,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
             if (file == null) {
                 return;
             }
-            isExportingSnapshot = true;
             createSnapshotNonInteractive(target, file);
         } catch (Exception e) {
             log.error("Error creating exporting image ", e);
@@ -1748,7 +1742,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         finally {
             WaitCursorManager.removeWaitCursor(token);
             resetStatusMessage();
-            isExportingSnapshot = false;
         }
 
     }
@@ -1786,14 +1779,11 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             boolean doubleBuffered = RepaintManager.currentManager(getContentPane()).isDoubleBufferingEnabled();
             try {
-                isExportingSnapshot = true;
-                RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(false);
+                setExportingSnapshot(true);
                 doComponentSnapshot(target, file, type);
-                //doComponentSnapshotOffscreen(mainPanel, file, type);
 
             } finally {
-                RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(doubleBuffered);
-                isExportingSnapshot = false;
+                setExportingSnapshot(false);
             }
         }
 
@@ -2307,6 +2297,19 @@ public class IGVMainFrame extends javax.swing.JFrame {
         mainPanel.doLayout();
     }
 
+    public Component getMainPanel() {
+        return mainPanel;
+    }
+
+    public void setExportingSnapshot(boolean exportingSnapshot) {
+        isExportingSnapshot = exportingSnapshot;
+        if (isExportingSnapshot) {
+            RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(false);
+        } else {
+            RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(true);
+        }
+    }
+
     private class MyStatusListener implements StatusListener {
 
         public void statusChanged(StatusChangeEvent event) {
@@ -2417,12 +2420,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
      * Class to encapsulate IGV command line arguments.
      */
     static class IGVArgs {
-        String batchFile = null;
-        String sessionFile = null;
-        String dataFileString = null;
-        String locusString = null;
-        String propertyFile = null;
-        String genomeId = null;
+        private String batchFile = null;
+        private String sessionFile = null;
+        private String dataFileString = null;
+        private String locusString = null;
+        private String propertyFile = null;
+        private String genomeId = null;
+        private String port = null;
 
 
         IGVArgs(String[] args) {
@@ -2437,6 +2441,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             CmdLineParser parser = new CmdLineParser();
             CmdLineParser.Option propertyFileOption = parser.addStringOption('p', "preferences");
             CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
+            CmdLineParser.Option portOption = parser.addStringOption('p', "port");
             CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
 
             try {
@@ -2448,6 +2453,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             }
             propertyFile = (String) parser.getOptionValue(propertyFileOption);
             batchFile = (String) parser.getOptionValue(batchFileOption);
+            port = (String) parser.getOptionValue(portOption);
             genomeId = (String) parser.getOptionValue(genomeOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
@@ -2463,6 +2469,34 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 }
             }
 
+        }
+
+        public String getBatchFile() {
+            return batchFile;
+        }
+
+        public String getSessionFile() {
+            return sessionFile;
+        }
+
+        public String getDataFileString() {
+            return dataFileString;
+        }
+
+        public String getLocusString() {
+            return locusString;
+        }
+
+        public String getPropertyFile() {
+            return propertyFile;
+        }
+
+        public String getGenomeId() {
+            return genomeId;
+        }
+
+        public String getPort() {
+            return port;
         }
     }
 
@@ -2513,12 +2547,25 @@ public class IGVMainFrame extends javax.swing.JFrame {
             // Done
             closeWindow(progressBar);
 
-            if (igvArgs.propertyFile != null) {
+            if (igvArgs.getPropertyFile() != null) {
 
             }
 
+            // Start up a port listener.  Port # can be overriden with "-p" command line switch
+            boolean portEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED);
+            String portString = igvArgs.getPort();
+            if (portEnabled || portString != null) {
+                // Command listner thread
+                int port = PreferenceManager.getInstance().getAsInt(PreferenceManager.PORT_NUMBER);
+                if (portString != null) {
+                    port = Integer.parseInt(portString);
+                }
+
+                CommandListener.start(port);
+            }
+
             //If there is an argument assume it is a session file or url
-            if (igvArgs.sessionFile != null || igvArgs.dataFileString != null) {
+            if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
 
                 if (log.isDebugEnabled()) {
                     log.debug("Loadding session data");
@@ -2538,25 +2585,25 @@ public class IGVMainFrame extends javax.swing.JFrame {
                     }
 
 
-                    if (igvArgs.genomeId != null) {
-                        selectGenomeFromList(igvArgs.genomeId);
+                    if (igvArgs.getGenomeId() != null) {
+                        selectGenomeFromList(igvArgs.getGenomeId());
                     }
 
 
-                    if (igvArgs.sessionFile != null) {
-                        if (IGVHttpUtils.isURL(igvArgs.sessionFile)) {
-                            URL url = new URL(igvArgs.sessionFile);
-                            doRestoreSession(url, igvArgs.locusString);
+                    if (igvArgs.getSessionFile() != null) {
+                        if (IGVHttpUtils.isURL(igvArgs.getSessionFile())) {
+                            URL url = new URL(igvArgs.getSessionFile());
+                            doRestoreSession(url, igvArgs.getLocusString());
                         } else {
-                            File sf = new File(igvArgs.sessionFile);
+                            File sf = new File(igvArgs.getSessionFile());
                             if (sf.exists()) {
-                                doRestoreSession(sf, igvArgs.locusString);
+                                doRestoreSession(sf, igvArgs.getLocusString());
                             }
                         }
                         doRefresh();
-                    } else if (igvArgs.dataFileString != null) {
+                    } else if (igvArgs.getDataFileString() != null) {
                         // Not an xml file, assume its a list of data files
-                        String[] tokens = igvArgs.dataFileString.split(",");
+                        String[] tokens = igvArgs.getDataFileString().split(",");
                         List<ResourceLocator> locators = new ArrayList();
                         for (String p : tokens) {
                             locators.add(new ResourceLocator(p));
@@ -2565,13 +2612,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         doRefresh();
                     }
 
-                    if (igvArgs.locusString != null) {
-                        goToLocus(igvArgs.locusString);
+                    if (igvArgs.getLocusString() != null) {
+                        goToLocus(igvArgs.getLocusString());
                     }
 
 
                 } catch (Exception ex) {
-                    String tmp = igvArgs.sessionFile != null ? igvArgs.sessionFile : igvArgs.dataFileString;
+                    String tmp = igvArgs.getSessionFile() != null ? igvArgs.getSessionFile() : igvArgs.getDataFileString();
                     JOptionPane.showMessageDialog(IGVMainFrame.this, "<html>Error loading session: " + tmp + "<br>" + ex.toString());
                     log.error("Error loading session: " + tmp, ex);
                 }
@@ -2596,8 +2643,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
          */
         @Override
         protected void done() {
-            if (igvArgs.batchFile != null) {
-                LongRunningTask.submit(new BatchRunner(igvArgs.batchFile));
+            if (igvArgs.getBatchFile() != null) {
+                LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
             }
 
         }

@@ -113,8 +113,37 @@ public class AlignmentDataManager {
         this.coverageTrack = coverageTrack;
     }
 
-    public AlignmentInterval getLoadedInterval(ReferenceFrame referenceFrame) {
-        return loadedIntervalMap.get(referenceFrame.getName());
+    /**
+     * Return the loaded interval for the specified frame.  Note this can be null if the interval isn't loaded
+     * yet.
+     *
+     * @param frame
+     * @return
+     */
+    public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
+        return loadedIntervalMap.get(frame);
+    }
+
+    /**
+     * Return the loaded interval for the RenderContext.  This method forces a load if the interval isn't present.
+     * It is provided to work aroud problems with batch mode image generation.
+     *
+     * @param context
+     * @return
+     */
+    public AlignmentInterval getLoadedInterval(RenderContext context) {
+        ReferenceFrame frame = context.getReferenceFrame();
+        if (!loadedIntervalMap.containsKey(frame.getName())) {
+            // IF in batch mode force a load of the interval if its missing
+            if (Globals.batch) {
+                int start = Math.max(0, (int) context.getOrigin() - 100);
+                int end = (int) context.getEndLocation() + 100;
+                loadAlignments(context.getGenomeId(), context.getChr(), start, end, context);
+            }
+        }
+
+        return loadedIntervalMap.get(frame.getName());
+
     }
 
 
@@ -236,7 +265,7 @@ public class AlignmentDataManager {
                     }
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
-                    if(context.getPanel() != null) context.getPanel().repaint();
+                    if (context.getPanel() != null) context.getPanel().repaint();
 
                     //TODO -- this has to be done after every load in every panel.  Centralize this somewhere?  Have
                     //TODO --  a "DataLoadRunnable"?

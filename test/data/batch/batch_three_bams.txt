@@ -1,0 +1,10 @@
+new
+snapshotDirectory /Users/jrobinso/tmp
+genome hg18   '
+maxPanelHeight 200
+load http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA19240.454.bam
+load http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam
+load http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12892.SLX.bam
+goto chr13:74,775,421-74,790,846
+sort position 74775638
+snapshot

@@ -41,6 +41,7 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -59,7 +60,13 @@ public class SnapshotUtilities {
      * Class logger
      */
     private static Logger logger = Logger.getLogger(SnapshotUtilities.class);
-    final private static LinkedHashMap<SnapshotFileType, SnapshotFileFilter> SNAPSHOT_TYPE_TO_FILTER = new LinkedHashMap();
+
+    private static LinkedHashMap<SnapshotFileType, SnapshotFileFilter> SNAPSHOT_TYPE_TO_FILTER = new LinkedHashMap();
+
+    /**
+     * The maximum height in pixels for snapshots of a panel.
+     */
+    public static int MAX_PANEL_HEIGHT = 1000;
 
 
     static {
@@ -69,15 +76,12 @@ public class SnapshotUtilities {
         //    new SnapshotFileFilter(SnapshotFileType.PDF));
         //SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.EPS,
         //        new SnapshotFileFilter(SnapshotFileType.EPS));
-        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.SVG,
-                new SnapshotFileFilter(SnapshotFileType.SVG));
-        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PNG,
-                new SnapshotFileFilter(SnapshotFileType.PNG));
+        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.SVG, new SnapshotFileFilter(SnapshotFileType.SVG));
+        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PNG, new SnapshotFileFilter(SnapshotFileType.PNG));
     }
 
     public static FileFilter[] getAllSnapshotFileFilters() {
-        return SNAPSHOT_TYPE_TO_FILTER.values().toArray(
-                new FileFilter[SNAPSHOT_TYPE_TO_FILTER.size()]);
+        return SNAPSHOT_TYPE_TO_FILTER.values().toArray(new FileFilter[SNAPSHOT_TYPE_TO_FILTER.size()]);
     }
 
     public static SnapshotFileFilter getSnapshotFileFilterForType(SnapshotFileType type) {
@@ -333,70 +337,47 @@ public class SnapshotUtilities {
     }
 
 
-    public static void doComponentSnapshotOffscreen(Component target, File selectedFile, SnapshotFileType type) {
+    public static void doSnapshotOffscreen(Component target, File selectedFile) {
 
-        if (!(target instanceof MainPanel)) {
+        if (!(target instanceof Paintable)) {
             // TODO -- message that target does not support this
             return;
         }
 
-        Rectangle rect = target.getBounds();
-
-        int height = ((MainPanel) target).getOffscreenImageHeight();
-        rect.height = height;
-
-        // translate to (0, 0) if neccessary
-        int dx = rect.x;
-        int dy = rect.y;
-        rect.x = 0;
-        rect.y = 0;
-        rect.width -= dx;
-        rect.height -= dy;
-
-        Paintable paintable = (Paintable) target;
-
-
-        /*
-        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
-
-
-        // Create an instance of org.w3c.dom.Document.
-        String svgNS = "http://www.w3.org/2000/svg";
-        Document document = domImpl.createDocument(svgNS, "svg", null);
-
-
-        // Create an instance of the SVG Generator.
-        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-        //logger.info("Painting");
-        paintable.paintOffscreen(svgGenerator, rect);
-
-        // Finally, stream out SVG to the standard output using
-        // UTF-8 encoding.
-        boolean useCSS = true; // we want to use CSS style attributes
         try {
-            Writer out = new BufferedWriter(new FileWriter(selectedFile));
-            //logger.info("Writing output");
+            IGVMainFrame.getInstance().setExportingSnapshot(true);
 
-            svgGenerator.stream(out, useCSS);
-        }
-        catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        */
+            Rectangle rect = target.getBounds();
 
+            int height = ((MainPanel) target).getOffscreenImageHeight();
+            rect.height = height;
 
-        BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
-        Graphics2D g = image.createGraphics();
+            // translate to (0, 0) if neccessary
+            int dx = rect.x;
+            int dy = rect.y;
+            rect.x = 0;
+            rect.y = 0;
+            rect.width -= dx;
+            rect.height -= dy;
 
-        paintable.paintOffscreen(g, rect);
+            Paintable paintable = (Paintable) target;
 
-        if (selectedFile != null) {
+            BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
+            Graphics2D g = image.createGraphics();
 
-            if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
-                String correctedFilename = selectedFile.getAbsolutePath() + ".png";
-                selectedFile = new File(correctedFilename);
+            paintable.paintOffscreen(g, rect);
+
+            if (selectedFile != null) {
+
+                if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
+                    String correctedFilename = selectedFile.getAbsolutePath() + ".png";
+                    selectedFile = new File(correctedFilename);
+                }
+                writeImage(image, selectedFile, "png");
             }
-            writeImage(image, selectedFile, "png");
+
+        } finally {
+            IGVMainFrame.getInstance().setExportingSnapshot(false);
         }
 
     }

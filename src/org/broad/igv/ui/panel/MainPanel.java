@@ -25,6 +25,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackManager;
+import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -420,44 +421,60 @@ public class MainPanel extends JPanel implements Paintable {
 
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
 
-                int maxPanelHeight = 10000;
-                int panelHeight = Math.min(maxPanelHeight, tsp.getDataPanel().getHeight());
+                //Skip if panel has no tracks
+                if(tsp.getTrackPanel().getTracks().size() == 0) {
+                    continue;
+                }
+
+                int maxPanelHeight = SnapshotUtilities.MAX_PANEL_HEIGHT;
+                int panelHeight = Math.min(maxPanelHeight, Math.max(tsp.getVisibleRect().height, tsp.getDataPanel().getHeight()));
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
                 tspRect.height = panelHeight;
 
                 g2d.setClip(new Rectangle(0, 0, tsp.getWidth(), tspRect.height));
-                tsp.printOffscreen(g2d, tspRect);
+                tsp.paintOffscreen(g2d, tspRect);
 
                 dy += tspRect.height;
 
             } else {
                 g2d.setClip(new Rectangle(0, 0, c.getWidth(), c.getHeight()));
                 c.paint(g2d);
-                dy += c.getHeight();          
+                dy += c.getHeight();
             }
 
             g2d.dispose();
 
         }
 
+        super.paintBorder(g);
+
     }
 
     public int getOffscreenImageHeight() {
         int height = centerSplitPane.getBounds().y;
-        int lastY = 0;
         for (Component c : centerSplitPane.getComponents()) {
 
-
             if (c instanceof TrackPanelScrollPane) {
-                DataPanelContainer dp = ((TrackPanelScrollPane) c).getDataPanel();
-                height += dp.getHeight();
+
+                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+
+                int maxPanelHeight = SnapshotUtilities.MAX_PANEL_HEIGHT;
+                int panelHeight = Math.min(maxPanelHeight, Math.max(tsp.getVisibleRect().height, tsp.getDataPanel().getHeight()));
+
+                Rectangle tspRect = new Rectangle(tsp.getBounds());
+                tspRect.height = panelHeight;
+
+
+                height += tspRect.height;
             } else {
                 height += c.getHeight();
             }
 
         }
-        return height + 50;
+        // TODO Not sure why this is neccessary
+        height += 35;
+        return height;
 
     }
 

@@ -676,7 +676,7 @@ public class TrackManager {
         FeatureTrack geneFeatureTrack = new FeatureTrack("Genes", new FeatureCollectionSource(featureMap));
 
         geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(30);
+        geneFeatureTrack.setHeight(35);
         geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
         geneFeatureTrack.setColor(Color.BLUE.darker());
 

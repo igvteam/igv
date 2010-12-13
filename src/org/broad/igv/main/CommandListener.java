@@ -40,14 +40,20 @@ public class CommandListener implements Runnable {
 
     private static CommandListener listener;
 
+    private int port = -1;
+
+    private CommandListener(int port) {
+        this.port = port;
+    }
+
     public static synchronized void halt() {
         if (listener != null) {
             listener.halt = true;
         }
     }
 
-    public static synchronized void start() {
-        listener = new CommandListener();
+    public static synchronized void start(int port) {
+        listener = new CommandListener(port);
         Thread listenerThread = new Thread(listener);
         listenerThread.start();
     }
@@ -56,7 +62,6 @@ public class CommandListener implements Runnable {
 
     public void run() {
 
-        int port = PreferenceManager.getInstance().getAsInt(PreferenceManager.PORT_NUMBER);
         CommandExecutor cmdExe = new CommandExecutor();
 
         ServerSocket serverSocket = null;

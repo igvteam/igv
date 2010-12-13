@@ -192,7 +192,7 @@ public class FeatureTrack extends AbstractTrack {
         if (showFeatures) {
 
             List<Feature> allFeatures = getAllFeatureAt(chr, position, y, frame);
-            if(allFeatures == null) {
+            if (allFeatures == null) {
                 return "";
             }
 
@@ -210,15 +210,15 @@ public class FeatureTrack extends AbstractTrack {
                     buf.append(vs);
                     firstFeature = false;
 
-                    if(n > maxNumber) {
+                    if (n > maxNumber) {
                         buf.append("...");
                         break;
                     }
                 }
                 n++;
             }
-            if(!firstFeature) buf.append("<br>--------------<br>");
-            
+            if (!firstFeature) buf.append("<br>--------------<br>");
+
             return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
@@ -558,15 +558,12 @@ public class FeatureTrack extends AbstractTrack {
 
             loadFeatures(chr, start, end, context);
 
-            if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
-                return;
-            }
-
-
         }
 
 
-        renderFeatureImpl(context, inputRect, packedFeatures);
+        if (IGVMainFrame.getInstance().isExportingSnapshot()) {
+            renderFeatureImpl(context, inputRect, packedFeatures);
+        }
 
 
     }
@@ -639,7 +636,7 @@ public class FeatureTrack extends AbstractTrack {
                     }
 
                     IGVMainFrame.getInstance().layoutMainPanel();
-                    if(context.getPanel() != null) context.getPanel().repaint();
+                    if (context.getPanel() != null) context.getPanel().repaint();
                 } catch (Throwable e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.

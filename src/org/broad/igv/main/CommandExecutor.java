@@ -33,6 +33,7 @@ import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
 
 import java.io.File;
@@ -44,6 +45,8 @@ import java.util.List;
 public class CommandExecutor {
 
     private static Logger log = Logger.getLogger(CommandExecutor.class);
+
+    private  File snapshotDirectory;
 
 
     private List<String> getArgs(String[] tokens) {
@@ -82,7 +85,7 @@ public class CommandExecutor {
 
                 } else if (cmd.equals("snapshot")) {
                     String filename = param1;
-                    MacroSnapshotAction.doSnapshot(filename);
+                    createSnapshot(filename);
 
                 } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
                     result = load(param1);
@@ -102,7 +105,9 @@ public class CommandExecutor {
                     expand(trackName);
                 } else if (cmd.equals("tweakdivider")) {
                     IGVMainFrame.getInstance().tweakPanelDivider();
-                } else if (cmd.equals("exit")) {
+                } else if (cmd.equals("maxpanelheight" )&& param1 != null) {
+                    return setMaxPanelHeight(param1);
+                }else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
                     log.error("UNKOWN COMMAND: " + command);
@@ -128,6 +133,17 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
+    }
+
+    private String setMaxPanelHeight(String param1) {
+        try {
+            Integer h = Integer.parseInt(param1.trim());
+            SnapshotUtilities.MAX_PANEL_HEIGHT = h;
+            return "OK";
+        }
+        catch(NumberFormatException e) {
+            return "ERROR - max panel height value ('" + param1 + ".) must be a number";            
+        }
     }
 
     private String genome(String param1) {
@@ -167,7 +183,7 @@ public class CommandExecutor {
         String result;
         File parentDir = new File(param1);
         if (parentDir.exists()) {
-            MacroSnapshotAction.setOutputDirectory(param1);
+            snapshotDirectory = parentDir;
             result = "OK";
         } else {
             result = "ERROR: directory: " + param1 + " does not exist";
@@ -221,10 +237,10 @@ public class CommandExecutor {
             Double location = null;
             if (param3 != null) {
                 try {
-                    location = new Double(param3);
+                    location = new Double(param3.replace(",", ""));
                 }
                 catch (NumberFormatException e) {
-                    log.info("Unexpected sort location argument: " + param3);
+                    log.info("Unexpected sort location argument (expected number): " + param3);
                 }
             }
             if (location == null) {
@@ -294,6 +310,20 @@ public class CommandExecutor {
 
 
         return "OK";
+    }
+
+    private  void createSnapshot(String filename) {
+        IGVMainFrame mainFrame = IGVMainFrame.getInstance();
+
+        if (filename == null) {
+            String locus = FrameManager.getDefaultFrame().getCurrentLocusString();
+            filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
+        }
+
+        File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
+        log.info("Snapshot: " + filename);
+        
+        SnapshotUtilities.doSnapshotOffscreen(mainFrame.getMainPanel(), file);
     }
 
     private static RegionScoreType getRegionSortOption(String str) {

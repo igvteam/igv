@@ -181,7 +181,7 @@ public class DataPanel extends JComponent implements Paintable {
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
             String genomeId = GenomeManager.getInstance().getGenomeId();
 
-            context = new RenderContext(genomeId, this, graphics2D, frame);
+            context = new RenderContext(genomeId, this, graphics2D, frame, this.getVisibleRect());
 
             if (IS_MAC) {
                 this.applyMacPerformanceHints((Graphics2D) g);
@@ -250,11 +250,11 @@ public class DataPanel extends JComponent implements Paintable {
 
             String genomeId = GenomeManager.getInstance().getGenomeId();
 
-            context = new RenderContext(genomeId, null, g, frame);
+            context = new RenderContext(genomeId, null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
-            int trackWidth = rect.width;
-            int trackHeight = rect.height;
-            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), rect);
+            int width = rect.width;
+            int height = rect.height;
+            painter.paint(groups, context, width, height, getBackground(), rect);
 
             super.paintBorder(g);
 

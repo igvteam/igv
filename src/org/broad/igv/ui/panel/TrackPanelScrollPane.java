@@ -32,7 +32,7 @@ import java.awt.*;
 /**
  * @author jrobinso
  */
-public class TrackPanelScrollPane extends JideScrollPane {
+public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
 
     private static Logger log = Logger.getLogger(TrackPanelScrollPane.class);
 
@@ -92,9 +92,8 @@ public class TrackPanelScrollPane extends JideScrollPane {
         //trackPanel.doLayout();
     }
 
-    public void printOffscreen(Graphics2D g, Rectangle tspRect) {
+    public void paintOffscreen(Graphics2D g, Rectangle tspRect) {
 
         trackPanel.paintOffscreen(g, tspRect);
-
     }
 }
