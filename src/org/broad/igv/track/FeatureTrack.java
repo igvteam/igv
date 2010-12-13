@@ -557,13 +557,16 @@ public class FeatureTrack extends AbstractTrack {
             featuresLoading = true;
 
             loadFeatures(chr, start, end, context);
+            
+            if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
+                return;
+            }
+
 
         }
 
 
-        if (IGVMainFrame.getInstance().isExportingSnapshot()) {
-            renderFeatureImpl(context, inputRect, packedFeatures);
-        }
+        renderFeatureImpl(context, inputRect, packedFeatures);
 
 
     }
