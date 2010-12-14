@@ -38,6 +38,7 @@ import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.lists.GeneListInputDialog;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.main.BatchRunner;
 import org.broad.igv.tools.ui.CoverageGui;

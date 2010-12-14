@@ -21,7 +21,7 @@
  * Created by JFormDesigner on Fri Sep 17 11:22:26 EDT 2010
  */
 
-package org.broad.igv.ui.panel;
+package org.broad.igv.lists;
 
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
@@ -45,10 +45,32 @@ public class GeneListInputDialog extends JDialog {
         initComponents();
     }
 
-    public GeneListInputDialog(Dialog owner) {
+    public GeneListInputDialog(Dialog owner, GeneList geneList) {
         super(owner);
         initComponents();
+        listNameField.setText(geneList.getName());
+
+        StringBuffer buf = new StringBuffer();
+        for (String gene : geneList.getLoci()) {
+            buf.append(gene);
+            buf.append("\n");
+        }
+        genesField.setText(buf.toString());
     }
+
+
+    private void parseGenes(String text) {
+        genes = text.trim().split("\\s+");
+    }
+
+    public String[] getGenes() {
+        return genes;
+    }
+
+    public String getGeneListName() {
+        return listNameField.getText();
+    }
+
 
     private void okButtonActionPerformed(ActionEvent e) {
         if (listNameField.getText().length() == 0) {
@@ -56,12 +78,12 @@ public class GeneListInputDialog extends JDialog {
             genes = null;
         } else {
             parseGenes(genesField.getText());
-            if(genes.length == 0) {
+            if (genes.length == 0) {
                 MessageUtils.showMessage("Lists must contain at least 1 locus");
                 genes = null;
             }
         }
-        if(genes != null) {
+        if (genes != null) {
             saveGeneList();
         }
         setVisible(false);
@@ -101,11 +123,11 @@ public class GeneListInputDialog extends JDialog {
                 contentPanel.setLayout(null);
 
                 //---- label1 ----
-                label1.setText("Gene list name: ");
+                label1.setText("Name: ");
                 contentPanel.add(label1);
                 label1.setBounds(new Rectangle(new Point(10, 21), label1.getPreferredSize()));
                 contentPanel.add(listNameField);
-                listNameField.setBounds(120, 15, 315, listNameField.getPreferredSize().height);
+                listNameField.setBounds(55, 15, 380, listNameField.getPreferredSize().height);
 
                 //---- label2 ----
                 label2.setText("Enter or paste gene list below");
@@ -117,7 +139,7 @@ public class GeneListInputDialog extends JDialog {
                     scrollPane1.setViewportView(genesField);
                 }
                 contentPanel.add(scrollPane1);
-                scrollPane1.setBounds(10, 100, 425, 250);
+                scrollPane1.setBounds(10, 100, 425, 355);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -172,17 +194,6 @@ public class GeneListInputDialog extends JDialog {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
-    private void parseGenes(String text) {
-        genes = text.trim().split("\\s+");
-    }
-
-    public String[] getGenes() {
-        return genes;
-    }
-
-    public String getGeneListName() {
-        return listNameField.getText();
-    }
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;

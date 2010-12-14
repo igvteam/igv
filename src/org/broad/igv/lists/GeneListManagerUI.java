@@ -33,6 +33,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+import com.jidesoft.swing.*;
+
 /**
  * @author Stan Diamond
  */
@@ -40,15 +42,13 @@ public class GeneListManagerUI extends JDialog {
 
     ListListModel listModel;
     GeneListModel geneListModel;
+    Map<String, GeneList> geneLists;
 
     public GeneListManagerUI(Frame owner) {
         super(owner);
         initComponents();
-    }
 
-    public GeneListManagerUI(Dialog owner) {
-        super(owner);
-        initComponents();
+        geneLists = GeneListManager.getGeneLists();
 
         groups.setModel(new AbstractListModel() {
             String[] values = {
@@ -67,7 +67,7 @@ public class GeneListManagerUI extends JDialog {
         listModel = new ListListModel();
         lists.setModel(listModel);
 
-        geneListModel = new GeneListModel(null);
+        geneListModel = new GeneListModel();
         loci.setModel(geneListModel);
     }
 
@@ -77,11 +77,15 @@ public class GeneListManagerUI extends JDialog {
     }
 
     private void listsValueChanged(ListSelectionEvent e) {
-        String listName = lists.getSelectedValue().toString();
-        GeneList gl = listModel.getGeneList(listName);
-        geneListModel = new GeneListModel(gl);
-        loci.setModel(geneListModel);
-        loci.updateUI();
+        String listName = (String) lists.getSelectedValue();
+        if (listName == null) {
+            geneListModel.clear();
+        } else {
+            GeneList gl = listModel.getGeneList(listName);
+            geneListModel.setGeneList(gl);
+            loci.setModel(geneListModel);
+            loci.updateUI();
+        }
     }
 
     private void listLabelMouseClicked(MouseEvent e) {
@@ -90,22 +94,31 @@ public class GeneListManagerUI extends JDialog {
     }
 
     private void searchBoxKeyReleased(KeyEvent e) {
+
         listModel.filter();
+        lists.clearSelection();
         lists.updateUI();
+        loci.updateUI();
+    }
+
+
+    private void editButtonActionPerformed(ActionEvent e) {
+
+        String selection = (String) lists.getSelectedValue();
+        if (selection != null) {
+            GeneList geneList = geneLists.get(selection);
+            GeneListInputDialog dlg = new GeneListInputDialog(this, geneList);
+            dlg.setVisible(true);
+        }
     }
 
 
     class ListListModel extends AbstractListModel {
 
         boolean sortAscending;
-
-        ArrayList<String> listNames;
         ArrayList<String> filteredNames;
-        Map<String, GeneList> geneLists;
 
         ListListModel() {
-            geneLists = GeneListManager.getGeneLists();
-            listNames = new ArrayList(geneLists.size());
             filteredNames = new ArrayList(geneLists.size());
             filter();
         }
@@ -118,13 +131,12 @@ public class GeneListManagerUI extends JDialog {
             return filteredNames.get(i);
         }
 
+        public int getIndexFor(String str) {
+            return filteredNames.indexOf(str);
+        }
+
         void sort() {
-            // Its wasteful doing this sort separately for each list, but convenient
-            Collections.sort(listNames, new Comparator<String>() {
-                public int compare(String s, String s1) {
-                    return sortAscending ? s.compareTo(s1) : s1.compareTo(s);
-                }
-            });
+
             Collections.sort(filteredNames, new Comparator<String>() {
                 public int compare(String s, String s1) {
                     return sortAscending ? s.compareTo(s1) : s1.compareTo(s);
@@ -144,8 +156,6 @@ public class GeneListManagerUI extends JDialog {
                 GeneList gl = entry.getValue();
 
                 if (gl != null) {
-                    //TODO -- why is listNames even needed ?
-                    listNames.add(name);
                     if (gl != null && isPassFilter(gl)) {
                         filteredNames.add(name);
                     }
@@ -158,12 +168,12 @@ public class GeneListManagerUI extends JDialog {
             if (filterString != null && filterString.trim().length() > 0) {
                 String tmp = filterString.trim().toLowerCase();
 
-                if(geneList.getName().toLowerCase().contains(tmp)) {
+                if (geneList.getName().toLowerCase().contains(tmp)) {
                     return true;
                 }
 
-                for(String gene : geneList.getLoci()) {
-                    if(gene.toLowerCase().contains(tmp)) {
+                for (String gene : geneList.getLoci()) {
+                    if (gene.toLowerCase().contains(tmp)) {
                         return true;
                     }
                 }
@@ -178,13 +188,15 @@ public class GeneListManagerUI extends JDialog {
 
     class GeneListModel extends AbstractListModel {
 
-        boolean sortAscending;
-
         java.util.List<String> genes;
-        Map<String, GeneList> geneLists;
 
-        GeneListModel(GeneList geneList) {
-            genes = geneList == null ? Collections.<String>emptyList() : geneList.getLoci();
+        GeneListModel() {
+            genes = new ArrayList();
+        }
+
+        void setGeneList(GeneList geneList) {
+
+            genes = geneList == null ? new ArrayList() : geneList.getLoci();
         }
 
         public int getSize() {
@@ -195,13 +207,8 @@ public class GeneListManagerUI extends JDialog {
             return genes.get(i);
         }
 
-        void sort() {
-            Collections.sort(genes, new Comparator<String>() {
-                public int compare(String s, String s1) {
-                    return sortAscending ? s.compareTo(s1) : s1.compareTo(s);
-                }
-            });
-            sortAscending = !sortAscending;
+        public void clear() {
+            genes.clear();
         }
     }
 
@@ -210,25 +217,34 @@ public class GeneListManagerUI extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
+        panel2 = new JPanel();
+        panel1 = new JPanel();
+        panel6 = new JPanel();
+        label1 = new JLabel();
+        searchBox = new JTextField();
         splitPane2 = new JSplitPane();
         splitPane1 = new JSplitPane();
         panel3 = new JPanel();
         label3 = new JLabel();
         scrollPane1 = new JScrollPane();
         groups = new JList();
+        panel7 = new JPanel();
+        addGroupButton = new JideButton();
         panel4 = new JPanel();
         listLabel = new JLabel();
         scrollPane2 = new JScrollPane();
         lists = new JList();
+        panel8 = new JPanel();
+        jideButton2 = new JideButton();
+        editButton = new JideButton();
         panel5 = new JPanel();
         label4 = new JLabel();
         scrollPane3 = new JScrollPane();
         loci = new JList();
+        panel9 = new JPanel();
+        jideButton4 = new JideButton();
         buttonBar = new JPanel();
         okButton = new JButton();
-        panel2 = new JPanel();
-        label1 = new JLabel();
-        searchBox = new JTextField();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -241,7 +257,47 @@ public class GeneListManagerUI extends JDialog {
 
             //======== contentPanel ========
             {
+                contentPanel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
                 contentPanel.setLayout(new BorderLayout());
+
+                //======== panel2 ========
+                {
+                    panel2.setBackground(new Color(204, 204, 204));
+                    panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+
+                    //======== panel1 ========
+                    {
+                        panel1.setBorder(new EmptyBorder(5, 5, 5, 0));
+                        panel1.setBackground(new Color(204, 204, 204));
+                        panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+
+                        //======== panel6 ========
+                        {
+                            panel6.setMinimumSize(new Dimension(400, 0));
+                            panel6.setPreferredSize(new Dimension(400, 0));
+                            panel6.setOpaque(false);
+                            panel6.setLayout(null);
+                        }
+                        panel1.add(panel6);
+
+                        //---- label1 ----
+                        label1.setText("Search");
+                        label1.setBorder(new EmptyBorder(0, 0, 0, 10));
+                        panel1.add(label1);
+
+                        //---- searchBox ----
+                        searchBox.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                        searchBox.addKeyListener(new KeyAdapter() {
+                            @Override
+                            public void keyReleased(KeyEvent e) {
+                                searchBoxKeyReleased(e);
+                            }
+                        });
+                        panel1.add(searchBox);
+                    }
+                    panel2.add(panel1);
+                }
+                contentPanel.add(panel2, BorderLayout.NORTH);
 
                 //======== splitPane2 ========
                 {
@@ -255,7 +311,7 @@ public class GeneListManagerUI extends JDialog {
 
                         //======== panel3 ========
                         {
-                            panel3.setBorder(new LineBorder(Color.black));
+                            panel3.setBorder(LineBorder.createBlackLineBorder());
                             panel3.setLayout(new BorderLayout());
 
                             //---- label3 ----
@@ -282,12 +338,22 @@ public class GeneListManagerUI extends JDialog {
                                 scrollPane1.setViewportView(groups);
                             }
                             panel3.add(scrollPane1, BorderLayout.CENTER);
+
+                            //======== panel7 ========
+                            {
+                                panel7.setLayout(new BoxLayout(panel7, BoxLayout.X_AXIS));
+
+                                //---- addGroupButton ----
+                                addGroupButton.setText("+");
+                                panel7.add(addGroupButton);
+                            }
+                            panel3.add(panel7, BorderLayout.SOUTH);
                         }
                         splitPane1.setLeftComponent(panel3);
 
                         //======== panel4 ========
                         {
-                            panel4.setBorder(new LineBorder(Color.black));
+                            panel4.setBorder(LineBorder.createBlackLineBorder());
                             panel4.setLayout(new BorderLayout());
 
                             //---- listLabel ----
@@ -313,6 +379,25 @@ public class GeneListManagerUI extends JDialog {
                                 scrollPane2.setViewportView(lists);
                             }
                             panel4.add(scrollPane2, BorderLayout.CENTER);
+
+                            //======== panel8 ========
+                            {
+                                panel8.setLayout(new BoxLayout(panel8, BoxLayout.X_AXIS));
+
+                                //---- jideButton2 ----
+                                jideButton2.setText("+");
+                                panel8.add(jideButton2);
+
+                                //---- editButton ----
+                                editButton.setText("Edit");
+                                editButton.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        editButtonActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(editButton);
+                            }
+                            panel4.add(panel8, BorderLayout.PAGE_END);
                         }
                         splitPane1.setRightComponent(panel4);
                     }
@@ -320,7 +405,7 @@ public class GeneListManagerUI extends JDialog {
 
                     //======== panel5 ========
                     {
-                        panel5.setBorder(new LineBorder(Color.black));
+                        panel5.setBorder(LineBorder.createBlackLineBorder());
                         panel5.setLayout(new BorderLayout());
 
                         //---- label4 ----
@@ -332,6 +417,16 @@ public class GeneListManagerUI extends JDialog {
                             scrollPane3.setViewportView(loci);
                         }
                         panel5.add(scrollPane3, BorderLayout.CENTER);
+
+                        //======== panel9 ========
+                        {
+                            panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
+
+                            //---- jideButton4 ----
+                            jideButton4.setText(" ");
+                            panel9.add(jideButton4);
+                        }
+                        panel5.add(panel9, BorderLayout.SOUTH);
                     }
                     splitPane2.setRightComponent(panel5);
                 }
@@ -353,42 +448,6 @@ public class GeneListManagerUI extends JDialog {
                     new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
-
-            //======== panel2 ========
-            {
-                panel2.setBackground(new Color(204, 204, 204));
-                panel2.setLayout(null);
-
-                //---- label1 ----
-                label1.setText("Search");
-                panel2.add(label1);
-                label1.setBounds(370, 1, 55, 21);
-
-                //---- searchBox ----
-                searchBox.addKeyListener(new KeyAdapter() {
-                    @Override
-                    public void keyReleased(KeyEvent e) {
-                        searchBoxKeyReleased(e);
-                    }
-                });
-                panel2.add(searchBox);
-                searchBox.setBounds(420, 0, 265, searchBox.getPreferredSize().height);
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < panel2.getComponentCount(); i++) {
-                        Rectangle bounds = panel2.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                    }
-                    Insets insets = panel2.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    panel2.setMinimumSize(preferredSize);
-                    panel2.setPreferredSize(preferredSize);
-                }
-            }
-            dialogPane.add(panel2, BorderLayout.NORTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
         setSize(715, 575);
@@ -400,29 +459,38 @@ public class GeneListManagerUI extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
+    private JPanel panel2;
+    private JPanel panel1;
+    private JPanel panel6;
+    private JLabel label1;
+    private JTextField searchBox;
     private JSplitPane splitPane2;
     private JSplitPane splitPane1;
     private JPanel panel3;
     private JLabel label3;
     private JScrollPane scrollPane1;
     private JList groups;
+    private JPanel panel7;
+    private JideButton addGroupButton;
     private JPanel panel4;
     private JLabel listLabel;
     private JScrollPane scrollPane2;
     private JList lists;
+    private JPanel panel8;
+    private JideButton jideButton2;
+    private JideButton editButton;
     private JPanel panel5;
     private JLabel label4;
     private JScrollPane scrollPane3;
     private JList loci;
+    private JPanel panel9;
+    private JideButton jideButton4;
     private JPanel buttonBar;
     private JButton okButton;
-    private JPanel panel2;
-    private JLabel label1;
-    private JTextField searchBox;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
     public static void main(String[] args) {
-        (new GeneListManagerUI((Dialog) null)).setVisible(true);
+        (new GeneListManagerUI(null)).setVisible(true);
     }
 }
