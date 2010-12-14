@@ -359,7 +359,7 @@ public class GFFParser implements FeatureParser {
 
             // Create and add IGV genes
             for (GFF3Transcript transcript : transcriptCache.values()) {
-                BasicFeature igvGene = transcript.createIGVGene();
+                BasicFeature igvGene = transcript.createTranscript();
                 if (igvGene != null) {
                     features.add(igvGene);
                 }
@@ -578,11 +578,11 @@ public class GFFParser implements FeatureParser {
         }
 
         /**
-         * Create an IGV "gene (transcript)" from a GFF mRNA (transcript). "
+         * Create a transcript from its constituitive parts. "
          *
          * @return
          */
-        BasicFeature createIGVGene() {
+        BasicFeature createTranscript() {
 
             Strand strand = Strand.NONE;
             String name = null;
@@ -696,7 +696,7 @@ public class GFFParser implements FeatureParser {
 
     class GFF2Helper implements Helper {
 
-        String[] idFields = {"systematic_id", "ID", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
+        String[] idFields = {"systematic_id", "ID", "transcript_id", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
 
 
         public void setUrlDecoding(boolean b) {
