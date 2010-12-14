@@ -112,6 +112,10 @@ public class GeneListManagerUI extends JDialog {
         }
     }
 
+    private void closeButtonActionPerformed(ActionEvent e) {
+        setVisible(false);
+    }
+
 
     class ListListModel extends AbstractListModel {
 
@@ -244,9 +248,10 @@ public class GeneListManagerUI extends JDialog {
         panel9 = new JPanel();
         jideButton4 = new JideButton();
         buttonBar = new JPanel();
-        okButton = new JButton();
+        closeButton = new JButton();
 
         //======== this ========
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -441,9 +446,14 @@ public class GeneListManagerUI extends JDialog {
                 ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80};
                 ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0};
 
-                //---- okButton ----
-                okButton.setText("OK");
-                buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                //---- closeButton ----
+                closeButton.setText("Close");
+                closeButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        closeButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
                     GridBagConstraints.CENTER, GridBagConstraints.BOTH,
                     new Insets(0, 0, 0, 0), 0, 0));
             }
@@ -486,7 +496,7 @@ public class GeneListManagerUI extends JDialog {
     private JPanel panel9;
     private JideButton jideButton4;
     private JPanel buttonBar;
-    private JButton okButton;
+    private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
