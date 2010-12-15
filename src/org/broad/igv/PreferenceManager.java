@@ -33,6 +33,7 @@ import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.ui.util.ColorTable;
+import org.broad.igv.util.IGVHttpUtils;
 
 import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
@@ -320,7 +321,7 @@ public class PreferenceManager implements PropertyManager {
 
     public void putAll(Map<String, String> updatedPrefs) {
         for (Map.Entry<String, String> entry : updatedPrefs.entrySet()) {
-            if (entry.getValue() == null) {
+            if (entry.getValue() == null || entry.getValue().trim().length() == 0) {
                 remove(entry.getKey());
 
             } else {
@@ -794,6 +795,21 @@ public class PreferenceManager implements PropertyManager {
         }
 
         return colorTable;
+    }
+
+
+    /**
+     * Immediately clear all proxy settings.
+     */
+    public void clearProxySettings() {
+
+        remove(PreferenceManager.USE_PROXY);
+        remove(PreferenceManager.PROXY_HOST);
+        remove(PreferenceManager.PROXY_PORT);
+        remove(PreferenceManager.PROXY_AUTHENTICATE);
+        remove(PreferenceManager.PROXY_USER);
+        remove(PreferenceManager.PROXY_PW);
+        IGVHttpUtils.updateProxySettings();
     }
 
 

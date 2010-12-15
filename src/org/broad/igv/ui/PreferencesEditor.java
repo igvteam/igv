@@ -182,7 +182,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jPanel9 = new JPanel();
         useByteRangeCB = new JCheckBox();
         jLabel25 = new JLabel();
-        jPanel14 = new JPanel();
+        proxyPanel = new JPanel();
         jPanel15 = new JPanel();
         jPanel16 = new JPanel();
         proxyUsernameField = new JTextField();
@@ -196,6 +196,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jLabel27 = new JLabel();
         jLabel23 = new JLabel();
         useProxyCB = new JCheckBox();
+        label3 = new JLabel();
+        clearProxySettingsButton = new JButton();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -1586,8 +1588,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
             tabbedPane.addTab("Advanced", advancedPanel);
 
 
-            //======== jPanel14 ========
+            //======== proxyPanel ========
             {
+                proxyPanel.setLayout(new BoxLayout(proxyPanel, BoxLayout.X_AXIS));
 
                 //======== jPanel15 ========
                 {
@@ -1651,7 +1654,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         .add(jPanel16Layout.createSequentialGroup()
                                             .addContainerGap()
                                             .add(authenticateProxyCB)))
-                                    .addContainerGap(219, Short.MAX_VALUE))
+                                    .addContainerGap(381, Short.MAX_VALUE))
                         );
                         jPanel16Layout.setVerticalGroup(
                             jPanel16Layout.createParallelGroup()
@@ -1666,7 +1669,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
                                         .add(jLabel29)
                                         .add(proxyPasswordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addContainerGap(70, Short.MAX_VALUE))
                         );
                     }
 
@@ -1752,49 +1755,53 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         );
                     }
 
+                    //---- label3 ----
+                    label3.setText("<html>Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.");
+
+                    //---- clearProxySettingsButton ----
+                    clearProxySettingsButton.setText("Clear All");
+                    clearProxySettingsButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            clearProxySettingsButtonActionPerformed(e);
+                        }
+                    });
+
                     GroupLayout jPanel15Layout = new GroupLayout(jPanel15);
                     jPanel15.setLayout(jPanel15Layout);
                     jPanel15Layout.setHorizontalGroup(
                         jPanel15Layout.createParallelGroup()
                             .add(jPanel15Layout.createSequentialGroup()
-                                .addContainerGap()
                                 .add(jPanel15Layout.createParallelGroup()
                                     .add(jPanel15Layout.createSequentialGroup()
-                                        .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                        .addContainerGap())
+                                        .add(22, 22, 22)
+                                        .add(label3, GroupLayout.PREFERRED_SIZE, 630, GroupLayout.PREFERRED_SIZE))
                                     .add(jPanel15Layout.createSequentialGroup()
-                                        .add(jPanel16, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .add(33, 33, 33))))
+                                        .addContainerGap()
+                                        .add(jPanel15Layout.createParallelGroup()
+                                            .add(jPanel16, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                                    .add(jPanel15Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .add(clearProxySettingsButton)))
+                                .addContainerGap())
                     );
                     jPanel15Layout.setVerticalGroup(
                         jPanel15Layout.createParallelGroup()
                             .add(jPanel15Layout.createSequentialGroup()
-                                .add(16, 16, 16)
+                                .addContainerGap()
+                                .add(label3, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED)
                                 .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .add(18, 18, 18)
-                                .add(jPanel16, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(39, 39, 39))
+                                .add(jPanel16, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .add(18, 18, 18)
+                                .add(clearProxySettingsButton)
+                                .addContainerGap(50, Short.MAX_VALUE))
                     );
                 }
-
-                GroupLayout jPanel14Layout = new GroupLayout(jPanel14);
-                jPanel14.setLayout(jPanel14Layout);
-                jPanel14Layout.setHorizontalGroup(
-                    jPanel14Layout.createParallelGroup()
-                        .add(jPanel14Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(jPanel15, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(129, Short.MAX_VALUE))
-                );
-                jPanel14Layout.setVerticalGroup(
-                    jPanel14Layout.createParallelGroup()
-                        .add(jPanel14Layout.createSequentialGroup()
-                            .add(28, 28, 28)
-                            .add(jPanel15, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(153, Short.MAX_VALUE))
-                );
+                proxyPanel.add(jPanel15);
             }
-            tabbedPane.addTab("Proxy", jPanel14);
+            tabbedPane.addTab("Proxy", proxyPanel);
 
         }
         contentPane.add(tabbedPane, BorderLayout.CENTER);
@@ -2340,6 +2347,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     // Proxy settings
 
+
+    private void clearProxySettingsButtonActionPerformed(ActionEvent e) {
+        if (MessageUtils.confirm("This will immediately clear all proxy settings.  Are you sure?")) {
+            this.proxyHostField.setText("");
+            this.proxyPortField.setText("");
+            this.proxyUsernameField.setText("");
+            this.proxyPasswordField.setText("");
+            this.useProxyCB.setSelected(false);
+            PreferenceManager.getInstance().clearProxySettings();
+        }
+    }
+    
+
     private void useProxyCBActionPerformed(java.awt.event.ActionEvent evt) {
         proxySettingsChanged = true;
         boolean useProxy = useProxyCB.isSelected();
@@ -2692,7 +2712,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel jPanel9;
     private JCheckBox useByteRangeCB;
     private JLabel jLabel25;
-    private JPanel jPanel14;
+    private JPanel proxyPanel;
     private JPanel jPanel15;
     private JPanel jPanel16;
     private JTextField proxyUsernameField;
@@ -2706,6 +2726,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel jLabel27;
     private JLabel jLabel23;
     private JCheckBox useProxyCB;
+    private JLabel label3;
+    private JButton clearProxySettingsButton;
     private ButtonPanel okCancelButtonPanel;
     private JButton okButton;
     private JButton cancelButton;

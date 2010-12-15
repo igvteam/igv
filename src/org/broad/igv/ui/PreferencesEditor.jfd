@@ -2776,18 +2776,10 @@
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>org.jdesktop.layout.GroupLayout</class> 
-           <void method="setProperty"> 
-            <string>$horizontalGroup</string> 
-            <string>par l {seq l {space :::p, comp jPanel15:::p::p, space ::129:x}}</string> 
-           </void> 
-           <void method="setProperty"> 
-            <string>$verticalGroup</string> 
-            <string>par l {seq l {space :p:28:p, comp jPanel15:::p::p, space ::153:x}}</string> 
-           </void> 
+           <class>javax.swing.BoxLayout</class> 
           </object> 
           <void property="name"> 
-           <string>jPanel14</string> 
+           <string>proxyPanel</string> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormContainer"> 
@@ -2796,11 +2788,11 @@
              <class>org.jdesktop.layout.GroupLayout</class> 
              <void method="setProperty"> 
               <string>$horizontalGroup</string> 
-              <string>par l {seq l {space :::p, par l {seq l {comp jPanel17:::p::p:1, space :::p}, seq l {comp jPanel16:::::x:1, space :33:33:p}}}}</string> 
+              <string>par l {seq {par l {seq l {space :p:22:p, comp label3:::p:630:p}, seq l {space :::p, par l {comp jPanel16::l:::x:1, comp jPanel17::l:p::p:1}}, seq l {space :::p, comp clearProxySettingsButton:::p::p}}, space :::p}}</string> 
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :p:16:p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::::x, space :p:39:p}}</string> 
+              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::50:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -2813,11 +2805,11 @@
                <class>org.jdesktop.layout.GroupLayout</class> 
                <void method="setProperty"> 
                 <string>$horizontalGroup</string> 
-                <string>par l {seq {par l {seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}, seq l {space :::p, comp authenticateProxyCB:::p::p}}, space ::219:x}}</string> 
+                <string>par l {seq {par l {seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}, seq l {space :::p, comp authenticateProxyCB:::p::p}}, space ::381:x}}</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$verticalGroup</string> 
-                <string>par l {seq {space :p:17:p, comp authenticateProxyCB:::p::p, space :::p, par b {comp jLabel28::b:p::p, comp proxyUsernameField::b:p::p}, space :::p, par b {comp jLabel29::b:p::p, comp proxyPasswordField::b:p::p}, space :::x}}</string> 
+                <string>par l {seq {space :p:17:p, comp authenticateProxyCB:::p::p, space :::p, par b {comp jLabel28::b:p::p, comp proxyUsernameField::b:p::p}, space :::p, par b {comp jLabel29::b:p::p, comp proxyPasswordField::b:p::p}, space ::70:x}}</string> 
                </void> 
               </object> 
               <void property="name"> 
@@ -3036,6 +3028,38 @@
                   <boolean>true</boolean> 
                  </object> 
                 </void> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;Note:  do not use these settings unless you receive error or warning messages about server connections.  On most systems the correct settings will be automatically copied from your web browser.</string> 
+              </void> 
+              <void property="name"> 
+               <string>label3</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JButton</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Clear All</string> 
+              </void> 
+              <void property="name"> 
+               <string>clearProxySettingsButton</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>clearProxySettingsButtonActionPerformed</string> 
+                <boolean>true</boolean> 
                </object> 
               </void> 
              </object> 
