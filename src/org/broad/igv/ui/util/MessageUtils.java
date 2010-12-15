@@ -46,10 +46,16 @@ public class MessageUtils {
         }
     }
 
+
     public static boolean confirm(String message) {
 
-        int opt = JOptionPane.showConfirmDialog(
-                IGVMainFrame.getInstance(), message, "Continue Loading", JOptionPane.YES_NO_OPTION);
+        return confirm(IGVMainFrame.getInstance(), message);
+
+    }
+
+    public static boolean confirm(Component component, String message) {
+
+        int opt = JOptionPane.showConfirmDialog(component, message, "Continue Loading", JOptionPane.YES_NO_OPTION);
         return opt == JOptionPane.YES_OPTION;
 
     }
@@ -93,7 +99,7 @@ public class MessageUtils {
         return val;
     }
 
-        public static String showInputDialog(String message) {
+    public static String showInputDialog(String message) {
         String val = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), message);
         return val;
     }

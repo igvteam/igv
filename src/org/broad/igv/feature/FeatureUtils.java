@@ -226,6 +226,13 @@ public class FeatureUtils {
     }
 
 
+    /**
+     * Return the index to the last feature in the list with a start < the given position
+     * 
+     * @param position
+     * @param features
+     * @return
+     */
     public static int getIndexBefore(double position, List<? extends Feature> features) {
 
         if (features.size() == 0) {

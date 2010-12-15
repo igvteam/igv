@@ -84,9 +84,7 @@ public class FeatureCollectionSource implements FeatureSource {
         if(features == null || features.size() == 0) {
             return null;
         }
-        //int startIdx = Math.max(0, FeatureUtils.getIndexBefore(start, features));
-        //int endIdx = Math.min(features.size(), FeatureUtils.getIndexBefore(end, features) + 1);
-        //return features.subList(startIdx, endIdx).iterator();
+
         return features.iterator();
     }
 

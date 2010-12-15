@@ -335,28 +335,26 @@ public class TrackPanel extends IGVPanel {
 
 
     /**
-     * Replace current gene track with new one.  This is called upon switching genomes.
+     * This is called upon switching genomes to replace the gene and sequence tracks
      *
-     * @param newGeneTrack
+     * @param newTrack
      * @return true if gene track is found.
      */
-    public boolean setGeneTrack(Track geneTrack, Track newGeneTrack) {
+    public boolean replaceTrack(Track oldTrack, Track newTrack) {
 
-        boolean foundGeneTrack = false;
+        boolean foundTrack = false;
 
         for (TrackGroup g : trackGroups) {
-            if (g.contains(geneTrack)) {
-                int geneTrackIndex = g.indexOf(geneTrack);
-                g.remove(geneTrack);
-                geneTrackIndex = Math.min(g.size(), geneTrackIndex);
-                g.add(geneTrackIndex, newGeneTrack);
-                foundGeneTrack = true;
+            if (g.contains(oldTrack)) {
+                int idx = g.indexOf(oldTrack);
+                g.remove(oldTrack);
+                idx = Math.min(g.size(), idx);
+                g.add(idx, newTrack);
+                foundTrack = true;
             }
         }
 
-
-        return foundGeneTrack;
-
+        return foundTrack;
     }
 
     public void removeTracks(Collection<Track> tracksToRemove) {

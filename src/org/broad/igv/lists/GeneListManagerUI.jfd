@@ -460,6 +460,26 @@
                     <string>com.jidesoft.swing.JideButton</string> 
                     <void method="setProperty"> 
                      <string>text</string> 
+                     <string>-</string> 
+                    </void> 
+                    <void property="name"> 
+                     <string>deleteButton</string> 
+                    </void> 
+                    <void method="addEvent"> 
+                     <object class="com.jformdesigner.model.FormEvent"> 
+                      <string>java.awt.event.ActionListener</string> 
+                      <string>actionPerformed</string> 
+                      <string>deleteButtonActionPerformed</string> 
+                      <boolean>true</boolean> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void method="add"> 
+                   <object class="com.jformdesigner.model.FormComponent"> 
+                    <string>com.jidesoft.swing.JideButton</string> 
+                    <void method="setProperty"> 
+                     <string>text</string> 
                      <string>Edit</string> 
                     </void> 
                     <void property="name"> 
@@ -470,6 +490,26 @@
                       <string>java.awt.event.ActionListener</string> 
                       <string>actionPerformed</string> 
                       <string>editButtonActionPerformed</string> 
+                      <boolean>true</boolean> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void method="add"> 
+                   <object class="com.jformdesigner.model.FormComponent"> 
+                    <string>com.jidesoft.swing.JideButton</string> 
+                    <void method="setProperty"> 
+                     <string>text</string> 
+                     <string>Copy</string> 
+                    </void> 
+                    <void property="name"> 
+                     <string>copyListButton</string> 
+                    </void> 
+                    <void method="addEvent"> 
+                     <object class="com.jformdesigner.model.FormEvent"> 
+                      <string>java.awt.event.ActionListener</string> 
+                      <string>actionPerformed</string> 
+                      <string>copyListButtonActionPerformed</string> 
                       <boolean>true</boolean> 
                      </object> 
                     </void> 
@@ -645,14 +685,7 @@
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
-           <object class="javax.swing.border.EmptyBorder"> 
-            <object class="java.awt.Insets"> 
-             <int>12</int> 
-             <int>0</int> 
-             <int>0</int> 
-             <int>0</int> 
-            </object> 
-           </object> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
           </void> 
           <void property="name"> 
            <string>buttonBar</string> 

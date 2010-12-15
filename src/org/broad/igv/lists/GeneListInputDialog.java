@@ -30,6 +30,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -38,16 +39,22 @@ import javax.swing.border.*;
  */
 public class GeneListInputDialog extends JDialog {
 
-    private String[] genes;
+    private GeneList geneList;
+    private boolean canceled = true;
+
+    // TODO -- redundant field
+    String [] genes;
 
     public GeneListInputDialog(Frame owner) {
         super(owner);
         initComponents();
+
     }
 
     public GeneListInputDialog(Dialog owner, GeneList geneList) {
         super(owner);
         initComponents();
+        this.geneList = geneList;
         listNameField.setText(geneList.getName());
 
         StringBuffer buf = new StringBuffer();
@@ -61,6 +68,7 @@ public class GeneListInputDialog extends JDialog {
 
     private void parseGenes(String text) {
         genes = text.trim().split("\\s+");
+
     }
 
     public String[] getGenes() {
@@ -210,7 +218,10 @@ public class GeneListInputDialog extends JDialog {
 
 
     private void saveGeneList() {
+        canceled = false;
         File file = null;
+        geneList.setName(getGeneListName());
+        geneList.setLoci(Arrays.asList(genes));
         try {
             final String listName = getGeneListName();
             file = new File(Globals.getGeneListDirectory(), getLegalFilename(listName));
@@ -239,4 +250,7 @@ public class GeneListInputDialog extends JDialog {
     }
 
 
+    public boolean isCanceled() {
+        return canceled;
+    }
 }

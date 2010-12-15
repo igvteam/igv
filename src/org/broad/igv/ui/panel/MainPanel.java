@@ -199,13 +199,22 @@ public class MainPanel extends JPanel implements Paintable {
         trackManager.reset();
         trackManager.clearScrollPanes();
         trackManager.putScrollPane(TrackManager.DATA_PANEL_NAME, dataTrackScrollPane);
+
+        Track sequenceTrack = trackManager.getSequenceTrack();
         Track geneTrack = trackManager.getGeneTrack();
+
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+            if (sequenceTrack != null) {
+                dataTrackScrollPane.getTrackPanel().addTrack(sequenceTrack);
+            }
             if (geneTrack != null) {
                 dataTrackScrollPane.getTrackPanel().addTrack(geneTrack);
             }
         } else {
             trackManager.putScrollPane(TrackManager.FEATURE_PANEL_NAME, featureTrackScrollPane);
+            if (sequenceTrack != null) {
+                featureTrackScrollPane.getTrackPanel().addTrack(sequenceTrack);
+            }
             if (geneTrack != null) {
                 featureTrackScrollPane.getTrackPanel().addTrack(geneTrack);
             }
@@ -422,7 +431,7 @@ public class MainPanel extends JPanel implements Paintable {
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
 
                 //Skip if panel has no tracks
-                if(tsp.getTrackPanel().getTracks().size() == 0) {
+                if (tsp.getTrackPanel().getTracks().size() == 0) {
                     continue;
                 }
 

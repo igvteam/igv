@@ -73,6 +73,11 @@ public class TrackManager {
      */
     private Track geneTrack;
 
+    /**
+     * The sequence track for the current genome
+     */
+    private SequenceTrack sequenceTrack;
+
     private Map<String, List<Track>> overlayTracksMap = new HashMap();
 
     private Set<TrackType> loadedTypes = new HashSet();
@@ -81,6 +86,11 @@ public class TrackManager {
 
     public Track getGeneTrack() {
         return geneTrack;
+    }
+
+
+    public SequenceTrack getSequenceTrack() {
+        return sequenceTrack;
     }
 
     public Set<TrackType> getLoadedTypes() {
@@ -386,6 +396,9 @@ public class TrackManager {
             allTracks.remove(geneTrack);
         }
 
+        // Don't include sequence track
+        allTracks.remove(sequenceTrack);
+
         return allTracks;
     }
 
@@ -680,7 +693,7 @@ public class TrackManager {
         geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
         geneFeatureTrack.setColor(Color.BLUE.darker());
 
-        SequenceTrack seqTrack = new SequenceTrack("Reference");
+        SequenceTrack seqTrack = new SequenceTrack("");
         if (geneManager != null) {
 
             if (geneManager.getTrackProperties() != null) {
@@ -688,7 +701,7 @@ public class TrackManager {
             }
             String geneTrackName = geneManager.getGeneTrackName();
 
-            GeneTrack gt = new GeneTrack(geneFeatureTrack, seqTrack);
+            FeatureTrack gt = geneFeatureTrack;
             gt.setName(geneTrackName);
 
             Genome genome = GenomeManager.getInstance().getGenome(genomeId);
@@ -696,9 +709,9 @@ public class TrackManager {
                 gt.setUrl(genome.getAnnotationURL());
             }
 
-            setGeneTrack(gt);
+            setGenomeTracks(gt, seqTrack);
         } else {
-            setGeneTrack(seqTrack);
+            setGenomeTracks(null, seqTrack);
         }
 
     }
@@ -707,28 +720,41 @@ public class TrackManager {
      * Replace current gene track with new one.  This is called upon switching genomes
      *
      * @param newGeneTrack
+     * @param newSeqTrack
      */
-    private void setGeneTrack(Track newGeneTrack) {
+    private void setGenomeTracks(Track newGeneTrack, SequenceTrack newSeqTrack) {
+
+        boolean foundSeqTrack = false;
+        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
+            TrackPanel tsv = tsp.getTrackPanel();
+            foundSeqTrack = tsv.replaceTrack(sequenceTrack, newSeqTrack);
+            if (foundSeqTrack) {
+                break;
+            }
+        }
 
         boolean foundGeneTrack = false;
         for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
             TrackPanel tsv = tsp.getTrackPanel();
-            foundGeneTrack = tsv.setGeneTrack(geneTrack, newGeneTrack);
+            foundGeneTrack = tsv.replaceTrack(geneTrack, newGeneTrack);
             if (foundGeneTrack) {
                 break;
             }
         }
 
-        if (!foundGeneTrack) {
-            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-                mainFrame.getDataPanel(DATA_PANEL_NAME).addTrack(newGeneTrack);
-            } else {
-                mainFrame.getDataPanel(FEATURE_PANEL_NAME).addTrack(newGeneTrack);
-            }
+
+        if (!foundGeneTrack || !foundSeqTrack) {
+            TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    mainFrame.getDataPanel(DATA_PANEL_NAME) : mainFrame.getDataPanel(FEATURE_PANEL_NAME);
+
+            if (!foundSeqTrack) panel.addTrack(newSeqTrack);
+            if (!foundGeneTrack) panel.addTrack(newGeneTrack);
+
         }
 
         // Keep a reference to this track so it can be removed
         geneTrack = newGeneTrack;
+        sequenceTrack = newSeqTrack;
 
     }
 
@@ -848,6 +874,5 @@ public class TrackManager {
     pw.close();
     }
     }     * */
-
 
 }

@@ -25,15 +25,13 @@ package org.broad.igv.lists;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
 import com.jidesoft.swing.*;
+import org.broad.igv.ui.util.MessageUtils;
 
 /**
  * @author Stan Diamond
@@ -51,16 +49,25 @@ public class GeneListManagerUI extends JDialog {
         geneLists = GeneListManager.getGeneLists();
 
         groups.setModel(new AbstractListModel() {
-            String[] values = {
-                    "All"
-            };
+
+            ArrayList<String> groups = new ArrayList();
+
+            {
+                LinkedHashSet<String> tmp = new LinkedHashSet();
+                for (GeneList gl : geneLists.values()) {
+                    if (gl != null)
+                        tmp.add(gl.getGroup());
+                }
+                groups = new ArrayList(tmp);
+            }
+
 
             public int getSize() {
-                return values.length;
+                return groups.size();
             }
 
             public Object getElementAt(int i) {
-                return values[i];
+                return groups.get(i);
             }
         });
 
@@ -85,6 +92,8 @@ public class GeneListManagerUI extends JDialog {
             geneListModel.setGeneList(gl);
             loci.setModel(geneListModel);
             loci.updateUI();
+
+            editButton.setEnabled(gl.isEditable());
         }
     }
 
@@ -109,6 +118,45 @@ public class GeneListManagerUI extends JDialog {
             GeneList geneList = geneLists.get(selection);
             GeneListInputDialog dlg = new GeneListInputDialog(this, geneList);
             dlg.setVisible(true);
+
+            if (!dlg.isCanceled()) {
+                geneListModel.setGeneList(geneList);
+                listModel.filter();
+                lists.updateUI();
+                loci.updateUI();
+            }
+
+        }
+    }
+
+
+    private void copyListButtonActionPerformed(ActionEvent e) {
+        String selection = (String) lists.getSelectedValue();
+        if (selection != null) {
+            GeneList geneList = geneLists.get(selection);
+            GeneList copiedList = geneList.copy();
+            GeneListInputDialog dlg = new GeneListInputDialog(this, copiedList);
+            dlg.setVisible(true);
+
+            if (!dlg.isCanceled()) {
+                listModel.add(copiedList);
+                lists.updateUI();
+                lists.setSelectedValue(copiedList.getName(), true);
+                //loci.updateUI();
+            }
+        }
+    }
+
+    private void deleteButtonActionPerformed(ActionEvent e) {
+        String selection = (String) lists.getSelectedValue();
+        if (selection != null) {
+            if (MessageUtils.confirm("Are you sure you want to delete list '" + selection + "' ?")) {
+                geneLists.remove(selection);
+                listModel.filter();
+                lists.updateUI();
+                lists.setSelectedIndex(1);
+                loci.updateUI();
+            }
         }
     }
 
@@ -187,6 +235,13 @@ public class GeneListManagerUI extends JDialog {
             }
             return true;
         }
+
+        public void add(GeneList geneList) {
+            geneLists.put(geneList.getName(), geneList);
+            if (isPassFilter(geneList)) {
+                filteredNames.add(geneList.getName());
+            }
+        }
     }
 
 
@@ -240,7 +295,9 @@ public class GeneListManagerUI extends JDialog {
         lists = new JList();
         panel8 = new JPanel();
         jideButton2 = new JideButton();
+        deleteButton = new JideButton();
         editButton = new JideButton();
+        copyListButton = new JideButton();
         panel5 = new JPanel();
         label4 = new JLabel();
         scrollPane3 = new JScrollPane();
@@ -329,10 +386,16 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groups ----
                                 groups.setModel(new AbstractListModel() {
                                     String[] values = {
-                                        "All"
+                                            "All"
                                     };
-                                    public int getSize() { return values.length; }
-                                    public Object getElementAt(int i) { return values[i]; }
+
+                                    public int getSize() {
+                                        return values.length;
+                                    }
+
+                                    public Object getElementAt(int i) {
+                                        return values[i];
+                                    }
                                 });
                                 groups.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groups.addListSelectionListener(new ListSelectionListener() {
@@ -393,6 +456,15 @@ public class GeneListManagerUI extends JDialog {
                                 jideButton2.setText("+");
                                 panel8.add(jideButton2);
 
+                                //---- deleteButton ----
+                                deleteButton.setText("-");
+                                deleteButton.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        deleteButtonActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(deleteButton);
+
                                 //---- editButton ----
                                 editButton.setText("Edit");
                                 editButton.addActionListener(new ActionListener() {
@@ -401,6 +473,15 @@ public class GeneListManagerUI extends JDialog {
                                     }
                                 });
                                 panel8.add(editButton);
+
+                                //---- copyListButton ----
+                                copyListButton.setText("Copy");
+                                copyListButton.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        copyListButtonActionPerformed(e);
+                                    }
+                                });
+                                panel8.add(copyListButton);
                             }
                             panel4.add(panel8, BorderLayout.PAGE_END);
                         }
@@ -441,10 +522,10 @@ public class GeneListManagerUI extends JDialog {
 
             //======== buttonBar ========
             {
-                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
+                buttonBar.setBorder(null);
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0};
 
                 //---- closeButton ----
                 closeButton.setText("Close");
@@ -454,8 +535,8 @@ public class GeneListManagerUI extends JDialog {
                     }
                 });
                 buttonBar.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -488,7 +569,9 @@ public class GeneListManagerUI extends JDialog {
     private JList lists;
     private JPanel panel8;
     private JideButton jideButton2;
+    private JideButton deleteButton;
     private JideButton editButton;
+    private JideButton copyListButton;
     private JPanel panel5;
     private JLabel label4;
     private JScrollPane scrollPane3;

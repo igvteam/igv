@@ -37,13 +37,15 @@ import java.awt.*;
  */
 public class SequenceTrack extends AbstractTrack {
 
-    /**
-     * Field description
-     */
-    public static final int SEQUENCE_HEIGHT = 14;
 
-    SequenceRenderer sequenceRenderer = new SequenceRenderer();
-    ColorScale colorScale;
+    private static final int SEQUENCE_HEIGHT = 14;
+
+    private SequenceRenderer sequenceRenderer = new SequenceRenderer();
+
+    /**
+     * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented, should always be
+     * false.
+     */
     private boolean showColorSpace = false;
 
     public SequenceTrack(String name) {
@@ -66,60 +68,64 @@ public class SequenceTrack extends AbstractTrack {
 
     }
 
-    public void setColorScale(ContinuousColorScale colorScale) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
-    public void setStatType(WindowFunction type) {
-
-        // ignore
-    }
-
-    public WindowFunction getWindowFunction() {
-
-        // ignore
-        return null;
-    }
-
-
-    public void setRendererClass(Class rc) {
-
-        // ignored
-    }
-
-
-    public Renderer getRenderer() {
-        return sequenceRenderer;
-    }
-
 
     @Override
     public int getHeight() {
         return SEQUENCE_HEIGHT * (showColorSpace ? 2 : 1);
     }
 
-    public boolean isLogNormalized() {
-        return true;
+
+    //----------------------------------------------------------------------------
+    // Methods belowo are required for the Track interface, but aren't
+    // meaningful here.  Obviously some refactoring is in order to reduce
+    // the number of required methods.
+
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+        return null;
     }
 
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public void setColorScale(ContinuousColorScale colorScale) {
+        // Required method for track interface, ignore
+    }
 
-        // TODO -- return sequence at this position
-        return "";
+
+    public void setStatType(WindowFunction type) {
+        // Required method for track interface, ignore
+    }
+
+    public WindowFunction getWindowFunction() {
+        // Required method for track interface, ignore
+        return null;
+    }
+
+
+    public void setRendererClass(Class rc) {
+        // Required method for track interface, ignore
+    }
+
+
+    public Renderer getRenderer() {
+        // Required method for track interface, ignore
+        return null;
     }
 
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+        // Required method for track interface, ignore
         return 0;
     }
 
 
     public boolean handleClick(int x, int y) {
-
         // Ignore
         return false;
+    }
+
+
+    public boolean isLogNormalized() {
+        // Required method for track interface, ignore
+        return true;
     }
 
 

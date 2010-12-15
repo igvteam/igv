@@ -28,10 +28,21 @@ import java.util.List;
  */
 public class GeneList {
 
+    private String group;
+    private boolean editable;
     private String name;
     private List<String> loci;
 
+    public GeneList(String name, String group, boolean editable, List<String> loci) {
+        this.group = group;
+        this.editable = editable;
+        this.name = name;
+        this.loci = loci;
+    }
+
     public GeneList(String name, List<String> loci) {
+        this.group = "CP";
+        this.editable = false;
         this.name = name;
         this.loci = loci;
     }
@@ -52,5 +63,26 @@ public class GeneList {
         // List might be immutable (Arrays.ArrayList)
         loci = new ArrayList(loci);
         loci.add(gene);
+    }
+
+    public GeneList copy() {
+        return new GeneList(name + " copy", loci);
+    }
+
+    public void setLoci(List<String> strings) {
+        loci = strings;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public String getGroup() {
+        
+        return group;
     }
 }

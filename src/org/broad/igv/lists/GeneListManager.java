@@ -20,11 +20,6 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.NamedFeature;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,22 +53,39 @@ public class GeneListManager {
         geneLists.put("None", null);
 
         //chr6:63,599,345-171,829,806
-        addNewGeneList(new GeneList("Proneural dev genes", Arrays.asList("SOX1", "SOX2", "SOX3", "SOX21", "DCX",
-                "DLL3", "ASCL1", "TCF4")));
-        addNewGeneList(new GeneList("Microglia markers", Arrays.asList("CD68", "PTPRC", "TNF")));
-        addNewGeneList(new GeneList("MMR genes", Arrays.asList("MGMT", "MLH1", "MSH2", "MSH6", "PMS2")));
-        addNewGeneList(new GeneList("PI(3)K complex", Arrays.asList("PIK3CA", "PIK3R1")));
-        addNewGeneList(new GeneList("Oligodendrocytic dev genes", Arrays.asList("PDGFRA", "NKX2-2", "NG2", "OLIG2",
-                "CDKN1A")));
-        addNewGeneList(new GeneList("P53 signaling", Arrays.asList("CDKN2A", "TP53", "MDM2", "MDM4")));
-        addNewGeneList(new GeneList("RB signaling", Arrays.asList("CDKN2A", "CDKN2B", "CDKN2C", "CDK4", "CDK6",
-                "CCND1", "CCND2", "RB1")));
-        addNewGeneList(new GeneList("AKT signaling", Arrays.asList("PIK3CA", "PTEN", "PIP3", "AKT1", "AKT2", "AKT3")));
-        addNewGeneList(new GeneList("RTK/RAS signaling", Arrays.asList("PDGFRA", "PDGFRB", "ERBB3", "EGFR", "ERBB2",
-                "FGFR1", "FGFR2", "MET", "GRB2", "NF1", "NRAS", "KRAS", "HRAS", "ARAF", "BRAF", "RAF1", "SPRY2")));
+        addNewGeneList(new GeneList("Proneural dev genes",
+                Arrays.asList("SOX1", "SOX2", "SOX3", "SOX21", "DCX",
+                        "DLL3", "ASCL1", "TCF4")));
+        addNewGeneList(new GeneList("Microglia markers",
+                Arrays.asList("CD68", "PTPRC", "TNF")));
+        addNewGeneList(new GeneList("MMR genes",
+                Arrays.asList("MGMT", "MLH1", "MSH2", "MSH6", "PMS2")));
+        addNewGeneList(new GeneList("PI(3)K complex",
+                Arrays.asList("PIK3CA", "PIK3R1")));
+        addNewGeneList(new GeneList("Oligodendrocytic dev genes",
+                Arrays.asList("PDGFRA", "NKX2-2", "NG2", "OLIG2",
+                        "CDKN1A")));
+        addNewGeneList(new GeneList("P53 signaling",
+                Arrays.asList("CDKN2A", "TP53", "MDM2", "MDM4")));
+        addNewGeneList(new GeneList("RB signaling",
+                Arrays.asList("CDKN2A", "CDKN2B", "CDKN2C", "CDK4", "CDK6",
+                        "CCND1", "CCND2", "RB1")));
+        addNewGeneList(new GeneList("AKT signaling",
+                Arrays.asList("PIK3CA", "PTEN", "PIP3", "AKT1", "AKT2", "AKT3")));
+        addNewGeneList(new GeneList("RTK/RAS signaling",
+                Arrays.asList("PDGFRA", "PDGFRB", "ERBB3", "EGFR", "ERBB2",
+                        "FGFR1", "FGFR2", "MET", "GRB2", "NF1", "NRAS", "KRAS", "HRAS", "ARAF", "BRAF", "RAF1", "SPRY2")));
 
-        loadGeneLists();
+        loadUserLists();
 
+    }
+
+    /**
+     * Import a .gmt file
+     *
+     * @param file
+     */
+    public static void importGMT(File file) {
 
     }
 
@@ -82,55 +94,110 @@ public class GeneListManager {
         geneLists.put(genes.getName(), genes);
     }
 
-    
 
-    private static void loadGeneLists() {
-         File dir = Globals.getGeneListDirectory();
-         if (dir.exists()) {
-             for (File f : dir.listFiles()) {
-                 String name = null;
-                 List<String> genes = new ArrayList();
-                 BufferedReader reader = null;
+    private static void loadUserLists() {
+        File dir = Globals.getGeneListDirectory();
+        if (dir.exists()) {
+            for (File f : dir.listFiles()) {
+                GeneList geneList = loadGRPFile(f);
+                if (geneList != null) {
+                    String name = geneList.getName();
+                    geneLists.put(name, geneList);
+                }
+            }
 
-                 try {
-                     reader = new BufferedReader(new FileReader(f));
-                     String nextLine;
-                     while ((nextLine = reader.readLine()) != null) {
-                         if (nextLine.startsWith("#")) {
-                             if (nextLine.startsWith("#name")) {
-                                 String[] tokens = nextLine.split("=");
-                                 if (tokens.length > 1) {
-                                     name = tokens[1];
-                                 }
-                             }
-                         } else {
-                             String[] tokens = nextLine.split("\\s+");
-                             for (String s : tokens) {
-                                 genes.add(s);
-                             }
-                         }
-                         if(genes.size() > 0) {
-                             if(name == null) {
-                                 name = f.getName();
-                             }
-                             geneLists.put(name, new GeneList(name, genes));
-                         }
-                     }
-                 } catch (IOException e) {
-                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                 } finally {
-                     if(reader != null) {
-                         try {
-                             reader.close();
-                         } catch (IOException e) {
-                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                         }
-                     }
-                 }
-             }
+        }
+    }
 
-         }
-     }
+    static GeneList loadGRPFile(File f) {
+        String name = f.getName();
+        String group = "My lists";
+        List<String> genes = new ArrayList();
+        BufferedReader reader = null;
 
+        try {
+            reader = new BufferedReader(new FileReader(f));
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("#name")) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length > 1) {
+                            name = tokens[1];
+                        }
+                    } else if (nextLine.startsWith("#group")) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length > 1) {
+                            group = tokens[1];
+                        }
+                    }
+                } else {
+                    String[] tokens = nextLine.split("\\s+");
+                    for (String s : tokens) {
+                        genes.add(s);
+                    }
+                }
+                if (genes.size() > 0) {
+                    if (name == null) {
+                        name = f.getName();
+                    }
+                    return new GeneList(name, group, true, genes);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        }
+        return null;
+    }
 
+    static List<GeneList> loadGMTFile(File f) {
+
+        String group = f.getName();
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(f));
+            String nextLine;
+            List<GeneList> lists = new ArrayList();
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#")) {
+                    if (nextLine.startsWith("#group") || nextLine.startsWith("#name")) {
+                        String[] tokens = nextLine.split("=");
+                        if (tokens.length > 1) {
+                            group = tokens[1];
+                        }
+                    }
+                } else {
+                    String[] tokens = nextLine.split("t");
+                    String name = tokens[0];
+                    // TODO -- description = tokes[1];
+                    List<String> genes = new ArrayList();
+                    for (int i = 2; i < tokens.length; i++) {
+                        genes.add(tokens[i]);
+                    }
+                    lists.add(new GeneList(name, group, true, genes));
+
+                }
+            }
+            return lists;
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        }
+        return null;
+    }
 }

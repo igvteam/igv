@@ -1839,7 +1839,9 @@ public class IGVMainFrame extends javax.swing.JFrame {
         }
 
         String gid = GenomeManager.getInstance().setGenomeId(id);
+
         FeatureDB.clearFeatures();
+
         IGVMainFrame.getInstance().getTrackManager().loadGeneTrack(gid);
 
 
