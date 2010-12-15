@@ -1,0 +1,10 @@
+#name=Example gene lists
+Proneural dev genes	Proneural dev genes	SOX1	SOX2	SOX3	SOX21	DCX	DLL3	ASCL1	TCF4
+Microglia markers	Microglia markers	CD68	PTPRC	TNF
+MMR genes	MMR genes	MGMT	MLH1	MSH2	MSH6	PMS2
+PI(3)K complex	PI(3)K complex	PIK3CA	PIK3R1
+Oligodendrocytic dev genes	Oligodendrocytic dev genes	PDGFRA	NKX2-2	NG2	OLIG2	CDKN1A
+P53 signaling	P53 signaling	CDKN2A	TP53	MDM2	MDM4
+RB signaling	RB signaling	CDKN2A	CDKN2B	CDKN2C	CDK4	CDK6	CCND1	CCND2	RB1
+AKT signaling	AKT signaling	PIK3CA	PTEN	PIP3	AKT1	AKT2	AKT3
+RTK/RAS signaling	RTK/RAS signaling	PDGFRA	PDGFRB	ERBB3	EGFR	ERBB2	FGFR1	FGFR2	MET	GRB2	NF1	NRAS	KRAS	HRAS	ARAF	BRAF	RAF1	SPRY2

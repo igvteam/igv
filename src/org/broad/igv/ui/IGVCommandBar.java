@@ -1217,13 +1217,19 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
 
-
     private JPopupMenu getGeneListMenu() {
 
         JPopupMenu geneListMenu = new JPopupMenu();
 
+        MenuAction menuAction = new MenuAction("None", null) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                owner.setGeneList("None");
+            }
+        };
+        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         for (final String listID : GeneListManager.getGeneLists().keySet()) {
-            MenuAction menuAction = new MenuAction(listID, null) {
+            menuAction = new MenuAction(listID, null) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     owner.setGeneList(listID);
@@ -1233,7 +1239,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
 
         geneListMenu.addSeparator();
-        MenuAction menuAction = new MenuAction("Add gene...", null) {
+        menuAction = new MenuAction("Add gene...", null) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String gene = JOptionPane.showInputDialog(owner, "Enter gene or locus:");
@@ -1254,7 +1260,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 String[] genes = dlg.getGenes();
                 if (genes != null && genes.length > 0) {
                     GeneList gl = new GeneList(dlg.getGeneListName(), Arrays.asList(genes));
-                    GeneListManager.addNewGeneList(gl);
+                    GeneListManager.addGeneList(gl);
                     owner.getSession().setCurrentGeneList(gl);
                     owner.updateGeneListMenu();
                     owner.resetFrames();

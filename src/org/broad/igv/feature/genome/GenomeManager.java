@@ -627,13 +627,31 @@ public class GenomeManager {
                             }
                         }
 
-                        try {
-                            GenomeListItem item = new GenomeListItem(fields[0], fields[1], fields[2], version, false);
-                            genomeItemList.add(item);
-                        } catch (Exception e) {
-                            log.error(
-                                    "Error reading a line from server genome list" + " line was: [" + genomeRecord + "]",
-                                    e);
+                        //String displayableName, String url, String id, int version, boolean isUserDefined
+                        String name = fields[0];
+                        String url = fields[1];
+                        String id = fields[2];
+
+                        boolean valid = true;
+                        if (url.length() == 0) {
+                            log.error("Genome entry : " + name + " has an empty URL string.  Check for extra tabs in the definition file: " +
+                                    PreferenceManager.getInstance().getGenomeListURL());
+                            valid = false;
+                        }
+                        // TODO -- more validation
+
+
+                        if (valid) {
+
+
+                            try {
+                                GenomeListItem item = new GenomeListItem(fields[0], fields[1], fields[2], version, false);
+                                genomeItemList.add(item);
+                            } catch (Exception e) {
+                                log.error(
+                                        "Error reading a line from server genome list" + " line was: [" + genomeRecord + "]",
+                                        e);
+                            }
                         }
                     } else {
                         log.error("Found invalid server genome list record: " + genomeRecord);

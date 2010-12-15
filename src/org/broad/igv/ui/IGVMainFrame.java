@@ -1256,8 +1256,15 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         geneListMenu.removeAll();
 
+        MenuAction menuAction = new MenuAction("None", null) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setGeneList("None");
+            }
+        };
+        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         for (final String listID : GeneListManager.getGeneLists().keySet()) {
-            MenuAction menuAction = new MenuAction(listID, null) {
+            menuAction = new MenuAction(listID, null) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     setGeneList(listID);
@@ -1267,7 +1274,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
         }
 
         geneListMenu.addSeparator();
-        MenuAction menuAction = new MenuAction("New...", null) {
+        menuAction = new MenuAction("New...", null) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 GeneListInputDialog dlg = new GeneListInputDialog(IGVMainFrame.this);
@@ -1275,7 +1282,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 String[] genes = dlg.getGenes();
                 if (genes != null && genes.length > 0) {
                     GeneList gl = new GeneList(dlg.getGeneListName(), Arrays.asList(genes));
-                    GeneListManager.addNewGeneList(gl);
+                    GeneListManager.addGeneList(gl);
                     session.setCurrentGeneList(gl);
                     updateGeneListMenu();
                     resetFrames();

@@ -85,4 +85,12 @@ public class GeneList {
         
         return group;
     }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
 }

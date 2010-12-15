@@ -117,7 +117,7 @@
                 <void method="setProperty"> 
                  <string>minimumSize</string> 
                  <object class="java.awt.Dimension"> 
-                  <int>400</int> 
+                  <int>0</int> 
                   <int>0</int> 
                  </object> 
                 </void> 
@@ -183,6 +183,35 @@
                   <string>searchBoxKeyReleased</string> 
                   <boolean>true</boolean> 
                  </object> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormContainer"> 
+                <string>javax.swing.JPanel</string> 
+                <object class="com.jformdesigner.model.FormLayoutManager"> 
+                 <class>com.jformdesigner.runtime.NullLayout</class> 
+                 <void method="setProperty"> 
+                  <string>autoSize</string> 
+                  <boolean>false</boolean> 
+                 </void> 
+                </object> 
+                <void method="setProperty"> 
+                 <string>preferredSize</string> 
+                 <object class="java.awt.Dimension"> 
+                  <int>5</int> 
+                  <int>0</int> 
+                 </object> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>minimumSize</string> 
+                 <object class="java.awt.Dimension"> 
+                  <int>5</int> 
+                  <int>0</int> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>panel10</string> 
                 </void> 
                </object> 
               </void> 
@@ -292,7 +321,7 @@
                      <int>0</int> 
                     </void> 
                     <void property="name"> 
-                     <string>groups</string> 
+                     <string>groupJList</string> 
                     </void> 
                     <void method="addEvent"> 
                      <object class="com.jformdesigner.model.FormEvent"> 
@@ -413,7 +442,7 @@
                      <int>0</int> 
                     </void> 
                     <void property="name"> 
-                     <string>lists</string> 
+                     <string>glJList</string> 
                     </void> 
                     <void method="addEvent"> 
                      <object class="com.jformdesigner.model.FormEvent"> 
@@ -587,7 +616,7 @@
                  <object class="com.jformdesigner.model.FormComponent"> 
                   <string>javax.swing.JList</string> 
                   <void property="name"> 
-                   <string>loci</string> 
+                   <string>lociJList</string> 
                   </void> 
                  </object> 
                 </void> 
