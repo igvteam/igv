@@ -40,6 +40,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListInputDialog;
 import org.broad.igv.lists.GeneListManager;
+import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.main.BatchRunner;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.tools.ui.IndexGui;
@@ -1202,7 +1203,19 @@ public class IGVMainFrame extends javax.swing.JFrame {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
-        menuItems.add(this.getGeneListsMenu());
+
+        //
+        menuAction =
+                new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        (new GeneListManagerUI(IGVMainFrame.this)).setVisible(true);
+                    }
+                };
+        menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
         /*
         menuAction =
@@ -1241,58 +1254,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         return MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
     }
 
-    private JMenu getGeneListsMenu() {
-
-        if (geneListMenu == null) {
-            geneListMenu = new JMenu("Gene Lists");
-            updateGeneListMenu();
-        }
-
-        return geneListMenu;
-
-    }
-
-    void updateGeneListMenu() {
-
-        geneListMenu.removeAll();
-
-        MenuAction menuAction = new MenuAction("None", null) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setGeneList("None");
-            }
-        };
-        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        for (final String listID : GeneListManager.getGeneLists().keySet()) {
-            menuAction = new MenuAction(listID, null) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setGeneList(listID);
-                }
-            };
-            geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        }
-
-        geneListMenu.addSeparator();
-        menuAction = new MenuAction("New...", null) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                GeneListInputDialog dlg = new GeneListInputDialog(IGVMainFrame.this);
-                dlg.setVisible(true);
-                String[] genes = dlg.getGenes();
-                if (genes != null && genes.length > 0) {
-                    GeneList gl = new GeneList(dlg.getGeneListName(), Arrays.asList(genes));
-                    GeneListManager.addGeneList(gl);
-                    session.setCurrentGeneList(gl);
-                    updateGeneListMenu();
-                    resetFrames();
-                }
-            }
-        };
-        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        geneListMenu.addActionListener(new MenuAction("Gene Lists", null, KeyEvent.VK_G));
-    }
 
     public void setGeneList(String listID) {
         setGeneList(listID, true);

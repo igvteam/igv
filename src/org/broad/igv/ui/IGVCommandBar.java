@@ -978,8 +978,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 1) {
-                    JPopupMenu m = getGeneListMenu();
-                    m.show(geneListLabel, evt.getX(), evt.getY());
+                    if (MessageUtils.confirm("Return to genome view?")) {
+                        owner.setGeneList("None");
+                    }
 
                 }
             }
@@ -1214,62 +1215,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
             super.reshape(arg0, arg1, arg2, getPreferredSize().height);
         }
 
-    }
-
-
-    private JPopupMenu getGeneListMenu() {
-
-        JPopupMenu geneListMenu = new JPopupMenu();
-
-        MenuAction menuAction = new MenuAction("None", null) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                owner.setGeneList("None");
-            }
-        };
-        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        for (final String listID : GeneListManager.getGeneLists().keySet()) {
-            menuAction = new MenuAction(listID, null) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    owner.setGeneList(listID);
-                }
-            };
-            geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        }
-
-        geneListMenu.addSeparator();
-        menuAction = new MenuAction("Add gene...", null) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String gene = JOptionPane.showInputDialog(owner, "Enter gene or locus:");
-                if (gene != null) {
-                    owner.getSession().addGene(gene);
-                    owner.resetFrames();
-                }
-            }
-        };
-        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        geneListMenu.addSeparator();
-        menuAction = new MenuAction("New...", null) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                GeneListInputDialog dlg = new GeneListInputDialog(owner);
-                dlg.setVisible(true);
-                String[] genes = dlg.getGenes();
-                if (genes != null && genes.length > 0) {
-                    GeneList gl = new GeneList(dlg.getGeneListName(), Arrays.asList(genes));
-                    GeneListManager.addGeneList(gl);
-                    owner.getSession().setCurrentGeneList(gl);
-                    owner.updateGeneListMenu();
-                    owner.resetFrames();
-                }
-            }
-        };
-        geneListMenu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        return geneListMenu;
     }
 
 
