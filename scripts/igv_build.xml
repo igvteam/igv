@@ -114,6 +114,7 @@
         <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}">
             <classpath>
                 <pathelement path="${tmp.dir}"/>
+                <pathelement path="${dist.dir}goby-io.jar"/>
             </classpath>
         </javac>
     </target>
