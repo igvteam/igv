@@ -29,20 +29,20 @@ import java.util.List;
 public class GeneList {
 
     private String group;
-    private boolean editable;
+    private boolean editable = true;
     private String name;
+    private String description;
     private List<String> loci;
 
-    public GeneList(String name, String group, boolean editable, List<String> loci) {
+    public GeneList(String name, String description, String group, List<String> loci) {
         this.group = group;
-        this.editable = editable;
+        this.description = description;
         this.name = name;
         this.loci = loci;
     }
 
     public GeneList(String name, List<String> loci) {
-        this.group = "CP";
-        this.editable = false;
+        this.group = "My lists";
         this.name = name;
         this.loci = loci;
     }
@@ -92,5 +92,13 @@ public class GeneList {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

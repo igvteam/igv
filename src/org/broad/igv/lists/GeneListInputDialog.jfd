@@ -64,7 +64,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>21</int> 
+             <int>10</int> 
             </void> 
            </object> 
           </void> 
@@ -83,7 +83,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>15</int> 
+             <int>5</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -96,7 +96,7 @@
             <string>javax.swing.JLabel</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Enter or paste gene list below</string> 
+             <string>&lt;html&gt;Enter or paste genes or loci below &amp;nbsp;&amp;nbsp;&lt;i&gt;(e.g EGFR or chr1:1000-2000)</string> 
             </void> 
             <void property="name"> 
              <string>label2</string> 
@@ -110,11 +110,15 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>70</int> 
+             <int>135</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>240</int> 
+             <int>425</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>37</int> 
             </void> 
            </object> 
           </void> 
@@ -144,7 +148,7 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>100</int> 
+             <int>175</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
@@ -152,7 +156,68 @@
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
-             <int>355</int> 
+             <int>320</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JScrollPane</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>javax.swing.JScrollPane</class> 
+            </object> 
+            <void property="name"> 
+             <string>scrollPane2</string> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextArea</string> 
+              <void property="name"> 
+               <string>descriptionField</string> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>10</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>70</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>425</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>60</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JLabel</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Description: </string> 
+            </void> 
+            <void property="name"> 
+             <string>label3</string> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>10</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
+             <int>45</int> 
             </void> 
            </object> 
           </void> 
@@ -297,8 +362,8 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>495</int> 
-        <int>550</int> 
+        <int>545</int> 
+        <int>595</int> 
        </object> 
       </void> 
      </object> 

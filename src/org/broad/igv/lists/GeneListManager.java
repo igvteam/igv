@@ -34,7 +34,7 @@ public class GeneListManager {
     private static Logger log = Logger.getLogger(GeneListManager.class);
 
     public static final String[] DEFAULT_GENE_LISTS = {
-            "examples.gmt", /*"biocarta_cancer_cp.gmt",*/  "reactome_cp.gmt", "kegg_cancer_cp.gmt" };
+            "examples.gmt", /*"biocarta_cancer_cp.gmt",*/  "reactome_cp.gmt", "kegg_cancer_cp.gmt"};
 
 
     public static LinkedHashSet<String> groups = new LinkedHashSet();
@@ -126,6 +126,7 @@ public class GeneListManager {
     static GeneList loadGRPFile(File f) {
         String name = f.getName();
         String group = "My lists";
+        String description = null;
         List<String> genes = new ArrayList();
         BufferedReader reader = null;
 
@@ -134,16 +135,20 @@ public class GeneListManager {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
                 if (nextLine.startsWith("#")) {
+
                     if (nextLine.startsWith("#name")) {
                         String[] tokens = nextLine.split("=");
                         if (tokens.length > 1) {
                             name = tokens[1];
                         }
                     } else if (nextLine.startsWith("#group")) {
+
+                    } else if (nextLine.startsWith("#description")) {
                         String[] tokens = nextLine.split("=");
                         if (tokens.length > 1) {
                             group = tokens[1];
                         }
+                        description = tokens[1];
                     }
                 } else {
                     String[] tokens = nextLine.split("\\s+");
@@ -156,7 +161,7 @@ public class GeneListManager {
                 if (name == null) {
                     name = f.getName();
                 }
-                return new GeneList(name, group, true, genes);
+                return new GeneList(name, description, group, genes);
 
             }
         } catch (IOException e) {
@@ -208,12 +213,13 @@ public class GeneListManager {
             } else {
                 String[] tokens = nextLine.split("\t");
                 String name = tokens[0];
+                String description = tokens[1].replaceFirst(">", "");
                 // TODO -- description = tokes[1];
                 List<String> genes = new ArrayList();
                 for (int i = 2; i < tokens.length; i++) {
                     genes.add(tokens[i]);
                 }
-                lists.add(new GeneList(name, group, true, genes));
+                lists.add(new GeneList(name, description, group, genes));
 
             }
         }

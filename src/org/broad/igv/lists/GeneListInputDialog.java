@@ -112,6 +112,9 @@ public class GeneListInputDialog extends JDialog {
         label2 = new JLabel();
         scrollPane1 = new JScrollPane();
         genesField = new JTextArea();
+        scrollPane2 = new JScrollPane();
+        descriptionField = new JTextArea();
+        label3 = new JLabel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -133,25 +136,37 @@ public class GeneListInputDialog extends JDialog {
                 //---- label1 ----
                 label1.setText("Name: ");
                 contentPanel.add(label1);
-                label1.setBounds(new Rectangle(new Point(10, 21), label1.getPreferredSize()));
+                label1.setBounds(new Rectangle(new Point(10, 10), label1.getPreferredSize()));
                 contentPanel.add(listNameField);
-                listNameField.setBounds(55, 15, 380, listNameField.getPreferredSize().height);
+                listNameField.setBounds(55, 5, 380, listNameField.getPreferredSize().height);
 
                 //---- label2 ----
-                label2.setText("Enter or paste gene list below");
+                label2.setText("<html>Enter or paste genes or loci below &nbsp;&nbsp;<i>(e.g EGFR or chr1:1000-2000)");
                 contentPanel.add(label2);
-                label2.setBounds(10, 70, 240, label2.getPreferredSize().height);
+                label2.setBounds(10, 135, 425, 37);
 
                 //======== scrollPane1 ========
                 {
                     scrollPane1.setViewportView(genesField);
                 }
                 contentPanel.add(scrollPane1);
-                scrollPane1.setBounds(10, 100, 425, 355);
+                scrollPane1.setBounds(10, 175, 425, 320);
+
+                //======== scrollPane2 ========
+                {
+                    scrollPane2.setViewportView(descriptionField);
+                }
+                contentPanel.add(scrollPane2);
+                scrollPane2.setBounds(10, 70, 425, 60);
+
+                //---- label3 ----
+                label3.setText("Description: ");
+                contentPanel.add(label3);
+                label3.setBounds(new Rectangle(new Point(10, 45), label3.getPreferredSize()));
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -169,8 +184,8 @@ public class GeneListInputDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -180,8 +195,8 @@ public class GeneListInputDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -191,8 +206,8 @@ public class GeneListInputDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -211,6 +226,9 @@ public class GeneListInputDialog extends JDialog {
     private JLabel label2;
     private JScrollPane scrollPane1;
     private JTextArea genesField;
+    private JScrollPane scrollPane2;
+    private JTextArea descriptionField;
+    private JLabel label3;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
