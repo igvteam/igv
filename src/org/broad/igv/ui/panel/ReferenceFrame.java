@@ -33,6 +33,8 @@ import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.text.NumberFormat;
+import java.util.Locale;
+
 
 /**
  * @author jrobinso
@@ -40,6 +42,8 @@ import java.text.NumberFormat;
 public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
+
+    private static NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
 
     String name;
     int pixelX;
@@ -206,7 +210,7 @@ public class ReferenceFrame {
     }
 
     public void recordHistory() {
-        IGVMainFrame.getInstance().getSession().getHistory().push(getCurrentLocusString());
+        IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString());
     }
 
     private void jumpToChromosomeForGenomeLocation(double locationMB) {
@@ -567,15 +571,15 @@ public class ReferenceFrame {
      *
      * @return
      */
-    public String getCurrentLocusString() {
+    public String getFormattedLocusString() {
 
         if (zoom == 0) {
             return getChrName();
         } else {
 
             Range range = getCurrentRange();
-            String startStr = NumberFormat.getInstance().format(range.getStart());
-            String endStr = NumberFormat.getInstance().format(range.getEnd());
+            String startStr = numberFormat.format(range.getStart());
+            String endStr = numberFormat.format(range.getEnd());
             String position = range.getChr() + ":" + startStr + "-" + endStr;
 
             return position;

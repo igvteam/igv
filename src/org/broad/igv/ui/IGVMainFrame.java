@@ -38,7 +38,6 @@ import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListInputDialog;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.main.BatchRunner;
@@ -2168,7 +2167,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             }
 
             (new SessionReader()).loadSession(inputStream, session, sessionPath);
-            String searchText = locus == null ? session.getLocus() : locus;
+            String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
             if (!FrameManager.isGeneListMode() && searchText != null && !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {

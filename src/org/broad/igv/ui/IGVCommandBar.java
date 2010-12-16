@@ -33,12 +33,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListInputDialog;
-import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
-import org.broad.igv.ui.action.MenuAction;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.action.SearchCommand;
@@ -458,7 +454,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         String p = "";
 
         if (!chr.equals(Globals.CHR_ALL)) {
-            p = getDefaultReferenceFrame().getCurrentLocusString();
+            p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;
         UIUtilities.invokeOnEventThread(new Runnable() {

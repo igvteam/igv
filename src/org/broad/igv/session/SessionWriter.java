@@ -127,7 +127,7 @@ public class SessionWriter {
             }
 
             //if (!FrameManager.isGeneListMode()) {
-            String locus = session.getLocus();
+            String locus = session.getLocusString();
             if (locus != null && !FrameManager.isGeneListMode()) {
                 globalElement.setAttribute(SessionAttribute.LOCUS.getText(), locus);
             }

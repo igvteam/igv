@@ -98,7 +98,7 @@ public class Session {
 
 
     public void recordHistory() {
-        history.push(FrameManager.getDefaultFrame().getCurrentLocusString());
+        history.push(FrameManager.getDefaultFrame().getFormattedLocusString());
     }
 
     public String getSessionVersion() {
@@ -180,10 +180,13 @@ public class Session {
         return PreferenceManager.getInstance().get(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY);
     }
 
-    public String getLocus() {
-        return getReferenceFrame().getCurrentLocusString();
+    public String getLocusString() {
+        ReferenceFrame.Range range = getReferenceFrame().getCurrentRange();
+        String startStr = String.valueOf(range.getStart());
+        String endStr = String.valueOf(range.getEnd());
+        String position = range.getChr() + ":" + startStr + "-" + endStr;
+        return position;
     }
-
 
     public void setLocus(String locusString) {
         try {
@@ -226,6 +229,7 @@ public class Session {
      * WARNING! This method should never be used for update of the regions collection.
      * If this gets abused, this method could be changed to create a new Collection so that updates
      * have no effect on the real one.
+     *
      * @param chr
      * @return
      */
@@ -328,17 +332,18 @@ public class Session {
         return getCurrentGeneList() == null ? "" : getCurrentGeneList().getName();
     }
 
-    static class Locus {
-        String chr;
-        int start;
-        int end;
+static class Locus {
+    String chr;
+    int start;
+    int end;
 
-        Locus(String chr, int start, int end) {
-            this.chr = chr;
-            this.start = start;
-            this.end = end;
-        }
+    Locus(String chr, int start, int end) {
+        this.chr = chr;
+        this.start = start;
+        this.end = end;
     }
+
+}
 
 
     static Locus getLocus(String searchString) {
@@ -431,6 +436,7 @@ public class Session {
 
     /**
      * Allows access to the Observable that notifies of changes to the regions of interest
+     *
      * @return
      */
     public ObserverForObject<Map<String, Collection<RegionOfInterest>>> getRegionsOfInterestObservable() {

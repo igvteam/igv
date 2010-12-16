@@ -429,7 +429,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 int mateStart = mate.mateStart - 1;
 
                 ReferenceFrame frame = te.getFrame();
-                String locus1 = frame.getCurrentLocusString();
+                String locus1 = frame.getFormattedLocusString();
 
                 // Generate a locus string for the read mate.  Keep the window width (in base pairs) == to the current range
                 ReferenceFrame.Range range = frame.getCurrentRange();

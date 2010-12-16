@@ -73,7 +73,7 @@ public class MacroSnapshotAction {
         IGVMainFrame mainFrame = IGVMainFrame.getInstance();
 
         if (filename == null) {
-            String locus = FrameManager.getDefaultFrame().getCurrentLocusString();
+            String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
         }
 
