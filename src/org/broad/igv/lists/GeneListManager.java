@@ -21,6 +21,7 @@ package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.util.FileUtils;
 
 import java.io.*;
 import java.util.*;
@@ -37,9 +38,12 @@ public class GeneListManager {
             "examples.gmt", /*"biocarta_cancer_cp.gmt",*/  "reactome_cp.gmt", "kegg_cancer_cp.gmt"};
 
 
-    public static LinkedHashSet<String> groups = new LinkedHashSet();
+    private static LinkedHashSet<String> groups = new LinkedHashSet();
+
+    private static HashMap<String, File> importedFiles = new HashMap();
 
     private static LinkedHashMap<String, GeneList> geneLists = new LinkedHashMap();
+    public static final String DEFAULT_GROUP = "My lists";
 
 
     /**
@@ -59,15 +63,6 @@ public class GeneListManager {
         return geneLists;
     }
     // Gene lists -- these don't belong here obviously
-
-    /**
-     * Import a .gmt file
-     *
-     * @param file
-     */
-    public static void importGMT(File file) {
-
-    }
 
 
     public static void addGeneList(GeneList genes) {
@@ -93,7 +88,6 @@ public class GeneListManager {
                 for (GeneList gl : lists) {
                     gl.setEditable(false);
                     addGeneList(gl);
-
                 }
             } catch (IOException e) {
                 log.error("Error loading default gene lists", e);
@@ -105,27 +99,42 @@ public class GeneListManager {
                 }
             }
         }
-
-
     }
 
     private static void loadUserLists() {
         File dir = Globals.getGeneListDirectory();
         if (dir.exists()) {
             for (File f : dir.listFiles()) {
-                GeneList geneList = loadGRPFile(f);
-                geneList.setGroup("My lists");
-                if (geneList != null) {
-                    addGeneList(geneList);
+                try {
+                    if (f.getName().toLowerCase().endsWith(".gmt")) {
+                        importGMTFile(f);
+                    } else {
+                        GeneList geneList = loadGRPFile(f);
+                        geneList.setGroup(DEFAULT_GROUP);
+                        if (geneList != null) {
+                            addGeneList(geneList);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
             }
 
         }
     }
 
-    static GeneList loadGRPFile(File f) {
+    static GeneList loadGRPFile(File grpFile) throws IOException {
+
+        // First copy file to gene list directory
+        File f = grpFile;
+        File dir = Globals.getGeneListDirectory();
+        if (!dir.equals(grpFile.getParentFile())) {
+            f = new File(dir, grpFile.getName());
+            FileUtils.copyFile(grpFile, f);
+        }
+
         String name = f.getName();
-        String group = "My lists";
+        String group = DEFAULT_GROUP;
         String description = null;
         List<String> genes = new ArrayList();
         BufferedReader reader = null;
@@ -141,8 +150,6 @@ public class GeneListManager {
                         if (tokens.length > 1) {
                             name = tokens[1];
                         }
-                    } else if (nextLine.startsWith("#group")) {
-
                     } else if (nextLine.startsWith("#description")) {
                         String[] tokens = nextLine.split("=");
                         if (tokens.length > 1) {
@@ -161,42 +168,49 @@ public class GeneListManager {
                 if (name == null) {
                     name = f.getName();
                 }
+                importedFiles.put(name, f);
                 return new GeneList(name, description, group, genes);
-
             }
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+
                 }
             }
         }
         return null;
     }
 
-    static List<GeneList> loadGMTFile(File f) {
+    static void importGMTFile(File gmtFile) throws IOException {
 
-        String group = f.getName();
+        File f = gmtFile;
+        File dir = Globals.getGeneListDirectory();
+        if (!dir.equals(gmtFile.getParentFile())) {
+            f = new File(dir, gmtFile.getName());
+            FileUtils.copyFile(gmtFile, f);
+        }
+
+        String group = f.getName().replace(".gmt", "");
         BufferedReader reader = null;
         try {
+            importedFiles.put(group, f);
             reader = new BufferedReader(new FileReader(f));
-            return loadGMT(group, reader);
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            List<GeneList> lists = loadGMT(group, reader);
+            for (GeneList gl : lists) {
+                gl.setEditable(false);
+                addGeneList(gl);
+            }
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+
                 }
             }
         }
-        return null;
     }
 
     private static List<GeneList> loadGMT(String group, BufferedReader reader) throws IOException {
@@ -212,17 +226,76 @@ public class GeneListManager {
                 }
             } else {
                 String[] tokens = nextLine.split("\t");
-                String name = tokens[0];
-                String description = tokens[1].replaceFirst(">", "");
-                // TODO -- description = tokes[1];
-                List<String> genes = new ArrayList();
-                for (int i = 2; i < tokens.length; i++) {
-                    genes.add(tokens[i]);
+                if (tokens.length > 2) {
+                    String name = tokens[0];
+                    String description = tokens[1].replaceFirst(">", "");
+                    List<String> genes = new ArrayList();
+                    for (int i = 2; i < tokens.length; i++) {
+                        genes.add(tokens[i]);
+                    }
+                    lists.add(new GeneList(name, description, group, genes));
                 }
-                lists.add(new GeneList(name, description, group, genes));
-
             }
         }
         return lists;
+    }
+
+    /**
+     * Test to see of group was imported by the user  Needed to determine if group can be removed.
+     */
+    public static boolean isImported(String groupName) {
+        return importedFiles.containsKey(groupName);
+    }
+
+    public static LinkedHashSet<String> getGroups() {
+        return groups;
+    }
+
+    public static void deleteGroup(String selectedGroup) {
+        File f = importedFiles.get(selectedGroup);
+        if (f.exists()) {
+            f.delete();
+        }
+        groups.remove(selectedGroup);
+        importedFiles.remove(selectedGroup);
+
+        Collection<GeneList> tmp = new ArrayList(geneLists.values());
+        for (GeneList gl : tmp) {
+            if (gl.getGroup().equals(selectedGroup)) {
+                geneLists.remove(gl.getName());
+            }
+        }
+    }
+
+
+    /**
+     * Return true if a group was also removed.
+     *
+     * @param listName
+     */
+    public static boolean deleteList(String listName) {
+
+
+        File f = importedFiles.get(listName);
+        if (f.exists()) {
+            f.delete();
+        }
+        importedFiles.remove(listName);
+
+        if (geneLists.containsKey(listName)) {
+            String group = geneLists.get(listName).getGroup();
+            geneLists.remove(listName);
+
+            // If the group is empty remove it as well
+
+            for (GeneList gl : geneLists.values()) {
+                if (gl.getGroup().equals(group)) {
+                    return false;
+                }
+            }
+            groups.remove(group);
+            return true;
+        }
+        return false;
     }
 }

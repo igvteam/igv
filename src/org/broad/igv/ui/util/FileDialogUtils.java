@@ -40,6 +40,11 @@ public class FileDialogUtils {
         return chooseFile(title, initialDirectory, null, mode);
     }
 
+
+    public static File chooseFile(String title) {
+        return chooseFile(title, Globals.getUserDirectory(), null, FileDialog.LOAD);
+    }
+
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {
 
         if(initialDirectory == null && initialFile != null) {
@@ -116,4 +121,5 @@ public class FileDialogUtils {
         }
 
     }
+
 }
