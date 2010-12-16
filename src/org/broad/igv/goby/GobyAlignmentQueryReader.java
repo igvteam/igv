@@ -79,13 +79,12 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
         reader = null;
 
         targetSequenceNames = new HashSet();
-        for(MutableString ms : identifiers.keySet()) {
+        for (MutableString ms : identifiers.keySet()) {
             targetSequenceNames.add(ms.toString());
         }
 
 
     }
-
 
 
     /**
@@ -153,11 +152,16 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
     /**
      * Determines whether filename can be loaded by this QueryReader.
      *
+     * Note -- the filename extension checks were added to prevent triggering a load of the entire Goby jar (15 mb) just
+     * just to do this check.
+     *
      * @param filename Name of a file component or alignment basename.
      * @return True if this implementation can load the alignment corresponding to this filename.
      */
     public static boolean supportsFileType(String filename) {
-        final boolean result = AlignmentReader.canRead(filename);
+        final boolean result =
+                (filename.endsWith(".header") || filename.endsWith(".index") || filename.endsWith(".stats")) &&
+                        AlignmentReader.canRead(filename);
         LOG.debug(String.format("supportsFileType %s result=%b", filename, result));
         return result;
     }

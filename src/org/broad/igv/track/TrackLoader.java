@@ -115,9 +115,6 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-                loadAlignmentsTrack(locator, newTracks);
-            } else
             if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
@@ -176,7 +173,7 @@ public class TrackLoader {
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks);
-            //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
+                //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
             } else if (AbstractFeatureParser.getInstanceFor(locator) != null) {
                 loadFeatureFile(locator, newTracks);
             } else if (MutationParser.isMutationAnnotationFile(locator)) {
@@ -191,6 +188,8 @@ public class TrackLoader {
             } else if (IGVDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadIGVFile(locator, newTracks);
+            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+                loadAlignmentsTrack(locator, newTracks);
             } else {
                 AttributeManager.getInstance().loadSampleInfo(locator);
             }
@@ -788,14 +787,14 @@ public class TrackLoader {
                     // This is expected if
                     //    log.info("Could not loading coverage data: MalformedURL: " + covPath);
                 }
-            }  
+            }
 
             newTracks.add(track);
 
-        }  catch(IndexNotFoundException e) {
-             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
-                     "<br><br>Note: The index file can be created using igvtools and must be in the same directory as the .sam file.");
-        }  catch (Exception e) {
+        } catch (IndexNotFoundException e) {
+            MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
+                    "<br><br>Note: The index file can be created using igvtools and must be in the same directory as the .sam file.");
+        } catch (Exception e) {
             MessageUtils.showMessage("Error: " + e.getMessage());
         }
     }
