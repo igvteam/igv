@@ -88,10 +88,12 @@
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
                 <exclude name="**/batik-codec.jar"/>
+                <exclude name="**/goby-io.jar"/>
             </fileset>
         </unzip>
 
         <copy file="${lib.dir}batik-codec.jar" tofile="${dist.dir}batik-codec.jar" overwrite="true"/>
+        <copy file="${lib.dir}goby-io.jar" tofile="${dist.dir}goby-io.jar" overwrite="true"/>
 
         <tstamp>
             <format property="timestamp" pattern="MM/dd/yyyy hh:mm aa"/>
@@ -124,7 +126,7 @@
                 <root classname="${main-class}"/>
             </classfileset>
             <manifest>
-                <attribute name="Class-Path" value="batik-codec.jar"/>
+                <attribute name="Class-Path" value="batik-codec.jar goby-io.jar"/>
                 <attribute name="Built-By" value="${user.name}"/>
                 <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
@@ -138,6 +140,8 @@
         <signjar jar="${jar.path}" alias="${alias}" keypass="${key-password}" storepass="${store-password}"
                  keystore="${keystore}"/>
         <signjar jar="${dist.dir}batik-codec.jar" alias="${alias}" keypass="${key-password}"
+                 storepass="${store-password}" keystore="${keystore}"/>
+        <signjar jar="${dist.dir}goby-io.jar" alias="${alias}" keypass="${key-password}"
                  storepass="${store-password}" keystore="${keystore}"/>
     </target>
 
@@ -157,7 +161,7 @@
 
         <copy todir="${tmp.dir}/${bin.archive.name}" file="${basedir}/dist/igv.jar"/>
         <copy todir="${tmp.dir}/${bin.archive.name}" file="${basedir}/dist/batik-codec.jar"/>
-
+        <copy todir="${tmp.dir}/${bin.archive.name}" file="${basedir}/dist/goby-io.jar"/>
         <!-- Base directory -->
         <copy todir="${tmp.dir}/${bin.archive.name}">
             <fileset dir="${scripts.dir}/">
@@ -248,6 +252,7 @@
             </fileset>
             <fileset file="${dist.dir}${jar.name}"/>
             <fileset file="${dist.dir}batik-codec.jar"/>
+            <fileset file="${dist.dir}goby-io.jar"/>
         </copy>
     </target>
 
