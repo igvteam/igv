@@ -37,68 +37,57 @@ import javax.swing.border.*;
 /**
  * @author Jim Robinson
  */
-public class GeneListInputDialog extends JDialog {
+public class GeneListEditDialog extends JDialog {
 
     private GeneList geneList;
     private boolean canceled = true;
 
-    // TODO -- redundant field
-    String [] genes;
 
-    public GeneListInputDialog(Frame owner) {
-        super(owner);
-        initComponents();
-
-    }
-
-    public GeneListInputDialog(Dialog owner, GeneList geneList) {
+    public GeneListEditDialog(Dialog owner, GeneList geneList) {
         super(owner);
         initComponents();
         this.geneList = geneList;
-        listNameField.setText(geneList.getName());
+
+        String name = geneList.getName();
+        if (name != null) {
+            listNameField.setText(name);
+        }
 
         StringBuffer buf = new StringBuffer();
-        for (String gene : geneList.getLoci()) {
-            buf.append(gene);
-            buf.append("\n");
+        java.util.List<String> loci = geneList.getLoci();
+        if (loci != null) {
+            for (String gene : geneList.getLoci()) {
+                buf.append(gene);
+                buf.append("\n");
+            }
+            genesField.setText(buf.toString());
         }
-        genesField.setText(buf.toString());
     }
 
 
-    private void parseGenes(String text) {
-        genes = text.trim().split("\\s+");
+    private String[] parseGenes(String text) {
+        return text.trim().split("\\s+");
 
-    }
-
-    public String[] getGenes() {
-        return genes;
-    }
-
-    public String getGeneListName() {
-        return listNameField.getText();
     }
 
 
     private void okButtonActionPerformed(ActionEvent e) {
-        if (listNameField.getText().length() == 0) {
+        String name = listNameField.getText();
+        if (name == null || name.length() == 0) {
             MessageUtils.showMessage("Name is required");
-            genes = null;
+            return;
         } else {
-            parseGenes(genesField.getText());
-            if (genes.length == 0) {
+            String[] genes = parseGenes(genesField.getText());
+            if (genes != null & genes.length == 0) {
                 MessageUtils.showMessage("Lists must contain at least 1 locus");
-                genes = null;
+                return;
             }
-        }
-        if (genes != null) {
-            saveGeneList();
+            saveGeneList(name, genes);
         }
         setVisible(false);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
-        genes = null;
         setVisible(false);
     }
 
@@ -166,7 +155,7 @@ public class GeneListInputDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -184,8 +173,8 @@ public class GeneListInputDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -195,8 +184,8 @@ public class GeneListInputDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -206,8 +195,8 @@ public class GeneListInputDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
@@ -235,36 +224,12 @@ public class GeneListInputDialog extends JDialog {
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-    private void saveGeneList() {
+    private void saveGeneList(String name, String[] genes) {
         canceled = false;
-        File file = null;
-        geneList.setName(getGeneListName());
+        geneList.setName(name);
         geneList.setLoci(Arrays.asList(genes));
-        try {
-            final String listName = getGeneListName();
-            file = new File(Globals.getGeneListDirectory(), getLegalFilename(listName));
-            PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
-            pw.println("#name=" + listName);
-            for (String s : genes) {
-                pw.println(s);
-            }
-            pw.close();
-        } catch (IOException e) {
-            if (file != null) {
-                MessageUtils.showMessage("Error writing gene list file: " + file.getAbsolutePath() + " " + e.getMessage());
-            }
-            e.printStackTrace();
-        }
-
-    }
-
-
-    private String getLegalFilename(String s) {
-        try {
-            return URLEncoder.encode(s, "UTF-8") + ".list.txt";
-        } catch (UnsupportedEncodingException e) {
-            return s;
-        }
+        geneList.setDescription(descriptionField.getText());
+        GeneListManager.saveGeneList(geneList);
     }
 
 

@@ -21,9 +21,11 @@ package org.broad.igv.lists;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -239,6 +241,57 @@ public class GeneListManager {
         }
         return lists;
     }
+
+    public static void saveGeneList(GeneList geneList) {
+
+        File file = null;
+        PrintWriter pw = null;
+        try {
+            final String listName = geneList.getName();
+            String description = geneList.getDescription();
+            List<String> genes = geneList.getLoci();
+
+            if (listName != null && genes != null) {
+                file = new File(Globals.getGeneListDirectory(), getLegalFilename(listName) + ".grp");
+                pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+                pw.println("#name=" + listName);
+                if (description != null) pw.println("#description=" + description);
+                for (String s : genes) {
+                    pw.println(s);
+                }
+                pw.close();
+                importedFiles.put(listName, file);
+            }
+
+        } catch (IOException e) {
+            if (file != null) {
+                MessageUtils.showMessage("Error writing gene list file: " + file.getAbsolutePath() + " " + e.getMessage());
+            }
+            log.error("Error saving gene list", e);
+        }
+        finally {
+            if (pw != null) {
+                pw.close();
+            }
+        }
+    }
+
+
+    /**
+     * Return a legal filename derived from the input string.
+     * todo Move this to a utility class
+     *
+     * @param s
+     * @return
+     */
+    private static String getLegalFilename(String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return s;
+        }
+    }
+
 
     /**
      * Test to see of group was imported by the user  Needed to determine if group can be removed.

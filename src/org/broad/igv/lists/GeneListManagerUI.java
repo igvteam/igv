@@ -168,7 +168,7 @@ public class GeneListManagerUI extends JDialog {
         String selection = (String) glJList.getSelectedValue();
         if (selection != null) {
             GeneList geneList = geneLists.get(selection);
-            GeneListInputDialog dlg = new GeneListInputDialog(this, geneList);
+            GeneListEditDialog dlg = new GeneListEditDialog(this, geneList);
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -182,12 +182,27 @@ public class GeneListManagerUI extends JDialog {
     }
 
 
+    private void newListActionPerformed(ActionEvent e) {
+        GeneList geneList = new GeneList();
+        GeneListEditDialog dlg = new GeneListEditDialog(this, geneList);
+            dlg.setVisible(true);
+
+            if (!dlg.isCanceled()) {
+                listModel.add(geneList);
+                glJList.updateUI();
+                glJList.setSelectedValue(geneList.getName(), true);
+                //loci.updateUI();
+            }
+    }
+
+
+
     private void copyListButtonActionPerformed(ActionEvent e) {
         String selection = (String) glJList.getSelectedValue();
         if (selection != null) {
             GeneList geneList = geneLists.get(selection);
             GeneList copiedList = geneList.copy();
-            GeneListInputDialog dlg = new GeneListInputDialog(this, copiedList);
+            GeneListEditDialog dlg = new GeneListEditDialog(this, copiedList);
             dlg.setVisible(true);
 
             if (!dlg.isCanceled()) {
@@ -212,7 +227,7 @@ public class GeneListManagerUI extends JDialog {
                     geneLists.remove(selection);
                     listModel.filter();
                     glJList.updateUI();
-                    glJList.setSelectedIndex(1);
+                    glJList.setSelectedIndex(0);
                     lociJList.updateUI();
                 }
             }
@@ -491,16 +506,10 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                            "All"
+                                        "All"
                                     };
-
-                                    public int getSize() {
-                                        return values.length;
-                                    }
-
-                                    public Object getElementAt(int i) {
-                                        return values[i];
-                                    }
+                                    public int getSize() { return values.length; }
+                                    public Object getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {
@@ -577,6 +586,11 @@ public class GeneListManagerUI extends JDialog {
                                 //---- newList ----
                                 newList.setIcon(null);
                                 newList.setText("New");
+                                newList.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        newListActionPerformed(e);
+                                    }
+                                });
                                 panel8.add(newList);
 
                                 //---- copyListButton ----

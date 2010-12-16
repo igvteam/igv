@@ -42,9 +42,13 @@ public class GeneList {
     }
 
     public GeneList(String name, List<String> loci) {
-        this.group = "My lists";
+        this.group = GeneListManager.DEFAULT_GROUP;
         this.name = name;
         this.loci = loci;
+    }
+
+    public GeneList() {
+        this.group = GeneListManager.DEFAULT_GROUP;
     }
 
     public String getName() {
