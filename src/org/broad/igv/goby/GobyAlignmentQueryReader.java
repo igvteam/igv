@@ -151,7 +151,7 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
 
     /**
      * Determines whether filename can be loaded by this QueryReader.
-     *
+     * <p/>
      * Note -- the filename extension checks were added to prevent triggering a load of the entire Goby jar (15 mb) just
      * just to do this check.
      *
@@ -160,7 +160,8 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
      */
     public static boolean supportsFileType(String filename) {
         final boolean result =
-                (filename.endsWith(".header") || filename.endsWith(".index") || filename.endsWith(".stats")) &&
+                (filename.endsWith(".header") || filename.endsWith(".index") || filename.endsWith(".stats") ||
+                        (filename.endsWith(".tmh") || filename.endsWith(".entries"))) &&
                         AlignmentReader.canRead(filename);
         LOG.debug(String.format("supportsFileType %s result=%b", filename, result));
         return result;
