@@ -84,7 +84,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showAttributesDisplayCheckBox = new JCheckBox();
         searchZoomCB = new JCheckBox();
         missingDataExplanation6 = new JLabel();
-        missingDataExplanation7 = new JLabel();
+        zoomToFeatureExplanation = new JLabel();
+        label4 = new JLabel();
+        geneListFlankingField = new JTextField();
+        zoomToFeatureExplanation2 = new JLabel();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -217,10 +220,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 //======== jPanel10 ========
                 {
+                    jPanel10.setLayout(null);
 
                     //---- missingDataExplanation ----
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation.setText("<html>Distinguish  regions with zero values from regions with no data on plots <br>(e.g. bar charts).  Regions with no data are indicated with a gray background.");
+                    jPanel10.add(missingDataExplanation);
+                    missingDataExplanation.setBounds(new Rectangle(new Point(41, 35), missingDataExplanation.getPreferredSize()));
 
                     //---- showMissingDataCB ----
                     showMissingDataCB.setText("Distinguish Missing Data");
@@ -229,6 +235,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showMissingDataCBActionPerformed(e);
                         }
                     });
+                    jPanel10.add(showMissingDataCB);
+                    showMissingDataCB.setBounds(new Rectangle(new Point(6, 6), showMissingDataCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Combine Data and Feature Panels");
@@ -237,6 +245,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             combinePanelsCBActionPerformed(e);
                         }
                     });
+                    jPanel10.add(combinePanelsCB);
+                    combinePanelsCB.setBounds(new Rectangle(new Point(6, 83), combinePanelsCB.getPreferredSize()));
 
                     //---- joinSegmentsCB ----
                     joinSegmentsCB.setText("Join Adjacent CopyNumber Segments");
@@ -245,6 +255,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             joinSegmentsCBActionPerformed(e);
                         }
                     });
+                    jPanel10.add(joinSegmentsCB);
+                    joinSegmentsCB.setBounds(new Rectangle(new Point(6, 132), joinSegmentsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show Attribute Display");
@@ -253,6 +265,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showAttributesDisplayCheckBoxActionPerformed(e);
                         }
                     });
+                    jPanel10.add(showAttributesDisplayCheckBox);
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(6, 209), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -261,62 +275,65 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             searchZoomCBActionPerformed(e);
                         }
                     });
+                    jPanel10.add(searchZoomCB);
+                    searchZoomCB.setBounds(new Rectangle(new Point(6, 260), searchZoomCB.getPreferredSize()));
 
                     //---- missingDataExplanation6 ----
                     missingDataExplanation6.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation6.setText("<html>This option applies to segmented copy number data only.  When selected, gaps between<br>adjacent segments are filled by extending segment endpoints.");
+                    jPanel10.add(missingDataExplanation6);
+                    missingDataExplanation6.setBounds(new Rectangle(new Point(50, 161), missingDataExplanation6.getPreferredSize()));
 
-                    //---- missingDataExplanation7 ----
-                    missingDataExplanation7.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    missingDataExplanation7.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
-                    missingDataExplanation7.setVerticalAlignment(SwingConstants.TOP);
+                    //---- zoomToFeatureExplanation ----
+                    zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    zoomToFeatureExplanation.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
+                    zoomToFeatureExplanation.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel10.add(zoomToFeatureExplanation);
+                    zoomToFeatureExplanation.setBounds(52, 289, 603, 61);
 
-                    GroupLayout jPanel10Layout = new GroupLayout(jPanel10);
-                    jPanel10.setLayout(jPanel10Layout);
-                    jPanel10Layout.setHorizontalGroup(
-                        jPanel10Layout.createParallelGroup()
-                            .add(jPanel10Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jPanel10Layout.createParallelGroup()
-                                    .add(jPanel10Layout.createSequentialGroup()
-                                        .add(35, 35, 35)
-                                        .add(missingDataExplanation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .add(showMissingDataCB)
-                                    .add(combinePanelsCB)
-                                    .add(joinSegmentsCB)
-                                    .add(searchZoomCB)
-                                    .add(showAttributesDisplayCheckBox)
-                                    .add(jPanel10Layout.createSequentialGroup()
-                                        .add(44, 44, 44)
-                                        .add(jPanel10Layout.createParallelGroup(GroupLayout.TRAILING)
-                                            .add(missingDataExplanation7, GroupLayout.PREFERRED_SIZE, 508, GroupLayout.PREFERRED_SIZE)
-                                            .add(missingDataExplanation6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-                                .addContainerGap(50, Short.MAX_VALUE))
-                    );
-                    jPanel10Layout.setVerticalGroup(
-                        jPanel10Layout.createParallelGroup()
-                            .add(jPanel10Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(showMissingDataCB)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .add(18, 18, 18)
-                                .add(combinePanelsCB)
-                                .add(26, 26, 26)
-                                .add(joinSegmentsCB)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .add(18, 18, 18)
-                                .add(showAttributesDisplayCheckBox)
-                                .add(28, 28, 28)
-                                .add(searchZoomCB)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation7, GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(53, Short.MAX_VALUE))
-                    );
+                    //---- label4 ----
+                    label4.setText("Feature flanking region (bp): ");
+                    jPanel10.add(label4);
+                    label4.setBounds(new Rectangle(new Point(10, 401), label4.getPreferredSize()));
+
+                    //---- geneListFlankingField ----
+                    geneListFlankingField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            geneListFlankingFieldFocusLost(e);
+                        }
+                    });
+                    geneListFlankingField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            geneListFlankingFieldActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(geneListFlankingField);
+                    geneListFlankingField.setBounds(210, 395, 255, geneListFlankingField.getPreferredSize().height);
+
+                    //---- zoomToFeatureExplanation2 ----
+                    zoomToFeatureExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.");
+                    zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel10.add(zoomToFeatureExplanation2);
+                    zoomToFeatureExplanation2.setBounds(70, 430, 603, 61);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < jPanel10.getComponentCount(); i++) {
+                            Rectangle bounds = jPanel10.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = jPanel10.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        jPanel10.setMinimumSize(preferredSize);
+                        jPanel10.setPreferredSize(preferredSize);
+                    }
                 }
                 generalPanel.add(jPanel10);
-                jPanel10.setBounds(0, 0, 610, 420);
+                jPanel10.setBounds(0, 0, 745, 490);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2129,7 +2146,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
         }
-    }//GEN-LAST:event_defaultTrackHeightFieldActionPerformed
+    }
 
     private void trackNameAttributeFieldFocusLost(java.awt.event.FocusEvent evt) {
         String attributeName = String.valueOf(trackNameAttributeField.getText());
@@ -2137,7 +2154,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             attributeName = attributeName.toUpperCase().trim();
         }
         updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
-    }//GEN-LAST:event_trackNameAttributeFieldFocusLost
+    }
 
     private void trackNameAttributeFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String attributeName = String.valueOf(trackNameAttributeField.getText());
@@ -2145,18 +2162,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
             attributeName = attributeName.toUpperCase().trim();
         }
         updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
-    }//GEN-LAST:event_trackNameAttributeFieldActionPerformed
+    }
 
     private void defaultChartTrackHeightFieldFocusLost(java.awt.event.FocusEvent evt) {
-        String defaultTrackHeight = String.valueOf(defaultChartTrackHeightField.getText());
-        try {
-            Integer.parseInt(defaultTrackHeight);
-            updatedPreferenceMap.put(PreferenceManager.CHART_TRACK_HEIGHT_KEY, defaultTrackHeight);
-        } catch (NumberFormatException numberFormatException) {
-            inputValidated = false;
-            MessageUtils.showMessage("Track height must be an integer number.");
-        }
-    }//GEN-LAST:event_defaultChartTrackHeightFieldFocusLost
+        defaultChartTrackHeightFieldActionPerformed(null);
+    }
 
     private void defaultChartTrackHeightFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String defaultTrackHeight = String.valueOf(defaultChartTrackHeightField.getText());
@@ -2167,28 +2177,48 @@ public class PreferencesEditor extends javax.swing.JDialog {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
         }
-    }//GEN-LAST:event_defaultChartTrackHeightFieldActionPerformed
+    }
+
+
+    private void geneListFlankingFieldFocusLost(FocusEvent e) {
+        // TODO add your code here
+    }
+
+
+    private void geneListFlankingFieldActionPerformed(ActionEvent e) {
+        String flankingRegion = String.valueOf(geneListFlankingField.getText());
+        try {
+            Integer.parseInt(flankingRegion);
+            updatedPreferenceMap.put(PreferenceManager.FLANKING_REGION, flankingRegion);
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Track height must be an integer number.");
+        }
+
+    }
+
+
 
     private void showAttributesDisplayCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
         boolean state = ((JCheckBox) evt.getSource()).isSelected();
         updatedPreferenceMap.put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, String.valueOf(state));
         IGVMainFrame.getInstance().doShowAttributeDisplay(state);
-    }//GEN-LAST:event_showAttributesDisplayCheckBoxActionPerformed
+    }
 
     private void joinSegmentsCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.JOIN_ADJACENT_SEGMENTS_KEY, String.valueOf(
                 joinSegmentsCB.isSelected()));
-    }//GEN-LAST:event_joinSegmentsCBActionPerformed
+    }
 
     private void combinePanelsCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY, String.valueOf(
                 combinePanelsCB.isSelected()));
-    }//GEN-LAST:event_combinePanelsCBActionPerformed
+    }
 
     private void showMissingDataCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.SHOW_MISSING_DATA_KEY, String.valueOf(
                 showMissingDataCB.isSelected()));
-    }//GEN-LAST:event_showMissingDataCBActionPerformed
+    }
 
     private void showRefSeqCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
@@ -2461,8 +2491,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         //drawExonNumbersCB.setSelected(preferenceManager.getDrawExonNumbers());
 
 
-        defaultChartTrackHeightField.setText(String.valueOf(prefMgr.getAsInt(PreferenceManager.CHART_TRACK_HEIGHT_KEY)));
-        defaultTrackHeightField.setText(String.valueOf(prefMgr.getAsInt(PreferenceManager.TRACK_HEIGHT_KEY)));
+        defaultChartTrackHeightField.setText(prefMgr.get(PreferenceManager.CHART_TRACK_HEIGHT_KEY));
+        defaultTrackHeightField.setText(prefMgr.get(PreferenceManager.TRACK_HEIGHT_KEY));
         displayTracksCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY));
@@ -2472,6 +2502,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
         colorOverlyCB.setEnabled(overlayTrackCB.isSelected());
         chooseOverlayColorsButton.setEnabled(overlayTrackCB.isSelected());
+
+        geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
         enablePortCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.PORT_ENABLED));
         portField.setText(String.valueOf(prefMgr.getAsInt(PreferenceManager.PORT_NUMBER)));
@@ -2614,7 +2646,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox showAttributesDisplayCheckBox;
     private JCheckBox searchZoomCB;
     private JLabel missingDataExplanation6;
-    private JLabel missingDataExplanation7;
+    private JLabel zoomToFeatureExplanation;
+    private JLabel label4;
+    private JTextField geneListFlankingField;
+    private JLabel zoomToFeatureExplanation2;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;

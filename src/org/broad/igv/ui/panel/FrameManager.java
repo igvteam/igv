@@ -19,6 +19,7 @@
 
 package org.broad.igv.ui.panel;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
@@ -36,7 +37,6 @@ public class FrameManager {
 
     private static List<ReferenceFrame> frames = new ArrayList();
     private static ReferenceFrame defaultFrame;
-    private static final int FLANKING_REGION = 0;
 
     static {
         defaultFrame = new ReferenceFrame("genome");
@@ -64,7 +64,7 @@ public class FrameManager {
     public static void setToDefaultFrame(String searchString) {
         frames.clear();
         if (searchString != null) {
-            Locus locus = getLocus(searchString);
+            Locus locus = getLocus(searchString, 0);
             if (locus != null) {
                 defaultFrame.setInterval(locus);
             }
@@ -82,9 +82,10 @@ public class FrameManager {
             frames.add(defaultFrame);
 
         } else {
+            int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
             List<String> lociNotFound = new ArrayList();
             for (String searchString : gl.getLoci()) {
-                Locus locus = getLocus(searchString);
+                Locus locus = getLocus(searchString, flankingRegion);
                 if (locus == null) {
                     lociNotFound.add(searchString);
                 } else {
@@ -107,14 +108,19 @@ public class FrameManager {
     }
 
 
-    public static Locus getLocus(String searchString) {
+    public static Locus getLocus(String name) {
+        int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
+        return getLocus(name, flankingRegion);
+    }
+
+    public static Locus getLocus(String searchString, int flankingRegion) {
 
         NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
         if (feature != null) {
             return new Locus(
                     feature.getChr(),
-                    feature.getStart() - FLANKING_REGION,
-                    feature.getEnd() + FLANKING_REGION);
+                    feature.getStart() - flankingRegion,
+                    feature.getEnd() + flankingRegion);
         } else {
             Locus locus = new Locus(searchString);
             String chr = locus.getChr();
@@ -137,5 +143,6 @@ public class FrameManager {
         getDefaultFrame().computeMaxZoom();
         getDefaultFrame().invalidateLocationScale();
     }
+
 }
 

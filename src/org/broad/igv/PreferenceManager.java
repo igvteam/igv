@@ -155,6 +155,10 @@ public class PreferenceManager implements PropertyManager {
 
     final public static String USE_BYTE_RANGE = "UseHttpByteRange";
 
+    public static final String FLANKING_REGION = "FLAKING_REGIONS";
+
+
+
     public static String DEFAULT_DATA_SERVER_URL;
 
     static {
@@ -191,7 +195,6 @@ public class PreferenceManager implements PropertyManager {
     private Map<String, Boolean> booleanCache = new Hashtable();
     private Map<String, Object> objectCache = new Hashtable();
     private Map<TrackType, ContinuousColorScale> colorScaleCache = new Hashtable();
-
 
     public static PreferenceManager getInstance() {
 
@@ -888,6 +891,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(TRACK_HEIGHT_KEY, "15");
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
 
+        defaultValues.put(FLANKING_REGION, "2000");
 
     }
 }

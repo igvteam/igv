@@ -102,8 +102,9 @@ public class SearchCommand implements Command {
         else {
             NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
             if (feature != null) {
-                int start = Math.max(0, feature.getStart());
-                int end = feature.getEnd();
+                int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
+                int start = Math.max(0, feature.getStart() - flankingRegion);
+                int end = feature.getEnd() + flankingRegion;
 
                 if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
                     referenceFrame.jumpTo(feature.getChr(), start, end);
