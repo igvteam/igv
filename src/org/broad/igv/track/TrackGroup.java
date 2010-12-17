@@ -83,7 +83,7 @@ public class TrackGroup {
         int height = 0;
         {
             for (Track track : tracks) {
-                if (track.isVisible()) {
+                if (track != null && track.isVisible()) {
                     height += track.getPreferredHeight();
                 }
             }

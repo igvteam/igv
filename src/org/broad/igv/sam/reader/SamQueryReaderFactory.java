@@ -21,7 +21,7 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.SAMFileReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-//import org.broad.igv.goby.GobyAlignmentQueryReader;
+import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 //import org.broad.igv.goby.GobyAlignmentQueryReader;
@@ -90,19 +90,14 @@ public class SamQueryReaderFactory {
             }
         } else if (path.endsWith(".bam.list")) {
             reader = new BAMRemoteQueryReader(locator);
-        }
+        } else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+            try {
+                reader = new GobyAlignmentQueryReader(locator.getPath());
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
 
-        // TODO -- Goby temporarily disabled
-        //else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-        //    try {
-        //        reader = new GobyAlignmentQueryReader(locator.getPath());
-        //    } catch (IOException e) {
-        //        throw new RuntimeException("Cannot load Goby alignment " + locator.getPath(), e);
-        //
-        //    }
-        //} 
-
-        else {
+            }
+        } else {
             throw new RuntimeException("Cannot find reader for aligment file: " + locator.getPath());
         }
 

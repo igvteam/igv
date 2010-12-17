@@ -38,7 +38,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-//import org.broad.igv.goby.GobyAlignmentQueryReader;
+import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
@@ -188,11 +188,9 @@ public class TrackLoader {
                 locator.setDescription("MAGE_TAB");
                 loadIGVFile(locator, newTracks);
 
-                // TODO -- temporarily disable goby access 
-            //} else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-            //    loadAlignmentsTrack(locator, newTracks);
-            }
-               else {
+            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+                loadAlignmentsTrack(locator, newTracks);
+            } else {
                 AttributeManager.getInstance().loadSampleInfo(locator);
             }
 
