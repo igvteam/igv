@@ -488,7 +488,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         //searchTextField.setVisible(!geneListMode);
         //goButton.setVisible(!geneListMode);
         zoomControl.setVisible(!geneListMode);
-        homeButton.setVisible(!geneListMode);
+        //homeButton.setVisible(!geneListMode);
         roiToggleButton.setVisible(!geneListMode);
     }
 
@@ -970,17 +970,17 @@ public class IGVCommandBar extends javax.swing.JPanel {
         geneListPanel.setLayout(new BorderLayout());
         geneListPanel.add(Box.createHorizontalStrut(400), BorderLayout.WEST);
         geneListLabel = new JideButton();
-        geneListLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 1) {
-                    if (MessageUtils.confirm("Return to genome view?")) {
-                        owner.setGeneList("None");
-                    }
+        /* geneListLabel.addMouseListener(new MouseAdapter() {
+           @Override
+           public void mousePressed(java.awt.event.MouseEvent evt) {
+               if (evt.getClickCount() == 1) {
+                   if (MessageUtils.confirm("Return to genome view?")) {
+                       owner.setGeneList("None");
+                   }
 
-                }
-            }
-        });
+               }
+           }
+       }); */
         geneListLabel.setPreferredSize(new Dimension(300, 12));
         geneListLabel.setBorder(BorderFactory.createEtchedBorder());
         geneListLabel.setHorizontalAlignment(JLabel.CENTER);
@@ -1135,6 +1135,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        if (FrameManager.isGeneListMode()) {
+            owner.setGeneList("None");
+        }
         String chr = GenomeManager.getInstance().getHomeChr();
         getDefaultReferenceFrame().setChromosomeName(chr);
         IGVMainFrame.getInstance().getSession().getHistory().push(chr);

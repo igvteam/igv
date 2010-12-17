@@ -96,10 +96,20 @@ public class HeaderPanel extends JPanel implements Transferable {
 
             final MouseAdapter nameMouseAdapater = new MouseAdapter() {
                 public void mouseClicked(MouseEvent evt) {
-                    if (evt.getClickCount() > 0) {
+                    if (evt.getClickCount() > 1) {
+                        if (FrameManager.isGeneListMode()) {
+                            String chr = frame.getChrName();
+                            int start = (int) frame.getOrigin();
+                            int end = (int) frame.getEnd() + 1;
+                            IGVMainFrame.getInstance().setGeneList("None");
+                            FrameManager.getDefaultFrame().jumpTo(chr, start, end);
+                        }
+                    } else {
                         frame.reset();
-                        IGVMainFrame.getInstance().doRefresh();
                     }
+                    IGVMainFrame.getInstance().doRefresh();
+
+
                 }
 
                 public void mousePressed(MouseEvent evt) {
