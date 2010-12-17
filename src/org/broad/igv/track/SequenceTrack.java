@@ -23,10 +23,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
-import org.broad.igv.renderer.ColorScale;
-import org.broad.igv.renderer.ContinuousColorScale;
-import org.broad.igv.renderer.Renderer;
-import org.broad.igv.renderer.SequenceRenderer;
+import org.broad.igv.renderer.*;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.awt.*;
@@ -41,6 +38,8 @@ public class SequenceTrack extends AbstractTrack {
     private static final int SEQUENCE_HEIGHT = 14;
 
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
+
+    private boolean shouldShowTranslation = true;
 
     /**
      * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented, should always be
@@ -59,19 +58,19 @@ public class SequenceTrack extends AbstractTrack {
      * @param rect
      */
     public void render(RenderContext context, Rectangle rect) {
-
         // Are we zoomed in far enough to show the sequence?  Scale is
-        // in BP / pixel,  need at least 1 pixel.
-        if (context.getScale() < 1 && !context.getChr().equals(Globals.CHR_ALL)) {
-            sequenceRenderer.draw(context, rect, showColorSpace);
+        // in BP / pixel,  need at least 1 pixel for 3 bp in order to show translated sequence,
+        //or 1 pixel per bp in order to show sequence
+        if (context.getScale() < (shouldShowTranslation ? 3 : 1) && !context.getChr().equals(Globals.CHR_ALL)) {
+            sequenceRenderer.draw(context, rect, showColorSpace, shouldShowTranslation);
         }
-
     }
 
 
     @Override
     public int getHeight() {
-        return SEQUENCE_HEIGHT * (showColorSpace ? 2 : 1);
+        return SEQUENCE_HEIGHT + (showColorSpace ? SEQUENCE_HEIGHT : 0) + 
+                (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0);
     }
 
 
@@ -128,5 +127,11 @@ public class SequenceTrack extends AbstractTrack {
         return true;
     }
 
+    public boolean isShouldShowTranslation() {
+        return shouldShowTranslation;
+    }
 
+    public void setShouldShowTranslation(boolean shouldShowTranslation) {
+        this.shouldShowTranslation = shouldShowTranslation;
+    }
 }
