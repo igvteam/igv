@@ -482,9 +482,10 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
         if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
             Rectangle aaRect = new Rectangle(pStart, yOffset - BLOCK_HEIGHT / 2, 1, BLOCK_HEIGHT);
 
-
-            boolean odd = true;
             int aaSeqStartPosition = aaSequence.getStartPosition();
+            int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - exon.getReadingShift()) / 3);
+            //calculated oddness or evenness of first amino acid. This is also done independently in SequenceRenderer
+            boolean odd = (firstFullAcidIndex % 2) == 1;
 
             if (aaSeqStartPosition > exon.getStart()) {
 
@@ -498,8 +499,8 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
                         aaSeqStartPosition, theOrigin, locationScale) - aaRect.x;
 
                 if (trackRectangle.intersects(aaRect)) {
-                    Graphics2D bgGraphics = context.getGraphic2DForColor(odd ? AA_COLOR_1 : AA_COLOR_2);
-                    odd = !odd;
+                    //use opposite color from first AA color
+                    Graphics2D bgGraphics = context.getGraphic2DForColor(!odd ? AA_COLOR_1 : AA_COLOR_2);
                     bgGraphics.fill(aaRect);
                 }
             }
@@ -520,7 +521,6 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
 
 
                         Graphics2D bgGraphics = context.getGraphic2DForColor(odd ? AA_COLOR_1 : AA_COLOR_2);
-                        odd = !odd;
                         if (((acid.getSymbol() == 'M') && (((gene.getStrand() == Strand.POSITIVE) &&
                                 (aaSeqStartPosition == exon.getCdStart())) || ((gene.getStrand() == Strand.NEGATIVE) &&
                                 (aaSeqStartPosition == exon.getCdEnd() - 3))))) {
@@ -534,6 +534,7 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
                         String tmp = new String(new char[]{acid.getSymbol()});
                         GraphicUtils.drawCenteredText(tmp, aaRect, fontGraphics);
                     }
+                    odd = !odd;                    
                     aaSeqStartPosition += 3;
 
                 }

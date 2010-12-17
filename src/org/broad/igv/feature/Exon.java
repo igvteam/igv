@@ -146,7 +146,7 @@ public class Exon extends AbstractFeature {
     }
 
 
-    int getReadingShift() {
+    public int getReadingShift() {
         return readingFrame;
     }
 
@@ -209,5 +209,6 @@ public class Exon extends AbstractFeature {
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
 
 }
