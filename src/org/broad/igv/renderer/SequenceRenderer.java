@@ -105,19 +105,22 @@ public class SequenceRenderer implements Renderer {
         byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
 
         //The combined height of sequence and (optionally) colorspace bands
-        int sequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / 5 * 2 :
-                (int) (trackRectangle.getHeight()/4);
-        //Rectangle containing the sequence and (optionally) colorspace bands
-        Rectangle untranslatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y,
-                (int) trackRectangle.getWidth(), sequenceHeight);
+        int untranslatedSequenceHeight = (int) trackRectangle.getHeight();
+
 
         if (showTranslation)
         {
+            untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / 5 * 2 :
+                (int) (trackRectangle.getHeight()/4);
             // Draw translated sequence
-            Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + sequenceHeight,
-                    (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - sequenceHeight);
+            Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
+                    (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
             translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq);
         }
+
+        //Rectangle containing the sequence and (optionally) colorspace bands
+        Rectangle untranslatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y,
+                (int) trackRectangle.getWidth(), untranslatedSequenceHeight);
 
         if (context.getScale() < 1)
         {
