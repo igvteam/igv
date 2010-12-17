@@ -46,7 +46,7 @@ import it.unimi.dsi.lang.MutableString;
  *         Time: 11:43:18 AM
  */
 public class GobyAlignmentQueryReader implements AlignmentQueryReader {
-    private static final Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
+    private static final Logger LOG = null; //Logger.getLogger(GobyAlignmentQueryReader.class);
 
     private AlignmentReader reader;
     private final String basename;
