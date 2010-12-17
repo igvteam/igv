@@ -59,6 +59,9 @@ public class SequenceRenderer implements Renderer {
 
     protected TranslatedSequenceDrawer translatedSequenceDrawer;
 
+    //are we rendering positive or negative strand?
+    protected Strand strand = Strand.POSITIVE;
+
     public SequenceRenderer()
     {
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
@@ -115,7 +118,7 @@ public class SequenceRenderer implements Renderer {
             // Draw translated sequence
             Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                     (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
-            translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq);
+            translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
         }
 
         //Rectangle containing the sequence and (optionally) colorspace bands
@@ -149,6 +152,8 @@ public class SequenceRenderer implements Renderer {
                     int idx = loc - start;
                     int pX0 = (int) ((loc - origin) / locScale);
                     char c = (char) seq[idx];
+                    if (Strand.NEGATIVE.equals(strand))
+                        c = complementChar(c);
                     Color color = nucleotideColors.get(c);
                     if (fontSize >= 8) {
                         if (color == null) {
@@ -173,6 +178,28 @@ public class SequenceRenderer implements Renderer {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * complement a nucleotide. If not ATGC, return the intput char
+     * @param inputChar
+     * @return
+     */
+    protected char complementChar(char inputChar)
+    {
+        switch (inputChar)
+        {
+            case 'A':
+                return 'T';
+            case 'T':
+                return 'A';
+            case 'G':
+                return 'C';
+            case 'C':
+                return 'G';
+            default:
+                return inputChar;
         }
     }
 
@@ -219,6 +246,14 @@ public class SequenceRenderer implements Renderer {
         return Color.BLACK;
     }
 
+    public Strand getStrand() {
+        return strand;
+    }
+
+    public void setStrand(Strand strand) {
+        this.strand = strand;
+    }
+
 
     /**
      * @author Damon May
@@ -243,9 +278,6 @@ public class SequenceRenderer implements Renderer {
         //ideal vertical buffer around AA characters in band
         public static final int IDEAL_FONT_VBUFFER = 2;
 
-        //are we rendering positive or negative strand?
-        protected Strand strand = Strand.POSITIVE;
-
         protected static final Color STOP_CODON_COLOR = Color.RED;
         protected static final Color METHIONINE_COLOR = Color.GREEN;
 
@@ -258,7 +290,7 @@ public class SequenceRenderer implements Renderer {
          * @param trackRectangle
          * @param seq
          */
-        public void draw(RenderContext context, int start, Rectangle trackRectangle, byte[] seq) {
+        public void draw(RenderContext context, int start, Rectangle trackRectangle, byte[] seq, Strand strand) {
             //each band gets 1/3 of the height, rounded
             int idealHeightPerBand = trackRectangle.height / 3;
             //In this situation, band height is more equal if we tweak things a bit
@@ -300,20 +332,20 @@ public class SequenceRenderer implements Renderer {
 
             //only draw nucleotide lines the last time this is called
             drawOneTranslation(context, start, bandRectangle, 0, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq);
+                    nucleotideLineXPositions, seq, strand);
 
             //rf 1
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = idealHeightPerBand;
             heightAlreadyUsed += bandRectangle.height;
             drawOneTranslation(context, start, bandRectangle, 1, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq);
+                    nucleotideLineXPositions, seq, strand);
 
             //rf 2
             bandRectangle.y = trackRectangle.y + heightAlreadyUsed;
             bandRectangle.height = trackRectangle.height - heightAlreadyUsed;
             drawOneTranslation(context, start, bandRectangle, 2, shouldDrawLetters, fontSize,
-                    nucleotideLineXPositions, seq);
+                    nucleotideLineXPositions, seq, strand);
 
             if (shouldDrawNucleotideLines)
             {
@@ -350,7 +382,8 @@ public class SequenceRenderer implements Renderer {
         protected void drawOneTranslation(RenderContext context, int start,
                                           Rectangle bandRectangle, int readingFrame,
                                           boolean shouldDrawLetters, int fontSize,
-                                          Set<Integer> nucleotideLineXPositions, byte[] seq) {
+                                          Set<Integer> nucleotideLineXPositions, byte[] seq,
+                                          Strand strand) {
 
             double locScale = context.getScale();
             double origin = context.getOrigin();
@@ -449,12 +482,6 @@ public class SequenceRenderer implements Renderer {
             return Color.BLACK;
         }
 
-        public Strand getStrand() {
-            return strand;
-        }
 
-        public void setStrand(Strand strand) {
-            this.strand = strand;
-        }
     }
 }

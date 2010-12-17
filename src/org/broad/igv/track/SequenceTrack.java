@@ -23,6 +23,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -42,7 +43,7 @@ public class SequenceTrack extends AbstractTrack {
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
     //should translated aminoacids be shown below the sequence?
-    private boolean shouldShowTranslation = false;
+    private boolean shouldShowTranslation = true;
 
     /**
      * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented, should always be
@@ -117,6 +118,7 @@ public class SequenceTrack extends AbstractTrack {
         // Required method for track interface, ignore
         return 0;
     }
+
 
 
     /**
