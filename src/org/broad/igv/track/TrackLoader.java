@@ -38,7 +38,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.goby.GobyAlignmentQueryReader;
+//import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
@@ -46,7 +46,6 @@ import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.track.tribble.FeatureFileHeader;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
-//import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.synteny.BlastMapping;
 import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
@@ -188,9 +187,12 @@ public class TrackLoader {
             } else if (IGVDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadIGVFile(locator, newTracks);
-            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-                loadAlignmentsTrack(locator, newTracks);
-            } else {
+
+                // TODO -- temporarily disable goby access 
+            //} else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+            //    loadAlignmentsTrack(locator, newTracks);
+            }
+               else {
                 AttributeManager.getInstance().loadSampleInfo(locator);
             }
 
