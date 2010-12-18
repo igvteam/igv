@@ -41,7 +41,11 @@ import java.util.Collection;
  */
 public interface Track extends Persistable {
 
-    enum DisplayMode {DENSE, SQUISH, PACK};
+    enum DisplayMode {
+        DENSE, SQUISH, PACK
+    }
+
+    ;
 
     /**
      * Render the track contents in the rectangle
@@ -69,8 +73,8 @@ public interface Track extends Persistable {
 
     /**
      * Render the track name
-     * */
-    
+     */
+
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
 
     /**
@@ -82,19 +86,19 @@ public interface Track extends Persistable {
     public void overlay(RenderContext context, Rectangle rect);
 
     /**
-     * @return  The unique identifier for the track.  This should only be used in saving/restoring sessions.
+     * @return The unique identifier for the track.  This should only be used in saving/restoring sessions.
      */
     public String getId();
 
     /**
-     *  Get the display name of the track.
+     * Get the display name of the track.
+     *
      * @return
      */
     public String getName();
 
     /**
-     *
-     * @return  ID for use with the sample info table.  Not
+     * @return ID for use with the sample info table.  Not
      */
     public String getSampleId();
 
@@ -198,7 +202,9 @@ public interface Track extends Persistable {
 
     public boolean isExpanded();
 
-    public boolean handleClick(TrackClickEvent e);
+    public boolean handleDataClick(TrackClickEvent e);
+
+    public void handleNameClick(MouseEvent e);
 
     public Collection<WindowFunction> getAvailableWindowFunctions();
 

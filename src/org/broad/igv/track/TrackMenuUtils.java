@@ -99,7 +99,7 @@ public class TrackMenuUtils {
             //  TODO -- this is ugly, refactor to remove instanceof
             if (track instanceof DataTrack) {
                 hasDataTracks = true;
-            } else if (track instanceof FeatureTrack || track instanceof GeneTrack) {
+            } else if (track instanceof FeatureTrack) {
                 hasFeatureTracks = true;
             }
             if (hasDataTracks && hasFeatureTracks) {
@@ -734,7 +734,7 @@ public class TrackMenuUtils {
 
         Collection<Track> featureTracks = new ArrayList(selectedTracks.size());
         for (Track t : selectedTracks) {
-            if (t instanceof FeatureTrack || t instanceof GeneTrack) {
+            if (t instanceof FeatureTrack) {
                 featureTracks.add(t);
             }
         }

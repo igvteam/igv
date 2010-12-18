@@ -33,6 +33,7 @@ import org.broad.igv.ui.WaitCursorManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.TimerTask;
 
 /**
  * @author eflakes
@@ -51,35 +52,28 @@ public class PanAndZoomTool extends IGVTool {
     private Cursor dragCursor;
 
     /**
-     * Constructs ...
-     *
-     * @param owner
+     * A scheduler is used to distinguish a click from a double click.
      */
+    private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
+
+
     public PanAndZoomTool(DataPanel owner) {
         super(owner, IGVMainFrame.handCursor);    // Cursor.getDefaultCursor());
         this.dragCursor = IGVMainFrame.fistCursor;
         setName("Zoom");
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     @Override
     public Cursor getCursor() {
         return isDragging ? dragCursor : super.getCursor();
     }
 
-    /**
-     * Method description
-     *
-     * @param e
-     */
+
     @Override
     public void mousePressed(final MouseEvent e) {
 
-   
+
         panel = (Container) e.getSource();
 
         panel.setCursor(dragCursor);
@@ -103,12 +97,7 @@ public class PanAndZoomTool extends IGVTool {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param e
-     */
-    @Override
+
     public void mouseReleased(final MouseEvent e) {
         viewport = null;
         if (isDragging) {
@@ -120,11 +109,7 @@ public class PanAndZoomTool extends IGVTool {
         ((JComponent) e.getSource()).setCursor(getCursor());
     }
 
-    /**
-     * Method description
-     *
-     * @param e
-     */
+
     @Override
     final public void mouseDragged(final MouseEvent e) {
 
@@ -201,29 +186,18 @@ public class PanAndZoomTool extends IGVTool {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param e
-     */
+
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mouseClicked(final MouseEvent e) {
+
         final ReferenceFrame referenceFrame = getReferenceFame();
 
-        Object source = e.getSource();
-        if (source instanceof DataPanel) {
-            Track track = ((DataPanel) source).getTrack(e.getX(), e.getY());
-            if (track != null) {
-                TrackClickEvent te = new TrackClickEvent(e, referenceFrame);
-                if (track.handleClick(te)) {
-                    return;
-                }
-            }
-        }
-
+        // If this is the second click of a double click, cancel the scheduled single click task.
         // The shift and alt keys are alternative undocumented zoom options
         // Shift zooms by 8x,  alt zooms out by 2x
-        if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
+        if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
+            clickScheduler.cancelClickTask();
+
             int currentZoom = referenceFrame.getZoom();
             final int newZoom = e.isAltDown()
                     ? Math.max(currentZoom - 1, 0)
@@ -236,6 +210,28 @@ public class PanAndZoomTool extends IGVTool {
             } finally {
                 WaitCursorManager.removeWaitCursor(token);
             }
+        } else {
+            // Unhandled single click.  Delegate to track unless second click arrives within double-click interval
+            TimerTask clickTask = new TimerTask() {
+
+                @Override
+                public void run() {
+                    Object source = e.getSource();
+                    if (source instanceof DataPanel) {
+                        Track track = ((DataPanel) source).getTrack(e.getX(), e.getY());
+                        if (track != null) {
+                            TrackClickEvent te = new TrackClickEvent(e, referenceFrame);
+                            if (track.handleDataClick(te)) {
+                                return;
+                            }
+                        }
+                    }
+                }
+
+            };
+            clickScheduler.scheduleClickTask(clickTask);
         }
+
+
     }
 }

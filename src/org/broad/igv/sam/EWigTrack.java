@@ -198,7 +198,7 @@ public class EWigTrack extends AbstractTrack {
     }
 
     @Override
-    public boolean handleClick(TrackClickEvent te) {
+    public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
         if (e.isPopupTrigger()) {
             getPopupMenu(e).show(e.getComponent(), e.getX(), e.getY());
@@ -206,7 +206,7 @@ public class EWigTrack extends AbstractTrack {
             //IGVMainFrame.getInstance().repaintDataPanels();
             return true;
         } else {
-            return super.handleClick(te);
+            return super.handleDataClick(te);
         }
 
     }

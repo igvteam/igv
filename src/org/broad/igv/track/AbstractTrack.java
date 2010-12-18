@@ -35,6 +35,7 @@ import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 
@@ -125,6 +126,10 @@ public abstract class AbstractTrack implements Track {
     private Color altColor;
     private DataRange dataRange;
     protected int visibilityWindow = -1;
+    /**
+     * A timer task is used for opening web links to distinguish a click from a double click.
+     */
+    private TimerTask currentClickTask = null;
 
 
     public AbstractTrack(
@@ -563,8 +568,12 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public boolean handleClick(TrackClickEvent e) {
+    public boolean handleDataClick(TrackClickEvent e) {
         return false;
+    }
+
+    public void handleNameClick(MouseEvent e) {
+        // Do nothing
     }
 
 
@@ -992,5 +1001,19 @@ public abstract class AbstractTrack implements Track {
 
     public int getVisibilityWindow() {
         return visibilityWindow;
+    }
+
+    protected void cancelClickTask() {
+        System.out.println("Cancel");
+        if (currentClickTask != null) {
+            currentClickTask.cancel();
+            currentClickTask = null;
+        }
+    }
+
+    protected void scheduleClickTask(TimerTask task) {
+        cancelClickTask();
+        currentClickTask = task;
+        (new Timer()).schedule(currentClickTask, UIConstants.getDoubleClickInterval());
     }
 }

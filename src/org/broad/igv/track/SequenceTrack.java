@@ -27,9 +27,11 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.TrackPanelComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 
 /**
@@ -40,10 +42,18 @@ public class SequenceTrack extends AbstractTrack {
 
     private static final int SEQUENCE_HEIGHT = 14;
 
+    private static String PLUS_STRING = "Sequence ==>";
+    private static String MINUS_STRING = "Sequence <==";
+
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
     //should translated aminoacids be shown below the sequence?
     private boolean shouldShowTranslation = true;
+
+    //is sequence visible (zoomed in far enough, etc)
+    private boolean sequenceVisible = false;
+
+    Strand strand = Strand.POSITIVE;
 
     /**
      * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented, should always be
@@ -55,8 +65,17 @@ public class SequenceTrack extends AbstractTrack {
         super(name);
     }
 
+
+    @Override
+    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+        if (sequenceVisible) {
+            String name = strand == Strand.POSITIVE ? PLUS_STRING : MINUS_STRING;
+            graphics.drawString(name, 20, 12);
+        }
+    }
+
     /**
-     * Method description
+     * Render the sequence, and optionally the 3 frame translation table
      *
      * @param context
      * @param rect
@@ -64,19 +83,74 @@ public class SequenceTrack extends AbstractTrack {
     public void render(RenderContext context, Rectangle rect) {
         // Are we zoomed in far enough to show the sequence?  Scale is
         // in BP / pixel,  need at least 1 pixel for 3 bp in order to show translated sequence,
-        //or 1 pixel per bp in order to show sequence
-        if (context.getScale() < (shouldShowTranslation ? 3 : 1) && !context.getChr().equals(Globals.CHR_ALL)) {
+        //or 1 pixel per bp in order to show sequence.
+        boolean visible = isSequenceVisible(context);
+        if(visible != sequenceVisible) {
+            sequenceVisible = visible;
+            context.getPanel().repaint();
+        }
+        if (sequenceVisible) {
+            sequenceRenderer.setStrand(strand);
             sequenceRenderer.draw(context, rect, showColorSpace, shouldShowTranslation);
         }
     }
 
 
-    @Override
-    public int getHeight() {
-        return SEQUENCE_HEIGHT + (showColorSpace ? SEQUENCE_HEIGHT : 0) + 
-                (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0);
+    private boolean isSequenceVisible(RenderContext context) {
+
+        return context.getScale() < (shouldShowTranslation ? 3 : 1) && !context.getChr().equals(Globals.CHR_ALL);
+
     }
 
+    @Override
+    public int getHeight() {
+        return sequenceVisible ? SEQUENCE_HEIGHT + (showColorSpace ? SEQUENCE_HEIGHT : 0) +
+                (shouldShowTranslation ? SequenceRenderer.TranslatedSequenceDrawer.TOTAL_HEIGHT : 0) :
+                0;
+    }
+
+
+    @Override
+    public boolean handleDataClick(TrackClickEvent e) {
+
+        MouseEvent evt = e.getMouseEvent();
+        setShouldShowTranslation(!shouldShowTranslation);
+        Object source = e.getMouseEvent().getSource();
+        if (source instanceof JComponent) {
+            ((JComponent) source).repaint();
+        }
+        return true;
+    }
+
+    /**
+     * On a single-click on this track, toggle whether we show translation and redraw
+     * <p/>
+     * Java does not have a "double-click" event,  each click is a separate event.  To prevent action from being taken
+     * on the first click of what will be a double click, the action is scheduled in the future and canceled if/when
+     * the second click is handled.
+     *
+     * @param e
+     * @return
+     */
+    @Override
+    public void handleNameClick(final MouseEvent e) {
+
+        strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
+        Object source = e.getSource();
+        if (source instanceof TrackPanelComponent) {
+            ((TrackPanelComponent) source).getTrackPanel().repaint();
+        }  //To change body of implemented methods use File | Settings | File Templates.
+
+    }
+
+
+    public boolean isShouldShowTranslation() {
+        return shouldShowTranslation;
+    }
+
+    public void setShouldShowTranslation(boolean shouldShowTranslation) {
+        this.shouldShowTranslation = shouldShowTranslation;
+    }
 
     //----------------------------------------------------------------------------
     // Methods belowo are required for the Track interface, but aren't
@@ -120,32 +194,10 @@ public class SequenceTrack extends AbstractTrack {
     }
 
 
-
-    /**
-     * On a click on this track, toggle whether we show translation and redraw
-     * @param e
-     * @return
-     */
-    public boolean handleClick(TrackClickEvent e) {
-        setShouldShowTranslation(!shouldShowTranslation);
-        Object source = e.getMouseEvent().getSource();
-        if (source instanceof JComponent) {
-            ((JComponent) source).repaint();
-        }
-        return true;
-    }
-
-
     public boolean isLogNormalized() {
         // Required method for track interface, ignore
         return true;
     }
 
-    public boolean isShouldShowTranslation() {
-        return shouldShowTranslation;
-    }
 
-    public void setShouldShowTranslation(boolean shouldShowTranslation) {
-        this.shouldShowTranslation = shouldShowTranslation;
-    }
 }

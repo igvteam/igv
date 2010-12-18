@@ -61,7 +61,7 @@ abstract public class IGVTool implements Tool {
         return owner.getFrame();
     }
 
-    public Component getOwner() {
+    public DataPanel getOwner() {
         return owner;
     }
 

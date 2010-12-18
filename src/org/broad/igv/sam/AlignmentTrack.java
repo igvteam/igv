@@ -565,14 +565,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     @Override
-    public boolean handleClick(TrackClickEvent te) {
+    public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
         if (e.isPopupTrigger()) {
             getPopupMenu(te).show(e.getComponent(), e.getX(), e.getY());
             return true;
         } else {
             if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
-                return super.handleClick(te);
+                return super.handleDataClick(te);
             } else if (e.getButton() == MouseEvent.BUTTON1 &&
                     (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
                 double location = te.getFrame().getChromosomePosition(e.getX());

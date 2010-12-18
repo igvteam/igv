@@ -28,6 +28,7 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
@@ -57,35 +58,10 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
     private static Logger log = Logger.getLogger(TrackNamePanel.class);
 
 
-    // TODO -- this use of a static is really bad,  bugs and memory leaks waiting to happen.  Redesign this.
-    static List<DropListener> dropListeners = new ArrayList();
-
-
-    static void addGhostDropListener(DropListener listener) {
-        if (listener != null) {
-            dropListeners.add(listener);
-        }
-    }
-
-    public static void removeDropListenerFor(TrackNamePanel panel) {
-        List<DropListener> removeThese = new ArrayList();
-        for (DropListener dl : dropListeners) {
-            if (dl.panel == panel) {
-                removeThese.add(dl);
-            }
-        }
-        dropListeners.removeAll(removeThese);
-    }
-
-
     List<GroupExtent> groupExtents = new ArrayList();
-
     BufferedImage dndImage = null;
-
     TrackGroup selectedGroup = null;
-
     boolean showGroupNames = true;
-
     boolean showSampleNamesWhenGrouped = false;
 
 
@@ -95,13 +71,11 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
     }
 
     Collection<TrackGroup> getGroups() {
-        TrackPanel dataTrackView = (TrackPanel) getParent();
-        return dataTrackView.getGroups();
+        return getTrackPanel().getGroups();
     }
 
     private boolean isGrouped() {
-        Collection<TrackGroup> groups = getGroups();
-        return groups.size() > 1;
+        return getGroups().size() > 1;
     }
 
 
@@ -112,8 +86,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
         removeMousableRegions();
         Rectangle visibleRect = getVisibleRect();
         paintImpl(g, visibleRect);
-
-
     }
 
 
@@ -543,10 +515,45 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             }
         }
 
+        @Override
         public void mouseMoved(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
             setToolTipText(getTooltipTextForLocation(x, y));
+        }
+
+
+        /**
+         * Mouse was clicked.  Delegate single-click action to the track(s) clicked on.   We won't know if this
+         * is a double click or not until the double-click interval has passed, so defer the action with a
+         * TimerTask.  If a second click arrives it will be canceled.
+         *
+         * @param e
+         */
+        @Override
+        public void mouseClicked(final MouseEvent e) {
+
+            // If this is the second click of a double click, cancel the scheduled single click task.
+            if (e.getClickCount() > 1) {
+                clickScheduler.cancelClickTask();
+                return;
+            }
+
+            TimerTask clickTask = new TimerTask() {
+
+                @Override
+                public void run() {
+                    for (MouseableRegion mouseRegion : trackRegions) {
+                        if (mouseRegion.containsPoint(e.getX(), e.getY())) {
+                            for (Track t : mouseRegion.getTracks()) {
+                                t.handleNameClick(e);
+                            }
+                            return;
+                        }
+                    }//To change body of implemented methods use File | Settings | File Templates.
+                }
+            };
+            clickScheduler.scheduleClickTask(clickTask);
         }
 
         protected void fireGhostDropEvent(GhostDropEvent evt) {
@@ -667,6 +674,28 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             }
         }
         return groupExtents.size();
+    }
+
+
+    // Track D&D support follows
+    // TODO -- this use of a static is really bad,  bugs and memory leaks waiting to happen.  Redesign this.
+    static List<DropListener> dropListeners = new ArrayList();
+
+
+    private static void addGhostDropListener(DropListener listener) {
+        if (listener != null) {
+            dropListeners.add(listener);
+        }
+    }
+
+    public static void removeDropListenerFor(TrackNamePanel panel) {
+        List<DropListener> removeThese = new ArrayList();
+        for (DropListener dl : dropListeners) {
+            if (dl.panel == panel) {
+                removeThese.add(dl);
+            }
+        }
+        dropListeners.removeAll(removeThese);
     }
 
 

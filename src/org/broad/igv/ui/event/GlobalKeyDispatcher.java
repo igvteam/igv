@@ -30,7 +30,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.vcf.VCFTrack;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.GeneTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
@@ -202,7 +201,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         if (tracks.size() == 1) {
             try {
                 Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack || t instanceof GeneTrack || t instanceof VCFTrack)) {
+                if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
                     //JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;
@@ -212,8 +211,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 ReferenceFrame frame = FrameManager.getDefaultFrame();
                 if (t instanceof FeatureTrack) {
                     f = ((FeatureTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
-                } else if (t instanceof GeneTrack) {
-                    f = ((GeneTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
                 } else if (t instanceof VCFTrack) {
                     f = ((VCFTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
                 }

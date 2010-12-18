@@ -101,7 +101,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -132,7 +132,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -163,7 +163,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -194,7 +194,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -225,7 +225,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -256,7 +256,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>50</int> 
+               <int>41</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -291,7 +291,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>52</int> 
+               <int>41</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -400,7 +400,7 @@
               </void> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>70</int> 
+               <int>41</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 

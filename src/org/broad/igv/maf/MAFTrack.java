@@ -223,7 +223,7 @@ public class MAFTrack extends AbstractTrack {
     }
 
     @Override
-    public boolean handleClick(TrackClickEvent te) {
+    public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
         if (e.isPopupTrigger()) {
             configureTrack();

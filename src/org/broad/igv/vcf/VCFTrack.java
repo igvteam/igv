@@ -703,13 +703,13 @@ public class VCFTrack extends FeatureTrack {
 
     @Override
     //THIS IS FOR THE MAIN TRACK
-    public boolean handleClick(TrackClickEvent te) {
+    public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
         if (e.isPopupTrigger()) {
             getPopupMenu(te).show(e.getComponent(), e.getX(), e.getY());
             return true;
         } else {
-            return super.handleClick(te);
+            return super.handleDataClick(te);
         }
     }
 

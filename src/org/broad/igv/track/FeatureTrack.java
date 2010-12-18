@@ -356,49 +356,44 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public boolean handleClick(TrackClickEvent te) {
+    public boolean handleDataClick(TrackClickEvent te) {
 
         MouseEvent e = te.getMouseEvent();
 
-        // If any modifier keys are down, of if this is the second click of a double click, cancel the scheduled
-        // browser opening.
-        if (e.isPopupTrigger() || e.isControlDown() || e.isAltDown() || e.isShiftDown() ||
-                e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() > 1) {
-            cancelBrowserTask();
-            return false;
-        } else {
-            if (e.getX() < EXPAND_ICON_BUFFER_WIDTH) {
-                if (EXPAND_BUTTON_RECT.contains(e.getPoint())) {
-                    setExpanded(!expanded);
-                    IGVMainFrame.getInstance().doRefresh();
+
+        if (e.getX() < EXPAND_ICON_BUFFER_WIDTH) {
+            if (EXPAND_BUTTON_RECT.contains(e.getPoint())) {
+                setExpanded(!expanded);
+                IGVMainFrame.getInstance().doRefresh();
+            }
+            return true;
+        }
+
+        Feature f = getFeatureAtMousePosition(te);
+        if (f != null && f instanceof IGVFeature) {
+            IGVFeature igvFeature = (IGVFeature) f;
+            String url = igvFeature.getURL();
+            if (url == null) {
+                String trackURL = getUrl();
+                if (trackURL != null && igvFeature.getIdentifier() != null) {
+                    String encodedID = URLEncoder.encode(igvFeature.getIdentifier());
+                    url = trackURL.replaceAll("\\$\\$", encodedID);
                 }
+            }
+            // A scheduler is used so that the browser opening can be canceled in the event of a double
+            // click.  In that case the first click will schedule the browser opening, but it is delayed
+            // long enough to enable the second click to cancel it.
+            if (url != null) {
+                try {
+                    BrowserLauncher.openURL(url);
+                } catch (IOException e1) {
+                    log.error("Error launching url: " + url);
+                }
+                e.consume();
                 return true;
             }
-
-
-            Feature f = getFeatureAtMousePosition(te);
-
-            if (f != null && f instanceof IGVFeature) {
-                IGVFeature igvFeature = (IGVFeature) f;
-                String url = igvFeature.getURL();
-                if (url == null) {
-                    String trackURL = getUrl();
-                    if (trackURL != null && igvFeature.getIdentifier() != null) {
-                        String encodedID = URLEncoder.encode(igvFeature.getIdentifier());
-                        url = trackURL.replaceAll("\\$\\$", encodedID);
-                    }
-                }
-                // A scheduler is used so that the browser opening can be canceled in the event of a double
-                // click.  In that case the first click will schedule the browser opening, but it is delayed
-                // long enough to enable the second click to cancel it.
-                if (url != null) {
-                    scheduleBrowserTask(url, UIConstants.getDoubleClickInterval());
-                    e.consume();
-                    return true;
-                }
-            }
-
         }
+
         return false;
     }
 
@@ -557,7 +552,7 @@ public class FeatureTrack extends AbstractTrack {
             featuresLoading = true;
 
             loadFeatures(chr, start, end, context);
-            
+
             if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
                 return;
             }
@@ -690,32 +685,6 @@ public class FeatureTrack extends AbstractTrack {
      * @param zoom
      */
     public void setZoom(int zoom) {
-    }
-
-    /**
-     * A timer task is used for opening web links to distinguish a click from a double click.
-     */
-    private TimerTask currentBrowserTask = null;
-
-    private void cancelBrowserTask() {
-        if (currentBrowserTask != null) {
-            currentBrowserTask.cancel();
-            currentBrowserTask = null;
-        }
-    }
-
-    private void scheduleBrowserTask(final String url, int delay) {
-        cancelBrowserTask();
-        currentBrowserTask = new TimerTask() {
-            public void run() {
-                try {
-                    BrowserLauncher.openURL(url);
-                } catch (IOException e1) {
-                    log.error("Error opening url: " + url);
-                }
-            }
-        };
-        (new java.util.Timer()).schedule(currentBrowserTask, delay);
     }
 
 

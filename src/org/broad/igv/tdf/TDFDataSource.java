@@ -34,6 +34,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
 
 import java.util.ArrayList;
@@ -162,45 +163,51 @@ public class TDFDataSource implements DataSource {
         }
     }
 
-    private List<LocusScore> getSummaryScores(String chr, int zoom, int tileNumber, double tileWidth) {
+    private List<LocusScore> getCachedSummaryScores(String chr, int zoom, int tileNumber, double tileWidth) {
 
         String key = chr + "_" + zoom + "_" + tileNumber + "_" + windowFunction;
 
-        List<LocusScore> scores = this.summaryScoreCache.get(key);
+        List<LocusScore> scores = summaryScoreCache.get(key);
         if (scores == null) {
 
             int startLocation = (int) (tileNumber * tileWidth);
             int endLocation = (int) ((tileNumber + 1) * tileWidth);
 
-            if (zoom <= this.maxZoom) {
-                scores = new ArrayList(1000);
-                TDFDataset ds = reader.getDataset(chr, zoom, windowFunction);
-                if (ds != null) {
-                    List<TDFTile> tiles = ds.getTiles(startLocation, endLocation);
-                    if (tiles.size() > 0) {
-                        for (TDFTile tile : tiles) {
-
-                            if (tile.getSize() > 0) {
-                                for (int i = 0; i < tile.getSize(); i++) {
-                                    float v = tile.getValue(trackNumber, i);
-                                    if (!Float.isNaN(v)) {
-                                        v *= normalizationFactor;
-                                        scores.add(new BasicScore(chr, tile.getStartPosition(i), tile.getEndPosition(i), v));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                scores = computeSummaryScores(chr, startLocation, endLocation, zoom);
-            }
+            scores = getSummaryScores(chr, zoom, startLocation, endLocation);
 
             summaryScoreCache.put(key, scores);
         }
 
         return scores;
 
+    }
+
+    private List<LocusScore> getSummaryScores(String chr, int zoom, int startLocation, int endLocation) {
+        List<LocusScore> scores;
+        if (zoom <= this.maxZoom) {
+            scores = new ArrayList(1000);
+            TDFDataset ds = reader.getDataset(chr, zoom, windowFunction);
+            if (ds != null) {
+                List<TDFTile> tiles = ds.getTiles(startLocation, endLocation);
+                if (tiles.size() > 0) {
+                    for (TDFTile tile : tiles) {
+
+                        if (tile.getSize() > 0) {
+                            for (int i = 0; i < tile.getSize(); i++) {
+                                float v = tile.getValue(trackNumber, i);
+                                if (!Float.isNaN(v)) {
+                                    v *= normalizationFactor;
+                                    scores.add(new BasicScore(chr, tile.getStartPosition(i), tile.getEndPosition(i), v));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            scores = computeSummaryScores(chr, startLocation, endLocation, zoom);
+        }
+        return scores;
     }
 
     private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
@@ -290,43 +297,52 @@ public class TDFDataSource implements DataSource {
     }
     double tileWidth = chromosome.getLength() / (Math.pow(2.0, zoom));
      */
-    public synchronized List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
-        ArrayList scores = new ArrayList();
+    public synchronized List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         Chromosome chromosome = genome.getChromosome(chr);
 
-        // TODO -- this whole section could be computed once and stored,  it is only a function
-        // of the genome, chr, and zoom level.
-        double tileWidth = 0;
-        if (chr.equals(Globals.CHR_ALL)) {
-            tileWidth = (genome.getLength() / 1000.0);
-        } else {
-            if (chromosome != null) {
-                tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
-            }
-        }
-        if (tileWidth == 0) {
-            return null;
-        }
 
-        int startTile = (int) (startLocation / tileWidth);
-        int endTile = (int) (endLocation / tileWidth);
-        for (int t = startTile; t <= endTile; t++) {
-            List<LocusScore> cachedScores = this.getSummaryScores(chr, zoom, t, tileWidth);
-            if (cachedScores != null) {
-                for (LocusScore s : cachedScores) {
-                    if (s.getEnd() >= startLocation) {
-                        scores.add(s);
-                    } else if (s.getStart() > endLocation) {
-                        break;
-                    }
+        // If we are in gene list view bypass caching.
+        if (FrameManager.isGeneListMode()) {
+            
+            return getSummaryScores(chr, zoom, startLocation, endLocation);
+
+        } else {
+
+            ArrayList scores = new ArrayList();
+
+            // TODO -- this whole section could be computed once and stored,  it is only a function of the genome, chr, and zoom level.
+            double tileWidth = 0;
+            if (chr.equals(Globals.CHR_ALL)) {
+                tileWidth = (genome.getLength() / 1000.0);
+            } else {
+                if (chromosome != null) {
+                    tileWidth = chromosome.getLength() / ((int) Math.pow(2.0, zoom));
                 }
             }
+            if (tileWidth == 0) {
+                return null;
+            }
 
+            int startTile = (int) (startLocation / tileWidth);
+            int endTile = (int) (endLocation / tileWidth);
+            for (int t = startTile; t <= endTile; t++) {
+                List<LocusScore> cachedScores = getCachedSummaryScores(chr, zoom, t, tileWidth);
+                if (cachedScores != null) {
+                    for (LocusScore s : cachedScores) {
+                        if (s.getEnd() >= startLocation) {
+                            scores.add(s);
+                        } else if (s.getStart() > endLocation) {
+                            break;
+                        }
+                    }
+                }
+
+            }
+
+            return scores;
         }
-
-        return scores;
     }
 
 

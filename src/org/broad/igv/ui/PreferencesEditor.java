@@ -236,7 +236,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showMissingDataCB);
-                    showMissingDataCB.setBounds(new Rectangle(new Point(6, 6), showMissingDataCB.getPreferredSize()));
+                    showMissingDataCB.setBounds(new Rectangle(new Point(10, 6), showMissingDataCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
                     combinePanelsCB.setText("Combine Data and Feature Panels");
@@ -246,7 +246,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(6, 83), combinePanelsCB.getPreferredSize()));
+                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 83), combinePanelsCB.getPreferredSize()));
 
                     //---- joinSegmentsCB ----
                     joinSegmentsCB.setText("Join Adjacent CopyNumber Segments");
@@ -256,7 +256,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(joinSegmentsCB);
-                    joinSegmentsCB.setBounds(new Rectangle(new Point(6, 132), joinSegmentsCB.getPreferredSize()));
+                    joinSegmentsCB.setBounds(new Rectangle(new Point(10, 132), joinSegmentsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show Attribute Display");
@@ -266,7 +266,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(6, 209), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 209), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -276,20 +276,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(6, 260), searchZoomCB.getPreferredSize()));
+                    searchZoomCB.setBounds(new Rectangle(new Point(10, 260), searchZoomCB.getPreferredSize()));
 
                     //---- missingDataExplanation6 ----
                     missingDataExplanation6.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation6.setText("<html>This option applies to segmented copy number data only.  When selected, gaps between<br>adjacent segments are filled by extending segment endpoints.");
                     jPanel10.add(missingDataExplanation6);
-                    missingDataExplanation6.setBounds(new Rectangle(new Point(50, 161), missingDataExplanation6.getPreferredSize()));
+                    missingDataExplanation6.setBounds(new Rectangle(new Point(41, 161), missingDataExplanation6.getPreferredSize()));
 
                     //---- zoomToFeatureExplanation ----
                     zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
                     zoomToFeatureExplanation.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation);
-                    zoomToFeatureExplanation.setBounds(52, 289, 603, 61);
+                    zoomToFeatureExplanation.setBounds(41, 289, 603, 61);
 
                     //---- label4 ----
                     label4.setText("Feature flanking region (bp): ");
@@ -316,7 +316,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation2);
-                    zoomToFeatureExplanation2.setBounds(70, 430, 603, 61);
+                    zoomToFeatureExplanation2.setBounds(41, 430, 603, 61);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();

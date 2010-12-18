@@ -29,13 +29,11 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author eflakes
@@ -47,6 +45,11 @@ abstract public class TrackPanelComponent extends JPanel {
 
     private TrackPanel trackPanel;
 
+    /**
+     * A scheduler is used to distinguish a click from a double click.
+     */
+    protected ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
+
 
     public TrackPanelComponent(TrackPanel trackPanel) {
         this.trackPanel = trackPanel;
@@ -54,7 +57,7 @@ abstract public class TrackPanelComponent extends JPanel {
         trackRegions = new ArrayList();
     }
 
-    public TrackPanel getTrackSetView() {
+    public TrackPanel getTrackPanel() {
         if (trackPanel == null) {
             trackPanel = (TrackPanel) getParent();
         }
@@ -62,7 +65,7 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     public String getTrackSetID() {
-        return getTrackSetView().getName();
+        return getTrackPanel().getName();
     }
 
 
@@ -145,7 +148,7 @@ abstract public class TrackPanelComponent extends JPanel {
         }
 
         if (selectedTracs.size() == 1) {
-            if (selectedTracs.iterator().next().handleClick(te)) {
+            if (selectedTracs.iterator().next().handleDataClick(te)) {
                 return;
             }
         }
@@ -176,7 +179,6 @@ abstract public class TrackPanelComponent extends JPanel {
         }
 
 
-
         for (MouseableRegion mouseRegion : trackRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 IGVMainFrame.getInstance().getTrackManager().setTrackSelections(mouseRegion.getTracks());
@@ -196,6 +198,15 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
         return false;
+    }
+
+
+    protected void cancelClickTask() {
+        clickScheduler.cancelClickTask();
+    }
+
+    protected void scheduleClickTask(TimerTask task) {
+        clickScheduler.scheduleClickTask(task);
     }
 
 }
