@@ -87,7 +87,7 @@ public class SequenceTrack extends AbstractTrack {
         boolean visible = isSequenceVisible(context);
         if(visible != sequenceVisible) {
             sequenceVisible = visible;
-            context.getPanel().repaint();
+            context.getPanel().invalidate();
         }
         if (sequenceVisible) {
             sequenceRenderer.setStrand(strand);
