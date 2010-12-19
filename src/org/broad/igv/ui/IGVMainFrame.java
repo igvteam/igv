@@ -929,7 +929,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         boolean hasImportedGenomes = true;
         try {
-            hasImportedGenomes = !GenomeManager.getInstance().getUserDefinedGenomeArchiveList(null).isEmpty();
+            hasImportedGenomes = !GenomeManager.getInstance().getUserDefinedGenomeArchiveList().isEmpty();
 
         } catch (IOException iOException) {
             // Ignore
@@ -2499,6 +2499,9 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             // Load the last genome and chromosome
             String genomeId = PreferenceManager.getInstance().getDefaultGenome();
+            if (genomeId == null) {
+                genomeId = GenomeManager.getInstance().getTopGenomeListItem().getId();
+            }
             setGenomeId(genomeId);
             monitor.fireProgressChange(50);
 

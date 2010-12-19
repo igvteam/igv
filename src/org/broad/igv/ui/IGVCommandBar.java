@@ -368,10 +368,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
 
             LinkedHashSet<GenomeListItem> cacheGenomeItemList =
-                    GenomeManager.getInstance().getCachedGenomeArchiveList(excludedArchivesUrls);
+                    GenomeManager.getInstance().getCachedGenomeArchiveList();
 
             LinkedHashSet<GenomeListItem> clientSideItemList =
-                    GenomeManager.getInstance().getUserDefinedGenomeArchiveList(excludedArchivesUrls);
+                    GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
 
             setGenomeItemList(clientSideItemList, serverSideItemList, cacheGenomeItemList);
             setGenomeItemListModel();

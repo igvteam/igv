@@ -597,7 +597,7 @@ public class PreferenceManager implements PropertyManager {
 
     public String getDefaultGenome() {
 
-        String genome = get(DEFAULT_GENOME_KEY, "hg18");
+        String genome = get(DEFAULT_GENOME_KEY, null);
         return genome;
     }
 
