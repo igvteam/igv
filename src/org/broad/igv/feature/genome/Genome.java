@@ -56,6 +56,7 @@ public class Genome {
     private long length = -1;
     private String annotationURL;
     private Map<String, Long> cumulativeOffsets = new HashMap();
+    public static final int MAX_WHOLE_GENOME = 10000;
 
 
     public Genome(String id) {
@@ -185,7 +186,7 @@ public class Genome {
 
 
     public String getHomeChromosome() {
-        if (getChromosomeNames().size() == 1 || chromosomeNames.size() > 5000) {
+        if (getChromosomeNames().size() == 1 || chromosomeNames.size() > MAX_WHOLE_GENOME) {
             return getChromosomeNames().get(0);
         } else {
             return Globals.CHR_ALL;
