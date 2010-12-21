@@ -701,18 +701,6 @@ public class VCFTrack extends FeatureTrack {
         this.samples = samples;
     }
 
-    @Override
-    //THIS IS FOR THE MAIN TRACK
-    public boolean handleDataClick(TrackClickEvent te) {
-        MouseEvent e = te.getMouseEvent();
-        if (e.isPopupTrigger()) {
-            getPopupMenu(te).show(e.getComponent(), e.getX(), e.getY());
-            return true;
-        } else {
-            return super.handleDataClick(te);
-        }
-    }
-
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
         Feature f = getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
         return menu.getDataPanelMenu(te, f);

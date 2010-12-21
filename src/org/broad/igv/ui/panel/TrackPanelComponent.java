@@ -149,7 +149,7 @@ abstract public class TrackPanelComponent extends JPanel {
         // If a single track is selected, give it an opportunity to provide the popup menu
         if (selectedTracks.size() == 1) {
             Track track = selectedTracks.iterator().next();
-            menu = track.getPopupMenu();
+            menu = track.getPopupMenu(te);
         }
 
         if (menu == null) {

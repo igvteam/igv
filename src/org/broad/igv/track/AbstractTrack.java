@@ -1018,7 +1018,7 @@ public abstract class AbstractTrack implements Track {
      * 
      * @return
      */
-    public JPopupMenu getPopupMenu() {
+    public JPopupMenu getPopupMenu(final TrackClickEvent te) {
         return null;
     }
 }

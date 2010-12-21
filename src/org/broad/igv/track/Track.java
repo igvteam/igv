@@ -225,6 +225,6 @@ public interface Track extends Persistable {
 
     void setVisibilityWindow(int i);
 
-    JPopupMenu getPopupMenu();
+    JPopupMenu getPopupMenu(final TrackClickEvent te);
     
 }
