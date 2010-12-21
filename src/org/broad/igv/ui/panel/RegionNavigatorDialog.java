@@ -20,9 +20,14 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
@@ -58,6 +63,10 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 //    private List<RegionOfInterest> regions;
 
     private TableRowSorter<TableModel> regionTableRowSorter;
+
+    //Indicates that we're in the process of synching the table with the regions list, so we shouldn't
+    //do anything about TableChanged events.
+    private boolean synchingRegions = false;
 
     /**
      * Return the active RegionNavigatorDialog, or null if none.
@@ -101,6 +110,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
      */
     public void synchRegions()
     {
+        //Indicate that we're synching regions, so that we don't respond to tableChanged events
+        synchingRegions = true;
         List<RegionOfInterest> regions = retrieveRegionsAsList();
         regionTableModel = (DefaultTableModel) regionTable.getModel();
         while (regionTableModel.getRowCount() > 0)
@@ -114,6 +125,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
             regionTableModel.setValueAt(region.getDisplayEnd(), i, TABLE_COLINDEX_END);
             regionTableModel.setValueAt(region.getChr(), i, TABLE_COLINDEX_CHR);
         }
+        //Done synching regions, allow ourselves to respond to tableChanged events
+        synchingRegions = false;
 
         regionTableModel.fireTableDataChanged();
     }
@@ -162,6 +175,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
             setSize(getWidth(), newTableHeight + extraHeight);
             update(getGraphics());
         }
+
+        regionTable.addMouseListener(new RegionTablePopupHandler());
     }
 
     private class SearchFieldDocumentListener implements DocumentListener {
@@ -188,27 +203,22 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         regionTableModel.fireTableDataChanged();
     }
 
-
-
     /**
-     * A row filter that shows only rows that contain filterString, case-insensitive
+     * Test whether we should display an entry
+     * @param regionChr
+     * @param regionDesc
+     * @return
      */
-    private class RegionRowFilter extends RowFilter<TableModel, Object> {
-
-        public RegionRowFilter() {
-            super();
-        }
-
-        public boolean include(RowFilter.Entry entry) {
+    protected boolean shouldIncludeRegion(String regionChr, String regionDesc)
+    {
             //if table is empty, a non-region event is fed here.  Test for it and don't display
-            if (entry.getValue(TABLE_COLINDEX_CHR) == null)
+            if (regionChr == null)
                 return false;
-            
+
             String filterStringLowercase = null;
             if (textFieldSearch.getText() != null)
                 filterStringLowercase = textFieldSearch.getText().toLowerCase();
 
-            String regionDesc = (String) entry.getValue(TABLE_COLINDEX_DESC);
             String chr = FrameManager.getDefaultFrame().getChrName();
 
             //show only regions matching the search string (if specified)
@@ -221,11 +231,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                 return true;
 
             //show only regions in the current chromosome
-            if (chr != null && !chr.isEmpty() && !entry.getValue(TABLE_COLINDEX_CHR).equals(chr))
+            if (chr != null && !chr.isEmpty() && !regionChr.equals(chr))
                 return false;
 
 
             return true;
+    }
+
+    /**
+     * A row filter that shows only rows that contain filterString, case-insensitive
+     */
+    private class RegionRowFilter extends RowFilter<TableModel, Object> {
+
+        public RegionRowFilter() {
+            super();
+        }
+
+        public boolean include(RowFilter.Entry entry) {
+            return shouldIncludeRegion((String) entry.getValue(TABLE_COLINDEX_CHR),
+                    (String) entry.getValue(TABLE_COLINDEX_DESC));
         }
     }
 
@@ -234,14 +258,28 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
      */
     private class RegionTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
-            int rowIdx = e.getFirstRow();
+            //If we're in the middle of synching regions, do nothing
+            if (synchingRegions)
+                return;
 
             List<RegionOfInterest> regions = retrieveRegionsAsList();
-
+            int firstRow = e.getFirstRow();
             //range checking because this method gets called after a clear event, and we don't want to
             //try to find an updated region then
-            if (rowIdx > regions.size()-1)
+            if (e.getFirstRow() > regions.size()-1)
                 return;
+
+            //must convert row index from view to model, in case of sorting, filtering
+            int rowIdx = 0;
+
+            try
+            {
+                rowIdx = regionTable.getRowSorter().convertRowIndexToModel(e.getFirstRow());
+            }
+            catch (ArrayIndexOutOfBoundsException x)
+            {
+                return;
+            }
 
             RegionOfInterest region = regions.get(rowIdx);
             switch (e.getColumn()) {
@@ -572,6 +610,71 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         public void actionPerformed(ActionEvent e) {
             // TODO add your code here
             synchRegions();
+        }
+    }
+
+    /**
+     * Creates an appropriate popup for the row under the cursor, with Copy Sequence and Copy Details actions.
+     * This class doesn't go back to the RegionOfInterest model -- it relies on the values stored in the
+     * TableModel, since that's all we need.  It could easily grab the Region, though, like in RegionTableModelListener
+     */
+    private class RegionTablePopupHandler extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)) {
+                Point p = e.getPoint();
+                //must convert row index from view to model, in case of sorting, filtering
+                int row = regionTable.getRowSorter().convertRowIndexToModel(regionTable.rowAtPoint(p));
+                int col = regionTable.columnAtPoint(p);
+
+                if (row >= 0 && col >= 0) {
+                    final String chr = (String) regionTableModel.getValueAt(row, TABLE_COLINDEX_CHR);
+                    //displayed values are 1-based, so subract 1
+                    final int start = (Integer) regionTableModel.getValueAt(row, TABLE_COLINDEX_START) - 1;
+                    final int end = (Integer) regionTableModel.getValueAt(row, TABLE_COLINDEX_END) - 1;
+
+                    final String desc = (String) regionTableModel.getValueAt(row, TABLE_COLINDEX_DESC);
+
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem copySequenceItem = new JMenuItem("Copy Sequence");
+                    copySequenceItem.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+
+                            String genomeId = GenomeManager.getInstance().getGenomeId();
+                            byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
+                            if (seqBytes == null) {
+                                MessageUtils.showMessage("Sequence not available");
+                            } else {
+                                String sequence = new String(seqBytes);
+                                copyTextToClipboard(sequence);
+                            }
+                        }
+                    });
+                    popupMenu.add(copySequenceItem);
+
+                    JMenuItem copyDetailsItem = new JMenuItem("Copy Details");
+                    copyDetailsItem.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            String details = chr + ":" + start + "-" + end;
+                            if (desc != null && !desc.isEmpty())
+                                details = details + ", " + desc;
+                            copyTextToClipboard(details);
+                        }
+                    });
+                    popupMenu.add(copyDetailsItem);
+                    popupMenu.show(regionTable, p.x,p.y);
+                }       
+            }
+        }
+
+        /**
+         * Copy a text string to the clipboard
+         * @param text
+         */
+        private void copyTextToClipboard(String text)
+        {
+            StringSelection stringSelection = new StringSelection(text);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
         }
     }
 }
