@@ -32,6 +32,7 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.session.Persistable;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
@@ -223,4 +224,7 @@ public interface Track extends Persistable {
     int getVisibilityWindow();
 
     void setVisibilityWindow(int i);
+
+    JPopupMenu getPopupMenu();
+    
 }

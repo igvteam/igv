@@ -27,7 +27,7 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.IGVTool;
+import org.broad.igv.ui.AbstractTool;
 import org.broad.igv.ui.WaitCursorManager;
 
 import javax.swing.*;
@@ -36,9 +36,11 @@ import java.awt.event.MouseEvent;
 import java.util.TimerTask;
 
 /**
+ * A "tool" basically handles certain mouse actions, specifically non-popup actions (i.e. left button).
+ *
  * @author eflakes
  */
-public class PanAndZoomTool extends IGVTool {
+public class PanAndZoomTool extends AbstractTool {
 
     private int previousYDirection = 0;    // Drag Directions: 1=up, 0=none 0r -1=down
     private int lastMousePressedY;
@@ -73,9 +75,11 @@ public class PanAndZoomTool extends IGVTool {
     @Override
     public void mousePressed(final MouseEvent e) {
 
+        if (e.isPopupTrigger()) {
+            return;
+        }
 
         panel = (Container) e.getSource();
-
         panel.setCursor(dragCursor);
 
         lastMousePoint = e.getPoint();
@@ -99,6 +103,11 @@ public class PanAndZoomTool extends IGVTool {
 
 
     public void mouseReleased(final MouseEvent e) {
+
+        if (e.isPopupTrigger()) {
+            return;
+        }
+
         viewport = null;
         if (isDragging) {
             getReferenceFame().snapToGrid();
@@ -113,7 +122,11 @@ public class PanAndZoomTool extends IGVTool {
     @Override
     final public void mouseDragged(final MouseEvent e) {
 
-        // ((JComponent) e.getSource()).setCursor(IGVMainFrame.handCursor);
+
+        if (e.isPopupTrigger()) {
+            return;
+        }
+
         try {
 
             if (lastMousePoint == null) {
@@ -187,8 +200,20 @@ public class PanAndZoomTool extends IGVTool {
     }
 
 
+    /**
+     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom).  Not the
+     * user of a schduler to detect double-clicks, there is no "double-click" event per se.
+     * <p/>
+     * Return immediately if this is a right-click or popup trigger
+     *
+     * @param e
+     */
     @Override
     public void mouseClicked(final MouseEvent e) {
+
+        if (e.getButton() != MouseEvent.BUTTON1 || e.isPopupTrigger()) {
+            return;
+        }
 
         final ReferenceFrame referenceFrame = getReferenceFame();
 
@@ -211,7 +236,9 @@ public class PanAndZoomTool extends IGVTool {
                 WaitCursorManager.removeWaitCursor(token);
             }
         } else {
-            // Unhandled single click.  Delegate to track unless second click arrives within double-click interval
+
+            // Unhandled single click.  Delegate to track unless second click arrives within double-click interval.
+            // TODO -- this is the wrong place for this,  it has nothing to do with pan & zoom
             TimerTask clickTask = new TimerTask() {
 
                 @Override

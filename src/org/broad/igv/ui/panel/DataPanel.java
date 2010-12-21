@@ -61,8 +61,8 @@ public class DataPanel extends JComponent implements Paintable {
     final static private boolean IS_MAC = System.getProperty("os.name").toLowerCase().startsWith("mac");
 
     private PanAndZoomTool panAndZoomTool;
-    private IGVTool currentTool;
-    private IGVTool defaultTool;
+    private AbstractTool currentTool;
+    private AbstractTool defaultTool;
     private Point tooltipTextPosition;
 
     private ReferenceFrame frame;
@@ -86,29 +86,29 @@ public class DataPanel extends JComponent implements Paintable {
     /**
      * This class exists entirely to tell the ToolTip to go away when the DataPanel loses focus.
      * Without this, the tooltip stays up and annoyingly visible even if another window is on top of IGV
-     *
+     * <p/>
      * It's also necessary to let the tooltip manager know when we get focus back.  Otherwise, the
      * tooltip won't display until you move the mouse out of the panel and back.
      */
-    private class DataPanelFocusListener implements FocusListener
-    {
+    private class DataPanelFocusListener implements FocusListener {
         protected Component cmp;
-        public DataPanelFocusListener(Component cmp)
-        {
+
+        public DataPanelFocusListener(Component cmp) {
             this.cmp = cmp;
         }
+
         public void focusGained(FocusEvent focusEvent) {
             //This is a bit of a hack -- if the mouse is in the panel, generate a mouseEntered event to tell
             // the tooltipmanager that the mouse is back, since we told it earlier that it went away when it hadn't
             if (getMousePosition() != null && cmp.contains(getMousePosition()))
-                ToolTipManager.sharedInstance().mouseEntered(new MouseEvent(cmp, 0, 0,0,
-                        (int)getMousePosition().getX(), (int) getMousePosition().getY(), 0,false));
+                ToolTipManager.sharedInstance().mouseEntered(new MouseEvent(cmp, 0, 0, 0,
+                        (int) getMousePosition().getX(), (int) getMousePosition().getY(), 0, false));
 
         }
 
         public void focusLost(FocusEvent focusEvent) {
             //This is a bit hacky, but it works and shouldn't cause any harm
-            ToolTipManager.sharedInstance().mouseExited(new MouseEvent(cmp, 0, 0,0,0,0,0,true));
+            ToolTipManager.sharedInstance().mouseExited(new MouseEvent(cmp, 0, 0, 0, 0, 0, 0, true));
         }
     }
 
@@ -137,7 +137,7 @@ public class DataPanel extends JComponent implements Paintable {
      *
      * @param tool
      */
-    public void setCurrentTool(final IGVTool tool) {
+    public void setCurrentTool(final AbstractTool tool) {
 
         UIUtilities.invokeOnEventThread(new Runnable() {
 
@@ -149,7 +149,6 @@ public class DataPanel extends JComponent implements Paintable {
 
                 // Swap out old tool
                 if (currentTool != null) {
-                    removeKeyListener(currentTool);
                     removeMouseListener(currentTool);
                     removeMouseMotionListener(currentTool);
                 }
@@ -158,7 +157,6 @@ public class DataPanel extends JComponent implements Paintable {
                 currentTool = ((tool == null) ? defaultTool : tool);
                 if (currentTool != null) {
                     setCursor(currentTool.getCursor());
-                    addKeyListener(currentTool);
                     addMouseListener(currentTool);
                     addMouseMotionListener(currentTool);
                 }
@@ -632,8 +630,6 @@ public class DataPanel extends JComponent implements Paintable {
 
     class DataPanelMouseAdapter extends MouseInputAdapter {
 
-        // TODO -- a static member on the frame class is probably not
-        // the best place for this.
 
         @Override
         public void mouseEntered(MouseEvent e) {
@@ -645,8 +641,7 @@ public class DataPanel extends JComponent implements Paintable {
         }
 
         /**
-         * The mouse has been clicked.  If the mode is ZOOM_IN or ZOOM_OUT
-         * zoom and center on click.  Otherwise ignore
+         * The mouse has been pressed.  If this is the platform's popup trigger select the track and popup a menu
          */
         @Override
         public void mousePressed(final MouseEvent e) {
@@ -659,7 +654,6 @@ public class DataPanel extends JComponent implements Paintable {
             if (e.isPopupTrigger()) {
                 IGVMainFrame.getInstance().getTrackManager().clearSelections();
                 parent.selectTracks(e);
-
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
             }
@@ -671,6 +665,9 @@ public class DataPanel extends JComponent implements Paintable {
 
         }
 
+        /**
+         * The mouse has been released.  If this is the platform's popup trigger select the track and popup a menu
+         */
         @Override
         public void mouseReleased(MouseEvent e) {
 

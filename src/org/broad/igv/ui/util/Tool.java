@@ -32,14 +32,10 @@ import java.awt.event.MouseMotionListener;
 /**
  * @author eflakes
  */
-public interface Tool
-        extends MouseListener, MouseMotionListener, KeyListener {
-
-    Image getImage();
+public interface Tool extends MouseListener, MouseMotionListener {
 
     String getName();
 
     Cursor getCursor();
 
-    void showCursor();
 }

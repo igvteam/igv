@@ -450,7 +450,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-    void endROI() {
+    public void endROI() {
 
         for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
             DataPanelContainer dp = tsv.getDataPanel();

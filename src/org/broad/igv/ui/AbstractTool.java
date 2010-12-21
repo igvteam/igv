@@ -31,19 +31,19 @@ import org.broad.igv.ui.util.Tool;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
  * @author eflakes
  */
-abstract public class IGVTool implements Tool {
+abstract public class AbstractTool extends MouseAdapter implements Tool {
 
     private Cursor cursor;
-    private Image image;
     private String name;
     private DataPanel owner;
 
-    public IGVTool(DataPanel owner, Cursor cursor) {
+    public AbstractTool(DataPanel owner, Cursor cursor) {
         this.owner = owner;
         this.cursor = cursor;
     }
@@ -52,11 +52,6 @@ abstract public class IGVTool implements Tool {
         return cursor;
     }
 
-    /**
-     * A convenience method.  Needed by many derived classes
-     *
-     * @return
-     */
     public ReferenceFrame getReferenceFame() {
         return owner.getFrame();
     }
@@ -65,9 +60,6 @@ abstract public class IGVTool implements Tool {
         return owner;
     }
 
-    public Image getImage() {
-        return image;
-    }
 
     public void setName(String name) {
         this.name = name;
@@ -77,37 +69,5 @@ abstract public class IGVTool implements Tool {
         return name;
     }
 
-    public void mouseClicked(MouseEvent e) {
-    }
 
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    public void keyPressed(KeyEvent e) {
-    }
-
-    public void keyReleased(KeyEvent e) {
-    }
-
-    public void keyTyped(KeyEvent e) {
-    }
-
-    public void showCursor() {
-        getOwner().setCursor(getCursor());
-    }
 }

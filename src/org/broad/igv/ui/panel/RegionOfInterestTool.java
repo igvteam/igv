@@ -21,9 +21,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.ui;
+package org.broad.igv.ui.panel;
 
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.ui.AbstractTool;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -34,9 +36,8 @@ import java.awt.event.MouseEvent;
 /**
  * @author eflakes
  */
-public class RegionOfInterestTool extends IGVTool {
+public class RegionOfInterestTool extends AbstractTool {
 
-    RegionOfInterest regionOfInterest = null;
     Integer roiStart = null;
     JButton roiButton;
 
@@ -55,6 +56,10 @@ public class RegionOfInterestTool extends IGVTool {
      */
     @Override
     public void mousePressed(final MouseEvent e) {
+
+        if (e.isPopupTrigger()) {
+            return;
+        }
 
         ReferenceFrame referenceFrame = this.getReferenceFame();
 
@@ -89,7 +94,7 @@ public class RegionOfInterestTool extends IGVTool {
                             }
 
                             // Create a Region of Interest
-                            regionOfInterest =
+                            RegionOfInterest regionOfInterest =
                                     new RegionOfInterest(
                                             chromosomeName,
                                             start,
@@ -110,7 +115,4 @@ public class RegionOfInterestTool extends IGVTool {
         }
     }
 
-    public RegionOfInterest getRegionOfInterest() {
-        return regionOfInterest;
-    }
 }

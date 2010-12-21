@@ -22,6 +22,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.tribble.Feature;
@@ -34,6 +35,7 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -1011,9 +1013,12 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-    protected void scheduleClickTask(TimerTask task) {
-        cancelClickTask();
-        currentClickTask = task;
-        (new Timer()).schedule(currentClickTask, UIConstants.getDoubleClickInterval());
+    /**
+     * Override to return a specialized popup menu
+     * 
+     * @return
+     */
+    public JPopupMenu getPopupMenu() {
+        return null;
     }
 }

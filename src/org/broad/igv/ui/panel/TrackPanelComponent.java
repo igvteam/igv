@@ -139,24 +139,27 @@ abstract public class TrackPanelComponent extends JPanel {
     protected void openPopupMenu(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
 
-
-        // If there is a single selected track give it a chance to handle the click
-        Collection<Track> selectedTracs = getSelectedTracks();
-
-        if (selectedTracs.size() == 0) {
+        Collection<Track> selectedTracks = getSelectedTracks();
+        if (selectedTracks.size() == 0) {
             return;
         }
 
-        if (selectedTracs.size() == 1) {
-            if (selectedTracs.iterator().next().handleDataClick(te)) {
-                return;
-            }
+        JPopupMenu menu = null;
+
+        // If a single track is selected, give it an opportunity to provide the popup menu
+        if (selectedTracks.size() == 1) {
+            Track track = selectedTracks.iterator().next();
+            menu = track.getPopupMenu();
         }
-        String title = getPopupMenuTitle(e.getX(), e.getY());
 
-        JPopupMenu menu = TrackMenuUtils.getPopupMenu(selectedTracs, title, te);
+        if (menu == null) {
+            String title = getPopupMenuTitle(e.getX(), e.getY());
+            menu = TrackMenuUtils.getPopupMenu(selectedTracks, title, te);
+        }
 
-        menu.show(e.getComponent(), e.getX(), e.getY());
+        if (menu != null) {
+            menu.show(e.getComponent(), e.getX(), e.getY());
+        }
     }
 
     protected void toggleTrackSelections(MouseEvent e) {
@@ -198,15 +201,6 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
         return false;
-    }
-
-
-    protected void cancelClickTask() {
-        clickScheduler.cancelClickTask();
-    }
-
-    protected void scheduleClickTask(TimerTask task) {
-        clickScheduler.scheduleClickTask(task);
     }
 
 }
