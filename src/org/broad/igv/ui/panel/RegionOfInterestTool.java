@@ -24,10 +24,8 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.ui.AbstractTool;
+import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.panel.DataPanel;
-import org.broad.igv.ui.panel.ReferenceFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,7 +34,7 @@ import java.awt.event.MouseEvent;
 /**
  * @author eflakes
  */
-public class RegionOfInterestTool extends AbstractTool {
+public class RegionOfInterestTool extends AbstractDataPanelTool {
 
     Integer roiStart = null;
     JButton roiButton;

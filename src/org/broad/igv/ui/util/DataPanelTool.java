@@ -22,52 +22,30 @@
  * and open the template in the editor.
  */
 
-package org.broad.igv.ui;
-
-
-import org.broad.igv.ui.panel.DataPanel;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.util.Tool;
+package org.broad.igv.ui.util;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 /**
- * @author eflakes
+ * Defines an interface for a "tool" to be used in the data panel.  A tool handles a subset of mouse events for
+ * the panel.  
  */
-abstract public class AbstractTool extends MouseAdapter implements Tool {
+public interface DataPanelTool {
 
-    private Cursor cursor;
-    private String name;
-    private DataPanel owner;
+    String getName();
 
-    public AbstractTool(DataPanel owner, Cursor cursor) {
-        this.owner = owner;
-        this.cursor = cursor;
-    }
+    Cursor getCursor();
 
-    public Cursor getCursor() {
-        return cursor;
-    }
+    void mousePressed(MouseEvent mouseEvent);
 
-    public ReferenceFrame getReferenceFame() {
-        return owner.getFrame();
-    }
+    void mouseReleased(MouseEvent mouseEvent);
 
-    public DataPanel getOwner() {
-        return owner;
-    }
+    void mouseClicked(MouseEvent mouseEvent);
 
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
+    void mouseDragged(MouseEvent mouseEvent);
 
 }

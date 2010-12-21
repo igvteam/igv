@@ -24,23 +24,18 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.AbstractTool;
+import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.WaitCursorManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.TimerTask;
 
 /**
- * A "tool" basically handles certain mouse actions, specifically non-popup actions (i.e. left button).
  *
- * @author eflakes
  */
-public class PanAndZoomTool extends AbstractTool {
+public class PanAndZoomTool extends AbstractDataPanelTool {
 
     private int previousYDirection = 0;    // Drag Directions: 1=up, 0=none 0r -1=down
     private int lastMousePressedY;
@@ -52,11 +47,6 @@ public class PanAndZoomTool extends AbstractTool {
     private JScrollBar verticalScrollBar;
     private boolean isDragging = false;
     private Cursor dragCursor;
-
-    /**
-     * A scheduler is used to distinguish a click from a double click.
-     */
-    private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
 
 
     public PanAndZoomTool(DataPanel owner) {
@@ -74,10 +64,6 @@ public class PanAndZoomTool extends AbstractTool {
 
     @Override
     public void mousePressed(final MouseEvent e) {
-
-        if (e.isPopupTrigger()) {
-            return;
-        }
 
         panel = (Container) e.getSource();
         panel.setCursor(dragCursor);
@@ -104,10 +90,6 @@ public class PanAndZoomTool extends AbstractTool {
 
     public void mouseReleased(final MouseEvent e) {
 
-        if (e.isPopupTrigger()) {
-            return;
-        }
-
         viewport = null;
         if (isDragging) {
             getReferenceFame().snapToGrid();
@@ -121,11 +103,6 @@ public class PanAndZoomTool extends AbstractTool {
 
     @Override
     final public void mouseDragged(final MouseEvent e) {
-
-
-        if (e.isPopupTrigger()) {
-            return;
-        }
 
         try {
 
@@ -201,27 +178,19 @@ public class PanAndZoomTool extends AbstractTool {
 
 
     /**
-     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom).  Not the
-     * user of a schduler to detect double-clicks, there is no "double-click" event per se.
-     * <p/>
-     * Return immediately if this is a right-click or popup trigger
+     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom). 
      *
      * @param e
      */
     @Override
     public void mouseClicked(final MouseEvent e) {
 
-        if (e.getButton() != MouseEvent.BUTTON1 || e.isPopupTrigger()) {
-            return;
-        }
-
         final ReferenceFrame referenceFrame = getReferenceFame();
 
         // If this is the second click of a double click, cancel the scheduled single click task.
         // The shift and alt keys are alternative undocumented zoom options
         // Shift zooms by 8x,  alt zooms out by 2x
-        if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
-            clickScheduler.cancelClickTask();
+        if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown()) {
 
             int currentZoom = referenceFrame.getZoom();
             final int newZoom = e.isAltDown()
@@ -235,30 +204,7 @@ public class PanAndZoomTool extends AbstractTool {
             } finally {
                 WaitCursorManager.removeWaitCursor(token);
             }
-        } else {
-
-            // Unhandled single click.  Delegate to track unless second click arrives within double-click interval.
-            // TODO -- this is the wrong place for this,  it has nothing to do with pan & zoom
-            TimerTask clickTask = new TimerTask() {
-
-                @Override
-                public void run() {
-                    Object source = e.getSource();
-                    if (source instanceof DataPanel) {
-                        Track track = ((DataPanel) source).getTrack(e.getX(), e.getY());
-                        if (track != null) {
-                            TrackClickEvent te = new TrackClickEvent(e, referenceFrame);
-                            if (track.handleDataClick(te)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-
-            };
-            clickScheduler.scheduleClickTask(clickTask);
-        }
-
+        } 
 
     }
 }

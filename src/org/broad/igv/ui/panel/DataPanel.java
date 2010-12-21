@@ -61,8 +61,8 @@ public class DataPanel extends JComponent implements Paintable {
     final static private boolean IS_MAC = System.getProperty("os.name").toLowerCase().startsWith("mac");
 
     private PanAndZoomTool panAndZoomTool;
-    private AbstractTool currentTool;
-    private AbstractTool defaultTool;
+    private AbstractDataPanelTool currentTool;
+    private AbstractDataPanelTool defaultTool;
     private Point tooltipTextPosition;
 
     private ReferenceFrame frame;
@@ -112,13 +112,6 @@ public class DataPanel extends JComponent implements Paintable {
         }
     }
 
-    /**
-     * @return the panAndZoomTool
-     */
-    public PanAndZoomTool getPanAndZoomTool() {
-        return panAndZoomTool;
-    }
-
 
     /**
      * @return
@@ -132,36 +125,9 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
 
-    /**
-     * Method description
-     *
-     * @param tool
-     */
-    public void setCurrentTool(final AbstractTool tool) {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-
-                if (defaultTool == null) {
-                    defaultTool = tool;
-                }
-
-                // Swap out old tool
-                if (currentTool != null) {
-                    removeMouseListener(currentTool);
-                    removeMouseMotionListener(currentTool);
-                }
-
-                // Swap in new tool
-                currentTool = ((tool == null) ? defaultTool : tool);
-                if (currentTool != null) {
-                    setCursor(currentTool.getCursor());
-                    addMouseListener(currentTool);
-                    addMouseMotionListener(currentTool);
-                }
-            }
-        });
+    public void setCurrentTool(final AbstractDataPanelTool tool) {
+        this.currentTool = (tool == null) ? defaultTool : tool;
     }
 
 
@@ -529,7 +495,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     private void init() {
         panAndZoomTool = new PanAndZoomTool(this);
-        setCurrentTool(getPanAndZoomTool());
+        setCurrentTool(panAndZoomTool);
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setBackground(new java.awt.Color(255, 255, 255));
         setRequestFocusEnabled(false);
@@ -630,6 +596,12 @@ public class DataPanel extends JComponent implements Paintable {
 
     class DataPanelMouseAdapter extends MouseInputAdapter {
 
+        /**
+         * A scheduler is used to distinguish a click from a double click.
+         */
+        private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
+
+        
 
         @Override
         public void mouseEntered(MouseEvent e) {
@@ -638,6 +610,13 @@ public class DataPanel extends JComponent implements Paintable {
         @Override
         public void mouseExited(MouseEvent e) {
             IGVMainFrame.getInstance().setSelectedRegion(null);
+        }
+
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            tooltipTextPosition = e.getPoint();
+
         }
 
         /**
@@ -657,11 +636,9 @@ public class DataPanel extends JComponent implements Paintable {
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
             }
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            tooltipTextPosition = e.getPoint();
+            else {
+                currentTool.mousePressed(e);
+            }
 
         }
 
@@ -676,6 +653,66 @@ public class DataPanel extends JComponent implements Paintable {
                 parent.selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
+            }
+            else {
+                currentTool.mouseReleased(e);
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            currentTool.mouseDragged(e);
+        }
+
+        @Override
+        public void mouseClicked(final MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1 || e.isPopupTrigger()) {
+                return;
+            }
+
+            // If this is the second click of a double click, cancel the scheduled single click task.
+            // The shift and alt keys are alternative undocumented zoom options
+            // Shift zooms by 8x,  alt zooms out by 2x
+            if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
+                clickScheduler.cancelClickTask();
+
+                int currentZoom = frame.getZoom();
+                final int newZoom = e.isAltDown()
+                        ? Math.max(currentZoom - 1, 0)
+                        : (e.isShiftDown() ? currentZoom + 3 : currentZoom + 1);
+                final double locationClicked = frame.getChromosomePosition(e.getX());
+
+                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+                try {
+                    frame.zoomTo(newZoom, locationClicked);
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+                }
+            } else {
+
+                // Unhandled single click.  Delegate to track unless second click arrives within double-click interval.
+                // If the track does not handle the event delegate to the current tool
+                TimerTask clickTask = new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        Object source = e.getSource();
+                        if (source instanceof DataPanel) {
+                            Track track = ((DataPanel) source).getTrack(e.getX(), e.getY());
+                            if (track != null) {
+                                TrackClickEvent te = new TrackClickEvent(e, frame);
+                                if (track.handleDataClick(te)) {
+                                    return;
+                                }
+                                else {
+                                    currentTool.mouseClicked(e);
+                                }
+                            }
+                        }
+                    }
+
+                };
+                clickScheduler.scheduleClickTask(clickTask);
             }
 
         }

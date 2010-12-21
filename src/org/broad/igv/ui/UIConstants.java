@@ -120,7 +120,7 @@ public class UIConstants {
     final static public String TUTORIAL_TOOLTIP =
             "Open tutorial web page";
     final static public String ABOUT_TOOLTIP =
-            "Display application information";// Tool Menu
+            "Display application information";// DataPanelTool Menu
     final static public String MACRO_SNAPSHOTS =
             "Macro Snapshots";
     final static public String RESET_FACTORY_TOOLTIP =
