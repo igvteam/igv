@@ -655,7 +655,8 @@ public class DataPanel extends JComponent implements Paintable {
                 parent.openPopupMenu(te);
             }
             else {
-                currentTool.mouseReleased(e);
+                if (currentTool != null)
+                    currentTool.mouseReleased(e);
             }
         }
 
