@@ -661,7 +661,8 @@ public class DataPanel extends JComponent implements Paintable {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            currentTool.mouseDragged(e);
+            if (currentTool != null)
+                currentTool.mouseDragged(e);
         }
 
         @Override
