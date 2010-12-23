@@ -1921,12 +1921,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void genomeServerURLTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_genomeServerURLTextFieldFocusLost
         String attributeName = genomeServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SEQUENCE_URL, attributeName);
+        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, attributeName);
     }
 
     private void genomeServerURLTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_genomeServerURLTextFieldActionPerformed
         String attributeName = genomeServerURLTextField.getText().trim();
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SEQUENCE_URL, attributeName);
+        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, attributeName);
     }
 
 
@@ -2331,7 +2331,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         PreferenceManager prefMgr = PreferenceManager.getInstance();
         genomeServerURLTextField.setEnabled(true);
         genomeServerURLTextField.setText(UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
-        updatedPreferenceMap.put(PreferenceManager.GENOMES_SEQUENCE_URL, null);
+        updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, null);
         dataServerURLTextField.setEnabled(true);
         dataServerURLTextField.setText(PreferenceManager.DEFAULT_DATA_SERVER_URL);
         updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, null);

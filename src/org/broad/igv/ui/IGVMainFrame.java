@@ -2397,7 +2397,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
         private String propertyFile = null;
         private String genomeId = null;
         private String port = null;
-
+        private String dataServerURL = null;
+        private String genomeServerURL = null;
 
         IGVArgs(String[] args) {
             parseArgs(args);
@@ -2413,6 +2414,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
             CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
             CmdLineParser.Option portOption = parser.addStringOption('p', "port");
             CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
+            CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
+            CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
 
             try {
                 parser.parse(args);
@@ -2425,6 +2428,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
             batchFile = (String) parser.getOptionValue(batchFileOption);
             port = (String) parser.getOptionValue(portOption);
             genomeId = (String) parser.getOptionValue(genomeOption);
+            dataServerURL = (String) parser.getOptionValue(dataServerOption);
+            genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
@@ -2467,6 +2472,14 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         public String getPort() {
             return port;
+        }
+
+        public String getDataServerURL() {
+            return dataServerURL;
+        }
+
+        public String getGenomeServerURL() {
+            return genomeServerURL;
         }
     }
 
@@ -2520,8 +2533,15 @@ public class IGVMainFrame extends javax.swing.JFrame {
             // Done
             closeWindow(progressBar);
 
+            // Optional arguments
             if (igvArgs.getPropertyFile() != null) {
 
+            }
+            if (igvArgs.getDataServerURL() != null) {
+                PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
+            }
+            if (igvArgs.getGenomeServerURL() != null) {
+                PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
             }
 
             // Start up a port listener.  Port # can be overriden with "-p" command line switch
@@ -2533,7 +2553,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 if (portString != null) {
                     port = Integer.parseInt(portString);
                 }
-
                 CommandListener.start(port);
             }
 

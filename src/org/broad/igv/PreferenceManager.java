@@ -103,7 +103,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String SHOW_MISSING_DATA_KEY = "IGVMainFrame.track.show.missing.data";
     final public static String SHOW_ATTRIBUTE_VIEWS_KEY = "IGVMainFrame.track.show.attribute.views";
     final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGVMainFrame.single.track.pane";
-    final public static String GENOMES_SEQUENCE_URL = "IGVMainFrame.genome.sequence.dir";
+    final public static String GENOMES_SERVER_URL = "IGVMainFrame.genome.sequence.dir";
     final public static String JOIN_ADJACENT_SEGMENTS_KEY = "IGVMainFrame.join.adjacent.segments";
     final public static String SHOW_REGION_TOOL_KEY = "IGVMainFrame.show.region.tool";
     final public static String SHOW_REGION_BARS = "SHOW_REGION_BARS";
@@ -353,8 +353,14 @@ public class PreferenceManager implements PropertyManager {
 
 
     public String getGenomeListURL() {
-        return get(PreferenceManager.GENOMES_SEQUENCE_URL);
+        return get(PreferenceManager.GENOMES_SERVER_URL);
     }
+
+    public void overrideGenomeServerURL(String url) {
+        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, url);
+        put(GENOMES_SERVER_URL, url);
+    }
+
 
     public List<String> getMafSpecies() {
         String tmp = get(MAF_SPECIES_KEY, null);
@@ -553,18 +559,26 @@ public class PreferenceManager implements PropertyManager {
         put(RECENT_SESSION_KEY, recentSessions);
     }
 
-    /**
-     * @return
-     */
+
     public String getRecentSessions() {
 
         return get(RECENT_SESSION_KEY, null);
     }
 
     public String getDataServerURL() {
-
         String masterResourceFile = get(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
         return masterResourceFile;
+    }
+
+    /**
+     * Temporarily override the data server url with the supplied value.  This override will persist for
+     * the duration of the session, or until the user explicitly changes it.
+     * @param url
+     */
+    public void overrideDataServerURL(String url) {
+        DEFAULT_DATA_SERVER_URL = url;
+        defaultValues.put(DATA_SERVER_URL_KEY, url);
+        put(DATA_SERVER_URL_KEY, url);
     }
 
 
@@ -880,7 +894,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SEARCH_ZOOM, "true");
 
 
-        defaultValues.put(PreferenceManager.GENOMES_SEQUENCE_URL, UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
+        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
         defaultValues.put(DEFAULT_GENOME_KEY, "hg18");
         defaultValues.put(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
