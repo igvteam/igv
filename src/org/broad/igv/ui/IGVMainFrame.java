@@ -26,6 +26,7 @@ package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
 import com.jidesoft.swing.JideBoxLayout;
+import com.jidesoft.swing.JideSplitPane;
 import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -823,7 +824,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     /**
      * Load tracks corresponding to a collection of resource locations.
-     * <p/>
+     * Note: Most of the code here is to adjust the scrollbars and split pane after loading
      * // TODO -- why is this in the main frame (as opposed to TrackManager for example)?
      *
      * @param locators
@@ -840,10 +841,59 @@ public class IGVMainFrame extends javax.swing.JFrame {
             token = WaitCursorManager.showWaitCursor();
             if (locators != null && !locators.isEmpty()) {
 
+                // get current track count per panel.  Needed to detect which panels
+                // changed.  Also record panel sizes
+                final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
+                final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
+                final Collection<TrackPanelScrollPane> scrollPanes = trackManager.getTrackPanelScrollPanes();
+                for (TrackPanelScrollPane sp : scrollPanes) {
+                    trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
+                    panelSizeMap.put(sp, sp.getDataPanel().getHeight());
+                }
+
                 getTrackManager().loadResources(locators);
+
+                double totalHeight = 0;
+                for (TrackPanelScrollPane sp : scrollPanes) {
+                    if (trackCountMap.containsKey(sp)) {
+                        int prevTrackCount = trackCountMap.get(sp).intValue();
+                        if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
+                            int scrollPosition = panelSizeMap.get(sp);
+                            if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
+                                sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
+                                sp.getVerticalScrollBar().setValue(scrollPosition);
+                            }
+                        }
+                    }
+                    // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
+                    if (sp.getTrackPanel().getTracks().size() > 0)
+                        totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
+                }
+
+                // Adjust dividers for data panel.  The data panel divider can be
+                // zero if there are no data tracks loaded.
+                final JideSplitPane centerSplitPane = mainPanel.getCenterSplitPane();
+                int htotal = centerSplitPane.getHeight();
+                int y = 0;
+                int i = 0;
+                for (Component c : centerSplitPane.getComponents()) {
+                    if (c instanceof TrackPanelScrollPane) {
+                        final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
+                        if (trackPanel.getTracks().size() > 0){
+                            int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
+                            int dh = (int) ((panelWeight / totalHeight) * htotal);
+                            y += dh;
+                        }
+                        centerSplitPane.setDividerLocation(i, y);
+                        i++;
+                    }
+                }
+
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         mainPanel.doLayout();
+
+
                     }
                 });
             }

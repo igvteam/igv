@@ -381,6 +381,10 @@ public class MainPanel extends JPanel implements Paintable {
         return dataPanelWidth;
     }
 
+    public JideSplitPane getCenterSplitPane() {
+        return centerSplitPane;
+    }
+
 
     static class SplitPane extends JideSplitPane {
         @Override
