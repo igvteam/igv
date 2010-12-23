@@ -411,7 +411,7 @@ public class DataPanel extends JComponent implements Paintable {
                 if (track != null) {
 
                     // Calculate y relative to track bounds
-                    int yRelative = y - mouseRegion.getBounds().y;
+                    //int yRelative = y - mouseRegion.getBounds().y;
 
                     // First see if there is an overlay track.  If there is, give
                     // it first crack
@@ -420,8 +420,8 @@ public class DataPanel extends JComponent implements Paintable {
                     if (overlays != null) {
                         for (Track overlay : overlays) {
                             if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), displayLocation, yRelative, frame) != null)) {
-                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, yRelative));
+                                    frame.getChrName(), displayLocation, y, frame) != null)) {
+                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, y));
                                 popupTextBuffer.append("<br>");
                             }
                         }
@@ -472,16 +472,14 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
     /**
-     * Return the
      *
-     * @return descriptive text for the panel at the given location.
-     *         Note:  the coordinates are in panel coordinates, they must be
-     *         offset by the track retangle.  This will not be needed when each
-     *         track has its own panel.
+     * @param track
+     * @param location in genomic coordinates
+     * @param y pixel position in panel coordinates
+     * @return
      */
     String getPopUpText(Track track, double location, int y) {
 
-        DataRange axisDefinition = track.getDataRange();
         StringBuffer buf = new StringBuffer();
         String value = track.getValueStringAt(frame.getChrName(), location, y, frame);
         if (value != null) {
@@ -490,10 +488,6 @@ public class DataPanel extends JComponent implements Paintable {
         return buf.toString();
     }
 
-
-    // TODO -- this method and the key and mouse adapters are nearly identical
-    // for the DataPanel and FeaturePanel classes.  Refractor to combine those
-    // classes, or share this method in some other way.
 
     private void init() {
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -594,6 +588,9 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
 
+    /**
+     * Receives all mouse events for a data panel.  Handling of some events are delegated to the current tool or track.
+     */
     class DataPanelMouseAdapter extends MouseInputAdapter {
 
         /**
@@ -619,14 +616,14 @@ public class DataPanel extends JComponent implements Paintable {
         }
 
         /**
-         * The mouse has been pressed.  If this is the platform's popup trigger select the track and popup a menu
+         * The mouse has been pressed.  If this is the platform's popup trigger select the track and popup a menu.
+         * Otherwise delegate handling to the current tool.
          */
         @Override
         public void mousePressed(final MouseEvent e) {
 
             if (SwingUtilities.getWindowAncestor(DataPanel.this).isActive()) {
                 DataPanel.this.requestFocus();
-                //DataPanel.this.grabFocus();
             }
 
             if (e.isPopupTrigger()) {
@@ -635,13 +632,15 @@ public class DataPanel extends JComponent implements Paintable {
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
             } else {
-                currentTool.mousePressed(e);
+                if (currentTool != null)
+                    currentTool.mousePressed(e);
             }
 
         }
 
         /**
-         * The mouse has been released.  If this is the platform's popup trigger select the track and popup a menu
+         * The mouse has been released.  If this is the platform's popup trigger select the track and popup a menu.
+         * Otherwise delegate handling to the current tool.
          */
         @Override
         public void mouseReleased(MouseEvent e) {
@@ -670,8 +669,8 @@ public class DataPanel extends JComponent implements Paintable {
             }
 
             // If this is the second click of a double click, cancel the scheduled single click task.
-            // The shift and alt keys are alternative undocumented zoom options
-            // Shift zooms by 8x,  alt zooms out by 2x
+            // The shift and alt keys are alternative  zoom options
+            //      shift zooms in by 8x,  alt zooms out by 2x
             if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
                 clickScheduler.cancelClickTask();
 
@@ -703,7 +702,8 @@ public class DataPanel extends JComponent implements Paintable {
                                 if (track.handleDataClick(te)) {
                                     return;
                                 } else {
-                                    currentTool.mouseClicked(e);
+                                    if (currentTool != null)
+                                        currentTool.mouseClicked(e);
                                 }
                             }
                         }

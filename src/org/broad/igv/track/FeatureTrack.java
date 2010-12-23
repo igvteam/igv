@@ -182,8 +182,8 @@ public class FeatureTrack extends AbstractTrack {
      * Return a string for popup text.
      *
      * @param chr
-     * @param position -- 1 relative coordinates
-     * @param y
+     * @param position in genomic coordinates
+     * @param y - pixel position in panel coordinates (i.e. not track coordinates)
      * @return
      */
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
@@ -237,10 +237,16 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
+    /**
+     *
+     * @param position in genomic coordinates
+     * @param y  pixel location in panel coordinates.  // TODO offset by track origin before getting here?
+     * @param frame
+     * @return
+     */
     protected List<Feature> getAllFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
 
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
-
 
         if (packedFeatures == null) {
             return null;
@@ -380,9 +386,7 @@ public class FeatureTrack extends AbstractTrack {
                     url = trackURL.replaceAll("\\$\\$", encodedID);
                 }
             }
-            // A scheduler is used so that the browser opening can be canceled in the event of a double
-            // click.  In that case the first click will schedule the browser opening, but it is delayed
-            // long enough to enable the second click to cancel it.
+
             if (url != null) {
                 try {
                     BrowserLauncher.openURL(url);
