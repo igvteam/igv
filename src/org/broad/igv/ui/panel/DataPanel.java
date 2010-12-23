@@ -36,7 +36,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.*;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.util.DataPanelTool;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -60,11 +60,9 @@ public class DataPanel extends JComponent implements Paintable {
     // TODO move this to some central place
     final static private boolean IS_MAC = System.getProperty("os.name").toLowerCase().startsWith("mac");
 
-    private PanAndZoomTool panAndZoomTool;
-    private AbstractDataPanelTool currentTool;
-    private AbstractDataPanelTool defaultTool;
+    private DataPanelTool defaultTool;
+    private DataPanelTool currentTool;
     private Point tooltipTextPosition;
-
     private ReferenceFrame frame;
     DataPanelContainer parent;
     private DataPanelPainter painter;
@@ -72,6 +70,8 @@ public class DataPanel extends JComponent implements Paintable {
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
+        this.defaultTool = new PanAndZoomTool(this);
+        this.currentTool = defaultTool;
         this.frame = frame;
         this.parent = parent;
         this.setBackground(Color.white);
@@ -125,9 +125,11 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
 
-
     public void setCurrentTool(final AbstractDataPanelTool tool) {
         this.currentTool = (tool == null) ? defaultTool : tool;
+        if (currentTool != null) {
+            setCursor(currentTool.getCursor());
+        }
     }
 
 
@@ -494,8 +496,6 @@ public class DataPanel extends JComponent implements Paintable {
     // classes, or share this method in some other way.
 
     private void init() {
-        panAndZoomTool = new PanAndZoomTool(this);
-        setCurrentTool(panAndZoomTool);
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         setBackground(new java.awt.Color(255, 255, 255));
         setRequestFocusEnabled(false);
@@ -601,7 +601,6 @@ public class DataPanel extends JComponent implements Paintable {
          */
         private ClickTaskScheduler clickScheduler = new ClickTaskScheduler();
 
-        
 
         @Override
         public void mouseEntered(MouseEvent e) {
@@ -635,8 +634,7 @@ public class DataPanel extends JComponent implements Paintable {
                 parent.selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
-            }
-            else {
+            } else {
                 currentTool.mousePressed(e);
             }
 
@@ -653,8 +651,7 @@ public class DataPanel extends JComponent implements Paintable {
                 parent.selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
-            }
-            else {
+            } else {
                 if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
@@ -705,8 +702,7 @@ public class DataPanel extends JComponent implements Paintable {
                                 TrackClickEvent te = new TrackClickEvent(e, frame);
                                 if (track.handleDataClick(te)) {
                                     return;
-                                }
-                                else {
+                                } else {
                                     currentTool.mouseClicked(e);
                                 }
                             }
