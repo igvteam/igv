@@ -264,19 +264,13 @@ public abstract class AbstractTrack implements Track {
         }
     }
 
-    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         Rectangle rect = getDisplayableRect(trackRectangle, visibleRectangle);
 
         String trackName = getDisplayName();
         if ((trackName != null)) {
-            if (isSelected()) {
-                graphics.setBackground(Color.LIGHT_GRAY);
-            } else {
-                graphics.setBackground(Color.WHITE);
-            }
-            Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
-            g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+
             if (rect.getHeight() > 3) {
 
 

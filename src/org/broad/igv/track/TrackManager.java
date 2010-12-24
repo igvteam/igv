@@ -395,9 +395,9 @@ public class TrackManager {
         if ((geneTrack != null) && !includeGeneTrack) {
             allTracks.remove(geneTrack);
         }
-
-        // Don't include sequence track
-        allTracks.remove(sequenceTrack);
+        if ((sequenceTrack != null) && !includeGeneTrack) {
+            allTracks.remove(sequenceTrack);
+        }
 
         return allTracks;
     }

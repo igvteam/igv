@@ -70,7 +70,7 @@ public class SequenceTrack extends AbstractTrack {
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
         if (sequenceVisible) {
             String name = strand == Strand.POSITIVE ? PLUS_STRING : MINUS_STRING;
-            graphics.drawString(name, 20, 12);
+            graphics.drawString(name, trackRectangle.x + 20, trackRectangle.y + 12);
         }
     }
 

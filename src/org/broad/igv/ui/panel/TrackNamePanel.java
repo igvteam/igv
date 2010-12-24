@@ -182,6 +182,13 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
                     if (!isGrouped() || showSampleNamesWhenGrouped) {
                         Rectangle rect = new Rectangle(regionX, regionY, width, height);
+                        //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
+                        if (track.isSelected()) {
+                            graphics2D.setBackground(Color.LIGHT_GRAY);
+                        } else {
+                            graphics2D.setBackground(Color.WHITE);
+                        }
+                        graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         track.renderName(graphics2D, rect, visibleRect);
                     }
 
