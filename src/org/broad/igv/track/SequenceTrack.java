@@ -84,10 +84,11 @@ public class SequenceTrack extends AbstractTrack {
         // Are we zoomed in far enough to show the sequence?  Scale is
         // in BP / pixel,  need at least 1 pixel for 3 bp in order to show translated sequence,
         //or 1 pixel per bp in order to show sequence.
+
         boolean visible = isSequenceVisible(context);
         if(visible != sequenceVisible) {
             sequenceVisible = visible;
-            context.getPanel().invalidate();
+            context.getPanel().revalidate();
         }
         if (sequenceVisible) {
             sequenceRenderer.setStrand(strand);
@@ -122,16 +123,7 @@ public class SequenceTrack extends AbstractTrack {
         return true;
     }
 
-    /**
-     * On a single-click on this track, toggle whether we show translation and redraw
-     * <p/>
-     * Java does not have a "double-click" event,  each click is a separate event.  To prevent action from being taken
-     * on the first click of what will be a double click, the action is scheduled in the future and canceled if/when
-     * the second click is handled.
-     *
-     * @param e
-     * @return
-     */
+
     @Override
     public void handleNameClick(final MouseEvent e) {
 
@@ -139,7 +131,7 @@ public class SequenceTrack extends AbstractTrack {
         Object source = e.getSource();
         if (source instanceof TrackPanelComponent) {
             ((TrackPanelComponent) source).getTrackPanel().repaint();
-        }  //To change body of implemented methods use File | Settings | File Templates.
+        } 
 
     }
 
