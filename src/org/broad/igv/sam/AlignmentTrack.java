@@ -205,7 +205,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         this.setExpanded(true);
 
         if (prefs.getAsBoolean(PreferenceManager.SAM_SHOW_REF_SEQ)) {
-            sequenceTrack = new SequenceTrack("Reference");
+            sequenceTrack = new SequenceTrack("Reference sequence");
             sequenceTrack.setHeight(14);
         }
 

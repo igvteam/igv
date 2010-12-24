@@ -256,21 +256,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
     }
 
 
-    public String getPopupMenuTitle(int x, int y) {
-
-        Collection<Track> tracks = getSelectedTracks();
-
-        String popupTitle;
-        if (tracks.size() == 1) {
-            popupTitle = tracks.iterator().next().getName();
-        } else {
-            popupTitle = "Total Tracks Selected: " + tracks.size();
-        }
-
-        return popupTitle;
-    }
-
-
     public String getTooltipTextForLocation(int x, int y) {
 
         List<MouseableRegion> mouseableRegions = TrackNamePanel.this.getTrackRegions();

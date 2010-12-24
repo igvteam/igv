@@ -137,7 +137,7 @@ public class TrackMenuUtils {
         zoomOutItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-                frame.incrementZoom(1);
+                frame.incrementZoom(-1);
             }
         });
         menu.add(zoomOutItem);
@@ -613,7 +613,7 @@ public class TrackMenuUtils {
         item.addActionListener(new TrackActionListener() {
 
             public void action() {
-                doToggleSelectedMultiTrackFeatures(tracks);
+                toggleExpandedState(tracks);
                 IGVMainFrame.getInstance().doRefresh();
             }
         });
@@ -667,11 +667,11 @@ public class TrackMenuUtils {
     /**
      * Toggle selected multi-level tracks
      */
-    public static void doToggleSelectedMultiTrackFeatures(final Collection<Track> selectedTracks) {
+    public static void toggleExpandedState(final Collection<Track> selectedTracks) {
 
         for (Track track : selectedTracks) {
-            boolean isMultiLevel = track.isExpanded();
-            track.setExpanded(!isMultiLevel);
+            boolean expanded = track.isExpanded();
+            track.setExpanded(!expanded);
         }
     }
 

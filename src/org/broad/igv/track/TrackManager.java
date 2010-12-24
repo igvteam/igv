@@ -693,7 +693,7 @@ public class TrackManager {
         geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
         geneFeatureTrack.setColor(Color.BLUE.darker());
 
-        SequenceTrack seqTrack = new SequenceTrack("");
+        SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
         if (geneManager != null) {
 
             if (geneManager.getTrackProperties() != null) {

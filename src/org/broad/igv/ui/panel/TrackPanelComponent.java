@@ -119,14 +119,19 @@ abstract public class TrackPanelComponent extends JPanel {
         return null;
     }
 
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     * @return
-     */
-    abstract public String getPopupMenuTitle(int x, int y);
+    public String getPopupMenuTitle(int x, int y) {
+
+        Collection<Track> tracks = getSelectedTracks();
+
+        String popupTitle;
+        if (tracks.size() == 1) {
+            popupTitle = tracks.iterator().next().getName();
+        } else {
+            popupTitle = "Total Tracks Selected: " + tracks.size();
+        }
+
+        return popupTitle;
+    }
 
     protected Collection<Track> getSelectedTracks() {
         return IGVMainFrame.getInstance().getTrackManager().getSelectedTracks();

@@ -70,14 +70,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         invalidate();
     }
 
-
-    // TODO -- implementation
-
-    @Override
-    public String getPopupMenuTitle(int x, int y) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     /**
      * @return
      */
