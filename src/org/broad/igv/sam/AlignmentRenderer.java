@@ -54,9 +54,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     static Font font = FontManager.getScalableFont(10);
     private static Stroke thickStroke = new BasicStroke(2.0f);
-    private static float dash[] = {4.0f, 1.0f};
-    private static Stroke dashedStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
+    //private static float dash[] = {4.0f, 1.0f};
+    //private static Stroke dashedStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
+    //        BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
 
     private static final Color negStrandColor = new Color(110, 145, 225);
     private static final Color posStrandColor = new Color(165, 35, 39);
@@ -118,25 +118,26 @@ public class AlignmentRenderer implements FeatureRenderer {
                 double pixelEnd = ((alignment.getEnd() - origin) / locScale);
 
                 // If the any part of the feature fits in the track rectangle draw  it
+                if (pixelEnd < rect.x) {
+                    continue;
+                } else if (pixelStart > rect.getMaxX()) {
+                    break;
+                }
 
+                Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
 
-                if ((pixelEnd >= rect.getX()) && (pixelStart <= rect.getMaxX())) {
-                    Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+                Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+                g.setFont(font);
 
-                    Graphics2D g = context.getGraphic2DForColor(alignmentColor);
-                    g.setFont(font);
-
-                    // If the alignment is 3 pixels or less,  draw alignment as posA single block,
-                    // further detail would not be seen and just add to drawing overhead
-                    if (pixelEnd - pixelStart < 4) {
-                        int w = Math.max(1, (int) (pixelEnd - pixelStart));
-                        int h = (int) Math.max(1, rect.getHeight() - 2);
-                        int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
-                        g.fillRect((int) pixelStart, y, w, h);
-                    } else {
-                        drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
-                    }
-
+                // If the alignment is 3 pixels or less,  draw alignment as posA single block,
+                // further detail would not be seen and just add to drawing overhead
+                if (pixelEnd - pixelStart < 4) {
+                    int w = Math.max(1, (int) (pixelEnd - pixelStart));
+                    int h = (int) Math.max(1, rect.getHeight() - 2);
+                    int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
+                    g.fillRect((int) pixelStart, y, w, h);
+                } else {
+                    drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
                 }
             }
 
@@ -262,6 +263,13 @@ public class AlignmentRenderer implements FeatureRenderer {
             int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
 
+            // If block is out of view skip
+            if (x + w < rect.x) {
+                continue;
+            } else if (x > rect.getMaxX()) {
+                break;
+            }
+
             // Create polygon to represent the alignment.
             boolean isZeroQuality = alignment.getMappingQuality() == 0;
 
@@ -360,7 +368,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 } else {
                     gLine = context.getGraphic2DForColor(gapLineColor);
                     stroke = gLine.getStroke();
-                    gLine.setStroke(dashedStroke);
+                    //gLine.setStroke(dashedStroke);
+                    gLine.setStroke(thickStroke);
                 }
 
                 int startX = Math.max(rect.x, lastBlockEnd);
