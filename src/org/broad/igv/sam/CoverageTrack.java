@@ -709,24 +709,14 @@ public class CoverageTrack extends AbstractTrack {
 
     }
 
-
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
     @Override
-    public boolean handleDataClick(TrackClickEvent te) {
-        MouseEvent e = te.getMouseEvent();
-        if (e.isPopupTrigger()) {
-            getPopupMenu(e).show(e.getComponent(), e.getX(), e.getY());
-            //sortRows();
-            //IGVMainFrame.getInstance().repaintDataPanels();
-            return true;
-        } else {
-            return super.handleDataClick(te);
-        }
-
-    }
-
-    public JPopupMenu getPopupMenu(
-            final MouseEvent evt) {
-
+    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+        
         JPopupMenu popupMenu = new JidePopupMenu();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);

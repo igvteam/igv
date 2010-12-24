@@ -567,39 +567,35 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
         MouseEvent e = te.getMouseEvent();
-        if (e.isPopupTrigger()) {
-            getPopupMenu(te).show(e.getComponent(), e.getX(), e.getY());
-            return true;
-        } else {
-            if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
-                return super.handleDataClick(te);
-            } else if (e.getButton() == MouseEvent.BUTTON1 &&
-                    (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
-                double location = te.getFrame().getChromosomePosition(e.getX());
-                double displayLocation = location + 1;
-                Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), te.getFrame());
-                if (alignment != null) {
-                    if (selectedReadNames.containsKey(alignment.getReadName())) {
-                        selectedReadNames.remove(alignment.getReadName());
-                    } else {
-                        Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
-                                ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
-                        selectedReadNames.put(alignment.getReadName(), c);
-                    }
-                    Object source = e.getSource();
-                    if (source instanceof JComponent) {
-                        ((JComponent) source).repaint();
-                    }
+
+        if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
+            return super.handleDataClick(te);
+        } else if (e.getButton() == MouseEvent.BUTTON1 &&
+                (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
+            double location = te.getFrame().getChromosomePosition(e.getX());
+            double displayLocation = location + 1;
+            Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), te.getFrame());
+            if (alignment != null) {
+                if (selectedReadNames.containsKey(alignment.getReadName())) {
+                    selectedReadNames.remove(alignment.getReadName());
+                } else {
+                    Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
+                            ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
+                    selectedReadNames.put(alignment.getReadName(), c);
                 }
-                return true;
+                Object source = e.getSource();
+                if (source instanceof JComponent) {
+                    ((JComponent) source).repaint();
+                }
             }
+            return true;
+
         }
         return false;
     }
 
-    public JPopupMenu getPopupMenu(final TrackClickEvent e) {
 
-        MouseEvent evt = e.getMouseEvent();
+    public JPopupMenu getPopupMenu(final TrackClickEvent e) {
 
         JPopupMenu popupMenu = new JidePopupMenu();
 

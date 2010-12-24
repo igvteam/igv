@@ -32,8 +32,10 @@ import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author eflakes
@@ -135,8 +137,11 @@ abstract public class TrackPanelComponent extends JPanel {
         return dataTrackView.getTracks();
     }
 
-
     protected void openPopupMenu(TrackClickEvent te) {
+        openPopupMenu(te, null);
+    }
+
+    protected void openPopupMenu(TrackClickEvent te, List<Component> extraItems) {
         MouseEvent e = te.getMouseEvent();
 
         Collection<Track> selectedTracks = getSelectedTracks();
@@ -152,14 +157,22 @@ abstract public class TrackPanelComponent extends JPanel {
             menu = track.getPopupMenu(te);
         }
 
+        // If still no menu, create a generic one with common items
         if (menu == null) {
             String title = getPopupMenuTitle(e.getX(), e.getY());
             menu = TrackMenuUtils.getPopupMenu(selectedTracks, title, te);
         }
 
-        if (menu != null) {
-            menu.show(e.getComponent(), e.getX(), e.getY());
+        // Add additional items, if any
+        if (extraItems != null) {
+            menu.addSeparator();
+            for (Component item : extraItems) {
+                menu.add(item);
+            }
         }
+
+        menu.show(e.getComponent(), e.getX(), e.getY());
+
     }
 
     protected void toggleTrackSelections(MouseEvent e) {

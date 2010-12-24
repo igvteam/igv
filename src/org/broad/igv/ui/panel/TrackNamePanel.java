@@ -222,15 +222,11 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
     @Override
     protected void openPopupMenu(TrackClickEvent te) {
-        MouseEvent e = te.getMouseEvent();
 
-        // If there is a single selected track give it a chance to handle the click
-        Collection<Track> selectedTracs = getSelectedTracks();
-        String title = getPopupMenuTitle(0, 0);
-
-        JPopupMenu menu = TrackMenuUtils.getEmptyPopup(title);
-
+        ArrayList<Component> extraItems = null;
         if (isGrouped()) {
+            extraItems = new ArrayList();
+
             final JMenuItem item = new JCheckBoxMenuItem("Show group names");
             item.setSelected(showGroupNames);
             item.addActionListener(new ActionListener() {
@@ -240,7 +236,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                     repaint();
                 }
             });
-            menu.add(item);
+            extraItems.add(item);
 
             final JMenuItem item2 = new JCheckBoxMenuItem("Show sample names");
             item2.setSelected(showSampleNamesWhenGrouped);
@@ -251,13 +247,11 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                     repaint();
                 }
             });
-            menu.add(item2);
-            menu.addSeparator();
+            extraItems.add(item2);
         }
 
-        TrackMenuUtils.addStandardItems(menu, selectedTracs, te);
+        super.openPopupMenu(te, extraItems);
 
-        menu.show(e.getComponent(), e.getX(), e.getY());
 
     }
 
@@ -365,7 +359,13 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
             if (e.isPopupTrigger()) {
                 if (isGrouped) {
-
+                    clearTrackSelections();
+                    TrackGroup g = getGroup(e.getY());
+                    if (g == selectedGroup) {
+                        selectedGroup = null;
+                    } else {
+                        selectGroup(getGroup(e.getY()));
+                    }
                 } else if (!isTrackSelected(e)) {
                     clearTrackSelections();
                     selectTracks(e);
