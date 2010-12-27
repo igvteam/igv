@@ -157,6 +157,9 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String FLANKING_REGION = "FLAKING_REGIONS";
 
+    public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
+
+
 
 
     public static String DEFAULT_DATA_SERVER_URL;
@@ -906,6 +909,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
 
         defaultValues.put(FLANKING_REGION, "2000");
+
+        defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "true");
 
     }
 }

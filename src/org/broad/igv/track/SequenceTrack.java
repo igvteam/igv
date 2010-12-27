@@ -23,6 +23,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
@@ -56,13 +57,14 @@ public class SequenceTrack extends AbstractTrack {
     Strand strand = Strand.POSITIVE;
 
     /**
-     * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented, should always be
-     * false.
+     * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented.
      */
     private boolean showColorSpace = false;
 
     public SequenceTrack(String name) {
         super(name);
+
+        shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
     }
 
 
@@ -129,12 +131,12 @@ public class SequenceTrack extends AbstractTrack {
 
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
         Object source = e.getSource();
+        // Send repaint to the TrackPanel, which includes all component panels for the track.
         if (source instanceof TrackPanelComponent) {
             ((TrackPanelComponent) source).getTrackPanel().repaint();
         } 
 
     }
-
 
     public boolean isShouldShowTranslation() {
         return shouldShowTranslation;
@@ -142,6 +144,8 @@ public class SequenceTrack extends AbstractTrack {
 
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
         this.shouldShowTranslation = shouldShowTranslation;
+        // Remember this choice
+        PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
     //The following 2 methods by jtr to support general "expand/collapse" menu items
