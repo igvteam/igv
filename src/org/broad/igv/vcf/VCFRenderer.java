@@ -38,7 +38,7 @@ import java.util.*;
  * Date: Jul 16, 2010
  */
 
-public class VCFRenderer extends FeatureRenderer {
+public class VCFRenderer { //extends FeatureRenderer {
 
 
     private static float alphaValue = (float) .1;
@@ -72,14 +72,7 @@ public class VCFRenderer extends FeatureRenderer {
 
     public VCFRenderer() {
     }
-
-
-    @Override
-    public void renderFeatures(java.util.List features, RenderContext context, Rectangle rect, FeatureTrack track) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
+ 
     public void renderVariantBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
                                   RenderContext context, boolean hideFiltered, VCFTrack.ZygosityCount zygCounts,
                                   int idBandHeight) {

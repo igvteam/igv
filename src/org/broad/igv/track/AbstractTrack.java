@@ -93,7 +93,7 @@ public abstract class AbstractTrack implements Track {
     /**
      * Minimum allowable height for this track
      */
-    private int minimumHeight = 1;
+    protected int minimumHeight = 1;
     /**
      * The file from which this track originated.
      */
@@ -473,7 +473,7 @@ public abstract class AbstractTrack implements Track {
         return isDraggable;
     }
 
-    int height = -1;
+    protected int height = -1;
 
 
     public void setHeight(int height) {

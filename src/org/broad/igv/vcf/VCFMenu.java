@@ -187,24 +187,6 @@ public class VCFMenu {
         return item;
     }
 
-    private JMenuItem getSquishItem() {
-        final boolean isSquished = track.getDisplayMode() == Track.DisplayMode.SQUISH;
-        JMenuItem item = new JCheckBoxMenuItem("Squish Track", isSquished);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                if (isSquished) {
-                    track.setDisplayMode(Track.DisplayMode.PACK);
-                } else {
-                    track.setDisplayMode(Track.DisplayMode.SQUISH);
-                }
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
-
-        item.setEnabled(track.isExpanded());
-        return item;
-    }
-
     private JMenuItem getHideReferenceItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Reference Genotypes", track.getHideReference());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {

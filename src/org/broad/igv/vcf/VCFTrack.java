@@ -100,10 +100,10 @@ public class VCFTrack extends FeatureTrack {
 
     @Override
     public int getPreferredHeight() {
-        if (isExpanded()) {
-            return variantBandHeight + alleleBandHeight + (samples.size() * genotypeBandHeight);
-        } else {
+        if (displayMode == Track.DisplayMode.DENSE) {
             return variantBandHeight + alleleBandHeight;
+        } else {
+           return variantBandHeight + alleleBandHeight + (samples.size() * genotypeBandHeight);
         }
     }
 
@@ -152,6 +152,11 @@ public class VCFTrack extends FeatureTrack {
             genotypeBandHeight = savedBandHeight;
         }
         setHeight(getPreferredHeight());
+    }
+
+
+    public void setHeight(int height) {
+        this.height = Math.max(minimumHeight, height);
     }
 
     @Override
@@ -207,10 +212,11 @@ public class VCFTrack extends FeatureTrack {
                             renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered,
                                     alleleCounts, getIDBandHeight());
                         }
-                        rect.y += rect.height;
 
-                        rect.height = genotypeBandHeight;
-                        if (rect.intersects(visibleRectangle)) {
+                        if (this.displayMode != Track.DisplayMode.DENSE) {
+                            rect.y += rect.height;
+
+                            rect.height = genotypeBandHeight;
                             for (String sample : samples) {
                                 if (rect.intersects(visibleRectangle)) {
                                     if (variant.isSNP()) {
@@ -221,6 +227,7 @@ public class VCFTrack extends FeatureTrack {
                                 rect.y += rect.height;
                             }
                         }
+
                     }
                     lastPX = pX;
                 }
@@ -355,7 +362,7 @@ public class VCFTrack extends FeatureTrack {
 
         rect.y += rect.height;
         rect.height = genotypeBandHeight;
-        if (isExpanded()) {
+        if (displayMode != Track.DisplayMode.DENSE) {
             colorBackground(g2D, rect, visibleRectangle, true, isSelected());
         }
     }
