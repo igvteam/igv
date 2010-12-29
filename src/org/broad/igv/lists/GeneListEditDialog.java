@@ -82,7 +82,7 @@ public class GeneListEditDialog extends JDialog {
                 MessageUtils.showMessage("Lists must contain at least 1 locus");
                 return;
             }
-            saveGeneList(name, genes);
+            saveGeneList(name.trim(), genes);
         }
         setVisible(false);
     }
@@ -228,7 +228,7 @@ public class GeneListEditDialog extends JDialog {
         canceled = false;
         geneList.setName(name);
         geneList.setLoci(Arrays.asList(genes));
-        geneList.setDescription(descriptionField.getText());
+        geneList.setDescription(descriptionField.getText().trim());
         GeneListManager.saveGeneList(geneList);
     }
 
