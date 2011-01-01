@@ -30,6 +30,7 @@ import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -260,6 +261,23 @@ public class MainPanel extends JPanel implements Paintable {
         });
 
         return sp;
+    }
+
+    /**
+     * Return an ordered list of TrackPanels.  This method is provided primarily for storing sessions, where
+     * TrackPanels need to be stored in proper order
+     *
+     * @return
+     */
+    public java.util.List<TrackPanel> getTrackPanels() {
+        ArrayList panels = new ArrayList();
+        for (Component c : centerSplitPane.getComponents()) {
+            if (c instanceof TrackPanelScrollPane) {
+                panels.add(((TrackPanelScrollPane) c).getTrackPanel());
+            }
+        }
+
+        return panels;
     }
 
     public void tweakPanelDivider() {

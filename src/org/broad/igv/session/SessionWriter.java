@@ -342,8 +342,8 @@ public class SessionWriter {
 
     private void writePanels(Element globalElement, Document document) throws DOMException {
 
-        for (TrackPanelScrollPane tsp : IGVMainFrame.getInstance().getTrackManager().getTrackPanelScrollPanes()) {
-            TrackPanel trackPanel = tsp.getTrackPanel();
+        for (TrackPanel trackPanel : IGVMainFrame.getInstance().getTrackPanels()) {
+
             // TODO -- loop through panels groups, rather than skipping groups to tracks
 
             List<Track> tracks = trackPanel.getTracks();

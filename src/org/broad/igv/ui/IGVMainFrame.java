@@ -2089,6 +2089,14 @@ public class IGVMainFrame extends javax.swing.JFrame {
         return false;
     }
 
+    /**
+     * Return an ordered list of track panels.  This method is provided primarily for storing sessions, where
+     * the track panels need to be stored in order.
+     */
+    public List<TrackPanel> getTrackPanels() {
+        return mainPanel.getTrackPanels();
+    }
+
     private void initComponents() {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);

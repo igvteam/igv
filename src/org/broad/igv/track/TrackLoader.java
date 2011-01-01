@@ -118,7 +118,7 @@ public class TrackLoader {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
                 loadIndexed(locator, newTracks);
-            } else if (typeString.endsWith(".vcf")) {
+            } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
                 throw new IndexNotFoundException(locator.getPath());
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {

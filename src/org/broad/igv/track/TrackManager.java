@@ -568,7 +568,8 @@ public class TrackManager {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
             return mainFrame.addDataPanel(newPanelName).getTrackPanel();
-        } else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz")) {
+        } else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+                path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
             String newPanelName = "Panel" + System.currentTimeMillis();
             return mainFrame.addDataPanel(newPanelName).getTrackPanel();
         } else {
