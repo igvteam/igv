@@ -76,7 +76,8 @@ public class CNFreqTrack extends AbstractTrack {
         StringBuffer buf = new StringBuffer();
         List<LocusScore> ampScores = data.getAmpCounts(chr);
         List<LocusScore> delScores = data.getDelCounts(chr);
-        for(int i = FeatureUtils.getIndexBefore(position, ampScores) ;i<ampScores.size(); i++) {
+        int startIdx = Math.max(0, FeatureUtils.getIndexBefore(position, ampScores));
+        for(int i = startIdx ;i<ampScores.size(); i++) {
             LocusScore ampScore = ampScores.get(i);
             if(position >= ampScore.getStart() && position <= ampScore.getEnd())  {
                 buf.append("<br>Amplifications: ");
