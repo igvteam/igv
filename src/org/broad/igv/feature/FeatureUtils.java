@@ -296,7 +296,7 @@ public class FeatureUtils {
         List<Feature> returnList = null;
 
         double adjustedPosition = Math.max(0, position - maxLength);
-        int startIdx = getIndexBefore(adjustedPosition, features);
+        int startIdx = Math.max(0, getIndexBefore(adjustedPosition, features));
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
             int start = feature.getStart() - (int) (minWidth/2);
