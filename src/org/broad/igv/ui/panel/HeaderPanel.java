@@ -105,7 +105,7 @@ public class HeaderPanel extends JPanel implements Transferable {
                             FrameManager.getDefaultFrame().jumpTo(chr, start, end);
                         }
                     } else {
-                        frame.reset();
+                        //frame.reset();
                     }
                     IGVMainFrame.getInstance().doRefresh();
 
@@ -232,7 +232,7 @@ public class HeaderPanel extends JPanel implements Transferable {
     // TODO -- this is a partial copy of the RegionOfInterestPanel method.  Refactor to share
 
 
-    protected static JPopupMenu getPopupMenu(final HeaderPanel parent, final ReferenceFrame frame) {
+    protected  JPopupMenu getPopupMenu(final HeaderPanel parent, final ReferenceFrame frame) {
 
         int start = (int) frame.getOrigin();
         int end = (int) frame.getEnd();
@@ -240,10 +240,20 @@ public class HeaderPanel extends JPanel implements Transferable {
 
         JPopupMenu popupMenu = new RegionMenu(roi, frame);
 
+        JMenuItem item = new JMenuItem("Reset");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                frame.reset();
+                // TODO -- paint only panels for this frame
+                HeaderPanel.this.getRootPane().repaint();
+            }
+        });
+        popupMenu.add(item);
+
         TrackMenuUtils.addZoomItems(popupMenu, frame);
 
         popupMenu.addSeparator();
-        JMenuItem item = new JMenuItem("Remove");
+        item = new JMenuItem("Remove");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 parent.removeFrame(frame);

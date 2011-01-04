@@ -209,6 +209,17 @@ public class ReferenceFrame {
 
     }
 
+
+    public void scaleBy(double z) {
+        double newExtent =  (getEnd() - getOrigin()) / (2 * z);
+        int newOrigin = (int) Math.max(0, getCenter() - newExtent);
+        int newEnd = (int) Math.round(getCenter() + newExtent);
+        this.setInterval(chrName, newOrigin, newEnd);
+        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
+        IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+    }
+
+
     public void recordHistory() {
         IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString());
     }

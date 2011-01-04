@@ -319,7 +319,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         }
                     }
 
-                    int[] xPoly = null;
+                    int[] xPoly;
                     int[] yPoly = {y, y, y + h / 2, y + h, y + h};
 
                     if (alignment.isNegativeStrand()) {

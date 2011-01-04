@@ -27,6 +27,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.stats.KMPlotTest;
 import org.broad.tribble.Feature;
@@ -128,7 +129,12 @@ public class TrackMenuUtils {
         zoomInItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-                frame.incrementZoom(1);
+                if (FrameManager.isGeneListMode()) {
+                    frame.scaleBy(1.5);
+                } else {
+                    frame.incrementZoom(1);
+                }
+
             }
         });
         menu.add(zoomInItem);
@@ -137,7 +143,11 @@ public class TrackMenuUtils {
         zoomOutItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-                frame.incrementZoom(-1);
+                if (FrameManager.isGeneListMode()) {
+                   frame.scaleBy(1.0 / 1.5);
+                } else {
+                    frame.incrementZoom(-1);
+                }
             }
         });
         menu.add(zoomOutItem);

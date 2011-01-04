@@ -27,6 +27,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanelComponent;
 
@@ -90,7 +91,7 @@ public class SequenceTrack extends AbstractTrack {
         boolean visible = isSequenceVisible(context);
         if(visible != sequenceVisible) {
             sequenceVisible = visible;
-            context.getPanel().revalidate();
+            context.getPanel().repaint();
         }
         if (sequenceVisible) {
             sequenceRenderer.setStrand(strand);
