@@ -66,7 +66,7 @@ public class CachingQueryReader {
     //private static final int LOW_MEMORY_THRESHOLD = 150000000;
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
-    private static int DEFAULT_TILE_SIZE = 1600;
+    private static int DEFAULT_TILE_SIZE = 16 * KB;
     private static int MAX_TILE_COUNT = 100;
 
     String cachedChr = "";

@@ -198,7 +198,7 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(genomeId, chr, start, end)) {
-            log.info("Loading alignments: " + chr + ":" + start + "-" + end);
+            log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
             loadAlignments(genomeId, chr, start, end, context);
         }
 
@@ -231,8 +231,7 @@ public class AlignmentDataManager {
 
             public void run() {
 
-                log.debug("Loading " + chr + ":" + start + "-" + end);
-                final PreferenceManager prefs = PreferenceManager.getInstance();
+                 final PreferenceManager prefs = PreferenceManager.getInstance();
                 final int qualityThreshold = prefs.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
 
 
@@ -240,7 +239,7 @@ public class AlignmentDataManager {
                 // 1 screen or 8kb, whichever is less
                 // DON'T expand mitochondria
 
-                int expandLength = isMitochondria(chr) ? 0 : Math.min(1000, end - start) / 2;
+                int expandLength = reader.getTileSize(chr) / 2;
                 int intervalStart = Math.max(0, start - expandLength);
                 int intervalEnd = end + expandLength;
                 CloseableIterator<Alignment> iter = null;

@@ -263,12 +263,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
 
-            // If block is out of view skip
-            if (x + w < rect.x) {
-                continue;
-            } else if (x > rect.getMaxX()) {
-                break;
-            }
 
             // Create polygon to represent the alignment.
             boolean isZeroQuality = alignment.getMappingQuality() == 0;
@@ -278,86 +272,94 @@ public class AlignmentRenderer implements FeatureRenderer {
                 w -= 2;
             }
 
-
-            if (w <= 10 || h <= 10 || aBlock != terminalBlock) {
-                g.fillRect(x, y, w, h);
-                if (isZeroQuality) {
-                    greyGraphics.drawRect(x, y, w - 1, h);
-                }
-
-                if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
-                    Graphics2D cRed = context.getGraphic2DForColor(Color.red);
-                    cRed.drawRect(x, y, w, h);
-                }
-
-                if (selectedReadNames.containsKey(alignment.getReadName())) {
-                    Color c = selectedReadNames.get(alignment.getReadName());
-                    if (c == null) {
-                        c = Color.blue;
+            // If block is out of view skip
+            if (x + w >= rect.x && x <= rect.getMaxX()) {
+                if (w <= 10 || h <= 10 || aBlock != terminalBlock) {
+                    g.fillRect(x, y, w, h);
+                    if (isZeroQuality) {
+                        greyGraphics.drawRect(x, y, w - 1, h);
                     }
-                    Graphics2D cBlue = context.getGraphic2DForColor(c);
-                    Stroke s = cBlue.getStroke();
-                    cBlue.setStroke(thickStroke);
-                    cBlue.drawRect(x, y, w, h);
-                    cBlue.setStroke(s);
-                }
 
-            } else {
-                int arrowLength = Math.min(5, w / 6);
-
-                // Don't draw off edge of clipping rect
-                if (x < rect.x && (x + w) > (rect.x + rect.width)) {
-                    x = rect.x;
-                    w = rect.width;
-                    arrowLength = 0;
-                } else if (x < rect.x) {
-                    int delta = rect.x - x;
-                    x = rect.x;
-                    w -= delta;
-                    if (alignment.isNegativeStrand()) {
-                        arrowLength = 0;
+                    if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
+                        Graphics2D cRed = context.getGraphic2DForColor(Color.red);
+                        cRed.drawRect(x, y, w, h);
                     }
-                } else if ((x + w) > (rect.x + rect.width)) {
-                    w -= ((x + w) - (rect.x + rect.width));
-                    if (!alignment.isNegativeStrand()) {
-                        arrowLength = 0;
+
+                    if (selectedReadNames.containsKey(alignment.getReadName())) {
+                        Color c = selectedReadNames.get(alignment.getReadName());
+                        if (c == null) {
+                            c = Color.blue;
+                        }
+                        Graphics2D cBlue = context.getGraphic2DForColor(c);
+                        Stroke s = cBlue.getStroke();
+                        cBlue.setStroke(thickStroke);
+                        cBlue.drawRect(x, y, w, h);
+                        cBlue.setStroke(s);
                     }
-                }
 
-                int[] xPoly = null;
-                int[] yPoly = {y, y, y + h / 2, y + h, y + h};
-
-                if (alignment.isNegativeStrand()) {
-                    xPoly = new int[]{x + w, x, x - arrowLength, x, x + w};
                 } else {
-                    xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
-                }
-                g.fillPolygon(xPoly, yPoly, xPoly.length);
+                    int arrowLength = Math.min(5, w / 6);
 
-
-                if (isZeroQuality) {
-                    greyGraphics.drawPolygon(xPoly, yPoly, xPoly.length);
-                }
-
-                if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
-                    Graphics2D cRed = context.getGraphic2DForColor(Color.red);
-                    cRed.drawPolygon(xPoly, yPoly, xPoly.length);
-                }
-
-                if (selectedReadNames.containsKey(alignment.getReadName())) {
-                    Color c = selectedReadNames.get(alignment.getReadName());
-                    if (c == null) {
-                        c = Color.blue;
+                    // Don't draw off edge of clipping rect
+                    if (x < rect.x && (x + w) > (rect.x + rect.width)) {
+                        x = rect.x;
+                        w = rect.width;
+                        arrowLength = 0;
+                    } else if (x < rect.x) {
+                        int delta = rect.x - x;
+                        x = rect.x;
+                        w -= delta;
+                        if (alignment.isNegativeStrand()) {
+                            arrowLength = 0;
+                        }
+                    } else if ((x + w) > (rect.x + rect.width)) {
+                        w -= ((x + w) - (rect.x + rect.width));
+                        if (!alignment.isNegativeStrand()) {
+                            arrowLength = 0;
+                        }
                     }
-                    Graphics2D cBlue = context.getGraphic2DForColor(c);
-                    Stroke s = cBlue.getStroke();
-                    cBlue.setStroke(thickStroke);
-                    cBlue.drawPolygon(xPoly, yPoly, xPoly.length);
-                    cBlue.setStroke(s);
+
+                    int[] xPoly = null;
+                    int[] yPoly = {y, y, y + h / 2, y + h, y + h};
+
+                    if (alignment.isNegativeStrand()) {
+                        xPoly = new int[]{x + w, x, x - arrowLength, x, x + w};
+                    } else {
+                        xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
+                    }
+                    g.fillPolygon(xPoly, yPoly, xPoly.length);
+
+
+                    if (isZeroQuality) {
+                        greyGraphics.drawPolygon(xPoly, yPoly, xPoly.length);
+                    }
+
+                    if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
+                        Graphics2D cRed = context.getGraphic2DForColor(Color.red);
+                        cRed.drawPolygon(xPoly, yPoly, xPoly.length);
+                    }
+
+                    if (selectedReadNames.containsKey(alignment.getReadName())) {
+                        Color c = selectedReadNames.get(alignment.getReadName());
+                        if (c == null) {
+                            c = Color.blue;
+                        }
+                        Graphics2D cBlue = context.getGraphic2DForColor(c);
+                        Stroke s = cBlue.getStroke();
+                        cBlue.setStroke(thickStroke);
+                        cBlue.drawPolygon(xPoly, yPoly, xPoly.length);
+                        cBlue.setStroke(s);
+                    }
                 }
             }
 
-            if (lastBlockEnd > Integer.MIN_VALUE) {
+
+            if (locScale < 5) {
+                drawBases(context, rect, aBlock, alignmentColor, renderOptions.shadeBases, renderOptions.showAllBases);
+            }
+
+            // Draw connecting lines between blocks, if in view
+            if (lastBlockEnd > Integer.MIN_VALUE && x > rect.x) {
                 Graphics2D gLine;
                 Stroke stroke;
                 int gapIdx = blockNumber - 1;
@@ -380,9 +382,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
             lastBlockEnd = x + w;
 
-            if (locScale < 5) {
-                drawBases(context, rect, aBlock, alignmentColor, renderOptions.shadeBases, renderOptions.showAllBases);
+            // Next block cannot start before lastBlockEnd.  If its out of view we are done.
+            if(lastBlockEnd > rect.getMaxX()) {
+                break;
             }
+
         }
 
         // Render insertions if locScale ~ 0.25 (base level)
