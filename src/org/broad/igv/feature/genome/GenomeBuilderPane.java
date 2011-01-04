@@ -294,7 +294,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             genomeDisplayNameTextField.setBounds(105, 40, 288, genomeDisplayNameTextField.getPreferredSize().height);
 
             //---- fastaFileLabel ----
-            fastaFileLabel.setText("Fasta file:");
+            fastaFileLabel.setText("Fasta file *");
             jPanel1.add(fastaFileLabel);
             fastaFileLabel.setBounds(15, 100, 87, 29);
 
