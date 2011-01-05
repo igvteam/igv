@@ -821,19 +821,13 @@ public class GenomeManager {
                     cachedGenomeArchiveList.add(item);
                 } catch (ZipException ex) {
                     log.error("\nZip error unzipping cached genome.", ex);
-                    JOptionPane.showMessageDialog(null, "Fatal error loading genome file: " + file.getAbsolutePath() +
-                            "\n     *** " + ex.getMessage() + " ***" +
-                            "\nIGV must exit.  If this problem persists contact igv-help@broadinstitute.org");
                     try {
-                        file.deleteOnExit();
+                        file.delete();
                         zipInputStream.close();
                     }
                     catch (Exception e) {
                         //ignore exception when trying to delete file
                     }
-                    System.exit(-1);
-
-
                 } catch (IOException ex) {
                     log.warn("\nIO error unzipping cached genome.", ex);
                     try {
