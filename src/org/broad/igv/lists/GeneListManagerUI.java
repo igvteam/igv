@@ -112,11 +112,12 @@ public class GeneListManagerUI extends JDialog {
     }
 
     private void listsValueChanged(ListSelectionEvent e) {
+
         selectedList = (String) glJList.getSelectedValue();
         if (selectedList == null) {
             geneListModel.clear();
         } else {
-            goButton.setEnabled(true);
+            loadButton.setEnabled(true);
             GeneList gl = listModel.getGeneList(selectedList);
             geneListModel.setGeneList(gl);
             lociJList.setModel(geneListModel);
@@ -265,11 +266,23 @@ public class GeneListManagerUI extends JDialog {
         setVisible(false);
     }
 
-    private void goButtonActionPerformed(ActionEvent e) {
+    private void loadButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
             IGVMainFrame.getInstance().setGeneList(selectedList);
+            setVisible(false);
+            dispose();
         }
 
+    }
+
+    private void glJListMouseClicked(MouseEvent e) {
+        if(e.getClickCount() > 1) {
+            this.loadButtonActionPerformed(null);
+        }
+    }
+
+    private void goButtonActionPerformed(ActionEvent e) {
+        // TODO add your code here
     }
 
     class ListListModel extends AbstractListModel {
@@ -415,7 +428,7 @@ public class GeneListManagerUI extends JDialog {
         lociJList = new JList();
         panel9 = new JPanel();
         buttonBar = new JPanel();
-        goButton = new JButton();
+        loadButton = new JButton();
         closeButton = new JButton();
 
         //======== this ========
@@ -575,6 +588,12 @@ public class GeneListManagerUI extends JDialog {
                                         listsValueChanged(e);
                                     }
                                 });
+                                glJList.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseClicked(MouseEvent e) {
+                                        glJListMouseClicked(e);
+                                    }
+                                });
                                 scrollPane2.setViewportView(glJList);
                             }
                             panel4.add(scrollPane2, BorderLayout.CENTER);
@@ -661,15 +680,15 @@ public class GeneListManagerUI extends JDialog {
                 buttonBar.setBorder(null);
                 buttonBar.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-                //---- goButton ----
-                goButton.setText("Go");
-                goButton.setEnabled(false);
-                goButton.addActionListener(new ActionListener() {
+                //---- loadButton ----
+                loadButton.setText("Load");
+                loadButton.setEnabled(false);
+                loadButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         goButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(goButton);
+                buttonBar.add(loadButton);
 
                 //---- closeButton ----
                 closeButton.setText("Close");
@@ -722,12 +741,7 @@ public class GeneListManagerUI extends JDialog {
     private JList lociJList;
     private JPanel panel9;
     private JPanel buttonBar;
-    private JButton goButton;
+    private JButton loadButton;
     private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
-
-
-    public static void main(String[] args) {
-        (new GeneListManagerUI(null)).setVisible(true);
-    }
 }
