@@ -315,8 +315,8 @@ public class IgvTools {
         }
         File tmp = new File(ifile);
 
-        // TODO -- do a better size estimate for directories
-        int nLines = tmp.isDirectory() ? 310000000 : ParsingUtils.estimateLineCount(ifile);
+        
+        int nLines = tmp.isDirectory() ? ParsingUtils.estimateLineCount(tmp) : ParsingUtils.estimateLineCount(ifile);
 
         // Convert  gct files to igv format first
         if (isGCT(ifile)) {

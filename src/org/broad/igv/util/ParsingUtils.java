@@ -68,6 +68,24 @@ public class ParsingUtils {
     }
 
 
+    public static int estimateLineCount(File file) {
+        if(file.isDirectory()) {
+            int lineCount = 0;
+            for(File f : file.listFiles()) {
+                // Don't recurse
+                if(!f.isDirectory()) {
+                    lineCount += estimateLineCount(f.getAbsolutePath());
+                }
+            }
+            return lineCount;
+
+        }
+        else {
+            return estimateLineCount(file.getAbsolutePath());
+        }
+
+    }
+
     public static int estimateLineCount(String filename) {
 
         AsciiLineReader reader = null;
