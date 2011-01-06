@@ -222,7 +222,6 @@ public class DASFeatureSource implements FeatureSource {
                 if (is != null) {
                     try {
                         is.close();
-
                     } catch (IOException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
@@ -437,7 +436,6 @@ public class DASFeatureSource implements FeatureSource {
         }
 
         public void close() throws IOException {
-            //To change body of implemented methods use File | Settings | File Templates.
         }
 
         public List<String> getSequenceNames() {

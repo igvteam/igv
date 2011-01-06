@@ -377,7 +377,7 @@ public class GeneListManagerUI extends JDialog {
         }
 
         void setGeneList(GeneList geneList) {
-            genes = geneList == null ? new ArrayList() : geneList.getLoci();
+            genes = geneList == null ? new ArrayList() : new ArrayList(geneList.getLoci());
         }
 
         public int getSize() {
@@ -686,6 +686,7 @@ public class GeneListManagerUI extends JDialog {
                 loadButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         goButtonActionPerformed(e);
+                        loadButtonActionPerformed(e);
                     }
                 });
                 buttonBar.add(loadButton);
