@@ -23,8 +23,11 @@
  */
 package org.broad.igv.ui.event;
 
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.vcf.VCFTrack;
@@ -39,7 +42,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * @author jrobinso
@@ -105,6 +110,10 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke toolsKey = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.ALT_MASK, false);
         final KeyStroke regionKey = KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK, false);
 
+        //dhmay adding 20101222
+        final KeyStroke nextExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.META_MASK, false);
+        final KeyStroke prevExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.META_MASK, false);
+
 
         KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);
         KeyStroke backKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK, false);
@@ -137,6 +146,25 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 setEnabled(true);
             }
         };
+
+        //dhmay adding
+        final Action nextExonAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                setEnabled(false); // stop any other events from interfering
+                nextExon(true);
+                setEnabled(true);
+            }
+        };
+        final Action prevExonAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                setEnabled(false); // stop any other events from interfering
+                nextExon(false);
+                setEnabled(true);
+            }
+        };
+
         final Action regionAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -174,6 +202,13 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("nextFeature", nextAction);
         getInputMap().put(prevKey, "prevFeature");
         getActionMap().put("prevFeature", prevAction);
+
+        //dhmay adding 20101222
+        getInputMap().put(nextExonKey, "nextExon");
+        getActionMap().put("nextExon", nextExonAction);
+        getInputMap().put(prevExonKey, "prevExon");
+        getActionMap().put("prevExon", prevExonAction);
+
         getInputMap().put(toolsKey, "tools");
         getActionMap().put("tools", toolAction);
         getInputMap().put(regionKey, "region");
@@ -186,6 +221,96 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getInputMap().put(forwardKey2, "forward");
         getActionMap().put("forward", forwardAction);
 
+    }
+
+    /**
+     * Move to the next exon in the feature located at the center, if:
+     *  -there is such a feature
+     *  -the track is expanded
+     *  -a single feature row is selected
+     *  -the feature has multiple exons
+     *  -there is an exon forward or backward to jump to
+     * @param forward
+     */
+    private void nextExon(boolean forward) {
+
+        // Ignore (Disable) if we are in gene list mode
+        if (FrameManager.isGeneListMode()) {
+            return;
+        }
+
+        ReferenceFrame vc = FrameManager.getDefaultFrame();
+        Collection<Track> tracks = IGVMainFrame.getInstance().getTrackManager().getSelectedTracks();
+        if (tracks.size() == 1) {
+            Track t = tracks.iterator().next();
+                if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
+                    //JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                    //        "Track panning is not enabled for data tracks.");
+                    return;
+                }
+
+            Exon e =  null;
+            if (t instanceof FeatureTrack) {
+                int center = (int) vc.getCenter();
+                FeatureTrack ft = (FeatureTrack) t;
+                if (!ft.isExpanded() ||
+                        ft.getSelectedFeatureRowIndex() == FeatureTrack.NO_FEATURE_ROW_SELECTED)
+                {
+                    MessageUtils.showMessage(
+                            "Exon navigation is only allowed when track is expanded and a single " +
+                                    "feature row is selected.");
+                    return;
+                }
+                Feature feature = ft.getFeatureAtPositionInFeatureRow(vc.getChrName(), center,
+                        ft.getSelectedFeatureRowIndex(), vc);
+
+                if (feature == null)
+                    return;
+                if (feature instanceof BasicFeature)
+                {
+                    BasicFeature bf = (BasicFeature) feature;
+                    java.util.List<Exon> exons = bf.getExons();
+                    if (exons == null || exons.isEmpty())
+                    {
+                        MessageUtils.showMessage("At least one centered feature does not have exon structure");
+                        return;
+                    }
+
+                    if (forward)
+                    {
+                        for (Exon exon : bf.getExons())
+                        {
+                            if (exon.getStart() > vc.getCenter())
+                            {
+                                e = exon;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i=exons.size()-1; i>=0; i--)
+                        {
+                            Exon exon = exons.get(i);
+                            if (exon.getEnd() < vc.getCenter())
+                            {
+                                e = exon;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (e != null)
+                    vc.centerOnLocation(e.getStart());
+
+            }
+            //todo: implement handling for VCFTrack
+
+
+        } else {
+            MessageUtils.showMessage("To use track panning you must first select a single feature track.");
+        }
     }
 
 

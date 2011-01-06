@@ -28,7 +28,6 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.Feature;
@@ -73,6 +72,12 @@ public class FeatureTrack extends AbstractTrack {
     private static final int EXPAND_ICON_BUFFER_WIDTH = 17;
     private static final int EXPAND_ICON_BUFFER_HEIGHT = 17;
     public static final int MARGIN = 5;
+
+    //track which row of the expanded track is selected by the user.
+    //Selection goes away if tracks are collpased
+    public static final int NO_FEATURE_ROW_SELECTED = -1;
+    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
+    int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
 
     public FeatureTrack(String id, FeatureSource source) {
@@ -285,7 +290,40 @@ public class FeatureTrack extends AbstractTrack {
         return feature;
     }
 
-    protected Feature getFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
+    /**
+     * Determine which row the user clicked in and return the appropriate feature
+     * @param chr
+     * @param position
+     * @param y
+     * @param frame
+     * @return
+     */
+    public Feature getFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
+        // Determine the level number (for expanded tracks.
+        int featureRow = 0;
+        if (featureRects != null) {
+            for (int i = 0; i < featureRects.size(); i++) {
+                Rectangle r = featureRects.get(i);
+                if ((y >= r.y) && (y <= r.getMaxY())) {
+                    featureRow = i;
+                    break;
+                }
+            }
+        }
+        return getFeatureAtPositionInFeatureRow(chr, position, featureRow, frame);
+    }
+
+    /**
+     * Knowing the feature row, figure out which feature is at position position. If not expanded,
+     * featureRow is ignored
+     * @param chr
+     * @param position
+     * @param featureRow
+     * @param frame
+     * @return
+     */
+    public Feature getFeatureAtPositionInFeatureRow(String chr, double position, int featureRow, 
+                                                    ReferenceFrame frame) {
 
         PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
 
@@ -294,22 +332,11 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         Feature feature = null;
-        // Determine the level number (for expanded tracks.
-        int levelNumber = 0;
-        if (featureRects != null) {
-            for (int i = 0; i < featureRects.size(); i++) {
-                Rectangle r = featureRects.get(i);
-                if ((y >= r.y) && (y <= r.getMaxY())) {
-                    levelNumber = i;
-                    break;
-                }
-            }
-        }
 
         int nLevels = this.getNumberOfFeatureLevels();
         List<Feature> features = null;
-        if ((nLevels > 1) && (levelNumber < nLevels)) {
-            features = packedFeatures.getRows().get(levelNumber).features;
+        if ((nLevels > 1) && (featureRow < nLevels)) {
+            features = packedFeatures.getRows().get(featureRow).features;
         } else {
             features = packedFeatures.getFeatures();
         }
@@ -374,6 +401,27 @@ public class FeatureTrack extends AbstractTrack {
             }
             return true;
         }
+
+        //dhmay adding selection of an expanded feature row
+        if (expanded)
+        {
+            if (featureRects != null) {
+                for (int i=0; i<featureRects.size(); i++)
+                {
+                    Rectangle rect = featureRects.get(i);
+                    if (rect.contains(e.getPoint()))
+                    {
+                        if (i == selectedFeatureRowIndex)
+                            setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
+                        else
+                            setSelectedFeatureRowIndex(i);
+                        IGVMainFrame.getInstance().doRefresh();
+                        break;
+                    }
+                }
+            }
+        }
+
 
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
@@ -581,10 +629,18 @@ public class FeatureTrack extends AbstractTrack {
                     // Divide rectangle into equal height levels
                     double h = inputRect.getHeight() / nLevels;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
+                    int i=0;
                     for (FeatureRow row : rows) {
                         featureRects.add(new Rectangle(rect));
                         getRenderer().renderFeatures(row.features, context, rect, this);
+                        if (selectedFeatureRowIndex == i)
+                        {
+                            Graphics2D fontGraphics =
+                                    (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR).create();
+                            fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                        }
                         rect.y += h;
+                        i++;
                     }
                 }
             }
@@ -667,6 +723,9 @@ public class FeatureTrack extends AbstractTrack {
     @Override
     public void setExpanded(boolean value) {
         expanded = value;
+        //dhmay adding: if collapsing rows, remove row selection if any
+        if (!expanded)
+            setSelectedFeatureRowIndex(NO_FEATURE_ROW_SELECTED);
         IGVMainFrame.getInstance().layoutMainPanel();   // TODO -- this is for the scrollbar.  Can some event be fired?
     }
 
@@ -804,6 +863,14 @@ public class FeatureTrack extends AbstractTrack {
         stateMap.put(FEATURE_VISIBILITY_WINDOW, String.valueOf(visibilityWindow));
         return stateMap;
 
+    }
+
+    public int getSelectedFeatureRowIndex() {
+        return selectedFeatureRowIndex;
+    }
+
+    public void setSelectedFeatureRowIndex(int selectedFeatureRowIndex) {
+        this.selectedFeatureRowIndex = selectedFeatureRowIndex;
     }
 
     //public IGVFeature nextFeature(String chr, double position, boolean forward) {
