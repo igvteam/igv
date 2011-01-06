@@ -85,25 +85,18 @@ public class CosmicFeatureRenderer extends FeatureRenderer<IGVFeature> {
 
                     Color color = colorScheme.get(((IGVFeature) feature).getType());
 
-                    
+
                     Graphics2D g = context.getGraphic2DForColor(color);
                     g.setFont(font);
 
-                    if (getOverlayMode() == true) {
-                        g.draw(mutRect);
-                        mutRect.x--;
-                        mutRect.width += 2;
-                        g.draw(mutRect);
+                    g.fill(mutRect);
+                    if (lastRect != null && mutRect.intersects(lastRect)) {
+                        // Indicate overlapping mutations
+                        Graphics2D g2 = context.getGraphic2DForColor(Color.BLACK);
+                        g2.draw(mutRect);
 
-                    } else {
-                        g.fill(mutRect);
-                        if (lastRect != null && mutRect.intersects(lastRect)) {
-                            // Indicate overlapping mutations
-                            Graphics2D g2 = context.getGraphic2DForColor(Color.BLACK);
-                            g2.draw(mutRect);
-
-                        }
                     }
+
 
                     lastRect = mutRect;
                 }

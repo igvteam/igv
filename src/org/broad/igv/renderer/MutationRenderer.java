@@ -54,56 +54,46 @@ public class MutationRenderer extends FeatureRenderer<IGVFeature> {
 
             Rectangle lastRect = null;
 
-            boolean colorOverlay =  IGVMainFrame.getInstance().getSession().getColorOverlay();
+            boolean colorOverlay = IGVMainFrame.getInstance().getSession().getColorOverlay();
             for (IGVFeature feature : featureList) {
-                 // Note -- don't cast these to an int until the range is checked.
-                    // could get an overflow.
-                    double pixelStart = ((feature.getStart() - origin) / locScale);
-                    double pixelEnd = ((feature.getEnd() - origin) / locScale);
+                // Note -- don't cast these to an int until the range is checked.
+                // could get an overflow.
+                double pixelStart = ((feature.getStart() - origin) / locScale);
+                double pixelEnd = ((feature.getEnd() - origin) / locScale);
 
-                    // If the any part of the feature fits in the
-                    // Track rectangle draw it
-                    if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
+                // If the any part of the feature fits in the
+                // Track rectangle draw it
+                if (pixelEnd >= trackRectangle.getX() && pixelStart <= trackRectangle.getMaxX()) {
 
-                        // Set color used to draw the feature
+                    // Set color used to draw the feature
 
-                        Color color = feature.getColor();
-                        Graphics2D g = context.getGraphic2DForColor(color);
-                        g.setFont(font);
-
-
-                        int w = (int) (pixelEnd - pixelStart);
-                        if (w < 3) {
-                            w = 3;
-                            pixelStart--;
-                        }
-
-                        int mutHeight = (int) Math.max(1, trackRectangle.getHeight() - 2);
-                        int mutY = (int) (trackRectangle.getY() + (trackRectangle.getHeight() - mutHeight) / 2);
+                    Color color = feature.getColor();
+                    Graphics2D g = context.getGraphic2DForColor(color);
+                    g.setFont(font);
 
 
-                        Rectangle mutRect = new Rectangle((int) pixelStart, mutY, w, mutHeight);
-
-                        if (getOverlayMode() == true) {
-                            Graphics2D gRect = (colorOverlay ? g : context.getGraphic2DForColor(Color.BLACK));
-                            gRect.draw(mutRect);
-                            mutRect.x--;
-                            mutRect.width += 2;
-                            gRect.draw(mutRect);
-
-                        } else {
-                            g.fill(mutRect);
-                            if (lastRect != null && mutRect.intersects(lastRect)) {
-                                // Indicate overlapping mutations
-                                Graphics2D g2 = context.getGraphic2DForColor(Color.BLACK);
-                                g2.draw(mutRect);
-
-                            }
-                        }
-
-                        lastRect = mutRect;
+                    int w = (int) (pixelEnd - pixelStart);
+                    if (w < 3) {
+                        w = 3;
+                        pixelStart--;
                     }
+
+                    int mutHeight = (int) Math.max(1, trackRectangle.getHeight() - 2);
+                    int mutY = (int) (trackRectangle.getY() + (trackRectangle.getHeight() - mutHeight) / 2);
+
+
+                    Rectangle mutRect = new Rectangle((int) pixelStart, mutY, w, mutHeight);
+
+                    Graphics2D gRect = (colorOverlay ? g : context.getGraphic2DForColor(Color.BLACK));
+                    gRect.draw(mutRect);
+                    mutRect.x--;
+                    mutRect.width += 2;
+                    gRect.draw(mutRect);
+
+
+                    lastRect = mutRect;
                 }
+            }
 
         }
     }

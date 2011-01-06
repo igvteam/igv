@@ -39,7 +39,5 @@ public interface Renderer {
 
     public void renderAxis(Track track, RenderContext context, Rectangle rect);
 
-    public void setOverlayMode(boolean overlayMode);
-
     public Color getDefaultColor();
 }

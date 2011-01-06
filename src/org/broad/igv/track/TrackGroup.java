@@ -56,29 +56,18 @@ public class TrackGroup {
         this("");
     }
 
-    /**
-     * @param attributeValue
-     */
-    public TrackGroup(String attributeValue) {
-        this.name = attributeValue;
+
+    public TrackGroup(String name) {
+        this.name = name;
         tracks = new ArrayList<Track>();
     }
 
-    /**
-     * Method description
-     *
-     * @param track
-     * @return
-     */
+
     public boolean contains(Track track) {
         return tracks.contains(track);
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public int getPreferredHeight() {
         int height = 0;
         {
@@ -91,56 +80,30 @@ public class TrackGroup {
         return height;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public List<Track> getTracks() {
         return tracks;
     }
 
-    /**
-     * Method description
-     *
-     * @param track
-     * @return
-     */
+
     public int indexOf(Track track) {
         return tracks.indexOf(track);
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public int size() {
         return tracks.size();
     }
 
-    /**
-     * Method description
-     *
-     * @param track
-     */
+
     public void add(Track track) {
         this.tracks.add(track);
     }
 
-    /**
-     * Method description
-     *
-     * @param pos
-     * @param track
-     */
     public void add(int pos, Track track) {
         this.tracks.add(pos, track);
     }
 
-    /**
-     *
-     */
     public void addAll(Collection<Track> trackList) {
         tracks.addAll(trackList);
     }
@@ -149,15 +112,10 @@ public class TrackGroup {
         tracks.addAll(index, trackList);
     }
 
-
     public void remove(Track track) {
         tracks.remove(track);
     }
 
-
-    /**
-     * Method description
-     */
     public void clear() {
         tracks.clear();
     }
@@ -187,38 +145,19 @@ public class TrackGroup {
     }
 
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean isDrawBorder() {
         return drawBorder;
     }
 
-    /**
-     * Method description
-     *
-     * @param drawBorder
-     */
+
     public void setDrawBorder(boolean drawBorder) {
         this.drawBorder = drawBorder;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean isVisible() {
         for (Track t : tracks) {
             if ((t != null) && t.isVisible()) {

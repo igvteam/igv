@@ -429,12 +429,10 @@ public class FeatureTrack extends AbstractTrack {
 
 
     public void overlay(RenderContext context, Rectangle rect) {
-        getRenderer().setOverlayMode(true);
         renderFeatures(context, rect);
     }
 
     public void render(RenderContext context, Rectangle rect) {
-        getRenderer().setOverlayMode(false);
         Rectangle renderRect = new Rectangle(rect);
         renderRect.y = renderRect.y + MARGIN;
         renderRect.height -= MARGIN;

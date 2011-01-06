@@ -38,8 +38,6 @@ import java.util.List;
  */
 public abstract class FeatureRenderer<T extends Feature> implements Renderer {
 
-    boolean overlayMode = false;
-
     private static Color defaultColor = new Color(0, 0, 150);
 
     final HashMap<Color, Graphics2D> graphicCacheByColor = new HashMap<Color, Graphics2D>();
@@ -50,15 +48,6 @@ public abstract class FeatureRenderer<T extends Feature> implements Renderer {
     private static Logger log = Logger.getLogger(FeatureRenderer.class);
 
     private Feature highlightFeature = null;
-
-
-    public void setOverlayMode(boolean overlayMode) {
-        this.overlayMode = overlayMode;
-    }
-
-    public boolean getOverlayMode() {
-        return overlayMode;
-    }
 
 
     /**
