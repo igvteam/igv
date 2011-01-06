@@ -211,7 +211,8 @@ public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
                 for (int i = idx0; i <= idx1; i++) {
                     Bin t = tiles.get(i);
 
-                    if ((aStart >= t.start) && (aStart < t.end)) {
+                    // A bin size == 0 means use a single bin for the entire chromosome.  This is a confusing convention.
+                    if (binSize == 0 || ((aStart >= t.start) && (aStart < t.end))) {
                         t.containedRecords.add(record);
                     } else if ((aEnd >= t.start) && (aStart < t.start)) {
                         t.overlappingRecords.add(record);

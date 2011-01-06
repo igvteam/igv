@@ -47,7 +47,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
 //http://das.sanger.ac.uk/das/cosmic_mutations/features
@@ -63,9 +62,11 @@ public class DASFeatureSource implements FeatureSource {
     private boolean isValid = true;
     private CachingFeatureReader reader;
     //DasReader reader;
-    private int binSize = 250000;
+    private int featureWindowSize = 250000;
     private String type;
     private String[] parameters;
+
+    Map<String, String> dasAliasMap = new HashMap();
 
     public DASFeatureSource(ResourceLocator locator) throws MalformedURLException {
         URL url = new URL(locator.getPath());
@@ -93,7 +94,7 @@ public class DASFeatureSource implements FeatureSource {
 
         //reader = new DasReader();
         reader = new CachingFeatureReader(new DasReader());
-        reader.setBinSize(binSize);
+        reader.setBinSize(featureWindowSize);
     }
 
     public Iterator<Feature> getFeatures(String chr, int start, int end) throws IOException {
@@ -105,11 +106,11 @@ public class DASFeatureSource implements FeatureSource {
     }
 
     public int getFeatureWindowSize() {
-        return binSize;
+        return featureWindowSize;
     }
 
     public void setFeatureWindowSize(int size) {
-        this.binSize = size;
+        this.featureWindowSize = size;
         reader.setBinSize(size);
     }
 
@@ -136,14 +137,13 @@ public class DASFeatureSource implements FeatureSource {
 
         public CloseableTribbleIterator query(String chr, int start, int end) throws IOException {
 
-            String dasChr = chr.startsWith("chr") ? chr.substring(3, chr.length()) : chr;
             int dasStart = start + 1;
             int dasEnd = end;
 
             if (isValid && !chr.equals("All")) {
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
-                    List<Feature> features = gatherFeatures(dasChr, dasStart, dasEnd);
+                    List<Feature> features = gatherFeatures(chr, dasStart, dasEnd);
                     if (features.size() < 1) {
                         return EMPTY__ITERATOR;
                     }
@@ -177,8 +177,9 @@ public class DASFeatureSource implements FeatureSource {
 
             List<Feature> features = new ArrayList<Feature>();
             try {
+                String dasChr = chr.startsWith("chr") ? chr.substring(3, chr.length()) : chr;
 
-                String urlString = serverURL + "?" + "segment=" + chr;
+                String urlString = serverURL + "?" + "segment=" + dasChr;
                 if (end > 0) urlString += ":" + start + "," + end;
 
                 // Add parameters
@@ -275,22 +276,23 @@ public class DASFeatureSource implements FeatureSource {
 
         private List<Feature> parseTree(TreeWalker walker,
                                         String tag,
-                                        String chr, List<Feature> features) {
+                                        String chr,
+                                        List<Feature> features) {
 
             Node parent = walker.getCurrentNode();
-            Node n = walker.firstChild();
+            Element n = (Element) walker.firstChild();
             while (n != null) {
-                if (((Element) n).getTagName().equalsIgnoreCase(tag)) {
+                if (n.getTagName().equalsIgnoreCase(tag)) {
                     Feature f = getFeature(walker, chr);
                     if (f != null) {
                         features.add(f);
                     }
 
-                    n = walker.nextSibling();
+                    n = (Element) walker.nextSibling();
                     continue;
                 }
                 parseTree(walker, tag, chr, features);
-                n = walker.nextSibling();
+                n = (Element) walker.nextSibling();
             }
             walker.setCurrentNode(parent);
             return features;
