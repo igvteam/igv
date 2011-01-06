@@ -93,7 +93,7 @@ public class SamQueryTextReader implements AlignmentQueryReader {
 
         }
         catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error loading header", e);
         }
         finally {
             try {
@@ -163,14 +163,6 @@ public class SamQueryTextReader implements AlignmentQueryReader {
             } catch (IOException ex) {
                 log.error("Error opening sam file", ex);
                 throw new RuntimeException("Error opening: " + samFile, ex);
-            }
-            finally {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-                stream = null;
             }
         }
         return EmptyAlignmentIterator.getInstance();

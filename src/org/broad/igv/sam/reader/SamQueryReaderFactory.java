@@ -59,11 +59,8 @@ public class SamQueryReaderFactory {
 
         String samFile = locator.getPath();
         if (path.endsWith(".sam")) {
-            try {
-                reader = new SamQueryTextReader(samFile, requireIndex);
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+            reader = new SamQueryTextReader(samFile, requireIndex);
+
         } else if (path.endsWith("sorted.txt")
                 || path.endsWith(".aligned")
                 || path.endsWith(".aligned.txt")
@@ -80,7 +77,7 @@ public class SamQueryReaderFactory {
                     URL url = new URL(locator.getPath());
                     reader = new BAMHttpQueryReader(url, requireIndex);
                 }
-                 catch (MalformedURLException e) {
+                catch (MalformedURLException e) {
                     log.error("", e);
                     throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
                 }
