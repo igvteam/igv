@@ -85,9 +85,9 @@ public class SequenceTrack extends AbstractTrack {
      */
     public void render(RenderContext context, Rectangle rect) {
         // Are we zoomed in far enough to show the sequence?  Scale is
-        // in BP / pixel,  need at least 1 pixel for 3 bp in order to show translated sequence,
-        //or 1 pixel per bp in order to show sequence.
+        // in BP / pixel,  need at least 1 pixel  per bp in order to show sequence.
 
+        // TODO -- this should be calculated from a "rescale" event
         boolean visible = isSequenceVisible(context);
         if(visible != sequenceVisible) {
             sequenceVisible = visible;
@@ -102,7 +102,7 @@ public class SequenceTrack extends AbstractTrack {
 
     private boolean isSequenceVisible(RenderContext context) {
 
-        return context.getScale() < (shouldShowTranslation ? 3 : 1) && !context.getChr().equals(Globals.CHR_ALL);
+        return FrameManager.getMinimumScale() < 1 && !context.getChr().equals(Globals.CHR_ALL);
 
     }
 
@@ -121,7 +121,8 @@ public class SequenceTrack extends AbstractTrack {
         setShouldShowTranslation(!shouldShowTranslation);
         Object source = e.getMouseEvent().getSource();
         if (source instanceof JComponent) {
-            ((JComponent) source).repaint();
+            // TODO -- what's really needed is a repaint of all panels the sequence track intersects
+            ((JComponent) source).getRootPane().repaint();
         }
         return true;
     }

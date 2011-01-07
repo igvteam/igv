@@ -240,20 +240,12 @@ public class HeaderPanel extends JPanel implements Transferable {
 
         JPopupMenu popupMenu = new RegionMenu(roi, frame);
 
-        JMenuItem item = new JMenuItem("Reset");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.reset();
-                // TODO -- paint only panels for this frame
-                HeaderPanel.this.getRootPane().repaint();
-            }
-        });
-        popupMenu.add(item);
 
+        // Zoom items
         TrackMenuUtils.addZoomItems(popupMenu, frame);
 
         popupMenu.addSeparator();
-        item = new JMenuItem("Remove");
+        JMenuItem item = new JMenuItem("Remove");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 parent.removeFrame(frame);

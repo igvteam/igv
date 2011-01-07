@@ -107,6 +107,19 @@ public class FrameManager {
         }
     }
 
+    /**
+     *
+     * @return The minimum scale among all active frames
+     * TODO -- track this with "rescale" events, rather than compute on the fly
+     */
+    public static double getMinimumScale() {
+        double minScale = Double.MAX_VALUE;
+        for(ReferenceFrame frame : frames) {
+            minScale = Math.min(minScale, frame.getScale());
+        }
+        return minScale;
+    }
+
 
     public static Locus getLocus(String name) {
         int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);

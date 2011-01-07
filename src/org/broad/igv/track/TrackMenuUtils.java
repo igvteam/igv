@@ -118,23 +118,31 @@ public class TrackMenuUtils {
 
         ReferenceFrame frame = te.getFrame();
         if (frame != null) {
+            menu.addSeparator();
             addZoomItems(menu, frame);
         }
     }
 
     public static void addZoomItems(JPopupMenu menu, final ReferenceFrame frame) {
+
         menu.addSeparator();
+
+        if (FrameManager.isGeneListMode()) {
+            JMenuItem item = new JMenuItem("Reset view");
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.reset();
+                    // TODO -- paint only panels for this frame
+                }
+            });
+            menu.add(item);
+        }
 
         JMenuItem zoomInItem = new JMenuItem("Zoom in");
         zoomInItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-                if (FrameManager.isGeneListMode()) {
-                    frame.scaleBy(1.5);
-                } else {
-                    frame.incrementZoom(1);
-                }
-
+                frame.incrementZoom(1);
             }
         });
         menu.add(zoomInItem);
@@ -143,11 +151,7 @@ public class TrackMenuUtils {
         zoomOutItem.addActionListener(new TrackActionListener() {
 
             public void action() {
-                if (FrameManager.isGeneListMode()) {
-                   frame.scaleBy(1.0 / 1.5);
-                } else {
-                    frame.incrementZoom(-1);
-                }
+                frame.incrementZoom(-1);
             }
         });
         menu.add(zoomOutItem);

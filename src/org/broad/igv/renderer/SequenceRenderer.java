@@ -27,6 +27,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.SOLIDUtils;
 
 import java.awt.*;
@@ -65,10 +66,6 @@ public class SequenceRenderer implements Renderer {
     public SequenceRenderer()
     {
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
-    }
-
-    public void draw(RenderContext context, Rectangle trackRectangle) {
-        draw(context, trackRectangle, false, false);
     }
 
     /**
@@ -169,7 +166,7 @@ public class SequenceRenderer implements Renderer {
                             drawCenteredText(g, cCS.toCharArray(), pX0 - dX/2, yCS + 2, dX, dY - 2);
                         }
                     } else {
-                        int bw = dX - 1;
+                        int bw = Math.max(1, dX - 1);
                         if (color != null) {
                             g.setColor(color);
                             g.fillRect(pX0, yBase, bw, dY);
@@ -178,6 +175,9 @@ public class SequenceRenderer implements Renderer {
                     }
                 }
             }
+        }
+        else {
+           context.getGraphic2DForColor(Color.LIGHT_GRAY).fill(untranslatedSequenceRect);
         }
     }
 
@@ -266,8 +266,8 @@ public class SequenceRenderer implements Renderer {
         public static final int TOTAL_HEIGHT = 3 * HEIGHT_PER_BAND;
 
         //alternating colors for aminoacids
-        public static final Color AA_COLOR_1 = new Color(92, 92, 164);
-        public static final Color AA_COLOR_2 = new Color(12, 12, 120);
+        public static final Color AA_COLOR_1 = new Color(128, 128, 128);
+        public static final Color AA_COLOR_2 = new Color(170, 170, 170);
 
         public static final Color AA_FONT_COLOR = Color.WHITE;
 

@@ -43,7 +43,9 @@ public class ReferenceFrame {
 
     private static Logger log = Logger.getLogger(ReferenceFrame.class);
 
-    private static NumberFormat numberFormat = NumberFormat.getInstance(Locale.US);
+    private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
+
+    private static double minimumScale = Double.MAX_VALUE;
 
     String name;
     int pixelX;
@@ -192,11 +194,8 @@ public class ReferenceFrame {
                 computeLocationScale();
 
                 double newLocationScale = getScale();
-
                 // Adjust origin so newCenter is centered
-                double newOrigin = Math.round(
-                        newCenter - ((pixelWidth / 2) * newLocationScale));
-
+                double newOrigin = Math.round(newCenter - ((pixelWidth / 2) * newLocationScale));
                 setOrigin(newOrigin);
 
             }
@@ -208,17 +207,6 @@ public class ReferenceFrame {
         DragEventManager.getInstance().dragStopped();
 
     }
-
-
-    public void scaleBy(double z) {
-        double newExtent =  (getEnd() - getOrigin()) / (2 * z);
-        int newOrigin = (int) Math.max(0, getCenter() - newExtent);
-        int newEnd = (int) Math.round(getCenter() + newExtent);
-        this.setInterval(chrName, newOrigin, newEnd);
-        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
-        IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
-    }
-
 
     public void recordHistory() {
         IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString());
@@ -589,8 +577,8 @@ public class ReferenceFrame {
         } else {
 
             Range range = getCurrentRange();
-            String startStr = numberFormat.format(range.getStart());
-            String endStr = numberFormat.format(range.getEnd());
+            String startStr = NUMBER_FORMAT.format(range.getStart());
+            String endStr = NUMBER_FORMAT.format(range.getEnd());
             String position = range.getChr() + ":" + startStr + "-" + endStr;
 
             return position;
@@ -632,6 +620,7 @@ public class ReferenceFrame {
 
     public void reset() {
         setInterval(FrameManager.getLocus(name));
+        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
     }
 
     public String getName() {
