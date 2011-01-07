@@ -63,13 +63,11 @@ public class SequenceRenderer implements Renderer {
     //are we rendering positive or negative strand?
     protected Strand strand = Strand.POSITIVE;
 
-    public SequenceRenderer()
-    {
+    public SequenceRenderer() {
         translatedSequenceDrawer = new TranslatedSequenceDrawer();
     }
 
     /**
-     *
      * @param context
      * @param trackRectangle
      * @param showColorSpace
@@ -77,53 +75,56 @@ public class SequenceRenderer implements Renderer {
      */
     public void draw(RenderContext context, Rectangle trackRectangle,
                      boolean showColorSpace, boolean showTranslation) {
-        double locScale = context.getScale();
-        double origin = context.getOrigin();
-        String chr = context.getChr();
-        String genome = context.getGenomeId();
+        if (context.getScale() >= 1) {
+            // Zoomed out too far to see sequences.  This can happen when in gene list view and one of the frames
+            // is zoomed in but others are not
+            context.getGraphic2DForColor(UIConstants.VERY_LIGHT_GRAY).fill(trackRectangle);
 
-        //The location of the first base that is loaded, which may include padding around what's visible
-        int start = Math.max(0, (int) origin - 1);
-        //The location of the last base that is loaded
-        int end = (int) (origin + trackRectangle.width * locScale) + 1;
-        int firstVisibleNucleotideStart = start;
-        int lastVisibleNucleotideEnd = end;
-        int firstCodonOffset = 0;
-        int lastCodonOffset = 0;
+        } else {
+            double locScale = context.getScale();
+            double origin = context.getOrigin();
+            String chr = context.getChr();
+            String genome = context.getGenomeId();
 
-
-        //If we're translating, we need to start with the first bp of the first codon, in frame 3, and
-        //end with the last bp of the last codon, in frame 1
-        if (showTranslation)
-        {
-            firstCodonOffset = 2;
-            start -= firstCodonOffset;
-
-            lastCodonOffset = 2;
-            end += lastCodonOffset;
-        }
-        byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
-
-        //The combined height of sequence and (optionally) colorspace bands
-        int untranslatedSequenceHeight = (int) trackRectangle.getHeight();
+            //The location of the first base that is loaded, which may include padding around what's visible
+            int start = Math.max(0, (int) origin - 1);
+            //The location of the last base that is loaded
+            int end = (int) (origin + trackRectangle.width * locScale) + 1;
+            int firstVisibleNucleotideStart = start;
+            int lastVisibleNucleotideEnd = end;
+            int firstCodonOffset = 0;
+            int lastCodonOffset = 0;
 
 
-        if (showTranslation)
-        {
-            untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / 5 * 2 :
-                (int) (trackRectangle.getHeight()/4);
-            // Draw translated sequence
-            Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
-                    (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
-            translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
-        }
+            //If we're translating, we need to start with the first bp of the first codon, in frame 3, and
+            //end with the last bp of the last codon, in frame 1
+            if (showTranslation) {
+                firstCodonOffset = 2;
+                start -= firstCodonOffset;
 
-        //Rectangle containing the sequence and (optionally) colorspace bands
-        Rectangle untranslatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y,
-                (int) trackRectangle.getWidth(), untranslatedSequenceHeight);
+                lastCodonOffset = 2;
+                end += lastCodonOffset;
+            }
+            byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
 
-        if (context.getScale() < 1)
-        {
+            //The combined height of sequence and (optionally) colorspace bands
+            int untranslatedSequenceHeight = (int) trackRectangle.getHeight();
+
+
+            if (showTranslation) {
+                untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / 5 * 2 :
+                        (int) (trackRectangle.getHeight() / 4);
+                // Draw translated sequence
+                Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
+                        (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
+                translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
+            }
+
+            //Rectangle containing the sequence and (optionally) colorspace bands
+            Rectangle untranslatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y,
+                    (int) trackRectangle.getWidth(), untranslatedSequenceHeight);
+
+
             byte[] seqCS = null;
             if (showColorSpace) {
                 seqCS = SOLIDUtils.convertToColorSpace(seq);
@@ -163,7 +164,7 @@ public class SequenceRenderer implements Renderer {
                             // two bases.
                             g.setColor(Color.black);
                             String cCS = String.valueOf(seqCS[idx]);
-                            drawCenteredText(g, cCS.toCharArray(), pX0 - dX/2, yCS + 2, dX, dY - 2);
+                            drawCenteredText(g, cCS.toCharArray(), pX0 - dX / 2, yCS + 2, dX, dY - 2);
                         }
                     } else {
                         int bw = Math.max(1, dX - 1);
@@ -176,20 +177,16 @@ public class SequenceRenderer implements Renderer {
                 }
             }
         }
-        else {
-           context.getGraphic2DForColor(Color.LIGHT_GRAY).fill(untranslatedSequenceRect);
-        }
     }
 
     /**
      * complement a nucleotide. If not ATGC, return the intput char
+     *
      * @param inputChar
      * @return
      */
-    protected char complementChar(char inputChar)
-    {
-        switch (inputChar)
-        {
+    protected char complementChar(char inputChar) {
+        switch (inputChar) {
             case 'A':
                 return 'T';
             case 'T':
@@ -257,8 +254,8 @@ public class SequenceRenderer implements Renderer {
 
     /**
      * @author Damon May
-     * This class draws three amino acid bands representing the 3-frame translation of one strand
-     * of the associated SequenceTrack
+     *         This class draws three amino acid bands representing the 3-frame translation of one strand
+     *         of the associated SequenceTrack
      */
     public static class TranslatedSequenceDrawer {
 
@@ -284,9 +281,8 @@ public class SequenceRenderer implements Renderer {
         protected static final Color NUCLEOTIDE_SEPARATOR_COLOR = new Color(150, 150, 150, 120);
 
         /**
-         *
          * @param context
-         * @param start Must be the first base involved in any codon that's even partially visible
+         * @param start          Must be the first base involved in any codon that's even partially visible
          * @param trackRectangle
          * @param seq
          */
@@ -295,7 +291,7 @@ public class SequenceRenderer implements Renderer {
             int idealHeightPerBand = trackRectangle.height / 3;
             //In this situation, band height is more equal if we tweak things a bit
             if (trackRectangle.height % 3 == 2)
-                 idealHeightPerBand++;
+                idealHeightPerBand++;
             int minHeightPerBand = Math.min(idealHeightPerBand, trackRectangle.height - (2 * idealHeightPerBand));
 
             double locScale = context.getScale();
@@ -347,16 +343,14 @@ public class SequenceRenderer implements Renderer {
             drawOneTranslation(context, start, bandRectangle, 2, shouldDrawLetters, fontSize,
                     nucleotideLineXPositions, seq, strand);
 
-            if (shouldDrawNucleotideLines)
-            {
+            if (shouldDrawNucleotideLines) {
                 Graphics2D graphicsForNucleotideLines = context.getGraphic2DForColor(NUCLEOTIDE_SEPARATOR_COLOR);
                 //use a dashed stroke
                 graphicsForNucleotideLines.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL,
-                        0, new float[]{1,2}, 0));
+                        0, new float[]{1, 2}, 0));
 
-                int topYCoord = trackRectangle.y-1;
-                for (int xVal :nucleotideLineXPositions)
-                {
+                int topYCoord = trackRectangle.y - 1;
+                for (int xVal : nucleotideLineXPositions) {
                     if (xVal >= trackRectangle.x && xVal <= trackRectangle.x + trackRectangle.width)
                         graphicsForNucleotideLines.drawLine(xVal,
                                 topYCoord,
@@ -369,15 +363,15 @@ public class SequenceRenderer implements Renderer {
          * Draw the band representing a translation of the sequence in one reading frame
          *
          * @param context
-         * @param start the index of the first base in seq.  Should be the first nucleotide that's in a codon
-         * that's even partially visible, in any frame
+         * @param start                    the index of the first base in seq.  Should be the first nucleotide that's in a codon
+         *                                 that's even partially visible, in any frame
          * @param bandRectangle
          * @param readingFrame
          * @param shouldDrawLetters
          * @param fontSize
          * @param nucleotideLineXPositions a Set that will accrue all of the x positions that we define here
-         * @param seq nucleotide sequence starting at start
-         * for the beginning and end of aminoacid boxes
+         * @param seq                      nucleotide sequence starting at start
+         *                                 for the beginning and end of aminoacid boxes
          */
         protected void drawOneTranslation(RenderContext context, int start,
                                           Rectangle bandRectangle, int readingFrame,
@@ -417,8 +411,7 @@ public class SequenceRenderer implements Renderer {
                     int firstFullAcidIndex = (int) Math.floor((aaSeqStartPosition - readingFrame) / 3);
                     boolean odd = (firstFullAcidIndex % 2) == 1;
 
-                    if (shouldDrawLetters)
-                    {
+                    if (shouldDrawLetters) {
                         Font f = FontManager.getScalableFont(Font.BOLD, fontSize);
                         g.setFont(f);
                     }
@@ -443,8 +436,7 @@ public class SequenceRenderer implements Renderer {
 
                                 bgGraphics.fill(aaRect);
 
-                                if (shouldDrawLetters)
-                                {
+                                if (shouldDrawLetters) {
                                     String acidString = new String(new char[]{acid.getSymbol()});
                                     GraphicUtils.drawCenteredText(acidString, aaRect, fontGraphics);
                                 }
@@ -460,17 +452,15 @@ public class SequenceRenderer implements Renderer {
             }
         }
 
-        protected Color getColorForAminoAcid(char acidSymbol, boolean odd)
-        {
-             switch (acidSymbol)
-             {
-                 case 'M':
-                     return METHIONINE_COLOR;
-                 case 'X':
-                     return STOP_CODON_COLOR;
-                 default:
-                     return odd ? AA_COLOR_1 : AA_COLOR_2;
-             }
+        protected Color getColorForAminoAcid(char acidSymbol, boolean odd) {
+            switch (acidSymbol) {
+                case 'M':
+                    return METHIONINE_COLOR;
+                case 'X':
+                    return STOP_CODON_COLOR;
+                default:
+                    return odd ? AA_COLOR_1 : AA_COLOR_2;
+            }
         }
 
         protected int getPixelFromChromosomeLocation(String chr, int chromosomeLocation, double origin,
