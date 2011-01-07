@@ -280,7 +280,11 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     {
                         for (Exon exon : bf.getExons())
                         {
-                            if (exon.getStart() > vc.getCenter())
+                            //the "+ 1" here is necessary because the rounding in the recentering method
+                            //sometimes places the center one base off.  This should be perfectly safe,
+                            //but it does assume no one's abusing the exon datastructure and creating
+                            //exons that are right next to each other.
+                            if (exon.getStart() > vc.getCenter() + 1)
                             {
                                 e = exon;
                                 break;
@@ -302,7 +306,10 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 if (e != null)
+                {
                     vc.centerOnLocation(e.getStart());
+                    int i = 3;
+                }
 
             }
             //todo: implement handling for VCFTrack
