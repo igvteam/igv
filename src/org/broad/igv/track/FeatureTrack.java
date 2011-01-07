@@ -414,7 +414,12 @@ public class FeatureTrack extends AbstractTrack {
                         if (i == selectedFeatureRowIndex)
                             setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
                         else
+                        {
+                            //make this track selected
+                            setSelected(true);
+                            //select the appropriate row
                             setSelectedFeatureRowIndex(i);
+                        }
                         IGVMainFrame.getInstance().doRefresh();
                         break;
                     }
