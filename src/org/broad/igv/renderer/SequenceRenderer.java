@@ -38,6 +38,8 @@ import java.util.*;
  */
 public class SequenceRenderer implements Renderer {
 
+    //Maximum scale at which the track is displayed
+    public static final double MAX_SCALE_FOR_RENDER = 2;
     static Map<Character, Color> nucleotideColors = new HashMap();
 
     static {
@@ -75,7 +77,7 @@ public class SequenceRenderer implements Renderer {
      */
     public void draw(RenderContext context, Rectangle trackRectangle,
                      boolean showColorSpace, boolean showTranslation) {
-        if (context.getScale() >= 1) {
+        if (context.getScale() >= MAX_SCALE_FOR_RENDER) {
             // Zoomed out too far to see sequences.  This can happen when in gene list view and one of the frames
             // is zoomed in but others are not
             context.getGraphic2DForColor(UIConstants.VERY_LIGHT_GRAY).fill(trackRectangle);

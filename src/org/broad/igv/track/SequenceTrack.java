@@ -101,8 +101,8 @@ public class SequenceTrack extends AbstractTrack {
 
 
     private boolean isSequenceVisible(RenderContext context) {
-
-        return FrameManager.getMinimumScale() < 1 && !context.getChr().equals(Globals.CHR_ALL);
+        return FrameManager.getMinimumScale() < SequenceRenderer.MAX_SCALE_FOR_RENDER &&
+                !context.getChr().equals(Globals.CHR_ALL);
 
     }
 
