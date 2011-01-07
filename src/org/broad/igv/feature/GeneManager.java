@@ -61,10 +61,6 @@ public class GeneManager {
      * Map of chromosome -> longest gene
      */
     Map<String, IGVFeature> longestGeneMap;
-    /**
-     * Set of loaded gene variants.  Used to prevent loading of duplicates.
-     */
-    Set<String> loadedGeneKeys;
 
     private TrackProperties trackProperties;
 
@@ -86,7 +82,6 @@ public class GeneManager {
         geneMap = new HashMap<String, IGVFeature>();
         maxLocationMap = new HashMap<String, Integer>();
         longestGeneMap = new HashMap<String, IGVFeature>();
-        loadedGeneKeys = new HashSet();
         this.geneTrackName = geneTrackName;
     }
 
@@ -101,62 +96,56 @@ public class GeneManager {
      */
     public void addGene(IGVFeature gene) {
 
-        String key = gene.getIdentifier();
+        // If there is a genome associated with this manager only include
+        // genes whose chromosome is contained in the genome.
 
-        if (!loadedGeneKeys.contains(key)) {
-            loadedGeneKeys.add(key);
-
-            // If there is a genome associated with this manager only include
-            // genes whose chromosome is contained in the genome.
-
-            if (genome != null) {
-                if (genome.getChromosome(gene.getChr()) == null) {
-                    return;
-                }
+        if (genome != null) {
+            if (genome.getChromosome(gene.getChr()) == null) {
+                return;
             }
+        }
 
-            // If there are multiple variant of a gene, use the longest
-            IGVFeature currentGene = geneMap.get(gene.getName());
-            if (gene.getIdentifier() != null) {
-                geneMap.put(gene.getIdentifier().trim().toUpperCase(), gene);
+        // If there are multiple variant of a gene, use the longest
+        IGVFeature currentGene = geneMap.get(gene.getName());
+        if (gene.getIdentifier() != null) {
+            geneMap.put(gene.getIdentifier().trim().toUpperCase(), gene);
+        }
+        if (currentGene == null) {
+            if (gene.getName() != null) {
+                geneMap.put(gene.getName().trim().toUpperCase(), gene);
             }
-            if (currentGene == null) {
+        } else {
+            int w1 = currentGene.getEnd() - currentGene.getStart();
+            int w2 = gene.getEnd() - gene.getStart();
+            if (w2 > w1) {
                 if (gene.getName() != null) {
                     geneMap.put(gene.getName().trim().toUpperCase(), gene);
                 }
-            } else {
-                int w1 = currentGene.getEnd() - currentGene.getStart();
-                int w2 = gene.getEnd() - gene.getStart();
-                if (w2 > w1) {
-                    if (gene.getName() != null) {
-                        geneMap.put(gene.getName().trim().toUpperCase(), gene);
-                    }
-                }
             }
-
-
-            // Update "longest gene" for this chromosome
-            String chr = gene.getChr();
-            List<org.broad.tribble.Feature> geneDataList = chromosomeGeneMap.get(chr);
-            if (geneDataList == null) {
-                geneDataList = new ArrayList<org.broad.tribble.Feature>();
-                chromosomeGeneMap.put(chr, geneDataList);
-                maxLocationMap.put(chr, (int) gene.getEnd());
-            }
-            if (gene.getEnd() > maxLocationMap.get(chr)) {
-                maxLocationMap.put(chr, (int) gene.getEnd());
-            }
-
-            if (longestGeneMap.get(chr) == null) {
-                longestGeneMap.put(chr, gene);
-            } else {
-                if (gene.getLength() > longestGeneMap.get(chr).getLength()) {
-                    longestGeneMap.put(chr, gene);
-                }
-            }
-
-            geneDataList.add((IGVFeature) gene);
         }
+
+
+        // Update "longest gene" for this chromosome
+        String chr = gene.getChr();
+        List<org.broad.tribble.Feature> geneDataList = chromosomeGeneMap.get(chr);
+        if (geneDataList == null) {
+            geneDataList = new ArrayList<org.broad.tribble.Feature>();
+            chromosomeGeneMap.put(chr, geneDataList);
+            maxLocationMap.put(chr, (int) gene.getEnd());
+        }
+        if (gene.getEnd() > maxLocationMap.get(chr)) {
+            maxLocationMap.put(chr, (int) gene.getEnd());
+        }
+
+        if (longestGeneMap.get(chr) == null) {
+            longestGeneMap.put(chr, gene);
+        } else {
+            if (gene.getLength() > longestGeneMap.get(chr).getLength()) {
+                longestGeneMap.put(chr, gene);
+            }
+        }
+
+        geneDataList.add((IGVFeature) gene);
 
     }
 
