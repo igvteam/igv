@@ -211,14 +211,6 @@ public abstract class AbstractAlignment implements Alignment {
         return absISize > 0 && absISize <= getReadSequence().length();
     }
 
-    public float getConfidence() {
-        return ((float) getMappingQuality()) / 255;
-    }
-
-    public void setConfidence(float c) {
-        // required by LocusScore interface, ignored
-    }
-
     public float getScore() {
         return getMappingQuality();
     }

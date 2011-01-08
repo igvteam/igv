@@ -125,14 +125,6 @@ public class Bin implements LocusScore {
         }
     }
 
-    public void setConfidence(float confidence) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public float getConfidence() {
-        return 1;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public LocusScore copy() {
         return new Bin(this);  //To change body of implemented methods use File | Settings | File Templates.
     }

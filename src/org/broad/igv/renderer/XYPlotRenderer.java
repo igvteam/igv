@@ -123,7 +123,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
                 continue;
             }
 
-            if (!Float.isNaN(dataY) && (score.getConfidence() > confThreshold)) {
+            if (!Float.isNaN(dataY)) {
 
 
                 // Compute the pixel y location.  Clip to bounds of rectangle.

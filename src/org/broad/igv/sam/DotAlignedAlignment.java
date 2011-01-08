@@ -155,15 +155,6 @@ public class DotAlignedAlignment implements Alignment {
     public float getScore() {
         return 1.0f;
     }
-
-    public void setConfidence(float confidence) {
-        // ignore
-    }
-
-    public float getConfidence() {
-        return 1.0f;
-    }
-
     public LocusScore copy() {
         return this;
     }

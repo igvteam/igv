@@ -34,20 +34,17 @@ public class SummaryScore implements LocusScore {
     int start;
     int end;
     float value;
-    float confidence;
 
-    public SummaryScore(int start, int end, float value, float confidence) {
+    public SummaryScore(int start, int end, float value) {
         this.start = start;
         this.end = end;
         this.value = value;
-        this.confidence = confidence;
     }
 
     public SummaryScore(LocusScore anotherScore) {
         this.start = anotherScore.getStart();
         this.end = anotherScore.getEnd();
         this.value = anotherScore.getScore();
-        this.confidence = anotherScore.getConfidence();
     }
 
     public SummaryScore copy() {
@@ -86,23 +83,8 @@ public class SummaryScore implements LocusScore {
         return value;
     }
 
-    public float getConfidence() {
-        return confidence;
-    }
-
     public String getValueString(double position, WindowFunction wf) {
         return "Value:  " + getScore() + (wf == null ? "" : " (" + wf.toString() + ")");
     }
 
-    public void setConfidence(float confidence) {
-        this.confidence = confidence;
-    }
-
-    public int getExtendedStart() {
-        return getStart();
-    }
-
-    public int getExtendedEnd() {
-        return getEnd();
-    }
 }

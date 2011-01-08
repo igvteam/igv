@@ -253,14 +253,6 @@ public class FreqData {
             return getCount();
         }
 
-        public void setConfidence(float confidence) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        public float getConfidence() {
-            return 1;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
         public LocusScore copy() {
             return this;  //To change body of implemented methods use File | Settings | File Templates.
         }

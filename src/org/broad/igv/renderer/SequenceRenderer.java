@@ -226,25 +226,6 @@ public class SequenceRenderer implements Renderer {
 
     }
 
-    public void renderBorder(Track track, RenderContext context, Rectangle rect) {
-
-
-    }
-
-    public void renderAxis(Track track, RenderContext context, Rectangle rect) {
-
-
-    }
-
-    public void setOverlayMode(boolean overlayMode) {
-
-
-    }
-
-    public Color getDefaultColor() {
-        return Color.BLACK;
-    }
-
     public Strand getStrand() {
         return strand;
     }

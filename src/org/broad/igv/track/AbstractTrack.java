@@ -238,31 +238,6 @@ public abstract class AbstractTrack implements Track {
         this.sampleId = sampleId;
     }
 
-    /**
-     * Render a border.
-     *
-     * @param context
-     * @param rect
-     */
-    public void renderBorder(RenderContext context, Rectangle rect) {
-        Renderer renderer = this.getRenderer();
-        if (renderer != null) {
-            this.getRenderer().renderBorder(this, context, rect);
-        }
-    }
-
-    /**
-     * Render a Y axis
-     *
-     * @param context
-     * @param rect
-     */
-    public void renderAxis(RenderContext context, Rectangle rect) {
-        Renderer renderer = this.getRenderer();
-        if (renderer != null) {
-            this.getRenderer().renderAxis(this, context, rect);
-        }
-    }
 
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
@@ -333,10 +308,7 @@ public abstract class AbstractTrack implements Track {
 
 
     public Color getColor() {
-        if (posColor != null) {
-            return posColor;
-        }
-        return getRenderer() == null ? null : getRenderer().getDefaultColor();
+        return posColor;
     }
 
     public Color getAltColor() {
@@ -1009,7 +981,7 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Override to return a specialized popup menu
-     * 
+     *
      * @return
      */
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {

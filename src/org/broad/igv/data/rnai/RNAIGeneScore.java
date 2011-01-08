@@ -163,42 +163,16 @@ public class RNAIGeneScore implements LocusScore {
         return geneScore;
     }
 
-    // This method required for interface
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public float getConfidence() {
         return geneConfidence;
     }
 
-    /**
-     * Method description
-     *
-     * @param start
-     */
     public void setStart(int start) {
         this.start = start;
     }
 
-    /**
-     * Method description
-     *
-     * @param end
-     */
     public void setEnd(int end) {
         this.end = end;
-    }
-
-    /**
-     * Method description
-     *
-     * @param confidence
-     */
-    public void setConfidence(float confidence) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**

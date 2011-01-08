@@ -47,36 +47,38 @@ public class FeatureTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
+    public static final int MINIMUM_FEATURE_SPACING = 1;
+    private static final int EXPAND_ICON_BUFFER_WIDTH = 17;
+    private static final int EXPAND_ICON_BUFFER_HEIGHT = 17;
+    public static final int MARGIN = 5;
+    public static final int NO_FEATURE_ROW_SELECTED = -1;
+    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
     static int maxLevels = 200;
 
     private boolean expanded;
-    private List<Rectangle> featureRects = new ArrayList();
+
+    private List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak
     protected LRUCache<String, PackedFeatures> packedFeaturesMap = new LRUCache(200);
 
     private FeatureRenderer renderer;
+
     private DataRenderer coverageRenderer;
 
     // true == features,  false =  coverage
     private boolean showFeatures = true;
 
     protected FeatureSource source;
-    public static final int MINIMUM_FEATURE_SPACING = 1;
 
 
     private boolean featuresLoading = false;
 
     private Rectangle EXPAND_BUTTON_RECT = new Rectangle();
-    private static final int EXPAND_ICON_BUFFER_WIDTH = 17;
-    private static final int EXPAND_ICON_BUFFER_HEIGHT = 17;
-    public static final int MARGIN = 5;
 
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
-    public static final int NO_FEATURE_ROW_SELECTED = -1;
-    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
     int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
 
@@ -86,15 +88,10 @@ public class FeatureTrack extends AbstractTrack {
 
     }
 
-
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
         init(source);
         this.getMinimumHeight();
-    }
-
-    public FeatureTrack(ResourceLocator locator) {
-        super(locator);
     }
 
     private void init(FeatureSource source) {
@@ -258,11 +255,12 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         List<Feature> feature = null;
+
         // Determine the level number (for expanded tracks.
         int levelNumber = 0;
-        if (featureRects != null) {
-            for (int i = 0; i < featureRects.size(); i++) {
-                Rectangle r = featureRects.get(i);
+        if (levelRects != null) {
+            for (int i = 0; i < levelRects.size(); i++) {
+                Rectangle r = levelRects.get(i);
                 if ((y >= r.y) && (y <= r.getMaxY())) {
                     levelNumber = i;
                     break;
@@ -301,9 +299,9 @@ public class FeatureTrack extends AbstractTrack {
     public Feature getFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
         // Determine the level number (for expanded tracks.
         int featureRow = 0;
-        if (featureRects != null) {
-            for (int i = 0; i < featureRects.size(); i++) {
-                Rectangle r = featureRects.get(i);
+        if (levelRects != null) {
+            for (int i = 0; i < levelRects.size(); i++) {
+                Rectangle r = levelRects.get(i);
                 if ((y >= r.y) && (y <= r.getMaxY())) {
                     featureRow = i;
                     break;
@@ -361,9 +359,9 @@ public class FeatureTrack extends AbstractTrack {
         Feature feature = null;
         // Determine the level number (for expanded tracks.
         int levelNumber = 0;
-        if (featureRects != null) {
-            for (int i = 0; i < featureRects.size(); i++) {
-                Rectangle r = featureRects.get(i);
+        if (levelRects != null) {
+            for (int i = 0; i < levelRects.size(); i++) {
+                Rectangle r = levelRects.get(i);
                 if ((y >= r.y) && (y <= r.getMaxY())) {
                     levelNumber = i;
                     break;
@@ -405,10 +403,10 @@ public class FeatureTrack extends AbstractTrack {
         //dhmay adding selection of an expanded feature row
         if (expanded)
         {
-            if (featureRects != null) {
-                for (int i=0; i<featureRects.size(); i++)
+            if (levelRects != null) {
+                for (int i=0; i< levelRects.size(); i++)
                 {
-                    Rectangle rect = featureRects.get(i);
+                    Rectangle rect = levelRects.get(i);
                     if (rect.contains(e.getPoint()))
                     {
                         if (i == selectedFeatureRowIndex)
@@ -627,16 +625,16 @@ public class FeatureTrack extends AbstractTrack {
             if (rows != null && rows.size() > 0) {
 
                 int nLevels = rows.size();
-                synchronized (featureRects) {
+                synchronized (levelRects) {
 
-                    featureRects.clear();
+                    levelRects.clear();
 
                     // Divide rectangle into equal height levels
                     double h = inputRect.getHeight() / nLevels;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i=0;
                     for (FeatureRow row : rows) {
-                        featureRects.add(new Rectangle(rect));
+                        levelRects.add(new Rectangle(rect));
                         getRenderer().renderFeatures(row.features, context, rect, this);
                         if (selectedFeatureRowIndex == i)
                         {

@@ -111,32 +111,6 @@ public class DataPanelPainter {
                     }
                 }
             }
-
-            // Now draw borders.  This is done in a second loop to prevent data from
-            // one track from overwriting border from an adjacent track
-            trackX = 0;
-            trackY = 0;
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
-
-                TrackGroup group = groupIter.next();
-                if (group.isVisible()) {
-                    if (groups.size() > 1) {
-                        trackY += UIConstants.groupGap;
-                    }
-
-                    // Draw borders  -- copy track list to prevent concurrent modification exception
-                    // Copy tracks to prevent concurrent modfication exception
-                    List<Track> trackList = new ArrayList(group.getTracks());
-                    for (Track track : trackList) {
-                        if (track.isVisible()) {
-                            Rectangle rect = new Rectangle(trackX, trackY, width, track.getHeight());
-                            track.renderBorder(context, rect);
-                            track.renderAxis(context, rect);
-                            trackY += track.getHeight();
-                        }
-                    }
-                }
-            }
         }
         finally {
             graphics2D.dispose();

@@ -164,8 +164,6 @@ public class HDFDataSource implements DataSource {
                                 // cn files that were created from cbs (segmented) files.  This
                                 // really doesn'tileNumber belong in IGV.
                                 previousScore.setEnd(score.getEnd());
-                                previousScore.setConfidence(1);
-
                             } else {
 
                                 SummaryScore newScore = new SummaryScore(score);

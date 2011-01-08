@@ -346,14 +346,6 @@ public class GobyAlignment implements Alignment {
         return 1;
     }
 
-    public void setConfidence(float confidence) {
-        throw new UnsupportedOperationException("setEnd is not supported");
-    }
-
-    public float getConfidence() {
-        //LOG.info("getConfidence");
-        return entry.getScore();
-    }
 
     public LocusScore copy() {
         return this;

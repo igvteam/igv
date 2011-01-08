@@ -29,11 +29,7 @@ import java.awt.*;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: May 13, 2010
- * Time: 9:38:33 PM
- * To change this template use File | Settings | File Templates.
+ * @author jrobinso
  */
 public class VCFFeature implements IGVFeature, org.broad.tribble.Feature {
 
@@ -62,15 +58,6 @@ public class VCFFeature implements IGVFeature, org.broad.tribble.Feature {
     public float getScore() {
         return getQuality();
     }
-
-    public void setConfidence(float confidence) {
-        throw new java.lang.UnsupportedOperationException("setConfidence");
-    }
-
-    public float getConfidence() {
-        return quality;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
 
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();

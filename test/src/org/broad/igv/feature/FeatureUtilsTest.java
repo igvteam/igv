@@ -182,13 +182,6 @@ public class FeatureUtilsTest {
             return 1.0f;
         }
 
-        public void setConfidence(float confidence) {
-        }
-
-        public float getConfidence() {
-            return 1.0f;
-        }
-
         public LocusScore copy() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

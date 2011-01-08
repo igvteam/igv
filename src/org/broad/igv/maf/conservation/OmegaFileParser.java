@@ -126,14 +126,6 @@ public class OmegaFileParser {
             return score;
         }
 
-        public void setConfidence(float confidence) {
-            throw new UnsupportedOperationException("setConfidence is not supported yet.");
-        }
-
-        public float getConfidence() {
-            return 1.0f;
-        }
-
         public LocusScore copy() {
             return new OmegaScore(position, score);
         }

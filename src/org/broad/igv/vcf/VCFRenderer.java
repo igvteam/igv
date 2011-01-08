@@ -271,18 +271,4 @@ public class VCFRenderer { //extends FeatureRenderer {
         g.drawChars(chars, 0, 1, msgX, msgY);
 
     }
-
-    public void renderBorder(Track track, RenderContext context, Rectangle rect) {
-    }
-
-    public void renderAxis(Track track, RenderContext context, Rectangle rect) {
-    }
-
-    public void setOverlayMode(boolean overlayMode) {
-    }
-
-    public Color getDefaultColor() {
-        return null;
-    }
-
 }

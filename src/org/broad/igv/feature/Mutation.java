@@ -160,18 +160,12 @@ public class Mutation implements IGVFeature {
         return valueString;
     }
 
-
     public boolean hasScore() {
         return false;
     }
 
-
     public Strand getStrand() {
         return Strand.NONE;
-    }
-
-    public boolean hasStrand() {
-        return false;
     }
 
     public boolean overlaps(IGVFeature track) {
@@ -209,25 +203,8 @@ public class Mutation implements IGVFeature {
         this.end = end;
     }
 
-    public int[] getStarts() {
-        return null;
-    }
-
-
-    public int[] getEnds() {
-        return null;
-    }
-
     public float getScore() {
         return 0;
-    }
-
-    public float getConfidence() {
-        return 1;
-    }
-
-    public int getLevel() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -257,16 +234,6 @@ public class Mutation implements IGVFeature {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setConfidence(float confidence) {
-
-        // ignore
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public List<Exon> getExons() {
         return null;
     }

@@ -133,21 +133,7 @@ public class RNAiBarChartRenderer extends XYPlotRenderer {
         // }
     }
 
-    /**
-     * Return the default color for this renderer.  Unless overriden by the user this color will
-     * be used to render the bars.
-     *
-     * @return
-     */
-    public Color getDefaultColor() {
-        return DEFAULT_COLOR;
-    }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getDisplayName() {
         return "RNAi BarChart";
     }

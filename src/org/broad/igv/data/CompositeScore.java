@@ -91,18 +91,6 @@ public class CompositeScore implements LocusScore {
         return score;
     }
 
-
-    public void setConfidence(float confidence) {
-
-        // ignore
-    }
-
-
-    public float getConfidence() {
-        return 1.0f;
-    }
-
-
     public String getValueString(double position, WindowFunction windowFunction) {
         if (scores == null) {
             return "";

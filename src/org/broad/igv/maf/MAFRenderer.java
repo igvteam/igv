@@ -37,17 +37,12 @@ import java.util.Map;
 public class MAFRenderer implements Renderer {
 
     static Font font = FontManager.getScalableFont(10);
-    //private ReferenceFrame referenceFrame;
+
     static Map<Character, Color> nucleotideColors = new HashMap();
 
 
     static {
 
-        // nucleotideColors.put('A', new Color(160, 160, 255));
-        // nucleotideColors.put('C', new Color(255, 140, 75));
-        // nucleotideColors.put('T', new Color(160, 255, 255));
-        // nucleotideColors.put('G', new Color(255, 112, 112));
-        // nucleotideColors.put('N', Color.gray);
         nucleotideColors.put('A', Color.GREEN);
         nucleotideColors.put('a', Color.GREEN);
         nucleotideColors.put('C', Color.BLUE);
@@ -248,17 +243,6 @@ public class MAFRenderer implements Renderer {
 
     }
 
-    public void renderBorder(Track track, RenderContext context, Rectangle rect) {
-    }
 
-    public void renderAxis(Track track, RenderContext context, Rectangle rect) {
-    }
-
-    public void setOverlayMode(boolean overlayMode) {
-    }
-
-    public Color getDefaultColor() {
-        return null;
-    }
 }
 

@@ -95,65 +95,30 @@ public class GisticScore implements LocusScore {
         return chromosome;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public float getScore() {
         return gScore;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public double getQValue() {
         return qValue;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public double getGScore() {
         return gScore;
     }
 
-    /**
-     * Method description
-     *
-     * @param qValue
-     */
     public void setQValue(float qValue) {
         this.qValue = qValue;
     }
 
-    /**
-     * Method description
-     *
-     * @param gScore
-     */
     public void setGScore(float gScore) {
         this.gScore = gScore;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Type getType() {
         return gisticType;
     }
 
-    /**
-     * Method description
-     *
-     * @param type
-     */
     public void setType(Type type) {
         this.gisticType = type;
     }
@@ -171,57 +136,19 @@ public class GisticScore implements LocusScore {
         return start;
     }
 
-    /**
-     * Method description
-     *
-     * @param start
-     */
     public void setStart(int start) {
         this.start = start;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getEnd() {
         return end;
     }
 
-    /**
-     * Method description
-     *
-     * @param end
-     */
+
     public void setEnd(int end) {
         this.end = end;
     }
 
-    /**
-     * Method description
-     *
-     * @param confidence
-     */
-    public void setConfidence(float confidence) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public float getConfidence() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Method description
-     *
-     * @param windowFunction
-     * @return
-     */
     public String getValueString(double position, WindowFunction windowFunction) {
         return "";
     }

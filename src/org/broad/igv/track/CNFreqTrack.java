@@ -104,7 +104,7 @@ public class CNFreqTrack extends AbstractTrack {
     }
 
     public Renderer getRenderer() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return renderer;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public boolean isLogNormalized() {

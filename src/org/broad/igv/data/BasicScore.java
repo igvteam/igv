@@ -82,14 +82,6 @@ public class BasicScore implements LocusScore {
         this.end = end;
     }
 
-    public void setConfidence(float confidence) {
-        // Ignored
-    }
-
-    public float getConfidence() {
-        return 1.0f;
-    }
-
     public String getValueString(double position, WindowFunction windowFunction) {
         return "Value: " + score;
         //throw new UnsupportedOperationException("Not supported yet.");

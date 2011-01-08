@@ -40,10 +40,6 @@ public interface LocusScore  extends org.broad.tribble.Feature {
 
     public float getScore();
 
-    public void setConfidence(float confidence);
-
-    public float getConfidence();
-
     public LocusScore copy();
 
     /**

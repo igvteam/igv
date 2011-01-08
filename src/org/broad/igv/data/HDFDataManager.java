@@ -496,14 +496,9 @@ public class HDFDataManager {
 
                     if (!Float.isNaN(value)) {
 
-                        // TODO - replace with statitstic, maybe based on confidence interval?
-                        // Note: Confidence in the "count" is by definition 100%
-                        float confidence = 1.0f;
-
                         summaryTile.addScore(j, new SummaryScore(
-                                (int) (tile.getStart(i) * locationUnit),
-                                (int) (tile.getEnd(i) * locationUnit), value,
-                                confidence));
+                                (tile.getStart(i) * locationUnit),
+                                (int) (tile.getEnd(i) * locationUnit), value));
                     }
 
                 }
@@ -740,7 +735,7 @@ public class HDFDataManager {
 
                         // NaN is treated as a missing value (as if its not there)
                         if (!Float.isNaN(val)) {
-                            SummaryScore ss = new SummaryScore(start, end, val, 1.0f);
+                            SummaryScore ss = new SummaryScore(start, end, val);
                             double pixelWidth = (end - start) / binWidth;
                             if (pixelWidth < 1) {
                                 scoresToBin.get(trackNumber).add(ss);
@@ -790,7 +785,7 @@ public class HDFDataManager {
                         // to add these.
                         if (!Float.isNaN(binValue)) {
                             tile.addScore(trackNumber,
-                                    new SummaryScore(binStart, binEnd, binValue, 1.0f));
+                                    new SummaryScore(binStart, binEnd, binValue));
                         }
                     }
 
@@ -845,7 +840,6 @@ public class HDFDataManager {
                             // The only purpose of this is to reconsitute segmented data from
                             // cn files that were created from cbs (segmented) files.
                             previousScore.setEnd(score.getEnd());
-                            previousScore.setConfidence(1);
 
                         } else {
 

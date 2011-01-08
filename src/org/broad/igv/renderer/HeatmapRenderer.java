@@ -118,7 +118,7 @@ public class HeatmapRenderer extends DataRenderer {
 
                 // TODo The instanceof test is very very ugly.   Special RNAi treatment
                 // Refactor  to generalize "confidence" for all datasets
-                if (!Float.isNaN(dataY) && ((score instanceof RNAIGeneScore) || (score.getConfidence() > confThreshold))) {
+                if (!Float.isNaN(dataY)) {
                     if (score instanceof RNAIGeneScore) {
                         RNAIGeneScore rnaiScore = (RNAIGeneScore) score;
                         if (rnaiScore.getConfidence() < 2) {

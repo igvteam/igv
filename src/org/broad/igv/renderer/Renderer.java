@@ -35,9 +35,5 @@ import java.awt.*;
 public interface Renderer {
 
     //public void render(Track track, RenderContext context, Rectangle rect);
-    public void renderBorder(Track track, RenderContext context, Rectangle rect);
 
-    public void renderAxis(Track track, RenderContext context, Rectangle rect);
-
-    public Color getDefaultColor();
 }

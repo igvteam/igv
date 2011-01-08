@@ -65,11 +65,6 @@ public class Segment implements LocusScore {
         this.snpCount = snpCount;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Segment copy() {
         return new Segment(start, extendedStart, end, extendedEnd, score, snpCount);
     }
@@ -78,77 +73,27 @@ public class Segment implements LocusScore {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getStart() {
         return start;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getEnd() {
         return end;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public float getScore() {
         return score;
     }
 
-    /**
-     * Method description
-     *
-     * @param start
-     */
     public void setStart(int start) {
         this.start = start;
     }
 
-    /**
-     * Method description
-     *
-     * @param end
-     */
     public void setEnd(int end) {
         this.end = end;
     }
 
-    /**
-     * Method description
-     *
-     * @param confidence
-     */
-    public void setConfidence(float confidence) {
 
-        // Ignored for now
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public float getConfidence() {
-        return 1.0f;
-    }
-
-    /**
-     * Method description
-     *
-     * @param position
-     * @param ignored
-     * @return
-     */
     public String getValueString(double position, WindowFunction ignored) {
         String valueString = "Copy number: " + getScore();
         if (snpCount > 0) {
@@ -157,49 +102,12 @@ public class Segment implements LocusScore {
         return valueString;
     }
 
-    /**
-     * Method description
-     *
-     * @param inc
-     */
-    public void incremenetSnpCount(int inc) {
+     public void incremenetSnpCount(int inc) {
         snpCount += inc;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public int getSnpCount() {
+     public int getSnpCount() {
         return snpCount;
     }
 
-    /**
-     * @return the extendedStart
-     */
-    public int getExtendedStart() {
-        return extendedStart;
-    }
-
-    /**
-     * @return the extendedEnd
-     */
-    public int getExtendedEnd() {
-        return extendedEnd;
-    }
-
-    /**
-     * @param extendedStart the extendedStart to set
-     */
-    public void setExtendedStart(int extendedStart) {
-        this.extendedStart = extendedStart;
-    }
-
-    /**
-     * @param extendedEnd the extendedEnd to set
-     */
-    public void setExtendedEnd(int extendedEnd) {
-        this.extendedEnd = extendedEnd;
-    }
 }

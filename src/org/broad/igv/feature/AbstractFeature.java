@@ -63,95 +63,34 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         this.strand = strand;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getIdentifier() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Method description
-     *
-     * @param type
-     */
     public void setType(String type) {
         this.type = type;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getType() {
         return type;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean hasScore() {
         return false;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public List<Exon> getExons() {
         return null;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public float getScore() {
         return Float.NaN;
     }
 
-    /**
-     * Method description
-     *
-     * @param confidence
-     */
-    public void setConfidence(float confidence) {
-
-        // ignored
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public float getConfidence() {
-
-        // Obsolete
-        return 1.0f;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getChr() {
         return chromosome;
     }
@@ -165,20 +104,10 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         return end;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getLength() {
         return end - start;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getStart() {
         return start;
     }
@@ -207,74 +136,34 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param end
-     */
     public void setEnd(int end) {
         this.end = end;
     }
 
-    /**
-     * Method description
-     *
-     * @param start
-     */
     public void setStart(int start) {
         this.start = start;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Strand getStrand() {
         return strand;
     }
 
-    /**
-     * Method description
-     *
-     * @param strand
-     */
     public void setStrand(Strand strand) {
         this.strand = strand;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public boolean hasStrand() {
         return ((strand != null) && (strand != Strand.NONE));
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Color getColor() {
         return color;
     }
 
-    /**
-     * Method description
-     *
-     * @param color
-     */
     public void setColor(Color color) {
         this.color = color;
     }
 
-    /**
-     * Method description
-     *
-     * @param rgb
-     */
     public void setColor(String[] rgb, int nTokens) {
         try {
             if (nTokens < 3) {

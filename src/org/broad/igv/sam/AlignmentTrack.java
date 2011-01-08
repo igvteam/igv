@@ -89,107 +89,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     private int minHeight = 100;
     private AlignmentDataManager dataManager;
 
-    public CoverageTrack getCoverageTrack() {
-        return coverageTrack;
-    }
-
-
-    public static class RenderOptions {
-        boolean shadeBases;
-        boolean shadeCenters;
-        boolean flagUnmappedPairs;
-        boolean showAllBases;
-        int minInsertSizeThreshold;
-        int insertSizeThreshold;
-        ColorOption colorOption;
-
-        RenderOptions() {
-            PreferenceManager prefs = PreferenceManager.getInstance();
-            shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
-            shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
-            flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
-            minInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
-            insertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD);
-            showAllBases = DEFAULT_SHOWALLBASES;
-            colorOption = colorByOption;
-        }
-
-        /**
-         * Called by session writer.  Return instance variable values as a map of strings.  Used to record current state
-         * of object.   Variables with default values are not stored, as it is presumed the user has not changed them.
-         *
-         * @return
-         */
-        public Map<String, String> getPersistentState() {
-            Map<String, String> attributes = new HashMap();
-            PreferenceManager prefs = PreferenceManager.getInstance();
-            if (shadeBases != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY)) {
-                attributes.put("shadeBases", String.valueOf(shadeBases));
-            }
-            if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
-                attributes.put("shadeCenters", String.valueOf(shadeBases));
-            }
-            if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
-                attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
-            }
-            if (insertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("insertSizeThreshold", String.valueOf(insertSizeThreshold));
-            }
-            if (minInsertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("minInsertSizeThreshold", String.valueOf(insertSizeThreshold));
-            }
-            if (showAllBases != DEFAULT_SHOWALLBASES) {
-                attributes.put("showAllBases", String.valueOf(showAllBases));
-            }
-            if (colorOption != DEFAULT_COLOR_OPTION) {
-                attributes.put("colorOption", colorByOption.toString());
-            }
-
-            return attributes;
-        }
-
-        /**
-         * Called by session reader.  Restores state of object.
-         *
-         * @param attributes
-         */
-        public void restorePersistentState(Map<String, String> attributes) {
-
-            String value;
-            value = attributes.get("insertSizeThreshold");
-            if (value != null) {
-                insertSizeThreshold = Integer.parseInt(value);
-            }
-            value = attributes.get("minInsertSizeThreshold");
-            if (value != null) {
-                minInsertSizeThreshold = Integer.parseInt(value);
-            }
-            value = attributes.get("shadeBases");
-            if (value != null) {
-                shadeBases = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("shadeCenters");
-            if (value != null) {
-                shadeCenters = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("flagUnmappedPairs");
-            if (value != null) {
-                flagUnmappedPairs = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("showAllBases");
-            if (value != null) {
-                showAllBases = Boolean.parseBoolean(value);
-            }
-            value = attributes.get("colorOption");
-            if (value != null) {
-                colorOption = ColorOption.valueOf(value);
-                colorByOption = colorOption;
-            }
-        }
-
-    }
-
-
     public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager) {
         super(locator);
 
@@ -232,6 +131,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
     }
+
+    public CoverageTrack getCoverageTrack() {
+        return coverageTrack;
+    }    
 
     public void setRenderer(FeatureRenderer renderer) {
         this.renderer = renderer;
@@ -1134,4 +1037,102 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
         renderOptions.restorePersistentState(attributes);
     }
+
+
+    public static class RenderOptions {
+        boolean shadeBases;
+        boolean shadeCenters;
+        boolean flagUnmappedPairs;
+        boolean showAllBases;
+        int minInsertSizeThreshold;
+        int insertSizeThreshold;
+        ColorOption colorOption;
+
+        RenderOptions() {
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
+            shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
+            flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
+            minInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
+            insertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD);
+            showAllBases = DEFAULT_SHOWALLBASES;
+            colorOption = colorByOption;
+        }
+
+        /**
+         * Called by session writer.  Return instance variable values as a map of strings.  Used to record current state
+         * of object.   Variables with default values are not stored, as it is presumed the user has not changed them.
+         *
+         * @return
+         */
+        public Map<String, String> getPersistentState() {
+            Map<String, String> attributes = new HashMap();
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            if (shadeBases != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY)) {
+                attributes.put("shadeBases", String.valueOf(shadeBases));
+            }
+            if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
+                attributes.put("shadeCenters", String.valueOf(shadeBases));
+            }
+            if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
+                attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
+            }
+            if (insertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD)) {
+                attributes.put("insertSizeThreshold", String.valueOf(insertSizeThreshold));
+            }
+            if (minInsertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
+                attributes.put("minInsertSizeThreshold", String.valueOf(insertSizeThreshold));
+            }
+            if (showAllBases != DEFAULT_SHOWALLBASES) {
+                attributes.put("showAllBases", String.valueOf(showAllBases));
+            }
+            if (colorOption != DEFAULT_COLOR_OPTION) {
+                attributes.put("colorOption", colorByOption.toString());
+            }
+
+            return attributes;
+        }
+
+        /**
+         * Called by session reader.  Restores state of object.
+         *
+         * @param attributes
+         */
+        public void restorePersistentState(Map<String, String> attributes) {
+
+            String value;
+            value = attributes.get("insertSizeThreshold");
+            if (value != null) {
+                insertSizeThreshold = Integer.parseInt(value);
+            }
+            value = attributes.get("minInsertSizeThreshold");
+            if (value != null) {
+                minInsertSizeThreshold = Integer.parseInt(value);
+            }
+            value = attributes.get("shadeBases");
+            if (value != null) {
+                shadeBases = Boolean.parseBoolean(value);
+            }
+            value = attributes.get("shadeCenters");
+            if (value != null) {
+                shadeCenters = Boolean.parseBoolean(value);
+            }
+            value = attributes.get("flagUnmappedPairs");
+            if (value != null) {
+                flagUnmappedPairs = Boolean.parseBoolean(value);
+            }
+            value = attributes.get("showAllBases");
+            if (value != null) {
+                showAllBases = Boolean.parseBoolean(value);
+            }
+            value = attributes.get("colorOption");
+            if (value != null) {
+                colorOption = ColorOption.valueOf(value);
+                colorByOption = colorOption;
+            }
+        }
+
+    }
+
+    
 }

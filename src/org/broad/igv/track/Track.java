@@ -49,28 +49,13 @@ public interface Track extends Persistable {
     ;
 
     /**
-     * Render the track contents in the rectangle
+     * Render the track contents in the rectangle, including the border
      *
      * @param context
      * @param rect
      */
     public void render(RenderContext context, Rectangle rect);
 
-    /**
-     * Render track borders in the rectangle
-     *
-     * @param context
-     * @param rect
-     */
-    public void renderBorder(RenderContext context, Rectangle rect);
-
-    /**
-     * Render the track border
-     *
-     * @param context
-     * @param rect
-     */
-    public void renderAxis(RenderContext context, Rectangle rect);
 
     /**
      * Render the track name

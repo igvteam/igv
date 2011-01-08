@@ -46,38 +46,9 @@ import java.util.List;
 public abstract class DataRenderer implements Renderer {
 
     private static Logger log = Logger.getLogger(DataRenderer.class);
-    private static Color defaultColor = new Color(0, 0, 150);
 
     protected static final int AXIS_AREA_WIDTH = 60;
     protected static Color axisLineColor = new Color(255, 180, 180);
-
-    private boolean overlayMode;
-
-    /** Field description */
-
-    /**
-     * Field description
-     */
-    public static float confThreshold = 0.02f;
-
-    /**
-     * Set the overlay mode.  Subclasses can use this flag to alter rendering
-     * if the track is being overlayed.
-     *
-     * @param mode
-     */
-    public void setOverlayMode(boolean mode) {
-        this.overlayMode = mode;
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public boolean getOverlayMode() {
-        return overlayMode;
-    }
 
     /**
      * Render the track in the given rectangle.
@@ -87,16 +58,17 @@ public abstract class DataRenderer implements Renderer {
      * @param context
      * @param arect
      */
-    public void render(Track track, List<LocusScore> scores, RenderContext context,
-                       Rectangle arect) {
+    public void render(Track track, List<LocusScore> scores, RenderContext context, Rectangle arect) {
 
         if (scores != null) {
             // Prevent modification of the scores collection during rendering.  This collection
             // has caused concurrent modification exceptions.
             synchronized (scores) {
                 renderScores(track, scores, context, arect);
+                renderAxis(track, context, arect);
             }
         }
+        renderBorder(track, context, arect);
 
     }
 
@@ -138,15 +110,6 @@ public abstract class DataRenderer implements Renderer {
         }
 
 
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public Color getDefaultColor() {
-        return defaultColor;
     }
 
     protected abstract void renderScores(Track track, List<LocusScore> scores,

@@ -49,10 +49,6 @@ public class GisticTrackRenderer implements Renderer {
         plotScores(track, context, rect);
     }
 
-    public Color getDefaultColor() {
-        return Color.BLUE;
-    }
-
     protected void plotScoresOn(List<GisticScore> scores, Graphics2D g2D, Rectangle rect, int xEnd,
                                 double scale, RenderContext vc, int xStart, int yStart) {
 

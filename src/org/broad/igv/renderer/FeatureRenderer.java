@@ -38,10 +38,6 @@ import java.util.List;
  */
 public abstract class FeatureRenderer<T extends Feature> implements Renderer {
 
-    private static Color defaultColor = new Color(0, 0, 150);
-
-    final HashMap<Color, Graphics2D> graphicCacheByColor = new HashMap<Color, Graphics2D>();
-
     /**
      * Return the pixel position corresponding to the chromosomal position.
      */
@@ -49,35 +45,7 @@ public abstract class FeatureRenderer<T extends Feature> implements Renderer {
 
     private Feature highlightFeature = null;
 
-
-    /**
-     * Render a border.  By default does nothing.
-     *
-     * @param track
-     * @param context
-     * @param rect
-     */
-    public void renderBorder(Track track, RenderContext context, Rectangle rect) {
-
-    }
-
-    /**
-     * Render a Y axis.  By default does nothing.
-     *
-     * @param track
-     * @param context
-     * @param rect
-     */
-    public void renderAxis(Track track, RenderContext context, Rectangle rect) {
-
-    }
-
-    public Color getDefaultColor() {
-        return defaultColor;
-    }
-
-    public abstract void renderFeatures(List<T> features, RenderContext context,
-                                        Rectangle rect, FeatureTrack track);
+    public abstract void renderFeatures(List<T> features, RenderContext context, Rectangle rect, FeatureTrack track);
 
     public Feature getHighlightFeature() {
         return highlightFeature;
