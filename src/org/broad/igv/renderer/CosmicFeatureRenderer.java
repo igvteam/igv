@@ -21,6 +21,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.track.Track;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
@@ -30,7 +31,7 @@ import org.broad.igv.PreferenceManager;
 
 import java.awt.*;
 
-public class CosmicFeatureRenderer extends FeatureRenderer<IGVFeature> {
+public class CosmicFeatureRenderer extends FeatureRenderer {
 
     private static Logger log = Logger.getLogger(CosmicFeatureRenderer.class);
     ColorTable colorScheme;
@@ -48,8 +49,8 @@ public class CosmicFeatureRenderer extends FeatureRenderer<IGVFeature> {
     /**
      * Note:  assumption is that featureList is sorted by start position.
      */
-    public void renderFeatures(java.util.List<IGVFeature> featureList, RenderContext context,
-                               Rectangle trackRectangle, FeatureTrack track) {
+    public void render(java.util.List<IGVFeature> featureList, RenderContext context,
+                       Rectangle trackRectangle, Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

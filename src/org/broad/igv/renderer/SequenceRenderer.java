@@ -36,7 +36,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class SequenceRenderer implements Renderer {
+public class SequenceRenderer  {
 
     //Maximum scale at which the track is displayed
     public static final double MAX_SCALE_FOR_RENDER = 2;

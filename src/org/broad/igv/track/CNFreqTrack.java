@@ -62,8 +62,8 @@ public class CNFreqTrack extends AbstractTrack {
 
     public void render(RenderContext context, Rectangle rect) {
 
-        renderer.render(this, data.getDelCounts(context.getChr()), context, rect);
-        renderer.render(this, data.getAmpCounts(context.getChr()), context, rect);
+        renderer.render(data.getDelCounts(context.getChr()), context, rect, this);
+        renderer.render(data.getAmpCounts(context.getChr()), context, rect, this);
         renderer.setMarginFraction(0);
         renderer.renderBorder(this, context, rect);
         context.getGraphic2DForColor(Color.black).drawRect(rect.x, rect.y, rect.width, rect.height-1);

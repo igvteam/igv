@@ -61,7 +61,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param trackRectangle
      * @param track
      */
-    public void renderFeatures(List<IGVFeature> featureList,
+    public void render(List<IGVFeature> featureList,
                                RenderContext context,
                                Rectangle trackRectangle,
                                FeatureTrack track) {

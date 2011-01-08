@@ -27,6 +27,7 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.FeatureRenderer;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
 
 import java.awt.*;
 import java.util.List;
@@ -34,13 +35,12 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class DRangerRenderer extends FeatureRenderer<IGVFeature> {
+public class DRangerRenderer extends FeatureRenderer {
 
     //TODO -- this is a copy from MutationRenderer.  Refactor to move this up
     // the class hierarchy.
 
-    public void renderFeatures(List<IGVFeature> featureList, RenderContext context,
-                               Rectangle trackRectangle, FeatureTrack track) {
+    public void render(List<IGVFeature> featureList, RenderContext context,Rectangle trackRectangle, Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

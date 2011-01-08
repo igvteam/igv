@@ -175,7 +175,7 @@ public class CoverageTrack extends AbstractTrack {
             int zoom = context.getZoom();
             List<LocusScore> scores = dataSource.getSummaryScoresForRange(chr, start, end, zoom);
             if (scores != null) {
-                dataSourceRenderer.render(this, scores, context, rect);
+                dataSourceRenderer.render(scores, context, rect, this);
             }
 
         }

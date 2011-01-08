@@ -81,8 +81,7 @@ public class GisticTrack extends AbstractTrack {
         delScoreMap = new HashMap<String, List<GisticScore>>();
         renderer = new GisticTrackRenderer();
         setHeight(DEFAULT_HEIGHT);
-
-        // renderer = new GisticTrackRenderer();
+        renderer = new GisticTrackRenderer();
     }
 
     @Override
@@ -91,34 +90,7 @@ public class GisticTrack extends AbstractTrack {
     }
 
 
-    /**
-     * Method description
-     *
-     * @return
-     */
-    @Override
-    public Class getDefaultRendererClass() {
-        return renderer.getClass();
-    }
 
-    /**
-     * Method description
-     *
-     * @param rendererClass
-     */
-    public void setRendererClass(Class rendererClass) {
-
-        // ignore
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public GisticTrackRenderer getRenderer() {
-        return renderer;
-    }
 
     /**
      * Method description
@@ -248,7 +220,7 @@ public class GisticTrack extends AbstractTrack {
             log.error("Null renderer !!");
 
         } else {
-            getRenderer().render(this, context, rect);
+            renderer.render(this, context, rect);
         }
     }
 

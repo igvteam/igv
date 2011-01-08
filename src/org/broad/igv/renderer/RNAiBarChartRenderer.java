@@ -41,8 +41,6 @@ import java.util.List;
 public class RNAiBarChartRenderer extends XYPlotRenderer {
 
 
-    private static Color DEFAULT_COLOR = new Color(0, 0, 150);
-
     /**
      * Render the track in the given rectangle.
      *
@@ -68,10 +66,6 @@ public class RNAiBarChartRenderer extends XYPlotRenderer {
 
         // The locaction scale  in bp / pixel of the current view
         double locScale = context.getScale();
-
-        // The track color (user settable)
-        DEFAULT_COLOR = new Color(94, 145, 201);
-
 
         // The axis definition defines the scale of the y axis (minimum, base, and maximum values)
         DataRange axisDefinition = track.getDataRange();

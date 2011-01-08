@@ -206,7 +206,7 @@ public class MAFTrack extends AbstractTrack {
     }
 
     public Renderer getRenderer() {
-        return renderer;
+        return null;
     }
 
     public boolean isLogNormalized() {

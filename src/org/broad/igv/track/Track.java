@@ -41,6 +41,13 @@ import java.util.Collection;
  * @author jrobinso
  */
 public interface Track extends Persistable {
+    boolean isItemRGB();
+
+    boolean isUseScore();
+
+    float getViewLimitMin();
+
+    float getViewLimitMax();
 
     enum DisplayMode {
         DENSE, SQUISH, PACK

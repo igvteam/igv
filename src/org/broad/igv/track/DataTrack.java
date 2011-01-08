@@ -116,7 +116,7 @@ public abstract class DataTrack extends AbstractTrack {
 
         }
 
-        getRenderer().render(this, inViewScores, context, rect);
+        getRenderer().render(inViewScores, context, rect, this);
     }
 
     public List<LocusScore> load(final RenderContext context, final String chr, final int start, final int end, final int zoom) {

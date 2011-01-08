@@ -24,6 +24,8 @@
 package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -36,7 +38,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public abstract class FeatureRenderer<T extends Feature> implements Renderer {
+public abstract class FeatureRenderer implements Renderer<IGVFeature> {
 
     /**
      * Return the pixel position corresponding to the chromosomal position.
@@ -44,8 +46,6 @@ public abstract class FeatureRenderer<T extends Feature> implements Renderer {
     private static Logger log = Logger.getLogger(FeatureRenderer.class);
 
     private Feature highlightFeature = null;
-
-    public abstract void renderFeatures(List<T> features, RenderContext context, Rectangle rect, FeatureTrack track);
 
     public Feature getHighlightFeature() {
         return highlightFeature;

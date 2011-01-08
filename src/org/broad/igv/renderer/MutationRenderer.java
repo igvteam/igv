@@ -21,6 +21,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
@@ -30,7 +31,7 @@ import org.broad.igv.ui.FontManager;
 import java.awt.*;
 import java.util.List;
 
-public class MutationRenderer extends FeatureRenderer<IGVFeature> {
+public class MutationRenderer extends FeatureRenderer {
 
     private static Logger log = Logger.getLogger(MutationRenderer.class);
 
@@ -43,8 +44,7 @@ public class MutationRenderer extends FeatureRenderer<IGVFeature> {
     /**
      * Note:  assumption is that featureList is sorted by start position.
      */
-    public void renderFeatures(List<IGVFeature> featureList, RenderContext context,
-                               Rectangle trackRectangle, FeatureTrack track) {
+    public void render(List<IGVFeature> featureList, RenderContext context, Rectangle trackRectangle, Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();

@@ -33,9 +33,11 @@ package org.broad.igv.renderer;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.tribble.Feature;
 
 import java.awt.*;
 import java.util.List;
@@ -43,7 +45,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public abstract class DataRenderer implements Renderer {
+public abstract class DataRenderer implements Renderer<LocusScore> {
 
     private static Logger log = Logger.getLogger(DataRenderer.class);
 
@@ -56,19 +58,19 @@ public abstract class DataRenderer implements Renderer {
      * @param track
      * @param scores
      * @param context
-     * @param arect
+     * @param rect
      */
-    public void render(Track track, List<LocusScore> scores, RenderContext context, Rectangle arect) {
+    public void render(List<LocusScore> scores, RenderContext context, Rectangle rect, Track track) {
 
         if (scores != null) {
             // Prevent modification of the scores collection during rendering.  This collection
             // has caused concurrent modification exceptions.
             synchronized (scores) {
-                renderScores(track, scores, context, arect);
-                renderAxis(track, context, arect);
+                renderScores(track, scores, context, rect);
+                renderAxis(track, context, rect);
             }
         }
-        renderBorder(track, context, arect);
+        renderBorder(track, context, rect);
 
     }
 

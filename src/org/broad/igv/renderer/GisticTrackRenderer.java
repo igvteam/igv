@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class GisticTrackRenderer implements Renderer {
+public class GisticTrackRenderer {
 
     public void setOverlayMode(boolean mode) {
         // Ignore for now

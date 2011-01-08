@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * @author jrobinso
  */
-public class MAFRenderer implements Renderer {
+public class MAFRenderer  {
 
     static Font font = FontManager.getScalableFont(10);
 

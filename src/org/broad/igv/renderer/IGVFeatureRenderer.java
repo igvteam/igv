@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.util.ColorUtilities;
@@ -39,7 +40,7 @@ import java.util.List;
  * @author Enter your name here...
  * @version Enter version here..., 08/10/24
  */
-public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
+public class IGVFeatureRenderer extends FeatureRenderer {
 
     static final Color AA_COLOR_1 = new Color(92, 92, 164);
     static final Color AA_COLOR_2 = new Color(12, 12, 120);
@@ -80,10 +81,10 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
      * @param trackRectangle
      * @param track
      */
-    public void renderFeatures(List<IGVFeature> featureList,
+    public void render(List<IGVFeature> featureList,
                                RenderContext context,
                                Rectangle trackRectangle,
-                               FeatureTrack track) {
+                               Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -566,7 +567,7 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
     // Declare this for efficiency.  Note: this makes getFeatureColor(...) not thread safe.
     private float[] colorComps = new float[3];
 
-    protected Color getFeatureColor(IGVFeature feature, FeatureTrack track) {
+    protected Color getFeatureColor(IGVFeature feature, Track track) {
         // Set color used to draw the feature
 
         Color color = null;
@@ -598,14 +599,14 @@ public class IGVFeatureRenderer extends FeatureRenderer<IGVFeature> {
         return color;
     }
 
-    float getViewLimitMin(FeatureTrack track) {
+    float getViewLimitMin(Track track) {
         if (Float.isNaN(viewLimitMin)) {
             viewLimitMin = Float.isNaN(track.getViewLimitMin()) ? 0 : track.getViewLimitMin();
         }
         return viewLimitMin;
     }
 
-    float getViewLimitMax(FeatureTrack track) {
+    float getViewLimitMax(Track track) {
         if (Float.isNaN(viewLimitMax)) {
             viewLimitMax = Float.isNaN(track.getViewLimitMax()) ? 1000 : track.getViewLimitMax();
         }

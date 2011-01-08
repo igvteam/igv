@@ -61,7 +61,7 @@ public class FeatureTrack extends AbstractTrack {
     private List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak
-    protected LRUCache<String, PackedFeatures> packedFeaturesMap = new LRUCache(200);
+    protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(200);
 
     private FeatureRenderer renderer;
 
@@ -248,7 +248,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected List<Feature> getAllFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
         if (packedFeatures == null) {
             return null;
@@ -269,9 +269,9 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         int nLevels = this.getNumberOfFeatureLevels();
-        List<Feature> features = null;
+        List<IGVFeature> features = null;
         if ((nLevels > 1) && (levelNumber < nLevels)) {
-            features = packedFeatures.getRows().get(levelNumber).features;
+            features = packedFeatures.getRows().get(levelNumber).getFeatures();
         } else {
             features = packedFeatures.getFeatures();
         }
@@ -323,7 +323,7 @@ public class FeatureTrack extends AbstractTrack {
     public Feature getFeatureAtPositionInFeatureRow(String chr, double position, int featureRow, 
                                                     ReferenceFrame frame) {
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
         if (packedFeatures == null) {
             return null;
@@ -332,9 +332,9 @@ public class FeatureTrack extends AbstractTrack {
         Feature feature = null;
 
         int nLevels = this.getNumberOfFeatureLevels();
-        List<Feature> features = null;
+        List<IGVFeature> features = null;
         if ((nLevels > 1) && (featureRow < nLevels)) {
-            features = packedFeatures.getRows().get(featureRow).features;
+            features = packedFeatures.getRows().get(featureRow).getFeatures();
         } else {
             features = packedFeatures.getFeatures();
         }
@@ -350,7 +350,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected Feature getFeatureClosest(double position, int y, ReferenceFrame frame) {
 
-        PackedFeatures packedFeatures = packedFeaturesMap.get(frame.getName());
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
         if (packedFeatures == null) {
             return null;
@@ -370,9 +370,9 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         int nLevels = this.getNumberOfFeatureLevels();
-        List<Feature> features = null;
+        List<IGVFeature> features = null;
         if ((nLevels > 1) && (levelNumber < nLevels)) {
-            features = packedFeatures.getRows().get(levelNumber).features;
+            features = packedFeatures.getRows().get(levelNumber).getFeatures();
         } else {
             features = packedFeatures.getFeatures();
         }
@@ -525,7 +525,7 @@ public class FeatureTrack extends AbstractTrack {
                 cs.setPosEnd(max);
             }
             setDataRange(new DataRange(0, 0, max));
-            coverageRenderer.render(this, scores, context, inputRect);
+            coverageRenderer.render(scores, context, inputRect, this);
         }
     }
 
@@ -621,7 +621,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
         if (expanded) {
-            List<FeatureRow> rows = packedFeatures.getRows();
+            List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
 
                 int nLevels = rows.size();
@@ -633,9 +633,9 @@ public class FeatureTrack extends AbstractTrack {
                     double h = inputRect.getHeight() / nLevels;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
                     int i=0;
-                    for (FeatureRow row : rows) {
+                    for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
-                        getRenderer().renderFeatures(row.features, context, rect, this);
+                        getRenderer().render(row.features, context, rect, this);
                         if (selectedFeatureRowIndex == i)
                         {
                             Graphics2D fontGraphics =
@@ -648,9 +648,9 @@ public class FeatureTrack extends AbstractTrack {
                 }
             }
         } else {
-            List<Feature> features = packedFeatures.getFeatures();
+            List<IGVFeature> features = packedFeatures.getFeatures();
             if (features != null) {
-                getRenderer().renderFeatures(features, context, inputRect, this);
+                getRenderer().render(features, context, inputRect, this);
             }
         }
     }
@@ -880,25 +880,6 @@ public class FeatureTrack extends AbstractTrack {
 //
 //    return source.nextFeature(chr, position, forward);
 //}
-
-
-    static class FeatureRow {
-        int start;
-        int end;
-        List<Feature> features;
-
-        FeatureRow() {
-            this.features = new ArrayList(100);
-        }
-
-        void addFeature(Feature feature) {
-            if (features.isEmpty()) {
-                this.start = feature.getStart();
-            }
-            features.add(feature);
-            end = feature.getEnd();
-        }
-    }
 
 
 }

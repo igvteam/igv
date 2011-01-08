@@ -20,22 +20,23 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
 import java.util.*;
 
 /**
-* @author jrobinso
-* @date Oct 7, 2010
-*/
-public class PackedFeatures {
+ * @author jrobinso
+ * @date Oct 7, 2010
+ */
+public class PackedFeatures<T extends Feature> {
     private String trackName;
     private String chr;
     private int start;
     private int end;
-    private List<Feature> features;
-    private List<FeatureTrack.FeatureRow> rows;
+    private List<T> features;
+    private List<FeatureRow> rows;
     private static Logger log = Logger.getLogger(PackedFeatures.class);
     private int maxFeatureLength = 0;
 
@@ -47,7 +48,7 @@ public class PackedFeatures {
         rows = Collections.emptyList();
     }
 
-    PackedFeatures(String chr, int start, int end, Iterator<Feature> iter, String trackName) {
+    PackedFeatures(String chr, int start, int end, Iterator<T> iter, String trackName) {
         this.trackName = trackName;
         this.chr = chr;
         this.start = start;
@@ -69,9 +70,9 @@ public class PackedFeatures {
      *
      * @param iter TabixLineReader wrapping the collection of alignments
      */
-    List<FeatureTrack.FeatureRow> packFeatures(Iterator<Feature> iter) {
+    List<FeatureRow> packFeatures(Iterator<T> iter) {
 
-        List<FeatureTrack.FeatureRow> rows = new ArrayList(10);
+        List<FeatureRow> rows = new ArrayList(10);
         if (iter == null || !iter.hasNext()) {
             return rows;
         }
@@ -84,15 +85,15 @@ public class PackedFeatures {
             }
         };
 
-        Feature firstFeature = iter.next();
+        T firstFeature = iter.next();
         features.add(firstFeature);
         maxFeatureLength = firstFeature.getEnd() - firstFeature.getStart();
         int totalCount = 1;
 
-        LinkedHashMap<Integer, PriorityQueue<Feature>> bucketArray = new LinkedHashMap();
+        LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
 
         while (iter.hasNext()) {
-            Feature feature = iter.next();
+            T feature = iter.next();
             maxFeatureLength = Math.max(maxFeatureLength, feature.getEnd() - feature.getStart());
             features.add(feature);
 
@@ -109,7 +110,7 @@ public class PackedFeatures {
         }
 
         // Allocate alignments to rows
-        FeatureTrack.FeatureRow currentRow = new FeatureTrack.FeatureRow();
+        FeatureRow currentRow = new FeatureRow();
         currentRow.addFeature(firstFeature);
         int allocatedCount = 1;
         int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
@@ -133,7 +134,7 @@ public class PackedFeatures {
 
             // Next row Loop through alignments until we reach the end of the interval
 
-            PriorityQueue<Feature> bucket = null;
+            PriorityQueue<T> bucket = null;
             // Advance to nextLine occupied bucket
 
             ArrayList<Integer> emptyBucketKeys = new ArrayList();
@@ -147,7 +148,7 @@ public class PackedFeatures {
                 if (key >= nextStart) {
                     bucket = bucketArray.get(key);
 
-                    Feature feature = bucket.poll();
+                    T feature = bucket.poll();
 
                     if (bucket.isEmpty()) {
                         emptyBucketKeys.add(key);
@@ -167,7 +168,7 @@ public class PackedFeatures {
                 rows.add(currentRow);
                 lastAllocatedCount = 0;
             }
-            currentRow = new FeatureTrack.FeatureRow();
+            currentRow = new FeatureRow();
             nextStart = 0;
             lastKey = 0;
 
@@ -197,15 +198,37 @@ public class PackedFeatures {
         return end;
     }
 
-    public List<Feature> getFeatures() {
+    public List<T> getFeatures() {
         return features;
     }
 
-    public List<FeatureTrack.FeatureRow> getRows() {
+    public List<FeatureRow> getRows() {
         return rows;
     }
 
     public int getMaxFeatureLength() {
         return maxFeatureLength;
+    }
+
+    class FeatureRow {
+        int start;
+        int end;
+        List<T> features;
+
+        public FeatureRow() {
+            this.features = new ArrayList(100);
+        }
+
+        public void addFeature(T feature) {
+            if (features.isEmpty()) {
+                this.start = feature.getStart();
+            }
+            features.add(feature);
+            end = feature.getEnd();
+        }
+
+        public List<T> getFeatures() {
+            return features;
+        }
     }
 }
