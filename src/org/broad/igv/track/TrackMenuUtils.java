@@ -323,9 +323,10 @@ public class TrackMenuUtils {
 
         featurePopupMenu.add(getTrackRenameItem(tracks));
 
-        featurePopupMenu.add(getExpandCollapseItem(tracks));
 
         if (hasFeatureTracks) {
+
+            featurePopupMenu.add(getExpandCollapseItem(tracks));
 
             featurePopupMenu.add(getChangeFontSizeItem(tracks));
 
@@ -612,7 +613,7 @@ public class TrackMenuUtils {
         // If any tracks are expanded show the "Collapse" option, otherwise expand
         boolean expanded = false;
         for (Track track : tracks) {
-            if (track.isExpanded()) {
+            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
                 expanded = true;
                 break;
             }
@@ -680,12 +681,24 @@ public class TrackMenuUtils {
 
     /**
      * Toggle selected multi-level tracks
+     * if (track instanceof FeatureTrack) {
+     * if (((FeatureTrack) track).getDisplayMode() == Track.DisplayMode.EXPANDED) {
+     * expanded = true;
+     * break;
+     * }
+     * }
      */
     public static void toggleExpandedState(final Collection<Track> selectedTracks) {
 
         for (Track track : selectedTracks) {
-            boolean expanded = track.isExpanded();
-            track.setExpanded(!expanded);
+            if (track instanceof FeatureTrack) {
+                boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED;
+                if (!expanded) {
+                    track.setDisplayMode(Track.DisplayMode.EXPANDED);
+                } else {
+                    track.setDisplayMode(Track.DisplayMode.COLLAPSED);
+                }
+            }
         }
     }
 

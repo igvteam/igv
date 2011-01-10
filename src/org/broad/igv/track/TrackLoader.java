@@ -203,7 +203,7 @@ public class TrackLoader {
             }
 
             for (Track track : newTracks) {
-                
+
                 if (locator.getUrl() != null) {
                     track.setUrl(locator.getUrl());
                 }
@@ -315,10 +315,11 @@ public class TrackLoader {
         PSLParser featureParser = new PSLParser();
         List<FeatureTrack> tracks = featureParser.loadTracks(locator);
         newTracks.addAll(tracks);
-        for (Track t : tracks) {
-            ((FeatureTrack) t).setMinimumHeight(10);
+        for (FeatureTrack t : tracks) {
+            t.setMinimumHeight(10);
             t.setHeight(30);
-            t.setExpanded(true);
+            t.setDisplayMode(Track.DisplayMode.EXPANDED);
+
         }
 
 
@@ -949,7 +950,7 @@ public class TrackLoader {
             track.setRendererClass(CosmicFeatureRenderer.class);
             track.setMinimumHeight(2);
             track.setHeight(20);
-            track.setExpanded(true);
+            track.setDisplayMode(Track.DisplayMode.EXPANDED);
         } else {
             track.setRendererClass(IGVFeatureRenderer.class);
             track.setMinimumHeight(35);

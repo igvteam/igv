@@ -197,21 +197,21 @@ public class TrackManager {
 
     public void collapseTracks() {
         for (Track t : getAllTracks(true)) {
-            t.setExpanded(false);
+            t.setDisplayMode(Track.DisplayMode.COLLAPSED);
         }
     }
 
 
     public void expandTracks() {
         for (Track t : getAllTracks(true)) {
-            t.setExpanded(true);
+            t.setDisplayMode(Track.DisplayMode.EXPANDED);
         }
     }
 
     public void collapseTrack(String trackName) {
         for (Track t : getAllTracks(true)) {
             if (t.getName().equals(trackName)) {
-                t.setExpanded(false);
+                t.setDisplayMode(Track.DisplayMode.COLLAPSED);
             }
         }
     }
@@ -220,7 +220,7 @@ public class TrackManager {
     public void expandTrack(String trackName) {
         for (Track t : getAllTracks(true)) {
             if (t.getName().equals(trackName)) {
-                t.setExpanded(true);
+                t.setDisplayMode(Track.DisplayMode.EXPANDED);
             }
         }
     }

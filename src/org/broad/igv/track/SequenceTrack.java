@@ -150,18 +150,6 @@ public class SequenceTrack extends AbstractTrack {
         PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
-    //The following 2 methods by jtr to support general "expand/collapse" menu items
-    @Override
-    public void setExpanded(boolean expanded) {
-        setShouldShowTranslation(expanded);
-    }
-
-    @Override
-    public boolean isExpanded() {
-        return isShouldShowTranslation();
-    }
-
-
     //----------------------------------------------------------------------------
     // Methods belowo are required for the Track interface, but aren't
     // meaningful here.  Obviously some refactoring is in order to reduce

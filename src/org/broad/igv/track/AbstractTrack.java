@@ -78,7 +78,6 @@ public abstract class AbstractTrack implements Track {
     private boolean showDataRange = true;
     private String sampleId;
     private ResourceLocator resourceLocator;
-    boolean expanded = false;
 
     private int top;
     protected int minimumHeight = 1;
@@ -109,8 +108,8 @@ public abstract class AbstractTrack implements Track {
      * A timer task is used for opening web links to distinguish a click from a double click.
      */
     private TimerTask currentClickTask = null;
-    
-    private TrackProperties trackProperties;
+
+    private DisplayMode displayMode = DisplayMode.COLLAPSED;
 
 
     public AbstractTrack(
@@ -148,7 +147,10 @@ public abstract class AbstractTrack implements Track {
 
     private void init() {
         overlayVisible = IGVMainFrame.getInstance().getSession().getDisplayOverlayTracks();
-        showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
+        showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);       
+        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
+            displayMode = DisplayMode.EXPANDED;
+        }
     }
 
     public void setRendererClass(Class rc) {
@@ -465,20 +467,6 @@ public abstract class AbstractTrack implements Track {
     public void refreshData(long timestamp) {
     }
 
-
-    public String getSourceFile() {
-        return resourceLocator == null ? "" : resourceLocator.getPath();
-    }
-
-    public void setExpanded(boolean expanded) {
-        this.expanded = expanded;
-    }
-
-    public boolean isExpanded() {
-        return expanded;
-    }
-
-
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return new ArrayList();
 
@@ -649,15 +637,11 @@ public abstract class AbstractTrack implements Track {
 
         attributes.put("showDataRange", String.valueOf(showDataRange));
 
-        // Visibility
         attributes.put(SessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(isVisible()));
-
-        // expanded
-        attributes.put(SessionReader.SessionAttribute.EXPAND.getText(), String.valueOf(isExpanded()));
 
         // height
         int height = getHeight();
-        if ((this instanceof FeatureTrack) && isExpanded()) {
+        if (displayMode != DisplayMode.COLLAPSED) {
             height = height / ((FeatureTrack) this).getNumberOfFeatureLevels();
         }
         String value = Integer.toString(height);
@@ -666,7 +650,6 @@ public abstract class AbstractTrack implements Track {
 
         if (name != null) {
             attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
-
         }
 
         // color
@@ -696,13 +679,10 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText(), wf.name());
         }
 
-
-        if (this instanceof FeatureTrack) {
-            boolean expand = this.isExpanded();
-            attributes.put(SessionReader.SessionAttribute.EXPAND.getText(), String.valueOf(expand));
-        }
-
         attributes.put("fontSize", String.valueOf(getFontSize()));
+
+        attributes.put(SessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
+
 
         return attributes;
     }
@@ -719,7 +699,7 @@ public abstract class AbstractTrack implements Track {
         String rendererType = attributes.get(SessionReader.SessionAttribute.RENDERER.getText());
         String windowFunction = attributes.get(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
         String scale = attributes.get(SessionReader.SessionAttribute.SCALE.getText());
-        String isExpanded = attributes.get(SessionReader.SessionAttribute.EXPAND.getText());
+
         String colorScale = attributes.get(SessionReader.SessionAttribute.COLOR_SCALE.getText());
         String fontSizeString = attributes.get("fontSize");
         String showDataRangeString = attributes.get("showDataRange");
@@ -807,11 +787,28 @@ public abstract class AbstractTrack implements Track {
             setDataRange(new DataRange(minimum, baseline, maximum));
         }
 
-        // Set expand
-        if (isExpanded != null) {
-            setExpanded(isExpanded.equalsIgnoreCase("true"));
-        }
 
+
+        // set display mode
+        String displayModeText = attributes.get(SessionReader.SessionAttribute.DISPLAY_MODE.getText());
+        if (displayModeText != null) {
+            try {
+                setDisplayMode(Track.DisplayMode.valueOf(displayModeText));
+            }
+            catch (Exception e) {
+                log.error("Error interpreting display mode: " + displayModeText);
+            }
+        } else {
+            String isExpanded = attributes.get(SessionReader.SessionAttribute.EXPAND.getText());
+            if (isExpanded != null) {
+                if(isExpanded.equalsIgnoreCase("true")) {
+                   setDisplayMode(DisplayMode.EXPANDED);
+                }
+                else {
+                   setDisplayMode(DisplayMode.COLLAPSED);
+                }
+            }
+        }
     }
 
 
@@ -927,7 +924,11 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
-    public TrackProperties getTrackProperties() {
-        return trackProperties;
+    public DisplayMode getDisplayMode() {
+        return displayMode;
+    }
+
+    public void setDisplayMode(DisplayMode mode) {
+        this.displayMode = mode;
     }
 }

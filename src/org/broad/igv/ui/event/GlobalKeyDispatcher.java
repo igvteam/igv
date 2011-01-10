@@ -253,7 +253,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
             if (t instanceof FeatureTrack) {
                 int center = (int) vc.getCenter();
                 FeatureTrack ft = (FeatureTrack) t;
-                if (!ft.isExpanded() ||
+                if (ft.getDisplayMode() == Track.DisplayMode.COLLAPSED||
                         ft.getSelectedFeatureRowIndex() == FeatureTrack.NO_FEATURE_ROW_SELECTED)
                 {
                     MessageUtils.showMessage(

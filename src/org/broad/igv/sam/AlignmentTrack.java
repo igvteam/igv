@@ -101,7 +101,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         minVisibleScale = (maxRange * 1000) / 700;
 
         renderer = new AlignmentRenderer();
-        this.setExpanded(true);
+
+        this.setDisplayMode(DisplayMode.EXPANDED);
 
         if (prefs.getAsBoolean(PreferenceManager.SAM_SHOW_REF_SEQ)) {
             sequenceTrack = new SequenceTrack("Reference sequence");
@@ -158,7 +159,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     private int getRowHeight() {
-        return isExpanded() ? expandedHeight : collapsedHeight;
+        return getDisplayMode() == DisplayMode.EXPANDED ? expandedHeight : collapsedHeight;
     }
 
     private int getNLevels() {
@@ -214,7 +215,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             // Divide rectangle into equal height levels
             double y = inputRect.getY();
             double h = expandedHeight;
-            if (!isExpanded()) {
+            if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = context.getVisibleRect().height;
                 collapsedHeight = Math.max(1, Math.min(expandedHeight, visHeight / dataManager.getMaxDepth(context.getReferenceFrame())));
                 h = collapsedHeight;
@@ -234,7 +235,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                             context,
                             rect,
                             renderOptions,
-                            isExpanded(),
+                            getDisplayMode() == DisplayMode.EXPANDED,
                             selectedReadNames);
                 }
                 levelNumber++;
@@ -405,7 +406,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             return null;
         }
 
-        int h = isExpanded() ? expandedHeight : collapsedHeight;
+        int h = getDisplayMode() == DisplayMode.EXPANDED ? expandedHeight : collapsedHeight;
         int levelNumber = (y - renderedRect.y) / h;
         if (levelNumber < 0 || levelNumber >= alignmentRows.size()) {
             return null;

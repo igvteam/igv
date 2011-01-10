@@ -22,7 +22,6 @@
  */
 package org.broad.igv.track;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
@@ -43,36 +42,17 @@ import java.util.Collection;
 public interface Track extends Persistable {
 
     enum DisplayMode {
-        DENSE, SQUISH, PACK
+        COLLAPSED, SQUISH, EXPANDED
     }
 
-    /**
-     * Render the track contents in the rectangle, including the border
-     *
-     * @param context
-     * @param rect
-     */
+    // The unique identifier for the track.  This should only be used in saving/restoring sessions.
+    public String getId();
+
     public void render(RenderContext context, Rectangle rect);
-
-
-    /**
-     * Render the track name
-     */
 
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
 
-    /**
-     * Render this track as an overlay in the track rectangle
-     *
-     * @param context
-     * @param rect
-     */
     public void overlay(RenderContext context, Rectangle rect);
-
-    /**
-     * @return The unique identifier for the track.  This should only be used in saving/restoring sessions.
-     */
-    public String getId();
 
     public void setName(String name);
 
@@ -148,24 +128,9 @@ public interface Track extends Persistable {
 
     public int getFontSize();
 
-    /**
-     * Record the file from which this track was created.
-     *
-     * @param filename
-     */
-    //public void setSourceFile(String filename);
+    //public void setExpanded(boolean value);
 
-    /**
-     * Return the filename from which this track was created.
-     *
-     * @return
-     */
-    public String getSourceFile();
-
-
-    public void setExpanded(boolean value);
-
-    public boolean isExpanded();
+    //public boolean isExpanded();
 
     public boolean handleDataClick(TrackClickEvent e);
 
@@ -195,7 +160,10 @@ public interface Track extends Persistable {
 
     float getViewLimitMax();
     
+    DisplayMode getDisplayMode();
 
+    void setDisplayMode(DisplayMode mode);
+ 
     JPopupMenu getPopupMenu(final TrackClickEvent te);
     
 }

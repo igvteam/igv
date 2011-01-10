@@ -298,8 +298,10 @@ public class SessionReader {
         if (version < 3 || !panelElementPresent) {
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
-                    TrackPanel group = IGVMainFrame.getInstance().getTrackManager().getPanelFor(new ResourceLocator(track.getSourceFile()));
-                    group.addTrack(track);
+                    if (track.getResourceLocator() != null) {
+                        TrackPanel group = IGVMainFrame.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
+                        group.addTrack(track);
+                    }
                 }
             }
         }

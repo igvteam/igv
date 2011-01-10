@@ -175,18 +175,6 @@ public class VCFMenu {
         return item;
     }
 
-
-    private JMenuItem getCollapseItem() {
-        JMenuItem item = new JCheckBoxMenuItem("Collapse Track", !track.isExpanded());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                track.setExpanded(!track.isExpanded());
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
-    }
-
     private JMenuItem getHideReferenceItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Reference Genotypes", track.getHideReference());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -354,10 +342,10 @@ public class VCFMenu {
         Track.DisplayMode displayMode = track.getDisplayMode();
 
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Dense");
-        m1.setSelected(displayMode == Track.DisplayMode.DENSE);
+        m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                track.setDisplayMode(Track.DisplayMode.DENSE);
+                track.setDisplayMode(Track.DisplayMode.COLLAPSED);
                 IGVMainFrame.getInstance().repaint();
             }
         });
@@ -372,10 +360,10 @@ public class VCFMenu {
         });
 
         JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Pack");
-        m3.setSelected(displayMode == Track.DisplayMode.PACK);
+        m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
         m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                track.setDisplayMode(Track.DisplayMode.PACK);
+                track.setDisplayMode(Track.DisplayMode.EXPANDED);
                 IGVMainFrame.getInstance().repaint();
             }
         });

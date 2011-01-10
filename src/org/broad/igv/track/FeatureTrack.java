@@ -24,6 +24,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
@@ -48,18 +49,16 @@ public class FeatureTrack extends AbstractTrack {
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
     public static final int MINIMUM_FEATURE_SPACING = 1;
-    private static final int EXPAND_ICON_BUFFER_WIDTH = 17;
-    private static final int EXPAND_ICON_BUFFER_HEIGHT = 17;
     public static final int MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
-    private boolean expanded;
-
     private List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
-    /** Map of reference frame name -> packed features */
+    /**
+     * Map of reference frame name -> packed features
+     */
     protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(200);
 
     private FeatureRenderer renderer;
@@ -71,10 +70,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected FeatureSource source;
 
-
     private boolean featuresLoading = false;
-
-    private Rectangle expandButtonRect = new Rectangle();
 
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
@@ -94,7 +90,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     private void init(FeatureSource source) {
-        this.expanded = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS);
+
         this.source = source;
         setMinimumHeight(10);
         setColor(Color.blue.darker());
@@ -132,7 +128,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     public int getNumberOfFeatureLevels() {
-        if (expanded && packedFeaturesMap.size() > 0) {
+        if (getDisplayMode() == DisplayMode.EXPANDED && packedFeaturesMap.size() > 0) {
             int n = 0;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
                 n += pf.getRowCount();
@@ -391,16 +387,8 @@ public class FeatureTrack extends AbstractTrack {
         MouseEvent e = te.getMouseEvent();
 
 
-        if (e.getX() < EXPAND_ICON_BUFFER_WIDTH) {
-            if (expandButtonRect.contains(e.getPoint())) {
-                setExpanded(!expanded);
-                IGVMainFrame.getInstance().doRefresh();
-            }
-            return true;
-        }
-
         //dhmay adding selection of an expanded feature row
-        if (expanded) {
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
             if (levelRects != null) {
                 for (int i = 0; i < levelRects.size(); i++) {
                     Rectangle rect = levelRects.get(i);
@@ -460,12 +448,6 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
-
-    @Override
-    public boolean isExpanded() {
-        return expanded;
-    }
-
     /**
      * Required by the interface, really not applicable to feature tracks
      */
@@ -494,10 +476,7 @@ public class FeatureTrack extends AbstractTrack {
         } else {
             renderCoverage(context, renderRect);
         }
-        boolean showIcon = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_EXPAND_ICON);
-        if (showIcon && !IGVMainFrame.getInstance().isExportingSnapshot() && !FrameManager.isGeneListMode()) {
-            renderExpandTool(context, rect);
-        }
+
     }
 
     private void renderCoverage(RenderContext context, Rectangle inputRect) {
@@ -532,50 +511,6 @@ public class FeatureTrack extends AbstractTrack {
         }
         return max;
     }
-
-
-    private int[] p1 = new int[3];
-    private int[] p2 = new int[3];
-
-    private void renderExpandTool(RenderContext contect, Rectangle rect) {
-
-        PackedFeatures packedFeatures = packedFeaturesMap.get(contect.getReferenceFrame().getName());
-
-        if (packedFeatures == null || packedFeatures.getRowCount() <= 1) {
-            return;
-        }
-
-        Graphics2D g2d = contect.getGraphic2DForColor(Color.DARK_GRAY);
-        int levelHeight = getHeight() / (this.getNumberOfFeatureLevels() + 1);
-
-        g2d.clearRect(rect.x, rect.y, EXPAND_ICON_BUFFER_WIDTH, levelHeight);
-
-        expandButtonRect.x = rect.x + 3;
-        expandButtonRect.y = rect.y + MARGIN + 4;
-        expandButtonRect.width = 10;
-        expandButtonRect.height = 10;
-
-        if (expanded) {
-            p1[0] = expandButtonRect.x;
-            p1[1] = expandButtonRect.x + 8;
-            p1[2] = expandButtonRect.x + 4;
-            p2[0] = expandButtonRect.y;
-            p2[1] = expandButtonRect.y;
-            p2[2] = expandButtonRect.y + 8;
-            g2d.fillPolygon(p1, p2, 3);
-
-        } else {
-            p1[0] = expandButtonRect.x;
-            p1[1] = expandButtonRect.x + 8;
-            p1[2] = expandButtonRect.x;
-            p2[0] = expandButtonRect.y;
-            p2[1] = expandButtonRect.y + 4;
-            p2[2] = expandButtonRect.y + 8;
-            g2d.fillPolygon(p1, p2, 3);
-        }
-
-    }
-
 
     // Render features in the given input rectangle.
 
@@ -615,7 +550,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
-        if (expanded) {
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
 
@@ -714,16 +649,6 @@ public class FeatureTrack extends AbstractTrack {
             runnable.run();
         }
 
-    }
-
-
-    @Override
-    public void setExpanded(boolean value) {
-        expanded = value;
-        //dhmay adding: if collapsing rows, remove row selection if any
-        if (!expanded)
-            setSelectedFeatureRowIndex(NO_FEATURE_ROW_SELECTED);
-        IGVMainFrame.getInstance().layoutMainPanel();   // TODO -- this is for the scrollbar.  Can some event be fired?
     }
 
     @Override
@@ -832,6 +757,14 @@ public class FeatureTrack extends AbstractTrack {
         source.setFeatureWindowSize(visibilityWindow);
     }
 
+    public int getSelectedFeatureRowIndex() {
+        return selectedFeatureRowIndex;
+    }
+
+    public void setSelectedFeatureRowIndex(int selectedFeatureRowIndex) {
+        this.selectedFeatureRowIndex = selectedFeatureRowIndex;
+    }
+
     @Override
     public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
@@ -845,29 +778,17 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
 
+
     }
 
     @Override
     public Map<String, String> getPersistentState() {
         Map<String, String> stateMap = super.getPersistentState();
         stateMap.put(FEATURE_VISIBILITY_WINDOW, String.valueOf(visibilityWindow));
+
         return stateMap;
 
     }
-
-    public int getSelectedFeatureRowIndex() {
-        return selectedFeatureRowIndex;
-    }
-
-    public void setSelectedFeatureRowIndex(int selectedFeatureRowIndex) {
-        this.selectedFeatureRowIndex = selectedFeatureRowIndex;
-    }
-
-    //public IGVFeature nextFeature(String chr, double position, boolean forward) {
-//
-//    return source.nextFeature(chr, position, forward);
-//}
-
 
 }
 
