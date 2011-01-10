@@ -76,9 +76,9 @@ public class MutationParser {
 
     }
 
-    public List<Track> loadMutationTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator) {
 
-        List<Track> tracks = new ArrayList();
+        List<FeatureTrack> tracks = new ArrayList();
         Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator);
         for (String sampleId : features.keySet()) {
 

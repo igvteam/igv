@@ -54,13 +54,12 @@ public class FeatureTrack extends AbstractTrack {
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
-    static int maxLevels = 200;
-
     private boolean expanded;
 
     private List<Rectangle> levelRects = new ArrayList();
 
-    // TODO -- this is a memory leak
+    // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
+    /** Map of reference frame name -> packed features */
     protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(200);
 
     private FeatureRenderer renderer;
@@ -75,7 +74,7 @@ public class FeatureTrack extends AbstractTrack {
 
     private boolean featuresLoading = false;
 
-    private Rectangle EXPAND_BUTTON_RECT = new Rectangle();
+    private Rectangle expandButtonRect = new Rectangle();
 
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
@@ -117,7 +116,6 @@ public class FeatureTrack extends AbstractTrack {
     @Override
     public void setTrackProperties(TrackProperties trackProperties) {
         super.setTrackProperties(trackProperties);
-
         if (trackProperties.getFeatureVisibilityWindow() >= 0) {
             setVisibilityWindow(trackProperties.getFeatureVisibilityWindow());
         }
@@ -185,7 +183,7 @@ public class FeatureTrack extends AbstractTrack {
      *
      * @param chr
      * @param position in genomic coordinates
-     * @param y - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
      * @return
      */
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
@@ -240,9 +238,8 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     /**
-     *
      * @param position in genomic coordinates
-     * @param y  pixel location in panel coordinates.  // TODO offset by track origin before getting here?
+     * @param y        pixel location in panel coordinates.  // TODO offset by track origin before getting here?
      * @param frame
      * @return
      */
@@ -290,6 +287,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Determine which row the user clicked in and return the appropriate feature
+     *
      * @param chr
      * @param position
      * @param y
@@ -314,13 +312,14 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Knowing the feature row, figure out which feature is at position position. If not expanded,
      * featureRow is ignored
+     *
      * @param chr
      * @param position
      * @param featureRow
      * @param frame
      * @return
      */
-    public Feature getFeatureAtPositionInFeatureRow(String chr, double position, int featureRow, 
+    public Feature getFeatureAtPositionInFeatureRow(String chr, double position, int featureRow,
                                                     ReferenceFrame frame) {
 
         PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
@@ -393,7 +392,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
         if (e.getX() < EXPAND_ICON_BUFFER_WIDTH) {
-            if (EXPAND_BUTTON_RECT.contains(e.getPoint())) {
+            if (expandButtonRect.contains(e.getPoint())) {
                 setExpanded(!expanded);
                 IGVMainFrame.getInstance().doRefresh();
             }
@@ -401,18 +400,14 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         //dhmay adding selection of an expanded feature row
-        if (expanded)
-        {
+        if (expanded) {
             if (levelRects != null) {
-                for (int i=0; i< levelRects.size(); i++)
-                {
+                for (int i = 0; i < levelRects.size(); i++) {
                     Rectangle rect = levelRects.get(i);
-                    if (rect.contains(e.getPoint()))
-                    {
+                    if (rect.contains(e.getPoint())) {
                         if (i == selectedFeatureRowIndex)
                             setSelectedFeatureRowIndex(FeatureTrack.NO_FEATURE_ROW_SELECTED);
-                        else
-                        {
+                        else {
                             //make this track selected
                             setSelected(true);
                             //select the appropriate row
@@ -555,27 +550,27 @@ public class FeatureTrack extends AbstractTrack {
 
         g2d.clearRect(rect.x, rect.y, EXPAND_ICON_BUFFER_WIDTH, levelHeight);
 
-        EXPAND_BUTTON_RECT.x = rect.x + 3;
-        EXPAND_BUTTON_RECT.y = rect.y + MARGIN + 4;
-        EXPAND_BUTTON_RECT.width = 10;
-        EXPAND_BUTTON_RECT.height = 10;
+        expandButtonRect.x = rect.x + 3;
+        expandButtonRect.y = rect.y + MARGIN + 4;
+        expandButtonRect.width = 10;
+        expandButtonRect.height = 10;
 
         if (expanded) {
-            p1[0] = EXPAND_BUTTON_RECT.x;
-            p1[1] = EXPAND_BUTTON_RECT.x + 8;
-            p1[2] = EXPAND_BUTTON_RECT.x + 4;
-            p2[0] = EXPAND_BUTTON_RECT.y;
-            p2[1] = EXPAND_BUTTON_RECT.y;
-            p2[2] = EXPAND_BUTTON_RECT.y + 8;
+            p1[0] = expandButtonRect.x;
+            p1[1] = expandButtonRect.x + 8;
+            p1[2] = expandButtonRect.x + 4;
+            p2[0] = expandButtonRect.y;
+            p2[1] = expandButtonRect.y;
+            p2[2] = expandButtonRect.y + 8;
             g2d.fillPolygon(p1, p2, 3);
 
         } else {
-            p1[0] = EXPAND_BUTTON_RECT.x;
-            p1[1] = EXPAND_BUTTON_RECT.x + 8;
-            p1[2] = EXPAND_BUTTON_RECT.x;
-            p2[0] = EXPAND_BUTTON_RECT.y;
-            p2[1] = EXPAND_BUTTON_RECT.y + 4;
-            p2[2] = EXPAND_BUTTON_RECT.y + 8;
+            p1[0] = expandButtonRect.x;
+            p1[1] = expandButtonRect.x + 8;
+            p1[2] = expandButtonRect.x;
+            p2[0] = expandButtonRect.y;
+            p2[1] = expandButtonRect.y + 4;
+            p2[2] = expandButtonRect.y + 8;
             g2d.fillPolygon(p1, p2, 3);
         }
 
@@ -632,12 +627,11 @@ public class FeatureTrack extends AbstractTrack {
                     // Divide rectangle into equal height levels
                     double h = inputRect.getHeight() / nLevels;
                     Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
-                    int i=0;
+                    int i = 0;
                     for (PackedFeatures.FeatureRow row : rows) {
                         levelRects.add(new Rectangle(rect));
                         getRenderer().render(row.features, context, rect, this);
-                        if (selectedFeatureRowIndex == i)
-                        {
+                        if (selectedFeatureRowIndex == i) {
                             Graphics2D fontGraphics =
                                     (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR).create();
                             fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -741,14 +735,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
     public void setStatType(WindowFunction type) {
-    }
-
-    /**
-     * Method description
-     *
-     * @param zoom
-     */
-    public void setZoom(int zoom) {
+        // Ignored for feature tracks
     }
 
 

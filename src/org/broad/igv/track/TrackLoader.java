@@ -203,7 +203,7 @@ public class TrackLoader {
             }
 
             for (Track track : newTracks) {
-                track.setSourceFile(locator.getPath());
+                
                 if (locator.getUrl() != null) {
                     track.setUrl(locator.getUrl());
                 }
@@ -219,6 +219,8 @@ public class TrackLoader {
 
                 IGVMainFrame.getInstance().getTrackManager().addLoadedType(track.getTrackType());
             }
+
+
             return newTracks;
         } catch (DataLoadException dle) {
             throw dle;
@@ -233,17 +235,17 @@ public class TrackLoader {
 
         TribbleFeatureSource src = new TribbleFeatureSource(locator.getPath());
         String typeString = locator.getPath();
-        Track t;
+        //Track t;
 
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
 
-            t = new VCFTrack(locator, src);
+            VCFTrack t = new VCFTrack(locator, src);
             t.setVisibilityWindow(100000);
-
+            newTracks.add(t);
         } else {
 
             // Create feature source and track
-            t = new FeatureTrack(locator, src);
+            FeatureTrack t = new FeatureTrack(locator, src);
             t.setName(locator.getTrackName());
             //t.setRendererClass(BasicTribbleRenderer.class);
 
@@ -262,8 +264,9 @@ public class TrackLoader {
                     t.setHeight(15);
                 }
             }
+            newTracks.add(t);
         }
-        newTracks.add(t);
+
     }
 
     /**
@@ -284,11 +287,12 @@ public class TrackLoader {
     }
 
     private void loadSyntentyMapping(ResourceLocator locator, List<Track> newTracks) {
+
         List<BlastMapping> mappings = (new BlastParser()).parse(locator.getPath());
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>(mappings.size());
         features.addAll(mappings);
 
-        Track track = new FeatureTrack(locator, new FeatureCollectionSource(features));
+        FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features));
         track.setName(locator.getTrackName());
         // track.setRendererClass(AlignmentBlockRenderer.class);
         newTracks.add(track);
@@ -557,7 +561,7 @@ public class TrackLoader {
             Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackId, ds);
 
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
             String displayName = (label == null || multiTrack) ? heading : label;
             track.setName(displayName);
@@ -607,10 +611,8 @@ public class TrackLoader {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
-            String id142 = multiTrack ? trackId : heading;
-
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, new TDFDataSource(reader, trackNumber, heading));
-            track.setId_142(id142);
+
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
             track.setTrackType(type);
@@ -632,7 +634,7 @@ public class TrackLoader {
             ParsingUtils.parseTrackLine(trackLine, props);
         }
 
-        Track track = new EWigTrack(locator);
+        EWigTrack track = new EWigTrack(locator);
         if (props != null) {
             track.setTrackProperties(props);
         }
@@ -715,7 +717,7 @@ public class TrackLoader {
 
     private void loadOmegaTrack(ResourceLocator locator, List<Track> newTracks) {
         OmegaDataSource ds = new OmegaDataSource();
-        Track track = new OmegaTrack(locator, ds);
+        OmegaTrack track = new OmegaTrack(locator, ds);
         track.setName("Conservation (Omega)");
         track.setHeight(40);
         newTracks.add(track);
@@ -809,8 +811,8 @@ public class TrackLoader {
     private void loadMutFile(ResourceLocator locator, List<Track> newTracks) {
 
         MutationParser parser = new MutationParser();
-        List<Track> mutationTracks = parser.loadMutationTracks(locator);
-        for (Track track : mutationTracks) {
+        List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator);
+        for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
             track.setRendererClass(MutationRenderer.class);
             newTracks.add(track);
@@ -835,7 +837,6 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
-            track.setId_142(trackName);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
 
@@ -863,7 +864,7 @@ public class TrackLoader {
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             newTracks.add(track);

@@ -20,7 +20,6 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
@@ -39,6 +38,7 @@ public class PackedFeatures<T extends Feature> {
     private List<FeatureRow> rows;
     private static Logger log = Logger.getLogger(PackedFeatures.class);
     private int maxFeatureLength = 0;
+    static int maxLevels = 200;
 
     PackedFeatures(String chr, int start, int end) {
         this.chr = chr;
@@ -118,7 +118,7 @@ public class PackedFeatures<T extends Feature> {
 
         int lastKey = 0;
         int lastAllocatedCount = 0;
-        while (allocatedCount < totalCount && rows.size() < FeatureTrack.maxLevels) {
+        while (allocatedCount < totalCount && rows.size() < maxLevels) {
 
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {

@@ -31,13 +31,6 @@ import java.awt.*;
  * @author jrobinso
  */
 public class TrackProperties {
-    public boolean isLogScale() {
-        return logScale;
-    }
-
-    public void setLogScale(boolean logScale) {
-        this.logScale = logScale;
-    }
 
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
@@ -118,6 +111,17 @@ public class TrackProperties {
 
     private boolean logScale;
 
+    public TrackProperties() {
+
+    }
+ 
+    public boolean isLogScale() {
+        return logScale;
+    }
+
+    public void setLogScale(boolean logScale) {
+        this.logScale = logScale;
+    }
 
     public int getFeatureVisibilityWindow() {
         return featureVisibilityWindow;
@@ -308,30 +312,18 @@ public class TrackProperties {
         this.drawMidValue = drawMidValue;
     }
 
-    /**
-     * @return the minHeight
-     */
     public int getMinHeight() {
         return minHeight;
     }
 
-    /**
-     * @param minHeight the minHeight to set
-     */
     public void setMinHeight(int minHeight) {
         this.minHeight = minHeight;
     }
 
-    /**
-     * @return the baseCoord
-     */
     public BaseCoord getBaseCoord() {
         return baseCoord;
     }
 
-    /**
-     * @param baseCoord the baseCoord to set
-     */
     public void setBaseCoord(BaseCoord baseCoord) {
         this.baseCoord = baseCoord;
     }

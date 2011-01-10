@@ -213,14 +213,6 @@ public abstract class DataTrack extends AbstractTrack {
 
     }
 
-
-    @Override
-    public void setMidColor(Color color) {
-        super.setMidColor(color);
-
-    }
-
-
     private InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
 
         InViewInterval interval = new InViewInterval();

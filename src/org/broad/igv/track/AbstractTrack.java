@@ -68,9 +68,7 @@ public abstract class AbstractTrack implements Track {
 
 
     private String id;
-    private String id_142;    // 1.4.2 name, used to restore old sessions.
     private String name;
-    private Color midColor;
     private String url;
     private boolean itemRGB = true;
     private boolean useScore;
@@ -79,38 +77,17 @@ public abstract class AbstractTrack implements Track {
     private int fontSize = 9;
     private boolean showDataRange = true;
     private String sampleId;
-
-    /**
-     * The source file from which this track was created.  Defaults to an
-     * empty string, which indicates that the track was not derived from a
-     * data file.
-     */
-    private String sourceFile = "";
-    /**
-     * Top (Y) position
-     */
-    private int top;
-    /**
-     * Minimum allowable height for this track
-     */
-    protected int minimumHeight = 1;
-    /**
-     * The file from which this track originated.
-     */
     private ResourceLocator resourceLocator;
+    boolean expanded = false;
+
+    private int top;
+    protected int minimumHeight = 1;
 
     private TrackType trackType = TrackType.OTHER;
 
-    /**
-     * Continuous posColor scale for this track
-     *
-     * @return
-     */
     private boolean isSelected = false;
     private boolean visible = true;
     boolean overlayVisible;
-    private int preferredHeight;
-    private boolean isDraggable = true;
 
     /**
      * Map to store attributes specific to this track.  Attributes shared by multiple
@@ -132,6 +109,8 @@ public abstract class AbstractTrack implements Track {
      * A timer task is used for opening web links to distinguish a click from a double click.
      */
     private TimerTask currentClickTask = null;
+    
+    private TrackProperties trackProperties;
 
 
     public AbstractTrack(
@@ -147,11 +126,8 @@ public abstract class AbstractTrack implements Track {
     public AbstractTrack(ResourceLocator dataResourceLocator) {
         this.resourceLocator = dataResourceLocator;
         this.id = dataResourceLocator.getPath();
-
         String drName = dataResourceLocator.getName();
         this.name = drName != null ? drName : dataResourceLocator.getFileName();
-
-
         init();
     }
 
@@ -173,8 +149,6 @@ public abstract class AbstractTrack implements Track {
     private void init() {
         overlayVisible = IGVMainFrame.getInstance().getSession().getDisplayOverlayTracks();
         showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
-        this.id_142 = String.valueOf(name == null ? resourceLocator.getPath() : name);
-
     }
 
     public void setRendererClass(Class rc) {
@@ -366,10 +340,6 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public int getLevelNumber(int y) {
-        return (preferredHeight == 0) ? 0 : y / preferredHeight;
-    }
-
     /**
      * Returns the default height based on the default renderer for the data
      * type, as opposed to the actual renderer in use.  This is done to prevent
@@ -429,10 +399,6 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void updateState() {
-    }
-
-
     public void setSelected(boolean selected) {
         isSelected = selected;
     }
@@ -440,16 +406,6 @@ public abstract class AbstractTrack implements Track {
 
     public boolean isSelected() {
         return isSelected;
-    }
-
-
-    public void setIsDraggable(boolean value) {
-        isDraggable = value;
-    }
-
-
-    public boolean isDraggable() {
-        return isDraggable;
     }
 
     protected int height = -1;
@@ -511,14 +467,8 @@ public abstract class AbstractTrack implements Track {
 
 
     public String getSourceFile() {
-        return sourceFile;
+        return resourceLocator == null ? "" : resourceLocator.getPath();
     }
-
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
-    }
-
-    boolean expanded = false;
 
     public void setExpanded(boolean expanded) {
         this.expanded = expanded;
@@ -532,14 +482,6 @@ public abstract class AbstractTrack implements Track {
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return new ArrayList();
 
-    }
-
-    public Color getMidColor() {
-        return midColor;
-    }
-
-    public void setMidColor(Color midColor) {
-        this.midColor = midColor;
     }
 
 
@@ -566,9 +508,7 @@ public abstract class AbstractTrack implements Track {
         }
 
         // Color scale properties
-        if (!trackProperties.isAutoScale() &&
-                !Float.isNaN(trackProperties.getMinValue()) &&
-                !Float.isNaN(trackProperties.getMaxValue())) {
+        if (!trackProperties.isAutoScale()) {
 
             float min = trackProperties.getMinValue();
             float max = trackProperties.getMaxValue();
@@ -621,7 +561,7 @@ public abstract class AbstractTrack implements Track {
             setAltColor(trackProperties.getAltColor());
         }
         if (trackProperties.getMidColor() != null) {
-            setMidColor(trackProperties.getMidColor());
+            //setMidColor(trackProperties.getMidColor());
         }
         if (trackProperties.getHeight() > 0) {
             setHeight(trackProperties.getHeight());
@@ -918,14 +858,6 @@ public abstract class AbstractTrack implements Track {
         return null;
     }
 
-    public String getId_142() {
-        return id_142 == null ? getName() : id_142;
-    }
-
-    public void setId_142(String id_142) {
-        this.id_142 = id_142;
-    }
-
     /**
      * Special normalization function for linear (non logged) copy number data
      *
@@ -993,5 +925,9 @@ public abstract class AbstractTrack implements Track {
      */
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
         return null;
+    }
+
+    public TrackProperties getTrackProperties() {
+        return trackProperties;
     }
 }

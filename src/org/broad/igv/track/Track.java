@@ -41,19 +41,10 @@ import java.util.Collection;
  * @author jrobinso
  */
 public interface Track extends Persistable {
-    boolean isItemRGB();
-
-    boolean isUseScore();
-
-    float getViewLimitMin();
-
-    float getViewLimitMax();
 
     enum DisplayMode {
         DENSE, SQUISH, PACK
     }
-
-    ;
 
     /**
      * Render the track contents in the rectangle, including the border
@@ -83,20 +74,9 @@ public interface Track extends Persistable {
      */
     public String getId();
 
-    /**
-     * Get the display name of the track.
-     *
-     * @return
-     */
-    public String getName();
-
-    /**
-     * @return ID for use with the sample info table.  Not
-     */
-    public String getSampleId();
-
-
     public void setName(String name);
+
+    public String getName();
 
     public void setUrl(String url);
 
@@ -111,8 +91,6 @@ public interface Track extends Persistable {
     public boolean isVisible();
 
     public void setOverlayVisible(boolean overlayVisible);
-
-    public void setTrackType(TrackType type);
 
     public TrackType getTrackType();
 
@@ -144,10 +122,6 @@ public interface Track extends Persistable {
 
     public void setAltColor(Color color);
 
-    public Color getMidColor();
-
-    public void setMidColor(Color color);
-
     public void setStatType(WindowFunction type);
 
     public WindowFunction getWindowFunction();
@@ -159,8 +133,6 @@ public interface Track extends Persistable {
     public void setSelected(boolean selected);
 
     public boolean isSelected();
-
-    public boolean isDraggable();
 
     public boolean isLogNormalized();
 
@@ -181,7 +153,7 @@ public interface Track extends Persistable {
      *
      * @param filename
      */
-    public void setSourceFile(String filename);
+    //public void setSourceFile(String filename);
 
     /**
      * Return the filename from which this track was created.
@@ -205,8 +177,6 @@ public interface Track extends Persistable {
 
     Feature getFeatureAtMousePosition(TrackClickEvent e);
 
-    public String getId_142();
-
     void setSampleId(String sampleId);
 
     float logScaleData(float dataY);
@@ -216,6 +186,15 @@ public interface Track extends Persistable {
     int getVisibilityWindow();
 
     void setVisibilityWindow(int i);
+
+    boolean isItemRGB();
+
+    boolean isUseScore();
+
+    float getViewLimitMin();
+
+    float getViewLimitMax();
+    
 
     JPopupMenu getPopupMenu(final TrackClickEvent te);
     

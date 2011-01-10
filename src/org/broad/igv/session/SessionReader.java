@@ -19,6 +19,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.data.seg.SegmentedDataSource;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -26,10 +27,7 @@ import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
-import org.broad.igv.track.TrackType;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
@@ -438,8 +436,7 @@ public class SessionReader {
                     if (tracks.size() > 0) {
                         for (Track track : tracks) {
 
-                            String id = version < 3 ? track.getId_142() : track.getId();
-
+                            String id = track.getId();
                             List<Track> trackList = trackDictionary.get(id);
                             if (trackList == null) {
                                 trackList = new ArrayList();
