@@ -27,12 +27,16 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanelComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
 
@@ -44,8 +48,7 @@ public class SequenceTrack extends AbstractTrack {
 
     private static final int SEQUENCE_HEIGHT = 14;
 
-    private static String PLUS_STRING = "Sequence ==>";
-    private static String MINUS_STRING = "Sequence <==";
+    private static String NAME = "Sequence";
 
     private SequenceRenderer sequenceRenderer = new SequenceRenderer();
 
@@ -61,19 +64,34 @@ public class SequenceTrack extends AbstractTrack {
      * If true show sequence in "color space"  (for SOLID alignments).  Currently not implemented.
      */
     private boolean showColorSpace = false;
+    private Rectangle arrowRect;
+    private Font font;
 
     public SequenceTrack(String name) {
         super(name);
 
         shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
+        font = FontManager.getScalableFont(12);
     }
 
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
         if (sequenceVisible) {
-            String name = strand == Strand.POSITIVE ? PLUS_STRING : MINUS_STRING;
-            graphics.drawString(name, trackRectangle.x + 20, trackRectangle.y + 12);
+            graphics.setFont(font);
+            graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);
+
+            int rx = trackRectangle.x + trackRectangle.width - 20;
+            arrowRect = new Rectangle(rx, trackRectangle.y + 2, 15, 10);
+            drawArrow(graphics);
+        }
+    }
+
+    private void drawArrow(Graphics2D graphics) {
+        if (strand == Strand.POSITIVE) {
+            GraphicUtils.drawHorizontalArrow(graphics, arrowRect, true);
+        } else {
+            GraphicUtils.drawHorizontalArrow(graphics, arrowRect, false);
         }
     }
 
@@ -89,7 +107,7 @@ public class SequenceTrack extends AbstractTrack {
 
         // TODO -- this should be calculated from a "rescale" event
         boolean visible = isSequenceVisible(context);
-        if(visible != sequenceVisible) {
+        if (visible != sequenceVisible) {
             sequenceVisible = visible;
             context.getPanel().repaint();
         }
@@ -121,27 +139,24 @@ public class SequenceTrack extends AbstractTrack {
         setShouldShowTranslation(!shouldShowTranslation);
         Object source = e.getMouseEvent().getSource();
         if (source instanceof JComponent) {
-            // TODO -- what's really needed is a repaint of all panels the sequence track intersects
-            ((JComponent) source).getRootPane().repaint();
+            repaint();
+
         }
         return true;
     }
 
-
     @Override
     public void handleNameClick(final MouseEvent e) {
-
-        strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
-        Object source = e.getSource();
-        // Send repaint to the TrackPanel, which includes all component panels for the track.
-        if (source instanceof TrackPanelComponent) {
-            ((TrackPanelComponent) source).getTrackPanel().repaint();
-        } 
+        if (arrowRect != null && arrowRect.contains(e.getPoint())) {
+            flipStrand(e.getSource());
+        }
 
     }
 
-    public boolean isShouldShowTranslation() {
-        return shouldShowTranslation;
+    private void flipStrand(Object source) {
+        strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
+        repaint();
+        IGVMainFrame.getInstance().getTrackManager().clearSelections();
     }
 
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
@@ -150,51 +165,47 @@ public class SequenceTrack extends AbstractTrack {
         PreferenceManager.getInstance().put(PreferenceManager.SHOW_SEQUENCE_TRANSLATION, shouldShowTranslation);
     }
 
-    //----------------------------------------------------------------------------
-    // Methods belowo are required for the Track interface, but aren't
-    // meaningful here.  Obviously some refactoring is in order to reduce
-    // the number of required methods.
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        return null;
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
+    @Override
+    public JPopupMenu getPopupMenu(final TrackClickEvent te) {
+
+        JPopupMenu menu = new JPopupMenu();
+
+        JMenuItem m1 = new JMenuItem("Flip strand");
+        m1.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                flipStrand(te.getMouseEvent().getSource());
+
+            }
+        });
+
+        final JCheckBoxMenuItem m2 = new JCheckBoxMenuItem("Show translation");
+        m2.setSelected(shouldShowTranslation);
+        m2.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                setShouldShowTranslation(m2.isSelected());
+                repaint();
+                IGVMainFrame.getInstance().getTrackManager().clearSelections();
+            }
+        });
+
+        menu.add(m1);
+        menu.add(m2);
+
+        return menu;
     }
 
 
-    public void setColorScale(ContinuousColorScale colorScale) {
-        // Required method for track interface, ignore
-    }
-
-
-    public void setStatType(WindowFunction type) {
-        // Required method for track interface, ignore
-    }
-
-    public WindowFunction getWindowFunction() {
-        // Required method for track interface, ignore
-        return null;
-    }
-
-
-    public void setRendererClass(Class rc) {
-        // Required method for track interface, ignore
-    }
-
-
-    public Renderer getRenderer() {
-        // Required method for track interface, ignore
-        return null;
-    }
-
-
-    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
-        // Required method for track interface, ignore
-        return 0;
-    }
-
-
-    public boolean isLogNormalized() {
-        // Required method for track interface, ignore
-        return true;
+    private void repaint() {
+        // TODO -- what's really needed is a repaint of all panels the sequence track intersects
+        IGVMainFrame.getInstance().getContentPane().repaint();
     }
 
 

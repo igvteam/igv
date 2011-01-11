@@ -25,6 +25,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
@@ -907,14 +908,6 @@ public abstract class AbstractTrack implements Track {
         return visibilityWindow;
     }
 
-    protected void cancelClickTask() {
-        System.out.println("Cancel");
-        if (currentClickTask != null) {
-            currentClickTask.cancel();
-            currentClickTask = null;
-        }
-    }
-
     /**
      * Override to return a specialized popup menu
      *
@@ -931,4 +924,35 @@ public abstract class AbstractTrack implements Track {
     public void setDisplayMode(DisplayMode mode) {
         this.displayMode = mode;
     }
+
+    //----------------------------------------------------------------------------
+    // Methods below are required for the Track interface, but aren't
+    // meaningful here.  Obviously some refactoring is in order to reduce
+    // the number of required methods.
+
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+        return null;
+    }
+
+
+    public void setStatType(WindowFunction type) {
+        // Required method for track interface, ignore
+    }
+
+    public WindowFunction getWindowFunction() {
+        // Required method for track interface, ignore
+        return null;
+    }
+
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+        // Required method for track interface, ignore
+        return 0;
+    }
+
+
+    public boolean isLogNormalized() {
+        // Required method for track interface, ignore
+        return true;
+    }
+
 }

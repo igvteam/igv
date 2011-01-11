@@ -216,4 +216,37 @@ public class GraphicUtils {
         g.setStroke(currentStroke);
 
     }
+
+
+    public static void drawHorizontalArrow(Graphics g, Rectangle r, boolean direction)
+    {
+        int [] x;
+        int [] y;
+
+        int dy = r.height / 3;
+        int y0 = r.y;
+        int y1 = y0 + dy;
+        int y3 = y0 + r.height;
+        int y2 = y3 - dy;
+        int yc = (y1 + y2) / 2;
+        int dx = yc - y0;
+        if(direction) {
+            int x1 = r.x;
+            int x3 = x1 + r.width;
+            int x2 = x3 - dx;
+            x = new int [] {x1, x2, x2, x3, x2, x2, x1};
+            y = new int [] {y1, y1, y0, yc, y3, y2, y2};
+        }
+        else {
+            int x1 = r.x;
+            int x3 = x1 + r.width;
+            int x2 = x1 + dx;
+            x = new int [] {x1, x2, x2, x3, x3, x2, x2};
+            y = new int [] {yc, y0, y1, y1, y2, y2, y3};
+
+        }
+
+        g.fillPolygon(x, y, x.length);
+    }
+
 }
