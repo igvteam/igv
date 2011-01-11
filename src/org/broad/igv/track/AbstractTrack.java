@@ -101,7 +101,7 @@ public abstract class AbstractTrack implements Track {
     /**
      * Chart parameters
      */
-    private Color posColor;
+    private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
     private Color altColor;
     private DataRange dataRange;
     protected int visibilityWindow = -1;

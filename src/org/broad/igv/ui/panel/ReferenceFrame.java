@@ -595,7 +595,9 @@ public class ReferenceFrame {
     }
 
     private void setLocationScale(double locationScale) {
-        System.out.println("Set location scale: " + locationScale + "  origin=" + origin + "  end=" + end);
+        if (log.isDebugEnabled()) {
+            log.debug("Set location scale: " + locationScale + "  origin=" + origin + "  end=" + end);
+        }
         this.locationScale = locationScale;
         locationScaleValid = true;
 
