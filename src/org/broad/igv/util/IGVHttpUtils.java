@@ -164,6 +164,9 @@ public class IGVHttpUtils {
                     }
                     disconnect(conn);
                 }
+                else {
+                    throw e;
+                }
             }
 
             if (getUserPass(url.toExternalForm()) == false) {
@@ -235,7 +238,7 @@ public class IGVHttpUtils {
         JPanel passPanel = new JPanel();
         passPanel.setLayout(new GridLayout(6, 1));
 
-        JLabel message = new JLabel("Please enter your Username and Password");
+        JLabel message = new JLabel("Please enter your username and password");
         JLabel location = new JLabel(locationString);
         JLabel username = new JLabel("User:");
         JLabel password = new JLabel("Pass:");
