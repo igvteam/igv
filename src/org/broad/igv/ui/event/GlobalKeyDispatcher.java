@@ -307,7 +307,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
                 if (e != null)
                 {
-                    vc.centerOnLocation(e.getStart());
+                    vc.centerOnLocation(forward ? e.getStart() : e.getEnd());
                     int i = 3;
                 }
 
