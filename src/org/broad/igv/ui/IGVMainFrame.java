@@ -2501,6 +2501,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 }
                 if (nonOptionArgs.length > 1) {
                     locusString = nonOptionArgs[1];
+                    System.out.println("locus=" + locusString);
                 }
             }
 
