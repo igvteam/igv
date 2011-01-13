@@ -252,7 +252,13 @@ public class ResourceTree {
         }
 
         locator.setInfolink(getAttribute((Element) xmlNode, HYPERLINK.getText()));
-        locator.setSampleId(getAttribute((Element) xmlNode, SAMPLE_ID.getText()));
+
+        String sampleId = getAttribute((Element) xmlNode, SAMPLE_ID.getText());
+        if(sampleId == null) {
+            // legacy option
+            sampleId = getAttribute((Element) xmlNode, ID.getText());
+        }
+        locator.setSampleId(sampleId);
         locator.setUrl(getAttribute((Element) xmlNode, URL.getText()));
         locator.setDescription(getAttribute((Element) xmlNode, DESCRIPTION.getText()));
         locator.setName(name);

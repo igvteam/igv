@@ -98,18 +98,11 @@ public abstract class AbstractTrack implements Track {
      * Scale for heatmaps
      */
     private ContinuousColorScale colorScale;
-    /**
-     * Chart parameters
-     */
+
     private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
     private Color altColor;
     private DataRange dataRange;
     protected int visibilityWindow = -1;
-    /**
-     * A timer task is used for opening web links to distinguish a click from a double click.
-     */
-    private TimerTask currentClickTask = null;
-
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
 
 
@@ -148,8 +141,8 @@ public abstract class AbstractTrack implements Track {
 
     private void init() {
         overlayVisible = IGVMainFrame.getInstance().getSession().getDisplayOverlayTracks();
-        showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);       
-        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
+        showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
         }
     }
@@ -789,7 +782,6 @@ public abstract class AbstractTrack implements Track {
         }
 
 
-
         // set display mode
         String displayModeText = attributes.get(SessionReader.SessionAttribute.DISPLAY_MODE.getText());
         if (displayModeText != null) {
@@ -802,11 +794,10 @@ public abstract class AbstractTrack implements Track {
         } else {
             String isExpanded = attributes.get(SessionReader.SessionAttribute.EXPAND.getText());
             if (isExpanded != null) {
-                if(isExpanded.equalsIgnoreCase("true")) {
-                   setDisplayMode(DisplayMode.EXPANDED);
-                }
-                else {
-                   setDisplayMode(DisplayMode.COLLAPSED);
+                if (isExpanded.equalsIgnoreCase("true")) {
+                    setDisplayMode(DisplayMode.EXPANDED);
+                } else {
+                    setDisplayMode(DisplayMode.COLLAPSED);
                 }
             }
         }
