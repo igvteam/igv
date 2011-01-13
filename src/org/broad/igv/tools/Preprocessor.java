@@ -708,7 +708,8 @@ public class Preprocessor implements DataConsumer {
         setNZoom(maxZoomValue);
         setTrackParameters(TrackType.COVERAGE, null, new String[]{iFile});
         this.setSkipZeroes(true);
-        CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile, genome, strandOption);
+        CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
+                wigFile, genome, strandOption);
         setSizeEstimate((int) (genome.getLength() / windowSizeValue));
         aParser.parse();
     }

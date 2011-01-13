@@ -25,6 +25,7 @@ package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
@@ -70,10 +71,13 @@ public class CoverageCounter {
     private WigWriter wigWriter = null;
     private Genome genome;
 
+    WigWriter mismatchWigWriter;
+
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
                            int windowSize,
                            int extFactor,
+                           File tdfFile,  // For reference
                            File wigFile,
                            Genome genome,
                            int strandOption) {
@@ -85,6 +89,15 @@ public class CoverageCounter {
         this.genome = genome;
         this.strandOption = strandOption;
         buffer = strandOption < 0 ? new float[1] : new float[2];
+
+
+        try {
+            mismatchWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".mismatch.wig"), windowSize);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+
     }
 
     private boolean passFilter(Alignment alignment) {
@@ -113,6 +126,8 @@ public class CoverageCounter {
                 wigWriter = new WigWriter(wigFile, windowSize);
             }
 
+
+
             reader = SamQueryReaderFactory.getReader(alignmentFile, false);
             iter = reader.iterator();
 
@@ -140,7 +155,8 @@ public class CoverageCounter {
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                     if (blocks != null) {
                         for (AlignmentBlock block : blocks) {
-
+                            byte[] bases = block.getBases();
+                            int blockStart = block.getStart();
                             int adjustedStart = block.getStart();
                             int adjustedEnd = block.getEnd();
                             if (alignment.isNegativeStrand()) {
@@ -150,8 +166,12 @@ public class CoverageCounter {
                             }
 
                             for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-
-                                counter.incrementCount(pos);
+                                byte base = 0;
+                                int baseIdx = pos - blockStart;
+                                if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
+                                    base = bases[baseIdx];
+                                }
+                                counter.incrementCount(pos, base);
                             }
                         }
                     } else {
@@ -164,7 +184,7 @@ public class CoverageCounter {
                         }
 
                         for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-                            counter.incrementCount(pos);
+                            counter.incrementCount(pos, (byte) 0);
                         }
                     }
                 }
@@ -196,6 +216,8 @@ public class CoverageCounter {
             if (wigWriter != null) {
                 wigWriter.close();
             }
+
+            mismatchWigWriter.close();
         }
     }
 
@@ -208,21 +230,23 @@ public class CoverageCounter {
             this.chr = chr;
         }
 
-        void incrementCount(int position) {
-            Integer bucket = position / windowSize;
+        void incrementCount(int position, byte base) {
+            int bucket = position / windowSize;
+            int bucketStartPosition = bucket * windowSize;
+            int bucketEndPosition = bucketStartPosition + windowSize;
             if (!counts.containsKey(bucket)) {
-                counts.put(bucket, new Counter());
+                counts.put(bucket, new Counter(chr, bucketStartPosition, bucketEndPosition));
             }
-            counts.get(bucket).increment();
+            counts.get(bucket).increment(position, base);
         }
 
-        void incrementNegCount(int position) {
-            Integer bucket = position / windowSize;
-            if (!counts.containsKey(bucket)) {
-                counts.put(bucket, new Counter());
-            }
-            counts.get(bucket).incrementNeg();
-        }
+        //void incrementNegCount(int position) {
+        //    Integer bucket = position / windowSize;
+        //    if (!counts.containsKey(bucket)) {
+        //        counts.put(bucket, new Counter());
+        //    }
+        //    counts.get(bucket).incrementNeg();
+        //}
 
         void closeBucketsBefore(int position) {
             List<Integer> bucketsToClose = new ArrayList();
@@ -243,15 +267,20 @@ public class CoverageCounter {
                     }
                     int bucketSize = bucketEndPosition - bucketStartPosition;
 
-                    buffer[0] = ((float) entry.getValue().getCount()) / bucketSize;
+                    final Counter counter = entry.getValue();
+                    buffer[0] = ((float) counter.getCount()) / bucketSize;
 
                     if (strandOption > 0) {
-                        buffer[1] = ((float) entry.getValue().getCount()) / bucketSize;
+                        buffer[1] = ((float) counter.getCount()) / bucketSize;
                     }
 
                     consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
+
+                    float mismatch = counter.getMaxMismatchFraction();
+                    mismatchWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, mismatch);
+
                     if (wigWriter != null) {
-                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
+                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
                     }
                     bucketsToClose.add(entry.getKey());
                 }
@@ -269,8 +298,29 @@ public class CoverageCounter {
 
         int count = 0;
         int negCount = 0;
+        String chr;
+        int start;
+        int end;
+        byte[] ref;
+        int[] baseCount;
+        int[] baseMismatchCount;
 
-        void increment() {
+        Counter(String chr, int start, int end) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            baseCount = new int[end - start];
+            baseMismatchCount = new int[end - start];
+            ref = SequenceManager.readSequence("hg18", chr, start, end);
+        }
+
+        void increment(int position, byte base) {
+            int offset = position - start;
+            byte refBase = ref[offset];
+            baseCount[offset] = baseCount[offset] + 1;
+            if (refBase != base) {
+                baseMismatchCount[offset]++;
+            }
             count++;
         }
 
@@ -285,12 +335,21 @@ public class CoverageCounter {
         int getNegCount() {
             return negCount;
         }
+
+        float getMaxMismatchFraction() {
+            float max = 0.0f;
+            for (int i = 0; i < baseMismatchCount.length; i++) {
+                max = Math.max(max, (float) baseMismatchCount[i] / baseCount[i]);
+            }
+            return max;
+        }
+
     }
 
     /**
      * Creates a vary step wig file
      */
-    class WigWriter implements DataConsumer {
+    class WigWriter {
         String lastChr = null;
         int lastPosition = 0;
         int step;
@@ -303,13 +362,16 @@ public class CoverageCounter {
             pw = new PrintWriter(new FileWriter(file));
         }
 
-        public void addData(String chr, int start, int end, float[] data, String name) {
+        public void addData(String chr, int start, int end, float data) {
 
+            if(Float.isNaN(data)) {
+                return;
+            }
             if (genome.getChromosome(chr) == null) {
                 return;
             }
 
-            if (data[0] == 0 || end <= start) {
+            if (data == 0 || end <= start) {
                 return;
             }
 
@@ -319,7 +381,7 @@ public class CoverageCounter {
                 span = dataSpan;
                 outputStepLine(chr, start + 1);
             }
-            pw.println((start + 1) + "\t" + data[0]);
+            pw.println((start + 1) + "\t" + data);
             lastPosition = start;
             lastChr = chr;
 

@@ -266,13 +266,15 @@ public abstract class AbstractDataSource implements DataSource {
                     endBin++;
                 }
                 for (int b = startBin; b < endBin; b++) {
-                    Bin bin = bins[b];
-                    if (bin == null) {
-                        int start = (int) (startLocation + b * binSize);
-                        int end = (int) (startLocation + (b + 1) * binSize);
-                        bins[b] = new Bin(start, end, probeName, v, windowFunction);
-                    } else {
-                        bin.addValue(probeName, v);
+                    if (b < bins.length) {
+                        Bin bin = bins[b];
+                        if (bin == null) {
+                            int start = (int) (startLocation + b * binSize);
+                            int end = (int) (startLocation + (b + 1) * binSize);
+                            bins[b] = new Bin(start, end, probeName, v, windowFunction);
+                        } else {
+                            bin.addValue(probeName, v);
+                        }
                     }
                 }
 
@@ -285,14 +287,16 @@ public abstract class AbstractDataSource implements DataSource {
             Bin currentBin = null;
             for (int b = 0; b < bins.length; b++) {
                 if (bins[b] != null) {
-                    if (currentBin == null) {
-                        currentBin = bins[b];
-                    } else {
-                        if (currentBin.isExtension(bins[b])) {
-                            currentBin.setEnd(bins[b].getEnd());
-                        } else {
-                            scores.add(currentBin);
+                    if (b < bins.length) {
+                        if (currentBin == null) {
                             currentBin = bins[b];
+                        } else {
+                            if (currentBin.isExtension(bins[b])) {
+                                currentBin.setEnd(bins[b].getEnd());
+                            } else {
+                                scores.add(currentBin);
+                                currentBin = bins[b];
+                            }
                         }
                     }
                 }
