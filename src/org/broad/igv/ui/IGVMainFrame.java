@@ -879,7 +879,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 for (Component c : centerSplitPane.getComponents()) {
                     if (c instanceof TrackPanelScrollPane) {
                         final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                        if (trackPanel.getTracks().size() > 0){
+                        if (trackPanel.getTracks().size() > 0) {
                             int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
                             int dh = (int) ((panelWeight / totalHeight) * htotal);
                             y += dh;
@@ -2492,10 +2492,12 @@ public class IGVMainFrame extends javax.swing.JFrame {
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
                 String firstArg = nonOptionArgs[0];
-                if (firstArg.endsWith("xml")) {
-                    sessionFile = firstArg;
-                } else {
-                    dataFileString = firstArg;
+                if (!firstArg.equals("ignore")) {
+                    if (firstArg.endsWith("xml")) {
+                        sessionFile = firstArg;
+                    } else {
+                        dataFileString = firstArg;
+                    }
                 }
                 if (nonOptionArgs.length > 1) {
                     locusString = nonOptionArgs[1];

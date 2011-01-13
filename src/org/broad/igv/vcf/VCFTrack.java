@@ -93,6 +93,7 @@ public class VCFTrack extends FeatureTrack {
             this.setDisplayMode(DisplayMode.EXPANDED);
         }
         setRenderID(false);
+        setVisibilityWindow(2100000);
     }
 
     @Override
@@ -162,75 +163,79 @@ public class VCFTrack extends FeatureTrack {
 
         int windowStart = (int) context.getOrigin();
 
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
-            rect.height = genotypeBandHeight;
-            rect.y = getTop() + variantBandHeight + alleleBandHeight;
-            colorBackground(g2D, rect, visibleRectangle, false, false);
+
+        rect.height = genotypeBandHeight;
+        rect.y = getTop() + variantBandHeight + alleleBandHeight;
+        colorBackground(g2D, rect, visibleRectangle, false, false);
 
 
-            List<Feature> features = packedFeatures.getFeatures();
-            if (features.size() > 0) {
-                byte[] reference = null;
+        List<Feature> features = packedFeatures.getFeatures();
+        if (features.size() > 0) {
+            byte[] reference = null;
 
-                int lastPX = -1;
-                double pXEnd = rect.getMaxX();
-                for (Feature feature : features) {
-                    rect.y = getTop();
+            int lastPX = -1;
+            double pXEnd = rect.getMaxX();
+            for (Feature feature : features) {
+                rect.y = getTop();
 
-                    VariantContext variant = (VariantContext) feature;
-                    char ref = getReference(variant, windowStart, reference);
+                VariantContext variant = (VariantContext) feature;
+                char ref = getReference(variant, windowStart, reference);
 
-                    // 1 -> 0 based coordinates
-                    int start = variant.getStart() - 1;
-                    int end = variant.getEnd();
-                    int pX = (int) ((start - context.getOrigin()) / locScale);
-                    int dX = (int) Math.max(2, (end - start) / locScale);
+                // 1 -> 0 based coordinates
+                int start = variant.getStart() - 1;
+                int end = variant.getEnd();
+                int pX = (int) ((start - context.getOrigin()) / locScale);
+                int dX = (int) Math.max(2, (end - start) / locScale);
 
-                    if (pX > pXEnd) {
-                        break;
+                if (pX > pXEnd) {
+                    break;
+                }
+
+                if (pX > lastPX) {
+                    ZygosityCount zygCounts = getZygosityCounts(variant);
+                    rect.height = variantBandHeight;
+                    if (rect.intersects(visibleRectangle)) {
+                        renderer.renderVariantBand(variant, rect, pX, dX, context, hideFiltered,
+                                zygCounts, getIDBandHeight());
+                    }
+                    rect.y += rect.height;
+
+                    rect.height = alleleBandHeight;
+                    if (rect.intersects(visibleRectangle)) {
+                        if(samples.size() == 0) {
+                            renderer.renderVariant(variant, rect, pX, dX, context);
+                        }
+                        else {
+                        AlleleCount alleleCounts = new AlleleCount(zygCounts);
+                        renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered,
+                                alleleCounts, getIDBandHeight());
+                        }
                     }
 
-                    if (pX > lastPX) {
-                        ZygosityCount zygCounts = getZygosityCounts(variant);
-                        rect.height = variantBandHeight;
-                        if (rect.intersects(visibleRectangle)) {
-                            renderer.renderVariantBand(variant, rect, pX, dX, context, hideFiltered,
-                                    zygCounts, getIDBandHeight());
-                        }
+                    if (this.getDisplayMode() != Track.DisplayMode.COLLAPSED) {
                         rect.y += rect.height;
 
-                        rect.height = alleleBandHeight;
-                        if (rect.intersects(visibleRectangle)) {
-                            AlleleCount alleleCounts = new AlleleCount(zygCounts);
-                            renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered,
-                                    alleleCounts, getIDBandHeight());
-                        }
-
-                        if (this.getDisplayMode() != Track.DisplayMode.COLLAPSED) {
-                            rect.y += rect.height;
-
-                            rect.height = genotypeBandHeight;
-                            for (String sample : samples) {
-                                if (rect.intersects(visibleRectangle)) {
-                                    if (variant.isSNP()) {
-                                        renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, ref, coloring,
-                                                hideFiltered);
-                                    }
+                        rect.height = genotypeBandHeight;
+                        for (String sample : samples) {
+                            if (rect.intersects(visibleRectangle)) {
+                                if (variant.isSNP()) {
+                                    renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, ref, coloring,
+                                            hideFiltered);
                                 }
-                                rect.y += rect.height;
                             }
+                            rect.y += rect.height;
                         }
-
                     }
-                    lastPX = pX;
+
                 }
+                lastPX = pX;
             }
         } else {
             rect.height = variantBandHeight;
             rect.y = getTop();
             g2D.setColor(Color.gray);
             GraphicUtils.drawCenteredText("No Variants Found", rect, g2D);
-            return;
+
         }
     }
 
@@ -702,7 +707,10 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
-        Feature f = getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+        Feature f = null;
+        if (te.getFrame() != null && te.getFrame().getName() != null) {
+            f = getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+        }
         return menu.getDataPanelMenu(te, f);
     }
 

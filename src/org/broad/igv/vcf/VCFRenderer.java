@@ -53,7 +53,8 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     private static int variantWidth = 3;
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
-    private static final Color DARK_GREEN = new Color(30,120,30);
+    private static final Color DARK_GREEN = new Color(30, 120, 30);
+    private static final Color BLUE = Color.blue.darker();
 
     static {
         nucleotideColors.put('A', Color.GREEN);
@@ -72,7 +73,7 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     public VCFRenderer() {
     }
- 
+
     public void renderVariantBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
                                   RenderContext context, boolean hideFiltered, VCFTrack.ZygosityCount zygCounts,
                                   int idBandHeight) {
@@ -132,6 +133,21 @@ public class VCFRenderer { //extends FeatureRenderer {
         boolean filtered = hideFiltered && variant.isFiltered();
 
         Graphics2D g = context.getGraphic2DForColor(DARK_GREEN);
+        g.fillRect(pX0, bottomY - barHeight, dX, barHeight);
+
+        context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,
+                bandRectangle.height);
+
+    }
+
+    public void renderVariant(VariantContext variant, Rectangle bandRectangle, int pX0, int dX, RenderContext context) {
+
+
+        int bottomY = bandRectangle.y + bandRectangle.height;
+
+        int barHeight = (int) (0.8 * bandRectangle.height);
+
+        Graphics2D g = context.getGraphic2DForColor(BLUE);
         g.fillRect(pX0, bottomY - barHeight, dX, barHeight);
 
         context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,

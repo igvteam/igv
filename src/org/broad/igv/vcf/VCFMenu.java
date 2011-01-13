@@ -92,10 +92,6 @@ public class VCFMenu {
         return popupMenu;
     }
 
-    public JPopupMenu getNamePanelMenu(MouseEvent evt) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
 
     private JMenuItem getChangeRowHeightItem() {
         JMenuItem item = new JMenuItem("Change Row Height...");
@@ -275,10 +271,10 @@ public class VCFMenu {
     }
 
     public void changeVisibilityWindow() {
-        // int value = getIntValue("Visibility Window", track.featureVisibilityWindow());
-        // if (value > 0) {
-        //     track.setFeatureVisibilityWindow(value);
-        // }
+        int value = getIntValue("Visibility Window", track.getVisibilityWindow());
+         if (value > 0) {
+             track.setVisibilityWindow(value);
+         }
     }
 
     private static int getIntValue(String parameter, int value) {
@@ -341,7 +337,7 @@ public class VCFMenu {
 
         Track.DisplayMode displayMode = track.getDisplayMode();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Dense");
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapsed");
         m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
@@ -350,7 +346,7 @@ public class VCFMenu {
             }
         });
 
-        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squish");
+        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
         m2.setSelected(displayMode == Track.DisplayMode.SQUISH);
         m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
@@ -359,7 +355,7 @@ public class VCFMenu {
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Pack");
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expanded");
         m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
         m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
