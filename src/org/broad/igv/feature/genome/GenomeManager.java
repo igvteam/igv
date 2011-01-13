@@ -1131,7 +1131,7 @@ public class GenomeManager {
     public GenomeListItem getTopGenomeListItem() {
         try {
             LinkedHashSet<GenomeListItem> allItems = getAllGenomeArchives();
-            if(allItems.size() > 0) {
+            if (allItems.size() > 0) {
                 return allItems.iterator().next();
             }
         } catch (IOException e) {
@@ -1139,7 +1139,7 @@ public class GenomeManager {
         }
         return getDefaultGenomeListItem();
     }
-    
+
 
     public GenomeDescriptor getDefaultGenomeDescriptor() {
         if (DEFAULT_GENOME == null) {
@@ -1308,9 +1308,12 @@ public class GenomeManager {
 
 
         // Reset the frame manager
-        FrameManager.reset(getHomeChr());
-        IGVMainFrame.getInstance().chromosomeChangeEvent();
+        if (!Globals.isHeadless()) {
+            FrameManager.reset(getHomeChr());
+            IGVMainFrame.getInstance().chromosomeChangeEvent();
+        }
         return genomeId;
+
     }
 
     public String getGenomeId() {
