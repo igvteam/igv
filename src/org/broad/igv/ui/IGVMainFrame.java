@@ -2501,7 +2501,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 }
                 if (nonOptionArgs.length > 1) {
                     locusString = nonOptionArgs[1];
-                    System.out.println("locus=" + locusString);
                 }
             }
 
@@ -2665,9 +2664,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         doRefresh();
                     }
 
-                    if (igvArgs.getLocusString() != null) {
-                        goToLocus(igvArgs.getLocusString());
-                    }
 
 
                 } catch (Exception ex) {
@@ -2680,6 +2676,11 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 indefMonitor.stop();
                 closeWindow(bar2);
             }
+
+            if (igvArgs.getLocusString() != null) {
+                goToLocus(igvArgs.getLocusString());
+            }
+            
 
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
