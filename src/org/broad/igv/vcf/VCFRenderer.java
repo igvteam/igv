@@ -120,20 +120,23 @@ public class VCFRenderer { //extends FeatureRenderer {
     }
 
     public void renderAlleleBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
-                                 RenderContext context, boolean hideFiltered, VCFTrack.AlleleCount alleleCounts,
-                                 int idBandHeight) {
+                                 RenderContext context, boolean hideFiltered, VCFTrack.AlleleCount alleleCounts) {
 
 
         int bottomY = bandRectangle.y + bandRectangle.height;
 
         float allelePercent = alleleCounts.getAllelePercent();
-        int barHeight = (int) (allelePercent * bandRectangle.height);
+        int alleleBarHeight = (int) (allelePercent * bandRectangle.height);
 
-        //Allele Percentages
         boolean filtered = hideFiltered && variant.isFiltered();
 
-        Graphics2D g = context.getGraphic2DForColor(DARK_GREEN);
-        g.fillRect(pX0, bottomY - barHeight, dX, barHeight);
+        Graphics2D g = context.getGraphic2DForColor(Color.red);
+        g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+
+        int remainderHeight = bandRectangle.height - alleleBarHeight;
+        g = context.getGraphic2DForColor(Color.lightGray);
+        g.fillRect(pX0, bandRectangle.y, dX, remainderHeight);
+
 
         context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,
                 bandRectangle.height);

@@ -95,7 +95,7 @@ public class FeatureTrack extends AbstractTrack {
         setMinimumHeight(10);
         setColor(Color.blue.darker());
         renderer = new IGVFeatureRenderer();
-        coverageRenderer = new HeatmapRenderer();
+        coverageRenderer = new BarChartRenderer(); //HeatmapRenderer();
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }

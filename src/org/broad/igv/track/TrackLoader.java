@@ -240,7 +240,6 @@ public class TrackLoader {
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
 
             VCFTrack t = new VCFTrack(locator, src);
-            t.setVisibilityWindow(2100000);
             newTracks.add(t);
         } else {
 

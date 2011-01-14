@@ -31,7 +31,6 @@ import org.broad.tribble.util.variantcontext.VariantContext;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 
@@ -62,7 +61,6 @@ public class VCFMenu {
 
         //Change Track Settings
         popupMenu.addSeparator();
-        popupMenu.add(getChangeRowHeightItem());
         popupMenu.add(getFeatureVisibilityItem());
 
         //Hides
@@ -89,19 +87,11 @@ public class VCFMenu {
         for (JMenuItem item : getDisplayModeItems()) {
             popupMenu.add(item);
         }
+
+        popupMenu.addSeparator();
+        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track [] {track})));
+
         return popupMenu;
-    }
-
-
-    private JMenuItem getChangeRowHeightItem() {
-        JMenuItem item = new JMenuItem("Change Row Height...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                changeBandHeight();
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
     }
 
     private JMenuItem getFeatureVisibilityItem() {
@@ -263,13 +253,6 @@ public class VCFMenu {
         return item;
     }
 
-    public void changeBandHeight() {
-        int value = getIntValue("Genotype Band Height", track.getGenotypeBandHeight());
-        if (value > 0) {
-            track.setGenotypeBandHeight(value);
-        }
-    }
-
     public void changeVisibilityWindow() {
         int value = getIntValue("Visibility Window", track.getVisibilityWindow());
          if (value > 0) {
@@ -347,10 +330,10 @@ public class VCFMenu {
         });
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
-        m2.setSelected(displayMode == Track.DisplayMode.SQUISH);
+        m2.setSelected(displayMode == Track.DisplayMode.SQUISHED);
         m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                track.setDisplayMode(Track.DisplayMode.SQUISH);
+                track.setDisplayMode(Track.DisplayMode.SQUISHED);
                 IGVMainFrame.getInstance().repaint();
             }
         });

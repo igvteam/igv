@@ -51,12 +51,12 @@ public class VCFTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(VCFTrack.class);
 
-    private final int DEFAULT_GENOTYPE_HEIGHT = 15;
+    private final int EXPANDED_GENOTYPE_HEIGHT = 15;
+    private final int SQUISHED_GENOTYPE_HEIGHT = 4;
+
     private final int MAX_GENOTYPE_HEIGHT = 50;
     private final int MIN_GENOTYPE_HEIGHT = 1;
-    private final int DEFAULT_VARIANT_HEIGHT = 25;
     private final int DEFAULT_ALLELE_HEIGHT = 25;
-    private final int ID_BAND_HEIGHT = 50;
     private final int MAX_FILTER_LINES = 15;
 
     private VCFRenderer renderer = new VCFRenderer();
@@ -65,10 +65,9 @@ public class VCFTrack extends FeatureTrack {
 
     int visibleHeight = 0;
 
-    private int genotypeBandHeight = DEFAULT_GENOTYPE_HEIGHT;
-    private int variantBandHeight = DEFAULT_VARIANT_HEIGHT;
+    //private int genotypeBandHeight = EXPANDED_GENOTYPE_HEIGHT;
     private int alleleBandHeight = DEFAULT_ALLELE_HEIGHT;
-    private int savedBandHeight = genotypeBandHeight;
+    //private int savedBandHeight = genotypeBandHeight;
     private List<String> samples;
     private ColorMode coloring = ColorMode.ZYGOSITY;
     private boolean hideReference = true;
@@ -89,53 +88,40 @@ public class VCFTrack extends FeatureTrack {
         super(locator, source);
         VCFHeader header = (VCFHeader) source.getHeader();
         samples = new ArrayList<String>(header.getGenotypeSamples());
+
+        int visWindow = 2500000;
         if (samples.size() > 1) {
+            visWindow = Math.max(100000, 2500000 - 100000 * samples.size());
             this.setDisplayMode(DisplayMode.EXPANDED);
         }
         setRenderID(false);
-        setVisibilityWindow(2100000);
+        setVisibilityWindow(visWindow);
     }
 
     @Override
     public int getPreferredHeight() {
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
-            return variantBandHeight + alleleBandHeight;
-        } else {
-            return variantBandHeight + alleleBandHeight + (samples.size() * genotypeBandHeight);
-        }
-    }
-
-
-    public void setGenotypeBandHeight(int height) {
-        if (height > MAX_GENOTYPE_HEIGHT) {
-            genotypeBandHeight = MAX_GENOTYPE_HEIGHT;
-        } else if (height < MIN_GENOTYPE_HEIGHT) {
-            genotypeBandHeight = MIN_GENOTYPE_HEIGHT;
-        } else {
-            genotypeBandHeight = height;
-        }
-        setHeight(getPreferredHeight());
-        savedBandHeight = genotypeBandHeight;
+        return getHeight();
     }
 
     public int getGenotypeBandHeight() {
-        return genotypeBandHeight;
-    }
+        switch (getDisplayMode()) {
+            case SQUISHED:
+                return SQUISHED_GENOTYPE_HEIGHT;
+            case COLLAPSED:
+                return 0;
+            default:
+                return EXPANDED_GENOTYPE_HEIGHT;
 
-    protected int getIDBandHeight() {
-        if (renderID) {
-            return ID_BAND_HEIGHT;
-        } else {
-            return 0;
         }
     }
 
     public int getHeight() {
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
-            return variantBandHeight + alleleBandHeight + (genotypeBandHeight * samples.size());
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
+            return alleleBandHeight;
         } else {
-            return variantBandHeight + alleleBandHeight;
+            return alleleBandHeight + (samples.size() * getGenotypeBandHeight());
         }
+
     }
 
 
@@ -145,11 +131,6 @@ public class VCFTrack extends FeatureTrack {
 
     public void setDisplayMode(DisplayMode mode) {
         super.setDisplayMode(mode);
-        if (mode == DisplayMode.SQUISH) {
-            genotypeBandHeight = Math.max(1, (visibleHeight - variantBandHeight - alleleBandHeight) / samples.size());
-        } else {
-            genotypeBandHeight = savedBandHeight;
-        }
         setHeight(getPreferredHeight());
     }
 
@@ -164,8 +145,8 @@ public class VCFTrack extends FeatureTrack {
         int windowStart = (int) context.getOrigin();
 
 
-        rect.height = genotypeBandHeight;
-        rect.y = getTop() + variantBandHeight + alleleBandHeight;
+        rect.height = getGenotypeBandHeight();
+        rect.y = getTop() + alleleBandHeight;
         colorBackground(g2D, rect, visibleRectangle, false, false);
 
 
@@ -193,29 +174,22 @@ public class VCFTrack extends FeatureTrack {
 
                 if (pX > lastPX) {
                     ZygosityCount zygCounts = getZygosityCounts(variant);
-                    rect.height = variantBandHeight;
-                    if (rect.intersects(visibleRectangle)) {
-                        renderer.renderVariantBand(variant, rect, pX, dX, context, hideFiltered,
-                                zygCounts, getIDBandHeight());
-                    }
-                    rect.y += rect.height;
 
                     rect.height = alleleBandHeight;
                     if (rect.intersects(visibleRectangle)) {
-                        if(samples.size() == 0) {
+                        if (samples.size() == 0) {
                             renderer.renderVariant(variant, rect, pX, dX, context);
-                        }
-                        else {
-                        AlleleCount alleleCounts = new AlleleCount(zygCounts);
-                        renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered,
-                                alleleCounts, getIDBandHeight());
+                        } else {
+                            AlleleCount alleleCounts = new AlleleCount(zygCounts);
+                            renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered,
+                                    alleleCounts);
                         }
                     }
 
                     if (this.getDisplayMode() != Track.DisplayMode.COLLAPSED) {
                         rect.y += rect.height;
 
-                        rect.height = genotypeBandHeight;
+                        rect.height = getGenotypeBandHeight();
                         for (String sample : samples) {
                             if (rect.intersects(visibleRectangle)) {
                                 if (variant.isSNP()) {
@@ -231,7 +205,7 @@ public class VCFTrack extends FeatureTrack {
                 lastPX = pX;
             }
         } else {
-            rect.height = variantBandHeight;
+            rect.height = alleleBandHeight;
             rect.y = getTop();
             g2D.setColor(Color.gray);
             GraphicUtils.drawCenteredText("No Variants Found", rect, g2D);
@@ -296,11 +270,6 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public void setRenderID(boolean value) {
-        if (value == true) {
-            variantBandHeight = DEFAULT_VARIANT_HEIGHT + ID_BAND_HEIGHT;
-        } else {
-            variantBandHeight = DEFAULT_VARIANT_HEIGHT;
-        }
         this.renderID = value;
     }
 
@@ -345,21 +314,14 @@ public class VCFTrack extends FeatureTrack {
             g2D.setColor(Color.white);
         }
 
-        rect.height = variantBandHeight;
         g2D.setColor(Color.black);
-        if (rect.intersects(visibleRectangle)) {
-
-            GraphicUtils.drawWrappedText("Variant fraction", rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
-        }
-
-        rect.y += rect.height;
         rect.height = alleleBandHeight;
         if (rect.intersects(visibleRectangle)) {
-            GraphicUtils.drawWrappedText("Allele fraction", rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
+            GraphicUtils.drawWrappedText(getName(), rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
         }
 
         rect.y += rect.height;
-        rect.height = genotypeBandHeight;
+        rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
             colorBackground(g2D, rect, visibleRectangle, true, isSelected());
         }
@@ -385,8 +347,8 @@ public class VCFTrack extends FeatureTrack {
 
     private String getMousePOI(int pY) {
         String poi = "VARIANTBAND";
-        if (pY > (getTop() + variantBandHeight + alleleBandHeight)) {
-            int sampleNumber = (pY - getTop() - variantBandHeight - alleleBandHeight) / genotypeBandHeight;
+        if (pY > (getTop() + alleleBandHeight)) {
+            int sampleNumber = (pY - getTop() - alleleBandHeight) / getGenotypeBandHeight();
 
             try {
                 poi = samples.get(sampleNumber);
@@ -725,11 +687,7 @@ public class VCFTrack extends FeatureTrack {
     public Map<String, String> getPersistentState() {
 
         Map<String, String> attributes = super.getPersistentState();
-        attributes.put(SessionReader.SessionAttribute.GENOTYPE_HEIGHT.getText(), String.valueOf(genotypeBandHeight));
-        attributes.put(SessionReader.SessionAttribute.VARIANT_HEIGHT.getText(), String.valueOf(variantBandHeight));
-        attributes.put(SessionReader.SessionAttribute.PREVIOUS_HEIGHT.getText(), String.valueOf(savedBandHeight));
         attributes.put(SessionReader.SessionAttribute.RENDER_NAME.getText(), String.valueOf(renderID));
-
 
         ColorMode mode = getColorMode();
         if (mode != null) {
@@ -742,10 +700,6 @@ public class VCFTrack extends FeatureTrack {
     public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);
 
-        String displayModeText = attributes.get(SessionReader.SessionAttribute.DISPLAY_MODE.getText());
-        String genotypeHeight = attributes.get(SessionReader.SessionAttribute.GENOTYPE_HEIGHT.getText());
-        String variantHeight = attributes.get(SessionReader.SessionAttribute.VARIANT_HEIGHT.getText());
-        String previousHeight = attributes.get(SessionReader.SessionAttribute.PREVIOUS_HEIGHT.getText());
         String rendername = attributes.get(SessionReader.SessionAttribute.RENDER_NAME.getText());
         String colorModeText = attributes.get(SessionReader.SessionAttribute.COLOR_MODE.getText());
 
@@ -760,26 +714,8 @@ public class VCFTrack extends FeatureTrack {
                 setColorMode(ColorMode.valueOf(colorModeText));
             }
             catch (Exception e) {
-                log.error("Error interpreting display mode: " + displayModeText);
+                log.error("Error interpreting display mode: " + colorModeText);
             }
-        }
-
-
-        // set component heights
-        try {
-            if (genotypeHeight != null) {
-                genotypeBandHeight = Integer.parseInt(genotypeHeight);
-            }
-            if (variantHeight != null) {
-                variantBandHeight = Integer.parseInt(variantHeight);
-            }
-            if (previousHeight != null) {
-                savedBandHeight = Integer.parseInt(previousHeight);
-            }
-        } catch (NumberFormatException nfe) {
-            savedBandHeight = DEFAULT_GENOTYPE_HEIGHT;
-            variantBandHeight = DEFAULT_VARIANT_HEIGHT;
-            genotypeBandHeight = DEFAULT_GENOTYPE_HEIGHT;
         }
 
         setHeight(getPreferredHeight());

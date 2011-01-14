@@ -42,7 +42,7 @@ import java.util.Collection;
 public interface Track extends Persistable {
 
     enum DisplayMode {
-        COLLAPSED, SQUISH, EXPANDED
+        COLLAPSED, SQUISHED, EXPANDED
     }
 
     // The unique identifier for the track.  This should only be used in saving/restoring sessions.
