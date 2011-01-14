@@ -294,6 +294,17 @@ public class CoverageCounter {
         }
     }
 
+
+    /**
+     * Events
+     *   base mismatch
+     *   translocation
+     *   insertion (small)
+     *   insertion (large, rearrangment)
+     *   deletion  (small)
+     *   deletion  (large, rearrangment)
+     *
+     */
     static class Counter {
 
         int count = 0;

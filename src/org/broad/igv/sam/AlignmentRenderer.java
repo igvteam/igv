@@ -578,6 +578,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = grey1;
         switch (renderOptions.colorOption) {
+            case UNEXPECTED_PAIRS:
             case INSERT_SIZE:
                 if (alignment.isPaired() && alignment.getMate().isMapped()) {
                     boolean sameChr = alignment.getMate().mateChr.equals(alignment.getChr());
@@ -593,6 +594,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                             c = Color.black;
                         }
                     }
+                }
+                if(renderOptions.colorOption == AlignmentTrack.ColorOption.UNEXPECTED_PAIRS && c == grey1) {
+                    c = getOrientationColor(alignment);
                 }
                 break;
             case PAIR_ORIENTATION:

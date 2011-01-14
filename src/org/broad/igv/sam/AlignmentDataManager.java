@@ -121,7 +121,7 @@ public class AlignmentDataManager {
      * @return
      */
     public AlignmentInterval getLoadedInterval(ReferenceFrame frame) {
-        return loadedIntervalMap.get(frame);
+        return loadedIntervalMap.get(frame.getName());
     }
 
     /**

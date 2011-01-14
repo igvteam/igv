@@ -61,12 +61,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP;
+        UNEXPECTED_PAIRS, INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP;
     }
 
 
     public static final int MIN_ALIGNMENT_SPACING = 10;
-    static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
+    static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.UNEXPECTED_PAIRS;
     static final boolean DEFAULT_SHOWALLBASES = false;
 
     private static ColorOption colorByOption = null;
@@ -135,7 +135,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public CoverageTrack getCoverageTrack() {
         return coverageTrack;
-    }    
+    }
 
     public void setRenderer(FeatureRenderer renderer) {
         this.renderer = renderer;
@@ -667,6 +667,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         ButtonGroup group = new ButtonGroup();
 
+        JRadioButtonMenuItem m0 = new JRadioButtonMenuItem("by unexpected pairs");
+        m0.setSelected(colorByOption == ColorOption.UNEXPECTED_PAIRS);
+        m0.addActionListener(new TrackMenuUtils.TrackActionListener() {
+            public void action() {
+                setColorOption(ColorOption.UNEXPECTED_PAIRS);
+                refresh();
+            }
+        });
+
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
         m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -721,6 +730,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
+        item.add(m0);
         item.add(m1);
         item.add(m1a);
         item.add(m2);
@@ -1135,5 +1145,5 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     }
 
-    
+
 }
