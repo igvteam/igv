@@ -691,13 +691,11 @@ public class TrackMenuUtils {
     public static void toggleExpandedState(final Collection<Track> selectedTracks) {
 
         for (Track track : selectedTracks) {
-            if (track instanceof FeatureTrack) {
-                boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED;
-                if (!expanded) {
-                    track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                } else {
-                    track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                }
+            boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED;
+            if (!expanded) {
+                track.setDisplayMode(Track.DisplayMode.EXPANDED);
+            } else {
+                track.setDisplayMode(Track.DisplayMode.COLLAPSED);
             }
         }
     }

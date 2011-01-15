@@ -80,7 +80,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
     private int expandedHeight = 14;
-    private int collapsedHeight = 2;
+    private int maxCollapsedHeight = 4;
+    private int collapsedHeight = maxCollapsedHeight;
+
     private FeatureRenderer renderer;
     private double minVisibleScale = 25;
     private Rectangle renderedRect;
@@ -217,7 +219,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = context.getVisibleRect().height;
-                collapsedHeight = Math.max(1, Math.min(expandedHeight, visHeight / dataManager.getMaxDepth(context.getReferenceFrame())));
+                int depth = dataManager.getMaxDepth(context.getReferenceFrame());
+                collapsedHeight = Math.min(maxCollapsedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = collapsedHeight;
             }
 
