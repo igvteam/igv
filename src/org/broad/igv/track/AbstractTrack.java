@@ -635,9 +635,6 @@ public abstract class AbstractTrack implements Track {
 
         // height
         int height = getHeight();
-        if (displayMode != DisplayMode.COLLAPSED) {
-            height = height / ((FeatureTrack) this).getNumberOfFeatureLevels();
-        }
         String value = Integer.toString(height);
         attributes.put(SessionReader.SessionAttribute.HEIGHT.getText(), value);
 
