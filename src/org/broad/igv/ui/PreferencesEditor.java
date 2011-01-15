@@ -953,6 +953,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         insertSizeThresholdField.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeThresholdFieldActionPerformed(e);
                             }
                         });
                         insertSizeThresholdField.addFocusListener(new FocusAdapter() {
@@ -962,7 +963,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(insertSizeThresholdField);
-                        insertSizeThresholdField.setBounds(206, 110, 84, insertSizeThresholdField.getPreferredSize().height);
+                        insertSizeThresholdField.setBounds(320, 110, 84, insertSizeThresholdField.getPreferredSize().height);
 
                         //---- jLabel13 ----
                         jLabel13.setText("Maximum read depth:");
@@ -1011,6 +1012,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             public void actionPerformed(ActionEvent e) {
                                 insertSizeThresholdFieldActionPerformed(e);
                                 insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
                             }
                         });
                         insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
@@ -1021,7 +1024,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(insertSizeMinThresholdField);
-                        insertSizeMinThresholdField.setBounds(320, 110, 84, 28);
+                        insertSizeMinThresholdField.setBounds(205, 110, 84, 28);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -1940,11 +1943,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
-    private void insertSizeThresholdFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_insertSizeThresholdFieldFocusLost
+    private void insertSizeThresholdFieldFocusLost(java.awt.event.FocusEvent evt) {
         this.insertSizeThresholdFieldActionPerformed(null);
     }
 
-    private void insertSizeThresholdFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertSizeThresholdFieldActionPerformed
+    private void insertSizeThresholdFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String insertThreshold = insertSizeThresholdField.getText().trim();
         try {
             Integer.parseInt(insertThreshold);
@@ -1957,7 +1960,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void insertSizeMinThresholdFieldFocusLost(FocusEvent e) {
-        insertSizeMinThresholdFieldFocusLost(null);
+        insertSizeMinThresholdFieldActionPerformed(null);
     }
 
     private void insertSizeMinThresholdFieldActionPerformed(ActionEvent e) {
@@ -2532,7 +2535,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxDepthField.setText(prefMgr.get(PreferenceManager.SAM_MAX_LEVELS));
         mappingQualityThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD))));
         insertSizeThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD))));
-        insertSizeThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD))));
+        insertSizeMinThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD))));
         snpThresholdField.setText((String.valueOf(prefMgr.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD))));
         //samShowZeroQualityCB.setSelected(samPrefs.isShowZeroQuality());
         samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES));

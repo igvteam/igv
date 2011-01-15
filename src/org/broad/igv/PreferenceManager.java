@@ -883,8 +883,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_FILTER_URL, null);
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");
-        defaultValues.put(SAM_MIN_INSERT_SIZE_THRESHOLD, "10");
-        defaultValues.put(SAM_INSERT_SIZE_THRESHOLD, "10000");
+        defaultValues.put(SAM_MIN_INSERT_SIZE_THRESHOLD, "50");
+        defaultValues.put(SAM_INSERT_SIZE_THRESHOLD, "1000");
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
 
