@@ -279,9 +279,9 @@ public class TrackManager {
             List<Track> newTracks = loader.load(locator);
             if (newTracks.size() > 0) {
                 for (Track track : newTracks) {
-                    track.setAttributeValue("NAME", track.getName());
-                    track.setAttributeValue("DATA FILE", locator.getPath());
-                    track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+                    //track.setAttributeValue("NAME", track.getName());
+                    //track.setAttributeValue("DATA FILE", locator.getPath());
+                    //track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
 
 
                 }
