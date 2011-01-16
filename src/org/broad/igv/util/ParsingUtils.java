@@ -124,7 +124,11 @@ public class ParsingUtils {
             log.error("Error estimating line count", e);
             return 1000;
         } finally {
-            reader.close();
+            try {
+                reader.close();
+            } catch (Exception e) {
+                // Ignore errors closing reader
+            }
         }
 
     }
