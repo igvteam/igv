@@ -330,9 +330,13 @@ public abstract class AbstractTrack implements Track {
     public String getAttributeValue(String attributeKey) {
         String value = attributes.get(attributeKey);
         if (value == null) {
-            value = AttributeManager.getInstance().getAttribute(getName(), attributeKey);
+            value = AttributeManager.getInstance().getAttribute(getSampleKey(), attributeKey);
         }
         return value;
+    }
+
+    private String getSampleKey() {
+        return sampleId != null ? sampleId : getName();
     }
 
 
