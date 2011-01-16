@@ -46,96 +46,65 @@ import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author jrobinso
  */
 public class AttributeHeaderPanel extends JPanel {
 
-    private int attributeCount = 0;
     final static int MAXIMUM_FONT_SIZE = 10;
     final static int ATTRIBUTE_COLUMN_WIDTH = 10;
     final static int COLUMN_BORDER_WIDTH = 2;
 
-    /**
-     * Constructs ...
-     */
+    Map<String, Boolean> sortOrder = new HashMap();
+
+
     public AttributeHeaderPanel() {
         setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addMouseListener();
     }
 
+
+    public int getAttributeColumnWidth() {
+        return ATTRIBUTE_COLUMN_WIDTH;
+    }
+
+
+    private String getAttributeHeading(int x) {
+        int idx = x / ATTRIBUTE_COLUMN_WIDTH;
+        List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
+        if (idx < keys.size()) {
+            return keys.get(idx);
+        } else {
+            return null;
+        }
+    }
 
     @Override
     protected void paintComponent(final Graphics graphics) {
 
         super.paintComponent(graphics);
 
-        // Don't want to destroy the components original graphics
-        // context because of the border so we need to create one
-        final Graphics2D graphics2 = (Graphics2D) graphics.create();
+        final List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
-        final int width = getWidth();
-        final int height = getHeight();
+        if (keys.size() > 0) {
+            final Graphics2D graphics2 = (Graphics2D) graphics.create();
 
-        final List<String> keys = getVisibleAttributeKeys();
+            // Divide the remaining space to get column widths
+            int columnWidth = getAttributeColumnWidth();
 
-
-        final int count = paint(graphics2, keys, width, height);
-
-
-        for (String key : keys) {
-
-            if (attributeCount != count) {
-                addMousableRegion(key);
+            // Create font and font size
+            int fontSize = (int) (0.9 * columnWidth);
+            if (fontSize > MAXIMUM_FONT_SIZE) {
+                fontSize = MAXIMUM_FONT_SIZE;
             }
-        }
-
-        //if (attributeCount != count) {
-        //    attributeCount = count;
-        //    doLayout();
-        //}
-    }
-
-
-    private List<String> getVisibleAttributeKeys() {
-        final List<String> keys = AttributeManager.getInstance().getAttributeKeys();
-        Set<String> hiddenKeys = AttributeManager.getInstance().getHiddenAttributes();
-        keys.removeAll(hiddenKeys);
-        return keys;
-    }
-
-
-    private int paint(Graphics2D graphics2, List<String> keys, int width, int height) {
-        graphics2.setColor(getBackground());
-        graphics2.fillRect(0, 0, width, height);
-        graphics2.setColor(Color.BLACK);
-
-        // Divide the remaining space to get column widths
-        int columnWidth = getAttributeColumnWidth();
-
-        // Create font and font size
-        int fontSize = (int) (0.9 * columnWidth);
-        if (fontSize > MAXIMUM_FONT_SIZE) {
-            fontSize = MAXIMUM_FONT_SIZE;
-        }
-        Font font = FontManager.getScalableFont(fontSize);
-
-        final int count = keys.size();
-        if (count > 0) {
-
-            if (attributeCount != count) {
-
-                removeAll();    // Remove Mouse Regions
-                if (keys != null) {
-                    setLayout(new GridLayout(1, count));
-                }
-            }
+            Font font = FontManager.getScalableFont(fontSize);
 
             // Change the origin for the text
-            AffineTransform transform = AffineTransform.getTranslateInstance(0, height - COLUMN_BORDER_WIDTH);
+            AffineTransform transform = AffineTransform.getTranslateInstance(0, getHeight() - COLUMN_BORDER_WIDTH);
             graphics2.transform(transform);
 
             // Now rotate text counter-clockwise 90 degrees
@@ -146,65 +115,32 @@ public class AttributeHeaderPanel extends JPanel {
             int fontAscent = fm.getHeight();
 
             int i = 1;
-            int x = 0;
+            int x;
             for (String key : keys) {
                 int columnLeftEdge = ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) * i++);
-                x = columnLeftEdge  + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
+                x = columnLeftEdge + ((COLUMN_BORDER_WIDTH + ATTRIBUTE_COLUMN_WIDTH) - fontAscent) / 2;
                 graphics2.drawString(key, 0, x);
             }
         }
-        return count;
     }
 
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public int getAttributeColumnWidth() {
-        return ATTRIBUTE_COLUMN_WIDTH;
-    }
-
-    private static class Region extends JPanel {
-
-        /**
-         * Method description
-         *
-         * @return
-         */
-        @Override
-        public boolean isOpaque() {
-            return false;
-        }
-    }
+    private void addMouseListener() {
 
 
-    private boolean isSortAscending = true;
-
-    private void addMousableRegion(final String tooltip) {
-
-        // Create a clickable region
-        final Region region = new Region();
-        region.setName(tooltip);
-        region.setToolTipText(tooltip);
+        setToolTipText("Click attribute heading to sort");
 
         MouseInputAdapter listener = new MouseInputAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                String[] selectedAttribute = {region.getName()};
-                boolean[] sortAscending = {isSortAscending};
-                sortTrackByAttribute(selectedAttribute, sortAscending);
-                isSortAscending = !isSortAscending;
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-
-                region.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
+                String attKey = getAttributeHeading(e.getX());
+                if (attKey != null) {
+                    Boolean tmp = sortOrder.get(attKey);
+                    boolean sortAscending = tmp == null ? true : tmp.booleanValue();
+                    sortTrackByAttribute(attKey, sortAscending);
+                    sortOrder.put(attKey, !sortAscending);
+                }
             }
 
             @Override
@@ -215,23 +151,15 @@ public class AttributeHeaderPanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
             }
         };
-        region.addMouseMotionListener(listener);
-        region.addMouseListener(listener);
-        add(region);
+        addMouseMotionListener(listener);
+        addMouseListener(listener);
     }
 
 
-    /**
-     * Method description
-     *
-     * @param selectedSortKeys
-     * @param isSortAscending
-     */
-    final public void sortTrackByAttribute(String[] selectedSortKeys, boolean[] isSortAscending) {
+    final public void sortTrackByAttribute(String sortKey, boolean isSortAscending) {
 
-        if (selectedSortKeys != null) {
-
-            IGVMainFrame.getInstance().getTrackManager().sortAllTracksByAttributes(selectedSortKeys, isSortAscending);
+        if (sortKey != null) {
+            IGVMainFrame.getInstance().getTrackManager().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
             IGVMainFrame.getInstance().getContentPane().repaint();
         }
     }

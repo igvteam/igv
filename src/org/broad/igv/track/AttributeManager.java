@@ -131,6 +131,14 @@ public class AttributeManager {
         return hiddenAttributes;
     }
 
+    // TODO -- don't compute this on the fly every time its called
+    public List<String> getVisibleAttributes() {
+        final List<String> keys = getAttributeKeys();
+        Set<String> hiddenKeys = getHiddenAttributes();
+        keys.removeAll(hiddenKeys);
+        return keys;
+    }
+
     public void setHiddenAttributes(Set<String> attributes) {
         // Interpret null to mean the empty set
         if (attributes == null) {
