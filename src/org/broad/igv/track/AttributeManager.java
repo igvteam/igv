@@ -88,6 +88,9 @@ public class AttributeManager {
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
         uniqueAttributeValues = new HashMap();
+        hiddenAttributes.add("NAME");
+        hiddenAttributes.add("DATA FILE");
+        hiddenAttributes.add("DATA TYPE");
 
     }
 
@@ -152,7 +155,7 @@ public class AttributeManager {
         attributeMap.clear();
         attributeKeys.clear();
         uniqueAttributeValues.clear();
-        hiddenAttributes.clear();
+        //hiddenAttributes.clear();
         loadedResources = new HashSet();
     }
 
