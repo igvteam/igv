@@ -30,10 +30,11 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
+import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
-import org.broad.igv.track.TrackType;
+import org.broad.igv.util.stats.Histogram;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -59,6 +60,7 @@ import java.util.TreeMap;
 public class CoverageCounter {
 
     private String alignmentFile;
+    private File tdfFile;
     private DataConsumer consumer;
     private float[] buffer;
     private int windowSize = 1;
@@ -72,6 +74,14 @@ public class CoverageCounter {
     private Genome genome;
 
     WigWriter mismatchWigWriter;
+    WigWriter isizeWigWriter;
+
+    private float meanInsertSize;
+    private float stdDevInsertSize;
+    private boolean computeTDF = true;
+
+    private Histogram coverageHistogram;
+
 
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
@@ -82,6 +92,7 @@ public class CoverageCounter {
                            Genome genome,
                            int strandOption) {
         this.alignmentFile = alignmentFile;
+        this.tdfFile = tdfFile;
         this.consumer = consumer;
         this.windowSize = windowSize;
         this.extFactor = extFactor;
@@ -90,22 +101,39 @@ public class CoverageCounter {
         this.strandOption = strandOption;
         buffer = strandOption < 0 ? new float[1] : new float[2];
 
-
-        try {
-            mismatchWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".mismatch.wig"), windowSize);
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-
+        this.coverageHistogram = new Histogram(1000);
 
     }
 
+    public void computeMismatch() {
+        try {
+            mismatchWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".mismatch.wig"), windowSize, false);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void computeISize(float meanInsertSize, float stdDevInsertSize) {
+        try {
+            this.meanInsertSize = meanInsertSize;
+            this.stdDevInsertSize = stdDevInsertSize;
+            isizeWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".isize.wig"), windowSize, false);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    // TODO -- options to ovveride all of these checks
     private boolean passFilter(Alignment alignment) {
 
         if (strandOption > 0 && alignment.getFragmentStrand(strandOption) == Strand.NONE) {
             return false;
         }
-        return alignment.isMapped() && !alignment.isDuplicate() && alignment.getMappingQuality() >= minMappingQuality;
+        return alignment.isMapped() &&
+                !alignment.isDuplicate() &&
+                alignment.getMappingQuality() >= minMappingQuality &&
+                !alignment.isVendorFailedRead() &&
+                !alignment.isDuplicate();
     }
 
     public void parse() {
@@ -123,9 +151,8 @@ public class CoverageCounter {
         try {
 
             if (wigFile != null) {
-                wigWriter = new WigWriter(wigFile, windowSize);
+                wigWriter = new WigWriter(wigFile, windowSize, false);
             }
-
 
 
             reader = SamQueryReaderFactory.getReader(alignmentFile, false);
@@ -151,6 +178,15 @@ public class CoverageCounter {
                         counter = new ReadCounter(alignmentChr);
                         lastChr = alignmentChr;
                     }
+
+                    ReadMate mate = alignment.getMate();
+                    boolean properPair =
+                            alignment.isPaired() && alignment.isProperPair() &&
+                                    mate != null && mate.isMapped() && mate.getChr().equals(alignment.getChr());
+                    if (properPair) {
+                        counter.incrementISize(alignment);
+                    }
+
 
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                     if (blocks != null) {
@@ -217,7 +253,20 @@ public class CoverageCounter {
                 wigWriter.close();
             }
 
-            mismatchWigWriter.close();
+            if (mismatchWigWriter != null)
+                mismatchWigWriter.close();
+
+            if (isizeWigWriter != null) {
+                isizeWigWriter.close();
+            }
+
+            try {
+                PrintWriter pw = new PrintWriter(new FileWriter(tdfFile.getAbsolutePath() + ".hist.txt"));
+                coverageHistogram.print(pw);
+                pw.close();
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
     }
 
@@ -231,14 +280,37 @@ public class CoverageCounter {
         }
 
         void incrementCount(int position, byte base) {
+            final Counter counter = getBucket(position);
+            counter.increment(position, base);
+        }
+
+
+        public void incrementISize(Alignment alignment) {
+            int startBucket = alignment.getStart() / windowSize;
+            int endBucket = alignment.getAlignmentEnd() / windowSize;
+            for(int bucket=startBucket; bucket<= endBucket; bucket++) {
+                int bucketStartPosition = bucket * windowSize;
+                int bucketEndPosition = bucketStartPosition + windowSize;
+                if (!counts.containsKey(bucket)) {
+                    counts.put(bucket, new Counter(chr, bucketStartPosition, bucketEndPosition));
+                }
+                final Counter counter = counts.get(bucket);
+                counter.incrementISize(alignment.getInferredInsertSize()); 
+            }
+        }
+
+
+        private Counter getBucket(int position) {
             int bucket = position / windowSize;
             int bucketStartPosition = bucket * windowSize;
             int bucketEndPosition = bucketStartPosition + windowSize;
             if (!counts.containsKey(bucket)) {
                 counts.put(bucket, new Counter(chr, bucketStartPosition, bucketEndPosition));
             }
-            counts.get(bucket).increment(position, base);
+            final Counter counter = counts.get(bucket);
+            return counter;
         }
+
 
         //void incrementNegCount(int position) {
         //    Integer bucket = position / windowSize;
@@ -276,12 +348,26 @@ public class CoverageCounter {
 
                     consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
 
-                    float mismatch = counter.getMaxMismatchFraction();
-                    mismatchWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, mismatch);
+                    if (mismatchWigWriter != null) {
+                        float mismatch = counter.getMaxMismatchFraction();
+                        mismatchWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, mismatch);
+                    }
+
+                    if (isizeWigWriter != null) {
+                        float zscore = counter.getISizeFraction();
+                        isizeWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, zscore);
+                    }
 
                     if (wigWriter != null) {
                         wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
                     }
+
+                    int [] baseCounts = counter.getBaseCount();
+                    for(int i=0; i<baseCounts.length; i++) {
+                        coverageHistogram.addDataPoint(baseCounts[i]);
+                    }
+
+
                     bucketsToClose.add(entry.getKey());
                 }
             }
@@ -292,20 +378,20 @@ public class CoverageCounter {
 
 
         }
+
     }
 
 
     /**
      * Events
-     *   base mismatch
-     *   translocation
-     *   insertion (small)
-     *   insertion (large, rearrangment)
-     *   deletion  (small)
-     *   deletion  (large, rearrangment)
-     *
+     * base mismatch
+     * translocation
+     * insertion (small)
+     * insertion (large, rearrangment)
+     * deletion  (small)
+     * deletion  (large, rearrangment)
      */
-    static class Counter {
+    class Counter {
 
         int count = 0;
         int negCount = 0;
@@ -315,6 +401,9 @@ public class CoverageCounter {
         byte[] ref;
         int[] baseCount;
         int[] baseMismatchCount;
+        int ppCount = 0;
+        int isizeCount = 0;
+        float isizeZScore = 0;
 
         Counter(String chr, int start, int end) {
             this.chr = chr;
@@ -328,11 +417,21 @@ public class CoverageCounter {
         void increment(int position, byte base) {
             int offset = position - start;
             byte refBase = ref[offset];
-            baseCount[offset] = baseCount[offset] + 1;
+            getBaseCount()[offset]++;
             if (refBase != base) {
                 baseMismatchCount[offset]++;
             }
             count++;
+        }
+
+
+        public void incrementISize(int inferredInsertSize) {
+            //float zs = Math.min(6, (Math.abs(inferredInsertSize) - meanInsertSize) / stdDevInsertSize);
+            //isizeZScore += zs;
+            ppCount++;
+            if(Math.abs(Math.abs(inferredInsertSize) - meanInsertSize) > 2*stdDevInsertSize) {
+                isizeCount++;
+            }
         }
 
         void incrementNeg() {
@@ -350,11 +449,24 @@ public class CoverageCounter {
         float getMaxMismatchFraction() {
             float max = 0.0f;
             for (int i = 0; i < baseMismatchCount.length; i++) {
-                max = Math.max(max, (float) baseMismatchCount[i] / baseCount[i]);
+                max = Math.max(max, (float) baseMismatchCount[i] / getBaseCount()[i]);
             }
             return max;
         }
 
+        float getISizeFraction() {
+            if (ppCount < 3) {
+                return 0;
+            }
+            float frac = ((float) isizeCount) / ppCount;
+            return frac;
+            //float avg = isizeZScore / ppCount;
+            //return avg;
+        }
+
+        public int[] getBaseCount() {
+            return baseCount;
+        }
     }
 
     /**
@@ -366,8 +478,10 @@ public class CoverageCounter {
         int step;
         int span;
         PrintWriter pw;
+        boolean keepZeroes = false;
 
-        WigWriter(File file, int step) throws IOException {
+        WigWriter(File file, int step, boolean keepZeroes) throws IOException {
+            this.keepZeroes = keepZeroes;
             this.step = step;
             this.span = step;
             pw = new PrintWriter(new FileWriter(file));
@@ -375,14 +489,14 @@ public class CoverageCounter {
 
         public void addData(String chr, int start, int end, float data) {
 
-            if(Float.isNaN(data)) {
+            if (Float.isNaN(data)) {
                 return;
             }
             if (genome.getChromosome(chr) == null) {
                 return;
             }
 
-            if (data == 0 || end <= start) {
+            if ((!keepZeroes && data == 0) || end <= start) {
                 return;
             }
 
@@ -407,26 +521,6 @@ public class CoverageCounter {
             pw.println("variableStep chrom=" + chr + " span=" + span);
         }
 
-        public void setType(String type) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-
-        public void parsingComplete() {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        public void setSortTolerance(int tolerance) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        public void setAttribute(String key, String value) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
     }
 
 

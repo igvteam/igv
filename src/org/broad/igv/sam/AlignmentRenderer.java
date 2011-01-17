@@ -581,15 +581,15 @@ public class AlignmentRenderer implements FeatureRenderer {
             case UNEXPECTED_PAIRS:
             case INSERT_SIZE:
                 if (alignment.isPaired() && alignment.getMate().isMapped()) {
-                    boolean sameChr = alignment.getMate().mateChr.equals(alignment.getChr());
+                    boolean sameChr = alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance > renderOptions.insertSizeThreshold || readDistance < renderOptions.minInsertSizeThreshold) {
-                            c = ChromosomeColors.getColor(alignment.getMate().mateChr);
+                            c = ChromosomeColors.getColor(alignment.getMate().getChr());
                             //c = getDistanceColor(readDistance);
                         }
                     } else {
-                        c = ChromosomeColors.getColor(alignment.getMate().mateChr);
+                        c = ChromosomeColors.getColor(alignment.getMate().getChr());
                         if (c == null) {
                             c = Color.black;
                         }

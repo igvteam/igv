@@ -97,7 +97,7 @@ public class GeraldParserTest {
 
         assertEquals(122, result.getInferredInsertSize());
         assertEquals(result.getStart() + result.getInferredInsertSize(),
-                result.getMate().mateStart);
+                result.getMate().start);
         assertTrue(result.getMate().isNegativeStrand());
 
         System.out.println(result.getReadName());

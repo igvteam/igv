@@ -187,7 +187,7 @@ public abstract class AbstractAlignment implements Alignment {
             buf.append("Pair start = " + getMate().positionString() + "<br>");
             buf.append("Pair is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
             //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
-            if (getChr().equals(getMate().mateChr)) {
+            if (getChr().equals(getMate().getChr())) {
                 buf.append("Insert size = " + getInferredInsertSize() + "<br>");
             }
             if (getPairOrientation().length() > 0) {

@@ -98,7 +98,6 @@ public class ParsingUtils {
                 fileLength = (new File(filename)).length();
             }
 
-
             reader = openAsciiReader(new ResourceLocator(filename));
             String nextLine;
             int lines = 0;

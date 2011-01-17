@@ -310,8 +310,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
-                String chr = mate.mateChr;
-                int start = mate.mateStart - 1;
+                String chr = mate.getChr();
+                int start = mate.start - 1;
                 te.getFrame().centerOnLocation(chr, start);
                 te.getFrame().recordHistory();
             }
@@ -332,8 +332,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
-                String mateChr = mate.mateChr;
-                int mateStart = mate.mateStart - 1;
+                String mateChr = mate.getChr();
+                int mateStart = mate.start - 1;
 
                 ReferenceFrame frame = te.getFrame();
                 String locus1 = frame.getFormattedLocusString();

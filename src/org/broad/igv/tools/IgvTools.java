@@ -142,9 +142,12 @@ public class IgvTools {
         CmdLineParser.Option outputDirOption = parser.addStringOption('o', "outputDir");
 
         // options for gentest
-        CmdLineParser.Option nRows = parser.addIntegerOption('r', "numRows");
+        //CmdLineParser.Option nRows = parser.addIntegerOption('r', "numRows");
         CmdLineParser.Option strandOption = parser.addIntegerOption('s', "strand");
-        CmdLineParser.Option unOrdered = parser.addBooleanOption('u', "unOrdered");
+        //CmdLineParser.Option unOrdered = parser.addBooleanOption('u', "unOrdered");
+
+        // options for coverage
+        CmdLineParser.Option isizeOption = parser.addStringOption('x', "insertSize");
 
 
         // Parse optional arguments (switches, etc)
@@ -204,11 +207,13 @@ public class IgvTools {
                 boolean isGCT = Preprocessor.getExtension(ifile).endsWith("gct");
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
+                String isize = (String) parser.getOptionValue(isizeOption);
 
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
                     int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-                    doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue, strandOptionValue);
+                    doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
+                            strandOptionValue, isize);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                     doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
@@ -237,13 +242,13 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3);
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
-            } else if (command.equals("gentest")) {
-                validateArgsLength(nonOptionArgs, 2);
-                int nRowsValue = (Integer) parser.getOptionValue(nRows, 10);
-                boolean sorted = !((Boolean) parser.getOptionValue(unOrdered, false));
-                int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-                String ofile = ifile;
-                TestFileGenerator.generateTestFile(ofile, sorted, nRowsValue, strandOptionValue);
+            //} else if (command.equals("gentest")) {
+              //  validateArgsLength(nonOptionArgs, 2);
+              //  int nRowsValue = (Integer) parser.getOptionValue(nRows, 10);
+              //  boolean sorted = !((Boolean) parser.getOptionValue(unOrdered, false));
+              //  int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
+              //  String ofile = ifile;
+              //  TestFileGenerator.generateTestFile(ofile, sorted, nRowsValue, strandOptionValue);
             } else if (command.toLowerCase().equals("gcttoigv")) {
                 validateArgsLength(nonOptionArgs, 4);
                 String ofile = nonOptionArgs[2];
@@ -379,7 +384,11 @@ public class IgvTools {
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
                         Collection<WindowFunction> windowFunctions,
-                        int windowSizeValue, int extFactorValue, int strandOption) throws IOException {
+                        int windowSizeValue, int extFactorValue, int strandOption,
+                        String isize) throws IOException {
+
+
+
         System.out.println("Computing coverage.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
         System.out.println("Window size = " + windowSizeValue);
@@ -414,12 +423,12 @@ public class IgvTools {
             }
         }
 
-        if (!tdfFile.getName().endsWith(".tdf")) {
+        if (tdfFile != null && !tdfFile.getName().endsWith(".tdf")) {
             tdfFile = new File(tdfFile.getAbsolutePath() + ".tdf");
         }
 
         Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, nLines, null);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption);
+        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, isize);
         p.finish();
 
         System.out.flush();

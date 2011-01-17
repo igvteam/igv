@@ -430,7 +430,7 @@ public class IgvToolsGui extends JDialog {
                     int strandOption = -1;
 
                     runButton.setEnabled(false);
-                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, strandOption);
+                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, strandOption, null);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

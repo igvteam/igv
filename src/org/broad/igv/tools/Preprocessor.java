@@ -704,12 +704,33 @@ public class Preprocessor implements DataConsumer {
     }
 
     public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
-                      File wigFile, int strandOption) throws IOException {
+                      File wigFile, int strandOption, String isize) throws IOException {
         setNZoom(maxZoomValue);
         setTrackParameters(TrackType.COVERAGE, null, new String[]{iFile});
         this.setSkipZeroes(true);
+
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
                 wigFile, genome, strandOption);
+        
+        if(isize != null) {
+            String [] tokens = isize.split(",");
+            if(tokens.length < 2) {
+                System.out.println("Invalid insert size string.  Expected mean & stdev separated by comma, e.g.  400,60");
+            }
+            else {
+                try {
+                    float mean = Float.parseFloat(tokens[0]);
+                    float stdev = Float.parseFloat(tokens[1]);
+                    aParser.computeISize(mean, stdev);
+                } catch (NumberFormatException e) {
+                    System.out.println("Error parsing iSize parameter " + e.toString());
+                }
+            }
+        }
+
+
+
+
         setSizeEstimate((int) (genome.getLength() / windowSizeValue));
         aParser.parse();
     }

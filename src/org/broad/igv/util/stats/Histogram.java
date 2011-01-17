@@ -17,48 +17,38 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+package org.broad.igv.util.stats;
+
+import java.io.PrintWriter;
+
+/**
+ * @author jrobinso
+ * @date Jan 16, 2011
  */
-package org.broad.igv.sam;
+public class Histogram {
 
+    private int n;
+    private final int[] freq;   // freq[i] = # occurences of value i
+    private double max;            // max frequency of any value
 
-public class ReadMate {
-
-    private String chr;
-    int start;
-    private boolean negativeStrand;
-    boolean mapped;
-
-    public ReadMate(String chr, int start, boolean negativeStrand,
-                    boolean isReadUnmappedFlag) {
-        this.chr = chr;
-        this.start = start;
-        this.negativeStrand = negativeStrand;
-        this.mapped = !isReadUnmappedFlag && !chr.equals("*");
+    // Create a new histogram.
+    public Histogram(int n) {
+        this.n = n;
+        freq = new int[n + 1];
     }
 
-    public boolean isMapped() {
-        return mapped;
+    // Add one occurrence of the value i.
+    public void addDataPoint(int i) {
+
+        int idx = Math.min(n, i);
+        freq[idx]++;
+        if (freq[idx] > max) max = freq[i]; 
     }
 
-    public String positionString() {
-        return chr + ":" + start + " (" + (isNegativeStrand() ? "-" : "+") + ")";
+    public void print(PrintWriter pw) {
+        for(int i=0; i<n; i++) {
+            pw.println(i + "\t" + freq[i]);
+        }
     }
 
-    public String getLocus() {
-        return chr + ":" + start;
-    }
-
-    /**
-     * @return the negativeStrand
-     */
-    public boolean isNegativeStrand() {
-        return negativeStrand;
-    }
-
-    public String getChr() {
-        return chr;
-    }
 }
