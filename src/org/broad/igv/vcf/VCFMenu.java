@@ -89,7 +89,7 @@ public class VCFMenu {
         }
 
         popupMenu.addSeparator();
-        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track [] {track})));
+        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
 
         return popupMenu;
     }
@@ -197,12 +197,33 @@ public class VCFMenu {
     }
 
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
-        JMenuItem item = new JMenuItem("Zygosity");
+        JMenuItem item = new JMenuItem("Genotype");
         try {
             variant.getAlleles();
             item.addActionListener(new TrackMenuUtils.TrackActionListener() {
                 public void action() {
                     GenotypeComparator compare = new GenotypeComparator();
+                    sortSamples(variant, compare);
+                    IGVMainFrame.getInstance().getContentPane().repaint();
+                }
+            });
+        } catch (Exception e) {
+            item.setEnabled(false);
+        }
+        return item;
+    }
+
+    public JMenuItem getSampleNameSortItem(final VariantContext variant) {
+        JMenuItem item = new JMenuItem("Sample Name");
+        try {
+            variant.getAlleles();
+            item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+                public void action() {
+                    Comparator<String> compare = new Comparator<String>() {
+                        public int compare(String o, String o1) {
+                            return o.compareTo(o1);
+                        }
+                    };
                     sortSamples(variant, compare);
                     IGVMainFrame.getInstance().getContentPane().repaint();
                 }
@@ -255,9 +276,9 @@ public class VCFMenu {
 
     public void changeVisibilityWindow() {
         int value = getIntValue("Visibility Window", track.getVisibilityWindow());
-         if (value > 0) {
-             track.setVisibilityWindow(value);
-         }
+        if (value > 0) {
+            track.setVisibilityWindow(value);
+        }
     }
 
     private static int getIntValue(String parameter, int value) {
@@ -307,6 +328,7 @@ public class VCFMenu {
         VariantContext variant = (VariantContext) closestFeature;
 
         items.add(getGenotypeSortItem(variant));
+        items.add(getSampleNameSortItem(variant));
         items.add(getDepthSortItem(variant));
         items.add(getQualitySortItem(variant));
         return items;
@@ -359,15 +381,11 @@ public class VCFMenu {
     }
 
 
-    class GenotypeComparator implements
-            Comparator {
-        public int compare(Object element1,
-                           Object element2) {
-            String E1 = (String) element1;
-            String E2 = (String) element2;
+    class GenotypeComparator implements Comparator<String> {
 
-            int genotype1 = classifyGenotype(sampleGenotypes.get(E1));
-            int genotype2 = classifyGenotype(sampleGenotypes.get(E2));
+        public int compare(String e1, String e2) {
+            int genotype1 = classifyGenotype(sampleGenotypes.get(e1));
+            int genotype2 = classifyGenotype(sampleGenotypes.get(e2));
 
             if (genotype2 == genotype1) {
                 return 0;
@@ -378,15 +396,13 @@ public class VCFMenu {
         }
     }
 
-    class DepthComparator implements
-            Comparator {
-        public int compare(Object element1,
-                           Object element2) {
 
-            String E1 = (String) element1;
-            String E2 = (String) element2;
-            String readDepth1 = sampleGenotypes.get(E1).getAttributeAsString("DP");
-            String readDepth2 = sampleGenotypes.get(E2).getAttributeAsString("DP");
+    class DepthComparator implements Comparator<String>  {
+
+        public int compare(String s1, String s2) {
+
+            String readDepth1 = sampleGenotypes.get(s1).getAttributeAsString("DP");
+            String readDepth2 = sampleGenotypes.get(s2).getAttributeAsString("DP");
 
             double depth1;
             try {
@@ -411,15 +427,12 @@ public class VCFMenu {
         }
     }
 
-    class QualityComparator implements
-            Comparator {
-        public int compare(Object element1,
-                           Object element2) {
+    class QualityComparator implements Comparator<String> {
 
-            String E1 = (String) element1;
-            String E2 = (String) element2;
-            double qual1 = sampleGenotypes.get(E1).getPhredScaledQual();
-            double qual2 = sampleGenotypes.get(E2).getPhredScaledQual();
+        public int compare(String s1, String s2) {
+
+            double qual1 = sampleGenotypes.get(s1).getPhredScaledQual();
+            double qual2 = sampleGenotypes.get(s2).getPhredScaledQual();
 
             if (qual2 == qual1) {
                 return 0;
