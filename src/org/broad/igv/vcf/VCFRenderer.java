@@ -41,15 +41,19 @@ import java.util.*;
 public class VCFRenderer { //extends FeatureRenderer {
 
 
-    private static float alphaValue = 0.15f;
+    private static float alphaValue = 0.2f;
     private static Color colorHomRef = new Color(215, 215, 215);
     private static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
-    private static Color colorHomVar = new Color(0, 245,255);
+    private static Color colorHomVar = new Color(0, 245, 255);
     private static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
     private static Color colorHet = Color.blue;
     private static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
-    private static Color colorNoCall = Color.white;
+    private static Color colorNoCall = Color.gray;
     private static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
+    private static final Color colorAlleleBand = Color.red;
+    private static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand.getColorComponents(null), alphaValue);
+    private static final Color colorAlleleRef = Color.lightGray;
+    private static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef.getColorComponents(null), alphaValue);
 
     private static int variantWidth = 3;
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
@@ -65,9 +69,9 @@ public class VCFRenderer { //extends FeatureRenderer {
         nucleotideColors.put('t', Color.RED);
         nucleotideColors.put('G', new Color(242, 182, 65));
         nucleotideColors.put('g', new Color(242, 182, 65));
-        nucleotideColors.put('N', Color.lightGray);
-        nucleotideColors.put('n', Color.lightGray);
-        nucleotideColors.put('.', Color.lightGray);
+        nucleotideColors.put('N', colorAlleleRef);
+        nucleotideColors.put('n', colorAlleleRef);
+        nucleotideColors.put('.', colorAlleleRef);
         nucleotideColors.put(null, Color.BLACK);
     }
 
@@ -122,26 +126,31 @@ public class VCFRenderer { //extends FeatureRenderer {
     public void renderAlleleBand(VariantContext variant,
                                  Rectangle bandRectangle,
                                  int pX0, int dX,
-                                 RenderContext context, boolean hideFiltered, VCFTrack.AlleleCount alleleCounts) {
+                                 RenderContext context,
+                                 boolean hideFiltered,
+                                 VCFTrack.AlleleCount alleleCounts) {
 
 
         int bottomY = bandRectangle.y + bandRectangle.height;
 
+        // Create a small margin
+        int maxBarHeight = bandRectangle.height - 3;
         float allelePercent = alleleCounts.getAllelePercent();
-        int alleleBarHeight = (int) (allelePercent * bandRectangle.height);
+        int alleleBarHeight = (int) (allelePercent * maxBarHeight);
+        int remainderHeight = maxBarHeight - alleleBarHeight;
 
-        boolean filtered = hideFiltered && variant.isFiltered();
+        boolean filtered = variant.isFiltered() && hideFiltered;
+        Color alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand;
+        Color refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;
 
-        Graphics2D g = context.getGraphic2DForColor(Color.red);
+        Graphics2D g = context.getGraphic2DForColor(alleleColor);
         g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+        g = context.getGraphic2DForColor(refColor);
+        g.fillRect(pX0, bandRectangle.y + 3, dX, remainderHeight);
 
-        int remainderHeight = bandRectangle.height - alleleBarHeight;
-        g = context.getGraphic2DForColor(Color.lightGray);
-        g.fillRect(pX0, bandRectangle.y, dX, remainderHeight);
-
-
-        context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,
-                bandRectangle.height);
+        int bottom = bandRectangle.y + bandRectangle.height;
+        context.getGraphic2DForColor(Color.gray).drawLine(bandRectangle.x, bottom,
+                bandRectangle.x + bandRectangle.width, bottom);
 
     }
 
@@ -166,7 +175,7 @@ public class VCFRenderer { //extends FeatureRenderer {
     }
 
     public void renderGenotypeBandSNP(VariantContext variant, RenderContext context, Rectangle bandRectangle, int pX0, int dX,
-                                      String sampleName, char ref, VCFTrack.ColorMode coloring, boolean hideFiltered) {
+                                      String sampleName, VCFTrack.ColorMode coloring, boolean hideFiltered) {
 
         int pY = (int) bandRectangle.getY();
         int dY = (int) bandRectangle.getHeight();
@@ -190,7 +199,10 @@ public class VCFRenderer { //extends FeatureRenderer {
         boolean isFiltered = variant.isFiltered() && hideFiltered;
 
         Genotype genotype = variant.getGenotype(sampleName);
-        if (genotype != null) {
+        if (genotype == null) {
+            System.out.println("Now what?");
+        }
+        else {
             char b1 = getFirstBase(genotype.getAlleles().get(0));
             char b2 = getFirstBase(genotype.getAlleles().get(1));
             Color b1Color;
@@ -209,11 +221,6 @@ public class VCFRenderer { //extends FeatureRenderer {
             } else {
                 b1Color = colorNoCall;
                 b2Color = b1Color;
-            }
-
-            //Suppress Options
-            if ((b1 == ref && b2 == ref) || (variant.isFiltered() && hideFiltered)) {
-                g.setComposite(makeComposite(alphaValue));
             }
 
 
@@ -256,7 +263,7 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     public Color getGenotypeColor(Genotype genotype, boolean isFiltered) {
         if (genotype.isNoCall()) {
-            return colorNoCall;
+            return isFiltered ?  colorNoCallAlpha : colorNoCall;
         } else if (genotype.isHomRef()) {
             return isFiltered ? colorHomRefAlpha : colorHomRef;
         } else if (genotype.isHomVar()) {

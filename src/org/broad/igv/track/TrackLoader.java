@@ -240,6 +240,8 @@ public class TrackLoader {
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
 
             VCFTrack t = new VCFTrack(locator, src);
+            // VCF tracks handle their own margin
+            t.setMargin(0);
             newTracks.add(t);
         } else {
 

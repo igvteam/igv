@@ -68,7 +68,6 @@ public class VCFMenu {
         JLabel hideHeading = new JLabel("Display Options", JLabel.LEFT);
         popupMenu.add(hideHeading);
         popupMenu.add(getColorMenuItem());
-        popupMenu.add(getHideReferenceItem());
         popupMenu.add(getHideFilteredItem());
         popupMenu.add(getRenderIDItem());
 
@@ -161,18 +160,6 @@ public class VCFMenu {
         return item;
     }
 
-    private JMenuItem getHideReferenceItem() {
-        JMenuItem item = new JCheckBoxMenuItem("Suppress Reference Genotypes", track.getHideReference());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                track.setHideAncestral(false);
-                track.setHideReference(!track.getHideReference());
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
-    }
-
     private JMenuItem getHideFilteredItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Filtered Sites", track.getHideFiltered());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -188,7 +175,6 @@ public class VCFMenu {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Ancestral Genotypes", track.getHideAncestral());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                track.setHideReference(false);
                 track.setHideAncestral(!track.getHideAncestral());
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }

@@ -20,12 +20,9 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.session.SessionReader;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGVMainFrame;
@@ -49,6 +46,7 @@ public class FeatureTrack extends AbstractTrack {
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
     public static final int MINIMUM_FEATURE_SPACING = 1;
+    public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
@@ -74,6 +72,8 @@ public class FeatureTrack extends AbstractTrack {
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
     int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
+
+    int margin = DEFAULT_MARGIN;
 
 
     public FeatureTrack(String id, FeatureSource source) {
@@ -106,6 +106,10 @@ public class FeatureTrack extends AbstractTrack {
         } catch (Exception ex) {
             log.error("Error instatiating renderer ", ex);
         }
+    }
+
+    public void setMargin(int margin)  {
+        this.margin = margin;
     }
 
     @Override
@@ -461,6 +465,9 @@ public class FeatureTrack extends AbstractTrack {
 
     public void render(RenderContext context, Rectangle rect) {
         Rectangle renderRect = new Rectangle(rect);
+        renderRect.y = renderRect.y + margin;
+        renderRect.height -= margin;
+
 
         double windowSize = context.getEndLocation() - context.getOrigin();
 

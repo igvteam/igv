@@ -70,7 +70,7 @@ public class VCFTrack extends FeatureTrack {
     //private int savedBandHeight = genotypeBandHeight;
     private List<String> samples;
     private ColorMode coloring = ColorMode.ZYGOSITY;
-    private boolean hideReference = true;
+    //private boolean hideReference = true;
     private boolean hideAncestral = false;
 
 
@@ -140,33 +140,37 @@ public class VCFTrack extends FeatureTrack {
     @Override
     protected void renderFeatureImpl(RenderContext context, Rectangle trackRectangle, PackedFeatures packedFeatures) {
 
+        Graphics2D g2D = context.getGraphics();
+
         // A hack
         top = trackRectangle.y;
 
-        double locScale = context.getScale();
         Rectangle visibleRectangle = context.getVisibleRect();
-        Graphics2D g2D = context.getGraphics();
-
         visibleHeight = visibleRectangle.height;
 
-        int windowStart = (int) context.getOrigin();
-
+        // A disposable rect -- note this gets modified all over the place, bad practice
         Rectangle rect = new Rectangle(trackRectangle);
         rect.height = getGenotypeBandHeight();
         rect.y = trackRectangle.y + alleleBandHeight;
         colorBackground(g2D, rect, visibleRectangle, false, false);
 
+        if(top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
+            drawBorderLine(g2D, top+1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
+        }
 
         List<Feature> features = packedFeatures.getFeatures();
         if (features.size() > 0) {
-            byte[] reference = null;
 
+            double locScale = context.getScale();
+            byte[] reference = null;
+            int windowStart = (int) context.getOrigin();
             int lastPX = -1;
             double pXEnd = rect.getMaxX();
+
             for (Feature feature : features) {
 
                 VariantContext variant = (VariantContext) feature;
-                char ref = getReference(variant, windowStart, reference);
+                //char ref = getReference(variant, windowStart, reference);
 
                 // 1 -> 0 based coordinates
                 int start = variant.getStart() - 1;
@@ -198,17 +202,17 @@ public class VCFTrack extends FeatureTrack {
                         rect.height = getGenotypeBandHeight();
                         for (String sample : samples) {
                             if (rect.intersects(visibleRectangle)) {
-                                if (variant.isSNP()) {
-                                    renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, ref, coloring,
+                            //    if (variant.isSNP()) {
+                                    renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, coloring,
                                             hideFiltered);
-                                }
+                            //    }
                             }
                             rect.y += rect.height;
                         }
                     }
-
+                    lastPX = pX;
                 }
-                lastPX = pX;
+
             }
         } else {
             rect.height = alleleBandHeight;
@@ -222,14 +226,16 @@ public class VCFTrack extends FeatureTrack {
         if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
             final int left = trackRectangle.x;
             final int right = (int) trackRectangle.getMaxX();
-            drawBottomBorder(g2D, bottomY, left, right);
+            drawBorderLine(g2D, bottomY, left, right);
         }
     }
 
-    private void drawBottomBorder(Graphics2D g2D, int bottomY, int left, int right) {
-        g2D.setColor(Color.gray);
+
+    private void drawBorderLine(Graphics2D g2D, int bottomY, int left, int right) {
+        g2D.setColor(Color.black);
         g2D.drawLine(left, bottomY, right, bottomY);
     }
+
 
     private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames, boolean isSelected) {
         boolean coloredLast = true;
@@ -265,33 +271,6 @@ public class VCFTrack extends FeatureTrack {
         g2D.setFont(oldFont);
     }
 
-    public char getReference(VariantContext variant, int start, byte[] reference) {
-        if (hideReference) {
-            if (reference == null) {
-                return ' ';
-            }
-            int i = Math.max(1, variant.getStart() - start);
-            return (char) reference[i - 1];
-        } else if (hideAncestral) {
-            String ancestralAllele = variant.getAttributeAsString("AA");
-            if (ancestralAllele == null) {
-                return '.';
-            } else {
-                return ancestralAllele.charAt(0);
-            }
-        } else {
-            return ' ';
-        }
-    }
-
-    public void setHideReference(boolean value) {
-        this.hideReference = value;
-    }
-
-    public boolean getHideReference() {
-        return hideReference;
-    }
-
     public void setRenderID(boolean value) {
         this.renderID = value;
     }
@@ -325,12 +304,13 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         // A hack
         top = trackRectangle.y;
-
+        
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getScalableFont(10));
@@ -339,6 +319,11 @@ public class VCFTrack extends FeatureTrack {
         } else {
             g2D.setColor(Color.white);
         }
+
+        if(top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
+            drawBorderLine(g2D, top+1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
+        }
+
 
         g2D.setColor(Color.black);
         rect.height = alleleBandHeight;
@@ -357,7 +342,7 @@ public class VCFTrack extends FeatureTrack {
         if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
             final int left = trackRectangle.x;
             final int right = (int) trackRectangle.getMaxX();
-            drawBottomBorder(g2D, bottomY, left, right);
+            drawBorderLine(g2D, bottomY, left, right);
         }
     }
 
