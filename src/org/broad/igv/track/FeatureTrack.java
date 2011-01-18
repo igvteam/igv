@@ -58,7 +58,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(200);
 
-    private FeatureRenderer renderer;
+    private FeatureRenderer renderer =  new IGVFeatureRenderer();
 
     private DataRenderer coverageRenderer;
 
@@ -93,7 +93,7 @@ public class FeatureTrack extends AbstractTrack {
         this.source = source;
         setMinimumHeight(10);
         setColor(Color.blue.darker());
-        renderer = new IGVFeatureRenderer();
+
         coverageRenderer = new BarChartRenderer(); //HeatmapRenderer();
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();

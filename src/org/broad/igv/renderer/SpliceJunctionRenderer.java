@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
@@ -60,11 +61,15 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param context
      * @param trackRectangle
      * @param track
+     *     public void render(List<IGVFeature> featureList,
+                               RenderContext context,
+                               Rectangle trackRectangle,
+                               Track track) {
      */
     public void render(List<IGVFeature> featureList,
                                RenderContext context,
                                Rectangle trackRectangle,
-                               FeatureTrack track) {
+                               Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
