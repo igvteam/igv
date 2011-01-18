@@ -39,6 +39,7 @@ import java.util.List;
  *
  * @author dhmay
  */
+
 public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     private static Logger log = Logger.getLogger(SpliceJunctionRenderer.class);
@@ -66,6 +67,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                                Rectangle trackRectangle,
                                Track track) {
      */
+    @Override
     public void render(List<IGVFeature> featureList,
                                RenderContext context,
                                Rectangle trackRectangle,

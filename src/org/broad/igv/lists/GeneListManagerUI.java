@@ -83,6 +83,7 @@ public class GeneListManagerUI extends JDialog {
 
             {
                 groups.add(ALL);
+                groups.add(GeneListManager.DEFAULT_GROUP);
                 groups.addAll(GeneListManager.getGroups());
             }
 
@@ -196,9 +197,12 @@ public class GeneListManagerUI extends JDialog {
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
+            geneList.setGroup(GeneListManager.DEFAULT_GROUP);
+            GeneListManager.addGeneList(geneList);
             listModel.add(geneList);
             glJList.updateUI();
             glJList.setSelectedValue(geneList.getName(), true);
+            groupJList.updateUI();
             //loci.updateUI();
         }
     }
