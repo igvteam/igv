@@ -41,14 +41,14 @@ import java.util.*;
 public class VCFRenderer { //extends FeatureRenderer {
 
 
-    private static float alphaValue = (float) .1;
-    private static Color colorHomRef = Color.lightGray;
+    private static float alphaValue = 0.15f;
+    private static Color colorHomRef = new Color(215, 215, 215);
     private static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
-    private static Color colorHomVar = Color.cyan;
+    private static Color colorHomVar = new Color(0, 245,255);
     private static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
     private static Color colorHet = Color.blue;
     private static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
-    private static Color colorNoCall = Color.gray;
+    private static Color colorNoCall = Color.white;
     private static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
 
     private static int variantWidth = 3;
@@ -119,7 +119,9 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     }
 
-    public void renderAlleleBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
+    public void renderAlleleBand(VariantContext variant,
+                                 Rectangle bandRectangle,
+                                 int pX0, int dX,
                                  RenderContext context, boolean hideFiltered, VCFTrack.AlleleCount alleleCounts) {
 
 

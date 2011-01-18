@@ -25,6 +25,9 @@
 package org.broad.igv.ui;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author eflakes
@@ -33,6 +36,8 @@ public class FontManager {
 
     // Constants
     final public static String SCALABLE_FONT_NAME = "Lucida Sans";
+
+    static Hashtable<Integer, Font> fontCache = new Hashtable();
 
     static public void applyScalableTextFont(Graphics2D graphics2) {
 
@@ -48,8 +53,13 @@ public class FontManager {
         graphics2.setFont(font);
     }
 
-    static public Font getScalableFont(int size) {
-        return new Font(SCALABLE_FONT_NAME, Font.PLAIN, size);
+    static public Font getScalableFont(Integer size) {
+        Font font = fontCache.get(size);
+        if (font == null) {
+            font = new Font(SCALABLE_FONT_NAME, Font.PLAIN, size);
+            fontCache.put(size, font);
+        }
+        return font;
     }
 
     static public Font getScalableFont(int attribute, int size) {

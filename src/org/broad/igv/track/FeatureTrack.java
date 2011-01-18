@@ -49,7 +49,6 @@ public class FeatureTrack extends AbstractTrack {
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
     public static final int MINIMUM_FEATURE_SPACING = 1;
-    public static final int MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
@@ -462,9 +461,6 @@ public class FeatureTrack extends AbstractTrack {
 
     public void render(RenderContext context, Rectangle rect) {
         Rectangle renderRect = new Rectangle(rect);
-        renderRect.y = renderRect.y + MARGIN;
-        renderRect.height -= MARGIN;
-
 
         double windowSize = context.getEndLocation() - context.getOrigin();
 
