@@ -531,20 +531,14 @@ public class FeatureTrack extends AbstractTrack {
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-
             featuresLoading = true;
-
             loadFeatures(chr, start, end, context);
-
             if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
                 return;
             }
-
-
         }
 
-
-        renderFeatureImpl(context, inputRect, packedFeatures);
+       renderFeatureImpl(context, inputRect, packedFeatures);
 
 
     }

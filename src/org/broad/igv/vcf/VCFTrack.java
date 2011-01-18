@@ -80,6 +80,9 @@ public class VCFTrack extends FeatureTrack {
     private static float dash[] = {4.0f, 1.0f};
     DecimalFormat numFormat = new DecimalFormat("#.###");
 
+    // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
+    int top;
+
     private static Stroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
 
@@ -135,7 +138,11 @@ public class VCFTrack extends FeatureTrack {
     }
 
     @Override
-    protected void renderFeatureImpl(RenderContext context, Rectangle rect, PackedFeatures packedFeatures) {
+    protected void renderFeatureImpl(RenderContext context, Rectangle trackRectangle, PackedFeatures packedFeatures) {
+
+        // A hack
+        top = trackRectangle.y;
+
         double locScale = context.getScale();
         Rectangle visibleRectangle = context.getVisibleRect();
         Graphics2D g2D = context.getGraphics();
@@ -144,9 +151,9 @@ public class VCFTrack extends FeatureTrack {
 
         int windowStart = (int) context.getOrigin();
 
-
+        Rectangle rect = new Rectangle(trackRectangle);
         rect.height = getGenotypeBandHeight();
-        rect.y = getTop() + alleleBandHeight;
+        rect.y = trackRectangle.y + alleleBandHeight;
         colorBackground(g2D, rect, visibleRectangle, false, false);
 
 
@@ -157,7 +164,7 @@ public class VCFTrack extends FeatureTrack {
             int lastPX = -1;
             double pXEnd = rect.getMaxX();
             for (Feature feature : features) {
-                rect.y = getTop();
+                rect.y = trackRectangle.y;
 
                 VariantContext variant = (VariantContext) feature;
                 char ref = getReference(variant, windowStart, reference);
@@ -206,10 +213,15 @@ public class VCFTrack extends FeatureTrack {
             }
         } else {
             rect.height = alleleBandHeight;
-            rect.y = getTop();
+            rect.y = trackRectangle.y;
             g2D.setColor(Color.gray);
-            GraphicUtils.drawCenteredText("No Variants Found", rect, g2D);
+            GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
+        }
 
+        // Bottom border
+        int bottomY = trackRectangle.y + trackRectangle.height;
+        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
+            g2D.drawLine(trackRectangle.x, bottomY, (int) trackRectangle.getMaxX(), bottomY);
         }
     }
 
@@ -305,6 +317,9 @@ public class VCFTrack extends FeatureTrack {
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
+        // A hack
+        top = trackRectangle.y;
+
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getScalableFont(10));
@@ -347,8 +362,8 @@ public class VCFTrack extends FeatureTrack {
 
     private String getMousePOI(int pY) {
         String poi = "VARIANTBAND";
-        if (pY > (getTop() + alleleBandHeight)) {
-            int sampleNumber = (pY - getTop() - alleleBandHeight) / getGenotypeBandHeight();
+        if (pY > (top + alleleBandHeight)) {
+            int sampleNumber = (pY - top - alleleBandHeight) / getGenotypeBandHeight();
 
             try {
                 poi = samples.get(sampleNumber);
