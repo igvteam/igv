@@ -155,9 +155,9 @@ public class GeneListManager {
                     } else if (nextLine.startsWith("#description")) {
                         String[] tokens = nextLine.split("=");
                         if (tokens.length > 1) {
-                            group = tokens[1];
+                           description = tokens[1];
                         }
-                        description = tokens[1];
+
                     }
                 } else {
                     String[] tokens = nextLine.split("\\s+");

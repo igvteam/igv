@@ -91,7 +91,7 @@ public class History {
                 IGVMainFrame.getInstance().setGeneList(listName, false);
 
             } else {
-                IGVMainFrame.getInstance().setGeneList("None");
+                IGVMainFrame.getInstance().setGeneList("None", false);
                 (new SearchCommand(FrameManager.getDefaultFrame(), item, false)).execute();
                 IGVMainFrame.getInstance().refreshCommandBar();
             }

@@ -36,14 +36,13 @@ import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.util.stats.Histogram;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  *   TODO -- normalize option
@@ -75,9 +74,10 @@ public class CoverageCounter {
 
     WigWriter mismatchWigWriter;
     WigWriter isizeWigWriter;
+    WigWriter orientationWigWriter;
 
-    private float meanInsertSize;
-    private float stdDevInsertSize;
+    //private float meanInsertSize;
+    //private float stdDevInsertSize;
     private boolean computeTDF = true;
 
     private Histogram coverageHistogram;
@@ -90,7 +90,8 @@ public class CoverageCounter {
                            File tdfFile,  // For reference
                            File wigFile,
                            Genome genome,
-                           int strandOption) {
+                           int strandOption,
+                           String options) {
         this.alignmentFile = alignmentFile;
         this.tdfFile = tdfFile;
         this.consumer = consumer;
@@ -101,8 +102,27 @@ public class CoverageCounter {
         this.strandOption = strandOption;
         buffer = strandOption < 0 ? new float[1] : new float[2];
 
-        this.coverageHistogram = new Histogram(1000);
+        if (options != null) {
+            parseOptions(options);
+        }
+    }
 
+    private void parseOptions(String options) {
+        String[] opts = options.split(",");
+        for (String opt : opts) {
+
+            if (opt.equals("i")) {
+                computeISize();
+            } else if (opt.equals("o")) {
+                computeOrientation();
+            } else if (opt.equals("m")) {
+                computeMismatch();
+            } else if (opt.equals("h")) {
+                coverageHistogram = new Histogram(1000);
+            } else {
+                System.out.println("Unknown coverage option: " + opt);
+            }
+        }
     }
 
     public void computeMismatch() {
@@ -113,17 +133,27 @@ public class CoverageCounter {
         }
     }
 
-    public void computeISize(float meanInsertSize, float stdDevInsertSize) {
+    public void computeISize() { //float meanInsertSize, float stdDevInsertSize) {
         try {
-            this.meanInsertSize = meanInsertSize;
-            this.stdDevInsertSize = stdDevInsertSize;
+            //this.meanInsertSize = meanInsertSize;
+            //this.stdDevInsertSize = stdDevInsertSize;
             isizeWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".isize.wig"), windowSize, false);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
+    public void computeOrientation() {
+        try {
+            orientationWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".mismatch.wig"), windowSize, false);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+
     // TODO -- options to ovveride all of these checks
+
     private boolean passFilter(Alignment alignment) {
 
         if (strandOption > 0 && alignment.getFragmentStrand(strandOption) == Strand.NONE) {
@@ -184,7 +214,17 @@ public class CoverageCounter {
                             alignment.isPaired() && alignment.isProperPair() &&
                                     mate != null && mate.isMapped() && mate.getChr().equals(alignment.getChr());
                     if (properPair) {
-                        counter.incrementISize(alignment);
+                        //counter.incrementISize(alignment);
+
+                        if (isizeWigWriter != null) {
+                            float iSize = Math.min(1000, Math.abs(alignment.getInferredInsertSize()));
+                            isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, iSize);
+                        }
+                        if (orientationWigWriter != null) {
+                            String oStr = alignment.getPairOrientation();
+                            int orientation = getOrientation(oStr);
+                            orientationWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, orientation);
+                        }
                     }
 
 
@@ -259,13 +299,18 @@ public class CoverageCounter {
             if (isizeWigWriter != null) {
                 isizeWigWriter.close();
             }
+            if (orientationWigWriter != null) {
+                orientationWigWriter.close();
+            }
 
-            try {
-                PrintWriter pw = new PrintWriter(new FileWriter(tdfFile.getAbsolutePath() + ".hist.txt"));
-                coverageHistogram.print(pw);
-                pw.close();
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            if (coverageHistogram != null) {
+                try {
+                    PrintWriter pw = new PrintWriter(new FileWriter(tdfFile.getAbsolutePath() + ".hist.txt"));
+                    coverageHistogram.print(pw);
+                    pw.close();
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
         }
     }
@@ -288,14 +333,14 @@ public class CoverageCounter {
         public void incrementISize(Alignment alignment) {
             int startBucket = alignment.getStart() / windowSize;
             int endBucket = alignment.getAlignmentEnd() / windowSize;
-            for(int bucket=startBucket; bucket<= endBucket; bucket++) {
+            for (int bucket = startBucket; bucket <= endBucket; bucket++) {
                 int bucketStartPosition = bucket * windowSize;
                 int bucketEndPosition = bucketStartPosition + windowSize;
                 if (!counts.containsKey(bucket)) {
                     counts.put(bucket, new Counter(chr, bucketStartPosition, bucketEndPosition));
                 }
                 final Counter counter = counts.get(bucket);
-                counter.incrementISize(alignment.getInferredInsertSize()); 
+                counter.incrementISize(alignment.getInferredInsertSize());
             }
         }
 
@@ -353,18 +398,21 @@ public class CoverageCounter {
                         mismatchWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, mismatch);
                     }
 
-                    if (isizeWigWriter != null) {
-                        float zscore = counter.getISizeFraction();
-                        isizeWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, zscore);
-                    }
+                    //if (isizeWigWriter != null) {
+                    //float isizeScore = counter.getISizeFraction();
+                    //float isizeScore = counter.getAvgIsize();
+                    //isizeWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, isizeScore);
+                    //}
 
                     if (wigWriter != null) {
                         wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
                     }
 
-                    int [] baseCounts = counter.getBaseCount();
-                    for(int i=0; i<baseCounts.length; i++) {
-                        coverageHistogram.addDataPoint(baseCounts[i]);
+                    if (coverageHistogram != null) {
+                        int[] baseCounts = counter.getBaseCount();
+                        for (int i = 0; i < baseCounts.length; i++) {
+                            coverageHistogram.addDataPoint(baseCounts[i]);
+                        }
                     }
 
 
@@ -404,6 +452,7 @@ public class CoverageCounter {
         int ppCount = 0;
         int isizeCount = 0;
         float isizeZScore = 0;
+        float totalIsize = 0;
 
         Counter(String chr, int start, int end) {
             this.chr = chr;
@@ -429,9 +478,10 @@ public class CoverageCounter {
             //float zs = Math.min(6, (Math.abs(inferredInsertSize) - meanInsertSize) / stdDevInsertSize);
             //isizeZScore += zs;
             ppCount++;
-            if(Math.abs(Math.abs(inferredInsertSize) - meanInsertSize) > 2*stdDevInsertSize) {
-                isizeCount++;
-            }
+            //if (Math.abs(Math.abs(inferredInsertSize) - meanInsertSize) > 2 * stdDevInsertSize) {
+            //    isizeCount++;
+            //}
+            totalIsize += Math.abs(inferredInsertSize);
         }
 
         void incrementNeg() {
@@ -462,6 +512,10 @@ public class CoverageCounter {
             return frac;
             //float avg = isizeZScore / ppCount;
             //return avg;
+        }
+
+        float getAvgIsize() {
+            return ppCount == 0 ? 0 : totalIsize / ppCount;
         }
 
         public int[] getBaseCount() {
@@ -521,6 +575,21 @@ public class CoverageCounter {
             pw.println("variableStep chrom=" + chr + " span=" + span);
         }
 
+    }
+
+
+    // Temporary hack,  illumina only 1 = duplication/translocation,  0 = normal, -1 = inverstion
+
+    private int getOrientation(String oStr) {
+
+        if (oStr.equals("R1F2") || oStr.equals("R2F1")) {
+            return 1;
+        }
+        if (oStr.equals("F1F2") || oStr.equals("F2F1") ||
+                oStr.equals("R1R2") || oStr.equals("R2R1")) {
+            return -1;
+        }
+        return 0;
     }
 
 
