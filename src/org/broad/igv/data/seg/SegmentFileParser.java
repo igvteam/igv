@@ -31,8 +31,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 /**
- * @author Enter your name here...
- * @version Enter version here..., 09/01/09
+ * @author jrobinso
  */
 public class SegmentFileParser implements SegFileParser {
 

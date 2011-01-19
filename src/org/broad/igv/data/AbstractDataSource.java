@@ -79,8 +79,7 @@ public abstract class AbstractDataSource implements DataSource {
      * @param zoom
      * @return
      */
-    protected List<SummaryTile> getPrecomputedSummaryTiles(String chr, int startLocation, int endLocation,
-                                                           int zoom) {
+    protected List<SummaryTile> getPrecomputedSummaryTiles(String chr, int startLocation, int endLocation, int zoom) {
         return null;
     }
 

@@ -75,12 +75,15 @@ public class CoverageCounter {
     WigWriter mismatchWigWriter;
     WigWriter isizeWigWriter;
     WigWriter orientationWigWriter;
+    WigWriter indelWigWriter;
+    WigWriter nomateWigWriter;
 
     //private float meanInsertSize;
     //private float stdDevInsertSize;
     private boolean computeTDF = true;
 
     private Histogram coverageHistogram;
+    private static final double LOG_1__1 = 0.09531018;
 
 
     public CoverageCounter(String alignmentFile,
@@ -117,6 +120,10 @@ public class CoverageCounter {
                 computeOrientation();
             } else if (opt.equals("m")) {
                 computeMismatch();
+            } else if (opt.equals("d")) {
+                computeIndel();
+            } else if (opt.equals("n")) {
+                computeNomate();
             } else if (opt.equals("h")) {
                 coverageHistogram = new Histogram(1000);
             } else {
@@ -146,6 +153,22 @@ public class CoverageCounter {
     public void computeOrientation() {
         try {
             orientationWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".orientation.wig"), windowSize, false);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void computeIndel() {
+        try {
+            indelWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".indel.wig"), windowSize, false);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
+
+    public void computeNomate() {
+        try {
+            nomateWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".nomate.wig"), windowSize, false);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -209,28 +232,48 @@ public class CoverageCounter {
                         lastChr = alignmentChr;
                     }
 
-                    ReadMate mate = alignment.getMate();
-                    boolean properPair =
-                            alignment.isPaired() && alignment.isProperPair() &&
-                                    mate != null && mate.isMapped() && mate.getChr().equals(alignment.getChr());
-                    if (properPair) {
-                        //counter.incrementISize(alignment);
+                    if (alignment.isPaired()) {
 
-                        if (isizeWigWriter != null) {
-                            float iSize = Math.min(1000, Math.abs(alignment.getInferredInsertSize()));
-                            isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, iSize);
+                        ReadMate mate = alignment.getMate();
+                        boolean mateMapped = mate != null && mate.isMapped();
+                        boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
+
+                        if (isizeWigWriter != null && mateMapped && sameChromosome) {
+                            int isize = Math.abs(alignment.getInferredInsertSize());
+                            float score = Math.min(900, isize);
+                            if (isize > 900) {
+                                score += (float) (Math.log(isize - 900) / LOG_1__1);
+                            }
+                            isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getEnd(), score);
                         }
-                        if (orientationWigWriter != null) {
+
+                        //if(interChrWigWriter != null && mateMapped && !sameChromosome) {
+                        //
+                        //}
+
+                        if (orientationWigWriter != null && mateMapped && sameChromosome) {
                             String oStr = alignment.getPairOrientation();
                             int orientation = getOrientation(oStr);
+
                             orientationWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, orientation);
+                        }
+
+                        if (nomateWigWriter != null && !mateMapped) {
+
                         }
                     }
 
 
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                     if (blocks != null) {
+                        int lastBlockEnd = -1;
                         for (AlignmentBlock block : blocks) {
+
+                            if (indelWigWriter != null && lastBlockEnd >= 0) {
+                                int s = block.getStart();
+                                counter.incrementIndel(lastBlockEnd, s);
+                            }
+
                             byte[] bases = block.getBases();
                             int blockStart = block.getStart();
                             int adjustedStart = block.getStart();
@@ -249,6 +292,8 @@ public class CoverageCounter {
                                 }
                                 counter.incrementCount(pos, base);
                             }
+
+                            lastBlockEnd = block.getEnd();
                         }
                     } else {
                         int adjustedStart = alignment.getAlignmentStart();
@@ -263,13 +308,29 @@ public class CoverageCounter {
                             counter.incrementCount(pos, (byte) 0);
                         }
                     }
+
+                    if (indelWigWriter != null) {
+                        for (AlignmentBlock block : alignment.getInsertions()) {
+                            counter.incrementIndel(block.getStart()-1, block.getStart());
+                        }
+
+                    }
                 }
 
             }
-        } catch (Exception e) {
+        }
+
+        catch (
+                Exception e
+                )
+
+        {
             e.printStackTrace();
         }
-        finally {
+
+        finally
+
+        {
             if (counter != null) {
                 counter.closeBucketsBefore(Integer.MAX_VALUE);
             }
@@ -302,6 +363,12 @@ public class CoverageCounter {
             if (orientationWigWriter != null) {
                 orientationWigWriter.close();
             }
+            if (indelWigWriter != null) {
+                indelWigWriter.close();
+            }
+            if (nomateWigWriter != null) {
+                nomateWigWriter.close();
+            }
 
             if (coverageHistogram != null) {
                 try {
@@ -329,6 +396,20 @@ public class CoverageCounter {
             counter.increment(position, base);
         }
 
+
+        void incrementIndel(int startPosition, int endPosition) {
+            for (int position = startPosition; position < endPosition; position++) {
+                final Counter counter = getBucket(position);
+                counter.incrementIndel(position);
+            }
+        }
+
+        void incrementNomate(int startPosition, int endPosition) {
+            for (int position = startPosition; position < endPosition; position++) {
+                final Counter counter = getBucket(position);
+                counter.incrementNomate();
+            }
+        }
 
         public void incrementISize(Alignment alignment) {
             int startBucket = alignment.getStart() / windowSize;
@@ -398,6 +479,16 @@ public class CoverageCounter {
                         mismatchWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, mismatch);
                     }
 
+                    if (indelWigWriter != null) {
+                        float indelCount = counter.getMaxIndelFraction();
+                        indelWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, indelCount);
+                    }
+
+                    if (nomateWigWriter != null) {
+                        int nomateCount = counter.getNomateCount();
+                        nomateWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, nomateCount);
+                    }
+
                     //if (isizeWigWriter != null) {
                     //float isizeScore = counter.getISizeFraction();
                     //float isizeScore = counter.getAvgIsize();
@@ -443,12 +534,15 @@ public class CoverageCounter {
 
         int count = 0;
         int negCount = 0;
+        int nomateCount = 0;
         String chr;
         int start;
         int end;
         byte[] ref;
+        int[] indelCount;
         int[] baseCount;
         int[] baseMismatchCount;
+
         int ppCount = 0;
         int isizeCount = 0;
         float isizeZScore = 0;
@@ -459,6 +553,7 @@ public class CoverageCounter {
             this.start = start;
             this.end = end;
             baseCount = new int[end - start];
+            indelCount = new int[end - start];
             baseMismatchCount = new int[end - start];
             ref = SequenceManager.readSequence("hg18", chr, start, end);
         }
@@ -473,6 +568,23 @@ public class CoverageCounter {
             count++;
         }
 
+        void incrementIndel(int position) {
+            int offset = position - start;
+            indelCount[offset]++;
+        }
+
+
+        public void incrementNomate() {
+            nomateCount++;
+        }
+
+        int getNomateCount() {
+            return nomateCount;
+        }
+
+        int getNegCount() {
+            return negCount;
+        }
 
         public void incrementISize(int inferredInsertSize) {
             //float zs = Math.min(6, (Math.abs(inferredInsertSize) - meanInsertSize) / stdDevInsertSize);
@@ -492,14 +604,19 @@ public class CoverageCounter {
             return count;
         }
 
-        int getNegCount() {
-            return negCount;
-        }
 
         float getMaxMismatchFraction() {
             float max = 0.0f;
             for (int i = 0; i < baseMismatchCount.length; i++) {
                 max = Math.max(max, (float) baseMismatchCount[i] / getBaseCount()[i]);
+            }
+            return max;
+        }
+
+        float getMaxIndelFraction() {
+            float max = 0.0f;
+            for (int i = 0; i < indelCount.length; i++) {
+                max = Math.max(max, (float) indelCount[i] / getBaseCount()[i]);
             }
             return max;
         }
@@ -521,6 +638,7 @@ public class CoverageCounter {
         public int[] getBaseCount() {
             return baseCount;
         }
+
     }
 
     /**
