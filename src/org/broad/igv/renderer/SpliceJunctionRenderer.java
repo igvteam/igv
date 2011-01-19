@@ -110,8 +110,19 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-                double virtualPixelStart = Math.round((feature.getStart() - origin) / locScale);
-                double virtualPixelEnd = Math.round((feature.getEnd() - origin) / locScale);
+                int junctionStart = feature.getStart();
+                int junctionEnd = feature.getEnd();
+                List<Exon> exons = feature.getExons();
+                //All features should have exons -- I'm just hedging my bets with the if.  The exons, in the case
+                //of a junction bed file, represent the area between the end of the read and the splice
+                //junction itself.  So, to determine the junction start and end points, just take away
+                //those exon lengths.
+                if (exons != null && exons.size() == 2) {
+                    junctionStart += exons.get(0).getEnd() - exons.get(0).getStart();
+                    junctionEnd -= exons.get(1).getEnd() - exons.get(1).getStart();
+                }
+                double virtualPixelStart = Math.round((junctionStart - origin) / locScale);
+                double virtualPixelEnd = Math.round((junctionEnd - origin) / locScale);
 
                 // If the any part of the feature fits in the
                 // Track rectangle draw it
