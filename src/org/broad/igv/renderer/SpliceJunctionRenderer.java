@@ -110,19 +110,25 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-                int junctionStart = feature.getStart();
-                int junctionEnd = feature.getEnd();
+                int featureStart = feature.getStart();
+                int featureEnd = feature.getEnd();
+
+                int junctionStart = featureStart;
+                int junctionEnd = featureEnd;
                 List<Exon> exons = feature.getExons();
-                //All features should have exons -- I'm just hedging my bets with the if.  The exons, in the case
-                //of a junction bed file, represent the area between the end of the read and the splice
-                //junction itself.  So, to determine the junction start and end points, just take away
-                //those exon lengths.
+                //All features should have 2 exons -- I'm just hedging my bets with the if.  The exons,
+                // in the case of a junction bed file, represent the area between the end of the read and
+                // the splice junction itself.  So, to determine the junction start and end points, just
+                // take away those exon lengths.
                 if (exons != null && exons.size() == 2) {
                     junctionStart += exons.get(0).getEnd() - exons.get(0).getStart();
                     junctionEnd -= exons.get(1).getEnd() - exons.get(1).getStart();
                 }
-                double virtualPixelStart = Math.round((junctionStart - origin) / locScale);
-                double virtualPixelEnd = Math.round((junctionEnd - origin) / locScale);
+                double virtualPixelStart = Math.round((featureStart - origin) / locScale);
+                double virtualPixelEnd = Math.round((featureEnd - origin) / locScale);
+
+                double virtualPixelJunctionStart = Math.round((junctionStart - origin) / locScale);
+                double virtualPixelJunctionEnd = Math.round((junctionEnd - origin) / locScale);
 
                 // If the any part of the feature fits in the
                 // Track rectangle draw it
@@ -152,7 +158,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                     }
 
 
-                    drawFeatureFilledArc((int) virtualPixelStart, (int) virtualPixelEnd, depth,
+                    drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
+                            (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
                             trackRectangle, context, feature.getStrand());
 
                     // Determine the y offset of features based on strand type
@@ -184,12 +191,15 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     /**
      * Draw a filled arc representing a single feature. The thickness and height of the arc are proportional to the
      * depth of coverage.  Some of this gets a bit arcane -- the result of lots of visual tweaking.
-     * @param pixelStart the starting position of the feature, whether on-screen or not
-     * @param pixelEnd the ending position of the feature, whether on-screen or not
+     * @param pixelFeatureStart the starting position of the feature, whether on-screen or not
+     * @param pixelFeatureEnd the ending position of the feature, whether on-screen or not
+     * @param pixelJunctionStart the starting position of the junction, whether on-screen or not
+     * @param pixelJunctionEnd the ending position of the junction, whether on-screen or not
      * @param depth coverage depth
      * @param trackRectangle
      */
-    final private void drawFeatureFilledArc(int pixelStart, int pixelEnd, float depth,
+    final private void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
+                                   int pixelJunctionStart, int pixelJunctionEnd, float depth,
                                         Rectangle trackRectangle, RenderContext context, Strand strand) {
         boolean isPositiveStrand = true;
         // Get the feature's direction, color appropriately
@@ -199,6 +209,20 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         Color color = isPositiveStrand ? ARC_COLOR_POS : ARC_COLOR_NEG;
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
+
+        //Draw rectangles indicating the overlap on each side of the junction
+        int overlapRectHeight = 3;
+        int overlapRectTopX = (int)trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
+        if (pixelFeatureStart < pixelJunctionStart)
+        {
+            g2D.fillRect(pixelFeatureStart, overlapRectTopX,
+                    pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
+        }
+        if (pixelJunctionEnd < pixelFeatureEnd)
+        {
+            g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
+                    pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+        }
 
         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
         //bottom arcs are based on the boundary points of the rectangles containing the arcs
@@ -230,16 +254,16 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         int innerBezierY = arcBeginY + (int) (1.5 * (innerArcPeakY - arcBeginY));
 
         //Putting the Bezier control points slightly off to the sides of the arc 
-        int bezierXPad = 1;
+        int bezierXPad = Math.max(1, (pixelJunctionEnd - pixelJunctionStart) / 30);
 
         GeneralPath arcPath = new GeneralPath();
-        arcPath.moveTo(pixelStart, arcBeginY);
-        arcPath.curveTo(pixelStart-bezierXPad, outerBezierY, //Bezier 1
-                pixelEnd+bezierXPad, outerBezierY,         //Bezier 2
-                pixelEnd, arcBeginY);        //Arc end
-        arcPath.curveTo(pixelEnd+bezierXPad, innerBezierY, //Bezier 1
-                pixelStart-bezierXPad, innerBezierY,         //Bezier 2
-                pixelStart, arcBeginY);        //Arc end
+        arcPath.moveTo(pixelJunctionStart, arcBeginY);
+        arcPath.curveTo(pixelJunctionStart-bezierXPad, outerBezierY, //Bezier 1
+                pixelJunctionEnd+bezierXPad, outerBezierY,         //Bezier 2
+                pixelJunctionEnd, arcBeginY);        //Arc end
+        arcPath.curveTo(pixelJunctionEnd+bezierXPad, innerBezierY, //Bezier 1
+                pixelJunctionStart-bezierXPad, innerBezierY,         //Bezier 2
+                pixelJunctionStart, arcBeginY);        //Arc end
 
         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also
         //give the arc a darker outline
