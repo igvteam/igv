@@ -913,7 +913,6 @@ public class TrackMenuUtils {
 
     public static void refresh() {
         UIUtilities.invokeOnEventThread(new Runnable() {
-
             public void run() {
 
                 IGVMainFrame.getInstance().showLoadedTrackCount();

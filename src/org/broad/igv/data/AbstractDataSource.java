@@ -347,6 +347,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     public void setWindowFunction(WindowFunction statType) {
         this.windowFunction = statType;
+        this.summaryTileCache.clear();
     }
 
 

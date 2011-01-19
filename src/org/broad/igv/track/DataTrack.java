@@ -60,9 +60,11 @@ public abstract class DataTrack extends AbstractTrack {
     private boolean featuresLoading = false;
 
 
+
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         autoscale = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_AUTOSCALE);
+
     }
 
     public boolean isAutoscale() {
@@ -145,6 +147,13 @@ public abstract class DataTrack extends AbstractTrack {
         }
 
     }
+
+
+
+    public void clearCaches() {
+        loadedIntervalCache.clear();
+    }
+
 
 
     public void setRendererClass(Class rc) {

@@ -36,7 +36,6 @@ import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.util.stats.Histogram;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -234,6 +233,8 @@ public class CoverageCounter {
 
                     if (alignment.isPaired()) {
 
+                        counter.incrementPairedCount (alignment.getStart());
+
                         ReadMate mate = alignment.getMate();
                         boolean mateMapped = mate != null && mate.isMapped();
                         boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
@@ -244,7 +245,8 @@ public class CoverageCounter {
                             if (isize > 900) {
                                 score += (float) (Math.log(isize - 900) / LOG_1__1);
                             }
-                            isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getEnd(), score);
+                            // Plot looks better if we record this for a point (start pos) rather than the alignment extent
+                            isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, score);
                         }
 
                         //if(interChrWigWriter != null && mateMapped && !sameChromosome) {
@@ -254,12 +256,11 @@ public class CoverageCounter {
                         if (orientationWigWriter != null && mateMapped && sameChromosome) {
                             String oStr = alignment.getPairOrientation();
                             int orientation = getOrientation(oStr);
-
-                            orientationWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, orientation);
+                            counter.incrementOrientation(alignment.getStart(), orientation);
                         }
 
                         if (nomateWigWriter != null && !mateMapped) {
-
+                            counter.incrementNomate(alignment.getStart());
                         }
                     }
 
@@ -311,7 +312,7 @@ public class CoverageCounter {
 
                     if (indelWigWriter != null) {
                         for (AlignmentBlock block : alignment.getInsertions()) {
-                            counter.incrementIndel(block.getStart()-1, block.getStart());
+                            counter.incrementIndel(block.getStart() - 1, block.getStart());
                         }
 
                     }
@@ -369,7 +370,6 @@ public class CoverageCounter {
             if (nomateWigWriter != null) {
                 nomateWigWriter.close();
             }
-
             if (coverageHistogram != null) {
                 try {
                     PrintWriter pw = new PrintWriter(new FileWriter(tdfFile.getAbsolutePath() + ".hist.txt"));
@@ -404,12 +404,22 @@ public class CoverageCounter {
             }
         }
 
-        void incrementNomate(int startPosition, int endPosition) {
-            for (int position = startPosition; position < endPosition; position++) {
-                final Counter counter = getBucket(position);
-                counter.incrementNomate();
-            }
+        void incrementNomate(int position) {
+            final Counter counter = getBucket(position);
+            counter.incrementNomate();
         }
+
+        void incrementOrientation(int position, int orientation) {
+            final Counter counter = getBucket(position);
+            counter.incrementOrientation(orientation);
+        }
+
+        void incrementPairedCount(int position) {
+            final Counter counter = getBucket(position);
+            counter.incrementPairedCount();
+        }
+
+
 
         public void incrementISize(Alignment alignment) {
             int startBucket = alignment.getStart() / windowSize;
@@ -485,8 +495,19 @@ public class CoverageCounter {
                     }
 
                     if (nomateWigWriter != null) {
-                        int nomateCount = counter.getNomateCount();
+                        float nomateCount = counter.getNomateFraction();
                         nomateWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, nomateCount);
+                    }
+                    if (orientationWigWriter != null) {
+                        float posOrientation = counter.getPosOrientationFraction();
+                        if (posOrientation > 0) {
+                            orientationWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, posOrientation);
+                        }
+                        float negOrientation = counter.getNegOrientationFraction();
+                        if (negOrientation > 0) {
+                            orientationWigWriter.addData(chr, bucketStartPosition, bucketEndPosition, negOrientation);
+                        }
+
                     }
 
                     //if (isizeWigWriter != null) {
@@ -534,7 +555,9 @@ public class CoverageCounter {
 
         int count = 0;
         int negCount = 0;
-        int nomateCount = 0;
+        float nomateCount = 0;
+        float posOrientationCount = 0;
+        float negOrientationCount = 0;
         String chr;
         int start;
         int end;
@@ -555,6 +578,8 @@ public class CoverageCounter {
             baseCount = new int[end - start];
             indelCount = new int[end - start];
             baseMismatchCount = new int[end - start];
+
+            // TODO -- obviously remove this hardcoded genomem reference
             ref = SequenceManager.readSequence("hg18", chr, start, end);
         }
 
@@ -568,9 +593,21 @@ public class CoverageCounter {
             count++;
         }
 
+        void incrementPairedCount() {
+            ppCount++;
+        }
+
         void incrementIndel(int position) {
             int offset = position - start;
             indelCount[offset]++;
+        }
+
+        void incrementOrientation(int orientation) {
+            if (orientation > 0) {
+                posOrientationCount++;
+            } else if (orientation < 0) {
+                negOrientationCount++;
+            }
         }
 
 
@@ -578,8 +615,8 @@ public class CoverageCounter {
             nomateCount++;
         }
 
-        int getNomateCount() {
-            return nomateCount;
+        float getNomateFraction() {
+            return (ppCount == 0 ? 0 : nomateCount / ppCount);
         }
 
         int getNegCount() {
@@ -589,7 +626,7 @@ public class CoverageCounter {
         public void incrementISize(int inferredInsertSize) {
             //float zs = Math.min(6, (Math.abs(inferredInsertSize) - meanInsertSize) / stdDevInsertSize);
             //isizeZScore += zs;
-            ppCount++;
+            //ppCount++;
             //if (Math.abs(Math.abs(inferredInsertSize) - meanInsertSize) > 2 * stdDevInsertSize) {
             //    isizeCount++;
             //}
@@ -639,6 +676,13 @@ public class CoverageCounter {
             return baseCount;
         }
 
+        public float getPosOrientationFraction() {
+            return ppCount == 0 ? 0 : posOrientationCount / ppCount;
+        }
+
+        public float getNegOrientationFraction() {
+            return ppCount == 0 ? 0 : negOrientationCount / ppCount;
+        }
     }
 
     /**
