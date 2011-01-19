@@ -828,12 +828,14 @@ public class TrackLoader {
         String path = locator.getPath();
         TrackProperties props = ds.getTrackProperties();
 
-        // The "freq" track.  Make this optional?
-        FreqData fd = new FreqData(ds);
-        String freqTrackId = path;
-        String freqTrackName = (new File(path)).getName();
-        CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-        newTracks.add(freqTrack);
+        // The "freq" track.  TODO - make this optional
+        if (ds.getSampleNames().size() > 1) {
+            FreqData fd = new FreqData(ds);
+            String freqTrackId = path;
+            String freqTrackName = (new File(path)).getName();
+            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            newTracks.add(freqTrack);
+        }
 
         for (String trackName : ds.getDataHeadings()) {
             String trackId = path + "_" + trackName;

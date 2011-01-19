@@ -162,8 +162,8 @@ public class VCFTrack extends FeatureTrack {
         if (features.size() > 0) {
 
             double locScale = context.getScale();
-            byte[] reference = null;
-            int windowStart = (int) context.getOrigin();
+            //byte[] reference;
+            //int windowStart;
             int lastPX = -1;
             double pXEnd = rect.getMaxX();
 
@@ -182,7 +182,7 @@ public class VCFTrack extends FeatureTrack {
                     break;
                 }
 
-                if (pX > lastPX) {
+                if (pX + dX > lastPX) {
                     ZygosityCount zygCounts = getZygosityCounts(variant);
 
                     rect.y = top;
@@ -210,7 +210,7 @@ public class VCFTrack extends FeatureTrack {
                             rect.y += rect.height;
                         }
                     }
-                    lastPX = pX;
+                    lastPX = pX + dX;
                 }
 
             }

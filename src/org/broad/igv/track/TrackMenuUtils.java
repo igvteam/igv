@@ -59,7 +59,21 @@ public class TrackMenuUtils {
 
     static Logger log = Logger.getLogger(TrackMenuUtils.class);
     final static String LEADING_HEADING_SPACER = "  ";
+    static Font boldFont = FontManager.getScalableFont(Font.BOLD, 12);
 
+
+
+    public static JidePopupMenu getEmptyPopup(String title) {
+        JidePopupMenu menu = new JidePopupMenu();
+
+        JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
+        popupTitle.setFont(boldFont);
+        if (popupTitle != null) {
+            menu.add(popupTitle);
+            menu.addSeparator();
+        }
+        return menu;
+    }
 
     /**
      * Return a popup menu with items applicable to the collection of tracks.
@@ -79,22 +93,11 @@ public class TrackMenuUtils {
 
     }
 
-    public static JidePopupMenu getEmptyPopup(String title) {
-        JidePopupMenu menu = new JidePopupMenu();
-
-        JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
-        Font newFont = FontManager.getScalableFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        if (popupTitle != null) {
-            menu.add(popupTitle);
-            menu.addSeparator();
-        }
-        return menu;
-    }
-
     public static void addStandardItems(JPopupMenu menu, Collection<Track> tracks, TrackClickEvent te) {
+
         boolean hasDataTracks = false;
         boolean hasFeatureTracks = false;
+        boolean hasOtherTracks = false;
         for (Track track : tracks) {
 
             //  TODO -- this is ugly, refactor to remove instanceof
@@ -103,17 +106,24 @@ public class TrackMenuUtils {
             } else if (track instanceof FeatureTrack) {
                 hasFeatureTracks = true;
             }
-            if (hasDataTracks && hasFeatureTracks) {
+            else {
+                hasOtherTracks = true;
+            }
+            if (hasDataTracks && hasFeatureTracks && hasOtherTracks) {
                 break;
             }
         }
 
-        if (hasDataTracks && hasFeatureTracks) {
-            addSharedItems(menu, tracks);
-        } else if (hasDataTracks) {
+        boolean featureTracksOnly = hasFeatureTracks && !hasDataTracks && !hasOtherTracks;
+        boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
+
+        addSharedItems(menu, tracks, hasFeatureTracks);
+        if (dataTracksOnly) {
+            menu.addSeparator();
             addDataItems(menu, tracks);
-        } else {
-            addFeatureItems(menu, tracks, te, hasFeatureTracks);
+        } else if (featureTracksOnly) {
+            menu.addSeparator();
+            addFeatureItems(menu, tracks, te);
         }
 
         ReferenceFrame frame = te.getFrame();
@@ -121,13 +131,15 @@ public class TrackMenuUtils {
             menu.addSeparator();
             addZoomItems(menu, frame);
         }
+
+        menu.addSeparator();
+        menu.add(getRemoveMenuItem(tracks));
+
     }
 
     public static void addZoomItems(JPopupMenu menu, final ReferenceFrame frame) {
 
-        menu.addSeparator();
-
-        if (FrameManager.isGeneListMode()) {
+       if (FrameManager.isGeneListMode()) {
             JMenuItem item = new JMenuItem("Reset view");
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -178,9 +190,8 @@ public class TrackMenuUtils {
 
         //JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
 
-        Font newFont = FontManager.getScalableFont(Font.BOLD, 12);
         JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
-        rendererHeading.setFont(newFont);
+        rendererHeading.setFont(boldFont);
 
         menu.add(rendererHeading);
 
@@ -238,7 +249,7 @@ public class TrackMenuUtils {
 
         if (!avaibleWindowFunctions.isEmpty() || !currentWindowFunctions.isEmpty()) {
             JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
-            statisticsHeading.setFont(newFont);
+            statisticsHeading.setFont(boldFont);
 
             menu.add(statisticsHeading);
 
@@ -263,10 +274,11 @@ public class TrackMenuUtils {
         }
 
         JLabel scaleHeading = new JLabel(LEADING_HEADING_SPACER + "Data Range", JLabel.LEFT);
-        scaleHeading.setFont(newFont);
+        scaleHeading.setFont(boldFont);
         menu.add(scaleHeading);
 
         menu.add(getDataRangeItem(tracks));
+        menu.add(getHeatmapScaleItem(tracks));
 
         if (tracks.size() > 0) {
             menu.add(getLogScaleItem(tracks));
@@ -274,21 +286,11 @@ public class TrackMenuUtils {
 
         menu.add(getAutoscaleItem(tracks));
 
-        menu.add(getHeatmapScaleItem(tracks));
 
         menu.add(getShowDataRangeItem(tracks));
 
-        JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
-        trackSettingsHeading.setFont(newFont);
 
-        menu.add(trackSettingsHeading);
-
-        menu.add(getTrackRenameItem(tracks));
-
-        addTrackSettingsMenuItems(menu, false, tracks);
-
-        menu.addSeparator();
-        menu.add(getChangeKMPlotItem(tracks));
+        //menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -297,70 +299,41 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks,
-                                        TrackClickEvent te, boolean hasFeatureTracks) {
-
-        MouseEvent e = te.getMouseEvent();
-
-        //JPopupMenu featurePopupMenu = new JidePopupMenu();
-
-        //JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title,
-        //        JLabel.CENTER);
-
-        Font newFont = featurePopupMenu.getFont().deriveFont(Font.BOLD, 12);
-        // popupTitle.setFont(newFont);
-        // if (popupTitle != null) {
-        //     featurePopupMenu.add(popupTitle);
-        //     featurePopupMenu.addSeparator();
-        // }
+    private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
 
 
-        JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
+        featurePopupMenu.add(getExpandCollapseItem(tracks));
 
-        trackSettingsHeading.setFont(newFont);
+        featurePopupMenu.add(getChangeFontSizeItem(tracks));
 
-        featurePopupMenu.add(trackSettingsHeading);
+        if (tracks.size() == 1) {
+            Track t = tracks.iterator().next();
+            Feature f = t.getFeatureAtMousePosition(te);
+            if (f != null) {
+                featurePopupMenu.addSeparator();
 
-        featurePopupMenu.add(getTrackRenameItem(tracks));
-
-
-        if (hasFeatureTracks) {
-
-            featurePopupMenu.add(getExpandCollapseItem(tracks));
-
-            featurePopupMenu.add(getChangeFontSizeItem(tracks));
-
-            if (tracks.size() == 1) {
-                Track t = tracks.iterator().next();
-                Feature f = t.getFeatureAtMousePosition(te);
-                if (f != null) {
-                    featurePopupMenu.addSeparator();
-
-                    // If we are over an exon, copy its sequence instead of the entire feature.
-                    if (f instanceof IGVFeature) {
-                        double position = te.getChromosomePosition();
-                        Collection<Exon> exons = ((IGVFeature) f).getExons();
-                        if (exons != null) {
-                            for (Exon exon : exons) {
-                                if (position > exon.getStart() && position < exon.getEnd()) {
-                                    f = exon;
-                                    break;
-                                }
+                // If we are over an exon, copy its sequence instead of the entire feature.
+                if (f instanceof IGVFeature) {
+                    double position = te.getChromosomePosition();
+                    Collection<Exon> exons = ((IGVFeature) f).getExons();
+                    if (exons != null) {
+                        for (Exon exon : exons) {
+                            if (position > exon.getStart() && position < exon.getEnd()) {
+                                f = exon;
+                                break;
                             }
                         }
                     }
-
-
-                    featurePopupMenu.add(getCopyDetailsItem(f, te));
-                    featurePopupMenu.add(getCopySequenceItem(f));
                 }
-            }
 
-            featurePopupMenu.addSeparator();
-            featurePopupMenu.add(getChangeFeatureWindow(tracks));
-            featurePopupMenu.addSeparator();
-            addTrackSettingsMenuItems(featurePopupMenu, true, tracks);
+
+                featurePopupMenu.add(getCopyDetailsItem(f, te));
+                featurePopupMenu.add(getCopySequenceItem(f));
+            }
         }
+
+        featurePopupMenu.addSeparator();
+        featurePopupMenu.add(getChangeFeatureWindow(tracks));
     }
 
     /**
@@ -368,28 +341,25 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    private static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks) {
+    private static void addSharedItems(JPopupMenu menu, final Collection<Track> tracks, boolean hasFeatureTracks) {
 
-        JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
-        menu.add(trackSettingsHeading);
-        addTrackSettingsMenuItems(menu, false, tracks);
+        //JLabel trackSettingsHeading = new JLabel(LEADING_HEADING_SPACER + "Track Settings", JLabel.LEFT);
+        //trackSettingsHeading.setFont(boldFont);
+        //menu.add(trackSettingsHeading);
 
-    }
+        menu.add(getTrackRenameItem(tracks));
 
-
-    private static void addTrackSettingsMenuItems(JPopupMenu menu, boolean featureTracksOnly, final Collection<Track> tracks) {
-        String colorLabel = featureTracksOnly
+        String colorLabel = hasFeatureTracks
                 ? "Change Track Color" : "Change Track Color (Positive Values)";
         JMenuItem item = new JMenuItem(colorLabel);
         item.addActionListener(new TrackActionListener() {
-
             public void action() {
                 changeTrackColor(tracks);
             }
         });
         menu.add(item);
 
-        if (!featureTracksOnly) {
+        if (!hasFeatureTracks) {
 
             // Change track color by attribute
             item = new JMenuItem("Change Track Color (Negative Values)");
@@ -404,8 +374,6 @@ public class TrackMenuUtils {
         }
 
         menu.add(getChangeTrackHeightItem(tracks));
-
-        menu.add(getRemoveMenuItem(tracks));
     }
 
 
