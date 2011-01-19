@@ -145,7 +145,7 @@ public class CoverageCounter {
 
     public void computeOrientation() {
         try {
-            orientationWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".mismatch.wig"), windowSize, false);
+            orientationWigWriter = new WigWriter(new File(tdfFile.getAbsolutePath() + ".orientation.wig"), windowSize, false);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

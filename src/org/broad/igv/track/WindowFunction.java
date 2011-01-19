@@ -29,6 +29,7 @@ package org.broad.igv.track;
  */
 public enum WindowFunction {
 
+    none("None"),
     mean("Mean"),
     median("Median"),
     min("Minimum"),
@@ -54,7 +55,9 @@ public enum WindowFunction {
     static public WindowFunction getWindowFunction(String name) {
 
         WindowFunction windowFunction = null;
-        if (WindowFunction.mean.name().equals(name)) {
+        if (WindowFunction.none.name().equals(name)) {
+            windowFunction = WindowFunction.none;
+        } else if (WindowFunction.mean.name().equals(name)) {
             windowFunction = WindowFunction.mean;
         } else if (WindowFunction.median.name().equals(name)) {
             windowFunction = WindowFunction.median;

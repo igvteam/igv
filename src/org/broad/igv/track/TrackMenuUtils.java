@@ -60,7 +60,17 @@ public class TrackMenuUtils {
     static Logger log = Logger.getLogger(TrackMenuUtils.class);
     final static String LEADING_HEADING_SPACER = "  ";
     static Font boldFont = FontManager.getScalableFont(Font.BOLD, 12);
-
+    private static final WindowFunction[] ORDERED_WINDOW_FUNCTIONS = new WindowFunction[]{
+            WindowFunction.min,
+            WindowFunction.percentile2,
+            WindowFunction.percentile10,
+            WindowFunction.median,
+            WindowFunction.mean,
+            WindowFunction.percentile90,
+            WindowFunction.percentile98,
+            WindowFunction.max,
+            WindowFunction.none
+    };
 
 
     public static JidePopupMenu getEmptyPopup(String title) {
@@ -226,17 +236,6 @@ public class TrackMenuUtils {
             avaibleWindowFunctions.addAll(track.getAvailableWindowFunctions());
         }
 
-        final WindowFunction[] orderedWindowFunctions = {
-                WindowFunction.min,
-                WindowFunction.percentile2,
-                WindowFunction.percentile10,
-                WindowFunction.median,
-                WindowFunction.mean,
-                WindowFunction.percentile90,
-                WindowFunction.percentile98,
-                WindowFunction.max
-        };
-
 
         // dataPopupMenu.addSeparator();
         // Collection all window functions for selected tracks
@@ -253,11 +252,9 @@ public class TrackMenuUtils {
 
             menu.add(statisticsHeading);
 
-            for (final WindowFunction wf : orderedWindowFunctions) {
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(
-                        wf.getDisplayName());
-                if (avaibleWindowFunctions.contains(wf) || currentWindowFunctions.contains(
-                        wf)) {
+            for (final WindowFunction wf : ORDERED_WINDOW_FUNCTIONS) {
+                JCheckBoxMenuItem item = new JCheckBoxMenuItem(wf.getDisplayName());
+                if (avaibleWindowFunctions.contains(wf) || currentWindowFunctions.contains(wf)) {
                     if (currentWindowFunctions.contains(wf)) {
                         item.setSelected(true);
                     }

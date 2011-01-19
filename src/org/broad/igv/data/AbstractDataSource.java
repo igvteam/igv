@@ -218,95 +218,118 @@ public abstract class AbstractDataSource implements DataSource {
 
         int nBins = Math.min(700, endLocation - startLocation);
         if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
-
-            tile = new SummaryTile(tileNumber, startLocation);
-            double binSize = ((float) (endLocation - startLocation)) / nBins;
-            Bin[] bins = new Bin[nBins];
-
-
             int[] starts = rawTile.getStartLocations();
             int[] ends = rawTile.getEndLocations();
             float[] values = rawTile.getValues();
             String[] features = rawTile.getFeatureNames();
 
-            List<LocusScore> scores = new ArrayList(700);
+            tile = new SummaryTile(tileNumber, startLocation);
 
-            /* for (int i = 0; i < starts.length; i++) {
-               int s = starts[i];
-                int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+            if (windowFunction == WindowFunction.none) {
 
-                if (e < startLocation) {
-                    continue;
-                } else if (s > endLocation) {
-                    break;
-                }
-               String probeName = features == null ? null : features[i];
-               scores.add(new Bin(s, e, probeName, values[i], windowFunction));
+                for (int i = 0; i < starts.length; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
 
-           }
-            */
+                    if (e < startLocation) {
+                        continue;
+                    } else if (s > endLocation) {
+                        break;
+                    }
 
-            for (int i = 0; i < starts.length; i++) {
-                int s = starts[i];
-                int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                    String probeName = features == null ? null : features[i];
+                    float v = values[i];
 
-                if (e < startLocation) {
-                    continue;
-                } else if (s > endLocation) {
-                    break;
+                    BasicScore score = new BasicScore(chr, s, e, v);
+                    tile.addScore(score);
+
                 }
 
-                String probeName = features == null ? null : features[i];
-                float v = values[i];
+
+            } else {
+                double binSize = ((float) (endLocation - startLocation)) / nBins;
+                Bin[] bins = new Bin[nBins];
 
 
-                int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
-                int endBin = (int) Math.min(bins.length, ((e - startLocation) / binSize));
-                if (startBin == endBin) {
-                    endBin++;
-                }
-                for (int b = startBin; b < endBin; b++) {
-                    if (b < bins.length) {
-                        Bin bin = bins[b];
-                        if (bin == null) {
-                            int start = (int) (startLocation + b * binSize);
-                            int end = (int) (startLocation + (b + 1) * binSize);
-                            bins[b] = new Bin(start, end, probeName, v, windowFunction);
-                        } else {
-                            bin.addValue(probeName, v);
+                List<LocusScore> scores = new ArrayList(700);
+
+                /* for (int i = 0; i < starts.length; i++) {
+                   int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+
+                    if (e < startLocation) {
+                        continue;
+                    } else if (s > endLocation) {
+                        break;
+                    }
+                   String probeName = features == null ? null : features[i];
+                   scores.add(new Bin(s, e, probeName, values[i], windowFunction));
+
+               }
+                */
+
+                for (int i = 0; i < starts.length; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+
+                    if (e < startLocation) {
+                        continue;
+                    } else if (s > endLocation) {
+                        break;
+                    }
+
+                    String probeName = features == null ? null : features[i];
+                    float v = values[i];
+
+
+                    int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
+                    int endBin = (int) Math.min(bins.length, ((e - startLocation) / binSize));
+                    if (startBin == endBin) {
+                        endBin++;
+                    }
+                    for (int b = startBin; b < endBin; b++) {
+                        if (b < bins.length) {
+                            Bin bin = bins[b];
+                            if (bin == null) {
+                                int start = (int) (startLocation + b * binSize);
+                                int end = (int) (startLocation + (b + 1) * binSize);
+                                bins[b] = new Bin(start, end, probeName, v, windowFunction);
+                            } else {
+                                bin.addValue(probeName, v);
+                            }
                         }
                     }
+
                 }
 
-            }
 
+                // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
+                // TODO-- look at computing variable length bins to start with
 
-            // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
-            // TODO-- look at computing variable length bins to start with
-
-            Bin currentBin = null;
-            for (int b = 0; b < bins.length; b++) {
-                if (bins[b] != null) {
-                    if (b < bins.length) {
-                        if (currentBin == null) {
-                            currentBin = bins[b];
-                        } else {
-                            if (currentBin.isExtension(bins[b])) {
-                                currentBin.setEnd(bins[b].getEnd());
-                            } else {
-                                scores.add(currentBin);
+                Bin currentBin = null;
+                for (int b = 0; b < bins.length; b++) {
+                    if (bins[b] != null) {
+                        if (b < bins.length) {
+                            if (currentBin == null) {
                                 currentBin = bins[b];
+                            } else {
+                                if (currentBin.isExtension(bins[b])) {
+                                    currentBin.setEnd(bins[b].getEnd());
+                                } else {
+                                    scores.add(currentBin);
+                                    currentBin = bins[b];
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (currentBin != null) {
-                scores.add(currentBin);
-            }
+                if (currentBin != null) {
+                    scores.add(currentBin);
+                }
 
 
-            tile.addAllScores(scores);
+                tile.addAllScores(scores);
+            }
         }
 
         return tile;
@@ -337,11 +360,13 @@ public abstract class AbstractDataSource implements DataSource {
 
 
     static {
+        wfs.add(WindowFunction.min);
         wfs.add(WindowFunction.percentile10);
         wfs.add(WindowFunction.median);
         wfs.add(WindowFunction.mean);
         wfs.add(WindowFunction.percentile90);
         wfs.add(WindowFunction.max);
+        wfs.add(WindowFunction.none);
 
     }
 
