@@ -118,6 +118,16 @@ public class CoverageCounter {
                 if (opt.equals("i")) {
                     writers.put(Event.largeISize, new WigWriter(new File(baseName + ".large_isize.wig"), windowSize, false));
                     writers.put(Event.smallISize, new WigWriter(new File(baseName + ".small_isize.wig"), windowSize, false));
+
+                    // Optionally specify mean and std dev (todo -- just specify min and max)
+                    String [] tokens = opt.split(":");
+                    if(tokens.length > 2) {
+                        float mean = Float.parseFloat(tokens[1]);
+                        float stdev = Float.parseFloat(tokens[2]);
+                        upperExpectedInsertSize = (int) (mean + 3*stdev);
+                        lowerExpectedInsertSize = Math.max(50, (int) (mean - 3*stdev));
+                    }
+                                       
                 } else if (opt.equals("o")) {
                     writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize, false));
                     writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize, false));
