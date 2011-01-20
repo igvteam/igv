@@ -115,8 +115,7 @@ public class TrackMenuUtils {
                 hasDataTracks = true;
             } else if (track instanceof FeatureTrack) {
                 hasFeatureTracks = true;
-            }
-            else {
+            } else {
                 hasOtherTracks = true;
             }
             if (hasDataTracks && hasFeatureTracks && hasOtherTracks) {
@@ -149,7 +148,7 @@ public class TrackMenuUtils {
 
     public static void addZoomItems(JPopupMenu menu, final ReferenceFrame frame) {
 
-       if (FrameManager.isGeneListMode()) {
+        if (FrameManager.isGeneListMode()) {
             JMenuItem item = new JMenuItem("Reset view");
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -235,6 +234,7 @@ public class TrackMenuUtils {
         for (Track track : tracks) {
             avaibleWindowFunctions.addAll(track.getAvailableWindowFunctions());
         }
+        avaibleWindowFunctions.add(WindowFunction.none);
 
 
         // dataPopupMenu.addSeparator();

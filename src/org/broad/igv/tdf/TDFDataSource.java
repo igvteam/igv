@@ -218,71 +218,100 @@ public class TDFDataSource implements DataSource {
 
         TDFDataset rawDataset = reader.getDataset(dsName);
         if (rawDataset != null) {
-
-            // The minimum bins size is 1 bp
-            int nBins = Math.min(700, endLocation - startLocation);
-            double binSize = ((float) (endLocation - startLocation)) / nBins;
-            Bin[] bins = new Bin[nBins];
-
             List<TDFTile> rawTiles = rawDataset.getTiles(startLocation, endLocation);
             if (rawTiles.size() > 0) {
-                for (TDFTile rawTile : rawTiles) {
-                    // Tile of raw data
-                    if (rawTile != null && rawTile.getSize() > 0) {
 
-                        for (int i = 0; i < rawTile.getSize(); i++) {
-                            int s = rawTile.getStartPosition(i);
-                            int e = Math.max(s, rawTile.getEndPosition(i) - 1);
+                if (windowFunction == WindowFunction.none) {
+                    for (TDFTile rawTile : rawTiles) {
+                        // Tile of raw data
+                        if (rawTile != null && rawTile.getSize() > 0) {
 
-                            if (e < startLocation) {
-                                continue;
-                            } else if (s > endLocation) {
-                                break;
+                            for (int i = 0; i < rawTile.getSize(); i++) {
+                                int s = rawTile.getStartPosition(i);
+                                int e = Math.max(s, rawTile.getEndPosition(i) - 1);
+
+                                if (e < startLocation) {
+                                    continue;
+                                } else if (s > endLocation) {
+                                    break;
+                                }
+                                float v = rawTile.getValue(trackNumber, i);
+                                if (!Float.isNaN(v)) {
+                                    v *= normalizationFactor;
+                                }
+                                scores.add(new BasicScore(chr, s, e, v));
                             }
+                        }
+                    }
 
-                            String probeName = rawTile.getName(i);
-                            float v = rawTile.getValue(trackNumber, i);
-                            if (!Float.isNaN(v)) {
-                                v *= normalizationFactor;
-                                int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
-                                int endBin = (int) Math.min(bins.length - 1, ((e - startLocation) / binSize));
-                                for (int b = startBin; b <= endBin; b++) {
-                                    Bin bin = bins[b];
-                                    if (bin == null) {
-                                        int start = (int) (startLocation + b * binSize);
-                                        int end = (int) (startLocation + (b + 1) * binSize);
-                                        bins[b] = new Bin(start, end, probeName, v, windowFunction);
-                                    } else {
-                                        bin.addValue(probeName, v);
+
+                } else {
+
+                    // The minimum bins size is 1 bp
+                    int nBins = Math.min(700, endLocation - startLocation);
+                    double binSize = ((float) (endLocation - startLocation)) / nBins;
+                    Bin[] bins = new Bin[nBins];
+
+                    for (TDFTile rawTile : rawTiles) {
+                        // Tile of raw data
+                        if (rawTile != null && rawTile.getSize() > 0) {
+
+                            for (int i = 0; i < rawTile.getSize(); i++) {
+                                int s = rawTile.getStartPosition(i);
+                                int e = Math.max(s, rawTile.getEndPosition(i) - 1);
+
+                                if (e < startLocation) {
+                                    continue;
+                                } else if (s > endLocation) {
+                                    break;
+                                }
+
+
+                                String probeName = rawTile.getName(i);
+                                float v = rawTile.getValue(trackNumber, i);
+                                if (!Float.isNaN(v)) {
+                                    v *= normalizationFactor;
+                                    int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
+                                    int endBin = (int) Math.min(bins.length - 1, ((e - startLocation) / binSize));
+                                    for (int b = startBin; b <= endBin; b++) {
+                                        Bin bin = bins[b];
+                                        if (bin == null) {
+                                            int start = (int) (startLocation + b * binSize);
+                                            int end = (int) (startLocation + (b + 1) * binSize);
+                                            bins[b] = new Bin(start, end, probeName, v, windowFunction);
+                                        } else {
+                                            bin.addValue(probeName, v);
+                                        }
                                     }
                                 }
                             }
                         }
+
                     }
-                }
-            }
 
 
-            // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
-            // TODO-- look at computing variable length bins to start with
+                    // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
+                    // TODO-- look at computing variable length bins to start with
 
-            Bin currentBin = null;
-            for (int b = 0; b < bins.length; b++) {
-                if (bins[b] != null) {
-                    if (currentBin == null) {
-                        currentBin = bins[b];
-                    } else {
-                        if (aggregateLikeBins && currentBin.isExtension(bins[b])) {
-                            currentBin.setEnd(bins[b].getEnd());
-                        } else {
-                            scores.add(currentBin);
-                            currentBin = bins[b];
+                    Bin currentBin = null;
+                    for (int b = 0; b < bins.length; b++) {
+                        if (bins[b] != null) {
+                            if (currentBin == null) {
+                                currentBin = bins[b];
+                            } else {
+                                if (aggregateLikeBins && currentBin.isExtension(bins[b])) {
+                                    currentBin.setEnd(bins[b].getEnd());
+                                } else {
+                                    scores.add(currentBin);
+                                    currentBin = bins[b];
+                                }
+                            }
                         }
                     }
+                    if (currentBin != null) {
+                        scores.add(currentBin);
+                    }
                 }
-            }
-            if (currentBin != null) {
-                scores.add(currentBin);
             }
         }
         return scores;
@@ -305,7 +334,7 @@ public class TDFDataSource implements DataSource {
 
         // If we are in gene list view bypass caching.
         if (FrameManager.isGeneListMode()) {
-            
+
             return getSummaryScores(chr, zoom, startLocation, endLocation);
 
         } else {

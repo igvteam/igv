@@ -366,7 +366,6 @@ public abstract class AbstractDataSource implements DataSource {
         wfs.add(WindowFunction.mean);
         wfs.add(WindowFunction.percentile90);
         wfs.add(WindowFunction.max);
-        wfs.add(WindowFunction.none);
 
     }
 
