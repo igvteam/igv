@@ -51,7 +51,7 @@ public class VCFTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(VCFTrack.class);
 
-    private final int EXPANDED_GENOTYPE_HEIGHT = 10;
+    private final int EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int SQUISHED_GENOTYPE_HEIGHT = 4;
 
     private final int MAX_GENOTYPE_HEIGHT = 50;
