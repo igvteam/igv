@@ -115,7 +115,7 @@ public class CoverageCounter {
             for (String opt : opts) {
 
                 final String baseName = getFilenameBase();
-                if (opt.equals("i")) {
+                if (opt.startsWith("i")) {
                     writers.put(Event.largeISize, new WigWriter(new File(baseName + ".large_isize.wig"), windowSize, false));
                     writers.put(Event.smallISize, new WigWriter(new File(baseName + ".small_isize.wig"), windowSize, false));
 
