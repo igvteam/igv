@@ -44,20 +44,20 @@ public class WigToBed implements DataConsumer {
 
     public static void main(String[] args) {
         String input = "/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
-        String output = "566.wgs.bam.large_isize.bed";
-        WigToBed wigToBed = new WigToBed(new File(output));
+        WigToBed wigToBed = new WigToBed(input);
         WiggleParser parser = new WiggleParser(input, wigToBed, null);
         parser.parse();
     }
 
-    public static void run(File inputFile, File outputFile) {
-
+    public static void run(String inputFile) {
+        int len = inputFile.length();
+        String outputFile = inputFile.substring(0, len - 4) + ".bed";
         WigToBed wigToBed = new WigToBed(outputFile);
-        WiggleParser parser = new WiggleParser(inputFile.getAbsolutePath(), wigToBed, null);
+        WiggleParser parser = new WiggleParser(inputFile, wigToBed, null);
         parser.parse();
     }
 
-    public WigToBed(File bedFile) {
+    public WigToBed(String bedFile) {
         try {
             bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
         } catch (IOException e) {
@@ -76,7 +76,7 @@ public class WigToBed implements DataConsumer {
             featureEnd = end;
         }
 
-        if(featureStart >= 0) {
+        if (featureStart >= 0) {
 
             if (data[0] > homThreshold) {
                 type = "HOM";
@@ -103,7 +103,7 @@ public class WigToBed implements DataConsumer {
     }
 
     public void parsingComplete() {
-        if(featureStart >= 0) writeCurrentFeature();
+        if (featureStart >= 0) writeCurrentFeature();
         bedWriter.close();
     }
 
