@@ -265,7 +265,7 @@ public class IgvTools {
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
-            } else if(command.equals("wigToBed")) {
+            } else if(command.equals("wigtobed")) {
                 validateArgsLength(nonOptionArgs, 1);
                   String inputFile =  nonOptionArgs[1];
                   WigToBed.run(inputFile);
