@@ -120,14 +120,14 @@ public class CoverageCounter {
                     writers.put(Event.smallISize, new WigWriter(new File(baseName + ".small_isize.wig"), windowSize, false));
 
                     // Optionally specify mean and std dev (todo -- just specify min and max)
-                    String [] tokens = opt.split(":");
-                    if(tokens.length > 2) {
+                    String[] tokens = opt.split(":");
+                    if (tokens.length > 2) {
                         float mean = Float.parseFloat(tokens[1]);
                         float stdev = Float.parseFloat(tokens[2]);
-                        upperExpectedInsertSize = (int) (mean + 3*stdev);
-                        lowerExpectedInsertSize = Math.max(50, (int) (mean - 3*stdev));
+                        upperExpectedInsertSize = (int) (mean + 3 * stdev);
+                        lowerExpectedInsertSize = Math.max(50, (int) (mean - 3 * stdev));
                     }
-                                       
+
                 } else if (opt.equals("o")) {
                     writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize, false));
                     writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize, false));
@@ -210,7 +210,9 @@ public class CoverageCounter {
                         lastChr = alignmentChr;
                     }
 
-                    if (alignment.isPaired()) {
+                    if (alignment.getMappingQuality() == 0) {
+                        // TODO -- mq zero event
+                    } else if (alignment.isPaired()) {
 
                         final int start = alignment.getStart();
                         final int end = alignment.getEnd();
@@ -220,16 +222,6 @@ public class CoverageCounter {
                         ReadMate mate = alignment.getMate();
                         boolean mateMapped = mate != null && mate.isMapped();
                         boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
-
-                        //if (isizeWigWriter != null && mateMapped && sameChromosome) {
-                        //    int isize = Math.abs(alignment.getInferredInsertSize());
-                        //    float score = Math.min(900, isize);
-                        //    if (isize > 900) {
-                        //        score += (float) (Math.log(isize - 900) / LOG_1__1);
-                        //    }
-                        //    // Plot looks better if we record this for a point (start pos) rather than the alignment extent
-                        //    isizeWigWriter.addData(alignment.getChr(), alignment.getStart(), alignment.getStart() + 1, score);
-                        //}
 
                         if (mateMapped) {
                             if (sameChromosome) {
@@ -637,21 +629,21 @@ public class CoverageCounter {
         public float getEventScore(Event evt) {
             switch (evt) {
                 case mismatch:
-                    return qualityCount == 0 ? 0 : mismatchCount / qualityCount;
+                    return qualityCount < 25 ? 0 : mismatchCount / qualityCount;
                 case indel:
-                    return count == 0 ? 0 : indelCount / count;
+                    return count < 5 ? 0 : indelCount / count;
                 case largeISize:
-                    return pairedCount == 0 ? 0 : largeISizeCount / pairedCount;
+                    return pairedCount < 5 ? 0 : largeISizeCount / pairedCount;
                 case smallISize:
-                    return pairedCount == 0 ? 0 : smallISizeCount / pairedCount;
+                    return pairedCount < 5 ? 0 : smallISizeCount / pairedCount;
                 case inversion:
-                    return pairedCount == 0 ? 0 : inversionCount / pairedCount;
+                    return pairedCount < 5 ? 0 : inversionCount / pairedCount;
                 case duplication:
-                    return pairedCount == 0 ? 0 : duplicationCount / pairedCount;
+                    return pairedCount < 5 ? 0 : duplicationCount / pairedCount;
                 case inter:
-                    return (pairedCount == 0 ? 0 : interChrCount / pairedCount);
+                    return (pairedCount < 5 ? 0 : interChrCount / pairedCount);
                 case unmappedMate:
-                    return (pairedCount == 0 ? 0 : unmappedMate / pairedCount);
+                    return (pairedCount < 5 ? 0 : unmappedMate / pairedCount);
             }
             throw new RuntimeException("Unknown event type: " + evt);
         }
