@@ -436,12 +436,8 @@ public class ReferenceFrame {
      * @return
      */
     public double getScale() {
-        if ((locationScale == 0) || !locationScaleValid) {
+        if ((locationScale == 0) || !locationScaleValid || locationScale < 0) {
             computeLocationScale();
-        }
-
-        if (locationScale < 0) {
-            System.err.println("Negative scale");
         }
 
         return locationScale;
