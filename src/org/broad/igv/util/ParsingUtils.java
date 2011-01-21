@@ -447,8 +447,8 @@ public class ParsingUtils {
 
                         // Ignore the min and max
                         String[] maxDefMin = value.split(":");
-                        trackProperties.setHeight(Integer.parseInt(maxDefMin[1].trim()));
-                        trackProperties.setMinHeight(Integer.parseInt(maxDefMin[2].trim()));
+                        trackProperties.setHeight(Integer.parseInt(maxDefMin[0].trim()));
+                        trackProperties.setMinHeight(Integer.parseInt(maxDefMin[1].trim()));
 
                     } else if (key.equals("url")) {
                         trackProperties.setUrl(value);
@@ -462,7 +462,7 @@ public class ParsingUtils {
                             trackProperties.setRendererClass(LineplotRenderer.class);
                         } else if (value.equals("heatmap")) {
                             trackProperties.setRendererClass(HeatmapRenderer.class);
-                        } else if (value.equals("junction")) {
+                        } else if (value.equals("junctions")) {
                             //dhmay adding check for graphType=junction.  name is also checked
                             trackProperties.setRendererClass(SpliceJunctionRenderer.class);
                         }
