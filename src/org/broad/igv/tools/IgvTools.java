@@ -150,6 +150,7 @@ public class IgvTools {
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
 
 
+
         // Parse optional arguments (switches, etc)
         try {
             parser.parse(argv);
@@ -264,7 +265,14 @@ public class IgvTools {
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
-            } else {
+            } else if(command.equals("wigToBed")) {
+                validateArgsLength(nonOptionArgs, 2);
+                 File inputFile = new File(nonOptionArgs[1]);
+                 File outputFile = new File(nonOptionArgs[2]);
+                
+            }
+
+            else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
