@@ -29,6 +29,7 @@ import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
+import org.broad.igv.sam.PairedEndStats;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
@@ -126,6 +127,19 @@ public class CoverageCounter {
                         float stdev = Float.parseFloat(tokens[2]);
                         upperExpectedInsertSize = (int) (mean + 3 * stdev);
                         lowerExpectedInsertSize = Math.max(50, (int) (mean - 3 * stdev));
+                    } else {
+                        PairedEndStats stats = PairedEndStats.compute(alignmentFile);
+                        if (stats == null) {
+                            System.out.println("Warning: error computing stats.  Using default insert size settings");
+                        } else {
+                            double mean = stats.getAverageInsertSize();
+                            double median = stats.getMedianInsertSize();
+                            double stdev = stats.getInsertSizeStdev();
+                            upperExpectedInsertSize = (int) (mean + 3 * stdev);
+                            lowerExpectedInsertSize = Math.max(50, (int) (mean - 3 * stdev));
+                            System.out.println(alignmentFile + "  avg insert size = " + mean + "  median = " + median +
+                                    " std dev = " + stdev);
+                        }
                     }
 
                 } else if (opt.equals("o")) {
