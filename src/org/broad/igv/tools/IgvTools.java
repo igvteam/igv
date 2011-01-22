@@ -39,6 +39,7 @@ import org.broad.igv.track.tribble.CodecFactory;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.vcf.VCFtoBed;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
@@ -150,7 +151,6 @@ public class IgvTools {
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
 
 
-
         // Parse optional arguments (switches, etc)
         try {
             parser.parse(argv);
@@ -243,13 +243,13 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3);
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
-            //} else if (command.equals("gentest")) {
-              //  validateArgsLength(nonOptionArgs, 2);
-              //  int nRowsValue = (Integer) parser.getOptionValue(nRows, 10);
-              //  boolean sorted = !((Boolean) parser.getOptionValue(unOrdered, false));
-              //  int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-              //  String ofile = ifile;
-              //  TestFileGenerator.generateTestFile(ofile, sorted, nRowsValue, strandOptionValue);
+                //} else if (command.equals("gentest")) {
+                //  validateArgsLength(nonOptionArgs, 2);
+                //  int nRowsValue = (Integer) parser.getOptionValue(nRows, 10);
+                //  boolean sorted = !((Boolean) parser.getOptionValue(unOrdered, false));
+                //  int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
+                //  String ofile = ifile;
+                //  TestFileGenerator.generateTestFile(ofile, sorted, nRowsValue, strandOptionValue);
             } else if (command.toLowerCase().equals("gcttoigv")) {
                 validateArgsLength(nonOptionArgs, 4);
                 String ofile = nonOptionArgs[2];
@@ -265,13 +265,16 @@ public class IgvTools {
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
-            } else if(command.equals("wigtobed")) {
+            } else if (command.equals("wigtobed")) {
                 validateArgsLength(nonOptionArgs, 1);
-                  String inputFile =  nonOptionArgs[1];
-                  WigToBed.run(inputFile);
-            }
-
-            else {
+                String inputFile = nonOptionArgs[1];
+                WigToBed.run(inputFile);
+            } else if (command.equals("vcftobed")) {
+                validateArgsLength(nonOptionArgs, 2);
+                String inputFile = nonOptionArgs[1];
+                String outputFile = nonOptionArgs[2];
+                VCFtoBed.convert(inputFile, outputFile);
+            } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
@@ -327,7 +330,7 @@ public class IgvTools {
         }
         File tmp = new File(ifile);
 
-        
+
         int nLines = tmp.isDirectory() ? ParsingUtils.estimateLineCount(tmp) : ParsingUtils.estimateLineCount(ifile);
 
         // Convert  gct files to igv format first
@@ -393,7 +396,6 @@ public class IgvTools {
                         Collection<WindowFunction> windowFunctions,
                         int windowSizeValue, int extFactorValue, int strandOption,
                         String coverageOpt) throws IOException {
-
 
 
         System.out.println("Computing coverage.  File = " + ifile);
