@@ -23,7 +23,6 @@ import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -36,7 +35,8 @@ public class PairedEndStats {
 
     private double averageInsertSize;
     private double medianInsertSize;
-    private double insertSizeStdev;
+    private double stddevInsertSize;
+    private double madInsertSize;
     private static final int MAX_PAIRS = 10000;
 
     public static void main(String[] args) throws IOException {
@@ -45,15 +45,17 @@ public class PairedEndStats {
         PairedEndStats stats = compute(reader.iterator());
         reader.close();
 
-        System.out.println(args[0] + "\t" + stats.averageInsertSize + "\t" + stats.medianInsertSize + "\t" + stats.insertSizeStdev);
+        System.out.println(args[0] + "\t" + stats.averageInsertSize + "\t" + stats.medianInsertSize +
+                "\t" + stats.stddevInsertSize + "\t" + stats.madInsertSize);
 
     }
 
 
-    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev) {
+    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev, double madInsertSize) {
         this.averageInsertSize = averageInsertSize;
         this.medianInsertSize = medianInsertSize;
-        this.insertSizeStdev = insertSizeStdev;
+        this.stddevInsertSize = insertSizeStdev;
+        this.madInsertSize = madInsertSize;
     }
 
     public static PairedEndStats compute(String bamFile) {
@@ -107,7 +109,15 @@ public class PairedEndStats {
         double median = StatUtils.percentile(insertSizes, 0, nPairs, 50);
         double stdDev = Math.sqrt(StatUtils.variance(insertSizes, 0, nPairs));
 
-        PairedEndStats stats = new PairedEndStats(mean, median, stdDev);
+        double[] deviations = new double[nPairs];
+        for (int i = 0; i < nPairs; i++) {
+            deviations[i] = Math.abs(insertSizes[i] - median);
+        }
+
+        // MAD, as defined at http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
+        double mad = 1.4826 * StatUtils.percentile(deviations, 50);
+
+        PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad);
 
         return stats;
 
@@ -134,8 +144,12 @@ public class PairedEndStats {
         return medianInsertSize;
     }
 
-    public double getInsertSizeStdev() {
-        return insertSizeStdev;
+    public double getStddevInsertSize() {
+        return stddevInsertSize;
+    }
+
+    public double getMadInsertSize() {
+        return madInsertSize;
     }
 }
 

@@ -123,22 +123,20 @@ public class CoverageCounter {
                     // Optionally specify mean and std dev (todo -- just specify min and max)
                     String[] tokens = opt.split(":");
                     if (tokens.length > 2) {
-                        float mean = Float.parseFloat(tokens[1]);
-                        float stdev = Float.parseFloat(tokens[2]);
-                        upperExpectedInsertSize = (int) (mean + 3 * stdev);
-                        lowerExpectedInsertSize = Math.max(50, (int) (mean - 3 * stdev));
+                        float median = Float.parseFloat(tokens[1]);
+                        float mad = Float.parseFloat(tokens[2]);
+                        upperExpectedInsertSize = (int) (median + 3 * mad);
+                        lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
                     } else {
                         PairedEndStats stats = PairedEndStats.compute(alignmentFile);
                         if (stats == null) {
                             System.out.println("Warning: error computing stats.  Using default insert size settings");
                         } else {
-                            double mean = stats.getAverageInsertSize();
                             double median = stats.getMedianInsertSize();
-                            double stdev = stats.getInsertSizeStdev();
-                            upperExpectedInsertSize = (int) (mean + 3 * stdev);
-                            lowerExpectedInsertSize = Math.max(50, (int) (mean - 3 * stdev));
-                            System.out.println(alignmentFile + "  avg insert size = " + mean + "  median = " + median +
-                                    " std dev = " + stdev);
+                            double mad = stats.getMadInsertSize();
+                            upperExpectedInsertSize = (int) (median + 3 * mad);
+                            lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
+                            System.out.println(alignmentFile +  "  median = " + median + " mad = " + mad);
                         }
                     }
 
