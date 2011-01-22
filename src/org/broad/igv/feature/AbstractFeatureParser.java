@@ -33,6 +33,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -116,13 +117,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         List<org.broad.tribble.Feature> features = loadFeatures(locator, -1);
         if(features.size() == 0) {
-            throw new DataLoadException("No features found in this file with locations mapped to the current genome", locator.getPath());
+               //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
         }
         FeatureCollectionSource source = new FeatureCollectionSource(features);
         FeatureTrack track = new FeatureTrack(locator, source);
         track.setName(locator.getTrackName());
         track.setRendererClass(IGVFeatureRenderer.class);
-        track.setMinimumHeight(35);
+        //track.setMinimumHeight(35);
         track.setHeight(45);
         //track.setRendererClass(GeneTrackRenderer.class);
         if (trackType != null) {
