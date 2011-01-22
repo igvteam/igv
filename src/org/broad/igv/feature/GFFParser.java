@@ -276,8 +276,8 @@ public class GFFParser implements FeatureParser {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description);
                     }
-                } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0) {
-
+                } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
+                        parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
                     String name = getName(attributes);
                     int phase = -1;
                     String phaseString = tokens[7].trim();
