@@ -23,6 +23,7 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
@@ -54,8 +55,6 @@ public class VCFTrack extends FeatureTrack {
     private final int EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int SQUISHED_GENOTYPE_HEIGHT = 4;
 
-    private final int MAX_GENOTYPE_HEIGHT = 50;
-    private final int MIN_GENOTYPE_HEIGHT = 1;
     private final int DEFAULT_ALLELE_HEIGHT = 25;
     private final int MAX_FILTER_LINES = 15;
 
@@ -68,7 +67,12 @@ public class VCFTrack extends FeatureTrack {
     //private int genotypeBandHeight = EXPANDED_GENOTYPE_HEIGHT;
     private int alleleBandHeight = DEFAULT_ALLELE_HEIGHT;
     //private int savedBandHeight = genotypeBandHeight;
-    private List<String> samples;
+
+    // Samples, organized by pedigree or other grouping
+    private LinkedHashMap<String, List<String>> samples;
+    int groupCount;
+    int sampleCount;
+
     private ColorMode coloring = ColorMode.ZYGOSITY;
     //private boolean hideReference = true;
     private boolean hideAncestral = false;
@@ -85,26 +89,58 @@ public class VCFTrack extends FeatureTrack {
 
     private static Stroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
+    private static final Color OFF_WHITE = new Color(150, 150, 150);
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
         super(locator, source);
         VCFHeader header = (VCFHeader) source.getHeader();
-        samples = new ArrayList<String>(header.getGenotypeSamples());
+
+        sampleCount = header.getGenotypeSamples().size();
+        samples = new LinkedHashMap();
+        if (UIConstants.isSigmaProject()) {
+            samples.put("L Unaffected", new ArrayList());
+            samples.put("AA", new ArrayList());
+            samples.put("BIP", new ArrayList());
+            samples.put("L", new ArrayList());
+            samples.put("LA", new ArrayList());
+            samples.put("OK", new ArrayList());
+            for (String s : header.getGenotypeSamples()) {
+                if (s.endsWith("375")) {
+                    samples.get("L Unaffected").add(s);
+                }
+                if (s.endsWith("259") || s.endsWith("265") || s.endsWith("266")) {
+                    samples.get("AA").add(s);
+                }
+                if (s.endsWith("701") || s.endsWith("564")) {
+                    samples.get("BIP").add(s);
+                }
+                if (s.endsWith("352") || s.endsWith("414")) {
+                    samples.get("L").add(s);
+                }
+                if (s.endsWith("4") || s.endsWith("8") || s.endsWith("13") || s.endsWith("15")) {
+                    samples.get("LA").add(s);
+                }
+                if (s.endsWith("563") || s.endsWith("566")) {
+                    samples.get("OK").add(s);
+                }
+            }
+            groupCount = samples.size();
+
+        } else {
+            groupCount = 1;
+            samples.put("All", new ArrayList<String>(header.getGenotypeSamples()));
+        }
 
         int visWindow = 2500000;
-        if (samples.size() > 1) {
-            visWindow = Math.max(100000, 2500000 - 100000 * samples.size());
+        if (sampleCount > 10) {
+            visWindow = Math.max(2500000, 2500000 - 100000 * (sampleCount - 10));
             this.setDisplayMode(DisplayMode.EXPANDED);
         }
         setRenderID(false);
         setVisibilityWindow(visWindow);
     }
 
-    @Override
-    public int getPreferredHeight() {
-        return getHeight();
-    }
 
     public int getGenotypeBandHeight() {
         switch (getDisplayMode()) {
@@ -122,11 +158,15 @@ public class VCFTrack extends FeatureTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return alleleBandHeight;
         } else {
-            return alleleBandHeight + (samples.size() * getGenotypeBandHeight());
+            return alleleBandHeight + (sampleCount * getGenotypeBandHeight());
         }
 
     }
 
+    @Override
+    public int getPreferredHeight() {
+        return getHeight();
+    }
 
     public void setHeight(int height) {
         this.height = Math.max(minimumHeight, height);
@@ -154,8 +194,8 @@ public class VCFTrack extends FeatureTrack {
         rect.y = trackRectangle.y + alleleBandHeight;
         colorBackground(g2D, rect, visibleRectangle, false, false);
 
-        if(top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            drawBorderLine(g2D, top+1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
+        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
+            drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
         }
 
         List<Feature> features = packedFeatures.getFeatures();
@@ -198,16 +238,25 @@ public class VCFTrack extends FeatureTrack {
 
                     if (this.getDisplayMode() != Track.DisplayMode.COLLAPSED) {
                         rect.y += rect.height;
-
                         rect.height = getGenotypeBandHeight();
-                        for (String sample : samples) {
-                            if (rect.intersects(visibleRectangle)) {
-                            //    if (variant.isSNP()) {
+
+                        // Loop through groups
+                        for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
+
+                            for (String sample : entry.getValue()) {
+                                if (rect.intersects(visibleRectangle)) {
+                                    //    if (variant.isSNP()) {
                                     renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, coloring,
                                             hideFiltered);
-                            //    }
+                                    //    }
+                                }
+                                rect.y += rect.height;
                             }
-                            rect.y += rect.height;
+                            g2D.setColor(OFF_WHITE);
+                            g2D.fillRect(rect.x, rect.y, rect.width, 3);
+                            rect.y += 3;
+
+
                         }
                     }
                     lastPX = pX + dX;
@@ -237,36 +286,47 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames, boolean isSelected) {
+    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
+                                 boolean isSelected) {
         boolean coloredLast = true;
 
-        Font font = FontManager.getScalableFont( (int) bandRectangle.getHeight() - 1);
+        Rectangle textRectangle = new Rectangle(bandRectangle);
+        textRectangle.height--;
+
+        Font font = FontManager.getScalableFont((int) bandRectangle.getHeight() - 1);
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
-        for (int i = 0; i < samples.size(); i++) {
-            if (isSelected) {
-                g2D.setColor(Color.lightGray);
-            } else {
-                if (coloredLast) {
-                    g2D.setColor(new Color(240, 240, 245));
-                    coloredLast = false;
+        for (List<String> sampleList : samples.values()) {
+            for (String sample : sampleList) {
+                if (isSelected) {
+                    g2D.setColor(Color.lightGray);
                 } else {
-                    g2D.setColor(Color.white);
-                    coloredLast = true;
-                }
-            }
-
-            if (bandRectangle.intersects(visibleRectangle)) {
-                g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
-                if (renderNames) {
-                    if (bandRectangle.height >= 3) {
-                        String sample = samples.get(i);
-                        g2D.setColor(Color.black);
-                        GraphicUtils.drawWrappedText(sample, bandRectangle, g2D, false);
+                    if (coloredLast) {
+                        g2D.setColor(new Color(240, 240, 245));
+                        coloredLast = false;
+                    } else {
+                        g2D.setColor(Color.white);
+                        coloredLast = true;
                     }
                 }
+
+                if (bandRectangle.intersects(visibleRectangle)) {
+                    g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
+                    if (renderNames && bandRectangle.height >= 3) {
+                        textRectangle.y = bandRectangle.y + 1;
+                        g2D.setColor(Color.black);
+                        GraphicUtils.drawWrappedText(sample, bandRectangle, g2D, false);
+
+                    }
+                }
+                bandRectangle.y += bandRectangle.height;
+
             }
-            bandRectangle.y += bandRectangle.height;
+
+            g2D.setColor(OFF_WHITE);
+            g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, 2);
+            bandRectangle.y += 3;
+
         }
         g2D.setFont(oldFont);
     }
@@ -304,13 +364,12 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
         // A hack
         top = trackRectangle.y;
-        
+
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getScalableFont(10));
@@ -320,8 +379,8 @@ public class VCFTrack extends FeatureTrack {
             g2D.setColor(Color.white);
         }
 
-        if(top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            drawBorderLine(g2D, top+1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
+        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
+            drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
         }
 
 
@@ -370,7 +429,7 @@ public class VCFTrack extends FeatureTrack {
             int sampleNumber = (pY - top - alleleBandHeight) / getGenotypeBandHeight();
 
             try {
-                poi = samples.get(sampleNumber);
+                //poi = samples.get(sampleNumber);
             } catch (IndexOutOfBoundsException ioe) {
                 log.error(ioe);
 
@@ -597,9 +656,11 @@ public class VCFTrack extends FeatureTrack {
     public ZygosityCount getZygosityCounts(VariantContext variant) {
         ZygosityCount zc = new ZygosityCount();
 
-        for (String sample : samples) {
-            Genotype genotype = variant.getGenotype(sample);
-            zc.incrementCount(genotype);
+        for (List<String> sampleList : samples.values()) {
+            for (String sample : sampleList) {
+                Genotype genotype = variant.getGenotype(sample);
+                zc.incrementCount(genotype);
+            }
         }
         return zc;
     }
@@ -679,13 +740,13 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    public List<String> getSamples() {
-        return samples;
-    }
+    // public List<String> getSamples() {
+    //     return samples;
+    // }
 
-    protected void setSamples(List<String> samples) {
-        this.samples = samples;
-    }
+    // protected void setSamples(List<String> samples) {
+    //     this.samples = samples;
+    // }
 
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
         Feature f = null;

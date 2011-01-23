@@ -182,7 +182,9 @@ public class VCFMenu {
         return item;
     }
 
+   /*
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
+
         JMenuItem item = new JMenuItem("Genotype");
         try {
             variant.getAlleles();
@@ -259,6 +261,7 @@ public class VCFMenu {
         }
         return item;
     }
+    */
 
     public void changeVisibilityWindow() {
         int value = getIntValue("Visibility Window", track.getVisibilityWindow());
@@ -286,7 +289,7 @@ public class VCFMenu {
         }
     }
 
-    private void sortSamples(VariantContext variant, Comparator<String> compare) {
+   /* private void sortSamples(VariantContext variant, Comparator<String> compare) {
         try {
             List<String> samples = track.getSamples();
             setSampleGenotypes(variant, samples);
@@ -297,7 +300,7 @@ public class VCFMenu {
         } catch (Exception e) {
             log.error(e);
         }
-    }
+    }   */
 
     public void setSampleGenotypes(VariantContext variant, List<String> samples) {
         for (String sample : samples) {
@@ -313,10 +316,10 @@ public class VCFMenu {
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
         VariantContext variant = (VariantContext) closestFeature;
 
-        items.add(getGenotypeSortItem(variant));
-        items.add(getSampleNameSortItem(variant));
-        items.add(getDepthSortItem(variant));
-        items.add(getQualitySortItem(variant));
+       // items.add(getGenotypeSortItem(variant));
+       // items.add(getSampleNameSortItem(variant));
+       // items.add(getDepthSortItem(variant));
+       // items.add(getQualitySortItem(variant));
         return items;
     }
 
