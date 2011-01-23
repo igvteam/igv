@@ -136,13 +136,13 @@ public class CoverageCounter {
                         if (stats == null) {
                             System.out.println("Warning: error computing stats.  Using default insert size settings");
                         } else {
-                            double median = stats.getMedianInsertSize();
-                            double mad = stats.getMadInsertSize();
+                            //double median = stats.getMedianInsertSize();
+                            //double mad = stats.getMadInsertSize();
                             //upperExpectedInsertSize = (int) (median + 3 * mad);
                             //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
-                            upperExpectedInsertSize = (int) (median + 3 * mad);
-                            lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
-                            System.out.println(alignmentFile +  "  median = " + median + " mad = " + mad);
+                            upperExpectedInsertSize = (int) stats.getMaxPercentileInsertSize();
+                            lowerExpectedInsertSize = (int) stats.getMinPercentileInsertSize();
+                            System.out.println(alignmentFile +  "  min = " + lowerExpectedInsertSize + " max = " + upperExpectedInsertSize);
                         }
                     }
 
