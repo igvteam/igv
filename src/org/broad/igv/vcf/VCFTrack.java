@@ -96,40 +96,48 @@ public class VCFTrack extends FeatureTrack {
         super(locator, source);
         VCFHeader header = (VCFHeader) source.getHeader();
 
-        sampleCount = header.getGenotypeSamples().size();
+        Set<String> allSamples = header.getGenotypeSamples();
         samples = new LinkedHashMap();
-        if (UIConstants.isSigmaProject()) {
+        if (UIConstants.isSigmaProject() && locator.getPath().contains("mckd1")) {
             samples.put("L Unaffected", new ArrayList());
             samples.put("AA", new ArrayList());
             samples.put("BIP", new ArrayList());
             samples.put("L", new ArrayList());
             samples.put("LA", new ArrayList());
             samples.put("OK", new ArrayList());
+            sampleCount=0;
             for (String s : header.getGenotypeSamples()) {
-                if (s.endsWith("375")) {
+                if (s.endsWith("-375")) {
                     samples.get("L Unaffected").add(s);
+                    sampleCount++;
                 }
-                if (s.endsWith("259") || s.endsWith("265") || s.endsWith("266")) {
+                if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266")) {
                     samples.get("AA").add(s);
+                    sampleCount++;
                 }
-                if (s.endsWith("701") || s.endsWith("564")) {
+                if (s.endsWith("-701") || s.endsWith("-564")) {
                     samples.get("BIP").add(s);
+                    sampleCount++;
                 }
-                if (s.endsWith("352") || s.endsWith("414")) {
+                if (s.endsWith("-352") || s.endsWith("-414")) {
                     samples.get("L").add(s);
+                    sampleCount++;
                 }
-                if (s.endsWith("4") || s.endsWith("8") || s.endsWith("13") || s.endsWith("15")) {
+                if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15")) {
                     samples.get("LA").add(s);
+                    sampleCount++;
                 }
-                if (s.endsWith("563") || s.endsWith("566")) {
+                if (s.endsWith("-563") || s.endsWith("-566")) {
                     samples.get("OK").add(s);
+                    sampleCount++;
                 }
             }
             groupCount = samples.size();
 
         } else {
             groupCount = 1;
-            samples.put("All", new ArrayList<String>(header.getGenotypeSamples()));
+            sampleCount = allSamples.size();
+            samples.put("All", new ArrayList<String>(allSamples));
         }
 
         int visWindow = 2500000;
@@ -158,7 +166,7 @@ public class VCFTrack extends FeatureTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return alleleBandHeight;
         } else {
-            return alleleBandHeight + (sampleCount * getGenotypeBandHeight());
+            return alleleBandHeight + (groupCount-1) * 3 +  (sampleCount * getGenotypeBandHeight());
         }
 
     }
