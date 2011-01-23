@@ -34,7 +34,7 @@ import java.io.*;
 public class WigToBed implements DataConsumer {
 
     PrintWriter bedWriter;
-    double hetThreshold = 0.15;
+    double hetThreshold = 0.20;
     double homThreshold = 0.55;
     String chr = null;
     int featureStart = -1;

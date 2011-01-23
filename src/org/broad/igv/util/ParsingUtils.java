@@ -465,6 +465,9 @@ public class ParsingUtils {
                         } else if (value.equals("junctions")) {
                             //dhmay adding check for graphType=junction.  name is also checked
                             trackProperties.setRendererClass(SpliceJunctionRenderer.class);
+                        } else if (value.equals("genotype")) {
+                            //dhmay adding check for graphType=junction.  name is also checked
+                            trackProperties.setRendererClass(GenotypeRenderer.class);
                         }
                     } else if (key.toLowerCase().equals("viewlimits")) {
                         String[] limits = value.split(":");
