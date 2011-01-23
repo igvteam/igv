@@ -42,18 +42,18 @@ public class VCFRenderer { //extends FeatureRenderer {
 
 
     private static float alphaValue = 0.2f;
-    private static Color colorHomRef = new Color(215, 215, 215);
-    private static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
-    private static Color colorHomVar = new Color(0, 245, 255);
-    private static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
-    private static Color colorHet = Color.blue;
-    private static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
-    private static Color colorNoCall = Color.gray;
-    private static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
-    private static final Color colorAlleleBand = Color.red;
-    private static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand.getColorComponents(null), alphaValue);
-    private static final Color colorAlleleRef = Color.lightGray;
-    private static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef.getColorComponents(null), alphaValue);
+    public static Color colorHomRef = new Color(215, 215, 215);
+    public static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
+    public static Color colorHomVar = new Color(0, 245, 255);
+    public static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
+    public static Color colorHet = Color.blue;
+    public static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
+    public static Color colorNoCall = Color.gray;
+    public static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
+    public static final Color colorAlleleBand = Color.red;
+    public static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand.getColorComponents(null), alphaValue);
+    public static final Color colorAlleleRef = Color.lightGray;
+    public static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef.getColorComponents(null), alphaValue);
 
     private static int variantWidth = 3;
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
