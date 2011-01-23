@@ -584,7 +584,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     boolean sameChr = alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
-                        if (readDistance > renderOptions.insertSizeThreshold || readDistance < renderOptions.minInsertSizeThreshold) {
+                        if (readDistance > renderOptions.maxInsertSizeThreshold || readDistance < renderOptions.minInsertSizeThreshold) {
                             c = ChromosomeColors.getColor(alignment.getMate().getChr());
                             //c = getDistanceColor(readDistance);
                         }

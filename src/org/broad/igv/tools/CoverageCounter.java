@@ -123,10 +123,14 @@ public class CoverageCounter {
                     // Optionally specify mean and std dev (todo -- just specify min and max)
                     String[] tokens = opt.split(":");
                     if (tokens.length > 2) {
-                        float median = Float.parseFloat(tokens[1]);
-                        float mad = Float.parseFloat(tokens[2]);
-                        upperExpectedInsertSize = (int) (median + 3 * mad);
-                        lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
+                        //float median = Float.parseFloat(tokens[1]);
+                        //float mad = Float.parseFloat(tokens[2]);
+                        //upperExpectedInsertSize = (int) (median + 3 * mad);
+                        //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
+                        int min = Integer.parseInt(tokens[1]);
+                        int max = Integer.parseInt(tokens[2]);
+                        upperExpectedInsertSize = min;
+                        lowerExpectedInsertSize = max;
                     } else {
                         PairedEndStats stats = PairedEndStats.compute(alignmentFile);
                         if (stats == null) {
@@ -134,6 +138,8 @@ public class CoverageCounter {
                         } else {
                             double median = stats.getMedianInsertSize();
                             double mad = stats.getMadInsertSize();
+                            //upperExpectedInsertSize = (int) (median + 3 * mad);
+                            //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
                             upperExpectedInsertSize = (int) (median + 3 * mad);
                             lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
                             System.out.println(alignmentFile +  "  median = " + median + " mad = " + mad);

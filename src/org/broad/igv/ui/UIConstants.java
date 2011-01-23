@@ -26,6 +26,7 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.TrackType;
 
 import java.awt.*;
@@ -211,4 +212,8 @@ public class UIConstants {
      * Field description
      */
     final static public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
+
+    public static boolean isSigmaProject() {
+        return PreferenceManager.getInstance().getDataServerURL().contains("igvdata/sigma/sigma");
+    }
 }

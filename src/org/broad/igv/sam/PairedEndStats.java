@@ -19,12 +19,13 @@
 
 package org.broad.igv.sam;
 
+import net.sf.samtools.util.CloseableIterator;
 import org.apache.commons.math.stat.StatUtils;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 
 /**
@@ -33,6 +34,8 @@ import java.util.Iterator;
  */
 public class PairedEndStats {
 
+    private double minPercentileInsertSize;
+    private double maxPercentileInsertSize;
     private double averageInsertSize;
     private double medianInsertSize;
     private double stddevInsertSize;
@@ -51,11 +54,14 @@ public class PairedEndStats {
     }
 
 
-    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev, double madInsertSize) {
+    public PairedEndStats(double averageInsertSize, double medianInsertSize, double insertSizeStdev, double madInsertSize,
+                          double secondPercentileSize, double maxPercentileInsertSize) {
         this.averageInsertSize = averageInsertSize;
         this.medianInsertSize = medianInsertSize;
         this.stddevInsertSize = insertSizeStdev;
         this.madInsertSize = madInsertSize;
+        this.minPercentileInsertSize = secondPercentileSize;
+        this.maxPercentileInsertSize = maxPercentileInsertSize;
     }
 
     public static PairedEndStats compute(String bamFile) {
@@ -64,6 +70,7 @@ public class PairedEndStats {
             reader = SamQueryReaderFactory.getReader(bamFile, false);
             PairedEndStats stats = compute(reader.iterator());
             return stats;
+
         } catch (IOException e) {
             System.out.println("Error reading sam file");
             e.printStackTrace();
@@ -77,11 +84,20 @@ public class PairedEndStats {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
-
-
     }
 
-    public static PairedEndStats compute(Iterator<Alignment> alignments) {
+    public static PairedEndStats compute(AlignmentQueryReader reader, String chr, int start, int end) {
+        try {
+
+            PairedEndStats stats = compute(reader.query(chr, start, end, false));
+            return stats;
+        } catch (IOException e) {
+            System.out.println("Error computing alignment stats");
+            return null;
+        }
+    }
+
+    public static PairedEndStats compute(CloseableIterator<Alignment> alignments) {
 
 
         double[] insertSizes = new double[MAX_PAIRS];
@@ -103,7 +119,12 @@ public class PairedEndStats {
             }
 
         }
+        alignments.close();
 
+        if(nPairs == 0) {
+            System.out.println("Error computing insert size distribution. No alignments in sample interval.");
+            return null;
+        }
 
         double mean = StatUtils.mean(insertSizes, 0, nPairs);
         double median = StatUtils.percentile(insertSizes, 0, nPairs, 50);
@@ -117,7 +138,9 @@ public class PairedEndStats {
         // MAD, as defined at http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
         double mad = 1.4826 * StatUtils.percentile(deviations, 50);
 
-        PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad);
+        double sec = StatUtils.percentile(insertSizes, 0, nPairs, 0.1);
+        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.9);
+        PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad, sec, max);
 
         return stats;
 
@@ -150,6 +173,14 @@ public class PairedEndStats {
 
     public double getMadInsertSize() {
         return madInsertSize;
+    }
+
+    public double getMinPercentileInsertSize() {
+        return minPercentileInsertSize;
+    }
+
+    public double getMaxPercentileInsertSize() {
+        return maxPercentileInsertSize;
     }
 }
 

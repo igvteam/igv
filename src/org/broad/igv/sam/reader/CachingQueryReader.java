@@ -83,6 +83,10 @@ public class CachingQueryReader {
         tileSize = Math.min(DEFAULT_TILE_SIZE, (int) (fvw * KB));
     }
 
+    public AlignmentQueryReader getWrappedReader() {
+        return reader;
+    }
+
     public void close() throws IOException {
         reader.close();
     }

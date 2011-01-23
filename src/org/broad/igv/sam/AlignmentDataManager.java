@@ -48,7 +48,7 @@ public class AlignmentDataManager {
 
     //TODO -- this is a  memory leak, this map needs cleared when the gene list changes
     private HashMap<String, AlignmentInterval> loadedIntervalMap = new HashMap(50);
-    private HashMap<String, String> chrMappings = new HashMap();
+    HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;

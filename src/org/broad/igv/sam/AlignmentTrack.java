@@ -141,14 +141,18 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         String chr = "chr1";
         int start =  153515801;
         int end = 153535418;
-        PairedEndStats stats = PairedEndStats.compute(dataManager.getReader().getWrappedReader(), chr, start, end);
+        String sequence = dataManager.chrMappings.containsKey(chr) ? dataManager.chrMappings.get(chr) : chr;
+
+        PairedEndStats stats = PairedEndStats.compute(dataManager.getReader().getWrappedReader(), sequence, start, end);
         if (stats == null) {
             System.out.println("Warning: error computing stats.  Using default insert size settings");
         } else {
             double median = stats.getMedianInsertSize();
             double mad = stats.getMadInsertSize();
-            renderOptions.maxInsertSizeThreshold = (int) (median + 3 * mad);
-            renderOptions.minInsertSizeThreshold = Math.max(50, (int) (median - 3 * mad));
+            //renderOptions.maxInsertSizeThreshold = (int) (median + 3 * mad);
+            //renderOptions.minInsertSizeThreshold = Math.max(50, (int) (median - 5 * mad));
+            renderOptions.minInsertSizeThreshold = (int) stats.getMinPercentileInsertSize();
+            renderOptions.maxInsertSizeThreshold = (int) stats.getMaxPercentileInsertSize();
             System.out.println("  median = " + median + " mad = " + mad);
         }
 
