@@ -34,16 +34,17 @@ import java.io.*;
 public class WigToBed implements DataConsumer {
 
     PrintWriter bedWriter;
-    double hetThreshold = 0.20;
+    double hetThreshold = 0.17;
     double homThreshold = 0.55;
     String chr = null;
     int featureStart = -1;
     int featureEnd = -1;
     String type;
+    private float score;
 
 
     public static void main(String[] args) {
-        String input = "/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
+        String input =  args[0]; //"/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
         WigToBed wigToBed = new WigToBed(input);
         WiggleParser parser = new WiggleParser(input, wigToBed, null);
         parser.parse();
@@ -80,10 +81,12 @@ public class WigToBed implements DataConsumer {
 
             if (data[0] > homThreshold) {
                 type = "HOM";
+                score = Math.max(score, data[0]);
 
             } else if (data[0] < hetThreshold) {
-                bedWriter.println(this.chr + "\t" + featureStart + "\t" + end + "\t" + type);
+                bedWriter.println(this.chr + "\t" + featureStart + "\t" + end + "\t" + type + "\t"  + score);
                 featureStart = -1;
+                score = 0f;
             }
 
         } else {
@@ -91,6 +94,7 @@ public class WigToBed implements DataConsumer {
                 featureStart = start;
                 featureEnd = end;
                 this.chr = chr;
+                score = Math.max(score, data[0]);
                 type = data[0] > homThreshold ? "HOM" : "HET";
             }
 
