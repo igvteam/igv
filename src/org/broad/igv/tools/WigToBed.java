@@ -45,20 +45,22 @@ public class WigToBed implements DataConsumer {
 
     public static void main(String[] args) {
         String input =  args[0]; //"/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
-        WigToBed wigToBed = new WigToBed(input);
+        WigToBed wigToBed = new WigToBed(input, .17f, .55f);
         WiggleParser parser = new WiggleParser(input, wigToBed, null);
         parser.parse();
     }
 
-    public static void run(String inputFile) {
+    public static void run(String inputFile, float hetThreshold, float homThreshold) {
         int len = inputFile.length();
         String outputFile = inputFile.substring(0, len - 4) + ".bed";
-        WigToBed wigToBed = new WigToBed(outputFile);
+        WigToBed wigToBed = new WigToBed(outputFile, hetThreshold, homThreshold);
         WiggleParser parser = new WiggleParser(inputFile, wigToBed, null);
         parser.parse();
     }
 
-    public WigToBed(String bedFile) {
+    public WigToBed(String bedFile, float hetThreshold, float homThreshold) {
+        this.hetThreshold = hetThreshold;
+        this.homThreshold = homThreshold;
         try {
             bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
         } catch (IOException e) {

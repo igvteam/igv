@@ -22,11 +22,16 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.ui.util.FileDialogUtils;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * This thread is registered upon startup and will get executed upon exit.
@@ -50,9 +55,20 @@ public class ShutdownThread extends Thread {
                 cleanupJnlpFiles(downloads);
             }
 
+            if (IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest().size() > 0) {
+                File file = new File("Regions_" + System.currentTimeMillis() + ".bed");
+
+                if (file != null) {
+                    writeRegionsOfInterestFile(file);
+                }
+
+            }
+
+
         }
 
     }
+
 
     /**
      * Cleanup extra jnlp files.  This method is written specifcally for Mac os.
@@ -107,6 +123,60 @@ public class ShutdownThread extends Thread {
                     newestFile.renameTo(new File(newestFile.getParentFile(), newName));
                 }
             }
+        }
+    }
+
+    private static void writeRegionsOfInterestFile(File roiFile) {
+
+        if (roiFile == null) {
+            log.info("A blank Region of Interest export file was supplied!");
+            return;
+        }
+        try {
+            Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
+
+            if (regions == null || regions.isEmpty()) {
+                return;
+            }
+
+            // Create export file
+            roiFile.createNewFile();
+            PrintWriter writer = null;
+            try {
+                writer = new PrintWriter(roiFile);
+                for (RegionOfInterest regionOfInterest : regions) {
+                    Integer regionStart = regionOfInterest.getStart();
+                    if (regionStart == null) {
+                        // skip - null starts are bad regions of interest
+                        continue;
+                    }
+                    Integer regionEnd = regionOfInterest.getEnd();
+                    if (regionEnd == null) {
+                        regionEnd = regionStart;
+                    }
+
+                    // Write info in BED format
+                    writer.print(regionOfInterest.getChr());
+                    writer.print("\t");
+                    writer.print(regionStart);
+                    writer.print("\t");
+                    writer.print(regionEnd);
+
+                    if (regionOfInterest.getDescription() != null) {
+                        writer.print("\t");
+                        writer.println(regionOfInterest.getDescription());
+                    } else {
+                        writer.println();
+                    }
+                }
+            } finally {
+
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to write Region of Interest export file!", e);
         }
     }
 }

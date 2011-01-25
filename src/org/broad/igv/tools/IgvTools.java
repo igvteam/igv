@@ -268,7 +268,15 @@ public class IgvTools {
             } else if (command.equals("wigtobed")) {
                 validateArgsLength(nonOptionArgs, 1);
                 String inputFile = nonOptionArgs[1];
-                WigToBed.run(inputFile);
+                float hetThreshold = 0.17f;
+                if(nonOptionArgs.length > 2) {
+                    hetThreshold = Float.parseFloat(nonOptionArgs[2]);
+                }
+                float homThreshold = 0.55f;
+                if(nonOptionArgs.length > 3) {
+                    homThreshold = Float.parseFloat(nonOptionArgs[3]);
+                }
+                WigToBed.run(inputFile, hetThreshold, homThreshold);
             } else if (command.equals("vcftobed")) {
                 validateArgsLength(nonOptionArgs, 2);
                 String inputFile = nonOptionArgs[1];

@@ -62,16 +62,6 @@ public class HeaderPanelContainer extends JPanel {
         removeAll();
         frames = FrameManager.getFrames();
 
-        //if(frames.size() > 1) {
-        //   String name = FrameManager.getGeneListName();
-        //    if(name != null) {
-        //        JLabel nameLabel = new JLabel(name);
-        //        nameLabel.setBackground(new Color(240, 240, 240));
-        //        nameLabel.setHorizontalAlignment(JLabel.CENTER);
-        //        add(nameLabel, BorderLayout.NORTH);
-        //    }
-        //}
-
         contentPanel = new JPanel();
         contentPanel.setLayout(new DataPanelLayout());
         for (ReferenceFrame f : frames) {
