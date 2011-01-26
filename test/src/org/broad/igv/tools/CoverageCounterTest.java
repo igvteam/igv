@@ -42,7 +42,7 @@ public class CoverageCounterTest {
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, 25, 0, null, null, null, 1);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, 25, 0, null, null, null, 1, null);
 
         cc.parse();
 
