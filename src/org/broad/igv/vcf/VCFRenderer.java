@@ -46,7 +46,7 @@ public class VCFRenderer { //extends FeatureRenderer {
     public static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
     public static Color colorHomVar = new Color(0, 245, 255);
     public static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
-    public static Color colorHet = new Color(107, 30, 115); //Color.blue;
+    public static Color colorHet = Color.blue.brighter();  //new Color(107, 30, 115); //Color.blue;
     public static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
     public static Color colorNoCall = Color.white;
     public static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
