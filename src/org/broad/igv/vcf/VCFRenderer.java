@@ -42,13 +42,13 @@ public class VCFRenderer { //extends FeatureRenderer {
 
 
     private static float alphaValue = 0.2f;
-    public static Color colorHomRef = new Color(215, 215, 215);
+    public static Color colorHomRef = new Color(235, 235, 235);
     public static Color colorHomRefAlpha = ColorUtilities.getCompositeColor(colorHomRef.getColorComponents(null), alphaValue);
     public static Color colorHomVar = new Color(0, 245, 255);
     public static Color colorHomVarAlpha = ColorUtilities.getCompositeColor(colorHomVar.getColorComponents(null), alphaValue);
-    public static Color colorHet = Color.blue;
+    public static Color colorHet = new Color(107, 30, 115); //Color.blue;
     public static Color colorHetAlpha = ColorUtilities.getCompositeColor(colorHet.getColorComponents(null), alphaValue);
-    public static Color colorNoCall = Color.gray;
+    public static Color colorNoCall = Color.white;
     public static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
     public static final Color colorAlleleBand = Color.red;
     public static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand.getColorComponents(null), alphaValue);
@@ -117,8 +117,14 @@ public class VCFRenderer { //extends FeatureRenderer {
             g.dispose();
         }
 
-        context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,
-                bandRectangle.height);
+        int w = bandRectangle.width;
+        int x = bandRectangle.x;
+        if (w < 3) {
+            w = 3;
+            x--;
+        }
+
+        context.getGraphic2DForColor(Color.black).drawRect(x, bandRectangle.y, w, bandRectangle.height);
 
 
     }
@@ -201,8 +207,7 @@ public class VCFRenderer { //extends FeatureRenderer {
         Genotype genotype = variant.getGenotype(sampleName);
         if (genotype == null) {
             System.out.println("Now what?");
-        }
-        else {
+        } else {
             char b1 = getFirstBase(genotype.getAlleles().get(0));
             char b2 = getFirstBase(genotype.getAlleles().get(1));
             Color b1Color;
@@ -263,7 +268,7 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     public Color getGenotypeColor(Genotype genotype, boolean isFiltered) {
         if (genotype.isNoCall()) {
-            return isFiltered ?  colorNoCallAlpha : colorNoCall;
+            return isFiltered ? colorNoCallAlpha : colorNoCall;
         } else if (genotype.isHomRef()) {
             return isFiltered ? colorHomRefAlpha : colorHomRef;
         } else if (genotype.isHomVar()) {

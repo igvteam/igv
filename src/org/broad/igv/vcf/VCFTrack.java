@@ -89,7 +89,10 @@ public class VCFTrack extends FeatureTrack {
 
     private static Stroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
-    private static final Color OFF_WHITE = new Color(150, 150, 150);
+    private static final Color OFF_WHITE = new Color(170, 170, 170);
+    private static final int GROUP_BORDER_WIDTH = 3;
+    private static final Color BAND1_COLOR = new Color(245, 245, 245);
+    private static final Color BAND2_COLOR = Color.white;
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
@@ -254,15 +257,24 @@ public class VCFTrack extends FeatureTrack {
                             for (String sample : entry.getValue()) {
                                 if (rect.intersects(visibleRectangle)) {
                                     //    if (variant.isSNP()) {
-                                    renderer.renderGenotypeBandSNP(variant, context, rect, pX, dX, sample, coloring,
+
+                                    int w = dX;
+                                    int x = pX;
+                                    if (w < 3) {
+                                        w = 3;
+                                        x--;
+                                    }
+
+
+                                    renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
                                             hideFiltered);
                                     //    }
                                 }
                                 rect.y += rect.height;
                             }
                             g2D.setColor(OFF_WHITE);
-                            g2D.fillRect(rect.x, rect.y, rect.width, 3);
-                            rect.y += 3;
+                            g2D.fillRect(rect.x, rect.y, rect.width, GROUP_BORDER_WIDTH);
+                            rect.y += GROUP_BORDER_WIDTH;
 
 
                         }
@@ -310,10 +322,10 @@ public class VCFTrack extends FeatureTrack {
                     g2D.setColor(Color.lightGray);
                 } else {
                     if (coloredLast) {
-                        g2D.setColor(new Color(240, 240, 245));
+                        g2D.setColor(BAND1_COLOR);
                         coloredLast = false;
                     } else {
-                        g2D.setColor(Color.white);
+                        g2D.setColor(BAND2_COLOR);
                         coloredLast = true;
                     }
                 }
@@ -332,8 +344,8 @@ public class VCFTrack extends FeatureTrack {
             }
 
             g2D.setColor(OFF_WHITE);
-            g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, 2);
-            bandRectangle.y += 3;
+            g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
+            bandRectangle.y += GROUP_BORDER_WIDTH;
 
         }
         g2D.setFont(oldFont);
@@ -384,7 +396,7 @@ public class VCFTrack extends FeatureTrack {
         if (isSelected()) {
             g2D.setColor(Color.lightGray);
         } else {
-            g2D.setColor(Color.white);
+            g2D.setColor(BAND2_COLOR);
         }
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
