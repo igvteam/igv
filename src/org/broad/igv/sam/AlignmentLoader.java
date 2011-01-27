@@ -74,7 +74,7 @@ public class AlignmentLoader {
      */
     public List<AlignmentInterval.Row> loadAndPackAlignments(CloseableIterator<Alignment> iter, int maxLevels, int end) {
 
-        pairAlignments = UIConstants.isSigmaProject();
+        //pairAlignments = UIConstants.isSigmaProject();
 
         Map<String, PairedAlignment> pairs = null;
         if(pairAlignments) {

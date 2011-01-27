@@ -24,6 +24,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
+import java.util.Arrays;
 
 /**
  * @author jrobinso
@@ -52,10 +53,9 @@ public class PairedAlignment implements Alignment {
             start = alignment.getStart();
             end = alignment.getEnd() + Math.abs(alignment.getInferredInsertSize());
             chr = alignment.getChr();
-        }
-        else {
+        } else {
             secondAlignment = alignment;
-            end =secondAlignment.getEnd();
+            end = secondAlignment.getEnd();
             // TODO -- check the chrs are equal,  error otherwise
 
         }
@@ -96,7 +96,7 @@ public class PairedAlignment implements Alignment {
 
 
     public boolean isMapped() {
-        return true;   
+        return true;
     }
 
 
@@ -104,9 +104,20 @@ public class PairedAlignment implements Alignment {
         return new AlignmentBlock[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
+    AlignmentBlock[] insertions;
     public AlignmentBlock[] getInsertions() {
-        return new AlignmentBlock[0];  //To change body of implemented methods use File | Settings | File Templates.
+        if (insertions == null) {
+            AlignmentBlock[] block1 = firstAlignment.getInsertions();
+            if (secondAlignment == null) {
+                insertions = block1;
+            } else {
+                AlignmentBlock[] block2 = secondAlignment.getInsertions();
+                insertions = new AlignmentBlock[block1.length + block2.length];
+                System.arraycopy(block1, 0, insertions, 0, block1.length);
+                System.arraycopy(block2, 0, insertions, block1.length, block2.length);
+            }
+        }
+        return insertions;
     }
 
     public char[] getGapTypes() {
@@ -138,26 +149,44 @@ public class PairedAlignment implements Alignment {
 
 
     public byte getBase(double position) {
-        if(firstAlignment.contains(position)) {
+        if (firstAlignment.contains(position)) {
             return firstAlignment.getBase(position);
-        }
-        else if(secondAlignment != null && secondAlignment.contains(position)) {
+        } else if (secondAlignment != null && secondAlignment.contains(position)) {
             return secondAlignment.getBase(position);
         }
         return 0;
     }
 
 
-
     public byte getPhred(double position) {
-        if(firstAlignment.contains(position)) {
+        if (firstAlignment.contains(position)) {
             return firstAlignment.getPhred(position);
-        }
-        else if(secondAlignment != null && secondAlignment.contains(position)) {
+        } else if (secondAlignment != null && secondAlignment.contains(position)) {
             return secondAlignment.getPhred(position);
         }
         return 0;
-    }   ////////////////////////////////////////////////////////////
+    }
+
+    /**
+     * Return a string to be used for popup text.   The WindowFunction is passed
+     * in so it can be used t annotate the value.  The LocusScore object itself
+     * does not "know" from what window function it was derived
+     *
+     * @param windowFunction
+     * @return
+     */
+    public String getValueString(double position, WindowFunction windowFunction) {
+        StringBuffer buf = new StringBuffer();
+        buf.append("<b>Left alignment</b><br/>");
+        buf.append(firstAlignment.getValueString(position, windowFunction));
+        if (secondAlignment != null) {
+            buf.append("<br/><b>Right alignment</b><br/>");
+            buf.append(secondAlignment.getValueString(position, windowFunction));
+        }
+        return buf.toString();
+    }
+
+    ////////////////////////////////////////////////////////////
 
     public boolean contains(double location) {
         return location >= start && location <= end;
@@ -236,16 +265,5 @@ public class PairedAlignment implements Alignment {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    /**
-     * Return a string to be used for popup text.   The WindowFunction is passed
-     * in so it can be used t annotate the value.  The LocusScore object itself
-     * does not "know" from what window function it was derived
-     *
-     * @param windowFunction
-     * @return
-     */
-    public String getValueString(double position, WindowFunction windowFunction) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
 }
