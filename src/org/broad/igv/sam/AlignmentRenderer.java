@@ -21,6 +21,7 @@ package org.broad.igv.sam;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
@@ -137,7 +138,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                     int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
                 } else {
-                    drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                    if (alignment instanceof PairedAlignment) {
+                        drawPairedAlignment((PairedAlignment) alignment, rect, g, context, alignmentColor,
+                                renderOptions, leaveMargin, selectedReadNames);
+                    } else {
+                        drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+                    }
                 }
             }
 
@@ -215,6 +221,37 @@ public class AlignmentRenderer implements FeatureRenderer {
             Graphics2D cRed = context.getGraphic2DForColor(Color.red);
             cRed.drawPolygon(xPoly, yPoly, xPoly.length);
         }
+    }
+
+    private void drawPairedAlignment(
+            PairedAlignment pair,
+            Rectangle rect,
+            Graphics2D g,
+            RenderContext context,
+            Color alignmentColor,
+            AlignmentTrack.RenderOptions renderOptions,
+            boolean leaveMargin,
+            Map<String, Color> selectedReadNames) {
+
+        drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+        if (pair.secondAlignment != null) {
+            drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+
+            Graphics2D gLine = context.getGraphic2DForColor(grey1);
+            double origin = context.getOrigin();
+            double locScale = context.getScale();
+            int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
+            startX = Math.max(rect.x, startX);
+
+            int endX = (int) ((pair.secondAlignment.getStart() - origin) / locScale);
+            endX = Math.min(rect.x + rect.width, endX);
+
+            int h = (int) Math.max(1, rect.getHeight() - (leaveMargin ? 2 : 0));
+            int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
+            gLine.drawLine(startX, y + h / 2, endX, y + h / 2);
+
+        }
+
     }
 
     /**
@@ -383,7 +420,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             lastBlockEnd = x + w;
 
             // Next block cannot start before lastBlockEnd.  If its out of view we are done.
-            if(lastBlockEnd > rect.getMaxX()) {
+            if (lastBlockEnd > rect.getMaxX()) {
                 break;
             }
 
@@ -570,6 +607,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
+    ContinuousColorScale cs = null;
+
+
     private Color getAlignmentColor(Alignment alignment, double locScale,
                                     double center, AlignmentTrack.RenderOptions renderOptions) {
 
@@ -578,26 +618,27 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = grey1;
         switch (renderOptions.colorOption) {
-            case UNEXPECTED_PAIRS:
             case INSERT_SIZE:
-                if (alignment.isPaired() && alignment.getMate().isMapped()) {
-                    boolean sameChr = alignment.getMate().getChr().equals(alignment.getChr());
+                boolean isPairedAlignment =   alignment instanceof PairedAlignment;
+                if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
+                    boolean sameChr = isPairedAlignment ||
+                            alignment.getMate().getChr().equals(alignment.getChr());
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
-                        if (readDistance > renderOptions.maxInsertSizeThreshold || readDistance < renderOptions.minInsertSizeThreshold) {
+                        if (readDistance > 0) {
+                            if (readDistance > renderOptions.getMaxInsertSizeThreshold() || readDistance < renderOptions.getMinInsertSizeThreshold()) {
+                                c = ChromosomeColors.getColor(alignment.getChr());
+                            }
+                            //return renderOptions.insertSizeColorScale.getColor(readDistance);
+                        } else {
                             c = ChromosomeColors.getColor(alignment.getMate().getChr());
-                            //c = getDistanceColor(readDistance);
-                        }
-                    } else {
-                        c = ChromosomeColors.getColor(alignment.getMate().getChr());
-                        if (c == null) {
-                            c = Color.black;
+                            if (c == null) {
+                                c = Color.black;
+                            }
                         }
                     }
                 }
-                if(renderOptions.colorOption == AlignmentTrack.ColorOption.UNEXPECTED_PAIRS && c == grey1) {
-                    c = getOrientationColor(alignment);
-                }
+
                 break;
             case PAIR_ORIENTATION:
                 c = getOrientationColor(alignment);

@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.AlignmentInterval.Row;
 import org.broad.igv.sam.reader.ReadGroupFilter;
+import org.broad.igv.ui.UIConstants;
 
 import java.util.*;
 
@@ -63,24 +64,22 @@ public class AlignmentLoader {
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
 
-    /**
-     * A temporary working buffer
-     */
-    static Alignment[] buffer = new Alignment[1000000];
 
-
+    boolean pairAlignments = false;
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
-     * @param iter             Iterator wrapping the collection of alignments
-
-     * @param maxLevels        the maximum number of levels (rows) to create
+     * @param iter      Iterator wrapping the collection of alignments
+     * @param maxLevels the maximum number of levels (rows) to create
      */
-    public static List<AlignmentInterval.Row> loadAndPackAlignments(
-            CloseableIterator<Alignment> iter,
-            int maxLevels,
-            int end) {
+    public List<AlignmentInterval.Row> loadAndPackAlignments(CloseableIterator<Alignment> iter, int maxLevels, int end) {
 
+        pairAlignments = UIConstants.isSigmaProject();
+
+        Map<String, PairedAlignment> pairs = null;
+        if(pairAlignments) {
+            pairs = new HashMap(1000);            
+        }
 
         List<Row> alignmentRows = new ArrayList(maxLevels);
         if (iter == null || !iter.hasNext()) {
@@ -90,7 +89,6 @@ public class AlignmentLoader {
 
         // Compares 2 alignments by length.
         Comparator lengthComparator = new Comparator<Alignment>() {
-
             public int compare(Alignment row1, Alignment row2) {
                 return (row2.getEnd() - row2.getStart()) -
                         (row1.getEnd() - row2.getStart());
@@ -117,13 +115,30 @@ public class AlignmentLoader {
         Map<String, Alignment> unmappedReads = new HashMap(1000);
 
         while (iter.hasNext()) {
-            Alignment alignment = iter.next();
+
+            Alignment al = iter.next();
 
             // Store unmapped reads in a hache, to be used later to fetch sequence
-            if (!alignment.isMapped()) {
-                unmappedReads.put(alignment.getReadName(), alignment);
+            if (!al.isMapped()) {
+                unmappedReads.put(al.getReadName(), al);
 
             } else {
+
+                Alignment alignment = al;
+                if(this.pairAlignments && al.isPaired() && al.isProperPair() && al.getMate().isMapped()) {
+                    String readName = al.getReadName();
+                    PairedAlignment pair = pairs.get(readName);
+                    if(pair == null) {
+                        pair = new PairedAlignment(al);
+                        pairs.put(readName, pair);
+                    }
+                    else {
+                        pair.addAlignment(al);
+                        pairs.remove(readName);
+                    }
+                    alignment = pair;
+                }
+
 
                 // We can get negative buckets if softclipping is on as the alignments are only approximately
                 // sorted.  Throw all alignments < start in the first bucket.

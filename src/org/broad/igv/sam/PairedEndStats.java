@@ -138,8 +138,8 @@ public class PairedEndStats {
         // MAD, as defined at http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
         double mad = 1.4826 * StatUtils.percentile(deviations, 50);
 
-        double sec = StatUtils.percentile(insertSizes, 0, nPairs, .5);
-        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.5);
+        double sec = StatUtils.percentile(insertSizes, 0, nPairs, .1);
+        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.8);
 
         PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad, sec, max);
 
@@ -150,8 +150,13 @@ public class PairedEndStats {
 
 
     static boolean isProperPair(Alignment alignment) {
-        if (alignment.isMapped() && alignment.isPaired() && alignment.isProperPair() &&
-                !alignment.isDuplicate() && alignment.getMappingQuality() > 0 && !alignment.isVendorFailedRead()) {
+        if (alignment.isMapped() &&
+                alignment.isPaired() &&
+                alignment.isProperPair() &&
+                !alignment.isDuplicate() &&
+                alignment.getMappingQuality() > 0 &&
+                !alignment.isVendorFailedRead() &&
+                alignment.getInferredInsertSize() > 0) {
             ReadMate mate = alignment.getMate();
             boolean mateMapped = mate != null && mate.isMapped();
             boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
