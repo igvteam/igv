@@ -96,6 +96,12 @@ public class Genome {
             chrAliasTable.put("chr23", "chrX");
             chrAliasTable.put("chr24", "chrY");
             chrAliasTable.put("MT", "chrM");
+
+            chrAliasTable.put("chr26", "chrM");
+            chrAliasTable.put("M", "chrM");
+            chrAliasTable.put("26", "chrM");
+            chrAliasTable.put("chrMT", "chrM");
+
         } else if (id.startsWith("mm")) {
             chrAliasTable.put("21", "chrX");
             chrAliasTable.put("22", "chrY");
@@ -106,6 +112,13 @@ public class Genome {
             chrAliasTable.put("chrM", "MT");
             chrAliasTable.put("chrX", "23");
             chrAliasTable.put("chrY", "24");
+
+            chrAliasTable.put("M", "MT");
+            chrAliasTable.put("chrMT", "MT");
+            chrAliasTable.put("26", "MT");
+            chrAliasTable.put("chr26", "MT");
+
+
 
         }
     }
