@@ -229,6 +229,49 @@ public class ParsingUtils {
     }
 
     /**
+       * Split the string into tokens separated by one or more space.  This method
+       * was added so support PLINK files.
+       *
+       * @param aString the string to split
+       * @param tokens  an array to hold the parsed tokens
+       * @return the number of tokens parsed
+       */
+      public static int splitSpaces(String aString, String[] tokens) {
+
+          aString = aString.trim();
+          int maxTokens = tokens.length;
+          int nTokens = 0;
+          int start = 0;
+          int end = aString.indexOf(' ');
+          if (end < 0) {
+              tokens[nTokens++] = aString;
+              return nTokens;
+          }
+          while ((end > 0) && (nTokens < maxTokens)) {
+
+              String t = aString.substring(start, end);
+              if (t.length() > 0) {
+                  tokens[nTokens++] = t;
+              }
+              start = end + 1;
+
+              end = aString.indexOf(' ', start);
+
+          }
+
+          // Add the trailing string,  if there is room and if it is not empty.
+          if (nTokens < maxTokens) {
+              String trailingString = aString.substring(start);
+              if (trailingString.length() > 0) {
+                  tokens[nTokens++] = trailingString;
+              }
+          }
+          return nTokens;
+      }
+
+
+
+    /**
      * Split the string into tokesn separated by tab or space(s).  This method
      * was added so support wig and bed files, which apparently accept
      * either.
