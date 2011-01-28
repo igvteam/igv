@@ -39,6 +39,9 @@ import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
+import org.broad.igv.gwas.GWASData;
+import org.broad.igv.gwas.GWASParser;
+import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
@@ -188,7 +191,14 @@ public class TrackLoader {
                 locator.setDescription("MAGE_TAB");
                 loadIGVFile(locator, newTracks);
 
-            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+            }
+
+            // For PLINK GWAS results files
+            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc")  || typeString.endsWith(".fisher")  || typeString.endsWith(".cmh")) {
+                loadGWASFile(locator, newTracks);
+
+            }
+            else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
             } else {
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -373,6 +383,26 @@ public class TrackLoader {
         newTracks.add(t);
 
     }
+
+    /**
+     * Load GWAS PLINK result file
+     * @param locator
+     * @param newTracks
+     * @throws IOException
+     */
+
+
+    private void loadGWASFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+
+        GWASParser gwasParser = new GWASParser(locator);
+        GWASData gwasData = gwasParser.parse();
+
+        // TODO: Check if path is suitable for track ID
+        GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser);
+        newTracks.add(gwasTrack);
+
+    }
+
 
     private void loadRnaiGctFile(ResourceLocator locator, List<Track> newTracks) {
 
