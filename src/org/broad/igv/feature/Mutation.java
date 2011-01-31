@@ -234,6 +234,10 @@ public class Mutation implements IGVFeature {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public Exon getExonAt(double location) {
+        return null;
+    }
+
     public List<Exon> getExons() {
         return null;
     }

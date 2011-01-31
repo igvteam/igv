@@ -63,4 +63,5 @@ public interface IGVFeature extends LocusScore, NamedFeature {
 
     public String getURL();
 
+    public Exon getExonAt(double location);
 }

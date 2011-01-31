@@ -87,6 +87,10 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         return null;
     }
 
+    public Exon getExonAt(double location) {
+        return null;
+    }
+
     public float getScore() {
         return Float.NaN;
     }

@@ -65,7 +65,7 @@ public class BasicFeature extends AbstractFeature {
         this.parentIds = parentIds;
     }
 
-    String [] parentIds;
+    String[] parentIds;
     String link;
 
     /**
@@ -185,7 +185,7 @@ public class BasicFeature extends AbstractFeature {
         }
         return valueString.toString();
     }
-    
+
 
     /**
      * Method description
@@ -206,29 +206,33 @@ public class BasicFeature extends AbstractFeature {
         return score;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     @Override
     public boolean hasScore() {
         return Float.isNaN(score) ? false : true;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     @Override
     public List<Exon> getExons() {
         return exons;
     }
 
-    /**
-     * Method description
-     */
+
+    // TODO -- reimplement for efficienty
+
+    @Override
+    public Exon getExonAt(double position) {
+        if (exons == null) return null;
+        for (Exon exon : exons) {
+            if (position >= exon.getStart() && position <= exon.getEnd()) {
+                return exon;
+            }
+        }
+        return null;
+    }
+
+
     public void sortExons() {
         if (exons != null) {
             Collections.sort(exons, new Comparator<IGVFeature>() {
@@ -240,11 +244,6 @@ public class BasicFeature extends AbstractFeature {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param region
-     */
     public void addExon(Exon region) {
         if (exons == null) {
             exons = new ArrayList();
@@ -254,12 +253,7 @@ public class BasicFeature extends AbstractFeature {
         exons.add(region);
     }
 
-    /**
-     * Method description
-     *
-     * @param o
-     * @return
-     */
+
     public int compareTo(Object o) {
         IGVFeature otherObj = (IGVFeature) o;
         return (int) (getStart() - otherObj.getStart());

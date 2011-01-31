@@ -145,7 +145,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param maxLines
      * @return
      */
-    protected List<org.broad.tribble.Feature> loadFeatures(ResourceLocator locator, int maxLines) {
+    public List<org.broad.tribble.Feature> loadFeatures(ResourceLocator locator, int maxLines) {
 
         // File file = new File(locator.getPath());
         int nLines = 0;
@@ -186,8 +186,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         try {
             int nLines = 0;
-            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+            while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
+                if(nextLine.length() == 0) continue;
                 nLines++;
                 if ((maxLines > 0) && (nLines > maxLines)) {
                     break;

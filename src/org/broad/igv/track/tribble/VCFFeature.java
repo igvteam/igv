@@ -145,6 +145,10 @@ public class VCFFeature implements IGVFeature, org.broad.tribble.Feature {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public Exon getExonAt(double location) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public void setEnd(int end) {
         throw new java.lang.UnsupportedOperationException("setEnd not supported");
 
