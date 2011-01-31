@@ -108,32 +108,52 @@ public class VCFTrack extends FeatureTrack {
             samples.put("L", new ArrayList());
             samples.put("LA", new ArrayList());
             samples.put("OK", new ArrayList());
-            sampleCount=0;
+            samples.put("S", new ArrayList());
+            samples.put("WC", new ArrayList());
+            samples.put("CC", new ArrayList());
+            samples.put("PA", new ArrayList());
+            sampleCount = 0;
+
             for (String s : header.getGenotypeSamples()) {
-                if (s.endsWith("-375")) {
+                if (s.endsWith("-375") || s.equals("375")) {
                     samples.get("L Unaffected").add(s);
                     sampleCount++;
                 }
-                if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266")) {
+                if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
+                        s.equals("259") || s.equals("265") || s.equals("266")) {
                     samples.get("AA").add(s);
                     sampleCount++;
                 }
-                if (s.endsWith("-701") || s.endsWith("-564")) {
+                if (s.endsWith("-701") || s.endsWith("-564") || s.equals("701") || s.equals("564")) {
                     samples.get("BIP").add(s);
                     sampleCount++;
                 }
-                if (s.endsWith("-352") || s.endsWith("-414")) {
+                if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")) {
                     samples.get("L").add(s);
                     sampleCount++;
                 }
-                if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15")) {
+                if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15") ||
+                        s.equals("4") || s.equals("8") || s.equals("13") || s.equals("15")) {
                     samples.get("LA").add(s);
                     sampleCount++;
                 }
-                if (s.endsWith("-563") || s.endsWith("-566")) {
+                if (s.endsWith("-563") || s.endsWith("-566") || s.equals("563") || s.equals("566")) {
                     samples.get("OK").add(s);
                     sampleCount++;
                 }
+                if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
+                    samples.get("S").add(s);
+                    sampleCount++;
+                }
+                if (s.endsWith("-467") || s.equals("467")) {
+                    samples.get("PA").add(s);
+                    sampleCount++;
+                }
+                if (s.endsWith("-469") || s.equals("469")) {
+                    samples.get("CC").add(s);
+                    sampleCount++;
+                }
+
             }
             groupCount = samples.size();
 
@@ -169,7 +189,7 @@ public class VCFTrack extends FeatureTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return alleleBandHeight;
         } else {
-            return alleleBandHeight + (groupCount-1) * 3 +  (sampleCount * getGenotypeBandHeight());
+            return alleleBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
         }
 
     }
@@ -333,9 +353,21 @@ public class VCFTrack extends FeatureTrack {
                 if (bandRectangle.intersects(visibleRectangle)) {
                     g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
                     if (renderNames && bandRectangle.height >= 3) {
+                        String printName = sample;
+                        if (UIConstants.isSigmaProject()) {
+                            if (printName.equals("384") || printName.equals("391")) {
+                                printName = "S-" + printName;
+                            } else if (printName.equals("467")) {
+                                printName = "PA-" + printName;
+
+                            } else if (printName.equals("469")) {
+                                printName = "CC-" + printName;
+                            }
+                        }
+
                         textRectangle.y = bandRectangle.y + 1;
                         g2D.setColor(Color.black);
-                        GraphicUtils.drawWrappedText(sample, bandRectangle, g2D, false);
+                        GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
 
                     }
                 }
@@ -386,6 +418,7 @@ public class VCFTrack extends FeatureTrack {
 
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+
 
         // A hack
         top = trackRectangle.y;
