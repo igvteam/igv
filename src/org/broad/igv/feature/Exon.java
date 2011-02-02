@@ -106,6 +106,11 @@ public class Exon extends AbstractFeature {
         return utr;
     }
 
+
+    public boolean isUTR(int position) {
+        return utr || (position < codingStart || position > codingEnd);
+    }
+
     public void setCodingStart(int codingStart) {
         this.codingStart = Math.max(getStart(), codingStart);
     }
@@ -157,13 +162,7 @@ public class Exon extends AbstractFeature {
         return aminoAcidSequence;
     }
 
-
-    public void setAminoAcidSequence(AminoAcidSequence aminoAcidSequence) {
-        this.aminoAcidSequence = aminoAcidSequence;
-    }
-
     private void computeAminoAcidSequence() {
-
         if (utr) {
             return;
         }
@@ -175,9 +174,61 @@ public class Exon extends AbstractFeature {
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
                 String genome = GenomeManager.getInstance().getGenomeId();
-                aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(genome, chr, readStart, readEnd, getStrand());
+                byte[] seqBytes = SequenceManager.readSequence(genome, chr, readStart, readEnd);
+                aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
             }
         }
+    }
+
+    public byte[] getCodon(int position) {
+        int readStart = (codingStart > start) ? codingStart : start + readingFrame;
+        if (position >= readStart) {
+            int codonNumber = (position - readStart) / 3;
+            int codonStart = readStart + codonNumber * 3;
+            int codonEnd = Math.min(codonStart + 3, codingEnd);
+            if (codonEnd - codonStart == 3) {
+                String genome = GenomeManager.getInstance().getGenomeId();
+                return SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
+            }
+        }
+        return null;
+    }
+
+    public byte[] getCodon(int position, byte altBase) {
+        int readStart = (codingStart > start) ? codingStart : start + readingFrame;
+        if (position >= readStart) {
+            int codonNumber = (position - readStart) / 3;
+            int codonStart = readStart + codonNumber * 3;
+            int codonEnd = Math.min(codonStart + 3, codingEnd);
+            if (codonEnd - codonStart == 3) {
+                String genome = GenomeManager.getInstance().getGenomeId();
+                byte [] refBytes = SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
+                int delta = position - codonStart;
+                if(delta > 3) {
+                    System.out.println("Error getting alternate codon.  Position out of bounds: " + position);
+                    return null;
+                }
+                refBytes[delta] = altBase;
+            }
+        }
+        return null;
+    }
+
+    public AminoAcid getAminoAcid(int position) {
+        if (aminoAcidSequence == null) {
+            computeAminoAcidSequence();
+        }
+        if (aminoAcidSequence == null) {
+            return null;
+        }
+
+        int delta = position - aminoAcidSequence.getStartPosition();
+        if (delta < 0) {
+            System.out.println("Warning: negative amino acide offset");
+        }
+        int aaIndex = delta / 3;
+        return aaIndex >= aminoAcidSequence.getSequence().size() ? null : aminoAcidSequence.getSequence().get(aaIndex);
+
     }
 
     public LocusScore copy() {
@@ -194,12 +245,8 @@ public class Exon extends AbstractFeature {
         if (aaNumber > 0) {
             msg += "<br>Amino acid number: " + aaNumber;
         }
-        if (description != null) msg +=  description;
+        if (description != null) msg += description;
         return msg;
-    }
-
-    public int getNumber() {
-        return number;
     }
 
     public void setNumber(int number) {
@@ -209,6 +256,5 @@ public class Exon extends AbstractFeature {
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
-
 
 }

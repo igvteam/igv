@@ -34,13 +34,16 @@ import java.io.*;
 public class WigToBed implements DataConsumer {
 
     PrintWriter bedWriter;
-    double hetThreshold = 0.17;
-    double homThreshold = 0.55;
+    double lowerThreshold = 0.1;
+    double higherThreshold = 0.3;
     String chr = null;
     int featureStart = -1;
     int featureEnd = -1;
     String type;
     private float score;
+
+    static String upperName = "upper";
+    static String lowerName = "lower";
 
 
     public static void main(String[] args) {
@@ -51,6 +54,10 @@ public class WigToBed implements DataConsumer {
     }
 
     public static void run(String inputFile, float hetThreshold, float homThreshold) {
+
+        lowerName = String.valueOf((int) (hetThreshold * 10));
+        upperName =  String.valueOf((int) (homThreshold * 10));
+
         int len = inputFile.length();
         String outputFile = inputFile.substring(0, len - 4) + ".bed";
         WigToBed wigToBed = new WigToBed(outputFile, hetThreshold, homThreshold);
@@ -58,9 +65,9 @@ public class WigToBed implements DataConsumer {
         parser.parse();
     }
 
-    public WigToBed(String bedFile, float hetThreshold, float homThreshold) {
-        this.hetThreshold = hetThreshold;
-        this.homThreshold = homThreshold;
+    public WigToBed(String bedFile, float lowerThreshold, float higherThreshold) {
+        this.lowerThreshold = lowerThreshold;
+        this.higherThreshold = higherThreshold;
         try {
             bedWriter = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
         } catch (IOException e) {
@@ -73,31 +80,33 @@ public class WigToBed implements DataConsumer {
 
         if (featureStart >= 0) {
             // Feature in progress
-            if (start > featureEnd || data[0] < hetThreshold) {
+            if (start > featureEnd || data[0] < lowerThreshold) {
                 writeCurrentFeature();
+                featureStart = -1;
+                score = 0f;
             }
             featureEnd = end;
         }
 
         if (featureStart >= 0) {
 
-            if (data[0] > homThreshold) {
-                type = "HOM";
+            if (data[0] > higherThreshold) {
+                type =  String.valueOf(higherThreshold);
                 score = Math.max(score, data[0]);
 
-            } else if (data[0] < hetThreshold) {
-                bedWriter.println(this.chr + "\t" + featureStart + "\t" + end + "\t" + type + "\t"  + score);
+            } else if (data[0] < lowerThreshold) {
+                writeCurrentFeature();
                 featureStart = -1;
                 score = 0f;
             }
 
         } else {
-            if (data[0] > hetThreshold) {
+            if (data[0] > lowerThreshold) {
                 featureStart = start;
                 featureEnd = end;
                 this.chr = chr;
                 score = Math.max(score, data[0]);
-                type = data[0] > homThreshold ? "HOM" : "HET";
+                type = data[0] > higherThreshold ? String.valueOf(higherThreshold) : String.valueOf(lowerThreshold);
             }
 
         }

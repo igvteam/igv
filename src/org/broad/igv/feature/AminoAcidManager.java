@@ -47,30 +47,28 @@ public class AminoAcidManager {
      * Get the amino acid sequence for an interval.
      * Assumptions and conventions
      * <p/>
-     * The start and end positions are on the positive strand (reference coordinate system)
+     * The start and end positions are on the positive strand
      * irrespective of the read direction.
      * <p/>
      * Reading will begin from the startPosition if strand == POSITIVE, endPosition if NEGATIVE
      *
+     * 
+     * @param seqBytes
      * @param startPosition
-     * @param endPosition
+     * @param strand
      * @return
      */
-    public static AminoAcidSequence getAminoAcidSequence(String genomeId, String chr,
-                                                         int startPosition, int endPosition, Strand strand) {
-
-        byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, startPosition, endPosition);
+    public static AminoAcidSequence getAminoAcidSequence(byte[] seqBytes, int startPosition, Strand strand) {
         if (seqBytes == null) {
             return null;
         } else {
             String nucSequence = new String(seqBytes);
             List<AminoAcid> acids = getAminoAcids(nucSequence, strand);
 
-            // Set the start position of this amino acid.  
+            // Set the start position of this amino acid.
             int aminoStart = startPosition;
             return new AminoAcidSequence(strand, aminoStart, acids);
         }
-
     }
 
     /**
@@ -96,21 +94,32 @@ public class AminoAcidManager {
             if (direction == Strand.NEGATIVE) {
                 codon = getNucleotideComplement(codon);
             }
-            if (codonTable == null || codon == null) {
-                acids.add(AminoAcid.NULL_AMINO_ACID);
-            } else {
-                AminoAcid aa = codonTable.get(codon);
-                if (aa == null) {
-                    aa = AminoAcid.NULL_AMINO_ACID;
-                }
-                acids.add(codonTable.get(codon));
-            }
+            AminoAcid aa = getAminoAcid(codon);
+            acids.add(aa);
 
         }
         return acids;
     }
 
-    private static String getNucleotideComplement(String sequence) {
+    public static AminoAcid getAminoAcid(String codon) {
+        AminoAcid aa = null;
+
+        if (codonTable == null) {
+            initTable();
+        }
+        
+        if (codonTable == null || codon == null) {
+            aa = AminoAcid.NULL_AMINO_ACID;
+        } else {
+            aa = codonTable.get(codon);
+            if (aa == null) {
+                aa = AminoAcid.NULL_AMINO_ACID;
+            }
+        }
+        return aa;
+    }
+
+    public static String getNucleotideComplement(String sequence) {
         char[] complement = new char[sequence.length()];
         for (int i = 0; i < sequence.length(); i++) {
             int j = sequence.length() - i - 1;

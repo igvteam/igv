@@ -101,58 +101,60 @@ public class VCFTrack extends FeatureTrack {
 
         Set<String> allSamples = header.getGenotypeSamples();
         samples = new LinkedHashMap();
-        if (UIConstants.isSigmaProject() && locator.getPath().contains("mckd1")) {
+        if (UIConstants.isSigmaProject() && locator.getPath().toLowerCase().contains("mckd1")) {
             samples.put("L Unaffected", new ArrayList());
             samples.put("AA", new ArrayList());
             samples.put("BIP", new ArrayList());
             samples.put("L", new ArrayList());
             samples.put("LA", new ArrayList());
             samples.put("OK", new ArrayList());
-            samples.put("S", new ArrayList());
+            //samples.put("S", new ArrayList());
             samples.put("WC", new ArrayList());
             samples.put("CC", new ArrayList());
+            samples.put("WC", new ArrayList());
             samples.put("PA", new ArrayList());
+            samples.put("Other", new ArrayList());
             sampleCount = 0;
 
             for (String s : header.getGenotypeSamples()) {
                 if (s.endsWith("-375") || s.equals("375")) {
                     samples.get("L Unaffected").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
+                } else if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
                         s.equals("259") || s.equals("265") || s.equals("266")) {
                     samples.get("AA").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-701") || s.endsWith("-564") || s.equals("701") || s.equals("564")) {
+                } else if (s.endsWith("-701") || s.endsWith("-564") || s.equals("701") || s.equals("564")) {
                     samples.get("BIP").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")) {
+                } else if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")) {
                     samples.get("L").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15") ||
+                } else if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15") ||
                         s.equals("4") || s.equals("8") || s.equals("13") || s.equals("15")) {
                     samples.get("LA").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-563") || s.endsWith("-566") || s.equals("563") || s.equals("566")) {
+                } else if (s.endsWith("-563") || s.endsWith("-566") || s.equals("563") || s.equals("566")) {
                     samples.get("OK").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
-                    samples.get("S").add(s);
-                    sampleCount++;
-                }
-                if (s.endsWith("-467") || s.equals("467")) {
+                } else if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
+                    // skip
+                    //samples.get("S").add(s);
+                   // sampleCount++;
+                } else if (s.endsWith("-467") || s.equals("467")) {
                     samples.get("PA").add(s);
                     sampleCount++;
-                }
-                if (s.endsWith("-469") || s.equals("469")) {
+                } else if (s.endsWith("-469") || s.equals("469")) {
                     samples.get("CC").add(s);
                     sampleCount++;
+                } else if (s.endsWith("-491") || s.endsWith("-497") || s.equals("491") || s.equals("497")) {
+                    samples.get("WC").add(s);
+                    sampleCount++;
+                } else {
+                    samples.get("Other").add(s);
+                    sampleCount++;
                 }
+
 
             }
             groupCount = samples.size();

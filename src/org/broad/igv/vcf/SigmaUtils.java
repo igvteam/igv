@@ -19,16 +19,7 @@
 
 package org.broad.igv.vcf;
 
-import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.Locus;
-import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.track.FeatureCollectionSource;
-import org.broad.igv.track.PackedFeatures;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
+import org.broad.igv.feature.*;
 import org.broad.igv.track.tribble.TribbleFeatureSource;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.ParsingUtils;
@@ -68,6 +59,7 @@ public class SigmaUtils {
     static int roiStart = 152668595;
     static int roiEnd = 154746948;
 
+
     static String refSeqURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/sigma/refGene.hg18.gz";
     static String ucscURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/sigma/ucscGene.hg18.gz";
     static String rnaGeneURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/sigma/rnaGene.hg18.bed.txt";
@@ -75,25 +67,61 @@ public class SigmaUtils {
     static String dbSnpURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/dbSnp/dbsnp_130_hg18.bed.gz";
     static String phastconURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/phastCons44way.wig.tdf";
     static String pi12merURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/conservation/pi.12mer.wig.tdf";
+    static String vntrURL = "http://www.broadinstitute.org/igvdata/annotations/hg18/sigma/VNTR_coding_scores.bed";
+    static String codingRepeatsURL = "http://iwww.broadinstitute.org/igvdata/sigma/annotations/CodingRepeats.bed";
+    static String cufflinksURL = "http://iwww.broadinstitute.org/igvdata/sigma/annotations/kidney.Cufflinks.hg19ToHg18.chr1.bed";
+    static String scriptureURL = "http://iwww.broadinstitute.org/igvdata/sigma/annotations/kidney.Scripture.hg19ToHg18.chr1.bed";
+    static String trfURL = "http://iwww.broadinstitute.org/igvdata/sigma/annotations/simple.repeats.bed";
+    /*
+   kidney.Cufflinks.hg19ToHg18.bed
+  kidney.Scripture.hg19ToHg18.bed
+  kidneyScriptureCufflinksHG19.toHG18.bed
+    */
+
+
+    static String phastconsPrimateURL = "/Users/jrobinso/Sigma/phastcon44.bed";
+    static String phastconsVeterbrateURL = "/Users/jrobinso/Sigma/phastconVerterbrates44.bed";
+    static String snp130URL = "/Users/jrobinso/Sigma/snp130.bed";
+    static String indelFilterURL = "/Users/jrobinso/Sigma/indel_filter.bed";
 
 
     TribbleFeatureSource source;
 
     Map<String, List<String>> samples;
     private VCFHeader header;
+
     private List<Feature> refSeqGenes;
+    private List<Feature> tfbsFeatures;
+    private List<Feature> vntrFeatures;
+    private List<Feature> cufflinksFeatures;
+    private List<Feature> scriptureFeatures;
+    private List<Feature> trfFeatures;
+    private List<Feature> ucscGenes;
+    private List<Feature> phastPrimateFeatures;
+    private List<Feature> phastVertFeatures;
+    private List<Feature> snp130Features;
+    private List<Feature> indelFilterFeatures;
+    private List<Feature> codingRepeatFeatures;
+
+    static Set<String> segregatingFamilies = new HashSet(Arrays.asList("AA", "L", "LA", "BIP", "OK"));
+
+    static String[] allFamiliesList = {"AA", "L", "LA", "BIP", "OK", "CC", "PA"};
+
+    String unaffected;
 
     public static void main(String[] args) throws IOException {
 
         SigmaUtils utils = new SigmaUtils(args[0]);
 
-        PrintWriter pw = new PrintWriter(new FileWriter("segregating_snps.bed"));
-        PrintWriter excelWriter = new PrintWriter(new FileWriter("segregating_snps.xls"));
+        PrintWriter pw = new PrintWriter(new FileWriter(args[1] + ".bed"));
+        PrintWriter excelWriter = new PrintWriter(new FileWriter(args[1] + ".xls"));
 
-        excelWriter.println("Locus\tID\tAllele freq\tFamilies\tGene\tCoding ?");
+        excelWriter.println("Type\tStart\tLocus\tID\tAllele freq\tFamilies\tGene\tCoding\tFunctional Class\tAA change\tPosition class\t" +
+                "UCSC Genes\tCufflinks\tScripture\tTRF\tCodingRepeat\tVNTR\tTFBS\tCons Primates\tCons Vertebrates\t" +
+                "AA (3 C)\tL (2 C)\tLA (4 C)\tBIP (2 S)\tOK (2 S)\tCC (1)\tPA (1)");
 
 
-        pw.println("#coord=1");
+        pw.println("#coords=1");
         pw.println("track name=\"Segregating snps\"");
         utils.walkVariants(pw, excelWriter);
 
@@ -105,13 +133,44 @@ public class SigmaUtils {
 
     private void initFeatureLists() throws IOException {
 
-        ResourceLocator rl = new ResourceLocator(refSeqURL);
-        AsciiLineReader reader = ParsingUtils.openAsciiReader(rl);
+        refSeqGenes = getFeatures(refSeqURL);
+        tfbsFeatures = getFeatures(tfbsURL);
+        vntrFeatures = getFeatures(vntrURL);
+        cufflinksFeatures = getFeatures(cufflinksURL);
+        scriptureFeatures = getFeatures(scriptureURL);
+        trfFeatures = getFeatures(trfURL);
+        ucscGenes = getFeatures(ucscURL);
+        codingRepeatFeatures = getFeatures(codingRepeatsURL);
+        phastPrimateFeatures = getFeatures(phastconsPrimateURL);
+        phastVertFeatures = getFeatures(phastconsVeterbrateURL);
+        snp130Features = getFeatures(snp130URL);
+        indelFilterFeatures = getFeatures(indelFilterURL);
+    }
 
-        refSeqGenes = AbstractFeatureParser.getInstanceFor(rl).loadFeatures(reader);
+    private List<Feature> getFeatures(String url) {
 
-        reader.close();
-
+        AsciiLineReader reader = null;
+        try {
+            ResourceLocator rl = new ResourceLocator(url);
+            reader = ParsingUtils.openAsciiReader(rl);
+            List<Feature> tmp = AbstractFeatureParser.getInstanceFor(rl).loadFeatures(reader);
+            List<Feature> features = new ArrayList(tmp.size());
+            for (Feature f : tmp) {
+                if (f.getChr().equals("chr1")) {
+                    features.add(f);
+                }
+            }
+            FeatureUtils.sortFeatureList(features);
+            return features;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
     }
 
     public SigmaUtils(String path) throws IOException {
@@ -130,7 +189,7 @@ public class SigmaUtils {
             samples.put("L", new ArrayList());
             samples.put("LA", new ArrayList());
             samples.put("OK", new ArrayList());
-            samples.put("S", new ArrayList());
+            //samples.put("S", new ArrayList());
             samples.put("WC", new ArrayList());
             samples.put("CC", new ArrayList());
             samples.put("WC", new ArrayList());
@@ -138,13 +197,14 @@ public class SigmaUtils {
             samples.put("Other", new ArrayList());
 
             for (String s : header.getGenotypeSamples()) {
-                if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
+                if (s.endsWith("-375") || s.equals("375")) {
+                    unaffected = s;
+                } else if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
                         s.equals("259") || s.equals("265") || s.equals("266")) {
                     samples.get("AA").add(s);
                 } else if (s.endsWith("-701") || s.endsWith("-564") || s.equals("701") || s.equals("564")) {
                     samples.get("BIP").add(s);
-                } else if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")
-                        || s.endsWith("-375") || s.equals("375")) {
+                } else if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")) {
                     samples.get("L").add(s);
                 } else if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15") ||
                         s.equals("4") || s.equals("8") || s.equals("13") || s.equals("15")) {
@@ -152,7 +212,8 @@ public class SigmaUtils {
                 } else if (s.endsWith("-563") || s.endsWith("-566") || s.equals("563") || s.equals("566")) {
                     samples.get("OK").add(s);
                 } else if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
-                    samples.get("S").add(s);
+                    // Ignore S
+                    //   samples.get("S").add(s);
                 } else if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
                     samples.get("S").add(s);
                 } else if (s.endsWith("-467") || s.equals("467")) {
@@ -181,80 +242,323 @@ public class SigmaUtils {
 
             VariantContext variant = (VariantContext) feature;
             //char ref = getReference(variant, windowStart, reference);
+            if (variant.getStart() == 152963959) {
+                System.out.println();
+            }
 
-            // 1 -> 0 based coordinates
-            int start = variant.getStart();
-            int end = variant.getEnd();
+            Genotype genotype = variant.getGenotype(unaffected);
+            if (!genotype.isHomRef()) {
+                continue;
+            }
 
-            boolean inNormal = false;
+            if (variant.getType() == VariantContext.Type.INDEL) {
+                Feature tmp = FeatureUtils.getFeatureAt(variant.getStart() - 1, 0, indelFilterFeatures);
+                if (tmp == null) {
+                    tmp = FeatureUtils.getFeatureAt(variant.getStart() - 1, 0, snp130Features);
+                }
+                if (tmp != null) {
+                    continue;
+                }
+
+
+            }
+
             boolean segregates = false;
             String families = "";
-            int familyCount = 0;
-            int individualCount = 0;
+
+            Set<String> concordantFamilies = new HashSet();
+
+            // Loop through the families
             for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
 
-                String group = entry.getKey();
 
-                //if (group.equals("S")) {
-                //    continue;
-                //}
+                String family = entry.getKey();
 
-                boolean isHet = true;
-
-                final List<String> sampleList = entry.getValue();
-                if (sampleList.size() > 1) {
-                    for (String s : sampleList) {
-                        Genotype genotype = variant.getGenotype(s);
-
-
-                        // Check the one un-affected, if it is not homRef this does not segregate
-                        if (group.equals("L") && s.endsWith("375")) {
-                            if (!genotype.isHomRef()) {
-                                inNormal = true;
-                                break;
-                            }
-
-                        } else {
-                            if (!genotype.isHet()) {
-                                isHet = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (inNormal) {
-                        break;
-                    } else if (isHet) {
-                        segregates = true;
-                        if (families.length() > 0) {
-                            families += ",";
-                        }
-                        families += group;
-                        familyCount++;
-                    }
+                // Skip "S" group
+                if (family.equals("S")) {
+                    continue;
                 }
+
+
+                // Loop through samples for this familuy
+                final List<String> sampleList = entry.getValue();
+                if (sampleList.isEmpty()) continue;
+
+                boolean anyHomVar = false;
+                boolean allHet = true;
+                boolean allRef = true;
+                for (String s : sampleList) {
+                    genotype = variant.getGenotype(s);
+                    String gt = genotype.toString();
+                    if (!genotype.isHet()) {
+                        allHet = false;
+                    }
+                    if (!genotype.isHomRef()) {
+                        allRef = false;
+                    }
+                    if (genotype.isHomVar()) {
+                        anyHomVar = true;
+                        break;
+                    }
+
+
+                }
+                if (anyHomVar || !(allHet || allRef)) {
+                    // Not this one
+                    segregates = false;
+                    break;
+                } else if (allHet) {
+                    if (segregatingFamilies.contains(family)) segregates = true;
+                    if (families.length() > 0) {
+                        families += ",";
+                    }
+                    families += family;
+                    if (allHet) concordantFamilies.add(family);
+                }
+
             }
 
             if (segregates) {
                 String chr = variant.getChr();
                 int s = variant.getStart();
                 int e = variant.getEnd();
-                bedWriter.println(chr + "\t" + s + "\t" + e + "\t" + families);
 
-                IGVFeature gene = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 1, refSeqGenes);
+                /*VCF annotations
+               refseq.inCodingRegion_1
+               refseq.positionType=intron
+               refseq.changesAA_1=false
+               refseq.functionalClass_2=silent;
+               refseq.positionType_1=CDS;
+               refseq.spliceDist_2=-41;
+               refseq.spliceDist_6=109;
+               refseq.variantAA_4
+               refseq.variantCodon_
+               refseq.name2
+                */
                 String geneName = "";
                 String coding = "";
-                if (gene != null) {
-                    geneName = gene.getName();
-                    if (gene.getExonAt(s - 1) != null) {
-                        coding = "Yes";
+                String functionalClass = "";
+                String positionType = "";
+                String aaChange = "";
+
+
+                if (variant.getType() == VariantContext.Type.INDEL) {
+
+
+                    IGVFeature gene = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 1, refSeqGenes);
+                    if (gene != null) {
+                        geneName = gene.getName();
+
+                        Exon exon = gene.getExonAt(s - 1);
+                        if (exon == null) {
+                            positionType = "intron";
+                        } else {
+                            boolean isUTR = exon.isUTR(s - 1);
+                            if (isUTR) {
+                                positionType = "utr";
+                            } else {
+                                positionType = "CDS";
+                                coding = "Yes";
+                            }
+                        }
+                    }
+
+                } else {
+                    String tmp = variant.getAttributeAsString("refseq.name2", null);
+                    if (tmp != null) {
+                        geneName = tmp;
+                        boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion", "FALSE").toUpperCase().equals("TRUE");
+                        if (isCoding) {
+                            coding = "Yes";
+                        }
+                        functionalClass = variant.getAttributeAsString("refseq.functionalClass", "");
+                        positionType = variant.getAttributeAsString("refseq.positionType", "");
+                        String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
+                        String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
+                        if (vcf_refAA != null && vcf_variantAA != null) {
+                            aaChange = vcf_refAA + "->" + vcf_variantAA;
+                        }
+
+                    } else {
+                        tmp = variant.getAttributeAsString("refseq.name2_1", null);
+                        if (tmp == null) {
+                            // Not in a gene
+                        } else {
+                            geneName = tmp;
+                            boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion_1", "FALSE").toUpperCase().equals("TRUE");
+                            if (isCoding) {
+                                coding = "Yes";
+                            }
+                            functionalClass = variant.getAttributeAsString("refseq.functionalClass_1", "");
+                            positionType = variant.getAttributeAsString("refseq.positionType_1", "");
+                            String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
+                            String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
+                            if (vcf_refAA != null && vcf_variantAA != null) {
+                                aaChange = vcf_refAA + "->" + vcf_variantAA;
+                            }
+
+                            int i = 2;
+                            while (i < 15) {
+                                tmp = variant.getAttributeAsString("refseq.name2_" + i, null);
+                                if (tmp == null) break;
+                                if (geneName.indexOf(tmp) < 0) {
+                                    if (geneName.length() > 0) geneName += ", ";
+                                    geneName += tmp;
+                                }
+
+                                isCoding = variant.getAttributeAsString("refseq.inCodingRegion_" + i, "FALSE").toUpperCase().equals("TRUE");
+                                if (isCoding) {
+                                    // If any are coding, mark yes
+                                    coding = "Yes";
+                                }
+
+                                tmp = variant.getAttributeAsString("refseq.functionalClass_" + i, null);
+                                if (tmp != null && functionalClass.indexOf(tmp) < 0) {
+                                    if (functionalClass.length() > 0) geneName += ", ";
+                                    functionalClass += tmp;
+                                }
+
+                                tmp = variant.getAttributeAsString("refseq.positionType_" + i, null);
+                                if (tmp != null && positionType.indexOf(tmp) < 0) {
+                                    if (positionType.length() > 0) positionType += ", ";
+                                    positionType += tmp;
+
+                                }
+
+                                vcf_refAA = variant.getAttributeAsString("refseq.referenceAA_" + i, null);
+                                vcf_variantAA = variant.getAttributeAsString("refseq.variantAA_" + i, null);
+                                if (vcf_refAA != null && vcf_variantAA != null) {
+                                    tmp = vcf_refAA + "->" + vcf_variantAA;
+                                    if (tmp != null && aaChange.indexOf(tmp) < 0) {
+                                        if (aaChange.length() > 0) aaChange += ", ";
+                                        aaChange += tmp;
+                                    }
+                                }
+
+                                i++;
+
+                            }
+                        }
                     }
                 }
 
+
+                String ucscGene = "";
+                if (ucscGenes != null) {
+                    IGVFeature ucsc = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, ucscGenes);
+                    if (ucsc != null) ucscGene = ucsc.getName();
+                }
+
+                String tfbsName = "";
+                if (tfbsFeatures != null) {
+
+                    IGVFeature tfbs = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, tfbsFeatures);
+                    if (tfbs != null) tfbsName = tfbs.getName();
+                }
+
+                String vntrName = "";
+                if (vntrFeatures != null) {
+                    IGVFeature vntr = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, vntrFeatures);
+                    if (vntr != null) vntrName = vntr.getName();
+                }
+
+                String clName = "";
+                if (cufflinksFeatures != null) {
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, cufflinksFeatures);
+                    if (cl != null) {
+                        Exon exon = cl.getExonAt(s - 1);
+                        if (exon == null) {
+                            clName = "intron";
+                        } else {
+                            clName = "exon";
+                        }
+                    }
+                }
+
+                String scripture = "";
+                if (scriptureFeatures != null) {
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, scriptureFeatures);
+                    if (cl != null) {
+                        Exon exon = cl.getExonAt(s - 1);
+                         if (exon == null) {
+                            scripture = "intron";
+                        } else {
+                            scripture = "exon";
+                        }
+                    }
+                }
+
+                String trf = "";
+                if (trfFeatures != null) {
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, trfFeatures);
+                    if (cl != null) trf = cl.getName();
+                }
+
+                String codingRepeat = "";
+                if (codingRepeatFeatures != null) {
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, codingRepeatFeatures);
+                    if (cl != null) codingRepeat = cl.getName();
+                }
+
+                String phastPrimate = "";
+                if (phastPrimateFeatures != null) {
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastPrimateFeatures);
+                    if (cl != null) phastPrimate = cl.getName();
+                }
+
+                String phastVert = "";
+                if (phastVertFeatures != null) {
+
+                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastVertFeatures);
+                    if (cl != null) phastVert = cl.getName();
+                }
+
+                //
+                // String functionalClass = variant.getAttributeAsString("refseq.functionalClass");
+
+                // Calculated annotations
+                /*
+                String coding = "";
+                String aaChange = ""; //refAA == null ? "" : refAA + "->" + altAA;
+                String geneName = ""; //variant.getAttributeAsString("refseq.name2", null);
+                String location = "";
+                String silent = "";
+
+
+                */
+
+                bedWriter.println(chr + "\t" + s + "\t" + e + "\t" + families);
+
+
+                /*
+                   vcf_genename = tmp;
+                    vcf_coding = variant.getAttributeAsString("refseq.inCodingRegion", null);
+                    vcf_functionClass = variant.getAttributeAsString("refseq.functionalClass", null);
+                    vcf_positionType = variant.getAttributeAsString("refseq.positionType", null);
+                    String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", "");
+                    String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", "");
+                    vcf_aaChange = vcf_refAA + "->" + vcf_variantAA;
+
+                 */
                 if (excelWriter != null) {
+                    String type = variant.getType().toString();
                     String locusString = chr + ":" + s + "-" + e;
                     String id = variant.getID();
                     String af = (id == null || id.length() == 0 || id.equals(".")) ? "" : variant.getAttributeAsString("AF");
-                    excelWriter.println(locusString + "\t" + id + "\t" + af + "\t" + families + "\t" + geneName + "\t" + coding);
+                    excelWriter.print(type + "\t" + variant.getStart() + "\t" + locusString + "\t" + id + "\t" + af + "\t" + families + "\t" + geneName + "\t"
+                            + coding + "\t" + functionalClass + "\t" + aaChange + "\t" + positionType +
+                            "\t" + ucscGene + "\t" + clName + "\t" + scripture + "\t" +
+                            trf + "\t" + codingRepeat + "\t" + vntrName + "\t" + tfbsName + "\t" + phastPrimate + "\t" + phastVert);
+
+
+                    for (String f : allFamiliesList) {
+                        excelWriter.print("\t");
+                        if (concordantFamilies.contains(f)) {
+                            excelWriter.print("Yes");
+                        }
+
+                    }
+                    excelWriter.println();
 
                 }
 
@@ -262,8 +566,5 @@ public class SigmaUtils {
             }
 
         }
-
     }
-
-
 }

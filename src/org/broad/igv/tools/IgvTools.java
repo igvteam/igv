@@ -282,7 +282,14 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else {
+            } else if(command.equals("lanecounter")) {
+                validateArgsLength(nonOptionArgs, 3);
+                Genome genome = loadGenome(nonOptionArgs[1]);
+                String bamFileList = nonOptionArgs[2];
+                String queryInterval = nonOptionArgs[3];
+                LaneCounter.run(genome, bamFileList, queryInterval);
+            }
+            else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {

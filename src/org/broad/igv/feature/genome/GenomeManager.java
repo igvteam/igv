@@ -479,8 +479,15 @@ public class GenomeManager {
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
                     if ((sequenceLocation != null) && !IGVHttpUtils.isURL(sequenceLocation)) {
-                        File tempZipFile = new File(zipFilePath);
-                        File sequenceFolder = new File(tempZipFile.getParent(), sequenceLocation);
+                        File sequenceFolder = null;
+                        // Relative or absolute location?
+                        if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
+                            sequenceFolder = new File(sequenceLocation);
+                        } else {
+                            File tempZipFile = new File(zipFilePath);
+                            sequenceFolder = new File(tempZipFile.getParent(), sequenceLocation);
+
+                        }
                         sequenceLocation = sequenceFolder.getCanonicalPath();
                         sequenceLocation.replace('\\', '/');
                     }
@@ -1262,7 +1269,9 @@ public class GenomeManager {
     public String setGenomeId(String newGenome) {
 
         if (genomeId != null && !genomeId.equals(newGenome)) {
-            IGVMainFrame.getInstance().getSession().getHistory().clear();
+            if (!Globals.isHeadless()) {
+                IGVMainFrame.getInstance().getSession().getHistory().clear();
+            }
         }
 
         boolean loadFailed = false;

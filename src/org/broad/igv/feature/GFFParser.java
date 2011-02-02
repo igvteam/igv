@@ -232,7 +232,7 @@ public class GFFParser implements FeatureParser {
                 }
 
 
-                String chromosome = genome.getChromosomeAlias(tokens[0]);
+                String chromosome = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
 
                 // GFF coordinates are 1-based inclusive (length = end - start + 1)
                 // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly
