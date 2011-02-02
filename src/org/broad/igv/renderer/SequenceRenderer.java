@@ -36,7 +36,7 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class SequenceRenderer  {
+public class SequenceRenderer {
 
     //Maximum scale at which the track is displayed
     public static final double MAX_SCALE_FOR_RENDER = 2;
@@ -92,6 +92,9 @@ public class SequenceRenderer  {
             int start = Math.max(0, (int) origin - 1);
             //The location of the last base that is loaded
             int end = (int) (origin + trackRectangle.width * locScale) + 1;
+
+            if (end <= start) return;
+
             int firstVisibleNucleotideStart = start;
             int lastVisibleNucleotideEnd = end;
             int firstCodonOffset = 0;
