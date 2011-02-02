@@ -26,6 +26,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.Session;
@@ -62,12 +63,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     public enum ColorOption {
-        UNEXPECTED_PAIRS, INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP;
+        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP;
     }
 
 
     public static final int MIN_ALIGNMENT_SPACING = 10;
-    static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.UNEXPECTED_PAIRS;
+    static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
     static final boolean DEFAULT_SHOWALLBASES = false;
 
     private static ColorOption colorByOption = null;
@@ -132,14 +133,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
 
         // Estimate insert size distribution
-        if(UIConstants.isSigmaProject()) {
+        if (UIConstants.isSigmaProject()) {
             estimateSizeDistribution();
         }
     }
 
     private void estimateSizeDistribution() {
         String chr = "chr1";
-        int start =  153515801;
+        int start = 153515801;
         int end = 153535418;
         String sequence = dataManager.chrMappings.containsKey(chr) ? dataManager.chrMappings.get(chr) : chr;
 
@@ -151,8 +152,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             double mad = stats.getMadInsertSize();
             //renderOptions.maxInsertSizeThreshold = (int) (median + 3 * mad);
             //renderOptions.minInsertSizeThreshold = Math.max(50, (int) (median - 5 * mad));
-            renderOptions.minInsertSizeThreshold = (int) stats.getMinPercentileInsertSize();
-            renderOptions.maxInsertSizeThreshold = (int) stats.getMaxPercentileInsertSize();
+            renderOptions.setMinInsertSizeThreshold((int) stats.getMinPercentileInsertSize());
+            renderOptions.setMaxInsertSizeThreshold((int) stats.getMaxPercentileInsertSize());
+            renderOptions.setMedianInsertSizeThreshold((int) median);
+            renderOptions.setMadInsertSizeThreshold((int) mad);
             System.out.println("  median = " + median + " mad = " + mad);
         }
 
@@ -697,15 +700,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         ButtonGroup group = new ButtonGroup();
 
-        JRadioButtonMenuItem m0 = new JRadioButtonMenuItem("by unexpected pairs");
-        m0.setSelected(colorByOption == ColorOption.UNEXPECTED_PAIRS);
-        m0.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                setColorOption(ColorOption.UNEXPECTED_PAIRS);
-                refresh();
-            }
-        });
-
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
         m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -760,7 +754,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
-        item.add(m0);
         item.add(m1);
         item.add(m1a);
         item.add(m2);
@@ -943,12 +936,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
             public void action() {
-                int threshold = renderOptions.minInsertSizeThreshold;
+                int threshold = renderOptions.getMinInsertSizeThreshold();
                 String val = MessageUtils.showInputDialog("minimum insert size threshold", String.valueOf(threshold));
                 try {
                     int newThreshold = Integer.parseInt(val);
                     if (newThreshold != threshold) {
-                        renderOptions.minInsertSizeThreshold = newThreshold;
+                        renderOptions.setMinInsertSizeThreshold(newThreshold);
                         refresh();
                     }
                 }
@@ -1085,9 +1078,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         boolean shadeCenters;
         boolean flagUnmappedPairs;
         boolean showAllBases;
-        int minInsertSizeThreshold;
-        int maxInsertSizeThreshold;
+        private int minInsertSizeThreshold;
+        private int maxInsertSizeThreshold;
+        private int medianInsertSize;
+        private int madInsertSize;
         ColorOption colorOption;
+        ContinuousColorScale insertSizeColorScale;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -1098,6 +1094,19 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             maxInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = colorByOption;
+            updateColorScale();
+        }
+
+        private void updateColorScale() {
+            int lower = minInsertSizeThreshold;
+            int delta = 1;
+            if (medianInsertSize == 0 || madInsertSize == 0) {
+                delta = (maxInsertSizeThreshold - minInsertSizeThreshold) / 10;
+            } else {
+                delta = Math.min((maxInsertSizeThreshold - minInsertSizeThreshold) / 3, madInsertSize);
+            }
+            insertSizeColorScale = new ContinuousColorScale(minInsertSizeThreshold, minInsertSizeThreshold + delta,
+                    maxInsertSizeThreshold - delta, maxInsertSizeThreshold, Color.blue, AlignmentRenderer.grey1, Color.red);
         }
 
         /**
@@ -1121,7 +1130,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             if (maxInsertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD)) {
                 attributes.put("insertSizeThreshold", String.valueOf(maxInsertSizeThreshold));
             }
-            if (minInsertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
+            if (getMinInsertSizeThreshold() != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
                 attributes.put("minInsertSizeThreshold", String.valueOf(maxInsertSizeThreshold));
             }
             if (showAllBases != DEFAULT_SHOWALLBASES) {
@@ -1148,7 +1157,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
             value = attributes.get("minInsertSizeThreshold");
             if (value != null) {
-                minInsertSizeThreshold = Integer.parseInt(value);
+                setMinInsertSizeThreshold(Integer.parseInt(value));
             }
             value = attributes.get("shadeBases");
             if (value != null) {
@@ -1173,6 +1182,33 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         }
 
+        public int getMinInsertSizeThreshold() {
+            return minInsertSizeThreshold;
+        }
+
+        public void setMinInsertSizeThreshold(int minInsertSizeThreshold) {
+            this.minInsertSizeThreshold = minInsertSizeThreshold;
+            updateColorScale();
+        }
+
+        public int getMaxInsertSizeThreshold() {
+            return maxInsertSizeThreshold;
+
+        }
+
+        public void setMaxInsertSizeThreshold(int maxInsertSizeThreshold) {
+            this.maxInsertSizeThreshold = maxInsertSizeThreshold;
+            updateColorScale();
+        }
+
+        public void setMedianInsertSizeThreshold(int medianInsertSize) {
+            this.medianInsertSize = medianInsertSize;
+        }
+
+        public void setMadInsertSizeThreshold(int madInsertSize) {
+            this.madInsertSize = madInsertSize;
+            updateColorScale();
+        }
     }
 
 
