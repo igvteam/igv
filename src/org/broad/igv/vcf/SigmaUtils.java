@@ -31,6 +31,7 @@ import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
 import org.broad.tribble.vcf.VCFHeader;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -109,16 +110,20 @@ public class SigmaUtils {
 
     String unaffected;
 
+    static String fileBase;
+
     public static void main(String[] args) throws IOException {
 
         SigmaUtils utils = new SigmaUtils(args[0]);
 
-        PrintWriter pw = new PrintWriter(new FileWriter(args[1] + ".bed"));
-        PrintWriter excelWriter = new PrintWriter(new FileWriter(args[1] + ".xls"));
+        fileBase = args[1];
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(args[1] + ".bed")));
+        PrintWriter excelWriter = new PrintWriter(new BufferedWriter(new FileWriter(args[1] + ".xls")));
 
-        excelWriter.println("Type\tStart\tLocus\tID\tAllele freq\tFamilies\tGene\tCoding\tFunctional Class\tAA change\tPosition class\t" +
-                "UCSC Genes\tCufflinks\tScripture\tTRF\tCodingRepeat\tVNTR\tTFBS\tCons Primates\tCons Vertebrates\t" +
-                "AA (3 C)\tL (2 C)\tLA (4 C)\tBIP (2 S)\tOK (2 S)\tCC (1)\tPA (1)");
+
+        excelWriter.println("Type\tStart\tLocus\tID\tFamilies\tGene\tCoding\tFunctional Class\tAA change\tPosition class\t" +
+                "UCSC Genes\tCufflinks\tScripture\tTRF\tCodingRepeat\tVNTR\tTFBS\tCons Primates\tCons Vertebrates\tDiscordant families\t" +
+                "Disc count\tAA (3 C)\tL (2 C)\tLA (4 C)\tBIP (2 S)\tOK (2 S)\tCC (1)\tPA (1)");
 
 
         pw.println("#coords=1");
@@ -236,19 +241,43 @@ public class SigmaUtils {
     public void walkVariants(PrintWriter bedWriter, PrintWriter excelWriter) throws IOException {
 
 
+        PrintWriter hetWriter = new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".hetNormal.bed")));
+        hetWriter.println("#coords=1");
+        hetWriter.println("trac name=Normal color=200,0,0");
+
+        Map<String, PrintWriter> writers = new HashMap();
+        writers.put("AA", new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".aa.bed"))));
+        writers.put("BIP", new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".bip.bed"))));
+        writers.put("LA", new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".la.bed"))));
+        writers.put("L", new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".l.bed"))));
+        writers.put("OK", new PrintWriter(new BufferedWriter(new FileWriter(fileBase + ".ok.bed"))));
+        for (Map.Entry<String, PrintWriter> entry : writers.entrySet()) {
+            PrintWriter pw = entry.getValue();
+            pw.println("#coords=1");
+            pw.println("track name=" + entry.getKey());
+        }
+
+
         CloseableTribbleIterator<Feature> features = source.getFeatures(chr, roiStart, roiEnd);
+
+        List<FilteredVariantRecord> disconcordantRecords = new ArrayList();
+        List<FilteredVariantRecord> normalHetRecords = new ArrayList();
 
         for (Feature feature : features) {
 
+            Set<String> affectedFamilies = new LinkedHashSet();
+            Set<String> discordantFamilies = new LinkedHashSet();
+            boolean normalHet = false;
+
             VariantContext variant = (VariantContext) feature;
-            //char ref = getReference(variant, windowStart, reference);
-            if (variant.getStart() == 152963959) {
-                System.out.println();
-            }
 
             Genotype genotype = variant.getGenotype(unaffected);
-            if (!genotype.isHomRef()) {
+            if (genotype.isHomVar()) {
                 continue;
+            } else if (genotype.isHet()) {
+                discordantFamilies.add("L-375");
+                normalHet = true;
+                hetWriter.println("chr1\t" + variant.getStart() + "\t" + variant.getEnd() + "\t" + "Het L-375");
             }
 
             if (variant.getType() == VariantContext.Type.INDEL) {
@@ -262,11 +291,6 @@ public class SigmaUtils {
 
 
             }
-
-            boolean segregates = false;
-            String families = "";
-
-            Set<String> concordantFamilies = new HashSet();
 
             // Loop through the families
             for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
@@ -304,266 +328,342 @@ public class SigmaUtils {
 
                 }
                 if (anyHomVar || !(allHet || allRef)) {
-                    // Not this one
-                    segregates = false;
-                    break;
-                } else if (allHet) {
-                    if (segregatingFamilies.contains(family)) segregates = true;
-                    if (families.length() > 0) {
-                        families += ",";
-                    }
-                    families += family;
-                    if (allHet) concordantFamilies.add(family);
+                    discordantFamilies.add(family);
+                    //if (discordantFamilies.size() > 1) {
+                    // Not this variant
+                    //    break;
+                    //}
+                } else if (allHet && segregatingFamilies.contains(family)) {
+                    affectedFamilies.add(family);
+
                 }
 
             }
 
-            if (segregates) {
-                String chr = variant.getChr();
-                int s = variant.getStart();
-                int e = variant.getEnd();
+            if (affectedFamilies.size() > 0) {
 
-                /*VCF annotations
-               refseq.inCodingRegion_1
-               refseq.positionType=intron
-               refseq.changesAA_1=false
-               refseq.functionalClass_2=silent;
-               refseq.positionType_1=CDS;
-               refseq.spliceDist_2=-41;
-               refseq.spliceDist_6=109;
-               refseq.variantAA_4
-               refseq.variantCodon_
-               refseq.name2
-                */
-                String geneName = "";
-                String coding = "";
-                String functionalClass = "";
-                String positionType = "";
-                String aaChange = "";
+                FilteredVariantRecord variantRecord = new FilteredVariantRecord(variant, affectedFamilies, discordantFamilies);
+                if (discordantFamilies.size() > 0 && discordantFamilies.size() < 2) {
+                    if (normalHet) {
+                        normalHetRecords.add(variantRecord);
+                    } else {
+                        disconcordantRecords.add(variantRecord);
+                    }
+                } else if (discordantFamilies.size() == 0) {
+                    writeVariant(bedWriter, excelWriter, variantRecord);
+                }
+            }
+
+            int s = variant.getStart();
+            int e = variant.getEnd();
+            String type = variant.getType().toString();
+            for (String f : affectedFamilies) {
+                PrintWriter pw = writers.get(f);
+                if (pw != null) {
+                    pw.println(variant.getChr() + "\t" + s + "\t" + e + "\t" + type + "\t1000\t.\t" +
+                            s + "\t" + e + "\t0,200,0");
+                }
+            }
+            for (String f : discordantFamilies) {
+                PrintWriter pw = writers.get(f);
+                if (pw != null) {
+                    pw.println(variant.getChr() + "\t" + s + "\t" + e + "\t" + type + "\t1000\t.\t" +
+                            s + "\t" + e + "\t200,0,0");
+                }
+            }
+
+        }
+
+        for (PrintWriter pw : writers.values()) {
+            pw.close();
+        }
+        hetWriter.close();
+
+        excelWriter.println();
+        excelWriter.println("One discordant family");
+        for (FilteredVariantRecord record : disconcordantRecords) {
+            writeVariant(bedWriter, excelWriter, record);
+        }
+
+        excelWriter.println();
+        excelWriter.println("Het call in normal (L-375)");
+        for (FilteredVariantRecord record : normalHetRecords) {
+            writeVariant(bedWriter, excelWriter, record);
+        }
+    }
+
+    class FilteredVariantRecord {
+        VariantContext variant;
+        Set<String> affectedFamilies;
+        Set<String> discordantFamilies;
+
+        FilteredVariantRecord(VariantContext variant, Set<String> affectedFamilies, Set<String> discordantFamilies) {
+            this.affectedFamilies = affectedFamilies;
+            this.discordantFamilies = discordantFamilies;
+            this.variant = variant;
+        }
+    }
+
+    private void writeVariant(PrintWriter bedWriter, PrintWriter excelWriter, FilteredVariantRecord record) {
+
+        VariantContext variant = record.variant;
+        Set<String> affectedFamilies = record.affectedFamilies;
+
+        String chr = variant.getChr();
+        int s = variant.getStart();
+        int e = variant.getEnd();
+
+        /*VCF annotations
+refseq.inCodingRegion_1
+refseq.positionType=intron
+refseq.changesAA_1=false
+refseq.functionalClass_2=silent;
+refseq.positionType_1=CDS;
+refseq.spliceDist_2=-41;
+refseq.spliceDist_6=109;
+refseq.variantAA_4
+refseq.variantCodon_
+refseq.name2
+*/
+        String geneName = "";
+        String coding = "";
+        String functionalClass = "";
+        String positionType = "";
+        String aaChange = "";
 
 
-                if (variant.getType() == VariantContext.Type.INDEL) {
+        if (variant.getType() == VariantContext.Type.INDEL) {
 
 
-                    IGVFeature gene = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 1, refSeqGenes);
-                    if (gene != null) {
-                        geneName = gene.getName();
+            IGVFeature gene = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 1, refSeqGenes);
+            if (gene != null) {
+                geneName = gene.getName();
 
-                        Exon exon = gene.getExonAt(s - 1);
-                        if (exon == null) {
-                            positionType = "intron";
-                        } else {
-                            boolean isUTR = exon.isUTR(s - 1);
-                            if (isUTR) {
-                                positionType = "utr";
-                            } else {
-                                positionType = "CDS";
-                                coding = "Yes";
-                            }
-                        }
+                Exon exon = gene.getExonAt(s - 1);
+                if (exon == null) {
+                    positionType = "intron";
+                } else {
+                    boolean isUTR = exon.isUTR(s - 1);
+                    if (isUTR) {
+                        positionType = "utr";
+                    } else {
+                        positionType = "CDS";
+                        coding = "Yes";
+                    }
+                }
+            }
+
+        } else {
+            String tmp = variant.getAttributeAsString("refseq.name2", null);
+            if (tmp != null) {
+                geneName = tmp;
+                boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion", "FALSE").toUpperCase().equals("TRUE");
+                if (isCoding) {
+                    coding = "Yes";
+                }
+                functionalClass = variant.getAttributeAsString("refseq.functionalClass", "");
+                positionType = variant.getAttributeAsString("refseq.positionType", "");
+                String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
+                String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
+                if (vcf_refAA != null && vcf_variantAA != null) {
+                    aaChange = vcf_refAA + "->" + vcf_variantAA;
+                }
+
+            } else {
+                tmp = variant.getAttributeAsString("refseq.name2_1", null);
+                if (tmp == null) {
+                    // Not in a gene
+                } else {
+                    geneName = tmp;
+                    boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion_1", "FALSE").toUpperCase().equals("TRUE");
+                    if (isCoding) {
+                        coding = "Yes";
+                    }
+                    functionalClass = variant.getAttributeAsString("refseq.functionalClass_1", "");
+                    positionType = variant.getAttributeAsString("refseq.positionType_1", "");
+                    String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
+                    String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
+                    if (vcf_refAA != null && vcf_variantAA != null) {
+                        aaChange = vcf_refAA + "->" + vcf_variantAA;
                     }
 
-                } else {
-                    String tmp = variant.getAttributeAsString("refseq.name2", null);
-                    if (tmp != null) {
-                        geneName = tmp;
-                        boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion", "FALSE").toUpperCase().equals("TRUE");
+                    int i = 2;
+                    while (i < 15) {
+                        tmp = variant.getAttributeAsString("refseq.name2_" + i, null);
+                        if (tmp == null) break;
+                        if (geneName.indexOf(tmp) < 0) {
+                            if (geneName.length() > 0) geneName += ", ";
+                            geneName += tmp;
+                        }
+
+                        isCoding = variant.getAttributeAsString("refseq.inCodingRegion_" + i, "FALSE").toUpperCase().equals("TRUE");
                         if (isCoding) {
+                            // If any are coding, mark yes
                             coding = "Yes";
                         }
-                        functionalClass = variant.getAttributeAsString("refseq.functionalClass", "");
-                        positionType = variant.getAttributeAsString("refseq.positionType", "");
-                        String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
-                        String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
+
+                        tmp = variant.getAttributeAsString("refseq.functionalClass_" + i, null);
+                        if (tmp != null && functionalClass.indexOf(tmp) < 0) {
+                            if (functionalClass.length() > 0) geneName += ", ";
+                            functionalClass += tmp;
+                        }
+
+                        tmp = variant.getAttributeAsString("refseq.positionType_" + i, null);
+                        if (tmp != null && positionType.indexOf(tmp) < 0) {
+                            if (positionType.length() > 0) positionType += ", ";
+                            positionType += tmp;
+
+                        }
+
+                        vcf_refAA = variant.getAttributeAsString("refseq.referenceAA_" + i, null);
+                        vcf_variantAA = variant.getAttributeAsString("refseq.variantAA_" + i, null);
                         if (vcf_refAA != null && vcf_variantAA != null) {
-                            aaChange = vcf_refAA + "->" + vcf_variantAA;
-                        }
-
-                    } else {
-                        tmp = variant.getAttributeAsString("refseq.name2_1", null);
-                        if (tmp == null) {
-                            // Not in a gene
-                        } else {
-                            geneName = tmp;
-                            boolean isCoding = variant.getAttributeAsString("refseq.inCodingRegion_1", "FALSE").toUpperCase().equals("TRUE");
-                            if (isCoding) {
-                                coding = "Yes";
-                            }
-                            functionalClass = variant.getAttributeAsString("refseq.functionalClass_1", "");
-                            positionType = variant.getAttributeAsString("refseq.positionType_1", "");
-                            String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", null);
-                            String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", null);
-                            if (vcf_refAA != null && vcf_variantAA != null) {
-                                aaChange = vcf_refAA + "->" + vcf_variantAA;
-                            }
-
-                            int i = 2;
-                            while (i < 15) {
-                                tmp = variant.getAttributeAsString("refseq.name2_" + i, null);
-                                if (tmp == null) break;
-                                if (geneName.indexOf(tmp) < 0) {
-                                    if (geneName.length() > 0) geneName += ", ";
-                                    geneName += tmp;
-                                }
-
-                                isCoding = variant.getAttributeAsString("refseq.inCodingRegion_" + i, "FALSE").toUpperCase().equals("TRUE");
-                                if (isCoding) {
-                                    // If any are coding, mark yes
-                                    coding = "Yes";
-                                }
-
-                                tmp = variant.getAttributeAsString("refseq.functionalClass_" + i, null);
-                                if (tmp != null && functionalClass.indexOf(tmp) < 0) {
-                                    if (functionalClass.length() > 0) geneName += ", ";
-                                    functionalClass += tmp;
-                                }
-
-                                tmp = variant.getAttributeAsString("refseq.positionType_" + i, null);
-                                if (tmp != null && positionType.indexOf(tmp) < 0) {
-                                    if (positionType.length() > 0) positionType += ", ";
-                                    positionType += tmp;
-
-                                }
-
-                                vcf_refAA = variant.getAttributeAsString("refseq.referenceAA_" + i, null);
-                                vcf_variantAA = variant.getAttributeAsString("refseq.variantAA_" + i, null);
-                                if (vcf_refAA != null && vcf_variantAA != null) {
-                                    tmp = vcf_refAA + "->" + vcf_variantAA;
-                                    if (tmp != null && aaChange.indexOf(tmp) < 0) {
-                                        if (aaChange.length() > 0) aaChange += ", ";
-                                        aaChange += tmp;
-                                    }
-                                }
-
-                                i++;
-
+                            tmp = vcf_refAA + "->" + vcf_variantAA;
+                            if (tmp != null && aaChange.indexOf(tmp) < 0) {
+                                if (aaChange.length() > 0) aaChange += ", ";
+                                aaChange += tmp;
                             }
                         }
-                    }
-                }
 
-
-                String ucscGene = "";
-                if (ucscGenes != null) {
-                    IGVFeature ucsc = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, ucscGenes);
-                    if (ucsc != null) ucscGene = ucsc.getName();
-                }
-
-                String tfbsName = "";
-                if (tfbsFeatures != null) {
-
-                    IGVFeature tfbs = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, tfbsFeatures);
-                    if (tfbs != null) tfbsName = tfbs.getName();
-                }
-
-                String vntrName = "";
-                if (vntrFeatures != null) {
-                    IGVFeature vntr = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, vntrFeatures);
-                    if (vntr != null) vntrName = vntr.getName();
-                }
-
-                String clName = "";
-                if (cufflinksFeatures != null) {
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, cufflinksFeatures);
-                    if (cl != null) {
-                        Exon exon = cl.getExonAt(s - 1);
-                        if (exon == null) {
-                            clName = "intron";
-                        } else {
-                            clName = "exon";
-                        }
-                    }
-                }
-
-                String scripture = "";
-                if (scriptureFeatures != null) {
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, scriptureFeatures);
-                    if (cl != null) {
-                        Exon exon = cl.getExonAt(s - 1);
-                         if (exon == null) {
-                            scripture = "intron";
-                        } else {
-                            scripture = "exon";
-                        }
-                    }
-                }
-
-                String trf = "";
-                if (trfFeatures != null) {
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, trfFeatures);
-                    if (cl != null) trf = cl.getName();
-                }
-
-                String codingRepeat = "";
-                if (codingRepeatFeatures != null) {
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, codingRepeatFeatures);
-                    if (cl != null) codingRepeat = cl.getName();
-                }
-
-                String phastPrimate = "";
-                if (phastPrimateFeatures != null) {
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastPrimateFeatures);
-                    if (cl != null) phastPrimate = cl.getName();
-                }
-
-                String phastVert = "";
-                if (phastVertFeatures != null) {
-
-                    IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastVertFeatures);
-                    if (cl != null) phastVert = cl.getName();
-                }
-
-                //
-                // String functionalClass = variant.getAttributeAsString("refseq.functionalClass");
-
-                // Calculated annotations
-                /*
-                String coding = "";
-                String aaChange = ""; //refAA == null ? "" : refAA + "->" + altAA;
-                String geneName = ""; //variant.getAttributeAsString("refseq.name2", null);
-                String location = "";
-                String silent = "";
-
-
-                */
-
-                bedWriter.println(chr + "\t" + s + "\t" + e + "\t" + families);
-
-
-                /*
-                   vcf_genename = tmp;
-                    vcf_coding = variant.getAttributeAsString("refseq.inCodingRegion", null);
-                    vcf_functionClass = variant.getAttributeAsString("refseq.functionalClass", null);
-                    vcf_positionType = variant.getAttributeAsString("refseq.positionType", null);
-                    String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", "");
-                    String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", "");
-                    vcf_aaChange = vcf_refAA + "->" + vcf_variantAA;
-
-                 */
-                if (excelWriter != null) {
-                    String type = variant.getType().toString();
-                    String locusString = chr + ":" + s + "-" + e;
-                    String id = variant.getID();
-                    String af = (id == null || id.length() == 0 || id.equals(".")) ? "" : variant.getAttributeAsString("AF");
-                    excelWriter.print(type + "\t" + variant.getStart() + "\t" + locusString + "\t" + id + "\t" + af + "\t" + families + "\t" + geneName + "\t"
-                            + coding + "\t" + functionalClass + "\t" + aaChange + "\t" + positionType +
-                            "\t" + ucscGene + "\t" + clName + "\t" + scripture + "\t" +
-                            trf + "\t" + codingRepeat + "\t" + vntrName + "\t" + tfbsName + "\t" + phastPrimate + "\t" + phastVert);
-
-
-                    for (String f : allFamiliesList) {
-                        excelWriter.print("\t");
-                        if (concordantFamilies.contains(f)) {
-                            excelWriter.print("Yes");
-                        }
+                        i++;
 
                     }
-                    excelWriter.println();
-
                 }
+            }
+        }
 
+
+        String ucscGene = "";
+        if (ucscGenes != null) {
+            IGVFeature ucsc = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, ucscGenes);
+            if (ucsc != null) ucscGene = ucsc.getName();
+        }
+
+        String tfbsName = "";
+        if (tfbsFeatures != null) {
+
+            IGVFeature tfbs = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, tfbsFeatures);
+            if (tfbs != null) tfbsName = tfbs.getName();
+        }
+
+        String vntrName = "";
+        if (vntrFeatures != null) {
+            IGVFeature vntr = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, vntrFeatures);
+            if (vntr != null) vntrName = vntr.getName();
+        }
+
+        String clName = "";
+        if (cufflinksFeatures != null) {
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, cufflinksFeatures);
+            if (cl != null) {
+                Exon exon = cl.getExonAt(s - 1);
+                if (exon == null) {
+                    clName = "intron";
+                } else {
+                    clName = "exon";
+                }
+            }
+        }
+
+        String scripture = "";
+        if (scriptureFeatures != null) {
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, scriptureFeatures);
+            if (cl != null) {
+                Exon exon = cl.getExonAt(s - 1);
+                if (exon == null) {
+                    scripture = "intron";
+                } else {
+                    scripture = "exon";
+                }
+            }
+        }
+
+        String trf = "";
+        if (trfFeatures != null) {
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, trfFeatures);
+            if (cl != null) trf = cl.getName();
+        }
+
+        String codingRepeat = "";
+        if (codingRepeatFeatures != null) {
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, codingRepeatFeatures);
+            if (cl != null) codingRepeat = cl.getName();
+        }
+
+        String phastPrimate = "";
+        if (phastPrimateFeatures != null) {
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastPrimateFeatures);
+            if (cl != null) phastPrimate = cl.getName();
+        }
+
+        String phastVert = "";
+        if (phastVertFeatures != null) {
+
+            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 2, phastVertFeatures);
+            if (cl != null) phastVert = cl.getName();
+        }
+
+        //
+        // String functionalClass = variant.getAttributeAsString("refseq.functionalClass");
+
+        // Calculated annotations
+        /*
+String coding = "";
+String aaChange = ""; //refAA == null ? "" : refAA + "->" + altAA;
+String geneName = ""; //variant.getAttributeAsString("refseq.name2", null);
+String location = "";
+String silent = "";
+
+
+*/
+        String families = "";
+        for (String f : affectedFamilies) {
+            if (families.length() > 0) {
+                families += ",";
+            }
+            families += f;
+        }
+        bedWriter.println(chr + "\t" + s + "\t" + e + "\t" + families);
+
+
+        /*
+  vcf_genename = tmp;
+   vcf_coding = variant.getAttributeAsString("refseq.inCodingRegion", null);
+   vcf_functionClass = variant.getAttributeAsString("refseq.functionalClass", null);
+   vcf_positionType = variant.getAttributeAsString("refseq.positionType", null);
+   String vcf_refAA = variant.getAttributeAsString("refseq.referenceAA", "");
+   String vcf_variantAA = variant.getAttributeAsString("refseq.variantAA", "");
+   vcf_aaChange = vcf_refAA + "->" + vcf_variantAA;
+
+*/
+        if (excelWriter != null) {
+
+            String discFamiles = "";
+            for (String f : record.discordantFamilies) {
+                if (discFamiles.length() > 0) {
+                    discFamiles += ",";
+                }
+                discFamiles += f;
+            }
+
+            String type = variant.getType().toString();
+            String locusString = chr + ":" + s + "-" + e;
+            String id = variant.getID();
+            excelWriter.print(type + "\t" + variant.getStart() + "\t" + locusString + "\t" + id + "\t" + families + "\t" + geneName + "\t"
+                    + coding + "\t" + functionalClass + "\t" + aaChange + "\t" + positionType +
+                    "\t" + ucscGene + "\t" + clName + "\t" + scripture + "\t" +
+                    trf + "\t" + codingRepeat + "\t" + vntrName + "\t" + tfbsName + "\t" + phastPrimate + "\t" + phastVert + "\t"
+                    + discFamiles + "\t" + record.discordantFamilies.size());
+
+
+            for (String f : allFamiliesList) {
+                excelWriter.print("\t");
+                if (affectedFamilies.contains(f)) {
+                    excelWriter.print("Yes");
+                }
 
             }
+            excelWriter.println();
 
         }
     }
