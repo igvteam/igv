@@ -23,7 +23,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,7 +51,9 @@ public class AltSequenceGenerator {
      * Test cached vs uncached sequence reads.
      */
 
-    public static void dumpSequence() {
+    public static void dumpSequence() throws IOException {
+
+        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("kcnn3_trf_1.fa")));
 
         String genome = "hg18";
         String chr = "chr1";
@@ -56,23 +61,59 @@ public class AltSequenceGenerator {
         int repeatEnd = 153108977;
 
         int preEnd = repeatStart;
-        int preStart = preEnd - 10;
+        int preStart = preEnd - 1000;
 
         int postStart = repeatEnd;
-        int postEnd = postStart + 10;
+        int postEnd = postStart + 1000;
 
-        byte[] preSeq = SequenceManager.readSequence(genome, chr, preStart, preEnd);
-        String seqString = new String(preSeq);
-        System.out.println(seqString);
+        StringBuffer seqStringBuffer = new StringBuffer();
+        String preSeq = new String(SequenceManager.readSequence(genome, chr, preStart, preEnd));
+        String repeatString = new String(SequenceManager.readSequence(genome, chr, repeatStart, repeatEnd));
+        String postSeq = new String(SequenceManager.readSequence(genome, chr, postStart, postEnd));
 
-        byte[] repeatSeq = SequenceManager.readSequence(genome, chr, repeatStart, repeatEnd);
-        seqString = new String(repeatSeq);
-        System.out.println(seqString);
+        seqStringBuffer.append(preSeq);
+        seqStringBuffer.append(repeatString);
+        seqStringBuffer.append(postSeq);
+        pw.println(">kcnn3_trf_1_m" + 0);
+        printFasta(pw, seqStringBuffer.toString());
 
-        byte[] postSeq = SequenceManager.readSequence(genome, chr, postStart, postEnd);
-        seqString = new String(postSeq);
-        System.out.println(seqString);
+        for (int i = 1; i < 5; i++) {
+            pw.println(">kcnn3_trf_1_m" + i);
+            seqStringBuffer = new StringBuffer();
+            String modRepeat = repeatString.substring(i * 3);
+            seqStringBuffer.append(preSeq);
+            seqStringBuffer.append(modRepeat);
+            seqStringBuffer.append(postSeq);
 
+            String seqString = seqStringBuffer.toString();
+            printFasta(pw, seqString);
+        }
+
+        String modRepeat = repeatString;
+        String trf = repeatString.substring(0, 3);
+        for (int i = 1; i < 10; i++) {
+            pw.println(">kcnn3_trf_1_p" + i);
+            seqStringBuffer = new StringBuffer();
+            modRepeat = modRepeat + trf;
+            seqStringBuffer.append(preSeq);
+            seqStringBuffer.append(modRepeat);
+            seqStringBuffer.append(postSeq);
+
+            String seqString = seqStringBuffer.toString();
+            printFasta(pw, seqString);
+        }
+
+
+        pw.close();
+    }
+
+    private static void printFasta(PrintWriter pw, String seqString) {
+        int len = seqString.length();
+        int lineLength = 80;
+        for (int start = 0; start < len; start += lineLength) {
+            int end = Math.min(len, start + lineLength);
+            pw.println(seqString.substring(start, end));
+        }
     }
 
 }

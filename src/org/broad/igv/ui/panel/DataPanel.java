@@ -314,7 +314,7 @@ public class DataPanel extends JComponent implements Paintable {
                 trackY += UIConstants.groupGap;
             }
             for (Track track : group.getTracks()) {
-
+                if(track == null) continue;
                 if (track.isVisible()) {
 
                     int trackWidth = getWidth();

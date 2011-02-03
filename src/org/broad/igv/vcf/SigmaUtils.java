@@ -104,7 +104,7 @@ public class SigmaUtils {
     private List<Feature> indelFilterFeatures;
     private List<Feature> codingRepeatFeatures;
 
-    static Set<String> segregatingFamilies = new HashSet(Arrays.asList("AA", "L", "LA", "BIP", "OK"));
+    static Set<String> segregatingFamilies = new HashSet(Arrays.asList("AA", "L", "LA", "BIP", "OK", "CC", "PA"));
 
     static String[] allFamiliesList = {"AA", "L", "LA", "BIP", "OK", "CC", "PA"};
 
@@ -265,7 +265,8 @@ public class SigmaUtils {
 
         for (Feature feature : features) {
 
-            Set<String> affectedFamilies = new LinkedHashSet();
+            Set<String> affectedSegregatingFamilies = new LinkedHashSet();
+            Set<String> affectedSingles = new LinkedHashSet();
             Set<String> discordantFamilies = new LinkedHashSet();
             boolean normalHet = false;
 
@@ -333,16 +334,22 @@ public class SigmaUtils {
                     // Not this variant
                     //    break;
                     //}
-                } else if (allHet && segregatingFamilies.contains(family)) {
-                    affectedFamilies.add(family);
+                } else if (allHet) {
+                    if(segregatingFamilies.contains(family)) {
+                        affectedSegregatingFamilies.add(family);
+                    }
+                    else {
+                        affectedSingles.add(family);
+                    }
 
                 }
 
             }
 
-            if (affectedFamilies.size() > 0) {
+            if (affectedSegregatingFamilies.size() > 0) {
 
-                FilteredVariantRecord variantRecord = new FilteredVariantRecord(variant, affectedFamilies, discordantFamilies);
+                FilteredVariantRecord variantRecord = new FilteredVariantRecord(variant, affectedSegregatingFamilies,
+                        affectedSingles, discordantFamilies);
                 if (discordantFamilies.size() > 0 && discordantFamilies.size() < 2) {
                     if (normalHet) {
                         normalHetRecords.add(variantRecord);
@@ -357,7 +364,7 @@ public class SigmaUtils {
             int s = variant.getStart();
             int e = variant.getEnd();
             String type = variant.getType().toString();
-            for (String f : affectedFamilies) {
+            for (String f : affectedSegregatingFamilies) {
                 PrintWriter pw = writers.get(f);
                 if (pw != null) {
                     pw.println(variant.getChr() + "\t" + s + "\t" + e + "\t" + type + "\t1000\t.\t" +
@@ -395,9 +402,12 @@ public class SigmaUtils {
     class FilteredVariantRecord {
         VariantContext variant;
         Set<String> affectedFamilies;
+        Set<String> affectedSingles;
         Set<String> discordantFamilies;
 
-        FilteredVariantRecord(VariantContext variant, Set<String> affectedFamilies, Set<String> discordantFamilies) {
+        FilteredVariantRecord(VariantContext variant, Set<String> affectedFamilies, Set<String> affectedSingles,
+                              Set<String> discordantFamilies) {
+            this.affectedSingles = affectedSingles;
             this.affectedFamilies = affectedFamilies;
             this.discordantFamilies = discordantFamilies;
             this.variant = variant;
@@ -554,26 +564,34 @@ refseq.name2
 
         String clName = "";
         if (cufflinksFeatures != null) {
-            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, cufflinksFeatures);
-            if (cl != null) {
-                Exon exon = cl.getExonAt(s - 1);
-                if (exon == null) {
-                    clName = "intron";
-                } else {
-                    clName = "exon";
+            List<Feature> features = FeatureUtils.getAllFeaturesAt(variant.getStart(), 10000, 5, cufflinksFeatures, false);
+            if (features != null && features.size() > 0) {
+                clName = "intron";
+                for (Feature f : features) {
+                    IGVFeature cl = (IGVFeature) f;
+                    Exon exon = cl.getExonAt(s - 1);
+                    if (exon != null) {
+                        clName = "exon";
+                        break;
+                    }
+
                 }
             }
         }
 
         String scripture = "";
         if (scriptureFeatures != null) {
-            IGVFeature cl = (IGVFeature) FeatureUtils.getFeatureAt(variant.getStart(), 5, scriptureFeatures);
-            if (cl != null) {
-                Exon exon = cl.getExonAt(s - 1);
-                if (exon == null) {
-                    scripture = "intron";
-                } else {
-                    scripture = "exon";
+            List<Feature> features = FeatureUtils.getAllFeaturesAt(variant.getStart(), 10000, 5, scriptureFeatures, false);
+            if (features != null && features.size() > 0) {
+                scripture = "intron";
+                for (Feature f : features) {
+                    IGVFeature cl = (IGVFeature) f;
+                    Exon exon = cl.getExonAt(s - 1);
+                    if (exon != null) {
+                        scripture = "exon";
+                        break;
+                    }
+
                 }
             }
         }
@@ -618,6 +636,12 @@ String silent = "";
 */
         String families = "";
         for (String f : affectedFamilies) {
+            if (families.length() > 0) {
+                families += ",";
+            }
+            families += f;
+        }
+        for (String f : record.affectedSingles) {
             if (families.length() > 0) {
                 families += ",";
             }

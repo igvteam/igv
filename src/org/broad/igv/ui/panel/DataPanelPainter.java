@@ -87,6 +87,7 @@ public class DataPanelPainter {
 
                     List<Track> trackList = group.getTracks();
                     for (Track track : trackList) {
+                        if(track == null) continue;
                         int trackHeight = track.getHeight();
                         if (visibleRect != null) {
                             if (trackY > visibleRect.y + visibleRect.height) {

@@ -169,6 +169,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
         List<Track> tmp = new ArrayList(group.getTracks());
         for (Track track : tmp) {
+            if(track == null) continue;
             track.setTop(regionY);
             int trackHeight = track.getHeight();
             if (track.isVisible()) {

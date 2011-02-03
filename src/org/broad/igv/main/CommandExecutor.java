@@ -46,7 +46,7 @@ public class CommandExecutor {
 
     private static Logger log = Logger.getLogger(CommandExecutor.class);
 
-    private  File snapshotDirectory;
+    private File snapshotDirectory;
 
 
     private List<String> getArgs(String[] tokens) {
@@ -105,9 +105,9 @@ public class CommandExecutor {
                     expand(trackName);
                 } else if (cmd.equals("tweakdivider")) {
                     IGVMainFrame.getInstance().tweakPanelDivider();
-                } else if (cmd.equals("maxpanelheight" )&& param1 != null) {
+                } else if (cmd.equals("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
-                }else if (cmd.equals("exit")) {
+                } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
                     log.error("UNKOWN COMMAND: " + command);
@@ -141,8 +141,8 @@ public class CommandExecutor {
             SnapshotUtilities.MAX_PANEL_HEIGHT = h;
             return "OK";
         }
-        catch(NumberFormatException e) {
-            return "ERROR - max panel height value ('" + param1 + ".) must be a number";            
+        catch (NumberFormatException e) {
+            return "ERROR - max panel height value ('" + param1 + ".) must be a number";
         }
     }
 
@@ -186,7 +186,14 @@ public class CommandExecutor {
             snapshotDirectory = parentDir;
             result = "OK";
         } else {
-            result = "ERROR: directory: " + param1 + " does not exist";
+            parentDir.mkdir();
+            if (parentDir.exists()) {
+                snapshotDirectory = parentDir;
+                result = "OK";
+            } else {
+
+                result = "ERROR: directory: " + param1 + " does not exist";
+            }
         }
         return result;
     }
@@ -312,7 +319,7 @@ public class CommandExecutor {
         return "OK";
     }
 
-    private  void createSnapshot(String filename) {
+    private void createSnapshot(String filename) {
         IGVMainFrame mainFrame = IGVMainFrame.getInstance();
 
         if (filename == null) {
@@ -321,8 +328,8 @@ public class CommandExecutor {
         }
 
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
-        log.info("Snapshot: " + filename);
-        
+        System.out.println("Snapshot: " + file.getAbsolutePath());
+
         SnapshotUtilities.doSnapshotOffscreen(mainFrame.getMainPanel(), file);
     }
 

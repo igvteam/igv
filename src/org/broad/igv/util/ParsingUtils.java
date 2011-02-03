@@ -69,18 +69,17 @@ public class ParsingUtils {
 
 
     public static int estimateLineCount(File file) {
-        if(file.isDirectory()) {
+        if (file.isDirectory()) {
             int lineCount = 0;
-            for(File f : file.listFiles()) {
+            for (File f : file.listFiles()) {
                 // Don't recurse
-                if(!f.isDirectory()) {
+                if (!f.isDirectory()) {
                     lineCount += estimateLineCount(f.getAbsolutePath());
                 }
             }
             return lineCount;
 
-        }
-        else {
+        } else {
             return estimateLineCount(file.getAbsolutePath());
         }
 
@@ -229,46 +228,45 @@ public class ParsingUtils {
     }
 
     /**
-       * Split the string into tokens separated by one or more space.  This method
-       * was added so support PLINK files.
-       *
-       * @param aString the string to split
-       * @param tokens  an array to hold the parsed tokens
-       * @return the number of tokens parsed
-       */
-      public static int splitSpaces(String aString, String[] tokens) {
+     * Split the string into tokens separated by one or more space.  This method
+     * was added so support PLINK files.
+     *
+     * @param aString the string to split
+     * @param tokens  an array to hold the parsed tokens
+     * @return the number of tokens parsed
+     */
+    public static int splitSpaces(String aString, String[] tokens) {
 
-          aString = aString.trim();
-          int maxTokens = tokens.length;
-          int nTokens = 0;
-          int start = 0;
-          int end = aString.indexOf(' ');
-          if (end < 0) {
-              tokens[nTokens++] = aString;
-              return nTokens;
-          }
-          while ((end > 0) && (nTokens < maxTokens)) {
+        aString = aString.trim();
+        int maxTokens = tokens.length;
+        int nTokens = 0;
+        int start = 0;
+        int end = aString.indexOf(' ');
+        if (end < 0) {
+            tokens[nTokens++] = aString;
+            return nTokens;
+        }
+        while ((end > 0) && (nTokens < maxTokens)) {
 
-              String t = aString.substring(start, end);
-              if (t.length() > 0) {
-                  tokens[nTokens++] = t;
-              }
-              start = end + 1;
+            String t = aString.substring(start, end);
+            if (t.length() > 0) {
+                tokens[nTokens++] = t;
+            }
+            start = end + 1;
 
-              end = aString.indexOf(' ', start);
+            end = aString.indexOf(' ', start);
 
-          }
+        }
 
-          // Add the trailing string,  if there is room and if it is not empty.
-          if (nTokens < maxTokens) {
-              String trailingString = aString.substring(start);
-              if (trailingString.length() > 0) {
-                  tokens[nTokens++] = trailingString;
-              }
-          }
-          return nTokens;
-      }
-
+        // Add the trailing string,  if there is room and if it is not empty.
+        if (nTokens < maxTokens) {
+            String trailingString = aString.substring(start);
+            if (trailingString.length() > 0) {
+                tokens[nTokens++] = trailingString;
+            }
+        }
+        return nTokens;
+    }
 
 
     /**
@@ -288,7 +286,7 @@ public class ParsingUtils {
         int tabEnd = aString.indexOf('\t');
         int spaceEnd = aString.indexOf(' ');
         int end = tabEnd < 0 ? spaceEnd : spaceEnd < 0 ? tabEnd : Math.min(spaceEnd, tabEnd);
-        while  ((end > 0) && (nTokens < maxTokens)) {
+        while ((end > 0) && (nTokens < maxTokens)) {
             //tokens[nTokens++] = new String(aString.toCharArray(), start, end-start); //  aString.substring(start, end);
             tokens[nTokens++] = aString.substring(start, end);
 
@@ -471,7 +469,8 @@ public class ParsingUtils {
                     } else if (key.equals("description")) {
                         trackProperties.setDescription(value);
                     } else if (key.equals("itemrgb")) {
-                        trackProperties.setItemRGB(value.toLowerCase().equals("on"));
+                        trackProperties.setItemRGB(value.toLowerCase().equals("on") ||
+                                value.equals("1"));
                     } else if (key.equals("usescore")) {
                         trackProperties.setUseScore(value.equals("1"));
                     } else if (key.equals("color")) {
@@ -564,7 +563,7 @@ public class ParsingUtils {
                             trackProperties.setWindowingFunction(WindowFunction.percentile90);
 
                         }
-                    } else if(key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow")) {
+                    } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow")) {
                         // These options are deprecated.  Use visibilityWindow
                         try {
                             int windowSize = Integer.parseInt(value);
@@ -573,7 +572,7 @@ public class ParsingUtils {
                             log.error("featureVisibilityWindow must be numeric: " + nextLine);
                         }
 
-                    } else if(key.equals("visibilitywindow")) {
+                    } else if (key.equals("visibilitywindow")) {
                         try {
                             int windowSize = Integer.parseInt(value) * 1000;
                             trackProperties.setFeatureVisibilityWindow(windowSize);
@@ -581,9 +580,8 @@ public class ParsingUtils {
                             log.error("featureVisibilityWindow must be an integer: " + nextLine);
                         }
 
-                    }
-                    else if(key.equals("scaletype")) {
-                        if(value.equals("log")) {
+                    } else if (key.equals("scaletype")) {
+                        if (value.equals("log")) {
                             trackProperties.setLogScale(true);
                         }
                     }
@@ -605,7 +603,7 @@ public class ParsingUtils {
 
     }
 
-    public static  boolean pathExists(String covPath)  {
+    public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||
                     (IGVHttpUtils.isURL(covPath) && IGVHttpUtils.resourceAvailable(new URL(covPath)));

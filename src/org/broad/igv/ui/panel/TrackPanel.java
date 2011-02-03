@@ -137,7 +137,7 @@ public class TrackPanel extends IGVPanel {
         int count = 0;
         for (TrackGroup tg : trackGroups) {
             for (Track t : tg.getTracks()) {
-                if (t.isVisible()) {
+                if (t != null && t.isVisible()) {
                     count++;
                 }
             }

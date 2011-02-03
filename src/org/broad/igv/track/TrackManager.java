@@ -125,11 +125,6 @@ public class TrackManager {
     }
 
 
-    /**
-     * Method description
-     *
-     * @param attributeName
-     */
     public void setGroupByAttribute(String attributeName) {
         groupByAttribute = attributeName;
         groupTracksByAttribute();
@@ -145,15 +140,15 @@ public class TrackManager {
 
 
     public void groupTracksByAttribute() {
-        //TODO We should go through all current panels not just the data panel
-        //for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-        //    TrackPanel trackPanel = tsp.getTrackPanel();
-        //    trackPanel.groupTracksByAttribute(groupByAttribute);
-        //}
-        TrackPanelScrollPane tsp = trackPanelScrollPanes.get(DATA_PANEL_NAME);
-        if (tsp != null) {
-            tsp.getTrackPanel().groupTracksByAttribute(groupByAttribute);
+        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
+            TrackPanel trackPanel = tsp.getTrackPanel();
+            trackPanel.groupTracksByAttribute(groupByAttribute);
         }
+        //TODO We should go through all current panels not just the data panel
+        //TrackPanelScrollPane tsp = trackPanelScrollPanes.get(DATA_PANEL_NAME);
+        //if (tsp != null) {
+        //    tsp.getTrackPanel().groupTracksByAttribute(groupByAttribute);
+        //}
     }
 
 
@@ -400,7 +395,8 @@ public class TrackManager {
 
     public void clearSelections() {
         for (Track t : getAllTracks(true)) {
-            t.setSelected(false);
+            if (t != null)
+                t.setSelected(false);
         }
 
     }
@@ -444,7 +440,7 @@ public class TrackManager {
     public Collection<Track> getSelectedTracks() {
         HashSet<Track> selectedTracks = new HashSet();
         for (Track t : getAllTracks(true)) {
-            if (t.isSelected()) {
+            if (t != null && t.isSelected()) {
                 selectedTracks.add(t);
             }
         }
@@ -564,10 +560,10 @@ public class TrackManager {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
             return mainFrame.addDataPanel(newPanelName).getTrackPanel();
-        //} else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-        //        path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-        //    String newPanelName = "Panel" + System.currentTimeMillis();
-        //    return mainFrame.addDataPanel(newPanelName).getTrackPanel();
+            //} else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+            //        path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+            //    String newPanelName = "Panel" + System.currentTimeMillis();
+            //    return mainFrame.addDataPanel(newPanelName).getTrackPanel();
         } else {
             return getDefaultPanel(locator);
         }
@@ -745,7 +741,7 @@ public class TrackManager {
                     mainFrame.getDataPanel(DATA_PANEL_NAME) : mainFrame.getDataPanel(FEATURE_PANEL_NAME);
 
             if (!foundSeqTrack) panel.addTrack(newSeqTrack);
-            if (!foundGeneTrack) panel.addTrack(newGeneTrack);
+            if (!foundGeneTrack && newGeneTrack != null) panel.addTrack(newGeneTrack);
 
         }
 

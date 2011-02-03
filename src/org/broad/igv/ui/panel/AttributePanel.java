@@ -132,7 +132,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                         }
 
                         for (Track track : group.getTracks()) {
-
+                            if(track == null) continue;
                             int trackHeight = track.getHeight();
                             if (regionY > visibleRect.y + visibleRect.height) {
                                 break;
