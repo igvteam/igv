@@ -178,7 +178,11 @@ public class CoverageCounter {
 
     private String getFilenameBase() {
         String tmp = tdfFile.getAbsolutePath();
-        return tmp.substring(0, tmp.length() - 4);
+        tmp =  tmp.substring(0, tmp.length() - 4);
+        if(readGroup != null) {
+            tmp += "." + readGroup;
+        }
+        return tmp;
     }
 
 
