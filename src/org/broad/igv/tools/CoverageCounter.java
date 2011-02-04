@@ -161,7 +161,7 @@ public class CoverageCounter {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
                     coverageHistogram = new Histogram(1000);
-                } else if (opt.equals("l")) {
+                } else if (opt.startsWith("l:")) {
                     String [] tmp = opt.split(":");
                     readGroup = tmp[1];
                 }
