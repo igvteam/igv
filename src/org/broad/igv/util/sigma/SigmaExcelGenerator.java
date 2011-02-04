@@ -17,7 +17,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.vcf;
+package org.broad.igv.util.sigma;
 
 import org.broad.igv.feature.*;
 import org.broad.igv.track.tribble.TribbleFeatureSource;
@@ -54,7 +54,7 @@ import java.util.*;
  * @author jrobinso
  * @date Jan 30, 2011
  */
-public class SigmaUtils {
+public class SigmaExcelGenerator {
 
     static String chr = "chr1";
     static int roiStart = 152668595;
@@ -114,7 +114,7 @@ public class SigmaUtils {
 
     public static void main(String[] args) throws IOException {
 
-        SigmaUtils utils = new SigmaUtils(args[0]);
+        SigmaExcelGenerator excelGenerator = new SigmaExcelGenerator(args[0]);
 
         fileBase = args[1];
         PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(args[1] + ".bed")));
@@ -128,7 +128,7 @@ public class SigmaUtils {
 
         pw.println("#coords=1");
         pw.println("track name=\"Segregating snps\"");
-        utils.walkVariants(pw, excelWriter);
+        excelGenerator.walkVariants(pw, excelWriter);
 
         pw.close();
         excelWriter.close();
@@ -178,7 +178,7 @@ public class SigmaUtils {
         }
     }
 
-    public SigmaUtils(String path) throws IOException {
+    public SigmaExcelGenerator(String path) throws IOException {
 
         initFeatureLists();
 

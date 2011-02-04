@@ -78,6 +78,8 @@ public class CoverageCounter {
     private WigWriter wigWriter = null;
     private Genome genome;
 
+    private String readGroup; // The read group to count
+
     Map<Event, WigWriter> writers = new HashMap();
 
     private boolean computeTDF = true;
@@ -159,7 +161,11 @@ public class CoverageCounter {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
                     coverageHistogram = new Histogram(1000);
-                } else {
+                } else if (opt.equals("l")) {
+                    String [] tmp = opt.split(":");
+                    readGroup = tmp[1];
+                }
+                else {
                     System.out.println("Unknown coverage option: " + opt);
                 }
             }
@@ -179,7 +185,8 @@ public class CoverageCounter {
     // TODO -- options to ovveride all of these checks
 
     private boolean passFilter(Alignment alignment) {
-        return alignment.isMapped() &&
+        return (readGroup == null || readGroup.equals(alignment.getReadGroup())) &&
+                alignment.isMapped() &&
                 !alignment.isDuplicate() &&
                 alignment.getMappingQuality() >= minMappingQuality &&
                 !alignment.isVendorFailedRead();
@@ -605,6 +612,12 @@ public class CoverageCounter {
 
 
         void increment(int position, byte base, byte quality) {
+
+            // Qualities of 2 or less => no idea what this base is
+            if(quality <= 2) {
+                return;
+            }
+
             int offset = position - start;
             byte refBase = ref[offset];
             getBaseCount()[offset]++;
@@ -701,6 +714,7 @@ public class CoverageCounter {
         //}
 
     }
+
 
     /**
      * Creates a vary step wig file
