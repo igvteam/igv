@@ -26,19 +26,29 @@ import org.broad.tribble.Feature;
 import java.util.*;
 
 /**
+ * dhmay changing 20110213.  I've changed a few things to make it possible to subclass this class. The
+ * changes are mostly innocuous, but some are odd, e.g., the iter argument to packFeatures() doesn't declare
+ * its type.  This is necessary so that packFeatures() can be overridden.
+ *
  * @author jrobinso
  * @date Oct 7, 2010
  */
 public class PackedFeatures<T extends Feature> {
-    private String trackName;
-    private String chr;
-    private int start;
-    private int end;
-    private List<T> features;
-    private List<FeatureRow> rows;
+    protected String trackName;
+    protected String chr;
+    protected int start;
+    protected int end;
+    protected List<T> features;
+    protected List<FeatureRow> rows;
     private static Logger log = Logger.getLogger(PackedFeatures.class);
-    private int maxFeatureLength = 0;
-    static int maxLevels = 200;
+    protected int maxFeatureLength = 0;
+    protected static int maxLevels = 200;
+
+    /**
+     * No-arg constructor to allow subclassing
+     */
+    PackedFeatures(){
+    }
 
     PackedFeatures(String chr, int start, int end) {
         this.chr = chr;
@@ -57,6 +67,30 @@ public class PackedFeatures<T extends Feature> {
         rows = packFeatures(iter);
     }
 
+
+     /**
+     * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
+     * This can be overridden in a subclass
+     * @param feature
+     * @return
+     */
+    protected int getFeatureStartForPacking(Feature feature)
+    {
+        return feature.getStart(); 
+    }
+
+
+    /**
+     * Some types of Features (splice junctions) should be packed on the same row even if start and end overlap.
+     * This can be overridden in a subclass
+     * @param feature
+     * @return
+     */
+    protected int getFeatureEndForPacking(Feature feature)
+    {
+        return feature.getEnd();
+    }
+
     int getRowCount() {
         return getRows().size();
     }
@@ -66,42 +100,39 @@ public class PackedFeatures<T extends Feature> {
     }
 
     /**
-     * Allocates each alignment to the rows such that there is no overlap.
+     * Allocates each feature to the rows such that there is no overlap.
      *
-     * @param iter TabixLineReader wrapping the collection of alignments
+     * @param iter TabixLineReader wrapping the collection of alignments. Note that this should
+     * really be an Iterator<T>, but it can't be subclassed if that's the case.
      */
-    List<FeatureRow> packFeatures(Iterator<T> iter) {
+    List<FeatureRow> packFeatures(Iterator iter) {
 
         List<FeatureRow> rows = new ArrayList(10);
         if (iter == null || !iter.hasNext()) {
             return rows;
         }
 
+        maxFeatureLength = 0;
+        int totalCount = 0;
 
-        // Compares 2 alignments by length.
-        Comparator lengthComparator = new Comparator<Feature>() {
+        LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
+        Comparator pqComparator = new Comparator<T>() {
             public int compare(Feature row1, Feature row2) {
                 return (row2.getEnd() - row2.getStart()) - (row1.getEnd() - row2.getStart());
             }
         };
 
-        T firstFeature = iter.next();
-        features.add(firstFeature);
-        maxFeatureLength = firstFeature.getEnd() - firstFeature.getStart();
-        int totalCount = 1;
-
-        LinkedHashMap<Integer, PriorityQueue<T>> bucketArray = new LinkedHashMap();
-
         while (iter.hasNext()) {
-            T feature = iter.next();
-            maxFeatureLength = Math.max(maxFeatureLength, feature.getEnd() - feature.getStart());
+            T feature = (T) iter.next();
+            maxFeatureLength = Math.max(maxFeatureLength,
+                    getFeatureEndForPacking(feature) - getFeatureStartForPacking(feature));
             features.add(feature);
 
-            int bucketNumber = feature.getStart();
+            int bucketNumber = getFeatureStartForPacking(feature);
 
-            PriorityQueue bucket = bucketArray.get(bucketNumber);
+            PriorityQueue<T> bucket = bucketArray.get(bucketNumber);
             if (bucket == null) {
-                bucket = new PriorityQueue(5, lengthComparator);
+                bucket = new PriorityQueue<T>(5, pqComparator);
                 bucketArray.put(bucketNumber, bucket);
             }
             bucket.add(feature);
@@ -111,7 +142,6 @@ public class PackedFeatures<T extends Feature> {
 
         // Allocate alignments to rows
         FeatureRow currentRow = new FeatureRow();
-        currentRow.addFeature(firstFeature);
         int allocatedCount = 1;
         int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
 
@@ -221,10 +251,10 @@ public class PackedFeatures<T extends Feature> {
 
         public void addFeature(T feature) {
             if (features.isEmpty()) {
-                this.start = feature.getStart();
+                this.start = getFeatureStartForPacking(feature);
             }
             features.add(feature);
-            end = feature.getEnd();
+            end = getFeatureEndForPacking(feature);
         }
 
         public List<T> getFeatures() {

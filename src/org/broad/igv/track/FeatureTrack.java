@@ -615,9 +615,17 @@ public class FeatureTrack extends AbstractTrack {
                     // TODO -- implement source to return iterators
                     Iterator<Feature> iter = source.getFeatures(chr, start, end);
                     if (iter == null) {
-                        packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, expandedStart, expandedEnd));
+                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
+                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     } else {
-                        packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName()));
+                        //dhmay putting a switch in for different packing behavior in splice junction tracks.
+                        //This should probably be switched somewhere else, but that would require a big refactor.
+                        PackedFeatures pf = null;
+                        if (getRenderer() instanceof SpliceJunctionRenderer)
+                            pf = new PackedFeaturesSpliceJunctions(chr, expandedStart, expandedEnd, iter, getName());                            
+                        else
+                            pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
+                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 
                     IGVMainFrame.getInstance().layoutMainPanel();
@@ -625,7 +633,8 @@ public class FeatureTrack extends AbstractTrack {
                 } catch (Throwable e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load
                     // attempts.
-                    packedFeaturesMap.put(context.getReferenceFrame().getName(), new PackedFeatures(chr, start, end));
+                    PackedFeatures pf = new PackedFeatures(chr, start, end);
+                    packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     String msg = "Error loading features for interval: " + chr + ":" + start + "-" + end + " <br>" + e.toString();
                     MessageUtils.showMessage(msg);
                     log.error(msg, e);

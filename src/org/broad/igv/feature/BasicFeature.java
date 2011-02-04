@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.track.WindowFunction;
 
@@ -169,7 +170,14 @@ public class BasicFeature extends AbstractFeature {
         if ((identifier != null) && ((name == null) || !name.equals(identifier))) {
             valueString.append("<br>" + identifier);
         }
-        valueString.append("<br>" + getLocusString());
+
+        valueString.append("<br>");
+        //for splice junctions, the junction boundary should be reported, not the feature ends
+        if (FEATURE_TYPE_SPLICEJUNCTION.equals(getType()))
+            valueString.append(getChr() + ":" + SpliceJunctionRenderer.getJunctionStart(this) + "-" +
+                    SpliceJunctionRenderer.getJunctionEnd(this));
+        else
+            valueString.append(getLocusString());
 
         if (FEATURE_TYPE_SPLICEJUNCTION.equals(getType()) && getStrand() != null)
             valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));

@@ -113,17 +113,9 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 int featureStart = feature.getStart();
                 int featureEnd = feature.getEnd();
 
-                int junctionStart = featureStart;
-                int junctionEnd = featureEnd;
-                List<Exon> exons = feature.getExons();
-                //All features should have 2 exons -- I'm just hedging my bets with the if.  The exons,
-                // in the case of a junction bed file, represent the area between the end of the read and
-                // the splice junction itself.  So, to determine the junction start and end points, just
-                // take away those exon lengths.
-                if (exons != null && exons.size() == 2) {
-                    junctionStart += exons.get(0).getEnd() - exons.get(0).getStart();
-                    junctionEnd -= exons.get(1).getEnd() - exons.get(1).getStart();
-                }
+                int junctionStart = getJunctionStart(feature);
+                int junctionEnd = getJunctionEnd(feature);
+                
                 double virtualPixelStart = Math.round((featureStart - origin) / locScale);
                 double virtualPixelEnd = Math.round((featureEnd - origin) / locScale);
 
@@ -186,6 +178,40 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                         (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
 
         }
+    }
+
+    /**
+     * Return the start of a junction, for an IGVFeature that represents a junction.
+     * If the contract is broken, i.e., the IGVFeature does /not/ represent a junction, return the feature start.
+     * @param feature
+     * @return
+     */
+    public static int getJunctionStart(IGVFeature feature)
+    {
+        List<Exon> exons = feature.getExons();
+        //Junction features have 2 exons. The exons represent the area between the end of the read and
+        // the splice junction itself.  So, to determine the junction start and end points, just
+        // take away those exon lengths.
+        if (exons == null || exons.size() != 2)
+            return feature.getStart();
+        return feature.getStart() + exons.get(0).getEnd() - exons.get(0).getStart();
+    }
+
+    /**
+     * Return the end of a junction, for an IGVFeature that represents a junction.
+     * If the contract is broken, i.e., the IGVFeature does /not/ represent a junction, return the feature end.
+     * @param feature
+     * @return
+     */
+    public static int getJunctionEnd(IGVFeature feature)
+    {
+        List<Exon> exons = feature.getExons();
+        //Junction features have 2 exons. The exons represent the area between the end of the read and
+        // the splice junction itself.  So, to determine the junction start and end points, just
+        // take away those exon lengths.
+        if (exons == null || exons.size() != 2)
+            return feature.getEnd();
+        return feature.getEnd() - (exons.get(1).getEnd() - exons.get(1).getStart());
     }
 
     /**
