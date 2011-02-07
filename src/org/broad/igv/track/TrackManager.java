@@ -509,11 +509,14 @@ public class TrackManager {
             }
         }
 
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
+        // Make copy of list as we will be modifying the original in the loop
+        ArrayList<TrackPanelScrollPane> panes = new ArrayList(getTrackPanelScrollPanes());
+        for (TrackPanelScrollPane tsp : panes) {
             TrackPanel tsv = tsp.getTrackPanel();
             tsv.removeTracks(tmp);
 
 
+            // TODO -- do we want to remove the DataPanel if its empty?
             if (!tsv.hasTracks()) {
                 mainFrame.removeDataPanel(tsp.getTrackPanelName());
             }
