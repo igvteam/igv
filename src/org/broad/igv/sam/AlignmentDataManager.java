@@ -53,7 +53,7 @@ public class AlignmentDataManager {
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
     private int maxLevels;
-
+    private boolean loadAsPairs = false;
 
     public AlignmentDataManager(ResourceLocator locator) throws IOException {
 
@@ -181,11 +181,11 @@ public class AlignmentDataManager {
         List<AlignmentInterval.Row> alignmentRows = (new AlignmentLoader()).loadAndPackAlignments(
                 iter,
                 maxLevels,
-                loadedInterval.getEnd());
+                loadedInterval.getEnd(),
+                loadAsPairs);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
-
 
     public synchronized List<AlignmentInterval.Row> getAlignmentRows(RenderContext context) {
 
@@ -252,7 +252,7 @@ public class AlignmentDataManager {
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts);
 
                     List<AlignmentInterval.Row> alignmentRows = (new AlignmentLoader()).loadAndPackAlignments(iter, maxLevels,
-                            intervalEnd);
+                            intervalEnd, loadAsPairs);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
                             alignmentRows, counts);
@@ -327,6 +327,14 @@ public class AlignmentDataManager {
 
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return loadedIntervalMap.values();
+    }
+
+    public boolean isLoadAsPairs() {
+        return loadAsPairs;
+    }
+
+    public void setLoadAsPairs(boolean loadAsPairs) {
+        this.loadAsPairs = loadAsPairs;
     }
 
 

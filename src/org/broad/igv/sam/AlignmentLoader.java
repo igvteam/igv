@@ -25,9 +25,7 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.AlignmentInterval.Row;
-import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.UIConstants;
 
 import java.util.*;
@@ -65,20 +63,19 @@ public class AlignmentLoader {
     public static final int MIN_ALIGNMENT_SPACING = 5;
 
 
-    boolean pairAlignments = false;
+
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
      * @param iter      Iterator wrapping the collection of alignments
      * @param maxLevels the maximum number of levels (rows) to create
      */
-    public List<AlignmentInterval.Row> loadAndPackAlignments(CloseableIterator<Alignment> iter, int maxLevels, int end) {
+    public List<AlignmentInterval.Row> loadAndPackAlignments(
+            CloseableIterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
 
-        //pairAlignments = UIConstants.isSigmaProject();
-
-        Map<String, PairedAlignment> pairs = null;
-        if(pairAlignments) {
-            pairs = new HashMap(1000);            
+       Map<String, PairedAlignment> pairs = null;
+        if (pairAlignments) {
+            pairs = new HashMap(1000);
         }
 
         List<Row> alignmentRows = new ArrayList(maxLevels);
@@ -125,18 +122,22 @@ public class AlignmentLoader {
             } else {
 
                 Alignment alignment = al;
-                if(this.pairAlignments && al.isPaired() && al.isProperPair() && al.getMate().isMapped()) {
+                if (pairAlignments && al.isPaired() && al.isProperPair() && al.getMate().isMapped()) {
                     String readName = al.getReadName();
                     PairedAlignment pair = pairs.get(readName);
-                    if(pair == null) {
+                    if (pair == null) {
                         pair = new PairedAlignment(al);
                         pairs.put(readName, pair);
+                        alignment = pair;
+                    } else {
+                        if (al.getChr().equals(pair.getChr())) {
+                            // Add second alignment to pair
+                            pair.setSecondAlignment(al);
+                            pairs.remove(readName);
+                            continue;
+                        }
+
                     }
-                    else {
-                        pair.addAlignment(al);
-                        pairs.remove(readName);
-                    }
-                    alignment = pair;
                 }
 
 
@@ -227,6 +228,5 @@ public class AlignmentLoader {
         return alignmentRows;
 
     }
-
 
 }

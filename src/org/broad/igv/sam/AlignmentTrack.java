@@ -156,7 +156,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             renderOptions.setMaxInsertSizeThreshold((int) stats.getMaxPercentileInsertSize());
             renderOptions.setMedianInsertSizeThreshold((int) median);
             renderOptions.setMadInsertSizeThreshold((int) mad);
-            System.out.println("  median = " + median + " mad = " + mad);
+            log.debug("  median = " + median + " mad = " + mad);
         }
 
     }
@@ -553,13 +553,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         addShadeBaseMenuItem(popupMenu);
         addShadeCentersMenuItem(popupMenu);
 
+        popupMenu.addSeparator();
+        addViewAsPairsMenuItem(popupMenu, e);
         addGoToMate(popupMenu, e);
         showMateRegion(popupMenu, e);
         addShowAllBasesMenuItem(popupMenu);
         addMinInsertSizeMenuItem(popupMenu);
         addMaxInsertSizeMenuItem(popupMenu);
-        popupMenu.addSeparator();
 
+        popupMenu.addSeparator();
         addShowCoverageItem(popupMenu);
         addLoadCoverageDataItem(popupMenu);
 
@@ -810,6 +812,27 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (te.getFrame() == null || te.getFrame().getScale() >= MIN_ALIGNMENT_SPACING) {
             item.setEnabled(false);
         }
+
+        menu.add(item);
+    }
+
+    public void addViewAsPairsMenuItem(JPopupMenu menu, final TrackClickEvent te) {
+        // Change track height by attribute
+        final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
+        item.setSelected(dataManager.isLoadAsPairs());
+        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+
+            public void action() {
+                UIUtilities.invokeOnEventThread(new Runnable() {
+
+                    public void run() {
+                        dataManager.setLoadAsPairs(item.isSelected());
+                        dataManager.clear();
+                        refresh();
+                    }
+                });
+            }
+        });
 
         menu.add(item);
     }
@@ -1084,6 +1107,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         private int madInsertSize;
         ColorOption colorOption;
         ContinuousColorScale insertSizeColorScale;
+        private boolean viewPairs = false;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -1208,6 +1232,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         public void setMadInsertSizeThreshold(int madInsertSize) {
             this.madInsertSize = madInsertSize;
             updateColorScale();
+        }
+
+        public boolean isViewPairs() {
+            return viewPairs;
+        }
+
+        public void setViewPairs(boolean viewPairs) {
+            this.viewPairs = viewPairs;
         }
     }
 

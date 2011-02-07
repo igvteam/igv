@@ -117,10 +117,12 @@ public class CoverageCounter {
             String[] opts = options.split(",");
             for (String opt : opts) {
 
-                final String baseName = getFilenameBase();
-                if (opt.startsWith("i")) {
-                    writers.put(Event.largeISize, new WigWriter(new File(baseName + ".large_isize.wig"), windowSize, false));
-                    writers.put(Event.smallISize, new WigWriter(new File(baseName + ".small_isize.wig"), windowSize, false));
+                if (opt.startsWith("l:")) {
+                    String[] tmp = opt.split(":");
+                    readGroup = tmp[1];
+                } else if (opt.startsWith("i")) {
+                    writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize, false));
+                    writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize, false));
 
                     // Optionally specify mean and std dev (todo -- just specify min and max)
                     String[] tokens = opt.split(":");
@@ -144,7 +146,7 @@ public class CoverageCounter {
                             //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
                             upperExpectedInsertSize = (int) stats.getMaxPercentileInsertSize();
                             lowerExpectedInsertSize = (int) stats.getMinPercentileInsertSize();
-                            System.out.println(alignmentFile +  "  min = " + lowerExpectedInsertSize + " max = " + upperExpectedInsertSize);
+                            System.out.println(alignmentFile + "  min = " + lowerExpectedInsertSize + " max = " + upperExpectedInsertSize);
                         }
                     }
 
@@ -152,7 +154,7 @@ public class CoverageCounter {
                     writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize, false));
                     writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize, false));
                 } else if (opt.equals("m")) {
-                    writers.put(Event.mismatch, new WigWriter(new File(baseName + ".mismatch.wig"), windowSize, false));
+                    writers.put(Event.mismatch, new WigWriter(new File(getFilenameBase() + ".mismatch.wig"), windowSize, false));
                 } else if (opt.equals("d")) {
                     writers.put(Event.indel, new WigWriter(new File(getFilenameBase() + ".indel.wig"), windowSize, false));
                 } else if (opt.equals("u")) {
@@ -161,11 +163,7 @@ public class CoverageCounter {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
                     coverageHistogram = new Histogram(1000);
-                } else if (opt.startsWith("l:")) {
-                    String [] tmp = opt.split(":");
-                    readGroup = tmp[1];
-                }
-                else {
+                } else {
                     System.out.println("Unknown coverage option: " + opt);
                 }
             }
@@ -178,8 +176,8 @@ public class CoverageCounter {
 
     private String getFilenameBase() {
         String tmp = tdfFile.getAbsolutePath();
-        tmp =  tmp.substring(0, tmp.length() - 4);
-        if(readGroup != null) {
+        tmp = tmp.substring(0, tmp.length() - 4);
+        if (readGroup != null) {
             tmp += "." + readGroup;
         }
         return tmp;
@@ -618,7 +616,7 @@ public class CoverageCounter {
         void increment(int position, byte base, byte quality) {
 
             // Qualities of 2 or less => no idea what this base is
-            if(quality <= 2) {
+            if (quality <= 2) {
                 return;
             }
 

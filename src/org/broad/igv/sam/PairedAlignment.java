@@ -44,21 +44,18 @@ public class PairedAlignment implements Alignment {
 
 
     public PairedAlignment(Alignment firstAlignment) {
-        addAlignment(firstAlignment);
+        this.firstAlignment = firstAlignment;
+        this.start = firstAlignment.getStart();
+        this.end = firstAlignment.getEnd() + Math.abs(firstAlignment.getInferredInsertSize());
+        this.chr = firstAlignment.getChr();
     }
 
-    public void addAlignment(Alignment alignment) {
-        if (firstAlignment == null) {
-            firstAlignment = alignment;
-            start = alignment.getStart();
-            end = alignment.getEnd() + Math.abs(alignment.getInferredInsertSize());
-            chr = alignment.getChr();
-        } else {
-            secondAlignment = alignment;
-            end = secondAlignment.getEnd();
-            // TODO -- check the chrs are equal,  error otherwise
+    public void setSecondAlignment(Alignment alignment) {
 
-        }
+        secondAlignment = alignment;
+        end = secondAlignment.getEnd();
+        // TODO -- check the chrs are equal,  error otherwise
+
     }
 
     public String getReadName() {
@@ -105,6 +102,7 @@ public class PairedAlignment implements Alignment {
     }
 
     AlignmentBlock[] insertions;
+
     public AlignmentBlock[] getInsertions() {
         if (insertions == null) {
             AlignmentBlock[] block1 = firstAlignment.getInsertions();
