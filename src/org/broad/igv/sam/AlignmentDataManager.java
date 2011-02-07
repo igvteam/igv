@@ -166,6 +166,62 @@ public class AlignmentDataManager {
     }
 
 
+    public boolean isLoadAsPairs() {
+        return loadAsPairs;
+    }
+
+    public void setLoadAsPairs(boolean loadAsPairs, ReferenceFrame referenceFrame) {
+        if (loadAsPairs == this.loadAsPairs) {
+            return;
+        }
+        boolean currentPairState = this.loadAsPairs;
+        this.loadAsPairs = loadAsPairs;
+        repackAlignments(referenceFrame, currentPairState);
+
+    }
+
+    private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState) {
+        if (currentPairState == true) {
+            AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
+            if (loadedInterval == null) {
+                return;
+            }
+            List<AlignmentInterval.Row> alignmentRows = loadedInterval.getAlignmentRows();
+            List<Alignment> alignments = new ArrayList(Math.min(50000, alignmentRows.size() * 1000));
+            for (AlignmentInterval.Row row : alignmentRows) {
+                for (Alignment al : row.alignments) {
+                    if (al instanceof PairedAlignment) {
+                        PairedAlignment pair = (PairedAlignment) al;
+                        alignments.add(pair.firstAlignment);
+                        if (pair.secondAlignment != null) {
+                            alignments.add(pair.secondAlignment);
+                        }
+                    } else {
+                        alignments.add(al);
+                    }
+                }
+            }
+
+            Collections.sort(alignments, new Comparator<Alignment>() {
+                public int compare(Alignment alignment, Alignment alignment1) {
+                    return alignment.getStart() - alignment1.getStart();
+                }
+            });
+
+             List<AlignmentInterval.Row> tmp = (new AlignmentLoader()).loadAndPackAlignments(
+                alignments.iterator(),
+                maxLevels,
+                loadedInterval.getEnd(),
+                loadAsPairs);
+
+        loadedInterval.setAlignmentRows(tmp);
+
+        } else {
+            repackAlignments(referenceFrame);
+        }
+    }
+
+
     /**
      * Repack currently loaded alignments.
      *
@@ -231,7 +287,7 @@ public class AlignmentDataManager {
 
             public void run() {
 
-                 final PreferenceManager prefs = PreferenceManager.getInstance();
+                final PreferenceManager prefs = PreferenceManager.getInstance();
                 final int qualityThreshold = prefs.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
 
 
@@ -328,15 +384,6 @@ public class AlignmentDataManager {
     public Collection<AlignmentInterval> getLoadedIntervals() {
         return loadedIntervalMap.values();
     }
-
-    public boolean isLoadAsPairs() {
-        return loadAsPairs;
-    }
-
-    public void setLoadAsPairs(boolean loadAsPairs) {
-        this.loadAsPairs = loadAsPairs;
-    }
-
 
     /**
      * An alignment iterator that iterates over packed rows.  Used for

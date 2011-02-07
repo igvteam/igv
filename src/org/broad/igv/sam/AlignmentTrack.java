@@ -826,8 +826,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
-                        dataManager.setLoadAsPairs(item.isSelected());
-                        dataManager.clear();
+                        dataManager.setLoadAsPairs(item.isSelected(), te.getFrame()); 
                         refresh();
                     }
                 });

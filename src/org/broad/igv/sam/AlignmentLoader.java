@@ -63,7 +63,6 @@ public class AlignmentLoader {
     public static final int MIN_ALIGNMENT_SPACING = 5;
 
 
-
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
@@ -71,9 +70,9 @@ public class AlignmentLoader {
      * @param maxLevels the maximum number of levels (rows) to create
      */
     public List<AlignmentInterval.Row> loadAndPackAlignments(
-            CloseableIterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
+            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
 
-       Map<String, PairedAlignment> pairs = null;
+        Map<String, PairedAlignment> pairs = null;
         if (pairAlignments) {
             pairs = new HashMap(1000);
         }
