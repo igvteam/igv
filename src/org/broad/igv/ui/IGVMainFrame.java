@@ -152,7 +152,11 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     public static IGVMainFrame getInstance() {
         if (theInstance == null) {
-            theInstance = new IGVMainFrame();
+            if (Globals.isHeadless()) {
+                System.err.println("Attempt to instantiate IGVMainFrame in headless mode");
+            } else {
+                theInstance = new IGVMainFrame();
+            }
         }
         return theInstance;
     }
@@ -2665,7 +2669,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                     }
 
 
-
                 } catch (Exception ex) {
                     String tmp = igvArgs.getSessionFile() != null ? igvArgs.getSessionFile() : igvArgs.getDataFileString();
                     JOptionPane.showMessageDialog(IGVMainFrame.this, "<html>Error loading session: " + tmp + "<br>" + ex.toString());
@@ -2680,7 +2683,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             if (igvArgs.getLocusString() != null) {
                 goToLocus(igvArgs.getLocusString());
             }
-            
+
 
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
