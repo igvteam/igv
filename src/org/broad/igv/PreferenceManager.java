@@ -159,6 +159,16 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
 
+    final public static String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
+    final public static String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
+    final public static String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
+    final public static String GWAS_MAX_POINT_SIZE = "GWAS_MAX_POINT_SIZE";
+    final public static String GWAS_USE_CHR_COLORS = "GWAS_USE_CHR_COLORS";
+    final public static String GWAS_SINGLE_COLOR = "GWAS_SINGLE_COLOR";
+    final public static String GWAS_ALTERNATING_COLORS = "GWAS_ALTERNATING_COLORS";
+    final public static String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
+    final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
+
 
 
 
@@ -911,6 +921,17 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(FLANKING_REGION, "2000");
 
         defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "true");
+
+        defaultValues.put(GWAS_TRACK_HEIGHT, "200");
+        defaultValues.put(GWAS_DESCRIPTION_CACHE_SIZE, "10000");
+        defaultValues.put(GWAS_MIN_POINT_SIZE, "2");
+        defaultValues.put(GWAS_MAX_POINT_SIZE, "7");
+        defaultValues.put(GWAS_USE_CHR_COLORS, "true");
+        defaultValues.put(GWAS_SINGLE_COLOR, "false");
+        defaultValues.put(GWAS_ALTERNATING_COLORS, "false");
+        defaultValues.put(GWAS_PRIMARY_COLOR, "69,101,183");
+        defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
+
 
     }
 }

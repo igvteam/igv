@@ -1,6 +1,7 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.ParsingUtils;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class DescriptionCache {
 
 
     // Maximum amount of values stored in the cache
-    private int maxSize = 10000;
+    private int maxSize;
 
     private ArrayList<String> chrs = new ArrayList<String>();
     private ArrayList<Integer> locations = new ArrayList<Integer>();
@@ -27,6 +28,12 @@ public class DescriptionCache {
     // Storage for the header tokens
     private String[] headerTokens = new String[1000];
 
+    public DescriptionCache() {
+
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        this.maxSize = prefs.getAsInt(PreferenceManager.GWAS_DESCRIPTION_CACHE_SIZE);
+
+    }
 
     public int getMaxSize() {
         return maxSize;
@@ -43,6 +50,12 @@ public class DescriptionCache {
     public void setHeaderTokens(String[] headerTokens) {
         this.headerTokens = headerTokens;
     }
+
+    public void setHeaderTokens(String headerString) {
+        headerString = headerString.trim();
+        ParsingUtils.splitSpaces(headerString, this.headerTokens);
+    }
+
 
     public void clear() {
 

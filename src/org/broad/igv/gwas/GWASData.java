@@ -16,14 +16,17 @@ import java.util.LinkedHashMap;
  */
 public class GWASData {
 
-    private static Logger log = Logger.getLogger(GWASData.class);
+    private static final Logger log = Logger.getLogger(GWASData.class);
 
 
+    // Location of the data points, chr and nucleotide location
     private LinkedHashMap<String, IntArrayList> locations = new LinkedHashMap();
+    // Values for the data points, chr and value
     private LinkedHashMap<String, FloatArrayList> values = new LinkedHashMap();
+    // Cache containing descriptions i.e. original rows from the parsed result file
+    private DescriptionCache descriptionCache = new DescriptionCache();
     private IntArrayList fileIndex = new IntArrayList(100);
     private float maxValue = 0;
-    private DescriptionCache descriptionCache = new DescriptionCache();
 
     public DescriptionCache getDescriptionCache() {
         return descriptionCache;
@@ -43,9 +46,7 @@ public class GWASData {
     public int getByteStartByIndex(int index) {
 
 
-        int bin = (int) index / 10000;
-        //log.info("index: " + index + " bin: " + bin + " bytestart: " + fileIndex.get(bin));
-
+        int bin = index / 10000;
         return fileIndex.get(bin);
 
     }
@@ -79,44 +80,13 @@ public class GWASData {
         int chrCounter = 0;
         int lineCounter = 0;
         while (chrCounter < keys.length && !keys[chrCounter].toString().equals(chr)) {
-
-            //lineCounter += locations.get(chr).size();
             lineCounter += locations.get(keys[chrCounter].toString()).size();
-            log.info("chr: " + keys[chrCounter].toString() + " chrCounter:" + chrCounter + " line: " + lineCounter);
-
             chrCounter++;
-
         }
 
         return lineCounter;
     }
 
-    /**
-     * Count number of all locations.
-     *
-     * @return
-     */
-
-    /*
-
-      public int countTotalLocations() {
-
-          int locationCounter = 0;
-
-          if (this.locations != null) {
-
-              Object[] keys = this.locations.keySet().toArray();
-
-              for (int i = 0; i < keys.length; i++) {
-                  locationCounter += locations.get(keys[i]).size();
-              }
-          }
-
-          return locationCounter;
-
-      }
-
-    */
 
     /**
      * Get index of data point based on chromosomal location
@@ -197,22 +167,20 @@ public class GWASData {
         int iBefore = -1;
         int iAfter = -1;
 
-        log.info("Get nearest: " + chr + " " + location);
-
-
+        // Check if the location chr exists in data set
         if (this.locations.containsKey(chr)) {
             int[] locList = this.locations.get(chr).toArray();
             float[] valueList = this.values.get(chr).toArray();
             int indexCounter = 0;
 
-
+            // Find index of the closest value before the location
             while ((indexCounter < locList.length) && locList[indexCounter] < location) {
                 if (valueList[indexCounter] > minY && valueList[indexCounter] < maxY)
                     iBefore = indexCounter;
                 indexCounter++;
             }
 
-
+            // Find index of the closest value after the location
             while (indexCounter < valueList.length) {
                 if (valueList[indexCounter] > minY && valueList[indexCounter] < maxY) {
                     iAfter = indexCounter;
@@ -223,6 +191,7 @@ public class GWASData {
 
             }
 
+            // Choose index of closer location
             if (iBefore >= 0 && iAfter >= 0) {
 
 
@@ -245,20 +214,14 @@ public class GWASData {
                 int distance = Math.abs(location - locList[index]);
                 if (distance > maxDistance)
                     index = -1;
-
-
             }
-
         }
 
-
-        log.info("index: " + index + " iBefore: " + iBefore + " iAfter: " + iAfter);
         return index;
     }
 
 
     public void addLocation(String chr, int location) {
-        //System.out.println("Adding: " + chr + " location: " +location);
         IntArrayList locList = new IntArrayList(1);
         if (this.locations != null && this.locations.get(chr) != null) {
             locList = this.locations.get(chr);
@@ -283,7 +246,6 @@ public class GWASData {
             valueList = this.values.get(chr);
 
         }
-
         valueList.add(value);
         this.addValues(chr, valueList);
         if (this.maxValue < value)

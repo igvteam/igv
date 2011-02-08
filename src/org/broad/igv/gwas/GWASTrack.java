@@ -14,6 +14,7 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ChromosomeColors;
+import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
@@ -34,17 +35,16 @@ import java.util.List;
 public class GWASTrack extends AbstractTrack {
 
     private GWASData gData;
-    private static Logger log = Logger.getLogger(GWASTrack.class);
+    private static final Logger log = Logger.getLogger(GWASTrack.class);
 
     private static final int AXIS_AREA_WIDTH = 60;
     protected static Color axisLineColor = new Color(255, 180, 180);
-    //  private RenderContext latestContext;
+    private double trackMinY;
     private double maxY;
     private double scale;
     private GWASParser parser;
-    private GWASPreferences preferences = new GWASPreferences();
 
-    public String getDisplayName() {
+    String getDisplayName() {
         return displayName;
     }
 
@@ -59,44 +59,51 @@ public class GWASTrack extends AbstractTrack {
         super(name);
     }
 
+    /**
+     * Constructor for a new GWAS track
+     *
+     * @param locator
+     * @param id
+     * @param name
+     * @param gData
+     * @param parser
+     */
     public GWASTrack(ResourceLocator locator, String id, String name, GWASData gData, GWASParser parser) {
+
+
         super(locator, id, name);
-        super.setHeight(140);
-        //log.info("DATA RANGE: " + this.getDataRange().getMinimum() + ".." + this.getDataRange().getBaseline() + ".." +this.getDataRange().getMaximum());
+
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        super.setHeight(prefs.getAsInt(PreferenceManager.GWAS_TRACK_HEIGHT));
 
         this.gData = gData;
-        int maxValue = (int) Math.ceil(gData.getMaxValue());
 
         // Set range from 0 to highest value rounded to greater integer
-        super.setDataRange(new DataRange(0, (int) maxValue / 2, maxValue));
-        //log.info("DATA RANGE: " + this.getDataRange().getMinimum() + ".." + this.getDataRange().getBaseline() + ".." +this.getDataRange().getMaximum());
+        int maxValue = (int) Math.ceil(gData.getMaxValue());
+        super.setDataRange(new DataRange(0, (int) (maxValue / 2), maxValue));
+
         this.parser = parser;
 
     }
 
+    /**
+     * Render GWAS data
+     *
+     * @param context
+     * @param arect
+     */
     public void render(RenderContext context, Rectangle arect) {
-        //log.info("GWASTrack render called");
-        //log.info("context chr: " + context.getChr());
-        // this.latestContext = context;
 
+        PreferenceManager prefs = PreferenceManager.getInstance();
 
-        //Graphics2D noDataGraphics = context.getGraphic2DForColor(IGVConstants.NO_DATA_COLOR);
-
-
+        this.trackMinY = arect.getMinY();
         Rectangle adjustedRect = calculateDrawingRect(arect);
         renderAxis(context, arect);
-
         this.maxY = adjustedRect.getMaxY();
         this.scale = context.getScale();
-
         int bufferX = (int) adjustedRect.getMaxX();
         int bufferY = (int) adjustedRect.getMaxY();
-
         Color[][] drawBuffer = new Color[bufferX + 1][bufferY + 1];
-
-
-        //log.info("maxY: " + adjustedRect.getMaxY() + " Y: " + adjustedRect.getY() + " maxx: " + adjustedRect.getMaxX() + " X: " + adjustedRect.getX());
-
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
@@ -129,8 +136,8 @@ public class GWASTrack extends AbstractTrack {
         }
         double dx = Math.ceil(1 / locScale) + 1;
         double rangeMaxValue = Math.ceil(gData.getMaxValue());
-        int minPointSize = this.preferences.getMinPointSize();
-        int maxPointSize = this.preferences.getMaxPointSize();
+        int minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
+        int maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
 
 
         for (String chr : chrList) {
@@ -138,13 +145,11 @@ public class GWASTrack extends AbstractTrack {
 
                 int size = this.gData.getLocations().get(chr).size();
                 for (int j = 0; j < size; j++) {
-                    //log.info(locationList.get(j));
                     int start;
 
 
                     if (chrName.equals("All"))
 
-                        //start = IGVModel.getInstance().getViewContext().getGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
                         start = GenomeManager.getInstance().getCurrentGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
 
                     else
@@ -152,22 +157,21 @@ public class GWASTrack extends AbstractTrack {
 
                         start = this.gData.getLocations().get(chr).get(j);
 
-                    //log.info("start: " + start);
-                    Color drawColor = this.preferences.getPrimaryColor();
-                    if (this.preferences.isChrColors())
+                    Color drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+                    if (prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS))
                         drawColor = ChromosomeColors.getColor(chr);
-                    else if (this.preferences.isAlternatingColors()) {
+                    else if (prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS)) {
 
                         Object[] keys = this.gData.getLocations().keySet().toArray();
 
                         int chrCounter = 0;
-                        int lineCounter = 0;
+                        //int lineCounter = 0;
                         while (chrCounter < keys.length && !keys[chrCounter].toString().equals(chr)) {
                             chrCounter++;
 
                         }
                         if (chrCounter % 2 == 0)
-                            drawColor = this.preferences.getSecondaryColor();
+                            drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
 
                     }
                     // Note -- don't cast these to an int until the range is checked.
@@ -185,14 +189,8 @@ public class GWASTrack extends AbstractTrack {
 
                     if (!Float.isNaN(dataY)) {
 
-                        // Commented out because it draws of the chart y-values
+
                         // Compute the pixel y location.  Clip to bounds of rectangle.
-                        /*
-                       int pY = (int) Math.max(adjustedRect.getMinY(),
-                               Math.min(adjustedRect.getMaxY(),
-                                       adjustedRect.getY()
-                                               + (maxValue - dataY) * yScaleFactor));
-                        */
                         int pY = (int)
                                 Math.min(adjustedRect.getMaxY(),
                                         adjustedRect.getY()
@@ -234,8 +232,6 @@ public class GWASTrack extends AbstractTrack {
                             }
                         }
                     }
-                    //drawDataPoint(color, (int) dx, (int) pX, baseY, pY, context);
-                    //log.info(color + " " + " " + (int) dx  + " " +  (int) pX  + " " +  baseY  + " " +  pY  + " " );
 
                 }
             }
@@ -257,7 +253,6 @@ public class GWASTrack extends AbstractTrack {
 
     void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY,
                        RenderContext context) {
-        //context.getGraphic2DForColor(graphColor).fillRect(pX, pY, dx, 2);
         context.getGraphic2DForColor(graphColor).fillRect(pX, pY, 1, 1);
 
     }
@@ -265,30 +260,15 @@ public class GWASTrack extends AbstractTrack {
     private static final DecimalFormat formatter = new DecimalFormat();
 
 
-    public void renderAxis(RenderContext context, Rectangle arect) {
+    void renderAxis(RenderContext context, Rectangle arect) {
 
-        // For now disable axes for all chromosome view
-        /*
-           if (context.getChr().equals(IGVConstants.CHR_ALL)) {
-               return;
-           }
-        */
-        //super.renderAxis(track, context, arect);
 
         Rectangle drawingRect = calculateDrawingRect(arect);
 
-        //PreferenceManager.ChartPreferences prefs = PreferenceManager.getInstance().getChartPreferences();
-
-        // Color labelColor = prefs.isColorTrackName() ? getColor() : Color.black;
-
         Color labelColor = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
-
-
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
-
         labelGraphics.setFont(FontManager.getScalableFont(8));
 
-        //if (prefs.isDrawTrackName()) {
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
@@ -298,16 +278,10 @@ public class GWASTrack extends AbstractTrack {
             }
         }
 
-        //if (prefs.isDrawAxis()) {
-
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
-
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
-
-
             DataRange axisDefinition = getDataRange();
             float maxValue = axisDefinition.getMaximum();
-            //float baseValue = axisDefinition.getBaseline();
             float minValue = axisDefinition.getMinimum();
 
 
@@ -331,7 +305,6 @@ public class GWASTrack extends AbstractTrack {
             labelGraphics.drawLine(axisRect.x + AXIS_AREA_WIDTH - 10, topPY,
                     axisRect.x + AXIS_AREA_WIDTH - 10, pY);
 
-
             // Draw middle tick marks from top to bottom, draw only if space available
             int lastY = pY;
             for (int i = (int) minValue + 1; i < (int) maxValue; i++) {
@@ -344,42 +317,8 @@ public class GWASTrack extends AbstractTrack {
                             axisRect.x + AXIS_AREA_WIDTH - 15, midPY + 4, labelGraphics);
                     lastY = midPY;
                 }
-
-
             }
-
-
         }
-    }
-
-
-    /**
-     * Get a grapphics object for the baseline.
-     * TODO -- make the line style settable by the user
-     *
-     * @param context
-     * @return
-     */
-    private static Graphics2D getBaselineGraphics(RenderContext context) {
-        Graphics2D baselineGraphics;
-        Stroke thindashed = new BasicStroke(1.0f,    // line width
-
-                /* cap style */
-                BasicStroke.CAP_BUTT,
-
-                /* join style, miter limit */
-                BasicStroke.JOIN_BEVEL, 1.0f,
-
-                /* the dash pattern */
-                new float[]{8.0f, 3.0f, 2.0f, 3.0f},
-
-                /* the dash phase */
-                0.0f);    /* on 8, off 3, on 2, off 3 */
-
-        baselineGraphics = (Graphics2D) context.getGraphic2DForColor(Color.lightGray).create();
-
-        // baselineGraphics.setStroke(thindashed);
-        return baselineGraphics;
     }
 
 
@@ -391,7 +330,7 @@ public class GWASTrack extends AbstractTrack {
         double yScaleFactor = drawingRect.getHeight() / (maxValue - minValue);
 
         // Compute the pixel y location.  Clip to bounds of rectangle.
-        // The distince in pixels frmo the data value to the axis maximum
+        // The distance in pixels from the data value to the axis maximum
         double delta = (maxValue - dataY) * yScaleFactor;
         double pY = drawingRect.getY() + delta;
 
@@ -411,10 +350,20 @@ public class GWASTrack extends AbstractTrack {
     }
 
 
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    /**
+     * Find index of data point closest to given chromosomal location and y-coordinate
+     *
+     * @param chr
+     * @param y
+     * @param location
+     * @param maxDistance
+     * @return
+     */
+    public int findIndex(String chr, int y, int location, int maxDistance) {
 
 
-        String textValue = "";
+        // Calculate offset from track location by other tracks
+        y = y - (int) this.trackMinY;
 
         // Estimate values near y coordinate
         double valueEstimate = (1 - y / this.maxY) * this.getDataRange().getMaximum();
@@ -428,10 +377,70 @@ public class GWASTrack extends AbstractTrack {
         if (bottomValue < 0)
             bottomValue = 0;
 
-        // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen
-        int maxDistance = (int) (this.scale) * 2;
+
+        // Find data point based on the given coordinates and search parameters
+        return this.gData.getNearestIndexByLocation(chr, location, bottomValue, topValue, maxDistance);
+
+    }
+
+    /**
+     * Get description for a data point at given chromosome and index. If description is not cached, re-populate cache.
+     *
+     * @param chr
+     * @param index
+     * @return
+     */
+
+    public String getDescription(String chr, int index) {
+
+        String textValue = "";
+
+        float value = this.gData.getValues().get(chr).get(index);
+        int hitLocation = this.gData.getLocations().get(chr).get(index);
+        int rowIndex = gData.getCumulativeChrLocation(chr) + index;
+
+        textValue += chr + ": " + hitLocation + "<br>";
+        textValue += "Value: " + value + "<br>";
+        textValue += "-----<br>";
+
+        try {
+
+            // Look for data point description from cache
+            String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+
+            // If no description found, populate cache with the description
+            if (tmpDescription == null) {
+                // Calculate starting row based on the cache size, i.e. cache descriptions before and after estimated hit location
+                int tmpRow = rowIndex - (gData.getDescriptionCache().getMaxSize() / 2);
+                if (tmpRow < 0)
+                    tmpRow = 0;
+
+                this.gData = parser.parseDescriptions(gData, chr, hitLocation, tmpRow);
+                tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+
+            }
+
+            // Add fetched description
+            textValue += tmpDescription;
+
+
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return textValue;
+
+    }
+
+
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+
+
+        String textValue = "";
 
         int location = (int) position;
+
+        // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen
+        int maxDistance = (int) (this.scale) * 2;
 
         // Convert from All view chr coordinates
         if (chr.equals("All")) {
@@ -442,45 +451,11 @@ public class GWASTrack extends AbstractTrack {
             maxDistance = maxDistance * 1000;
         }
 
-        // Find data point based on the given coordinates and search parameters
-        int index = gData.getNearestIndexByLocation(chr, location, bottomValue, topValue, maxDistance);
+        int index = findIndex(chr, y, location, maxDistance);
 
-        float value = -1;
-        int hitLocation = -1;
-        int rowIndex = -1;
-        if (index != -1) {
-
-            value = this.gData.getValues().get(chr).get(index);
-            hitLocation = this.gData.getLocations().get(chr).get(index);
-            rowIndex = gData.getCumulativeChrLocation(chr) + index;
-
-            textValue += chr + ": " + hitLocation + "<br>";
-            textValue += "Value: " + value + "<br>";
-            textValue += "-----<br>";
-
-            try {
-
-
-                String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
-                if (tmpDescription == null) {
-                    // Calculate starting row based on the cache size, i.e. cache descriptions before and after estimated hit location
-                    int tmpRow = rowIndex - (gData.getDescriptionCache().getMaxSize() / 2);
-                    if (rowIndex < 0) {
-                        rowIndex = 0;
-                    }
-                    this.gData = parser.parseDescriptions(gData, chr, hitLocation, tmpRow);
-                    tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
-
-                }
-                textValue += tmpDescription;
-
-
-            } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-
-
-        }
+        // If there is a data point at the given location, fetch description
+        if (index != -1)
+            textValue += getDescription(chr, index);
 
         return textValue;
     }
