@@ -823,6 +823,14 @@ public class TrackLoader {
                 }
             }
 
+            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator.getPath() + "_junctions",
+                    track.getName() + " Junctions");
+            spliceJunctionTrack.setDataManager(dataManager);
+            spliceJunctionTrack.setHeight(80);
+            spliceJunctionTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(
+                    PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
+            newTracks.add(spliceJunctionTrack);
+
             newTracks.add(track);
 
         } catch (IndexNotFoundException e) {

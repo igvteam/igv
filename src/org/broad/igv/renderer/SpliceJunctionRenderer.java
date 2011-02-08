@@ -82,7 +82,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         lastRegionMaxY = 0;
 
         // TODO -- use enum instead of string "Color"
-        if ((featureList != null) && (featureList.size() > 0)) {
+        if ((featureList != null) && !featureList.isEmpty()) {
 
             // Create a graphics object to draw font names.  Graphics are not cached
             // by font, only by color, so its neccessary to create a new one to prevent

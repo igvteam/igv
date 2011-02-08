@@ -162,6 +162,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         filterFailedReadsCB = new JCheckBox();
         label2 = new JLabel();
         showSoftClippedCB = new JCheckBox();
+        showJunctionTrackCB = new JCheckBox();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         expMapToGeneCB = new JRadioButton();
@@ -1217,6 +1218,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         });
                         jPanel12.add(showSoftClippedCB);
                         showSoftClippedCB.setBounds(new Rectangle(new Point(6, 111), showSoftClippedCB.getPreferredSize()));
+
+                        //---- showJunctionTrackCB ----
+                        showJunctionTrackCB.setText("Show splice junction track");
+                        showJunctionTrackCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                showJunctionTrackCBActionPerformed(e);
+                            }
+                        });
+                        jPanel12.add(showJunctionTrackCB);
+                        showJunctionTrackCB.setBounds(new Rectangle(new Point(385, 110), showJunctionTrackCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -2286,6 +2297,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
     }//GEN-LAST:event_showCovTrackCBActionPerformed
 
+    private void showJunctionTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
+        updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_TRACK, String.valueOf(showJunctionTrackCB.isSelected()));
+    }//GEN-LAST:event_showCovTrackCBActionPerformed
+
     private void filterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_FILTER_ALIGNMENTS, String.valueOf(filterCB.isSelected()));
         filterURL.setEnabled(filterCB.isSelected());
@@ -2550,6 +2565,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         shadeCenterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER));
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
+        //dhmay adding 20110208
+        showJunctionTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
         filterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS));
         if (prefMgr.get(PreferenceManager.SAM_FILTER_URL) != null) {
             filterURL.setText(prefMgr.get(PreferenceManager.SAM_FILTER_URL));
@@ -2727,6 +2744,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox filterFailedReadsCB;
     private JLabel label2;
     private JCheckBox showSoftClippedCB;
+    private JCheckBox showJunctionTrackCB;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JRadioButton expMapToGeneCB;

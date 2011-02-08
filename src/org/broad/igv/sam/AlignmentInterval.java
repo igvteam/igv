@@ -59,12 +59,12 @@ public class AlignmentInterval extends Locus {
         }
     }
 
-    boolean contains(String genomeId, String chr, int start, int end) {
+    public boolean contains(String genomeId, String chr, int start, int end) {
         return this.genomeId.equals(genomeId) && super.contains(chr, start, end);
     }
 
 
-    boolean overlaps(String genomeId, String chr, int start, int end) {
+    public boolean overlaps(String genomeId, String chr, int start, int end) {
         return this.genomeId.equals(genomeId) && overlaps(chr, start, end);
     }
 
@@ -209,6 +209,9 @@ public class AlignmentInterval extends Locus {
         return 0;
      }
 
+    public List<CachingQueryReader.AlignmentCounts> getCounts() {
+        return counts;
+    }
 
     public static class Row {
         int nextIdx;

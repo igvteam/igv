@@ -76,6 +76,7 @@ public class FeatureTrack extends AbstractTrack {
     int margin = DEFAULT_MARGIN;
 
 
+
     public FeatureTrack(String id, FeatureSource source) {
         super(id);
         init(source);
@@ -795,6 +796,5 @@ public class FeatureTrack extends AbstractTrack {
         return stateMap;
 
     }
-
 }
 
