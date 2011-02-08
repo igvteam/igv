@@ -19,18 +19,19 @@ package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
-//import org.broad.igv.feature.ParsingUtils;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ParsingUtils;
-//import org.broad.igv.util.AsciiLineReader;
-import org.broad.tribble.readers.AsciiLineReader;
-
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import static java.lang.Math.log10;
+
+//import org.broad.igv.feature.ParsingUtils;
+//import org.broad.igv.util.AsciiLineReader;
 
 /**
  * Parses GWAS PLINK result files
@@ -63,6 +64,259 @@ public class GWASParser {
 
     }
 
+
+    public GWASData parseDescriptions(GWASData gData, String hitChr, long hitLocation, int searchStartRow) throws IOException {
+
+
+        FileInputStream fs = null;
+
+        AsciiLineReader reader = null;
+        String nextLine = null;
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        boolean hitFound = false;
+        String resultLine = "";
+        int cacheSize = gData.getDescriptionCache().getMaxSize();
+
+
+        try {
+            fs = new FileInputStream(locator.getPath());
+            fs.getChannel().position(0);
+            reader = new AsciiLineReader(fs);
+
+            String headerLine = reader.readLine();
+            headerLine = headerLine.trim();
+
+            String[] headers = new String[1000];
+
+            gData.getDescriptionCache().setHeaderTokens(headers);
+
+            int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
+            if (headersSize < 4)
+                throw new ParserException("Incorrect amount of column headers.", reader.getCurrentLineNumber(), nextLine);
+
+            int colCounter = 0;
+            for (int i = 0; i < headersSize; i++) {
+                String header = headers[i];
+                header = header.toLowerCase();
+                if (header.equals("chr") || header.equals("chromosome"))
+                    chrCol = colCounter;
+                if (header.equals("bp") || header.equals("pos") || header.equals("position"))
+                    locationCol = colCounter;
+                if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue"))
+                    pCol = colCounter;
+
+                if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id"))
+                    this.SNPCol = colCounter;
+
+                colCounter++;
+
+            }
+
+            if (this.locationCol < 0 || this.chrCol < 0 || this.pCol < 0 || this.SNPCol < 0)
+                throw new ParserException("Did not find required column headers.", reader.getCurrentLineNumber(), nextLine);
+
+
+            int rowCounter = 0;
+            // Number of lines to cache after the hit
+            int cacheAfter = cacheSize / 2;
+            int cacheCounter = 0;
+
+            while (cacheCounter < cacheAfter && (nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+
+
+                nextLine = nextLine.trim();
+                rowCounter++;
+
+
+                if (rowCounter >= searchStartRow) {
+                    String[] tokens = new String[1000];
+                    int size = ParsingUtils.splitSpaces(nextLine, tokens);
+
+                    if (tokens.length > 1) {
+
+                        String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
+
+                        int start;
+
+                        try {
+                            start = Integer.parseInt(tokens[locationCol].trim());
+                        } catch (NumberFormatException e) {
+                            throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                        }
+
+                        if (chr.equals(hitChr) && start == hitLocation) {
+                            hitFound = true;
+
+
+                            log.info(headerLine);
+
+                            log.info(nextLine);
+
+                        }
+
+                        // Add descriptions to cache
+                        if (hitFound) {
+                            cacheCounter++;
+                        }
+                        gData.getDescriptionCache().add(chr, start, nextLine);
+                        //log.info(hitChr + " " + chr + " " + hitLocation + " " + start + " " + rowCounter + " " + cacheCounter + " " + cacheAfter + " " + cacheSize + " " + hitLocation);
+
+
+                    }
+
+                }
+
+            }
+
+
+        } catch (
+                ParserException e
+                )
+
+        {
+            throw e;
+        } catch (
+                Exception e
+                )
+
+        {
+            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
+                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            } else {
+                throw new RuntimeException(e);
+            }
+        } finally
+
+        {
+            reader.close();
+            fs.close();
+        }
+
+        return gData;
+
+    }
+
+
+    public String parse(String hitChr, double hitLocation, int searchStartRow) throws IOException {
+
+
+        FileInputStream fs = null;
+
+        AsciiLineReader reader = null;
+        String nextLine = null;
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        boolean hitFound = false;
+        String resultLine = "";
+
+
+        try {
+            fs = new FileInputStream(locator.getPath());
+            fs.getChannel().position(0);
+            reader = new AsciiLineReader(fs);
+
+            String headerLine = reader.readLine();
+            headerLine = headerLine.trim();
+
+            String[] headers = new String[1000];
+
+            int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
+            if (headersSize < 4)
+                throw new ParserException("Incorrect amount of column headers.", reader.getCurrentLineNumber(), nextLine);
+
+            int colCounter = 0;
+            for (int i = 0; i < headersSize; i++) {
+                String header = headers[i];
+                header = header.toLowerCase();
+                if (header.equals("chr") || header.equals("chromosome"))
+                    chrCol = colCounter;
+                if (header.equals("bp") || header.equals("pos") || header.equals("position"))
+                    locationCol = colCounter;
+                if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue"))
+                    pCol = colCounter;
+
+                if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id"))
+                    this.SNPCol = colCounter;
+
+                colCounter++;
+
+            }
+
+            if (this.locationCol < 0 || this.chrCol < 0 || this.pCol < 0 || this.SNPCol < 0)
+                throw new ParserException("Did not find required column headers.", reader.getCurrentLineNumber(), nextLine);
+
+
+            int rowCounter = 0;
+
+            while (!hitFound && (nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+
+
+                nextLine = nextLine.trim();
+                rowCounter++;
+                if (rowCounter >= searchStartRow) {
+                    String[] tokens = new String[100];
+                    int size = ParsingUtils.splitSpaces(nextLine, tokens);
+
+                    if (tokens.length > 1) {
+
+                        String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
+
+                        int start;
+
+                        try {
+                            start = Integer.parseInt(tokens[locationCol].trim());
+                        } catch (NumberFormatException e) {
+                            throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                        }
+
+                        if (chr.equals(hitChr) && start == hitLocation) {
+                            hitFound = true;
+                            for (int i = 0; i < headersSize; i++) {
+                                resultLine += headers[i] + ": " + tokens[i] + "<br>";
+
+                            }
+
+                            log.info(headerLine);
+
+                            log.info(nextLine);
+
+                        }
+
+
+                    }
+
+                }
+
+
+            }
+
+
+            return resultLine;
+        } catch (
+                ParserException e
+                )
+
+        {
+            throw e;
+        } catch (
+                Exception e
+                )
+
+        {
+            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
+                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            } else {
+                throw new RuntimeException(e);
+            }
+        } finally
+
+        {
+            reader.close();
+            fs.close();
+        }
+
+
+    }
+    /*
 
     public String parse(long startingBytes, int row) throws IOException {
         FileInputStream fs = null;
@@ -167,157 +421,154 @@ public class GWASParser {
 
     }
 
-
+    */
 
     public GWASData parse() throws IOException {
 
 
-          FileInputStream fs = null;
+        FileInputStream fs = null;
 
-          AsciiLineReader reader = null;
-          String nextLine = null;
-          //int byteCounter = 0;
-         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-
-
-          try {
-              //reader = ParsingUtils.openAsciiReader(locator);
-              fs = new FileInputStream(locator.getPath());
-              fs.getChannel().position(0);
-              reader = new AsciiLineReader(fs);
-
-              String headerLine = reader.readLine();
-              //byteCounter += headerLine.getBytes().length;
-              headerLine = headerLine.trim();
-
-              String[] headers = new String[100];
-              int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
-              if (headersSize < 4)
-                  throw new ParserException("Incorrect amount of column headers.", reader.getCurrentLineNumber(), nextLine);
-
-              int colCounter = 0;
-              for (int i = 0; i < headersSize; i++) {
-                  String header = headers[i];
-                  header = header.toLowerCase();
-                  if (header.equals("chr") || header.equals("chromosome"))
-                      chrCol = colCounter;
-                  if (header.equals("bp") || header.equals("pos") || header.equals("position"))
-                      locationCol = colCounter;
-                  if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue"))
-                      pCol = colCounter;
-
-                  if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id"))
-                      this.SNPCol = colCounter;
-
-                  colCounter++;
-
-              }
-
-              if (this.locationCol < 0 || this.chrCol < 0 || this.pCol < 0 || this.SNPCol < 0)
-                  throw new ParserException("Did not find required column headers.", reader.getCurrentLineNumber(), nextLine);
+        AsciiLineReader reader = null;
+        String nextLine = null;
+        //int byteCounter = 0;
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
 
 
-              GWASData gData = new GWASData();
+        try {
+            //reader = ParsingUtils.openAsciiReader(locator);
+            fs = new FileInputStream(locator.getPath());
+            fs.getChannel().position(0);
+            reader = new AsciiLineReader(fs);
 
-              int rowCounter = 0;
-              int indexCounter = 0;
-              int addedValuesCounter = 0;
+            String headerLine = reader.readLine();
+            //byteCounter += headerLine.getBytes().length;
+            headerLine = headerLine.trim();
 
-              while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+            String[] headers = new String[100];
+            int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
+            if (headersSize < 4)
+                throw new ParserException("Incorrect amount of column headers.", reader.getCurrentLineNumber(), nextLine);
 
+            int colCounter = 0;
+            for (int i = 0; i < headersSize; i++) {
+                String header = headers[i];
+                header = header.toLowerCase();
+                if (header.equals("chr") || header.equals("chromosome"))
+                    chrCol = colCounter;
+                if (header.equals("bp") || header.equals("pos") || header.equals("position"))
+                    locationCol = colCounter;
+                if (header.equals("p") || header.equals("pval") || header.equals("p-value") || header.equals("pvalue"))
+                    pCol = colCounter;
 
-                  nextLine = nextLine.trim();
-                  rowCounter++;
+                if (header.equals("snp") || header.equals("rs") || header.equals("rsid") || header.equals("rsnum") || header.equals("id"))
+                    this.SNPCol = colCounter;
 
-                  String[] tokens = new String[100];
-                  int size = ParsingUtils.splitSpaces(nextLine, tokens);
+                colCounter++;
 
-                  if (tokens.length > 1) {
+            }
 
-                      //String chr = ParsingUtils.convertChrString(tokens[chrCol].trim());
-                      String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
-
-                      int start;
-
-                      try {
-                          start = Integer.parseInt(tokens[locationCol].trim());
-                      } catch (NumberFormatException e) {
-                          throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
-                      }
-
-                      // Check if the p-value is NA
-                      if (!tokens[pCol].trim().equals("NA")) {
-                          float p;
-
-                          try {
-                              p = Float.parseFloat(tokens[pCol].trim());
-                              // Transform to -log10
-                              p = (float) -log10((double) p);
-
-
-                          } catch (NumberFormatException e) {
-                              throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
-                          }
+            if (this.locationCol < 0 || this.chrCol < 0 || this.pCol < 0 || this.SNPCol < 0)
+                throw new ParserException("Did not find required column headers.", reader.getCurrentLineNumber(), nextLine);
 
 
-                          gData.addLocation(chr, start);
-                          gData.addValue(chr, p);
-                          indexCounter++;
-                          addedValuesCounter++;
+            GWASData gData = new GWASData();
 
-                          if (indexCounter == indexSize) {
-                              //log.info(nextLine.trim());
-                             //log.info("bytes: " + reader.getBytesRead() + " readrows: " + rowCounter + " added locations: " + addedValuesCounter + " tot.locations: " + gData.countTotalLocations());
-                              //log.info("bytes: " + reader.getBytesRead() + " readrows: " + rowCounter + " added locations: " + addedValuesCounter);
-                              //gData.getFileIndex().add(reader.getBytesRead());
-                              gData.getFileIndex().add((int) reader.getPosition());
+            int rowCounter = 0;
+            int indexCounter = 0;
+            int addedValuesCounter = 0;
 
-                              indexCounter = 0;
-
-                          }
+            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 
 
-                      }
+                nextLine = nextLine.trim();
+                rowCounter++;
 
-                  }
+                String[] tokens = new String[100];
+                int size = ParsingUtils.splitSpaces(nextLine, tokens);
 
+                if (tokens.length > 1) {
 
-              }
+                    //String chr = ParsingUtils.convertChrString(tokens[chrCol].trim());
+                    String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
 
+                    int start;
 
-              return gData;
-          }
+                    try {
+                        start = Integer.parseInt(tokens[locationCol].trim());
+                    } catch (NumberFormatException e) {
+                        throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                    }
 
-          catch (
-                  ParserException e
-                  )
+                    // Check if the p-value is NA
+                    if (!tokens[pCol].trim().equals("NA")) {
+                        float p;
 
-          {
-              throw e;
-          }
-
-          catch (
-                  Exception e
-                  )
-
-          {
-              if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                  throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
-              } else {
-                  throw new RuntimeException(e);
-              }
-          }
-
-          finally
-
-          {
-              reader.close();
-              fs.close();
-          }
+                        try {
+                            p = Float.parseFloat(tokens[pCol].trim());
+                            // Transform to -log10
+                            p = (float) -log10((double) p);
 
 
-      }
+                        } catch (NumberFormatException e) {
+                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                        }
 
+
+                        gData.addLocation(chr, start);
+                        gData.addValue(chr, p);
+
+                        //String snp = tokens[SNPCol].trim();
+                        //gData.addDescription(chr, snp);
+
+                        indexCounter++;
+                        addedValuesCounter++;
+
+                        if (indexCounter == indexSize) {
+                            //log.info(nextLine.trim());
+                            //log.info("bytes: " + reader.getBytesRead() + " readrows: " + rowCounter + " added locations: " + addedValuesCounter + " tot.locations: " + gData.countTotalLocations());
+                            //log.info("bytes: " + reader.getBytesRead() + " readrows: " + rowCounter + " added locations: " + addedValuesCounter);
+                            //gData.getFileIndex().add(reader.getBytesRead());
+                            gData.getFileIndex().add((int) reader.getPosition());
+
+                            indexCounter = 0;
+
+                        }
+
+
+                    }
+
+                }
+
+
+            }
+
+
+            return gData;
+        } catch (
+                ParserException e
+                )
+
+        {
+            throw e;
+        } catch (
+                Exception e
+                )
+
+        {
+            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
+                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            } else {
+                throw new RuntimeException(e);
+            }
+        } finally
+
+        {
+            reader.close();
+            fs.close();
+        }
+
+
+    }
 
 
 }

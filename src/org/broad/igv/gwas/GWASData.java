@@ -1,16 +1,11 @@
 package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
-//import org.broad.igv.data.FloatArrayList;
-//import org.broad.igv.data.IntArrayList;
-//import org.broad.igv.data.StringArrayList;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
-import org.broad.igv.util.collections.StringArrayList;
-
-
 
 import java.util.LinkedHashMap;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,7 +22,16 @@ public class GWASData {
     private LinkedHashMap<String, IntArrayList> locations = new LinkedHashMap();
     private LinkedHashMap<String, FloatArrayList> values = new LinkedHashMap();
     private IntArrayList fileIndex = new IntArrayList(100);
+    private float maxValue = 0;
+    private DescriptionCache descriptionCache = new DescriptionCache();
 
+    public DescriptionCache getDescriptionCache() {
+        return descriptionCache;
+    }
+
+    public void setDescriptionCache(DescriptionCache descriptionCache) {
+        this.descriptionCache = descriptionCache;
+    }
 
     /**
      * Get bytecount for start of bin containing given index
@@ -55,19 +59,6 @@ public class GWASData {
     }
 
 
-    public LinkedHashMap<String, StringArrayList> getDescriptions() {
-        return descriptions;
-    }
-
-    public void setDescriptions(LinkedHashMap<String, StringArrayList> descriptions) {
-        this.descriptions = descriptions;
-    }
-
-    private LinkedHashMap<String, StringArrayList> descriptions = null;
-
-    private float maxValue = 0;
-
-
     public float getMaxValue() {
         return maxValue;
     }
@@ -82,6 +73,7 @@ public class GWASData {
 
     public int getCumulativeChrLocation(String chr) {
 
+        // Get list of chromosomes
         Object[] keys = this.locations.keySet().toArray();
 
         int chrCounter = 0;
@@ -90,7 +82,7 @@ public class GWASData {
 
             //lineCounter += locations.get(chr).size();
             lineCounter += locations.get(keys[chrCounter].toString()).size();
-            //log.info("chr: " + keys[chrCounter].toString() + " chrCounter:" + chrCounter + " line: " + lineCounter);
+            log.info("chr: " + keys[chrCounter].toString() + " chrCounter:" + chrCounter + " line: " + lineCounter);
 
             chrCounter++;
 
@@ -105,26 +97,27 @@ public class GWASData {
      * @return
      */
 
-   /*
-    
-    public int countTotalLocations() {
+    /*
 
-        int locationCounter = 0;
+      public int countTotalLocations() {
 
-        if (this.locations != null) {
+          int locationCounter = 0;
 
-            Object[] keys = this.locations.keySet().toArray();
+          if (this.locations != null) {
 
-            for (int i = 0; i < keys.length; i++) {
-                locationCounter += locations.get(keys[i]).size();
-            }
-        }
+              Object[] keys = this.locations.keySet().toArray();
 
-        return locationCounter;
+              for (int i = 0; i < keys.length; i++) {
+                  locationCounter += locations.get(keys[i]).size();
+              }
+          }
 
-    }
+          return locationCounter;
 
-  */
+      }
+
+    */
+
     /**
      * Get index of data point based on chromosomal location
      *
@@ -187,6 +180,7 @@ public class GWASData {
         return index;
     }
 
+
     /**
      * Get index of nearest data point based on given parameters
      *
@@ -202,6 +196,9 @@ public class GWASData {
         int index = -1;
         int iBefore = -1;
         int iAfter = -1;
+
+        log.info("Get nearest: " + chr + " " + location);
+
 
         if (this.locations.containsKey(chr)) {
             int[] locList = this.locations.get(chr).toArray();
@@ -233,13 +230,12 @@ public class GWASData {
                 int before = locList[iBefore];
                 // Location of nearest data point after the location
                 int after = locList[iAfter];
-                // Compare which one is closer and use ase index
+                // Compare which one is closer and use it as index
                 if (Math.abs(location - before) < Math.abs(location - after))
                     index = iBefore;
-
-
                 else
                     index = iAfter;
+
             } else if (iBefore >= 0)
                 index = iBefore;
             else if (iAfter >= 0)
@@ -256,7 +252,7 @@ public class GWASData {
         }
 
 
-        //log.info("index: " + index + " iBefore: " + iBefore + " iAfter: " + iAfter);
+        log.info("index: " + index + " iBefore: " + iBefore + " iAfter: " + iAfter);
         return index;
     }
 
@@ -301,29 +297,6 @@ public class GWASData {
         }
 
         this.values.put(chr, values);
-    }
-
-
-    public void addDescription(String chr, String description) {
-        StringArrayList descriptionList = new StringArrayList(1);
-        if (this.descriptions != null && this.descriptions.get(chr) != null) {
-
-            descriptionList = this.descriptions.get(chr);
-
-        }
-
-        descriptionList.add(description);
-        this.addDescriptions(chr, descriptionList);
-
-
-    }
-
-    void addDescriptions(String chr, StringArrayList descriptions) {
-        if (this.descriptions == null) {
-            this.descriptions = new LinkedHashMap<String, StringArrayList>();
-        }
-
-        this.descriptions.put(chr, descriptions);
     }
 
 

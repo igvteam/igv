@@ -22,7 +22,6 @@ public class GWASPreferences {
     private Color secondaryColor = new Color(199, 81, 39);
 
 
-
     public boolean isAlternatingColors() {
         return alternatingColors;
     }
@@ -30,7 +29,6 @@ public class GWASPreferences {
     public void setAlternatingColors(boolean alternatingColors) {
         this.alternatingColors = alternatingColors;
     }
-
 
 
     public boolean isChrColors() {

@@ -12,7 +12,7 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.FontManager;
-//import org.broad.igv.ui.IGVModel;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ResourceLocator;
 
@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
+
+//import org.broad.igv.ui.IGVModel;
 
 /**
  * Created by IntelliJ IDEA.
@@ -144,10 +145,9 @@ public class GWASTrack extends AbstractTrack {
                     if (chrName.equals("All"))
 
                         //start = IGVModel.getInstance().getViewContext().getGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
-                     start = GenomeManager.getInstance().getCurrentGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
+                        start = GenomeManager.getInstance().getCurrentGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
 
                     else
-
 
 
                         start = this.gData.getLocations().get(chr).get(j);
@@ -279,10 +279,9 @@ public class GWASTrack extends AbstractTrack {
 
         //PreferenceManager.ChartPreferences prefs = PreferenceManager.getInstance().getChartPreferences();
 
-    // Color labelColor = prefs.isColorTrackName() ? getColor() : Color.black;
+        // Color labelColor = prefs.isColorTrackName() ? getColor() : Color.black;
 
         Color labelColor = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
-
 
 
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
@@ -290,7 +289,7 @@ public class GWASTrack extends AbstractTrack {
         labelGraphics.setFont(FontManager.getScalableFont(8));
 
         //if (prefs.isDrawTrackName()) {
-         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
@@ -301,7 +300,7 @@ public class GWASTrack extends AbstractTrack {
 
         //if (prefs.isDrawAxis()) {
 
-        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
 
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
 
@@ -412,8 +411,10 @@ public class GWASTrack extends AbstractTrack {
     }
 
 
-    public String getValueStringAt(String chr, double position, int y) {
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
+
+        String textValue = "";
 
         // Estimate values near y coordinate
         double valueEstimate = (1 - y / this.maxY) * this.getDataRange().getMaximum();
@@ -427,44 +428,62 @@ public class GWASTrack extends AbstractTrack {
         if (bottomValue < 0)
             bottomValue = 0;
 
-        // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen 
+        // Set maximum search distance to be the amount of nucleotides corresponding to 2 pixels on the screen
         int maxDistance = (int) (this.scale) * 2;
+
+        int location = (int) position;
+
+        // Convert from All view chr coordinates
+        if (chr.equals("All")) {
+
+            Genome.ChromosomeCoordinate chrCoordinate = GenomeManager.getInstance().getCurrentGenome().getChromosomeCoordinate(location);
+            chr = chrCoordinate.getChr();
+            location = chrCoordinate.getCoordinate();
+            maxDistance = maxDistance * 1000;
+        }
+
         // Find data point based on the given coordinates and search parameters
-        int index = gData.getNearestIndexByLocation(chr, (int) position, bottomValue, topValue, maxDistance);
+        int index = gData.getNearestIndexByLocation(chr, location, bottomValue, topValue, maxDistance);
 
         float value = -1;
         int hitLocation = -1;
-        String description = "";
         int rowIndex = -1;
-        int byteCount;
-        String textValue = "";
         if (index != -1) {
+
             value = this.gData.getValues().get(chr).get(index);
             hitLocation = this.gData.getLocations().get(chr).get(index);
-       /*
             rowIndex = gData.getCumulativeChrLocation(chr) + index;
-            byteCount = gData.getByteStartByIndex(rowIndex);
+
+            textValue += chr + ": " + hitLocation + "<br>";
+            textValue += "Value: " + value + "<br>";
+            textValue += "-----<br>";
 
             try {
-                this.parser.parse(byteCount, rowIndex-(rowIndex / 10000)*10000);
+
+
+                String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+                if (tmpDescription == null) {
+                    // Calculate starting row based on the cache size, i.e. cache descriptions before and after estimated hit location
+                    int tmpRow = rowIndex - (gData.getDescriptionCache().getMaxSize() / 2);
+                    if (rowIndex < 0) {
+                        rowIndex = 0;
+                    }
+                    this.gData = parser.parseDescriptions(gData, chr, hitLocation, tmpRow);
+                    tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+
+                }
+                textValue += tmpDescription;
+
+
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            //description = this.gData.getDescriptions().get(chr).get(index);
-            textValue = "ByteStart: " + byteCount + " RowIndex: " + rowIndex + " Scale: " + this.scale + " maxDistance: " + maxDistance + "Chr: " + chr + " Position: " + position + " intPosition: " + (int) position + " y: " + y + " maxY: " + this.maxY +
-                    " value: " + value + " Data location: " + hitLocation + " Description: " + description + " Estimate:" + valueEstimate + " bottomValue: " + bottomValue + " topValue: " + topValue + " index: " + index;
-            log.info(textValue);
-         */
-            textValue = "Value: " + value;
+
 
         }
 
-
         return textValue;
-
-
     }
-
 
     // Needed to compile
 
