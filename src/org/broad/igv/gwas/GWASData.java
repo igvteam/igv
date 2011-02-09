@@ -156,12 +156,12 @@ public class GWASData {
      *
      * @param chr         Chromosome
      * @param location    Chromosomal location as nucleotides
-     * @param minY        Lower range of y value
-     * @param maxY        Upper range of y value
+     * @param minValue    Lower range of value
+     * @param maxValue    Upper range of value
      * @param maxDistance Maximum chromosomal distance as nucleotides from the given location
      * @return
      */
-    public int getNearestIndexByLocation(String chr, int location, double minY, double maxY, int maxDistance) {
+    public int getNearestIndexByLocation(String chr, int location, double minValue, double maxValue, int maxDistance) {
 
         int index = -1;
         int iBefore = -1;
@@ -175,14 +175,14 @@ public class GWASData {
 
             // Find index of the closest value before the location
             while ((indexCounter < locList.length) && locList[indexCounter] < location) {
-                if (valueList[indexCounter] > minY && valueList[indexCounter] < maxY)
+                if (valueList[indexCounter] > minValue && valueList[indexCounter] < maxValue)
                     iBefore = indexCounter;
                 indexCounter++;
             }
 
             // Find index of the closest value after the location
             while (indexCounter < valueList.length) {
-                if (valueList[indexCounter] > minY && valueList[indexCounter] < maxY) {
+                if (valueList[indexCounter] > minValue && valueList[indexCounter] < maxValue) {
                     iAfter = indexCounter;
                     break;
 
@@ -194,21 +194,23 @@ public class GWASData {
             // Choose index of closer location
             if (iBefore >= 0 && iAfter >= 0) {
 
-
                 // Location of nearest data point before the location
                 int before = locList[iBefore];
                 // Location of nearest data point after the location
                 int after = locList[iAfter];
+
                 // Compare which one is closer and use it as index
                 if (Math.abs(location - before) < Math.abs(location - after))
                     index = iBefore;
                 else
                     index = iAfter;
 
-            } else if (iBefore >= 0)
-                index = iBefore;
-            else if (iAfter >= 0)
-                index = iAfter;
+            } else {
+                if (iBefore >= 0)
+                    index = iBefore;
+                if (iAfter >= 0)
+                    index = iAfter;
+            }
 
             if (index >= 0) {
                 int distance = Math.abs(location - locList[index]);
@@ -216,7 +218,6 @@ public class GWASData {
                     index = -1;
             }
         }
-
         return index;
     }
 

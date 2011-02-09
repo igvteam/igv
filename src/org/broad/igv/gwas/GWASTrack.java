@@ -373,9 +373,10 @@ public class GWASTrack extends AbstractTrack {
 
         // Calculate offset from track location by other tracks
         y = y - (int) this.trackMinY;
+        double tmpMaxY = this.maxY - this.trackMinY;
 
         // Estimate values near y coordinate
-        double valueEstimate = (1 - y / this.maxY) * this.getDataRange().getMaximum();
+        double valueEstimate = (1 - y / tmpMaxY) * this.getDataRange().getMaximum();
         // Percentage threshold for searching values on y-axis
         double threshold = 0.1;
 

@@ -929,7 +929,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(GWAS_TRACK_HEIGHT, "200");
         defaultValues.put(GWAS_DESCRIPTION_CACHE_SIZE, "10000");
-        defaultValues.put(GWAS_MIN_POINT_SIZE, "2");
+        defaultValues.put(GWAS_MIN_POINT_SIZE, "3");
         defaultValues.put(GWAS_MAX_POINT_SIZE, "7");
         defaultValues.put(GWAS_USE_CHR_COLORS, "true");
         defaultValues.put(GWAS_SINGLE_COLOR, "false");
