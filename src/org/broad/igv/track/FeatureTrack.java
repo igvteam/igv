@@ -669,7 +669,10 @@ public class FeatureTrack extends AbstractTrack {
     public void setHeight(int newHeight) {
 
         int levelCount = this.getNumberOfFeatureLevels();
-        super.setHeight(Math.max(getMinimumHeight(), newHeight / levelCount));
+        int newLevelHeight = newHeight;
+        if (levelCount > 0)
+            Math.max(getMinimumHeight(), newHeight / levelCount);
+        super.setHeight(newLevelHeight);
     }
 
 
