@@ -140,7 +140,7 @@ public class VCFTrack extends FeatureTrack {
                 } else if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
                     // skip
                     //samples.get("S").add(s);
-                   // sampleCount++;
+                    // sampleCount++;
                 } else if (s.endsWith("-467") || s.equals("467")) {
                     samples.get("PA").add(s);
                     sampleCount++;
@@ -361,9 +361,20 @@ public class VCFTrack extends FeatureTrack {
                                 printName = "S-" + printName;
                             } else if (printName.equals("467")) {
                                 printName = "PA-" + printName;
-
                             } else if (printName.equals("469")) {
                                 printName = "CC-" + printName;
+                            } else if (printName.equals("259") || printName.equals("265") || printName.equals("266")) {
+                                printName = "AA-" + printName;
+                            } else if (printName.equals("701") || printName.equals("564")) {
+                                printName = "BIP-" + printName;
+                            } else if (printName.equals("352") || printName.equals("414") || printName.equals("375")) {
+                                printName = "L-" + printName;
+                            } else if (printName.equals("4") || printName.equals("8") || printName.equals("13") || printName.equals("15")) {
+                                printName = "LA-" + printName;
+                            } else if (printName.equals("563") || printName.equals("566")) {
+                                printName = "OK-" + printName;
+                            } else if (printName.equals("491") || printName.equals("497")) {
+                                printName = "WC-" + printName;
                             }
                         }
 
@@ -448,6 +459,7 @@ public class VCFTrack extends FeatureTrack {
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+            // Sample names printed in colorBackground !!
             colorBackground(g2D, rect, visibleRectangle, true, isSelected());
         }
 
