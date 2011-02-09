@@ -16,12 +16,13 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.FloatArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 
 import java.awt.*;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 //import org.broad.igv.ui.IGVModel;
 
@@ -38,11 +39,15 @@ public class GWASTrack extends AbstractTrack {
     private static final Logger log = Logger.getLogger(GWASTrack.class);
 
     private static final int AXIS_AREA_WIDTH = 60;
-    protected static Color axisLineColor = new Color(255, 180, 180);
+    //protected static Color axisLineColor = new Color(255, 180, 180);
     private double trackMinY;
     private double maxY;
     private double scale;
     private GWASParser parser;
+    private static final DecimalFormat formatter = new DecimalFormat();
+    //private String displayName = "GWAS Track";
+    private String displayName = null;
+
 
     String getDisplayName() {
         return displayName;
@@ -52,12 +57,6 @@ public class GWASTrack extends AbstractTrack {
         this.displayName = displayName;
     }
 
-    private String displayName = "GWAS Track";
-
-
-    public GWASTrack(String name) {
-        super(name);
-    }
 
     /**
      * Constructor for a new GWAS track
@@ -80,7 +79,7 @@ public class GWASTrack extends AbstractTrack {
 
         // Set range from 0 to highest value rounded to greater integer
         int maxValue = (int) Math.ceil(gData.getMaxValue());
-        super.setDataRange(new DataRange(0, (int) (maxValue / 2), maxValue));
+        super.setDataRange(new DataRange(0, (maxValue / 2), maxValue));
 
         this.parser = parser;
 
@@ -94,37 +93,39 @@ public class GWASTrack extends AbstractTrack {
      */
     public void render(RenderContext context, Rectangle arect) {
 
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        //long startTime = System.nanoTime();
 
+        // Draw the legend axis
+        this.renderAxis(context, arect);
+
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        PreferenceManager prefs = PreferenceManager.getInstance();
         this.trackMinY = arect.getMinY();
         Rectangle adjustedRect = calculateDrawingRect(arect);
-        renderAxis(context, arect);
-        this.maxY = adjustedRect.getMaxY();
+        double adjustedRectMaxX = adjustedRect.getMaxX();
+        double adjustedRectMaxY = adjustedRect.getMaxY();
+        double adjustedRectY = adjustedRect.getY();
+        this.maxY = adjustedRectMaxY;
         this.scale = context.getScale();
-        int bufferX = (int) adjustedRect.getMaxX();
-        int bufferY = (int) adjustedRect.getMaxY();
+        int bufferX = (int) adjustedRectMaxX;
+        int bufferY = (int) adjustedRectMaxY;
         Color[][] drawBuffer = new Color[bufferX + 1][bufferY + 1];
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-
         // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
         // the base value is == min value which is == 0.
 
-        DataRange axisDefinition = getDataRange();
+        DataRange axisDefinition = this.getDataRange();
         float maxValue = axisDefinition.getMaximum();
-        float baseValue = axisDefinition.getBaseline();
         float minValue = axisDefinition.getMinimum();
 
         // Calculate the Y scale factor.
         double yScaleFactor = adjustedRect.getHeight() / (maxValue - minValue);
 
-        // Calculate the Y position in pixels of the base value.
-        int baseY = (int) (adjustedRect.getY() + (maxValue - baseValue) * yScaleFactor);
-
         //int lastPx = 0;
         String chrName = context.getChr();
-        List<String> chrList = new ArrayList();
+        ArrayList<String> chrList = new ArrayList();
         if (chrName.equals("All")) {
             for (String key : gData.getLocations().keySet()) {
                 chrList.add(key);
@@ -138,126 +139,133 @@ public class GWASTrack extends AbstractTrack {
         double rangeMaxValue = Math.ceil(gData.getMaxValue());
         int minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
         int maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
+        double pointSizeScale = rangeMaxValue / maxPointSize;
 
+        Color drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+        Object[] chrs = this.gData.getLocations().keySet().toArray();
+
+        int xMinPointSize = (int) (1 / locScale);
+
+        // Loop through data points, chromosome by chromosome
 
         for (String chr : chrList) {
             if (this.gData.getLocations().containsKey(chr) && this.gData.getValues().containsKey(chr)) {
 
-                int size = this.gData.getLocations().get(chr).size();
-                for (int j = 0; j < size; j++) {
-                    int start;
 
+                // Choose a color for the chromosome
 
-                    if (chrName.equals("All"))
+                // Use specific color for each chromosome
+                if (prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS))
+                    drawColor = ChromosomeColors.getColor(chr);
 
-                        start = GenomeManager.getInstance().getCurrentGenome().getGenomeCoordinate(chr, this.gData.getLocations().get(chr).get(j));
+                    // Use two alternating colors for chromosomes
+                else if (prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS)) {
+                    int chrCounter = 0;
+                    while (chrCounter < chrs.length && !chrs[chrCounter].toString().equals(chr))
+                        chrCounter++;
 
+                    if (chrCounter % 2 == 0)
+                        drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
                     else
+                        drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
 
+                }
 
-                        start = this.gData.getLocations().get(chr).get(j);
+                IntArrayList locations = this.gData.getLocations().get(chr);
+                FloatArrayList values = this.gData.getValues().get(chr);
 
-                    Color drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
-                    if (prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS))
-                        drawColor = ChromosomeColors.getColor(chr);
-                    else if (prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS)) {
+                int size = locations.size();
 
-                        Object[] keys = this.gData.getLocations().keySet().toArray();
+                // Loop through data points in a chromosome
+                for (int j = 0; j < size; j++) {
 
-                        int chrCounter = 0;
-                        //int lineCounter = 0;
-                        while (chrCounter < keys.length && !keys[chrCounter].toString().equals(chr)) {
-                            chrCounter++;
+                    // Get location, e.g. start for the data point
+                    int start;
+                    if (chrName.equals("All"))
+                        start = genome.getGenomeCoordinate(chr, locations.get(j));
+                    else
+                        start = locations.get(j);
 
-                        }
-                        if (chrCounter % 2 == 0)
-                            drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
-
-                    }
-                    // Note -- don't cast these to an int until the range is checked.
-                    // could get an overflow.
+                    // Based on location, calculate X-coordinate, or break if outside of the view
                     double pX = ((start - origin) / locScale);
-                    // Todo -- No need to calculate end for the genomic region?
-                    //double dx = Math.ceil((Math.max(1, start - start)) / locScale) + 1;
-                    if ((pX + dx < 0)) {
+                    if ((pX + dx < 0))
                         continue;
-                    } else if (pX > adjustedRect.getMaxX()) {
+                    else if (pX > adjustedRectMaxX)
                         break;
-                    }
 
-                    float dataY = this.gData.getValues().get(chr).get(j);
+                    // Based on value of the data point, calculate Y-coordinate
+                    float dataY = values.get(j);
 
                     if (!Float.isNaN(dataY)) {
 
+                        int xPointSize = (int) Math.ceil(dataY / pointSizeScale);
 
-                        // Compute the pixel y location.  Clip to bounds of rectangle.
-                        int pY = (int)
-                                Math.min(adjustedRect.getMaxY(),
-                                        adjustedRect.getY()
-                                                + (maxValue - dataY) * yScaleFactor);
+                        // Scale y size based on the used range, data value and max point size
+                        int yPointSize = xPointSize;
+                        if (yPointSize < minPointSize)
+                            yPointSize = minPointSize;
 
-                        int xPointSize = (int) Math.ceil(dataY / rangeMaxValue * maxPointSize);
-                        // Min x size is the width of a single nucleotide
-                        int xMinPointSize = (int) (1 / locScale);
-                        // If min x size is smaller than minimun point size, use min point size
+                        // If x minimum size is smaller than point minimum size, use minimum point size
                         if (xMinPointSize < minPointSize)
                             xMinPointSize = minPointSize;
 
                         if (xPointSize < xMinPointSize)
                             xPointSize = xMinPointSize;
-                        // Scale y size based on the used on the data value and max point size
-                        int yPointSize = (int) Math.ceil(dataY / rangeMaxValue * maxPointSize);
-                        if (yPointSize < minPointSize)
-                            yPointSize = minPointSize;
 
-                        int tmpX = (int) pX;
-                        if (tmpX < 0)
-                            tmpX = 0;
-                        // Calculate offsets that can be used to center larger data points around their location
-                        int xCenterOffset = (int) xPointSize / 2;
-                        int yCenterOffset = (int) yPointSize / 2;
+                        // Point sizes divided by two to center locations of large points
+                        int x = (int) pX - (xPointSize / 2);
+                        int y = ((int) Math.min(adjustedRectMaxY, adjustedRectY + (maxValue - dataY) * yScaleFactor)) - (yPointSize / 2);
 
-                        // Loop through all the pixels of the data point
-                        for (int drawX = 0; drawX < xPointSize; drawX++) {
-                            for (int drawY = 0; drawY < yPointSize; drawY++) {
+                        int maxDrawX = x + xPointSize;
+                        int maxDrawY = y + yPointSize;
+                        if (x < 0)
+                            x = 0;
+                        if (y < 0)
+                            y = 0;
 
-                                int tmpDrawX = tmpX + drawX - xCenterOffset;
-                                int tmpDrawY = pY + drawY - yCenterOffset;
-                                // Check if pixels are inside array, if so, mark them in the buffer
-                                if (tmpDrawX >= 0 && tmpDrawX <= adjustedRect.getMaxX() && tmpDrawY >= 0 && tmpDrawY <= adjustedRect.getMaxY()) {
+                        if (maxDrawX > adjustedRectMaxX)
+                            maxDrawX = (int) adjustedRectMaxX;
+                        if (maxDrawY > adjustedRectMaxY)
+                            maxDrawY = (int) adjustedRectMaxY;
 
-
-                                    drawBuffer[tmpDrawX][tmpDrawY] = drawColor;
-                                }
-                            }
-                        }
+                        // Loop through all the pixels of the data point and fill in drawing buffer
+                        for (int drawX = x; drawX < maxDrawX; drawX++)
+                            for (int drawY = y; drawY < maxDrawY; drawY++)
+                                drawBuffer[drawX][drawY] = drawColor;
                     }
+                }
+            }
+        }
+        //log.info(" --starting drawing time: " + ((System.nanoTime() - startTime) / 1000000));
 
+        // Draw the pixels from the drawing buffer
+        /*
+        for (int x = 0; x < bufferX; x++)
+            for (int y = 0; y < bufferY; y++)
+                if (drawBuffer[x][y] != null)
+                    context.getGraphic2DForColor(drawBuffer[x][y]).fillRect(x, y, 1, 1);
+         */
+
+        // Draw the pixels from the drawing buffer to the canvas
+
+        Graphics2D g = context.getGraphics();
+        Color color;
+        Color prevColor = null;
+
+        for (int x = 0; x < bufferX; x++)
+            for (int y = 0; y < bufferY; y++) {
+                color = drawBuffer[x][y];
+                if (color != null) {
+                    if (!color.equals(prevColor)) {
+                        g.setColor(color);
+                        prevColor = color;
+                    }
+                    g.fillRect(x, y, 1, 1);
                 }
             }
 
-
-        }
-        int tmpDx = (int) Math.ceil(1 / locScale) + 1;
-        for (int x = 0; x < bufferX; x++) {
-            for (int y = 0; y < bufferY; y++) {
-                if (drawBuffer[x][y] != null)
-                    drawDataPoint(drawBuffer[x][y], tmpDx, x, baseY, y, context);
-            }
-
-
-        }
-
+        //log.info("rendering time: " + ((System.nanoTime() - startTime) / 1000000));
     }
-
-
-    void drawDataPoint(Color graphColor, int dx, int pX, int baseY, int pY,
-                       RenderContext context) {
-        context.getGraphic2DForColor(graphColor).fillRect(pX, pY, 1, 1);
-
-    }
-
-    private static final DecimalFormat formatter = new DecimalFormat();
 
 
     void renderAxis(RenderContext context, Rectangle arect) {
@@ -269,12 +277,13 @@ public class GWASTrack extends AbstractTrack {
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
         labelGraphics.setFont(FontManager.getScalableFont(8));
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
+        String tmpDisplayName = this.getDisplayName();
+        if (tmpDisplayName != null && tmpDisplayName.length() > 0 && PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
                 labelGraphics.setFont(FontManager.getScalableFont(10));
-                GraphicUtils.drawCenteredText(getDisplayName(), labelRect, labelGraphics);
+                GraphicUtils.drawCenteredText(tmpDisplayName, labelRect, labelGraphics);
             }
         }
 
@@ -359,7 +368,7 @@ public class GWASTrack extends AbstractTrack {
      * @param maxDistance
      * @return
      */
-    public int findIndex(String chr, int y, int location, int maxDistance) {
+    int findIndex(String chr, int y, int location, int maxDistance) {
 
 
         // Calculate offset from track location by other tracks
@@ -391,7 +400,7 @@ public class GWASTrack extends AbstractTrack {
      * @return
      */
 
-    public String getDescription(String chr, int index) {
+    String getDescription(String chr, int index) {
 
         String textValue = "";
 
