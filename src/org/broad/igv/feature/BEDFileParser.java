@@ -25,6 +25,8 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import java.util.List;
+
 /**
  * Class description
  *
@@ -70,16 +72,23 @@ public class BEDFileParser extends UCSCParser {
             end = Integer.parseInt(tokens[2]);
         }
 
-        BasicFeature feature = new BasicFeature(chr, start, end);
+        BasicFeature feature = null;
 
+        boolean isSpliceJunction = false;
         //dhmay adding.  This is a hacky way to determine whether the BED file we're reading is a
         //splice junction BED file.
         //todo: some refactoring that allows this hack to be removed
         if (trackProperties != null) {
             Class rendererClass = trackProperties.getRendererClass();
             if (rendererClass != null && rendererClass.isAssignableFrom(SpliceJunctionRenderer.class))
-                feature.setType(BasicFeature.FEATURE_TYPE_SPLICEJUNCTION);
+                isSpliceJunction = true;
         }
+
+        if (isSpliceJunction)
+            feature = new SpliceJunctionFeature(chr, start, end);
+        else
+            feature = new BasicFeature(chr, start, end);
+
         // The rest of the columns are optional.  Stop parsing upon encountering
         // a non-expected value
 
@@ -95,6 +104,9 @@ public class BEDFileParser extends UCSCParser {
             try {
                 float score = Float.parseFloat(tokens[4]);
                 feature.setScore(score);
+                //todo: some refactoring that allows this hack to be removed
+                if (isSpliceJunction)
+                    ((SpliceJunctionFeature) feature).setJunctionDepth((int) score);
             } catch (NumberFormatException numberFormatException) {
 
                 // Unexpected, but does not invalidate the previous values.
@@ -131,10 +143,24 @@ public class BEDFileParser extends UCSCParser {
             feature.setColor(rgb, nTokens);
         }
 
-        // Coding information is optional
+        // Coding information is optional, except in the case of splice junctions
         if (tokenCount > 11) {
             createExons(start, tokens, feature, chr, feature.getStrand());
+
+            //todo: some refactoring that allows this hack to be removed
+            if (isSpliceJunction)
+            {
+                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+
+                List<Exon> exons = feature.getExons();
+
+                junctionFeature.setJunctionStart(start + exons.get(0).getLength());
+                junctionFeature.setJunctionEnd(end - exons.get(1).getLength());
+
+                new StringBuilder();
+            }
         }
+
 
         return feature;
     }

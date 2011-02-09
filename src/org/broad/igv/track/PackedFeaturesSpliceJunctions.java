@@ -22,6 +22,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.ui.util.MessageUtils;
@@ -59,7 +60,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
      */
     protected int getFeatureStartForPacking(Feature feature)
     {
-        return SpliceJunctionRenderer.getJunctionStart((IGVFeature) feature);
+        return ((SpliceJunctionFeature) feature).getJunctionStart();
     }
 
 
@@ -70,7 +71,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
      */
     protected int getFeatureEndForPacking(Feature feature)
     {
-        return SpliceJunctionRenderer.getJunctionEnd((IGVFeature) feature);
+        return ((SpliceJunctionFeature) feature).getJunctionEnd();
     }
 
     int getRowCount() {

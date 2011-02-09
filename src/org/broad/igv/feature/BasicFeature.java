@@ -44,11 +44,6 @@ public class BasicFeature extends AbstractFeature {
 
     private static Logger log = Logger.getLogger(BasicFeature.class);
 
-    //A special, known feature type that represents a splice junction. A feature of this type has
-    //slightly different popup text.
-    //todo: refactor features and parsers to do this check in a cleaner way
-    public static final String FEATURE_TYPE_SPLICEJUNCTION = "FEATURE_TYPE_SPLICEJUNCTION";
-
     protected List<Exon> exons;
     protected int level = 1;
     private String type;
@@ -172,21 +167,10 @@ public class BasicFeature extends AbstractFeature {
         }
 
         valueString.append("<br>");
-        //for splice junctions, the junction boundary should be reported, not the feature ends
-        if (FEATURE_TYPE_SPLICEJUNCTION.equals(getType()))
-            valueString.append(getChr() + ":" + SpliceJunctionRenderer.getJunctionStart(this) + "-" +
-                    SpliceJunctionRenderer.getJunctionEnd(this));
-        else
-            valueString.append(getLocusString());
+        valueString.append(getLocusString());
 
-        if (FEATURE_TYPE_SPLICEJUNCTION.equals(getType()) && getStrand() != null)
-            valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));
         if (hasScore()) {
-            //if this feature is a splice junction, then we're treating "Score" as "Depth".
-            //todo: this is a hack.  Remove it after a refactor that allows it to be removed.
-            String scoreDisplayName =
-                    FEATURE_TYPE_SPLICEJUNCTION.equals(getType()) ? "Depth" : "Score";
-            valueString.append("<br>" + scoreDisplayName + " = " + score);
+            valueString.append("<br>Score = " + score);
         }
         if (description != null) {
             valueString.append("<br>" + description);

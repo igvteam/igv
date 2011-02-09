@@ -94,7 +94,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // Track coordinates
             double trackRectangleX = trackRectangle.getX();
             double trackRectangleMaxX = trackRectangle.getMaxX();
-            double trackRectangleMaxY = trackRectangle.getMaxY();
 
             // Draw the lines that represent the bounds of
             // a feature's region
@@ -106,18 +105,20 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
             IGVFeature featureArray[] = featureList.toArray(new IGVFeature[featureList.size()]);
             for (IGVFeature feature : featureArray) {
+                SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+
                 // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
                 // done in double precision and cast to an int only when its confirmed its
                 // within the field of view.
-                int featureStart = feature.getStart();
-                int featureEnd = feature.getEnd();
+                int flankingStart = junctionFeature.getStart();
+                int flankingEnd = junctionFeature.getEnd();
 
-                int junctionStart = getJunctionStart(feature);
-                int junctionEnd = getJunctionEnd(feature);
+                int junctionStart = junctionFeature.getJunctionStart();
+                int junctionEnd = junctionFeature.getJunctionEnd();
                 
-                double virtualPixelStart = Math.round((featureStart - origin) / locScale);
-                double virtualPixelEnd = Math.round((featureEnd - origin) / locScale);
+                double virtualPixelStart = Math.round((flankingStart - origin) / locScale);
+                double virtualPixelEnd = Math.round((flankingEnd - origin) / locScale);
 
                 double virtualPixelJunctionStart = Math.round((junctionStart - origin) / locScale);
                 double virtualPixelJunctionEnd = Math.round((junctionEnd - origin) / locScale);
@@ -142,17 +143,12 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                         lastPixelEnd = displayPixelEnd;
                     }
 
-                    // Junction read depth is modeled as score in BasicFeature
-                    float depth = 1;
-                    if (feature instanceof BasicFeature) {
-                        BasicFeature bf = (BasicFeature) feature;
-                        depth = bf.getScore();
-                    }
+                    float depth = junctionFeature.getJunctionDepth();
 
 
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand());
+                            trackRectangle, context, feature.getStrand(), junctionFeature);
 
                     // Determine the y offset of features based on strand type
 
@@ -180,38 +176,39 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         }
     }
 
-    /**
-     * Return the start of a junction, for an IGVFeature that represents a junction.
-     * If the contract is broken, i.e., the IGVFeature does /not/ represent a junction, return the feature start.
-     * @param feature
-     * @return
-     */
-    public static int getJunctionStart(IGVFeature feature)
-    {
-        List<Exon> exons = feature.getExons();
-        //Junction features have 2 exons. The exons represent the area between the end of the read and
-        // the splice junction itself.  So, to determine the junction start and end points, just
-        // take away those exon lengths.
-        if (exons == null || exons.size() != 2)
-            return feature.getStart();
-        return feature.getStart() + exons.get(0).getEnd() - exons.get(0).getStart();
-    }
 
     /**
-     * Return the end of a junction, for an IGVFeature that represents a junction.
-     * If the contract is broken, i.e., the IGVFeature does /not/ represent a junction, return the feature end.
-     * @param feature
-     * @return
+     * Draw depth of coverage for the starting or ending flanking region
+     * @param g2D
+     * @param pixelStart
+     * @param pixelLength
+     * @param regionDepthArray
+     * @param maxPossibleArcHeight
+     * @param trackRectangle
+     * @param isPositiveStrand
      */
-    public static int getJunctionEnd(IGVFeature feature)
-    {
-        List<Exon> exons = feature.getExons();
-        //Junction features have 2 exons. The exons represent the area between the end of the read and
-        // the splice junction itself.  So, to determine the junction start and end points, just
-        // take away those exon lengths.
-        if (exons == null || exons.size() != 2)
-            return feature.getEnd();
-        return feature.getEnd() - (exons.get(1).getEnd() - exons.get(1).getStart());
+    protected void drawFlankingRegion(Graphics g2D, int pixelStart, int pixelLength, int[] regionDepthArray,
+                                      int maxPossibleArcHeight, Rectangle trackRectangle, boolean isPositiveStrand) {
+        for (int i=0; i<pixelLength; i++)
+        {
+            float arrayIndicesPerPixel = (float) regionDepthArray.length /
+                    (float) pixelLength;
+            int flankingRegionArrayPixelMinIndex = (int) (i * arrayIndicesPerPixel);
+            int flankingRegionArrayPixelMaxIndex = (int) ((i+1) * arrayIndicesPerPixel);
+            flankingRegionArrayPixelMinIndex =
+                    Math.max(0, Math.min(flankingRegionArrayPixelMinIndex, regionDepthArray.length-1));
+            flankingRegionArrayPixelMaxIndex =
+                    Math.max(0, Math.min(flankingRegionArrayPixelMaxIndex, regionDepthArray.length-1));
+
+            int meanDepthThisPixel = 0;
+            for (int j=flankingRegionArrayPixelMinIndex; j<=flankingRegionArrayPixelMaxIndex; j++)
+                meanDepthThisPixel += regionDepthArray[j];
+            meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex-flankingRegionArrayPixelMinIndex+1);
+            int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / MAX_DEPTH, 2);
+            g2D.fillRect(pixelStart+i,
+                    (int)trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
+                    1, pixelHeight);
+        }
     }
 
     /**
@@ -224,9 +221,10 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param depth coverage depth
      * @param trackRectangle
      */
-    final private void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
+     protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                    int pixelJunctionStart, int pixelJunctionEnd, float depth,
-                                        Rectangle trackRectangle, RenderContext context, Strand strand) {
+                                   Rectangle trackRectangle, RenderContext context, Strand strand,
+                                   SpliceJunctionFeature junctionFeature) {
         boolean isPositiveStrand = true;
         // Get the feature's direction, color appropriately
         if (strand != null && strand.equals(Strand.NEGATIVE))
@@ -235,19 +233,37 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         Color color = isPositiveStrand ? ARC_COLOR_POS : ARC_COLOR_NEG;
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
+                //Height of top of an arc of maximum depth
+        int maxPossibleArcHeight = (trackRectangle.height - 1)/2;
 
-        //Draw rectangles indicating the overlap on each side of the junction
-        int overlapRectHeight = 3;
-        int overlapRectTopX = (int)trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
-        if (pixelFeatureStart < pixelJunctionStart)
+        if (junctionFeature.hasFlankingRegionDepthArrays())
         {
-            g2D.fillRect(pixelFeatureStart, overlapRectTopX,
-                    pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
+            //draw a wigglegram of the splice junction flanking region depth of coverage
+
+            int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
+            int endFlankingRegionPixelLength =  pixelFeatureEnd - pixelJunctionEnd;
+
+            drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
+                    junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
+                    trackRectangle, isPositiveStrand);
+            drawFlankingRegion(g2D, pixelJunctionEnd+1, endFlankingRegionPixelLength,
+                    junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
+                    trackRectangle, isPositiveStrand);
         }
-        if (pixelJunctionEnd < pixelFeatureEnd)
-        {
-            g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
-                    pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+        else {
+            //Draw rectangles indicating the overlap on each side of the junction
+            int overlapRectHeight = 3;
+            int overlapRectTopX = (int)trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
+            if (pixelFeatureStart < pixelJunctionStart)
+            {
+                g2D.fillRect(pixelFeatureStart, overlapRectTopX,
+                        pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
+            }
+            if (pixelJunctionEnd < pixelFeatureEnd)
+            {
+                g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
+                        pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
+            }
         }
 
         //Create a path describing the arc, using Bezier curves. The Bezier control points for the top and
@@ -255,9 +271,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
         //proportion of the maximum arc height used by a minimum-height arc
         double minArcHeightProportion = 0.33;
-
-        //Height of top of an arc of maximum depth
-        int maxPossibleArcHeight = (trackRectangle.height - 1)/2;
 
         int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
         float depthProportionOfMax = Math.min(1, depth / MAX_DEPTH);

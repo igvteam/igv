@@ -105,10 +105,10 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
                     (int) context.getEndLocation())) {
 
-                Map<Integer, Map<Integer, SpliceJunction>> posStartEndJunctionsMap =
-                        new HashMap<Integer, Map<Integer, SpliceJunction>>();
-                Map<Integer, Map<Integer, SpliceJunction>> negStartEndJunctionsMap =
-                        new HashMap<Integer, Map<Integer, SpliceJunction>>();
+                Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap =
+                        new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
+                Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap =
+                        new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
 
 
 
@@ -128,7 +128,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                         if (strandAttr != null)
                             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
 
-                        Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
+                        Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
                                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
                         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                         if (blocks.length < 2)
@@ -141,56 +141,25 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                             int blockStart = block.getStart();
                             if (prevBlockEnd != -1)
                             {
-                                Map<Integer, SpliceJunction> endJunctionsMap =
+                                Map<Integer, SpliceJunctionFeature> endJunctionsMap =
                                         startEndJunctionsMapThisStrand.get(prevBlockEnd);
                                 if (endJunctionsMap == null)
                                 {
-                                    endJunctionsMap = new HashMap<Integer, SpliceJunction>();
+                                    endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
                                     startEndJunctionsMapThisStrand.put(prevBlockEnd, endJunctionsMap);
                                 }
-                                SpliceJunction junction = endJunctionsMap.get(blockStart);
+                                SpliceJunctionFeature junction = endJunctionsMap.get(blockStart);
                                 if (junction == null)
                                 {
-                                    junction = new SpliceJunction(prevBlockEnd, blockStart);
+                                    junction = new SpliceJunctionFeature(chr, prevBlockEnd, blockStart,
+                                            isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
                                     endJunctionsMap.put(blockStart, junction);
+                                    spliceJunctionFeatures.add(junction);
                                 }
                                 junction.addRead(prevBlockStart, blockEnd);
                             }
                             prevBlockStart = blockStart;
                             prevBlockEnd = blockEnd;
-                        }
-                    }
-                }
-
-                //Build splice junction features for neg, then pos strand
-                for (boolean isNeg : new boolean[] {true, false})
-                {
-                    Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
-                            isNeg ? negStartEndJunctionsMap : posStartEndJunctionsMap;
-
-                    //note: this is designed to put the features in order.  But technically it won't -- they'll
-                    //be in order by junction start, which isn't the start of the feature because it doesn't
-                    //take into account flanking reads.  No problem for this renderer
-                    for (int junctionStart : startEndJunctionsMapThisStrand.keySet())
-                    {
-                        Map<Integer, SpliceJunction> endJunctionMap =
-                                startEndJunctionsMapThisStrand.get(junctionStart);
-                        for (int junctionEnd : endJunctionMap.keySet())
-                        {
-                            SpliceJunction junction = endJunctionMap.get(junctionEnd);
-                            BasicFeature feature = new BasicFeature(context.getChr(),
-                                    junction.flankingStart, junction.flankingEnd);
-                            feature.setStrand(isNeg ? Strand.NEGATIVE : Strand.POSITIVE);
-                            feature.setScore(junction.depth);
-                            feature.addExon(new Exon(context.getChr(),
-                                    junction.flankingStart, junction.start,
-                                    isNeg ? Strand.NEGATIVE : Strand.POSITIVE
-                            ));
-                            feature.addExon(new Exon(context.getChr(),
-                                    junction.end, junction.flankingEnd,
-                                    isNeg ? Strand.NEGATIVE : Strand.POSITIVE
-                            ));
-                            spliceJunctionFeatures.add(feature);
                         }
                     }
                 }
@@ -332,143 +301,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
 
-    public void renderNONONO(RenderContext context, Rectangle rect) {
-
-        //todo: add preference specifically for splice junctions
-        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
-
-        if (context.getScale() > minVisibleScale)
-            return;
-
-        AlignmentInterval interval = null;
-        if (dataManager != null) {
-            interval = dataManager.getLoadedInterval(context);
-        }
-
-
-        if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
-                (int) context.getEndLocation())) {
-
-            Map<Integer, Map<Integer, SpliceJunction>> posStartEndJunctionsMap =
-                    new HashMap<Integer, Map<Integer, SpliceJunction>>();
-            Map<Integer, Map<Integer, SpliceJunction>> negStartEndJunctionsMap =
-                    new HashMap<Integer, Map<Integer, SpliceJunction>>();
-
-
-
-            List<AlignmentInterval.Row> alignmentRows = interval.getAlignmentRows();
-
-            for (AlignmentInterval.Row row : alignmentRows)
-            {
-                //todo: is this dangerous?  Might something else depend on this not being reset?
-                row.resetIdx();
-
-                while (row.hasNext())
-                {
-                    Alignment alignment = row.nextAlignment();
-
-
-
-                    Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
-                            alignment.isNegativeStrand() ? negStartEndJunctionsMap : posStartEndJunctionsMap;
-                    AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                    if (blocks.length < 2)
-                        continue;
-                    int prevBlockStart = -1;
-                    int prevBlockEnd = -1;
-                    for (AlignmentBlock block : blocks)
-                    {
-                        int blockEnd = block.getEnd();
-                        int blockStart = block.getStart();
-                        if (prevBlockEnd != -1)
-                        {
-                            Map<Integer, SpliceJunction> endJunctionsMap =
-                                    startEndJunctionsMapThisStrand.get(prevBlockEnd);
-                            if (endJunctionsMap == null)
-                            {
-                                endJunctionsMap = new HashMap<Integer, SpliceJunction>();
-                                startEndJunctionsMapThisStrand.put(prevBlockEnd, endJunctionsMap);
-                            }
-                            SpliceJunction junction = endJunctionsMap.get(blockStart);
-                            if (junction == null)
-                            {
-                                junction = new SpliceJunction(prevBlockEnd, blockStart);
-                                endJunctionsMap.put(blockStart, junction);
-                            }
-                            junction.addRead(prevBlockStart, blockEnd);
-                        }
-                        prevBlockStart = blockStart;
-                        prevBlockEnd = blockEnd;
-                    }
-                }
-            }
-
-            List<IGVFeature> spliceJunctionFeatures = new ArrayList<IGVFeature>();
-            //Build splice junction features for neg, then pos strand
-            for (boolean isNeg : new boolean[] {true, false})
-            {
-                Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
-                        isNeg ? negStartEndJunctionsMap : posStartEndJunctionsMap;
-
-                //note: this is designed to put the features in order.  But technically it won't -- they'll
-                //be in order by junction start, which isn't the start of the feature because it doesn't
-                //take into account flanking reads.  No problem for this renderer
-                for (int junctionStart : startEndJunctionsMapThisStrand.keySet())
-                {
-                    Map<Integer, SpliceJunction> endJunctionMap = startEndJunctionsMapThisStrand.get(junctionStart);
-                    for (int junctionEnd : endJunctionMap.keySet())
-                    {
-                        SpliceJunction junction = endJunctionMap.get(junctionEnd);
-                        BasicFeature feature = new BasicFeature(context.getChr(),
-                                junction.flankingStart, junction.flankingEnd);
-                        feature.setStrand(isNeg ? Strand.NEGATIVE : Strand.POSITIVE);
-                        feature.setScore(junction.depth);
-                        feature.addExon(new Exon(context.getChr(),
-                                junction.flankingStart, junction.start,
-                                isNeg ? Strand.NEGATIVE : Strand.POSITIVE
-                        ));
-                        feature.addExon(new Exon(context.getChr(),
-                                junction.end, junction.flankingEnd,
-                                isNeg ? Strand.NEGATIVE : Strand.POSITIVE
-                        ));
-                        spliceJunctionFeatures.add(feature);
-                    }
-                }
-            }
-
-            Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>()
-            {
-                public int compare(IGVFeature o1, IGVFeature o2) {
-                    return o1.getStart() - o2.getStart();
-                }
-            });
-            spliceJunctionRenderer.render(spliceJunctionFeatures, context, rect, this);
-        }
-
-    }
-
-
-    protected class SpliceJunction {
-        int depth = 0;
-        int start, end;
-        //start of beginning flanking region, end of end flanking region
-        int flankingStart, flankingEnd;
-
-        public SpliceJunction(int start, int end) {
-            this.start = start;
-            this.end = end;
-            this.flankingStart = start;            
-            this.flankingEnd = end;
-        }
-
-        public void addRead(int readStart, int readEnd) {
-            depth++;
-            flankingStart = Math.min(readStart, flankingStart);
-            flankingEnd = Math.max(readEnd, flankingEnd);
-        }
-
-    }
 
 
     public boolean isLogNormalized() {
