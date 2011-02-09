@@ -32,6 +32,7 @@ import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
@@ -202,19 +203,21 @@ public class AlignmentDataManager {
                 }
             }
 
-            Collections.sort(alignments, new Comparator<Alignment>() {
+            // ArrayHeapObjectSorter sorts in place (no additional memory required).
+            ArrayHeapObjectSorter<Alignment> heapSorter = new ArrayHeapObjectSorter();
+            heapSorter.sort(alignments, new Comparator<Alignment>() {
                 public int compare(Alignment alignment, Alignment alignment1) {
                     return alignment.getStart() - alignment1.getStart();
                 }
             });
 
-             List<AlignmentInterval.Row> tmp = (new AlignmentLoader()).loadAndPackAlignments(
-                alignments.iterator(),
-                maxLevels,
-                loadedInterval.getEnd(),
-                loadAsPairs);
+            List<AlignmentInterval.Row> tmp = (new AlignmentLoader()).loadAndPackAlignments(
+                    alignments.iterator(),
+                    maxLevels,
+                    loadedInterval.getEnd(),
+                    loadAsPairs);
 
-        loadedInterval.setAlignmentRows(tmp);
+            loadedInterval.setAlignmentRows(tmp);
 
         } else {
             repackAlignments(referenceFrame);
