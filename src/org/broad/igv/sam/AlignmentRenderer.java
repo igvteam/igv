@@ -619,7 +619,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         Color c = grey1;
         switch (renderOptions.colorOption) {
             case INSERT_SIZE:
-                boolean isPairedAlignment =   alignment instanceof PairedAlignment;
+                boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
                     boolean sameChr = isPairedAlignment ||
                             alignment.getMate().getChr().equals(alignment.getChr());
@@ -630,14 +630,15 @@ public class AlignmentRenderer implements FeatureRenderer {
                                 c = ChromosomeColors.getColor(alignment.getChr());
                             }
                             //return renderOptions.insertSizeColorScale.getColor(readDistance);
-                        } else {
-                            c = ChromosomeColors.getColor(alignment.getMate().getChr());
-                            if (c == null) {
-                                c = Color.black;
-                            }
+                        }
+                    } else {
+                        c = ChromosomeColors.getColor(alignment.getMate().getChr());
+                        if (c == null) {
+                            c = Color.black;
                         }
                     }
                 }
+
 
                 break;
             case PAIR_ORIENTATION:
