@@ -48,9 +48,9 @@ public class FeatureTrack extends AbstractTrack {
     public static final int MINIMUM_FEATURE_SPACING = 1;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    private static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
+    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
 
-    private List<Rectangle> levelRects = new ArrayList();
+    protected List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
     /**
@@ -67,7 +67,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected FeatureSource source;
 
-    private boolean featuresLoading = false;
+    protected boolean featuresLoading = false;
 
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
@@ -75,7 +75,14 @@ public class FeatureTrack extends AbstractTrack {
 
     int margin = DEFAULT_MARGIN;
 
-
+    /**
+     * Does not initialize with the featuresource
+     * @param id
+     * @param name
+     */
+    public FeatureTrack(String id, String name) {
+        super(id, name);
+    }
 
     public FeatureTrack(String id, FeatureSource source) {
         super(id);
@@ -89,7 +96,7 @@ public class FeatureTrack extends AbstractTrack {
         this.getMinimumHeight();
     }
 
-    private void init(FeatureSource source) {
+    protected void init(FeatureSource source) {
 
         this.source = source;
         setMinimumHeight(10);
@@ -518,7 +525,7 @@ public class FeatureTrack extends AbstractTrack {
 
     // Render features in the given input rectangle.
 
-    private void renderFeatures(RenderContext context, Rectangle inputRect) {
+    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
         if (featuresLoading) {
             return;
@@ -590,7 +597,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param start
      * @param end
      */
-    private synchronized void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
+    protected synchronized void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
 
         // TODO -- improve or remove the need for this test.  We know that FeatureCollectionSource has all the data
         // in memory, and can by run synchronously
@@ -614,7 +621,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
                     // TODO -- implement source to return iterators
-                    Iterator<Feature> iter = source.getFeatures(chr, start, end);
+                    Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     if (iter == null) {
                         PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);

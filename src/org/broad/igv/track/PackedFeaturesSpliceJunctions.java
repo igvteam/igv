@@ -169,12 +169,12 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
 
         // Allocate features to rows
         FeatureRow currentRow = new FeatureRow();
-        int allocatedCount = 1;
+        int allocatedCount = 0;
         int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
 
 
         int lastKey = 0;
-        int lastAllocatedCount = 0;
+        int lastAllocatedCount = -1;
         while (allocatedCount < totalCount && rows.size() < maxLevels) {
 
             // Check to prevent infinite loops
@@ -222,7 +222,7 @@ public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeat
             // We've reached the end of the interval,  start a new row
             if (currentRow.features.size() > 0) {
                 rows.add(currentRow);
-                lastAllocatedCount = 0;
+                lastAllocatedCount = -1;
             }
             currentRow = new FeatureRow();
             nextStart = 0;

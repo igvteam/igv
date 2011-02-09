@@ -22,41 +22,39 @@
  */
 package org.broad.igv.track;
 
+import edu.mit.broad.prodinfo.genomicplot.Feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.sam.*;
-import org.broad.igv.sam.reader.CachingQueryReader;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.renderer.DataRenderer;
-import org.broad.igv.tdf.TDFDataSource;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
 /**
  * @author dhmay
  */
-public class SpliceJunctionFinderTrack extends AbstractTrack {
+public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
-
-    char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
-    public static Color lightBlue = new Color(0, 0, 150);
-    private float[] bgColorComps = new float[3];
 
     AlignmentDataManager dataManager;
     SpliceJunctionRenderer spliceJunctionRenderer;
     PreferenceManager prefs;
+    RenderContext context;
 
-
-    public SpliceJunctionFinderTrack(String id, String name) {
+    public SpliceJunctionFinderTrack(String id, String name, AlignmentDataManager dataManager) {
         super(id, name);
+        init(new SpliceJunctionFinderFeatureSource());
         super.setDataRange(new DataRange(0, 0, 60));
-        spliceJunctionRenderer = new SpliceJunctionRenderer();
+        setRendererClass(SpliceJunctionRenderer.class);
+        this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
     }
 
@@ -64,32 +62,49 @@ public class SpliceJunctionFinderTrack extends AbstractTrack {
         this.dataManager = dataManager;
     }
 
+    protected class SpliceJunctionFinderFeatureSource implements FeatureSource {
 
-    @Override
-    public void setDataRange(DataRange axisDefinition) {
-        // Explicitly setting a data range turns off auto-scale
-        super.setDataRange(axisDefinition);
-    }
+        public SpliceJunctionFinderFeatureSource()
+        {
+        }
 
+        public Iterator getFeatures(String chr, int start, int end) throws IOException {
+            List<IGVFeature> spliceJunctionFeatures = new ArrayList<IGVFeature>();
 
-    public void render(RenderContext context, Rectangle rect) {
-
-        //todo: add preference specifically for splice junctions
-        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
-
-        if (context.getScale() < minVisibleScale) {
+            if (!shouldShowFeatures())
+                return null;
 
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                interval = dataManager.getLoadedInterval(context);
+                //This method is called in a Runnable in its own thread, so we can enter a long while loop here
+                //and make sure the features get loaded
+//                while (interval == null)
+//                {
+                    interval = dataManager.getLoadedInterval(context);
+                    while (dataManager.isLoading())
+                        try {
+
+                            Thread.sleep(50);
+                        }
+                        catch (InterruptedException e) {}
+                    interval = dataManager.getLoadedInterval(context);
+//                }
+                //sometimes, interval does not contain the requested interval.  In that case, we display no features.
+                //I don't understand this.  Maybe dataManager is getting multiple requests with different extents?
+
+//if (!interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
+//                    (int) context.getEndLocation()))
+//{
+//    RenderContext newContext = context;
+//    new StringBuilder(oldContext + "" + newContext);
+//}
             }
+            if (interval == null)
+                new StringBuilder();
 
 
             if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
                     (int) context.getEndLocation())) {
-
-
 
                 Map<Integer, Map<Integer, SpliceJunction>> posStartEndJunctionsMap =
                         new HashMap<Integer, Map<Integer, SpliceJunction>>();
@@ -109,10 +124,13 @@ public class SpliceJunctionFinderTrack extends AbstractTrack {
                     {
                         Alignment alignment = row.nextAlignment();
 
-
+                        boolean isNegativeStrand = alignment.isNegativeStrand();
+                        Object strandAttr = alignment.getAttribute("XS");
+                        if (strandAttr != null)
+                            isNegativeStrand = strandAttr.toString().charAt(0) == '-';
 
                         Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
-                                alignment.isNegativeStrand() ? negStartEndJunctionsMap : posStartEndJunctionsMap;
+                                isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
                         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                         if (blocks.length < 2)
                             continue;
@@ -145,7 +163,6 @@ public class SpliceJunctionFinderTrack extends AbstractTrack {
                     }
                 }
 
-                List<IGVFeature> spliceJunctionFeatures = new ArrayList<IGVFeature>();
                 //Build splice junction features for neg, then pos strand
                 for (boolean isNeg : new boolean[] {true, false})
                 {
@@ -157,7 +174,8 @@ public class SpliceJunctionFinderTrack extends AbstractTrack {
                     //take into account flanking reads.  No problem for this renderer
                     for (int junctionStart : startEndJunctionsMapThisStrand.keySet())
                     {
-                        Map<Integer, SpliceJunction> endJunctionMap = startEndJunctionsMapThisStrand.get(junctionStart);
+                        Map<Integer, SpliceJunction> endJunctionMap =
+                                startEndJunctionsMapThisStrand.get(junctionStart);
                         for (int junctionEnd : endJunctionMap.keySet())
                         {
                             SpliceJunction junction = endJunctionMap.get(junctionEnd);
@@ -184,9 +202,251 @@ public class SpliceJunctionFinderTrack extends AbstractTrack {
                         return o1.getStart() - o2.getStart();
                     }
                 });
-                spliceJunctionRenderer.render(spliceJunctionFeatures, context, rect, this);
+//  if (spliceJunctionFeatures.isEmpty())
+//      new StringBuilder("");
+            }
+            else
+            {
+//                new StringBuilder("");
+            }
+//         if (spliceJunctionFeatures.isEmpty())
+//      new StringBuilder("").toString();
+            return spliceJunctionFeatures.iterator();
+
+        }
+
+        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public int getFeatureWindowSize() {
+            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public void setFeatureWindowSize(int size) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public Class getFeatureClass() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+    }
+
+    /**
+     * Relies on context
+     * @return
+     */
+    protected boolean shouldShowFeatures()  {
+        //todo: add preference specifically for splice junctions
+        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float minVisibleScale = (maxRange * 1000) / 700;
+
+        if (context == null || (context.getScale() > minVisibleScale))
+            return false;
+        return true;
+    }
+
+
+    
+
+        // Render features in the given input rectangle.
+
+    protected void renderFeatures(RenderContext context, Rectangle inputRect) {
+
+        if (featuresLoading) {
+            return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("renderFeatures: " + getName());
+        }
+
+        String chr = context.getChr();
+        int start = (int) context.getOrigin();
+        int end = (int) context.getEndLocation() + 1;
+
+        PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
+
+        if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
+            this.context = context;
+            if (shouldShowFeatures()) {
+                featuresLoading = true;
+                loadFeatures(chr, start, end, context);
+
+            }
+            else if (packedFeatures != null)
+                packedFeaturesMap.put(context.getReferenceFrame().getName(), null);
+            if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
+                return;
             }
         }
+
+       renderFeatureImpl(context, inputRect, packedFeatures);
+    }
+
+    protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
+        //todo: add preference specifically for splice junctions
+        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float minVisibleScale = (maxRange * 1000) / 700;
+
+        if (context.getScale() > minVisibleScale)
+            return;
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
+            List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
+            if (rows != null && rows.size() > 0) {
+
+                int nLevels = rows.size();
+                synchronized (levelRects) {
+
+                    levelRects.clear();
+
+                    // Divide rectangle into equal height levels
+                    double h = inputRect.getHeight() / nLevels;
+                    Rectangle rect = new Rectangle(inputRect.x, inputRect.y, inputRect.width, (int) h);
+                    int i = 0;
+                    for (PackedFeatures.FeatureRow row : rows) {
+                        levelRects.add(new Rectangle(rect));
+                        getRenderer().render(row.features, context, rect, this);
+                        if (selectedFeatureRowIndex == i) {
+                            Graphics2D fontGraphics =
+                                    (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR).create();
+                            fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
+                        }
+                        rect.y += h;
+                        i++;
+                    }
+                }
+            }
+        } else {
+            List<IGVFeature> features = packedFeatures.getFeatures();
+            if (features != null) {
+                getRenderer().render(features, context, inputRect, this);
+            }
+        }
+    }
+
+
+    @Override
+    public void setDataRange(DataRange axisDefinition) {
+        // Explicitly setting a data range turns off auto-scale
+        super.setDataRange(axisDefinition);
+    }
+
+
+    public void renderNONONO(RenderContext context, Rectangle rect) {
+
+        //todo: add preference specifically for splice junctions
+        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float minVisibleScale = (maxRange * 1000) / 700;
+
+        if (context.getScale() > minVisibleScale)
+            return;
+
+        AlignmentInterval interval = null;
+        if (dataManager != null) {
+            interval = dataManager.getLoadedInterval(context);
+        }
+
+
+        if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
+                (int) context.getEndLocation())) {
+
+            Map<Integer, Map<Integer, SpliceJunction>> posStartEndJunctionsMap =
+                    new HashMap<Integer, Map<Integer, SpliceJunction>>();
+            Map<Integer, Map<Integer, SpliceJunction>> negStartEndJunctionsMap =
+                    new HashMap<Integer, Map<Integer, SpliceJunction>>();
+
+
+
+            List<AlignmentInterval.Row> alignmentRows = interval.getAlignmentRows();
+
+            for (AlignmentInterval.Row row : alignmentRows)
+            {
+                //todo: is this dangerous?  Might something else depend on this not being reset?
+                row.resetIdx();
+
+                while (row.hasNext())
+                {
+                    Alignment alignment = row.nextAlignment();
+
+
+
+                    Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
+                            alignment.isNegativeStrand() ? negStartEndJunctionsMap : posStartEndJunctionsMap;
+                    AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+                    if (blocks.length < 2)
+                        continue;
+                    int prevBlockStart = -1;
+                    int prevBlockEnd = -1;
+                    for (AlignmentBlock block : blocks)
+                    {
+                        int blockEnd = block.getEnd();
+                        int blockStart = block.getStart();
+                        if (prevBlockEnd != -1)
+                        {
+                            Map<Integer, SpliceJunction> endJunctionsMap =
+                                    startEndJunctionsMapThisStrand.get(prevBlockEnd);
+                            if (endJunctionsMap == null)
+                            {
+                                endJunctionsMap = new HashMap<Integer, SpliceJunction>();
+                                startEndJunctionsMapThisStrand.put(prevBlockEnd, endJunctionsMap);
+                            }
+                            SpliceJunction junction = endJunctionsMap.get(blockStart);
+                            if (junction == null)
+                            {
+                                junction = new SpliceJunction(prevBlockEnd, blockStart);
+                                endJunctionsMap.put(blockStart, junction);
+                            }
+                            junction.addRead(prevBlockStart, blockEnd);
+                        }
+                        prevBlockStart = blockStart;
+                        prevBlockEnd = blockEnd;
+                    }
+                }
+            }
+
+            List<IGVFeature> spliceJunctionFeatures = new ArrayList<IGVFeature>();
+            //Build splice junction features for neg, then pos strand
+            for (boolean isNeg : new boolean[] {true, false})
+            {
+                Map<Integer, Map<Integer, SpliceJunction>> startEndJunctionsMapThisStrand =
+                        isNeg ? negStartEndJunctionsMap : posStartEndJunctionsMap;
+
+                //note: this is designed to put the features in order.  But technically it won't -- they'll
+                //be in order by junction start, which isn't the start of the feature because it doesn't
+                //take into account flanking reads.  No problem for this renderer
+                for (int junctionStart : startEndJunctionsMapThisStrand.keySet())
+                {
+                    Map<Integer, SpliceJunction> endJunctionMap = startEndJunctionsMapThisStrand.get(junctionStart);
+                    for (int junctionEnd : endJunctionMap.keySet())
+                    {
+                        SpliceJunction junction = endJunctionMap.get(junctionEnd);
+                        BasicFeature feature = new BasicFeature(context.getChr(),
+                                junction.flankingStart, junction.flankingEnd);
+                        feature.setStrand(isNeg ? Strand.NEGATIVE : Strand.POSITIVE);
+                        feature.setScore(junction.depth);
+                        feature.addExon(new Exon(context.getChr(),
+                                junction.flankingStart, junction.start,
+                                isNeg ? Strand.NEGATIVE : Strand.POSITIVE
+                        ));
+                        feature.addExon(new Exon(context.getChr(),
+                                junction.end, junction.flankingEnd,
+                                isNeg ? Strand.NEGATIVE : Strand.POSITIVE
+                        ));
+                        spliceJunctionFeatures.add(feature);
+                    }
+                }
+            }
+
+            Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>()
+            {
+                public int compare(IGVFeature o1, IGVFeature o2) {
+                    return o1.getStart() - o2.getStart();
+                }
+            });
+            spliceJunctionRenderer.render(spliceJunctionFeatures, context, rect, this);
+        }
+
     }
 
 

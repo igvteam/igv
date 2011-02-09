@@ -388,6 +388,10 @@ public class AlignmentDataManager {
         return loadedIntervalMap.values();
     }
 
+    public boolean isLoading() {
+        return isLoading;
+    }
+
     /**
      * An alignment iterator that iterates over packed rows.  Used for
      * "repacking".   Using the iterator avoids the need to copy alignments
