@@ -35,11 +35,11 @@ import java.util.List;
 
 /**
  * Renderer for splice junctions. Draws a filled-in arc for each junction, with the width of the
- * arc representing the depth of coverage
+ * arc representing the depth of coverage. If coverage information is present for the flanking
+ * regions, draws that, too; otherwise indicates flanking regions with rectangles
  *
  * @author dhmay
  */
-
 public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     private static Logger log = Logger.getLogger(SpliceJunctionRenderer.class);
@@ -204,6 +204,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             for (int j=flankingRegionArrayPixelMinIndex; j<=flankingRegionArrayPixelMaxIndex; j++)
                 meanDepthThisPixel += regionDepthArray[j];
             meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex-flankingRegionArrayPixelMinIndex+1);
+            meanDepthThisPixel = Math.min(MAX_DEPTH, meanDepthThisPixel);
             int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / MAX_DEPTH, 2);
             g2D.fillRect(pixelStart+i,
                     (int)trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),

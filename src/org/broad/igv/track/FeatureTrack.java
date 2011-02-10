@@ -132,7 +132,7 @@ public class FeatureTrack extends AbstractTrack {
     @Override
     public int getHeight() {
 
-        if (false == isVisible()) {
+        if (!isVisible()) {
             return 0;
         }
         return super.getHeight() * Math.max(1, getNumberOfFeatureLevels());
@@ -142,7 +142,10 @@ public class FeatureTrack extends AbstractTrack {
         if (getDisplayMode() == DisplayMode.EXPANDED && packedFeaturesMap.size() > 0) {
             int n = 0;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
-                n += pf.getRowCount();
+                //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
+                //it intermittently.  Food for future thought
+                if (pf != null)
+                    n += pf.getRowCount();
             }
             return n;
         }

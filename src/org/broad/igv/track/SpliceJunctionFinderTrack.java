@@ -38,13 +38,13 @@ import java.util.List;
 
 /**
  * @author dhmay
+ * Finds splice junctions in real time and renders them as Features
  */
 public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
     AlignmentDataManager dataManager;
-    SpliceJunctionRenderer spliceJunctionRenderer;
     PreferenceManager prefs;
     RenderContext context;
 
@@ -57,10 +57,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         prefs = PreferenceManager.getInstance();
     }
 
-    public void setDataManager(AlignmentDataManager dataManager) {
-        this.dataManager = dataManager;
-    }
-
+    /**
+     * Uses the datamanager to build SpliceJunctionFeatures for the alignments in a given range
+     */
     protected class SpliceJunctionFinderFeatureSource implements FeatureSource {
 
         public SpliceJunctionFinderFeatureSource()
@@ -76,41 +75,25 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 //This method is called in a Runnable in its own thread, so we can enter a long while loop here
-                //and make sure the features get loaded
-//                while (interval == null)
-//                {
-                    interval = dataManager.getLoadedInterval(context);
-                    while (dataManager.isLoading())
-                        try {
-
-                            Thread.sleep(50);
-                        }
-                        catch (InterruptedException e) {}
-                    interval = dataManager.getLoadedInterval(context);
-//                }
-                //sometimes, interval does not contain the requested interval.  In that case, we display no features.
-                //I don't understand this.  Maybe dataManager is getting multiple requests with different extents?
-
-//if (!interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
-//                    (int) context.getEndLocation()))
-//{
-//    RenderContext newContext = context;
-//    new StringBuilder(oldContext + "" + newContext);
-//}
+                //and make sure the features get loaded, without hanging the interface
+                interval = dataManager.getLoadedInterval(context);
+                while (dataManager.isLoading())
+                    try {
+                        Thread.sleep(50);
+                    }
+                    catch (InterruptedException e) {}
+                interval = dataManager.getLoadedInterval(context);
             }
-            if (interval == null)
-                new StringBuilder();
+            //interval really shouldn't be null at this point
 
-
-            if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
-                    (int) context.getEndLocation())) {
-
+            if (interval != null && interval.contains(context.getGenomeId(), context.getChr(),
+                    (int) context.getOrigin(), (int) context.getEndLocation())) {
+                //we need to keep the positive and negative strand junctions separate, since
+                //they don't represent the same thing and are rendered separately
                 Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap =
                         new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
                 Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap =
                         new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
-
-
 
                 List<AlignmentInterval.Row> alignmentRows = interval.getAlignmentRows();
 
@@ -121,20 +104,24 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
                     while (row.hasNext())
                     {
+                        //Any alignment with 2 or more blocks is considered to be a splice junction
                         Alignment alignment = row.nextAlignment();
+                        AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+                        if (blocks.length < 2)
+                            continue;
 
-                        boolean isNegativeStrand = alignment.isNegativeStrand();
+                        //there may be other ways in which this is indicated. May have to code for them later
+                        boolean isNegativeStrand = false;
                         Object strandAttr = alignment.getAttribute("XS");
                         if (strandAttr != null)
                             isNegativeStrand = strandAttr.toString().charAt(0) == '-';
 
                         Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
                                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
-                        AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                        if (blocks.length < 2)
-                            continue;
+
                         int prevBlockStart = -1;
                         int prevBlockEnd = -1;
+                        //for each pair of blocks, create or add evidence to a splice junction
                         for (AlignmentBlock block : blocks)
                         {
                             int blockEnd = block.getEnd();
@@ -164,21 +151,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                     }
                 }
 
+                //Sort by increasing beginning of start flanking region, as required by the renderer
                 Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>()
                 {
                     public int compare(IGVFeature o1, IGVFeature o2) {
                         return o1.getStart() - o2.getStart();
                     }
                 });
-//  if (spliceJunctionFeatures.isEmpty())
-//      new StringBuilder("");
             }
-            else
-            {
-//                new StringBuilder("");
-            }
-//         if (spliceJunctionFeatures.isEmpty())
-//      new StringBuilder("").toString();
             return spliceJunctionFeatures.iterator();
 
         }
@@ -201,7 +181,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
     /**
-     * Relies on context
+     * Determine whether we should show the features. Relies on context
      * @return
      */
     protected boolean shouldShowFeatures()  {
@@ -215,10 +195,12 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
 
-    
 
-        // Render features in the given input rectangle.
-
+    /**
+     * Render features in the given input rectangle.
+     * @param context
+     * @param inputRect
+     */
     protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
         if (featuresLoading) {
@@ -252,6 +234,13 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
        renderFeatureImpl(context, inputRect, packedFeatures);
     }
 
+    /**
+     * Render the track decorations and tell the renderer to render the features if appropriate
+     * todo: make the horizontal center line appear even if not rendering features
+     * @param context
+     * @param inputRect
+     * @param packedFeatures
+     */
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
         //todo: add preference specifically for splice junctions
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
@@ -299,8 +288,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         // Explicitly setting a data range turns off auto-scale
         super.setDataRange(axisDefinition);
     }
-
-
 
 
     public boolean isLogNormalized() {

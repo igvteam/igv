@@ -19,7 +19,6 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.WindowFunction;
 
 
@@ -27,12 +26,15 @@ import org.broad.igv.track.WindowFunction;
  * A feature class for splice junctions, with depth information for flanking regions if available.
  *
  * The interpretation of 'start' and 'end' for these features is the start and end of the flanking regions.
+ * This is a bit counterintuitive, but it's required for popup text to display correctly in the feature track
  *
  * @author dhmay
  */
 public class SpliceJunctionFeature extends BasicFeature {
+    //depth of coverage for the splice junction
     protected int junctionDepth = 0;
 
+    //start and end locations of the junction
     protected int junctionStart = 0;
     protected int junctionEnd = 0;
 
@@ -57,6 +59,14 @@ public class SpliceJunctionFeature extends BasicFeature {
         this.junctionEnd = junctionEnd;
     }
 
+    /**
+     * "Adds a read" to the junction. We don't actually track all the reads associated with a junction
+     * (though that might be interesting, in the future), but we track depth of coverage information. By
+     * adding all the reads one by one, we can build up the depth of coverage map for the flanking regions
+     * and the junction itself.
+     * @param readStart
+     * @param readEnd
+     */
     public void addRead(int readStart, int readEnd) {
         junctionDepth++;
 
