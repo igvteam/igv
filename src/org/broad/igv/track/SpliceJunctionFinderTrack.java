@@ -22,6 +22,7 @@
  */
 package org.broad.igv.track;
 
+import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
@@ -31,7 +32,10 @@ import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -47,6 +51,10 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     AlignmentDataManager dataManager;
     PreferenceManager prefs;
     RenderContext context;
+
+    protected int minReadFlankingWidth = 0;
+    protected int minJunctionCoverage = 1;
+
 
     public SpliceJunctionFinderTrack(String id, String name, AlignmentDataManager dataManager) {
         super(id, name);
@@ -67,7 +75,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         }
 
         public Iterator getFeatures(String chr, int start, int end) throws IOException {
-            List<IGVFeature> spliceJunctionFeatures = new ArrayList<IGVFeature>();
+            List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
 
             if (!shouldShowFeatures())
                 return null;
@@ -77,12 +85,15 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 //This method is called in a Runnable in its own thread, so we can enter a long while loop here
                 //and make sure the features get loaded, without hanging the interface
                 interval = dataManager.getLoadedInterval(context);
-                while (dataManager.isLoading())
-                    try {
-                        Thread.sleep(50);
-                    }
-                    catch (InterruptedException e) {}
-                interval = dataManager.getLoadedInterval(context);
+                if (dataManager.isLoading())
+                {
+                    while (dataManager.isLoading())
+                        try {
+                            Thread.sleep(50);
+                        }
+                        catch (InterruptedException e) {}
+                    interval = dataManager.getLoadedInterval(context);
+                }
             }
             //interval really shouldn't be null at this point
 
@@ -119,36 +130,52 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                         Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
                                 isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
 
-                        int prevBlockStart = -1;
-                        int prevBlockEnd = -1;
+                        int flankingStart = -1;
+                        int junctionStart = -1;
                         //for each pair of blocks, create or add evidence to a splice junction
                         for (AlignmentBlock block : blocks)
                         {
-                            int blockEnd = block.getEnd();
-                            int blockStart = block.getStart();
-                            if (prevBlockEnd != -1)
+                            int flankingEnd = block.getEnd();
+                            int junctionEnd = block.getStart();
+                            if (junctionStart != -1)
                             {
-                                Map<Integer, SpliceJunctionFeature> endJunctionsMap =
-                                        startEndJunctionsMapThisStrand.get(prevBlockEnd);
-                                if (endJunctionsMap == null)
-                                {
-                                    endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
-                                    startEndJunctionsMapThisStrand.put(prevBlockEnd, endJunctionsMap);
+                                //only proceed if the flanking regions are both bigger than the minimum
+                                if (minReadFlankingWidth == 0 ||
+                                        ((junctionStart - flankingStart >= minReadFlankingWidth) &&
+                                        (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
+                                    Map<Integer, SpliceJunctionFeature> endJunctionsMap =
+                                            startEndJunctionsMapThisStrand.get(junctionStart);
+                                    if (endJunctionsMap == null)
+                                    {
+                                        endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
+                                        startEndJunctionsMapThisStrand.put(junctionStart, endJunctionsMap);
+                                    }
+                                    SpliceJunctionFeature junction = endJunctionsMap.get(junctionEnd);
+                                    if (junction == null)
+                                    {
+                                        junction = new SpliceJunctionFeature(chr, junctionStart, junctionEnd,
+                                                isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
+                                        endJunctionsMap.put(junctionEnd, junction);
+                                        spliceJunctionFeatures.add(junction);
+                                    }
+                                    junction.addRead(flankingStart, flankingEnd);
                                 }
-                                SpliceJunctionFeature junction = endJunctionsMap.get(blockStart);
-                                if (junction == null)
-                                {
-                                    junction = new SpliceJunctionFeature(chr, prevBlockEnd, blockStart,
-                                            isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
-                                    endJunctionsMap.put(blockStart, junction);
-                                    spliceJunctionFeatures.add(junction);
-                                }
-                                junction.addRead(prevBlockStart, blockEnd);
                             }
-                            prevBlockStart = blockStart;
-                            prevBlockEnd = blockEnd;
+                            flankingStart = junctionEnd;
+                            junctionStart = flankingEnd;
                         }
                     }
+                }
+
+                //get rid of any features without enough coverage
+                if (minJunctionCoverage > 1)
+                {
+                    List<SpliceJunctionFeature> coveredFeatures =
+                            new ArrayList<SpliceJunctionFeature>(spliceJunctionFeatures.size());
+                    for (SpliceJunctionFeature feature : spliceJunctionFeatures)
+                        if (feature.getJunctionDepth() >= minJunctionCoverage)
+                            coveredFeatures.add(feature);
+                    spliceJunctionFeatures = coveredFeatures;
                 }
 
                 //Sort by increasing beginning of start flanking region, as required by the renderer
@@ -280,6 +307,104 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 getRenderer().render(features, context, inputRect, this);
             }
         }
+    }
+
+    /**
+     * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
+     * If either the start OR the end flanking region is less than this, the read is not used
+     * @param menu
+     * @return
+     */
+    public JMenuItem addFlankingWidthTresholdItem(JPopupMenu menu) {
+        JMenuItem flankingWidthItem = new JMenuItem("Set minimum read flanking width...");
+
+        flankingWidthItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                String value = JOptionPane.showInputDialog("Minimum start and end flanking region width: ",
+                        Float.valueOf(minReadFlankingWidth));
+                if (value == null) {
+                    return;
+                }
+                try {
+                    int tmp = Integer.parseInt(value);
+                    minReadFlankingWidth = tmp;
+                    IGVMainFrame.getInstance().repaintDataPanels();
+                }
+                catch (Exception exc) {
+                    //log
+                }
+
+            }
+        });
+        menu.add(flankingWidthItem);
+
+        return flankingWidthItem;
+    }
+
+
+    /**
+     * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
+     * If either the start OR the end flanking region is less than this, the read is not used
+     * @param menu
+     * @return
+     */
+    public JMenuItem addJunctionCoverageTresholdItem(JPopupMenu menu) {
+        JMenuItem junctionDepthItem = new JMenuItem("Set minimum junction coverage...");
+
+        junctionDepthItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                String value = JOptionPane.showInputDialog("Minimum coverage depth for displayed junctions: ",
+                        Float.valueOf(minJunctionCoverage));
+                if (value == null) {
+                    return;
+                }
+                try {
+                    int tmp = Integer.parseInt(value);
+                    minJunctionCoverage = tmp;
+                    IGVMainFrame.getInstance().repaintDataPanels();
+                }
+                catch (Exception exc) {
+                    //log
+                }
+
+            }
+        });
+        menu.add(junctionDepthItem);
+
+        return junctionDepthItem;
+    }
+
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
+    @Override
+    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+
+        JPopupMenu popupMenu = new JidePopupMenu();
+
+        JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
+
+        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
+        popupTitle.setFont(newFont);
+        if (popupTitle != null) {
+            popupMenu.add(popupTitle);
+        }
+
+        popupMenu.addSeparator();
+
+        ArrayList<Track> tmp = new ArrayList();
+        tmp.add(this);
+        TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
+        popupMenu.addSeparator();
+        addFlankingWidthTresholdItem(popupMenu);
+        addJunctionCoverageTresholdItem(popupMenu);
+        return popupMenu;
     }
 
 
