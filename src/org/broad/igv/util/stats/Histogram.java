@@ -27,27 +27,28 @@ import java.io.PrintWriter;
  */
 public class Histogram {
 
-    private int n;
+    private int maxBin;
     private final int[] freq;   // freq[i] = # occurences of value i
-    private double max;            // max frequency of any value
+    private int n;  // # of data points
 
     // Create a new histogram.
-    public Histogram(int n) {
-        this.n = n;
-        freq = new int[n + 1];
+    public Histogram(int maxFreq) {
+        this.maxBin = maxFreq;
+        freq = new int[maxFreq + 1];
     }
 
     // Add one occurrence of the value i.
     public void addDataPoint(int i) {
 
-        int idx = Math.min(n, i);
+        int idx = Math.min(maxBin, i);
         freq[idx]++;
-        if (freq[idx] > max) max = freq[i]; 
+        n++;
     }
 
     public void print(PrintWriter pw) {
-        for(int i=0; i<n; i++) {
-            pw.println(i + "\t" + freq[i]);
+        for(int i=0; i<= maxBin; i++) {
+            float frac = ((float) freq[i]) / n;
+            pw.println(i + "\t" + freq[i]); // + "\t" + frac);
         }
     }
 

@@ -24,8 +24,7 @@
 package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
@@ -35,6 +34,7 @@ import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.util.stats.Histogram;
+import org.broad.tribble.Feature;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -87,6 +87,11 @@ public class CoverageCounter {
     private Histogram coverageHistogram;
     private static final double LOG_1__1 = 0.09531018;
 
+    private String interval = null;
+
+    // TODO Sigma hack
+    List<Feature> genes;
+
 
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
@@ -110,6 +115,9 @@ public class CoverageCounter {
         if (options != null) {
             parseOptions(options);
         }
+
+        // TODO Sigma hack
+        genes = GeneManager.getGeneManager(genome.getId()).getGenesForChromosome("chr1");
     }
 
     private void parseOptions(String options) {
@@ -120,6 +128,9 @@ public class CoverageCounter {
                 if (opt.startsWith("l:")) {
                     String[] tmp = opt.split(":");
                     readGroup = tmp[1];
+                } else if (opt.startsWith("q")) {
+                    String [] tmp = opt.split("@");
+                    interval = tmp[1];
                 } else if (opt.startsWith("i")) {
                     writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize, false));
                     writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize, false));
@@ -162,7 +173,7 @@ public class CoverageCounter {
                 } else if (opt.equals("r")) {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
-                    coverageHistogram = new Histogram(1000);
+                    coverageHistogram = new Histogram(50);
                 } else {
                     System.out.println("Unknown coverage option: " + opt);
                 }
@@ -214,7 +225,12 @@ public class CoverageCounter {
 
 
             reader = SamQueryReaderFactory.getReader(alignmentFile, false);
-            iter = reader.iterator();
+            if (interval == null) {
+                iter = reader.iterator();
+            } else {
+                Locus locus = new Locus(interval);
+                iter = reader.query(locus.getChr(), locus.getStart(), locus.getEnd(), false);
+            }
 
             while (iter != null && iter.hasNext()) {
                 Alignment alignment = iter.next();
@@ -520,9 +536,26 @@ public class CoverageCounter {
                     }
 
                     if (coverageHistogram != null) {
-                        int[] baseCounts = counter.getBaseCount();
-                        for (int i = 0; i < baseCounts.length; i++) {
-                            coverageHistogram.addDataPoint(baseCounts[i]);
+
+                        List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
+                        if (transcripts != null && !transcripts.isEmpty()) {
+
+                            boolean isCoding = false;
+                            for (Feature t : transcripts) {
+                                Exon exon = ((IGVFeature) t).getExonAt(bucketStartPosition);
+                                if (exon != null && !exon.isUTR(bucketStartPosition)) {
+                                    isCoding = true;
+                                    break;
+                                }
+                            }
+
+                            if (isCoding) {
+                                int[] baseCounts = counter.getBaseCount();
+                                for (int i = 0; i < baseCounts.length; i++) {
+                                    System.out.println(bucketStartPosition + "\t" + baseCounts[i]);
+                                    coverageHistogram.addDataPoint(baseCounts[i]);
+                                }
+                            }
                         }
                     }
 
@@ -616,9 +649,9 @@ public class CoverageCounter {
         void increment(int position, byte base, byte quality) {
 
             // Qualities of 2 or less => no idea what this base is
-            if (quality <= 2) {
-                return;
-            }
+            //if (quality <= 2) {
+            //    return;
+            //}
 
             int offset = position - start;
             byte refBase = ref[offset];
