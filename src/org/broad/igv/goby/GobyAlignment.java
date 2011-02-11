@@ -20,6 +20,7 @@
 package org.broad.igv.goby;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
@@ -31,6 +32,8 @@ import org.broad.igv.track.WindowFunction;
 import com.google.protobuf.ByteString;
 
 import java.awt.*;
+
+import it.unimi.dsi.lang.MutableString;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -54,7 +57,8 @@ public class GobyAlignment implements Alignment {
     private final GobyAlignmentIterator iterator;
     private AlignmentBlock[] block = new AlignmentBlock[1];
     private AlignmentBlock[] insertionBlock;
-    private Color defaultColor = new Color(200, 200, 200);;
+    private Color defaultColor = new Color(200, 200, 200);
+
 
     /**
      * Construct the facade for an iterator and entry.
@@ -68,6 +72,7 @@ public class GobyAlignment implements Alignment {
 
         block[0] = new AlignmentBlock(entry.getPosition(), buildBases(), buildQualities());
         insertionBlock = buildInsertions();
+
     }
 
     /**
@@ -133,18 +138,32 @@ public class GobyAlignment implements Alignment {
         String referenceAlias = genome.getChromosomeAlias(reference);
         int position = entry.getPosition();
 
+        int readLength = 0;
+        if (entry.hasQueryLength()) {
+            readLength = entry.getQueryLength();
+        } else {
 
+            iterator.getQueryLength(entry.getQueryIndex());
+        }
 
         // adjust by one because Goby positions start at 1 while IGV starts at 0
         byte[] result = SequenceManager.readSequence(genomeId, referenceAlias, position, position + entry.getTargetAlignedLength());
         final int length = result.length;
 
         for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
+            final String from = var.getFrom();
             final String to = var.getTo();
             for (int j = 0; j < to.length(); j++) {
 
                 final int offset = var.getPosition() + j - 1;
                 if (offset >= length) break;
+                if (result[offset] != from.charAt(j)) {
+
+                    System.out.printf("Detected difference between IGV reference sequence and alignment reference on sequence %s at position %d (reporting will stop after 10 such differences are reported.)%n", getChr(),
+                            j + entry.getPosition());
+                    System.out.flush();
+
+                }
                 result[offset] = (byte) to.charAt(j);
             }
         }
@@ -172,6 +191,16 @@ public class GobyAlignment implements Alignment {
     public String getChromosome() {
         //LOG.info("getChromosome");
         return "chr" + iterator.indexToReferenceId.getId(entry.getTargetIndex()).toString();
+
+
+    }
+
+    /**
+     * Get the reference id from the iterator, prepend "chr".
+     */
+    public String getChromosome(int targetIndex) {
+        //LOG.info("getChromosome");
+        return "chr" + iterator.indexToReferenceId.getId(targetIndex).toString();
 
 
     }
@@ -205,42 +234,64 @@ public class GobyAlignment implements Alignment {
 
     public char[] getGapTypes() {
         //LOG.info("getGapTypes");
-        return new char[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return new char[0];
     }
 
     public String getCigarString() {
         //LOG.info("getCigarString");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public int getInferredInsertSize() {
-        //LOG.info("getInferredInsertSize");
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        if (entry.hasInsertSize()) {
+            return entry.getInsertSize();
+        } else return 0;
     }
 
     public int getMappingQuality() {
-        //LOG.info("getMappingQuality");
-        return 255;  //To change body of implemented methods use File | Settings | File Templates.
+        if (entry.hasMappingQuality()) {
+            return entry.getMappingQuality();
+        } else {
+
+            return 255;
+        }
     }
 
     public ReadMate getMate() {
-        //LOG.info("getMate");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (entry.hasPairAlignmentLink()) {
+            Alignments.RelatedAlignmentEntry link = entry.getPairAlignmentLink();
+            String mateChr = getChromosome(link.getTargetIndex());
+            int mateStart = entry.getPosition();
+            boolean mateNegativeStrand = EntryFlagHelper.isMateReverseStrand(entry);
+
+            boolean isReadUnmappedFlag = EntryFlagHelper.isReadUnmapped(entry);
+            ReadMate mate = new ReadMate(mateChr, mateStart, mateNegativeStrand, isReadUnmappedFlag);
+            return mate;
+        } else {
+
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
     }
 
     public boolean isProperPair() {
-        //LOG.info("isProperPair");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (entry.hasPairFlags()) {
+
+            return EntryFlagHelper.isProperlyPaired(entry);
+
+        } else return false;
     }
 
     public boolean isMapped() {
-        //LOG.info("isMapped");
+
         return true;
     }
 
     public boolean isPaired() {
-        //LOG.info("isPaired");
-        return false;
+        if (entry.hasPairFlags()) {
+
+            return EntryFlagHelper.isPaired(entry);
+
+        } else return false;
     }
 
     public boolean isNegativeStrand() {
@@ -260,60 +311,100 @@ public class GobyAlignment implements Alignment {
 
     public byte getBase(double position) {
         //LOG.info("getBase");
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public byte getPhred(double position) {
-        //LOG.info("getPhred");
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
+            for (int i = 0; i < var.getTo().length(); i++) {
+                if (var.getPosition() + i == position) {
+                    return var.getToQuality().byteAt(i);
+                }
+            }
+        }
+        // Goby only stores quality scores for variations at this point, so if we have not found the
+        // position in stored sequence variations, we return zero.
+        return 0;
     }
 
     public String getSample() {
         //LOG.info("getSample");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public String getReadGroup() {
         //LOG.info("getReadGroup");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public Object getAttribute(String key) {
         //LOG.info("getAttribute");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public Strand getFragmentStrand(int read) {
         //LOG.info("getFragmentStrand");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public void setMateSequence(String sequence) {
         //LOG.info("setMateSequence");
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     public String getPairOrientation() {
         //LOG.info("getPairOrientation");
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        String pairOrientation = "";
+        if (EntryFlagHelper.isPaired(entry) &&
+
+                !EntryFlagHelper.isMateUnmapped(entry) &&
+                entry.getTargetIndex() == entry.getPairAlignmentLink().getTargetIndex()) {
+
+            char s1 = EntryFlagHelper.isReadReverseStrand(entry) ? 'R' : 'F';
+            char s2 = EntryFlagHelper.isMateReverseStrand(entry) ? 'R' : 'F';
+            char o1 = ' ';
+            char o2 = ' ';
+            char[] tmp = new char[4];
+            if (EntryFlagHelper.isFirstInPair(entry)) {
+                o1 = '1';
+                o2 = '2';
+            } else if (EntryFlagHelper.isSecondInPair(entry)) {
+                o1 = '2';
+                o2 = '1';
+            }
+            if (getInferredInsertSize() > 0) {
+                tmp[0] = s1;
+                tmp[1] = o1;
+                tmp[2] = s2;
+                tmp[3] = o2;
+
+            } else {
+                tmp[2] = s1;
+                tmp[3] = o1;
+                tmp[0] = s2;
+                tmp[1] = o2;
+            }
+            pairOrientation = new String(tmp);
+        }
+        return pairOrientation;
     }
 
     public boolean isSmallInsert() {
         //LOG.info("isSmallInsert");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
 
     /**
      * Return true if this read failed vendor quality checks
-      */    
+     */
     public boolean isVendorFailedRead() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     /**
      * Return the default color with which to render this alignment
-     * 
+     *
      * @return
      */
     public Color getDefaultColor() {
@@ -353,11 +444,23 @@ public class GobyAlignment implements Alignment {
 
     public String getValueString(double position, WindowFunction windowFunction) {
         //  //LOG.info("getValueString");
-        String str = entry.toString();
-        if (str != null) {
+        MutableString buffer = new MutableString();
 
-            str = str.replace("\n", "<br>");
+        buffer.append(entry.toString());
+        buffer.replace("\n", "<br>");
+
+        if (this.isPaired()) {
+            buffer.append("----------------------" + "<br>");
+            buffer.append("Pair start = " + getMate().positionString() + "<br>");
+            buffer.append("Pair is mapped = " + (getMate().isMapped() ? "yes" : "no") + "<br>");
+            //buf.append("Pair is proper = " + (getProperPairFlag() ? "yes" : "no") + "<br>");
+            if (getChr().equals(getMate().getChr())) {
+                buffer.append("Insert size = " + getInferredInsertSize() + "<br>");
+            }
+            if (getPairOrientation().length() > 0) {
+                buffer.append("Pair orientation = " + getPairOrientation() + "<br>");
+            }
         }
-        return str;
+        return buffer.toString();
     }
 }

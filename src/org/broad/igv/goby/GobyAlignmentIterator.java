@@ -55,6 +55,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
 
     // We need to record the sequence (chr), its redundant with the index but I'm not sure how to do the reverse lookup (JTR)
     private String reference;
+    private int[] globalQueryLengths;
 
     /**
      * Construct an iterator over the entire alignment file.
@@ -67,6 +68,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         this.indexToReferenceId = targetIdentifiers;
         startReferencePosition = Integer.MAX_VALUE;
         previousPosition = Integer.MIN_VALUE;
+        this.globalQueryLengths = reader.getQueryLengths();
     }
 
     /**
@@ -82,13 +84,16 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     public GobyAlignmentIterator(final AlignmentReader reader, final DoubleIndexedIdentifier targetIdentifiers,
                                  int referenceIndex, String chr, int start, int end) throws IOException {
         this(reader, targetIdentifiers);
-        this.targetIndex = referenceIndex;
-        this.reference = chr;
-        this.startReferencePosition = start;
-        this.endReferencePosition = end;
-        this.previousReferenceIndex = referenceIndex;
-        //  LOG.debug(String.format("reposition %d %d", referenceIndex, start));
-        reader.reposition(referenceIndex, start);
+        if (referenceIndex != -1) {
+            this.targetIndex = referenceIndex;
+            this.reference = chr;
+            this.startReferencePosition = start;
+            this.endReferencePosition = end;
+            this.previousReferenceIndex = referenceIndex;
+            //  LOG.debug(String.format("reposition %d %d", referenceIndex, start));
+
+            reader.reposition(referenceIndex, start);
+        }
 
     }
 
@@ -174,4 +179,15 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         return reference;
     }
 
+    /**
+     * If query lengths are stored globally, return the length of this query/read.
+     *
+     * @param queryIndex Index of the read/query.
+     * @return length if globally stored, or zero.
+     */
+    public int getQueryLength(int queryIndex) {
+        if (this.globalQueryLengths != null && queryIndex <= this.globalQueryLengths.length) {
+            return reader.getQueryLength(queryIndex);
+        } else return 0;
+    }
 }
