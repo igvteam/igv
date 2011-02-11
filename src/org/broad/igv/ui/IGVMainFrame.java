@@ -68,6 +68,7 @@ import static org.broad.igv.ui.util.SnapshotUtilities.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 
 import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
+import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 
 import org.broad.igv.util.*;
 
@@ -370,6 +371,9 @@ public class IGVMainFrame extends javax.swing.JFrame {
         // Create Track Chooser
         //  Note --  why are these reused ? (JTR)
         trackFileChooser = new FileChooserDialog(this, true);
+        //trackFileChooser.addChoosableFileFilter(new GobyFileFilter());
+        trackFileChooser.addChoosableFileFilter(new AlignmentFileFilter());
+
     }
 
     public FileChooserDialog getTrackFileChooser() {
