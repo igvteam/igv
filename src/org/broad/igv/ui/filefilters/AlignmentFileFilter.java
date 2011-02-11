@@ -6,6 +6,10 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
 /**
+ * Filters filenames to only show alignment files. This is useful when users store a
+ * number of Goby alignments in the same directory: only one file for each distinct alignment will be
+ * available for selection.
+ *
  * @author Fabien Campagne
  *         Date: Feb 11, 2011
  *         Time: 11:47:28 AM
