@@ -87,7 +87,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
 
         String name = getFastaFileName();
         if (name != null && !name.trim().equals("")) {
-            return "/" + getGenomeId() ;
+            return getGenomeId() ;
         } else {
             return null;
         }

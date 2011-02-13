@@ -60,7 +60,7 @@ public class GenomeImporter {
      * @param genomeFileName
      * @param genomeId                       Id of the genome.
      * @param genomeDisplayName              The genome name that is user-friendly.
-     * @param relativeSequenceLocation       The location of sequence data.
+     * @param sequenceLocation       The location of sequence data.
      * @param sequenceInputFile
      * @param refFlatFile                    RefFlat file.
      * @param cytobandFile                   Cytoband file.
@@ -72,7 +72,7 @@ public class GenomeImporter {
                                     String genomeFileName,
                                     String genomeId,
                                     String genomeDisplayName,
-                                    String relativeSequenceLocation,
+                                    String sequenceLocation,
                                     File sequenceInputFile,
                                     File refFlatFile,
                                     File cytobandFile,
@@ -104,7 +104,7 @@ public class GenomeImporter {
             if (sequenceInputFile != null) {
                 LinkedHashMap<String, Integer> chromSizes = new LinkedHashMap();
 
-                File sequenceOutputFolder = new File(archiveOutputLocation, relativeSequenceLocation);
+                File sequenceOutputFolder = new File(archiveOutputLocation, sequenceLocation);
                 if (!sequenceOutputFolder.exists()) {
                     sequenceOutputFolder.mkdir();
                 }
@@ -173,11 +173,11 @@ public class GenomeImporter {
             }
 
             // Create Property File for genome archive
-            if (sequenceOutputLocationOverride != null) {
-                relativeSequenceLocation = sequenceOutputLocationOverride;
+            if (sequenceOutputLocationOverride != null && sequenceOutputLocationOverride.length() > 0) {
+                sequenceLocation = sequenceOutputLocationOverride;
             }
             File propertyFile = createGenomePropertyFile(genomeId, genomeDisplayName,
-                    relativeSequenceLocation, refFlatFile, cytobandFile,
+                    sequenceLocation, refFlatFile, cytobandFile,
                     chrAliasFile, chromsSorted, altererdChrFilenames);
 
             archive = new File(archiveOutputLocation, genomeFileName);
