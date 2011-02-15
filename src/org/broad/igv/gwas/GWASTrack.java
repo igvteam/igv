@@ -1,5 +1,6 @@
 package org.broad.igv.gwas;
 
+import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
@@ -7,22 +8,26 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.track.AbstractTrack;
-import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.WindowFunction;
+import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 
 //import org.broad.igv.ui.IGVModel;
 
@@ -34,6 +39,16 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class GWASTrack extends AbstractTrack {
+
+
+    private int minPointSize;
+    private int maxPointSize;
+    private boolean useChrColors;
+    private boolean singleColor;
+    private boolean alternatingColors;
+    private Color primaryColor;
+    private Color secondaryColor;
+
 
     private GWASData gData;
     private static final Logger log = Logger.getLogger(GWASTrack.class);
@@ -47,6 +62,7 @@ public class GWASTrack extends AbstractTrack {
     private static final DecimalFormat formatter = new DecimalFormat();
     //private String displayName = "GWAS Track";
     private String displayName = null;
+    private boolean drawYAxis = true;
 
 
     String getDisplayName() {
@@ -73,15 +89,27 @@ public class GWASTrack extends AbstractTrack {
         super(locator, id, name);
 
         PreferenceManager prefs = PreferenceManager.getInstance();
-        super.setHeight(prefs.getAsInt(PreferenceManager.GWAS_TRACK_HEIGHT));
-
-        this.gData = gData;
 
         // Set range from 0 to highest value rounded to greater integer
         int maxValue = (int) Math.ceil(gData.getMaxValue());
         super.setDataRange(new DataRange(0, (maxValue / 2), maxValue));
 
+
+        // Get defaulta values
+        super.setHeight(prefs.getAsInt(PreferenceManager.GWAS_TRACK_HEIGHT));
+
+        this.minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
+        this.maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
+
+        this.primaryColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+        this.secondaryColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
+        this.singleColor = prefs.getAsBoolean(PreferenceManager.GWAS_SINGLE_COLOR);
+        this.alternatingColors = prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS);
+        this.useChrColors = prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS);
+
+        this.gData = gData;
         this.parser = parser;
+
 
     }
 
@@ -95,11 +123,9 @@ public class GWASTrack extends AbstractTrack {
 
         //long startTime = System.nanoTime();
 
-        // Draw the legend axis
-        this.renderAxis(context, arect);
 
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        PreferenceManager prefs = PreferenceManager.getInstance();
+        //PreferenceManager prefs = PreferenceManager.getInstance();
         this.trackMinY = arect.getMinY();
         Rectangle adjustedRect = calculateDrawingRect(arect);
         double adjustedRectMaxX = adjustedRect.getMaxX();
@@ -137,14 +163,16 @@ public class GWASTrack extends AbstractTrack {
         }
         double dx = Math.ceil(1 / locScale) + 1;
         double rangeMaxValue = Math.ceil(gData.getMaxValue());
+        /*
         int minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
         int maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
         if (minPointSize > maxPointSize)
             minPointSize = maxPointSize;
+        */
 
         double pointSizeScale = rangeMaxValue / maxPointSize;
 
-        Color drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+        Color drawColor = this.primaryColor;
         Object[] chrs = this.gData.getLocations().keySet().toArray();
 
         int xMinPointSize = (int) (1 / locScale);
@@ -158,19 +186,19 @@ public class GWASTrack extends AbstractTrack {
                 // Choose a color for the chromosome
 
                 // Use specific color for each chromosome
-                if (prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS))
+                if (this.useChrColors)
                     drawColor = ChromosomeColors.getColor(chr);
 
                     // Use two alternating colors for chromosomes
-                else if (prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS)) {
+                else if (this.alternatingColors) {
                     int chrCounter = 0;
                     while (chrCounter < chrs.length && !chrs[chrCounter].toString().equals(chr))
                         chrCounter++;
 
                     if (chrCounter % 2 == 0)
-                        drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
+                        drawColor = this.secondaryColor;
                     else
-                        drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+                        drawColor = this.primaryColor;
 
                 }
 
@@ -267,17 +295,21 @@ public class GWASTrack extends AbstractTrack {
                 }
             }
 
+        // Draw the legend axis
+        this.renderAxis(context, arect);
+
         //log.info("rendering time: " + ((System.nanoTime() - startTime) / 1000000));
     }
 
 
     void renderAxis(RenderContext context, Rectangle arect) {
 
-
         Rectangle drawingRect = calculateDrawingRect(arect);
 
         Color labelColor = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_COLOR_TRACK_NAME) ? getColor() : Color.black;
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
+        //Graphics2D labelGraphics = context.getGraphic2DForColor(Color.black);
+
         labelGraphics.setFont(FontManager.getScalableFont(8));
 
         String tmpDisplayName = this.getDisplayName();
@@ -290,7 +322,12 @@ public class GWASTrack extends AbstractTrack {
             }
         }
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
+        //if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
+        if (this.drawYAxis) {
+            labelGraphics = context.getGraphic2DForColor(Color.black);
+            labelGraphics.setFont(FontManager.getScalableFont(11));
+
+
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);
             DataRange axisDefinition = getDataRange();
             float maxValue = axisDefinition.getMaximum();
@@ -473,6 +510,271 @@ public class GWASTrack extends AbstractTrack {
             textValue += getDescription(chr, index);
 
         return textValue;
+    }
+
+    /**
+     * Override to return a specialized popup menu
+     *
+     * @return
+     */
+    @Override
+    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+
+        JPopupMenu popupMenu = new JidePopupMenu();
+
+        JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
+
+        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
+        popupTitle.setFont(newFont);
+        popupMenu.add(popupTitle);
+
+        Collection<Track> tmpTracks = new ArrayList();
+        tmpTracks.add(this);
+
+
+        popupMenu.addSeparator();
+
+        //ArrayList<Track> tmp = new ArrayList();
+        //tmp.add(this);
+
+
+        popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
+        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmpTracks));
+        popupMenu.addSeparator();
+
+        popupMenu.add(TrackMenuUtils.getDataRangeItem(tmpTracks));
+        popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
+        popupMenu.addSeparator();
+
+        popupMenu.add(addChrColorItem(popupMenu));
+        popupMenu.add(addSingleColorItem(popupMenu));
+        popupMenu.add(addAlternatingColorItem(popupMenu));
+        popupMenu.add(addPrimaryColorItem(popupMenu));
+        popupMenu.add(addSecondaryColorItem(popupMenu));
+
+        popupMenu.addSeparator();
+        popupMenu.add(addMinPointSizeItem(popupMenu));
+        popupMenu.add(addMaxPointSizeItem(popupMenu));
+
+        popupMenu.addSeparator();
+
+
+        TrackMenuUtils.addZoomItems(popupMenu, FrameManager.getDefaultFrame());
+
+
+        return popupMenu;
+    }
+
+
+    public JMenuItem addChrColorItem(JPopupMenu menu) {
+        JMenuItem colorItem = new JMenuItem("Chromosome color scheme");
+
+        colorItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                singleColor = false;
+                useChrColors = true;
+                alternatingColors = false;
+                IGVMainFrame.getInstance().repaintDataPanels();
+
+            }
+        });
+        menu.add(colorItem);
+
+        return colorItem;
+    }
+
+    public JMenuItem addAlternatingColorItem(JPopupMenu menu) {
+        JMenuItem colorItem = new JMenuItem("Alternating color scheme");
+
+        colorItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                singleColor = false;
+                useChrColors = false;
+                alternatingColors = true;
+                IGVMainFrame.getInstance().repaintDataPanels();
+
+
+            }
+        });
+        menu.add(colorItem);
+
+        return colorItem;
+    }
+
+    public JMenuItem addSingleColorItem(JPopupMenu menu) {
+        JMenuItem colorItem = new JMenuItem("Single color scheme");
+
+        colorItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                singleColor = true;
+                useChrColors = false;
+                alternatingColors = false;
+                IGVMainFrame.getInstance().repaintDataPanels();
+
+            }
+        });
+        menu.add(colorItem);
+
+        return colorItem;
+    }
+
+
+    public JMenuItem addPrimaryColorItem(JPopupMenu menu) {
+        JMenuItem colorItem = new JMenuItem("Set primary color...");
+
+        //final Collection<Track> tmpTracks = new ArrayList();
+        //tmpTracks.add(this);
+
+        colorItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                Color color = UIUtilities.showColorChooserDialog(
+                        "Set primary color",
+                        primaryColor);
+
+                if (color != null) {
+                    primaryColor = color;
+                }
+
+                IGVMainFrame.getInstance().repaintDataPanels();
+
+            }
+        });
+        menu.add(colorItem);
+
+        return colorItem;
+    }
+
+    public JMenuItem addSecondaryColorItem(JPopupMenu menu) {
+        JMenuItem colorItem = new JMenuItem("Set alternating color...");
+
+        //final Collection<Track> tmpTracks = new ArrayList();
+        //tmpTracks.add(this);
+
+        colorItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                Color color = UIUtilities.showColorChooserDialog(
+                        "Set alternating color",
+                        secondaryColor);
+
+                if (color != null) {
+                    secondaryColor = color;
+                }
+
+                IGVMainFrame.getInstance().repaintDataPanels();
+
+            }
+        });
+        menu.add(colorItem);
+
+        return colorItem;
+    }
+
+
+    public JMenuItem addMinPointSizeItem(JPopupMenu menu) {
+        JMenuItem menuItem = new JMenuItem("Set minimum point size...");
+
+
+        menuItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+
+                changeMinPointSizeValue();
+
+
+            }
+        });
+        menu.add(menuItem);
+
+        return menuItem;
+    }
+
+    public JMenuItem addMaxPointSizeItem(JPopupMenu menu) {
+        JMenuItem menuItem = new JMenuItem("Set maximum point size...");
+
+
+        menuItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+
+                changeMaxPointSizeValue();
+
+
+            }
+        });
+        menu.add(menuItem);
+
+        return menuItem;
+    }
+
+    private void changeMinPointSizeValue() {
+
+        int value = this.minPointSize;
+
+
+        String tmpValue = JOptionPane.showInputDialog(
+                IGVMainFrame.getInstance(), "Minimum point size in pixels (1-20):",
+                String.valueOf(value));
+
+        if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
+
+            try {
+                value = Integer.parseInt(tmpValue);
+                if (value < 1 || value > 20) {
+                    JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                            "Minimum point size must be an integer number between 1 and 20.");
+                } else {
+                    if (value > this.maxPointSize)
+                        this.maxPointSize = value;
+
+                    this.minPointSize = value;
+                    IGVMainFrame.getInstance().repaintDataPanels();
+                }
+
+            } catch (NumberFormatException numberFormatException) {
+                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                        "Point size must be an integer number.");
+            }
+        }
+    }
+
+    private void changeMaxPointSizeValue() {
+
+        int value = this.maxPointSize;
+
+
+        String tmpValue = JOptionPane.showInputDialog(
+                IGVMainFrame.getInstance(), "Maximum point size in pixels (1-20):",
+                String.valueOf(value));
+
+        if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
+
+            try {
+                value = Integer.parseInt(tmpValue);
+                if (value < 1 || value > 20) {
+                    JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                            "Maximum point size must be an integer number between 1 and 20.");
+                } else {
+                    if (value < this.minPointSize)
+                        this.minPointSize = value;
+
+                    this.maxPointSize = value;
+                    IGVMainFrame.getInstance().repaintDataPanels();
+                }
+
+            } catch (NumberFormatException numberFormatException) {
+                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                        "Point size must be an integer number.");
+            }
+        }
     }
 
     // Needed to compile
