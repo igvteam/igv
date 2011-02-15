@@ -371,8 +371,12 @@ public class IGVMainFrame extends javax.swing.JFrame {
         // Create Track Chooser
         //  Note --  why are these reused ? (JTR)
         trackFileChooser = new FileChooserDialog(this, true);
-        //trackFileChooser.addChoosableFileFilter(new GobyFileFilter());
         trackFileChooser.addChoosableFileFilter(new AlignmentFileFilter());
+
+        // This hack is ugly, but I can't see any other way to set the default file filter to "All"
+        trackFileChooser.setFileFilter(trackFileChooser.getChoosableFileFilters()[0]);
+       
+
 
     }
 

@@ -161,6 +161,12 @@ public class FileChooserDialog extends javax.swing.JDialog {
         fileChooser.removeChoosableFileFilter(filter);
     }
 
+    
+
+    public void setFileFilter(FileFilter filter) {
+        fileChooser.setFileFilter(filter);
+    }
+
     public void setMultiSelectionEnabled(boolean isEnabled) {
         fileChooser.setMultiSelectionEnabled(true);
     }

@@ -21,7 +21,8 @@ public class AlignmentFileFilter extends FileFilter {
         if (extension != null) {
 
             return extension.equalsIgnoreCase("entries") ||
-                    extension.equalsIgnoreCase("bam");
+                    extension.equalsIgnoreCase("bam") || extension.equals("sam") ||
+                    file.getName().endsWith(".sorted.txt") || extension.equals("aligned");
         } else {
             return false;
         }
@@ -29,7 +30,7 @@ public class AlignmentFileFilter extends FileFilter {
     }
 
     public String getDescription() {
-        return "All supported alignment files (*.bam, *.entries).";
+        return "All supported alignment files";
     }
 
 }
