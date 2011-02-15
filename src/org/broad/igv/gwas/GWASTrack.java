@@ -139,6 +139,9 @@ public class GWASTrack extends AbstractTrack {
         double rangeMaxValue = Math.ceil(gData.getMaxValue());
         int minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
         int maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
+        if (minPointSize > maxPointSize)
+            minPointSize = maxPointSize;
+
         double pointSizeScale = rangeMaxValue / maxPointSize;
 
         Color drawColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));

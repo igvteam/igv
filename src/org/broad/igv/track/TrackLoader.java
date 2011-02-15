@@ -194,7 +194,7 @@ public class TrackLoader {
             }
 
             // For PLINK GWAS results files
-            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc")  || typeString.endsWith(".fisher")  || typeString.endsWith(".cmh")) {
+            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc")  || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
 
             }
