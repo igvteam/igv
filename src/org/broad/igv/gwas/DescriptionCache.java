@@ -40,7 +40,13 @@ public class DescriptionCache {
         return maxSize;
     }
 
+    /**
+     * Set size of the cache in lines. Minimum size is 10.
+     * @param maxSize
+     */
     public void setMaxSize(int maxSize) {
+        if (maxSize < 10)
+            maxSize = 10;
         this.maxSize = maxSize;
     }
 
