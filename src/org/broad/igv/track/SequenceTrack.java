@@ -208,5 +208,10 @@ public class SequenceTrack extends AbstractTrack {
         IGVMainFrame.getInstance().getContentPane().repaint();
     }
 
+    // SequenceTrack does not expose its renderer
+    public Renderer getRenderer() {
+        return null;
+    }
+
 
 }

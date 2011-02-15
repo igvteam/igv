@@ -38,6 +38,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GisticTrackRenderer;
+import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -216,7 +217,7 @@ public class GisticTrack extends AbstractTrack {
      * @param rect
      */
     public void render(RenderContext context, Rectangle rect) {
-        if (getRenderer() == null) {
+        if (renderer == null) {
             log.error("Null renderer !!");
 
         } else {
@@ -440,4 +441,11 @@ public class GisticTrack extends AbstractTrack {
     public void setAltColor(Color color) {
         // Not used
     }
+
+    // GisticTrack does not expose its renderer
+    public Renderer getRenderer() {
+        return null;
+    }
+
+
 }

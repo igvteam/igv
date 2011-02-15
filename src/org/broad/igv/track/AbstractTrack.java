@@ -151,10 +151,6 @@ public abstract class AbstractTrack implements Track {
         // Ingore by default
     }
 
-    public Renderer getRenderer() {
-        return null;   // <- default, override for tracks with settable renderer
-    }
-
     public String getUrl() {
         return url;
     }
