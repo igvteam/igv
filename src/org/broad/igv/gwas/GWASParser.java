@@ -75,7 +75,8 @@ public class GWASParser {
 
         String[] headers = new String[1000];
 
-        int headersSize = ParsingUtils.splitSpaces(headerString, headers);
+        //int headersSize = ParsingUtils.splitSpaces(headerString, headers);
+        int headersSize = ParsingUtils.splitWhitespace(headerString, headers);
 
         if (headersSize < 4)
             parsingSuccessful = false;
@@ -157,9 +158,26 @@ public class GWASParser {
 
                 if (rowCounter >= searchStartRow) {
                     String[] tokens = new String[1000];
-                    ParsingUtils.splitSpaces(nextLine, tokens);
+                    //ParsingUtils.splitSpaces(nextLine, tokens);
+                    ParsingUtils.splitWhitespace(nextLine, tokens);
 
                     if (tokens.length > 1) {
+
+
+                     // Check if the p-value is NA
+                    if (!tokens[pCol].trim().equals("NA")) {
+                        float p;
+
+                        try {
+                            p = Float.parseFloat(tokens[pCol].trim());
+                            // Transform to -log10
+                            p = (float) -log10((double) p);
+
+
+                        } catch (NumberFormatException e) {
+                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                        }
+
 
                         // Get chromosome
                         String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
@@ -182,11 +200,11 @@ public class GWASParser {
                         if (hitFound) {
                             cacheCounter++;
                         }
-                        gData.getDescriptionCache().add(chr, start, nextLine);
+                        gData.getDescriptionCache().add(chr, start, p, nextLine);
                     }
                 }
             }
-
+            }
 
         } catch (
                 ParserException e
@@ -249,7 +267,8 @@ public class GWASParser {
             // Tokenize header for creation of tokenized descriptions
             headerLine = headerLine.trim();
             String[] headers = new String[1000];
-            int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
+            //int headersSize = ParsingUtils.splitSpaces(headerLine, headers);
+            int headersSize = ParsingUtils.splitWhitespace(headerLine, headers);
 
 
             int rowCounter = 0;
@@ -261,7 +280,8 @@ public class GWASParser {
                 rowCounter++;
                 if (rowCounter >= searchStartRow) {
                     String[] tokens = new String[100];
-                    ParsingUtils.splitSpaces(nextLine, tokens);
+                    //ParsingUtils.splitSpaces(nextLine, tokens);
+                    ParsingUtils.splitWhitespace(nextLine, tokens);
 
                     if (tokens.length > 1) {
 
@@ -348,7 +368,8 @@ public class GWASParser {
                 rowCounter++;
 
                 String[] tokens = new String[100];
-                ParsingUtils.splitSpaces(nextLine, tokens);
+                //ParsingUtils.splitSpaces(nextLine, tokens);
+                ParsingUtils.splitWhitespace(nextLine, tokens);
 
                 if (tokens.length > 1) {
 

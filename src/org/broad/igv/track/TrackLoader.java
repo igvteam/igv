@@ -397,7 +397,6 @@ public class TrackLoader {
         GWASParser gwasParser = new GWASParser(locator);
         GWASData gwasData = gwasParser.parse();
 
-        // TODO: Check if path is suitable for track ID
         GWASTrack gwasTrack = new GWASTrack(locator, locator.getPath(), locator.getFileName(), gwasData, gwasParser);
         newTracks.add(gwasTrack);
 

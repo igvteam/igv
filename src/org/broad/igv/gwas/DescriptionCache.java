@@ -24,6 +24,7 @@ public class DescriptionCache {
 
     private ArrayList<String> chrs = new ArrayList<String>();
     private ArrayList<Integer> locations = new ArrayList<Integer>();
+    private ArrayList<Float> values = new ArrayList<Float>();
     private ArrayList<String> descriptions = new ArrayList<String>();
     // Storage for the header tokens
     private String[] headerTokens = new String[1000];
@@ -53,7 +54,10 @@ public class DescriptionCache {
 
     public void setHeaderTokens(String headerString) {
         headerString = headerString.trim();
-        ParsingUtils.splitSpaces(headerString, this.headerTokens);
+        //ParsingUtils.splitSpaces(headerString, this.headerTokens);
+        ParsingUtils.splitWhitespace(headerString, this.headerTokens);
+
+
     }
 
 
@@ -65,18 +69,19 @@ public class DescriptionCache {
     }
 
 
-    public boolean add(String chr, int location, String description) {
+    public boolean add(String chr, int location, float value, String description) {
 
-        if (locations.size() >= maxSize) {
-            locations.remove(0);
-            chrs.remove(0);
-            descriptions.remove(0);
+        if (this.locations.size() >= this.maxSize) {
+            this.locations.remove(0);
+            this.chrs.remove(0);
+            this.descriptions.remove(0);
+            this.values.remove(0);
         }
 
-        return chrs.add(chr) & locations.add(location) & descriptions.add(description);
+        return this.chrs.add(chr) & this.locations.add(location) & this.descriptions.add(description) & this.values.add(value);
     }
 
-    public String getDescription(String chr, int location) {
+    public String getDescription(String chr, int location, float value) {
 
         String description = null;
 
@@ -84,7 +89,7 @@ public class DescriptionCache {
         boolean descriptionFound = false;
 
         while (indexCounter < this.descriptions.size() && !descriptionFound) {
-            if (this.chrs.get(indexCounter).equals(chr) && this.locations.get(indexCounter) == location) {
+            if (this.chrs.get(indexCounter).equals(chr) && this.locations.get(indexCounter) == location && this.values.get(indexCounter) == value) {
                 description = this.descriptions.get(indexCounter);
                 descriptionFound = true;
 
@@ -97,9 +102,9 @@ public class DescriptionCache {
     }
 
 
-    public String getDescriptionString(String chr, int location) {
+    public String getDescriptionString(String chr, int location, float value) {
 
-        String description = this.getDescription(chr, location);
+        String description = this.getDescription(chr, location, value);
         String descriptionString = null;
 
         if (description != null) {
@@ -107,7 +112,8 @@ public class DescriptionCache {
             int headersSize = this.getHeaderTokens().length;
             String[] tokens = new String[1000];
 
-            ParsingUtils.splitSpaces(description, tokens);
+            //ParsingUtils.splitSpaces(description, tokens);
+            ParsingUtils.splitWhitespace(description, tokens);
 
             for (int i = 0; i < headersSize; i++) {
                 String tmpHeaderToken = this.getHeaderTokens()[i];

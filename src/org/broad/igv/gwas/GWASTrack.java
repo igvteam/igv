@@ -419,7 +419,9 @@ public class GWASTrack extends AbstractTrack {
         try {
 
             // Look for data point description from cache
-            String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+            //String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+            String tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation, value);
+
 
             // If no description found, populate cache with the description
             if (tmpDescription == null) {
@@ -429,7 +431,7 @@ public class GWASTrack extends AbstractTrack {
                     tmpRow = 0;
 
                 this.gData = parser.parseDescriptions(gData, chr, hitLocation, tmpRow);
-                tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation);
+                tmpDescription = gData.getDescriptionCache().getDescriptionString(chr, hitLocation, value);
 
             }
 
