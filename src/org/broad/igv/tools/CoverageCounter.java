@@ -173,7 +173,7 @@ public class CoverageCounter {
                 } else if (opt.equals("r")) {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
-                    coverageHistogram = new Histogram(50);
+                    coverageHistogram = new Histogram(200);
                 } else {
                     System.out.println("Unknown coverage option: " + opt);
                 }
@@ -552,7 +552,6 @@ public class CoverageCounter {
                             if (isCoding) {
                                 int[] baseCounts = counter.getBaseCount();
                                 for (int i = 0; i < baseCounts.length; i++) {
-                                    System.out.println(bucketStartPosition + "\t" + baseCounts[i]);
                                     coverageHistogram.addDataPoint(baseCounts[i]);
                                 }
                             }
@@ -634,9 +633,6 @@ public class CoverageCounter {
         // frac should be between 0 znd 1
 
         void incrementPairedCount(float frac) {
-            if (frac > 1) {
-                System.out.println("Frac=" + frac);
-            }
             pairedCount += frac;
         }
 
