@@ -78,6 +78,10 @@ public class FeatureCollectionSource implements FeatureSource {
                 coverageData.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
     }
 
+    public List<Feature> getFeatureList(String chr) {
+        return featureMap.get(chr);
+    }
+
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
 
         List<Feature> features = featureMap.get(chr);
@@ -303,8 +307,8 @@ public class FeatureCollectionSource implements FeatureSource {
                     for (Feature f : features) {
                         int genStart = (int) ((offset + f.getStart()) / 1000);
                         int genEnd = (int) ((offset + f.getEnd()) / 1000);
-                        int binStart = (int) (genStart / step);
-                        int binEnd = (int) (genEnd / step);
+                        int binStart = Math.min(values.length-1, (int) (genStart / step));
+                        int binEnd = Math.min(values.length-1, (int) (genEnd / step));
                         for (int i = binStart; i <= binEnd; i++) {
                             values[i] = values[i] + 1;
                             dataMax = Math.max(dataMax, values[i]);
