@@ -67,12 +67,14 @@ public class CachingQueryReader {
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
     private static int DEFAULT_TILE_SIZE = 16 * KB;
-    private static int MAX_TILE_COUNT = 100;
+    private static int MAX_TILE_COUNT = 5;
 
-    String cachedChr = "";
+    private String cachedChr = "";
     private int tileSize = DEFAULT_TILE_SIZE;
-    AlignmentQueryReader reader;
-    LRUCache<Integer, AlignmentTile> cache;
+    private AlignmentQueryReader reader;
+
+    // Why not just this?  Map<K, V> myCache = Collections.synchronizedMap(new WeakHashMap<K, V>());
+    // private LRUCache<Integer, AlignmentTile> cache;
 
     private boolean cancel = false;
 
@@ -111,6 +113,7 @@ public class CachingQueryReader {
 
         int startTile = (start + 1) / getTileSize(sequence);
         int endTile = end / getTileSize(sequence);    // <= inclusive
+                
         List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile);
 
         if (tiles.size() == 0) {
@@ -195,6 +198,10 @@ public class CachingQueryReader {
 
         int start = tiles.get(0).start;
         int end = tiles.get(tiles.size() - 1).end;
+
+        //
+
+
         CloseableIterator<Alignment> iter = null;
 
         //log.debug("Loading : " + start + " - " + end);
