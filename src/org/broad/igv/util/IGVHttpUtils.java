@@ -208,7 +208,7 @@ public class IGVHttpUtils {
 
     public static URLConnection openConnection(URL url) throws IOException {
         if (useProxy()) {
-            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+            Proxy proxy = getProxy();
             URLConnection conn = url.openConnection(proxy);
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 String encodedUserPwd = base64Encode(proxySettings.user + ":" + proxySettings.pw);
@@ -221,7 +221,12 @@ public class IGVHttpUtils {
         }
     }
 
-    private static boolean useProxy() {
+    public static Proxy getProxy() {
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
+        return proxy;
+    }
+
+    public static boolean useProxy() {
         return proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null && proxySettings.proxyPort > 0;
     }
 

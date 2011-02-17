@@ -33,8 +33,7 @@ import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ftp.SeekablePicardFtpStream;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.*;
 
@@ -141,7 +140,11 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         if (protocol.equals("http") || protocol.equals("https")) {
             boolean useByteRange = IGVHttpUtils.useByteRange();
             if (useByteRange) {
-                is = new SeekableHTTPStream(url);
+                Proxy proxy = null;
+                if (IGVHttpUtils.useProxy()) {
+                    proxy = IGVHttpUtils.getProxy();
+                }
+                is = new SeekableHTTPStream(url, proxy);
             } else {
                 throw new RuntimeException("Byte-range requests are disabled.  HTTP and FTP access to BAM files require byte-range support.");
             }
@@ -204,7 +207,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                     throw new DataLoadException("Index file not found for file: " + bamURL, bamURL);
                 }
             }
-            byte[] buf = new byte[512000];  
+            byte[] buf = new byte[512000];
             int bytesRead;
             while ((bytesRead = is.read(buf)) != -1) {
                 os.write(buf, 0, bytesRead);
