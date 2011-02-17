@@ -119,7 +119,7 @@ public class GFFParser implements FeatureParser {
     Map<String, BasicFeature> geneCache = new HashMap(50000);
     private TrackProperties trackProperties = null;
 
-    static StringBuffer buf = new StringBuffer(1000);
+    static StringBuffer buf = new StringBuffer();
 
 
     public GFFParser(String path) {
@@ -388,6 +388,11 @@ public class GFFParser implements FeatureParser {
 
 
     static String getDescription(Map<String, String> attributes, String type) {
+        // 30 attributes is the maximum visible on a typical screen
+        int max = 30;
+        int count = 0;
+
+        // Reset buffer.
         buf.setLength(0);
         buf.append(type);
         buf.append("<br>");
@@ -399,6 +404,11 @@ public class GFFParser implements FeatureParser {
             buf.append(" = ");
             buf.append(attValue);
             buf.append("<br>");
+            if(++count > max) {
+                buf.append("...");
+                break;
+            }
+
             //}
         }
         String description = buf.toString();
