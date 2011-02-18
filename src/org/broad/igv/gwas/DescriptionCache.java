@@ -42,6 +42,7 @@ public class DescriptionCache {
 
     /**
      * Set size of the cache in lines. Minimum size is 10.
+     *
      * @param maxSize
      */
     public void setMaxSize(int maxSize) {

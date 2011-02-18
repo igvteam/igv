@@ -164,46 +164,46 @@ public class GWASParser {
                     if (tokens.length > 1) {
 
 
-                     // Check if the p-value is NA
-                    if (!tokens[pCol].trim().equals("NA")) {
-                        float p;
+                        // Check if the p-value is NA
+                        if (!tokens[pCol].trim().equals("NA")) {
+                            float p;
 
-                        try {
-                            p = Float.parseFloat(tokens[pCol].trim());
-                            // Transform to -log10
-                            p = (float) -log10((double) p);
+                            try {
+                                p = Float.parseFloat(tokens[pCol].trim());
+                                // Transform to -log10
+                                p = (float) -log10((double) p);
 
 
-                        } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            } catch (NumberFormatException e) {
+                                throw new ParserException("Column " + pCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            }
+
+
+                            // Get chromosome
+                            String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
+
+                            // Get nucleotide position
+                            int start;
+                            try {
+                                start = Integer.parseInt(tokens[locationCol].trim());
+                            } catch (NumberFormatException e) {
+                                throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
+                            }
+
+                            // See if chr and nucleotide position match to our query data point
+                            if (chr.equals(hitChr) && start == hitLocation) {
+                                hitFound = true;
+
+                            }
+
+                            // Add descriptions to cache
+                            if (hitFound) {
+                                cacheCounter++;
+                            }
+                            gData.getDescriptionCache().add(chr, start, p, nextLine);
                         }
-
-
-                        // Get chromosome
-                        String chr = genome.getChromosomeAlias(tokens[chrCol].trim());
-
-                        // Get nucleotide position
-                        int start;
-                        try {
-                            start = Integer.parseInt(tokens[locationCol].trim());
-                        } catch (NumberFormatException e) {
-                            throw new ParserException("Column " + locationCol + " must be a numeric value.", reader.getCurrentLineNumber(), nextLine);
-                        }
-
-                        // See if chr and nucleotide position match to our query data point
-                        if (chr.equals(hitChr) && start == hitLocation) {
-                            hitFound = true;
-
-                        }
-
-                        // Add descriptions to cache
-                        if (hitFound) {
-                            cacheCounter++;
-                        }
-                        gData.getDescriptionCache().add(chr, start, p, nextLine);
                     }
                 }
-            }
             }
 
         } catch (

@@ -40,7 +40,7 @@ import java.util.Collection;
  */
 public class GWASTrack extends AbstractTrack {
 
-
+    // Color properties
     private int minPointSize;
     private int maxPointSize;
     private boolean useChrColors;
@@ -54,7 +54,6 @@ public class GWASTrack extends AbstractTrack {
     private static final Logger log = Logger.getLogger(GWASTrack.class);
 
     private static final int AXIS_AREA_WIDTH = 60;
-    //protected static Color axisLineColor = new Color(255, 180, 180);
     private double trackMinY;
     private double maxY;
     private double scale;
@@ -121,11 +120,7 @@ public class GWASTrack extends AbstractTrack {
      */
     public void render(RenderContext context, Rectangle arect) {
 
-        //long startTime = System.nanoTime();
-
-
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
-        //PreferenceManager prefs = PreferenceManager.getInstance();
         this.trackMinY = arect.getMinY();
         Rectangle adjustedRect = calculateDrawingRect(arect);
         double adjustedRectMaxX = adjustedRect.getMaxX();
@@ -163,12 +158,6 @@ public class GWASTrack extends AbstractTrack {
         }
         double dx = Math.ceil(1 / locScale) + 1;
         double rangeMaxValue = Math.ceil(gData.getMaxValue());
-        /*
-        int minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
-        int maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
-        if (minPointSize > maxPointSize)
-            minPointSize = maxPointSize;
-        */
 
         double pointSizeScale = rangeMaxValue / maxPointSize;
 
@@ -267,15 +256,6 @@ public class GWASTrack extends AbstractTrack {
                 }
             }
         }
-        //log.info(" --starting drawing time: " + ((System.nanoTime() - startTime) / 1000000));
-
-        // Draw the pixels from the drawing buffer
-        /*
-        for (int x = 0; x < bufferX; x++)
-            for (int y = 0; y < bufferY; y++)
-                if (drawBuffer[x][y] != null)
-                    context.getGraphic2DForColor(drawBuffer[x][y]).fillRect(x, y, 1, 1);
-         */
 
         // Draw the pixels from the drawing buffer to the canvas
 
@@ -298,7 +278,6 @@ public class GWASTrack extends AbstractTrack {
         // Draw the legend axis
         this.renderAxis(context, arect);
 
-        //log.info("rendering time: " + ((System.nanoTime() - startTime) / 1000000));
     }
 
 
@@ -534,9 +513,6 @@ public class GWASTrack extends AbstractTrack {
 
         popupMenu.addSeparator();
 
-        //ArrayList<Track> tmp = new ArrayList();
-        //tmp.add(this);
-
 
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmpTracks));
         popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmpTracks));
@@ -546,9 +522,13 @@ public class GWASTrack extends AbstractTrack {
         popupMenu.add(TrackMenuUtils.getChangeTrackHeightItem(tmpTracks));
         popupMenu.addSeparator();
 
+        popupMenu.add(new JLabel("Color scheme", JLabel.LEFT));
+
         popupMenu.add(addChrColorItem(popupMenu));
         popupMenu.add(addSingleColorItem(popupMenu));
         popupMenu.add(addAlternatingColorItem(popupMenu));
+        popupMenu.addSeparator();
+
         popupMenu.add(addPrimaryColorItem(popupMenu));
         popupMenu.add(addSecondaryColorItem(popupMenu));
 
@@ -567,7 +547,7 @@ public class GWASTrack extends AbstractTrack {
 
 
     public JMenuItem addChrColorItem(JPopupMenu menu) {
-        JMenuItem colorItem = new JMenuItem("Chromosome color scheme");
+        JMenuItem colorItem = new JCheckBoxMenuItem("Chromosome color", useChrColors);
 
         colorItem.addActionListener(new ActionListener() {
 
@@ -585,7 +565,7 @@ public class GWASTrack extends AbstractTrack {
     }
 
     public JMenuItem addAlternatingColorItem(JPopupMenu menu) {
-        JMenuItem colorItem = new JMenuItem("Alternating color scheme");
+        JMenuItem colorItem = new JCheckBoxMenuItem("Alternating color", alternatingColors);
 
         colorItem.addActionListener(new ActionListener() {
 
@@ -604,7 +584,7 @@ public class GWASTrack extends AbstractTrack {
     }
 
     public JMenuItem addSingleColorItem(JPopupMenu menu) {
-        JMenuItem colorItem = new JMenuItem("Single color scheme");
+        JMenuItem colorItem = new JCheckBoxMenuItem("Single color", singleColor);
 
         colorItem.addActionListener(new ActionListener() {
 
@@ -624,9 +604,6 @@ public class GWASTrack extends AbstractTrack {
 
     public JMenuItem addPrimaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set primary color...");
-
-        //final Collection<Track> tmpTracks = new ArrayList();
-        //tmpTracks.add(this);
 
         colorItem.addActionListener(new ActionListener() {
 
@@ -652,8 +629,6 @@ public class GWASTrack extends AbstractTrack {
     public JMenuItem addSecondaryColorItem(JPopupMenu menu) {
         JMenuItem colorItem = new JMenuItem("Set alternating color...");
 
-        //final Collection<Track> tmpTracks = new ArrayList();
-        //tmpTracks.add(this);
 
         colorItem.addActionListener(new ActionListener() {
 
