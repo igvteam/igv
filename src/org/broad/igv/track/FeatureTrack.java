@@ -56,7 +56,7 @@ public class FeatureTrack extends AbstractTrack {
     /**
      * Map of reference frame name -> packed features
      */
-    protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(200);
+    protected LRUCache<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new LRUCache(this,200);
 
     private FeatureRenderer renderer =  new IGVFeatureRenderer();
 

@@ -21,10 +21,10 @@
 package org.broad.igv.track.tribble;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.LRUCache;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureSource;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
-import org.broad.tribble.util.LRUCache;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
 
     public CachingFeatureReader(FeatureSource reader, int binCount, int binSize) {
         this.reader = reader;
-        this.cache = new LRUCache(binCount);
+        this.cache = new LRUCache(this, binCount);
         this.binSize = binSize;
     }
 

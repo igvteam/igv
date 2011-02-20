@@ -447,7 +447,7 @@ public class DASFeatureSource implements FeatureSource {
         }
     }
 
-    LRUCache<String, BasicFeature> groupFeatureCache = new LRUCache(10000);
+    LRUCache<String, BasicFeature> groupFeatureCache = new LRUCache(this, 10000);
 
 
     static class IteratorWrapper<Feature> implements CloseableTribbleIterator {

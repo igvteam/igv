@@ -73,14 +73,13 @@ public class CachingQueryReader {
     private int tileSize = DEFAULT_TILE_SIZE;
     private AlignmentQueryReader reader;
 
-    // Why not just this?  Map<K, V> myCache = Collections.synchronizedMap(new WeakHashMap<K, V>());
-    // private LRUCache<Integer, AlignmentTile> cache;
+    private LRUCache<Integer, AlignmentTile> cache;
 
     private boolean cancel = false;
 
     public CachingQueryReader(AlignmentQueryReader reader) {
         this.reader = reader;
-        cache = new LRUCache(MAX_TILE_COUNT);
+        cache = new LRUCache(this,MAX_TILE_COUNT);
         float fvw = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         tileSize = Math.min(DEFAULT_TILE_SIZE, (int) (fvw * KB));
     }
@@ -111,11 +110,10 @@ public class CachingQueryReader {
 
     public CloseableIterator<Alignment> query(String sequence, int start, int end, List<AlignmentCounts> counts) {
 
+        // Get the tiles covering this interval
         int startTile = (start + 1) / getTileSize(sequence);
         int endTile = end / getTileSize(sequence);    // <= inclusive
-                
         List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile);
-
         if (tiles.size() == 0) {
             return EmptyAlignmentIterator.getInstance();
         }
@@ -142,7 +140,6 @@ public class CachingQueryReader {
             cachedChr = seq;
         }
 
-
         List<AlignmentTile> tiles = new ArrayList(endTile - startTile + 1);
         List<AlignmentTile> tilesToLoad = new ArrayList(endTile - startTile + 1);
 
@@ -159,10 +156,12 @@ public class CachingQueryReader {
 
             tiles.add(tile);
 
-            // The current tile is loaded,  load any preceding tiles we have pending
+            // The current tile is loaded,  load any preceding tiles we have pending and clear "to load" list
             if (tile.isLoaded()) {
                 if (tilesToLoad.size() > 0) {
-                    if (!loadTiles(seq, tilesToLoad)) {
+                    boolean success = loadTiles(seq, tilesToLoad);
+                    if (!success) {
+                        // Loading was canceled, return what we have
                         return tiles;
                     }
                 }
@@ -179,7 +178,13 @@ public class CachingQueryReader {
         return tiles;
     }
 
-    private boolean loadTiles(String seq, List<AlignmentTile> tiles) {
+    /**
+     * Load alignments for the list of tiles
+     * @param chr
+     * @param tiles
+     * @return true if successful,  false if canceled.
+     */
+    private boolean loadTiles(String chr, List<AlignmentTile> tiles) {
 
         assert (tiles.size() > 0);
 
@@ -199,8 +204,6 @@ public class CachingQueryReader {
         int start = tiles.get(0).start;
         int end = tiles.get(tiles.size() - 1).end;
 
-        //
-
 
         CloseableIterator<Alignment> iter = null;
 
@@ -208,9 +211,9 @@ public class CachingQueryReader {
         int alignmentCount = 0;
         try {
             activeReaders.add(this);
-            iter = reader.query(seq, start, end, false);
+            iter = reader.query(chr, start, end, false);
 
-            int tileSize = getTileSize(seq);
+            int tileSize = getTileSize(chr);
             while (iter != null && iter.hasNext()) {
 
                 if (cancel) {
@@ -281,7 +284,10 @@ public class CachingQueryReader {
 
     private static synchronized boolean checkMemory() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
-            LRUCache.clearCaches();
+            System.out.println(RuntimeUtils.getAvailableMemoryFraction());
+            LRUCache.clearCaches();        
+            System.gc();
+            System.out.println(RuntimeUtils.getAvailableMemoryFraction());
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
                 String msg = "Memory is low, reading terminating.";
                 MessageUtils.showMessage(msg);

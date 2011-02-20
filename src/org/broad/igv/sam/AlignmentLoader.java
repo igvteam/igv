@@ -95,6 +95,13 @@ public class AlignmentLoader {
 
         // Strictly speaking we should loop discarding dupes, etc.
         Alignment firstAlignment = iter.next();
+        if (pairAlignments && firstAlignment.isPaired() && firstAlignment.isProperPair() && firstAlignment.getMate().isMapped()) {
+            String readName = firstAlignment.getReadName();
+            PairedAlignment pair = new PairedAlignment(firstAlignment);
+            pairs.put(readName, pair);
+            firstAlignment = pair;
+        }
+
         int start = firstAlignment.getStart();
         int bucketCount = end - start + 1;
 

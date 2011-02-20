@@ -32,32 +32,32 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     private int maxEntries = 100;
 
-    private static Set<WeakReference<LRUCache>> instances = new HashSet();
+    private static Map<Object, LRUCache> instances = Collections.synchronizedMap(new WeakHashMap<Object, LRUCache>());
 
-
-    public LRUCache(int maxEntries) {
-        this.maxEntries = maxEntries;
-        instances.add(new WeakReference(this));
-    }
 
     public static void clearCaches() {
-        for (WeakReference<LRUCache> cache : instances) {
-            LRUCache instance = cache.get();
-            if (instance != null) {
-                instance.clear();
+        for (LRUCache cache : instances.values()) {
+            if (cache != null) {
+                cache.clear();
             }
+            System.gc();
         }
-        instances.clear();
     }
 
     public static void removeAllOldestEntries() {
-        for (WeakReference<LRUCache> cache : instances) {
-            LRUCache instance = cache.get();
-            if (instance != null) {
-                instance.removeOldestEntries();
+        for (LRUCache cache : instances.values()) {
+             if (cache != null) {
+                 cache.removeOldestEntries();
             }
         }
     }
+
+
+    public LRUCache(Object source, int maxEntries) {
+        this.maxEntries = maxEntries;
+        instances.put(source, this);
+    }
+
 
     @Override
     protected boolean removeEldestEntry(Map.Entry eldest) {
@@ -67,9 +67,9 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
             }
             return true;
         } else if (RuntimeUtils.getAvailableMemoryFraction() < 0.3) {
-            log.info("Memory low.  Free cache entry");
+            log.info("Memory low.  Freeing cache entries.");
             removeAllOldestEntries();
-
+            System.gc();
             // Per the LinkedHashMap contract return false, to prevent further modifications
             return false;
         } else {

@@ -285,14 +285,10 @@ public class AlignmentDataManager {
         NamedRunnable runnable = new NamedRunnable() {
 
             public String getName() {
-                return "preloadData";
+                return "loadAlignments";
             }
 
             public void run() {
-
-                final PreferenceManager prefs = PreferenceManager.getInstance();
-                final int qualityThreshold = prefs.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
-
 
                 // Expand start and end to facilitate panning, but by no more than
                 // 1 screen or 8kb, whichever is less
@@ -301,6 +297,7 @@ public class AlignmentDataManager {
                 int expandLength = reader.getTileSize(chr) / 2;
                 int intervalStart = Math.max(0, start - expandLength);
                 int intervalEnd = end + expandLength;
+
                 CloseableIterator<Alignment> iter = null;
                 try {
 
@@ -310,7 +307,8 @@ public class AlignmentDataManager {
 
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts);
 
-                    List<AlignmentInterval.Row> alignmentRows = (new AlignmentLoader()).loadAndPackAlignments(iter, maxLevels,
+                    final AlignmentLoader alignmentLoader = new AlignmentLoader();
+                    List<AlignmentInterval.Row> alignmentRows = alignmentLoader.loadAndPackAlignments(iter, maxLevels,
                             intervalEnd, loadAsPairs);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,

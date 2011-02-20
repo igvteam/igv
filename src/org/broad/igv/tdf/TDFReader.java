@@ -55,8 +55,8 @@ public class TDFReader {
     private TrackType trackType;
     private String trackLine;
     private String[] trackNames;
-    LRUCache<String, TDFGroup> groupCache = new LRUCache(20);
-    LRUCache<String, TDFDataset> datasetCache = new LRUCache(20);
+    LRUCache<String, TDFGroup> groupCache = new LRUCache(this,20);
+    LRUCache<String, TDFDataset> datasetCache = new LRUCache(this,20);
 
     Map<WindowFunction, Double> valueCache = new HashMap();
     private List<WindowFunction> windowFunctions;

@@ -61,7 +61,7 @@ public class MAFManager {
     String refId;
 
     public MAFManager(ResourceLocator locator) {
-        tileCache = new LRUCache(50);
+        tileCache = new LRUCache(this,50);
         if (speciesNames == null) {
             loadNames();
         }
