@@ -20,71 +20,131 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
 /**
+ * An LRUCache using SoftReferences
+ * <p/>
+ * This implementation was based on ideas in the following article by Dr. Heinz Kabutz
+ * <p/>
+ * http://archive.devx.com/java/free/articles/Kabutz01/Kabutz01-1.asp
+ *
  * @author jrobinso
  */
-public class LRUCache<K, V> extends LinkedHashMap<K, V> {
+public class LRUCache<K, V> {
 
     Logger log = Logger.getLogger(LRUCache.class);
 
-    private int maxEntries = 100;
+    private final int minEntries;
 
-    private static Map<Object, LRUCache> instances = Collections.synchronizedMap(new WeakHashMap<Object, LRUCache>());
+    private final int maxEntries;
 
+    private LinkedHashMap<K, SoftValue<K, V>> theMap;
 
-    public static void clearCaches() {
-        for (LRUCache cache : instances.values()) {
-            if (cache != null) {
-                cache.clear();
+    /**
+     * The FIFO list of hard references, order of last inserted.
+     */
+    private final LinkedList<V> hardCache = new LinkedList<V>();
+
+    private final ReferenceQueue queue = new ReferenceQueue();
+
+    public LRUCache(int max) {
+        this(0, max);
+    }
+
+    public LRUCache(int min, int max) {
+        this.minEntries = min;
+        this.maxEntries = max;
+        theMap = new LinkedHashMap<K, SoftValue<K, V>>() {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+                return (size() > maxEntries);
             }
-            System.gc();
+        };
+    }
+
+    public V put(K k, V v) {
+        processQueue(); // throw out garbage collected values first
+        SoftValue<K, V> softValue = theMap.put(k, new SoftValue(v, k, queue));
+
+        if (minEntries > 0) {
+            hardCache.addFirst(v);
+            if (hardCache.size() > minEntries) {
+                hardCache.removeLast();
+            }
         }
+
+        return softValue == null ? null : softValue.get();
+
     }
 
-    public static void removeAllOldestEntries() {
-        for (LRUCache cache : instances.values()) {
-             if (cache != null) {
-                 cache.removeOldestEntries();
-            }
-        }
-    }
-
-
-    public LRUCache(Object source, int maxEntries) {
-        this.maxEntries = maxEntries;
-        instances.put(source, this);
-    }
-
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-        if (size() > maxEntries) {
-            if (log.isDebugEnabled()) {
-                log.debug("Exceed cache capacity.");
-            }
-            return true;
-        } else if (RuntimeUtils.getAvailableMemoryFraction() < 0.3) {
-            log.info("Memory low.  Freeing cache entries.");
-            removeAllOldestEntries();
-            System.gc();
-            // Per the LinkedHashMap contract return false, to prevent further modifications
-            return false;
+    public V get(Object key) {
+        processQueue();
+        SoftValue<K, V> softValue = theMap.get(key);
+        if (softValue == null) {
+            return null;
         } else {
-            return false;
+            V value = softValue.get();
+            if (value == null) {
+                theMap.remove(key);
+            }
+            return value;
         }
     }
 
-    private void removeOldestEntries() {
-        // Remove oldest entries,  keeping the lower of the newest 5 or 1/2 of the entries.
-        List<K> keys = new ArrayList(keySet());
-        int midPoint = Math.min(5, keys.size() / 2);
-        for (int i = midPoint; i < keys.size(); i++) {
-            remove(keys.get(i));
-        }
-        System.gc();
+    public boolean containsKey(Object o) {
+        return theMap.containsKey(o);
     }
+
+    public boolean isEmpty() {
+        return theMap.isEmpty();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    public void clear() {
+        theMap.clear();
+        while (queue.poll() != null) ;
+    }
+
+    /**
+     * Here we go through the ReferenceQueue and remove garbage
+     * collected SoftValue objects from the HashMap by looking them
+     * up using the SoftValue.key data member.
+     */
+    private void processQueue() {
+
+        SoftValue sv;
+        while ((sv = (SoftValue) queue.poll()) != null) {
+            theMap.remove(sv.key); // we can access private data!
+            System.out.println("Removed " + sv.key);
+        }
+
+    }
+
+    /**
+     * We define our own subclass of SoftReference which contains
+     * not only the value but also the key to make it easier to find
+     * the entry in the HashMap after it's been garbage collected.
+     */
+    private static class SoftValue<K, V> extends SoftReference<V> {
+        private final K key; // always make data member final
+
+        /**
+         * Did you know that an outer class can access private data
+         * members and methods of an inner class?  I didn't know that!
+         * I thought it was only the inner class who could access the
+         * outer class's private information.  An outer class can also
+         * access private members of an inner class inside its inner
+         * class.
+         */
+        private SoftValue(V v, K key, ReferenceQueue q) {
+            super(v, q);
+            this.key = key;
+        }
+    }
+
+
 }
 
