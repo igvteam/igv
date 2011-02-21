@@ -64,7 +64,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
         header = basicReader.getHeader();
         initFeatureWindowSize(basicReader);
-        reader = new CachingFeatureReader(basicReader, 10, getFeatureWindowSize());
+        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
 
 
         init();

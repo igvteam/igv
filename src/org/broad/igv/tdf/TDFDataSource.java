@@ -52,7 +52,7 @@ public class TDFDataSource implements DataSource {
     TDFReader reader;
     private int trackNumber = 0;
     String trackName;
-    LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(this,20);
+    LRUCache<String, List<LocusScore>> summaryScoreCache = new LRUCache(this, 20);
     Genome genome;
     Interval currentInterval;
     WindowFunction windowFunction = WindowFunction.mean;

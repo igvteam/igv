@@ -66,7 +66,7 @@ public class HDFDataManager {
     /**
      * Cache of zoom level parameters.  Key is the zoom level
      */
-    private LRUCache<String, ZoomParameters> zoomParameterCache = new LRUCache(this,1000);
+    private LRUCache<String, ZoomParameters> zoomParameterCache = new LRUCache(this, 100);
     /**
      * Cache of rawMeansPath arrays -- shared across all instances.  Used for location arrays
      */

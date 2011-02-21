@@ -61,12 +61,11 @@ public class DASFeatureSource implements FeatureSource {
     private String serverURL;
     private boolean isValid = true;
     private CachingFeatureReader reader;
-    //DasReader reader;
     private int featureWindowSize = 250000;
     private String type;
     private String[] parameters;
-
-    Map<String, String> dasAliasMap = new HashMap();
+    Map<String, BasicFeature> groupFeatureCache = new HashMap(10000);
+    
 
     public DASFeatureSource(ResourceLocator locator) throws MalformedURLException {
         URL url = new URL(locator.getPath());
@@ -143,12 +142,14 @@ public class DASFeatureSource implements FeatureSource {
             if (isValid && !chr.equals("All")) {
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
+                    groupFeatureCache.clear();
                     List<Feature> features = gatherFeatures(chr, dasStart, dasEnd);
                     if (features.size() < 1) {
                         return EMPTY__ITERATOR;
                     }
                     return new IteratorWrapper(features.iterator());
                 } finally {
+                    groupFeatureCache.clear();
                     WaitCursorManager.removeWaitCursor(token);
                 }
             }
@@ -173,8 +174,7 @@ public class DASFeatureSource implements FeatureSource {
          * @return
          */
         private List<Feature> gatherFeatures(String chr, int start, int end) {
-            groupFeatureCache.clear();
-
+            
             List<Feature> features = new ArrayList<Feature>();
             try {
                 String dasChr = chr.startsWith("chr") ? chr.substring(3, chr.length()) : chr;
@@ -325,7 +325,6 @@ public class DASFeatureSource implements FeatureSource {
             tmpNode = nnm.getNamedItem("label");
             label = tmpNode == null ? "" : tmpNode.getTextContent();
 
-            //GO THROUGH FEATURE NODES
             for (Node n = walker.firstChild(); n != null;
                  n = walker.nextSibling()) {
 
@@ -447,7 +446,6 @@ public class DASFeatureSource implements FeatureSource {
         }
     }
 
-    LRUCache<String, BasicFeature> groupFeatureCache = new LRUCache(this, 10000);
 
 
     static class IteratorWrapper<Feature> implements CloseableTribbleIterator {

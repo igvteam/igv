@@ -1148,7 +1148,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        LRUCache.clearCaches();
+        //LRUCache.clearCaches();
         owner.doRefresh();
     }
 

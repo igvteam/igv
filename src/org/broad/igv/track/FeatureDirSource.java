@@ -50,7 +50,7 @@ public class FeatureDirSource implements FeatureSource {
     ResourceLocator rootLocator;
 
     public FeatureDirSource(ResourceLocator locator) throws IOException {
-        featureCache = new LRUCache(this,3);
+        featureCache = new LRUCache(this, 3);
         rootLocator = locator;
         setRootDir(locator.getPath());
 

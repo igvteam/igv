@@ -2247,7 +2247,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             }
 
             setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            //LRUCache.clearCaches();
+            LRUCache.clearCaches();
             doRefresh();
 
             //If there's a RegionNavigatorDialog, kill it.

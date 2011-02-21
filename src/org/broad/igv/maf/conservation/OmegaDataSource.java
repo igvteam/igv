@@ -115,7 +115,7 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
     }
 
 
-    LRUCache<String, DataTile> tileCache = new LRUCache(this,3);
+    LRUCache<String, DataTile> tileCache = new LRUCache(this, 3);
 
     @Override
     public DataTile getRawData(String chr, int startLocation, int endLocation) {

@@ -41,6 +41,7 @@ import org.broad.igv.util.RuntimeUtils;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 /**
@@ -52,22 +53,26 @@ public class CachingQueryReader {
 
     private static Logger log = Logger.getLogger(CachingQueryReader.class);
 
-    private static Set<CachingQueryReader> activeReaders = Collections.synchronizedSet(new HashSet());
+    private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
 
-    private static void cancelReaders() {
-        for (CachingQueryReader reader : activeReaders) {
-            reader.cancel = true;
-        }
-        log.debug("Readers canceled");
-        activeReaders.clear();
-    }
+      private static void cancelReaders() {
+          for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
+              CachingQueryReader reader = readerRef.get();
+              if (reader != null) {
+                  reader.cancel = true;
+              }
+          }
+          log.debug("Readers canceled");
+          activeReaders.clear();
+      }
+
 
 
     //private static final int LOW_MEMORY_THRESHOLD = 150000000;
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
     private static int DEFAULT_TILE_SIZE = 16 * KB;
-    private static int MAX_TILE_COUNT = 5;
+    private static int MAX_TILE_COUNT = 4;
 
     private String cachedChr = "";
     private int tileSize = DEFAULT_TILE_SIZE;
@@ -79,7 +84,7 @@ public class CachingQueryReader {
 
     public CachingQueryReader(AlignmentQueryReader reader) {
         this.reader = reader;
-        cache = new LRUCache(this,MAX_TILE_COUNT);
+        cache = new LRUCache(this, MAX_TILE_COUNT);
         float fvw = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         tileSize = Math.min(DEFAULT_TILE_SIZE, (int) (fvw * KB));
     }
@@ -151,7 +156,6 @@ public class CachingQueryReader {
                 int start = t * tileSize;
                 int end = start + tileSize;
                 tile = new AlignmentTile(seq, t, start, end);
-                cache.put(t, tile);
             }
 
             tiles.add(tile);
@@ -160,7 +164,7 @@ public class CachingQueryReader {
             if (tile.isLoaded()) {
                 if (tilesToLoad.size() > 0) {
                     boolean success = loadTiles(seq, tilesToLoad);
-                    if (!success) {
+                    if(!success) {
                         // Loading was canceled, return what we have
                         return tiles;
                     }
@@ -180,6 +184,7 @@ public class CachingQueryReader {
 
     /**
      * Load alignments for the list of tiles
+     *
      * @param chr
      * @param tiles
      * @return true if successful,  false if canceled.
@@ -210,7 +215,7 @@ public class CachingQueryReader {
         //log.debug("Loading : " + start + " - " + end);
         int alignmentCount = 0;
         try {
-            activeReaders.add(this);
+            //activeReaders.add(this);
             iter = reader.query(chr, start, end, false);
 
             int tileSize = getTileSize(chr);
@@ -256,6 +261,7 @@ public class CachingQueryReader {
 
             for (AlignmentTile t : tiles) {
                 t.setLoaded(true);
+                cache.put(t.getTileNumber(), t);
             }
 
             return true;
@@ -269,7 +275,7 @@ public class CachingQueryReader {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
-            activeReaders.remove(this);
+            // activeReaders.remove(this);
             if (iter != null) {
                 iter.close();
             }
@@ -284,15 +290,14 @@ public class CachingQueryReader {
 
     private static synchronized boolean checkMemory() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
-            System.out.println(RuntimeUtils.getAvailableMemoryFraction());
-            LRUCache.clearCaches();        
+            LRUCache.clearCaches();
             System.gc();
-            System.out.println(RuntimeUtils.getAvailableMemoryFraction());
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
                 String msg = "Memory is low, reading terminating.";
                 MessageUtils.showMessage(msg);
                 return false;
             }
+
         }
         return true;
     }

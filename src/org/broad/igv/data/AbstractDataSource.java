@@ -45,7 +45,7 @@ public abstract class AbstractDataSource implements DataSource {
     // DataManager dataManager;
     boolean cacheSummaryTiles = true;
     WindowFunction windowFunction = WindowFunction.mean;
-    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this,20);
+    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this, 20);
 
     // abstract DataManager getDataManager();
 
