@@ -88,9 +88,9 @@ public class AttributeManager {
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
         uniqueAttributeValues = new HashMap();
-        hiddenAttributes.add("NAME");
-        hiddenAttributes.add("DATA FILE");
-        hiddenAttributes.add("DATA TYPE");
+        //hiddenAttributes.add("NAME");
+        //hiddenAttributes.add("DATA FILE");
+        //hiddenAttributes.add("DATA TYPE");
 
     }
 
