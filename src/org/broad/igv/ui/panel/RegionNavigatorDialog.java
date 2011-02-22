@@ -23,7 +23,10 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -42,10 +45,10 @@ import javax.swing.table.*;
  *         Navigation to the start of a region is done by selecting the appropriate row.
  *         <p/>
  *         This dialog is not intended to be persistent.  To view one of these, create it.
- *
- * todo: tell the regions observable that this object is toast, when it goes away
+ *         <p/>
+ *         todo: tell the regions observable that this object is toast, when it goes away
  */
-public class RegionNavigatorDialog extends JDialog implements Observer{
+public class RegionNavigatorDialog extends JDialog implements Observer {
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
@@ -70,6 +73,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
     /**
      * Return the active RegionNavigatorDialog, or null if none.
+     *
      * @return
      */
     public static RegionNavigatorDialog getActiveInstance() {
@@ -100,16 +104,14 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         postInit();
     }
 
-    public void update(Observable observable, Object object)
-    {
+    public void update(Observable observable, Object object) {
         synchRegions();
     }
 
     /**
      * Synchronize the regions ArrayList with the passed-in regionsCollection, and update UI
      */
-    public void synchRegions()
-    {
+    public void synchRegions() {
         //Indicate that we're synching regions, so that we don't respond to tableChanged events
         synchingRegions = true;
         List<RegionOfInterest> regions = retrieveRegionsAsList();
@@ -131,14 +133,12 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         regionTableModel.fireTableDataChanged();
     }
 
-    private List<RegionOfInterest> retrieveRegionsAsList()
-    {
+    private List<RegionOfInterest> retrieveRegionsAsList() {
         return new ArrayList<RegionOfInterest>(IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest());
     }
 
     /**
      * Populate the table with the loaded regions
-     *
      */
     private void postInit() {
         regionTableModel = (DefaultTableModel) regionTable.getModel();
@@ -163,7 +163,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
         //resize window if small number of regions.  By default, tables are initialized with 20
         //rows, and that can look ungainly for empty windows or windows with a few rows.
         //This correction is rather hacky. Minimum size of 5 rows set.
-        int newTableHeight = Math.min(regionTableModel.getRowCount()+1,5) * regionTable.getRowHeight();
+        int newTableHeight = Math.min(regionTableModel.getRowCount() + 1, 5) * regionTable.getRowHeight();
         //This is quite hacky -- need to find the size of the other components programmatically somehow, since
         //it will vary on different platforms
         int extraHeight = 225;
@@ -196,8 +196,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
     /**
      * When chromosome that's displayed is changed, need to update displayed regions.  showSearchedRegions will do that
      */
-    public void updateChromosomeDisplayed()
-    {
+    public void updateChromosomeDisplayed() {
 //        regionTable.updateUI();
 //        showSearchedRegions();
         regionTableModel.fireTableDataChanged();
@@ -205,37 +204,37 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
     /**
      * Test whether we should display an entry
+     *
      * @param regionChr
      * @param regionDesc
      * @return
      */
-    protected boolean shouldIncludeRegion(String regionChr, String regionDesc)
-    {
-            //if table is empty, a non-region event is fed here.  Test for it and don't display
-            if (regionChr == null)
-                return false;
+    protected boolean shouldIncludeRegion(String regionChr, String regionDesc) {
+        //if table is empty, a non-region event is fed here.  Test for it and don't display
+        if (regionChr == null)
+            return false;
 
-            String filterStringLowercase = null;
-            if (textFieldSearch.getText() != null)
-                filterStringLowercase = textFieldSearch.getText().toLowerCase();
+        String filterStringLowercase = null;
+        if (textFieldSearch.getText() != null)
+            filterStringLowercase = textFieldSearch.getText().toLowerCase();
 
-            String chr = FrameManager.getDefaultFrame().getChrName();
+        String chr = FrameManager.getDefaultFrame().getChrName();
 
-            //show only regions matching the search string (if specified)
-            if ((filterStringLowercase != null && !filterStringLowercase.isEmpty() &&
+        //show only regions matching the search string (if specified)
+        if ((filterStringLowercase != null && !filterStringLowercase.isEmpty() &&
                 (regionDesc == null || !regionDesc.toLowerCase().contains(filterStringLowercase))))
-                return false;
+            return false;
 
-            //if this checkbox is checked, show all chromosomes
-            if (checkBoxShowAllChrs.isSelected())
-                return true;
-
-            //show only regions in the current chromosome
-            if (chr != null && !chr.isEmpty() && !regionChr.equals(chr))
-                return false;
-
-
+        //if this checkbox is checked, show all chromosomes
+        if (checkBoxShowAllChrs.isSelected())
             return true;
+
+        //show only regions in the current chromosome
+        if (chr != null && !chr.isEmpty() && !regionChr.equals(chr))
+            return false;
+
+
+        return true;
     }
 
     /**
@@ -266,18 +265,16 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
             int firstRow = e.getFirstRow();
             //range checking because this method gets called after a clear event, and we don't want to
             //try to find an updated region then
-            if (e.getFirstRow() > regions.size()-1)
+            if (e.getFirstRow() > regions.size() - 1)
                 return;
 
             //must convert row index from view to model, in case of sorting, filtering
             int rowIdx = 0;
 
-            try
-            {
+            try {
                 rowIdx = regionTable.getRowSorter().convertRowIndexToModel(e.getFirstRow());
             }
-            catch (ArrayIndexOutOfBoundsException x)
-            {
+            catch (ArrayIndexOutOfBoundsException x) {
                 return;
             }
 
@@ -286,7 +283,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                 case TABLE_COLINDEX_DESC:
                     Object descObject = regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_DESC);
                     if (descObject != null)
-                         region.setDescription(descObject.toString());
+                        region.setDescription(descObject.toString());
                     break;
                 case TABLE_COLINDEX_START:
                     //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
@@ -323,8 +320,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                     Set<String> selectedChrs = new HashSet<String>();
 
                     //Figure out which region has the first start and which has the last end
-                    for (int selectedRowIndex : selectedRows)
-                    {
+                    for (int selectedRowIndex : selectedRows) {
                         int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRowIndex);
                         RegionOfInterest region = regions.get(selectedModelRow);
                         selectedChrs.add(region.getChr());
@@ -340,16 +336,13 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                     if (selectedChrs.size() > 1)
                         return;
 
-                    if (checkBoxZoomWhenNav.isSelected())
-                    {
+                    if (checkBoxZoomWhenNav.isSelected()) {
                         // Option (1), zoom and center on group of selected regions, with an interval equal to
                         // 20% of the length of the end regions on either side for context (dhmay reduced from 100%)
                         int start = firstStartRegion.getStart() - (int) (0.2 * firstStartRegion.getLength());
                         int end = lastEndRegion.getEnd() + (int) (0.2 * lastEndRegion.getLength());
                         FrameManager.getDefaultFrame().jumpTo(selectedChrs.iterator().next(), start, end);
-                    }
-                    else
-                    {
+                    } else {
                         // Option (2), center on the FIRST selected region without changing resolution
                         FrameManager.getDefaultFrame().centerOnLocation(firstStartRegion.getCenter());
                     }
@@ -401,23 +394,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                        new Object[][] {
-                            {null, null, null, null},
-                        },
-                        new String[] {
-                            "Chr", "Start", "End", "Description"
-                        }
+                            new Object[][]{
+                                    {null, null, null, null},
+                            },
+                            new String[]{
+                                    "Chr", "Start", "End", "Description"
+                            }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[] {
-                            String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[]{
+                                String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[] {
-                            false, true, true, true
+                        boolean[] columnEditable = new boolean[]{
+                                false, true, true, true
                         };
+
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
+
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -519,7 +514,6 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
-
     private class CancelAction extends AbstractAction {
         private CancelAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -556,10 +550,9 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                 JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
-            else
-            {
+            else {
                 RegionOfInterest newRegion = new RegionOfInterest(FrameManager.getDefaultFrame().getChrName(),
-                        0, 0, "");
+                        1, 100, "");
                 IGVMainFrame.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
         }
@@ -576,22 +569,18 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
 
         public void actionPerformed(ActionEvent e) {
             int[] selectedRows = regionTable.getSelectedRows();
-            if (selectedRows != null && selectedRows.length > 0)
-            {
+            if (selectedRows != null && selectedRows.length > 0) {
                 List<RegionOfInterest> selectedRegions = new ArrayList<RegionOfInterest>();
                 List<RegionOfInterest> regions = retrieveRegionsAsList();
 
-                for (int selectedRowIndex : selectedRows)
-                {
+                for (int selectedRowIndex : selectedRows) {
                     int selectedModelRow = regionTableRowSorter.convertRowIndexToModel(selectedRowIndex);
                     selectedRegions.add(regions.get(selectedModelRow));
                 }
                 regionTable.clearSelection();
                 IGVMainFrame.getInstance().getSession().removeRegionsOfInterest(selectedRegions);
 
-            }
-            else
-            {
+            } else {
                 //todo dhmay -- I don't fully understand this call.  Clean this up.
                 JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), "No regions have been selected for removal.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
@@ -619,6 +608,9 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
      * TableModel, since that's all we need.  It could easily grab the Region, though, like in RegionTableModelListener
      */
     private class RegionTablePopupHandler extends MouseAdapter {
+        // Maximum length for "copy sequence" action
+        private static final int MAX_SEQUENCE_LENGTH = 1000000;
+
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isRightMouseButton(e)) {
                 Point p = e.getPoint();
@@ -638,14 +630,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                     JMenuItem copySequenceItem = new JMenuItem("Copy Sequence");
                     copySequenceItem.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-
-                            String genomeId = GenomeManager.getInstance().getGenomeId();
-                            byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
-                            if (seqBytes == null) {
-                                MessageUtils.showMessage("Sequence not available");
+                            int length = end - start;
+                            if (length > MAX_SEQUENCE_LENGTH) {
+                                JOptionPane.showMessageDialog(RegionNavigatorDialog.this, "Region is to large to copy sequence data.");
                             } else {
-                                String sequence = new String(seqBytes);
-                                copyTextToClipboard(sequence);
+                                try {
+                                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                    String genomeId = GenomeManager.getInstance().getGenomeId();
+                                    byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
+                                    if (seqBytes == null) {
+                                        MessageUtils.showMessage("Sequence not available");
+                                    } else {
+                                        String sequence = new String(seqBytes);
+                                        copyTextToClipboard(sequence);
+                                    }
+
+                                } finally {
+                                    setCursor(Cursor.getDefaultCursor());
+                                }
+
                             }
                         }
                     });
@@ -661,17 +664,17 @@ public class RegionNavigatorDialog extends JDialog implements Observer{
                         }
                     });
                     popupMenu.add(copyDetailsItem);
-                    popupMenu.show(regionTable, p.x,p.y);
-                }       
+                    popupMenu.show(regionTable, p.x, p.y);
+                }
             }
         }
 
         /**
          * Copy a text string to the clipboard
+         *
          * @param text
          */
-        private void copyTextToClipboard(String text)
-        {
+        private void copyTextToClipboard(String text) {
             StringSelection stringSelection = new StringSelection(text);
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(stringSelection, null);
