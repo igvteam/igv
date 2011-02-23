@@ -500,6 +500,7 @@ public class ParsingUtils {
                             trackProperties.setRendererClass(BarChartRenderer.class);
                         } else if (value.equals("points")) {
                             trackProperties.setRendererClass(ScatterplotRenderer.class);
+                            trackProperties.setWindowingFunction(WindowFunction.none);
                         } else if (value.equals("line")) {
                             trackProperties.setRendererClass(LineplotRenderer.class);
                         } else if (value.equals("heatmap")) {
@@ -561,7 +562,8 @@ public class ParsingUtils {
 
                         } else if (value.equals("percentile90")) {
                             trackProperties.setWindowingFunction(WindowFunction.percentile90);
-
+                        } else if(value.equals("none")) {
+                            trackProperties.setWindowingFunction(WindowFunction.none);
                         }
                     } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow")) {
                         // These options are deprecated.  Use visibilityWindow
