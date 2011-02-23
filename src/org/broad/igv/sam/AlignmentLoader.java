@@ -181,7 +181,7 @@ public class AlignmentLoader {
         long t0 = System.currentTimeMillis();
         int allocatedCount = 0;
         int nextStart = start;
-        AlignmentInterval.Row currentRow = new Row();
+        AlignmentInterval.Row currentRow = new Row(alignmentRows.size());
         while (allocatedCount < totalCount) { // && alignmentRows.size() < maxLevels) {
 
             // Loop through alignments until we reach the end of the interval
@@ -210,7 +210,7 @@ public class AlignmentLoader {
             }
 
             // We've reached the end of the interval,  start a new row
-            if (currentRow.alignments.size() > 0) {
+            if (currentRow.getAlignments().size() > 0) {
                 alignmentRows.add(currentRow);
             }
 
@@ -218,7 +218,7 @@ public class AlignmentLoader {
                 break;
             }
 
-            currentRow = new Row();
+            currentRow = new Row(alignmentRows.size());
             nextStart = start;
         }
         if (log.isDebugEnabled()) {
@@ -227,12 +227,124 @@ public class AlignmentLoader {
         }
 
         // Add the last row
-        if (currentRow.alignments.size() > 0 && alignmentRows.size() < maxLevels) {
+        if (currentRow.getAlignments().size() > 0 && alignmentRows.size() < maxLevels) {
             alignmentRows.add(currentRow);
         }
 
         return alignmentRows;
 
     }
+
+    /* Allocates each alignment to the rows such that there is no overlap.  This version fills rows as alignments are
+     * added.  
+     *
+     * @param iter      Iterator wrapping the collection of alignments
+     * @param maxLevels the maximum number of levels (rows) to create
+     */
+
+    public List<AlignmentInterval.Row> loadAndPackAlignments2(
+            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
+
+
+        List<Row> alignmentRows = new ArrayList(maxLevels);
+        if (iter == null || !iter.hasNext()) {
+            return alignmentRows;
+        }
+
+        // Compares 2 rows by row number.
+        Comparator rowComparator = new Comparator<Row>() {
+            public int compare(Row row1, Row row2) {
+                return (row1.getRowNumber() - row2.getRowNumber());
+
+            }
+        };
+
+        // Get first alignment.  Strictly speaking we should loop discarding dupes, etc.
+        Alignment firstAlignment = iter.next();
+        int start = firstAlignment.getStart();
+
+        // Use 10 buckets for this interval
+        int bucketWidth = Math.max(1, (end - start) / 10 + 1);
+        Map<Integer, PriorityQueue<Row>> rowBucketHash = new HashMap(20);
+
+        int rowCount = 0;
+        Row row = new Row(rowCount++);
+        row.addAlignment(firstAlignment);
+
+
+        PriorityQueue<Row> firstBucket = new PriorityQueue(5, rowComparator);
+        firstBucket.add(row);
+        int bucketNumber = (row.getLastEnd() - start) / bucketWidth;
+        rowBucketHash.put(bucketNumber, firstBucket);
+
+
+        //  Allocate alignments to buckets based on position
+        List<Alignment> matesUnmapped = new ArrayList(1000);
+        Map<String, Alignment> unmappedReads = new HashMap(1000);
+
+        while (iter.hasNext()) {
+
+            Alignment al = iter.next();
+            // Find the next bucket this alignment could be allocated to
+            PriorityQueue<Row> bucket = null;
+            int bucketIdx = (al.getStart() - start) / bucketWidth;
+            do {
+                bucket = rowBucketHash.get(bucketIdx);
+                bucketIdx++;
+            }
+            while (bucket == null && bucketIdx < 11);
+
+            row = null;
+            if (bucket == null) {
+                if (rowCount < maxLevels) {
+                    row = new Row(rowCount++);
+                }
+            } else {
+                // Row is somewhere in this bucket
+                List<Row> tmp = new ArrayList(bucket.size());
+                while (!bucket.isEmpty()) {
+                    row = bucket.remove();
+                    if (al.getStart() >= row.getLastEnd()) {
+                        break;
+                    }
+                    tmp.add(row);
+                }
+                bucket.addAll(tmp);
+            }
+
+            if (row == null) {
+                if (rowCount < maxLevels) {
+                    row = new Row(rowCount++);
+                } else {
+                    break;
+                }
+            }
+
+            row.addAlignment(al);
+            bucketIdx = (row.getLastEnd() - start) / bucketWidth;
+            bucket = rowBucketHash.get(bucketIdx);
+            if (bucket == null) {
+                bucket = new PriorityQueue(5, rowComparator);
+                rowBucketHash.put(bucketIdx, bucket);
+            }
+            bucket.add(row);
+
+
+        }
+
+        for (PriorityQueue<Row> bucket : rowBucketHash.values()) {
+            Iterator<Row> rowIter = bucket.iterator();
+            while (rowIter.hasNext()) {
+                alignmentRows.add(rowIter.next());
+            }
+        }
+
+
+        Collections.sort(alignmentRows, rowComparator);
+
+        return alignmentRows;
+
+    }
+
 
 }

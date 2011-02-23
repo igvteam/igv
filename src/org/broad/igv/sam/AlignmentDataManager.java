@@ -47,7 +47,7 @@ public class AlignmentDataManager {
 
     private static final int DEFAULT_DEPTH = 10;
 
-    //TODO -- this is a  memory leak, this map needs cleared when the gene list changes
+    //TODO -- this is a  potential memory leak, this map needs cleared when the gene list changes
     private HashMap<String, AlignmentInterval> loadedIntervalMap = new HashMap(50);
     HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
@@ -190,7 +190,7 @@ public class AlignmentDataManager {
             List<AlignmentInterval.Row> alignmentRows = loadedInterval.getAlignmentRows();
             List<Alignment> alignments = new ArrayList(Math.min(50000, alignmentRows.size() * 1000));
             for (AlignmentInterval.Row row : alignmentRows) {
-                for (Alignment al : row.alignments) {
+                for (Alignment al : row.getAlignments()) {
                     if (al instanceof PairedAlignment) {
                         PairedAlignment pair = (PairedAlignment) al;
                         alignments.add(pair.firstAlignment);
