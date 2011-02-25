@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.util.HttpUtils;
 
 import java.io.*;
@@ -56,7 +57,7 @@ public class FileUtils {
     public static boolean isRemote(String path) {
         return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
     }
- 
+
 
     public static boolean canWriteTo(File file) {
         FileOutputStream fos = null;
@@ -233,7 +234,7 @@ public class FileUtils {
     }
 
 
-    public static void main(String [] args){
+    public static void main(String[] args) {
         fixEOL("/Volumes/igv/data/public/ismb/ismb_snp_answers.bed", "/Volumes/igv/data/public/ismb/snp_answers.bed");
     }
 
@@ -326,7 +327,7 @@ public class FileUtils {
 
         try {
             is = new FileInputStream(from);
-            int bytesCopied = createFileFromStream(new BufferedInputStream(is), to);
+            createFileFromStream(is, to);
 
         }
         finally {
@@ -339,32 +340,35 @@ public class FileUtils {
     /**
      * Create a file from an input stream.
      *
-     * @param is
+     * @param in
      * @param outputFile
      * @throws java.io.IOException
      */
-    public static int createFileFromStream(InputStream is, File outputFile) throws IOException {
+    public static void createFileFromStream(InputStream in, File outputFile) throws IOException {
 
         int totalSize = 0;
 
-        int chunkSize = 64000;
-        byte[] data = new byte[chunkSize];
-
-        FileOutputStream fileOutputStream = null;
+        FileOutputStream out = null;
 
         try {
-            fileOutputStream = new FileOutputStream(outputFile);
-            int bytesRead = 0;
-            while ((bytesRead = is.read(data)) > 0) {
-                totalSize += bytesRead;
-                fileOutputStream.write(data, 0, bytesRead);
-            }
-        } finally {
-            if (fileOutputStream != null) {
-                fileOutputStream.close();
+            out = new FileOutputStream(outputFile);
+            byte[] buffer = new byte[64000];
+            int bytes_read;
+            while ((bytes_read = in.read(buffer)) != -1)
+                out.write(buffer, 0, bytes_read);
+        }
+
+        catch (IOException e) {
+            outputFile.delete();
+            MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
+                    "<br/>" + e.toString());
+
+        }
+        finally {
+            if (out != null) {
+                out.close();
             }
         }
-        return totalSize;
     }
 
 
