@@ -264,7 +264,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 if (y + h > visibleRect.getY()) {
                     Rectangle rect = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                     renderOptions.colorOption = colorByOption;
-                    renderer.renderAlignments(row.getAlignments(),
+                    renderer.renderAlignments(row.alignments,
                             context,
                             rect,
                             renderOptions,
@@ -446,7 +446,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
 
         AlignmentInterval.Row row = alignmentRows.get(levelNumber);
-        List<Alignment> features = row.getAlignments();
+        List<Alignment> features = row.alignments;
 
         // give posA 2 pixel window, otherwise very narrow features will be missed.
         double bpPerPixel = frame.getScale();

@@ -104,8 +104,10 @@ public class SequenceRenderer {
             //If we're translating, we need to start with the first bp of the first codon, in frame 3, and
             //end with the last bp of the last codon, in frame 1
             if (showTranslation) {
-                firstCodonOffset = 2;
-                start -= firstCodonOffset;
+                if (start > 1) {
+                    firstCodonOffset = 2;
+                    start -= firstCodonOffset;
+                }
 
                 lastCodonOffset = 2;
                 end += lastCodonOffset;

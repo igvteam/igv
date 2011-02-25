@@ -26,7 +26,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
-import org.broad.igv.sam.reader.CachingQueryReader;
+import org.broad.igv.sam.reader.AlignmentCounts;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.util.ArrayList;
@@ -41,20 +41,20 @@ public class AlignmentInterval extends Locus {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
+    List<AlignmentCounts> counts;
     private List<AlignmentInterval.Row> alignmentRows;
-    List<CachingQueryReader.AlignmentCounts> counts;
     String genomeId;
     byte[] reference;
     int maxCount = 0;
 
     public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows,
-                             List<CachingQueryReader.AlignmentCounts> counts) {
+                             List<AlignmentCounts> counts) {
         super(chr, start, end);
         this.genomeId = genomeId;
         this.alignmentRows = rows;
         reference = SequenceManager.readSequence(this.genomeId, chr, start, end);
         this.counts = counts;
-        for(CachingQueryReader.AlignmentCounts c : counts) {
+        for(AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
     }
@@ -170,7 +170,7 @@ public class AlignmentInterval extends Locus {
 
 
     public int getCount(int pos, byte b) {
-        for (CachingQueryReader.AlignmentCounts c : counts) {
+        for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {
                 return c.getCount(pos, b);
             }
@@ -183,7 +183,7 @@ public class AlignmentInterval extends Locus {
     }
 
     public int getTotalCount(int pos) {
-        for (CachingQueryReader.AlignmentCounts c : counts) {
+        for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {
                 return c.getTotalCount(pos);
             }
@@ -192,7 +192,7 @@ public class AlignmentInterval extends Locus {
     }
 
     public int getNegCount(int pos, byte b) {
-        for (CachingQueryReader.AlignmentCounts c : counts) {
+        for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {
                 return c.getNegCount(pos, b);
             }
@@ -201,7 +201,7 @@ public class AlignmentInterval extends Locus {
      }
 
     public int getPosCount(int pos, byte b) {
-        for (CachingQueryReader.AlignmentCounts c : counts) {
+        for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {
                 return c.getPosCount(pos, b);
             }
@@ -209,29 +209,15 @@ public class AlignmentInterval extends Locus {
         return 0;
      }
 
-    public List<CachingQueryReader.AlignmentCounts> getCounts() {
-        return counts;
-    }
 
-    public static class Row {
-
-        private int rowNumber;
+  public static class Row {
+        int nextIdx;
+        private double score = 0;
+        List<Alignment> alignments;
         private int start;
         private int lastEnd;
-        private List<Alignment> alignments;
 
-        /**
-         * Iterator variable
-         */
-        private int nextIdx;
-
-        /**
-         * Score -- used for sorting rows
-         */
-        private double score = 0;
-
-        public Row(int rowNumber) {
-            this.rowNumber = rowNumber;
+        public Row() {
             nextIdx = 0;
             this.alignments = new ArrayList(100);
         }
@@ -241,8 +227,55 @@ public class AlignmentInterval extends Locus {
                 this.start = alignment.getStart();
             }
             alignments.add(alignment);
-            lastEnd = Math.max(lastEnd, alignment.getEnd());
+            lastEnd = alignment.getEnd();
+
         }
+
+        public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
+
+            int adjustedCenter = (int) center;
+            Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
+            if (centerAlignment == null) {
+                setScore(Double.MAX_VALUE);
+            } else {
+                switch (option) {
+                    case START:
+                        setScore(centerAlignment.getStart());
+                        break;
+                    case STRAND:
+                        setScore(centerAlignment.isNegativeStrand() ? -1 : 1);
+                        break;
+                    case NUCELOTIDE:
+                        byte base = centerAlignment.getBase(adjustedCenter);
+                        byte ref = interval.getReference(adjustedCenter);
+                        if (base == 'N' || base == 'n') {
+                            setScore(Integer.MAX_VALUE - 1);
+                        } else if (base == ref) {
+                            setScore(Integer.MAX_VALUE);
+                        } else {
+                            int count = interval.getCount(adjustedCenter, base);
+                            byte phred = centerAlignment.getPhred(adjustedCenter);
+                            float score = -(count + (phred / 100.0f));
+                            setScore(score);
+                        }
+                        break;
+                    case QUALITY:
+                        setScore(-centerAlignment.getMappingQuality());
+                        break;
+                    case SAMPLE:
+                        String sample = centerAlignment.getSample();
+                        score = sample == null ? 0 : sample.hashCode();
+                        setScore(score);
+                        break;
+                    case READ_GROUP:
+                        String readGroup = centerAlignment.getReadGroup();
+                        score = readGroup == null ? 0 : readGroup.hashCode();
+                        setScore(score);
+                        break;
+                }
+            }
+        }
+
 
         // Used for iterating over all alignments, e.g. for packing
 
@@ -293,63 +326,5 @@ public class AlignmentInterval extends Locus {
         public int getLastEnd() {
             return lastEnd;
         }
-
-
-        public int getRowNumber() {
-            return rowNumber;
-        }
-
-
-        public List<Alignment> getAlignments() {
-            return alignments;
-        }
-
-        public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
-
-            int adjustedCenter = (int) center;
-            Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
-            if (centerAlignment == null) {
-                setScore(Double.MAX_VALUE);
-            } else {
-                switch (option) {
-                    case START:
-                        setScore(centerAlignment.getStart());
-                        break;
-                    case STRAND:
-                        setScore(centerAlignment.isNegativeStrand() ? -1 : 1);
-                        break;
-                    case NUCELOTIDE:
-                        byte base = centerAlignment.getBase(adjustedCenter);
-                        byte ref = interval.getReference(adjustedCenter);
-                        if (base == 'N' || base == 'n') {
-                            setScore(Integer.MAX_VALUE - 1);
-                        } else if (base == ref) {
-                            setScore(Integer.MAX_VALUE);
-                        } else {
-                            int count = interval.getCount(adjustedCenter, base);
-                            byte phred = centerAlignment.getPhred(adjustedCenter);
-                            float score = -(count + (phred / 100.0f));
-                            setScore(score);
-                        }
-                        break;
-                    case QUALITY:
-                        setScore(-centerAlignment.getMappingQuality());
-                        break;
-                    case SAMPLE:
-                        String sample = centerAlignment.getSample();
-                        score = sample == null ? 0 : sample.hashCode();
-                        setScore(score);
-                        break;
-                    case READ_GROUP:
-                        String readGroup = centerAlignment.getReadGroup();
-                        score = readGroup == null ? 0 : readGroup.hashCode();
-                        setScore(score);
-                        break;
-                }
-            }
-        }
-
-
     }
 }
-

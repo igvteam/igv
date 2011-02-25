@@ -25,6 +25,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
+import org.broad.igv.sam.reader.AlignmentCounts;
 import org.broad.igv.sam.reader.CachingQueryReader;
 import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
@@ -190,7 +191,7 @@ public class AlignmentDataManager {
             List<AlignmentInterval.Row> alignmentRows = loadedInterval.getAlignmentRows();
             List<Alignment> alignments = new ArrayList(Math.min(50000, alignmentRows.size() * 1000));
             for (AlignmentInterval.Row row : alignmentRows) {
-                for (Alignment al : row.getAlignments()) {
+                for (Alignment al : row.alignments) {
                     if (al instanceof PairedAlignment) {
                         PairedAlignment pair = (PairedAlignment) al;
                         alignments.add(pair.firstAlignment);
@@ -303,9 +304,9 @@ public class AlignmentDataManager {
 
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
-                    List<CachingQueryReader.AlignmentCounts> counts = new ArrayList();
+                    List<AlignmentCounts> counts = new ArrayList();
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts);
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels);
 
                     final AlignmentLoader alignmentLoader = new AlignmentLoader();
                     List<AlignmentInterval.Row> alignmentRows = alignmentLoader.loadAndPackAlignments(iter, maxLevels,

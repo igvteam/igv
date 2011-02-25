@@ -123,7 +123,7 @@ public class IGVHttpUtils {
 
 
     public static InputStream openConnectionStream(URL url) throws IOException {
-        if (url.getProtocol().toUpperCase().equals("FTP")) {
+        if (url.getProtocol().toLowerCase().equals("ftp")) {
             String host = url.getHost();
             String file = url.getPath();
             FTPClient ftp = FTPUtils.connect(host);
@@ -375,7 +375,7 @@ public class IGVHttpUtils {
     public static boolean resourceAvailable(URL url) {
         URLConnection conn = null;
 
-        if (url.getProtocol().equals("ftp")) {
+        if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
         }
 

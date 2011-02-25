@@ -33,7 +33,7 @@ import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
-import org.broad.igv.util.stats.Histogram;
+import org.broad.igv.util.stats.Distribution;
 import org.broad.tribble.Feature;
 
 import java.io.File;
@@ -84,7 +84,7 @@ public class CoverageCounter {
 
     private boolean computeTDF = true;
 
-    private Histogram coverageHistogram;
+    private Distribution coverageHistogram;
     private static final double LOG_1__1 = 0.09531018;
 
     private String interval = null;
@@ -173,7 +173,7 @@ public class CoverageCounter {
                 } else if (opt.equals("r")) {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
                 } else if (opt.equals("h")) {
-                    coverageHistogram = new Histogram(200);
+                    coverageHistogram = new Distribution(200);
                 } else {
                     System.out.println("Unknown coverage option: " + opt);
                 }

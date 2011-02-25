@@ -115,7 +115,7 @@ public class BAMCachingQueryReaderTest {
         reader.close();
 
         CachingQueryReader cachingReader = new CachingQueryReader(new BAMRemoteQueryReader(loc));
-        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList());
+        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(), 100);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {

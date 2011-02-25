@@ -26,7 +26,7 @@ package org.broad.igv.sam;
 import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.sam.reader.CachingQueryReader;
+import org.broad.igv.sam.reader.AlignmentCounts;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -51,7 +51,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -162,7 +161,7 @@ public class CoverageTrack extends AbstractTrack {
 
             if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
                     (int) context.getEndLocation())) {
-                List<CachingQueryReader.AlignmentCounts> counts = interval.counts;
+                List<AlignmentCounts> counts = interval.counts;
                 intervalRenderer.paint(context, rect, counts);
             }
         }
@@ -401,7 +400,7 @@ public class CoverageTrack extends AbstractTrack {
     class IntervalRenderer {
 
 
-        private void paint(RenderContext context, Rectangle rect, List<CachingQueryReader.AlignmentCounts> countList) {
+        private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
 
             Graphics2D graphics = context.getGraphic2DForColor(AlignmentRenderer.grey1);
 
@@ -411,7 +410,7 @@ public class CoverageTrack extends AbstractTrack {
             // Temporary until proper windowing is implemented
             int lastpX = -1;
 
-            for (CachingQueryReader.AlignmentCounts alignmentCounts : countList) {
+            for (AlignmentCounts alignmentCounts : countList) {
 
                 for (int pos = alignmentCounts.getStart(); pos < alignmentCounts.getEnd(); pos++) {
 
@@ -554,7 +553,7 @@ public class CoverageTrack extends AbstractTrack {
                     int pX,
                     int dX,
                     char nucleotide,
-                    CachingQueryReader.AlignmentCounts interval,
+                    AlignmentCounts interval,
                     boolean isLog) {
 
             int count = interval.getCount(pos, (byte) nucleotide);
@@ -607,7 +606,7 @@ public class CoverageTrack extends AbstractTrack {
                           int dX,
                           char nucleotide,
                           boolean isPositive,
-                          CachingQueryReader.AlignmentCounts interval) {
+                          AlignmentCounts interval) {
 
 
             Color c = AlignmentRenderer.getNucleotideColors().get(nucleotide);

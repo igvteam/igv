@@ -264,4 +264,11 @@ public class PairedAlignment implements Alignment {
     }
 
 
+    public Alignment getFirstAlignment() {
+        return firstAlignment;
+    }
+
+    public Alignment getSecondAlignment() {
+        return secondAlignment;
+    }
 }
