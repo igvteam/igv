@@ -59,7 +59,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE
     }
 
     public enum ColorOption {
@@ -676,6 +676,18 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
+        JMenuItem m7 = new JMenuItem("by insert size");
+        m7.addActionListener(new TrackMenuUtils.TrackActionListener() {
+
+            public void action() {
+
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE, frame);
+                refresh();
+
+            }
+        });
+
+
         if (frame != null && frame.getScale() >= MIN_ALIGNMENT_SPACING) {
             item.setEnabled(false);
         }
@@ -687,6 +699,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m4);
         item.add(m5);
         item.add(m6);
+        item.add(m7);
         menu.add(item);
     }
 

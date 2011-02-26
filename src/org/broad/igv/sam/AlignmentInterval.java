@@ -272,7 +272,10 @@ public class AlignmentInterval extends Locus {
                         score = readGroup == null ? 0 : readGroup.hashCode();
                         setScore(score);
                         break;
-                }
+                    case INSERT_SIZE:
+                         setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
+                         break;
+                 }
             }
         }
 

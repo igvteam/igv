@@ -364,6 +364,8 @@ public class CommandExecutor {
 
         } else if (option.equals("readGroup") || option.equals("read_group")) {
             return AlignmentTrack.SortOption.READ_GROUP;
+        } else if (option.equals("insertSize") || option.equals("insert_size")) {
+            return AlignmentTrack.SortOption.INSERT_SIZE;
         }
         return AlignmentTrack.SortOption.NUCELOTIDE;
     }
