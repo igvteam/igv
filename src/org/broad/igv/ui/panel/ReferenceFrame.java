@@ -284,9 +284,9 @@ public class ReferenceFrame {
         }
 
         // If zoomed in sufficiently track the center position
-        if (locationScale < 10) {
-            IGVMainFrame.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
-        }
+        //if (locationScale < 10) {
+        //    IGVMainFrame.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
+        //}
 
         // Repaint
         IGVMainFrame.getInstance().repaintDataAndHeaderPanels();

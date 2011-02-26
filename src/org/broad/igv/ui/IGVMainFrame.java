@@ -145,7 +145,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     // Glass panes
     Component glassPane;
     GhostGlassPane dNdGlassPane;
-    private JMenu geneListMenu;
 
     // Tracksets
     //private final Map<String, TrackPanelScrollPane> trackSetScrollPanes = new Hashtable();

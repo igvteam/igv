@@ -27,6 +27,7 @@
 package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
@@ -77,7 +78,7 @@ public class DataPanel extends JComponent implements Paintable {
         this.setBackground(Color.white);
         setFocusable(true);
         setAutoscrolls(true);
-        setToolTipText("Data panel");
+        setToolTipText("");
         painter = new DataPanelPainter();
         //add a listener that kills the tooltip when we navigate away from tne window
         addFocusListener(new DataPanelFocusListener(this));
@@ -314,7 +315,7 @@ public class DataPanel extends JComponent implements Paintable {
                 trackY += UIConstants.groupGap;
             }
             for (Track track : group.getTracks()) {
-                if(track == null) continue;
+                if (track == null) continue;
                 if (track.isVisible()) {
 
                     int trackWidth = getWidth();
@@ -397,14 +398,12 @@ public class DataPanel extends JComponent implements Paintable {
      * @param y
      */
     public void updateTooltipText(int x, int y) {
-        StringBuffer popupTextBuffer = new StringBuffer();
         double location = frame.getChromosomePosition(x);
         double displayLocation = location + 1;
 
-        popupTextBuffer.append("<html>");
-
         Track track = null;
         List<MouseableRegion> regions = parent.getTrackRegions();
+        StringBuffer popupTextBuffer = new StringBuffer();
         for (MouseableRegion mouseRegion : regions) {
             if (mouseRegion.containsPoint(x, y)) {
                 track = mouseRegion.getTracks().iterator().next();
@@ -433,10 +432,14 @@ public class DataPanel extends JComponent implements Paintable {
             }
         }
 
-        popupTextBuffer.append("<br>Location: ");
-        popupTextBuffer.append(frame.getChrName() + ":" + locationFormatter.format((int) displayLocation));
+        String puText = popupTextBuffer.toString().trim();
+        if (puText.length() > 0) {
 
-        setToolTipText(popupTextBuffer.toString());
+            //popupTextBuffer.append("<br>Location: ");
+            //popupTextBuffer.append(frame.getChrName() + ":" + locationFormatter.format((int) displayLocation));
+
+            setToolTipText("<html>" + puText);
+        }
     }
 
     private boolean isWaitingForToolTipText = false;
@@ -472,10 +475,9 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
     /**
-     *
      * @param track
      * @param location in genomic coordinates
-     * @param y pixel position in panel coordinates
+     * @param y        pixel position in panel coordinates
      * @return
      */
     String getPopUpText(Track track, double location, int y) {
@@ -612,7 +614,11 @@ public class DataPanel extends JComponent implements Paintable {
         @Override
         public void mouseMoved(MouseEvent e) {
             tooltipTextPosition = e.getPoint();
-
+            if (!frame.getChrName().equals(Globals.CHR_ALL)) {
+                int location = (int) frame.getChromosomePosition(e.getX()) + 1;
+                String position = frame.getChrName() + ":" + locationFormatter.format(location);
+                IGVMainFrame.getInstance().setStatusBarMessage(position);
+            }
         }
 
         /**
