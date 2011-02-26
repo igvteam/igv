@@ -30,6 +30,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
+import org.broad.igv.sam.PairedAlignment;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
@@ -404,9 +405,10 @@ public class CachingQueryReader {
          */
         //private int lastStart = -1;
         //private int bucketCount = 0;
-        private List<Alignment> currentBucket;
+        private HashMap<String, Alignment> currentBucket;
         private List<Alignment> pairedBucket;
         private Set<String> unmappedPairs;
+        private Set<String> currentUnmappedPairs;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
 
@@ -424,9 +426,10 @@ public class CachingQueryReader {
 
             // TODO -- compute this value from the data
             //maxBucketSize = (maxDepth / 10) + 1;
-            currentBucket = new ArrayList(5 * maxDepth);
+            currentBucket = new HashMap(5 * maxDepth);
             pairedBucket = new ArrayList(maxDepth);
             unmappedPairs = new HashSet(5 * maxDepth);
+            currentUnmappedPairs = new HashSet(maxDepth);
         }
 
         public int getTileNumber() {
@@ -453,11 +456,19 @@ public class CachingQueryReader {
                 depthCount++;
             }
 
-            if (unmappedPairs.contains(record.getReadName())) {
+            final String readName = record.getReadName();
+            if (unmappedPairs.contains(readName)) {
                 pairedBucket.add(record);
-                unmappedPairs.remove(record.getReadName());
+                unmappedPairs.remove(readName);
             } else {
-                currentBucket.add(record);
+                if (currentBucket.containsKey(readName)) {
+                    PairedAlignment pa = new PairedAlignment(currentBucket.get(readName));
+                    pa.setSecondAlignment(record);
+                    currentBucket.put(readName, pa);
+                } else {
+                    currentBucket.put(readName, record);
+                }
+
             }
             counts.incCounts(record);
         }
@@ -479,33 +490,44 @@ public class CachingQueryReader {
             currentBucket.clear();
         }
 
+
+        /**
+         * Sample the current bucket of alignments to achieve the desired depth.
+         * @return
+         */
         private List<Alignment> sampleCurrentBucket() {
 
+            List sampledList = new ArrayList(maxDepth);
 
-            List subsetList = new ArrayList(maxDepth);
+            sampledList.addAll(pairedBucket);
 
-            subsetList.addAll(pairedBucket);
-            if (pairedBucket.size() + currentBucket.size() < maxDepth) {
-                subsetList.addAll(currentBucket);
+            if (pairedBucket.size() + 2 * currentBucket.size() < maxDepth) {
+                sampledList.addAll(currentBucket.values());
             } else {
-                int n = maxDepth - subsetList.size();
-                for (int i = 0; i < n; i++) {
-                    Alignment a = currentBucket.remove(RAND.nextInt(currentBucket.size()));
-                    if (a.isPaired() && a.getMate().isMapped()) {
-                        unmappedPairs.add(a.getReadName());
+
+                ArrayList<Alignment> currentBucketList = new ArrayList(currentBucket.values());
+                while (sampledList.size() < maxDepth && currentBucketList.size() > 0) {
+                    Alignment a = currentBucketList.remove(RAND.nextInt(currentBucketList.size()));
+                    if (a instanceof PairedAlignment) {
+                        sampledList.add(((PairedAlignment) a).getFirstAlignment());
+                        sampledList.add(((PairedAlignment) a).getSecondAlignment());
+                    } else {
+                        if (a.isPaired() && a.isProperPair()) {
+                            unmappedPairs.add(a.getReadName());
+                        }
+                        sampledList.add(a);
                     }
-                    subsetList.add(a);
                 }
             }
 
-            Collections.sort(subsetList, new Comparator<Alignment>() {
+
+            Collections.sort(sampledList, new Comparator<Alignment>() {
                 public int compare(Alignment alignment, Alignment alignment1) {
                     return alignment.getStart() - alignment1.getStart();
                 }
             });
 
-
-            return subsetList;
+            return sampledList;
 
         }
 
@@ -538,6 +560,7 @@ public class CachingQueryReader {
             return counts;
         }
     }
+
 
 }
 

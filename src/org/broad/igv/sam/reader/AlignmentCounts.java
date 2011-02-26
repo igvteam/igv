@@ -307,13 +307,15 @@ public class AlignmentCounts {
         }
     }
 
+
     private void incCounts(AlignmentBlock block, boolean isNegativeStrand) {
         int start = block.getStart();
         byte[] bases = block.getBases();
         if (bases != null) {
             for (int i = 0; i < bases.length; i++) {
                 int pos = start + i;
-                byte q = block.getQuality(i);
+                // NOTE:  the direct access block.qualities is intentional,  profiling reveals this to be a critical bottleneck
+                byte q = block.qualities[i];
                 // TODO -- handle "="
                 byte n = bases[i];
                 incCount(pos, n, q, isNegativeStrand);

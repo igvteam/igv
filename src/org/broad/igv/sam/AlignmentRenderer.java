@@ -125,23 +125,25 @@ public class AlignmentRenderer implements FeatureRenderer {
                     break;
                 }
 
-                Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
-
-                Graphics2D g = context.getGraphic2DForColor(alignmentColor);
-                g.setFont(font);
 
                 // If the alignment is 3 pixels or less,  draw alignment as posA single block,
                 // further detail would not be seen and just add to drawing overhead
                 if (pixelEnd - pixelStart < 4) {
+                    Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+                    Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+                    g.setFont(font);
+
                     int w = Math.max(1, (int) (pixelEnd - pixelStart));
                     int h = (int) Math.max(1, rect.getHeight() - 2);
                     int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
                 } else {
                     if (alignment instanceof PairedAlignment) {
-                        drawPairedAlignment((PairedAlignment) alignment, rect, g, context, alignmentColor,
-                                renderOptions, leaveMargin, selectedReadNames);
+                        drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames);
                     } else {
+                        Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+                        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+                        g.setFont(font);
                         drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
                     }
                 }
@@ -226,20 +228,26 @@ public class AlignmentRenderer implements FeatureRenderer {
     private void drawPairedAlignment(
             PairedAlignment pair,
             Rectangle rect,
-            Graphics2D g,
             RenderContext context,
-            Color alignmentColor,
             AlignmentTrack.RenderOptions renderOptions,
             boolean leaveMargin,
             Map<String, Color> selectedReadNames) {
 
+        double locScale = context.getScale();
+        Color alignmentColor = getAlignmentColor(pair.firstAlignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+        g.setFont(font);
         drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
+
         if (pair.secondAlignment != null) {
+
+            alignmentColor = getAlignmentColor(pair.secondAlignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+            g = context.getGraphic2DForColor(alignmentColor);
+
             drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
 
             Graphics2D gLine = context.getGraphic2DForColor(grey1);
             double origin = context.getOrigin();
-            double locScale = context.getScale();
             int startX = (int) ((pair.firstAlignment.getEnd() - origin) / locScale);
             startX = Math.max(rect.x, startX);
 
@@ -502,7 +510,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     }
 
                     if (shadeBases) {
-                        byte qual = block.getQuality(loc - start);
+                        byte qual = block.qualities[loc - start];
                         color = getShadedColor(qual, color, prefs);
                     }
 

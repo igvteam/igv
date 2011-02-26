@@ -23,17 +23,24 @@
  */
 package org.broad.igv.sam;
 
+import java.util.Arrays;
+
 public class AlignmentBlock {
 
     private int start;
     private byte[] bases;
-    private byte[] qualities;
+    public byte[] qualities;
     private boolean softClipped = false;
 
     public AlignmentBlock(int start, byte[] bases, byte[] qualities) {
         this.start = start;
         this.bases = bases;
-        this.qualities = qualities;
+        if (qualities == null || qualities.length < bases.length) {
+            this.qualities = new byte[bases.length];
+            Arrays.fill(qualities, (byte) 126);
+        } else {
+            this.qualities = qualities;
+        }
     }
 
     public boolean contains(int position) {
@@ -50,7 +57,7 @@ public class AlignmentBlock {
     }
 
     public byte getQuality(int offset) {
-        return   qualities.length > offset ? qualities[offset] : (byte) 126;
+        return qualities[offset];
 
     }
 

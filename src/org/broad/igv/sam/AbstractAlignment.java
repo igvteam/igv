@@ -134,7 +134,7 @@ public abstract class AbstractAlignment implements Alignment {
         for (AlignmentBlock block : this.alignmentBlocks) {
             if (block.contains(basePosition)) {
                 int offset = basePosition - block.getStart();
-                byte qual = block.getQuality(offset);
+                byte qual = block.qualities[offset];
                 return qual;
             }
         }

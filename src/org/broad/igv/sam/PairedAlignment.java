@@ -128,12 +128,17 @@ public class PairedAlignment implements Alignment {
 
 
     public int getMappingQuality() {
-        return firstAlignment.getMappingQuality();
+        if (secondAlignment == null) {
+            return firstAlignment.getMappingQuality();
+        } else {
+            return Math.max(firstAlignment.getMappingQuality(), secondAlignment.getMappingQuality());
+        }
     }
 
 
     public boolean isDuplicate() {
-        return firstAlignment.isDuplicate();
+        return firstAlignment.isDuplicate() &&
+                (secondAlignment == null || secondAlignment.isDuplicate());
     }
 
 
