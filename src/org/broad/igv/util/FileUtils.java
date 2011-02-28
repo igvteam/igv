@@ -351,16 +351,16 @@ public class FileUtils {
         OutputStream out = null;
 
         try {
-            log.info("Downloading to " + outputFile.getAbsolutePath());
+            //log.info("Downloading to " + outputFile.getAbsolutePath());
             out = new FileOutputStream(outputFile);
             byte[] buffer = new byte[64000];
             int bytes_read;
             while ((bytes_read = in.read(buffer)) != -1) {
-                log.info(" xferred " + bytes_read + " bytes");
+                //log.info(" xferred " + bytes_read + " bytes");
                 out.write(buffer, 0, bytes_read);
                 totalSize += bytes_read;
             }
-            log.info("Download complete.  Transferred " + totalSize + " bytes");
+            //log.info("Download complete.  Transferred " + totalSize + " bytes");
         }
 
 
