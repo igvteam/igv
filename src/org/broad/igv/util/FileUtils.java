@@ -351,14 +351,20 @@ public class FileUtils {
         FileOutputStream out = null;
 
         try {
+            log.info("Downloading to " + outputFile.getAbsolutePath());
             out = new FileOutputStream(outputFile);
             byte[] buffer = new byte[64000];
             int bytes_read;
-            while ((bytes_read = in.read(buffer)) != -1)
+            while ((bytes_read = in.read(buffer)) != -1) {
+                log.info(" xferred " + bytes_read + " bytes");
                 out.write(buffer, 0, bytes_read);
+                totalSize += bytes_read;
+            }
+            log.info("Download complete.  Transferred " + totalSize + " bytes");
         }
 
-        catch (IOException e) {
+
+        catch (Exception e) {
             outputFile.delete();
             MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
                     "<br/>" + e.toString());
