@@ -742,15 +742,23 @@ public class AlignmentRenderer implements FeatureRenderer {
             //LR
             illuminaScheme.put("F1R2", LR_COLOR);
             illuminaScheme.put("F2R1", LR_COLOR);
+            illuminaScheme.put("F R ", LR_COLOR);
+            illuminaScheme.put("FR", LR_COLOR);
             //LL
             illuminaScheme.put("F1F2", LL_COLOR);
             illuminaScheme.put("F2F1", LL_COLOR);
+            illuminaScheme.put("F F ", LL_COLOR);
+            illuminaScheme.put("FF", LL_COLOR);
             //RR
             illuminaScheme.put("R1R2", RR_COLOR);
             illuminaScheme.put("R2R1", RR_COLOR);
+            illuminaScheme.put("R R ", RR_COLOR);
+            illuminaScheme.put("RR", RR_COLOR);
             //RL
             illuminaScheme.put("R1F2", RL_COLOR);
             illuminaScheme.put("R2F1", RL_COLOR);
+            illuminaScheme.put("R F ", RL_COLOR);
+            illuminaScheme.put("RF", RR_COLOR);
         }
         return illuminaScheme;
     }
