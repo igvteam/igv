@@ -348,7 +348,7 @@ public class FileUtils {
 
         int totalSize = 0;
 
-        FileOutputStream out = null;
+        OutputStream out = null;
 
         try {
             log.info("Downloading to " + outputFile.getAbsolutePath());
@@ -372,6 +372,7 @@ public class FileUtils {
         }
         finally {
             if (out != null) {
+                out.flush();
                 out.close();
             }
         }
