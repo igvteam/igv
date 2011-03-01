@@ -124,9 +124,10 @@ public class IGVHttpUtils {
 
     public static InputStream openConnectionStream(URL url) throws IOException {
         if (url.getProtocol().toLowerCase().equals("ftp")) {
+            String userInfo = url.getUserInfo();
             String host = url.getHost();
             String file = url.getPath();
-            FTPClient ftp = FTPUtils.connect(host);
+            FTPClient ftp = FTPUtils.connect(host, userInfo);
             ftp.pasv();
             ftp.retr(file);
             return new FTPStream(ftp);

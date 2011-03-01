@@ -39,12 +39,14 @@ public class SeekableFTPStreamHelper {
     private long position = 0;
     private String host;
     private String path;
+    private String userInfo;
     FTPClient ftp = null;
 
     SeekableFTPStreamHelper(URL url) throws IOException {
+        this.userInfo = url.getUserInfo();
         this.host = url.getHost();
         this.path = url.getPath();
-        ftp = FTPUtils.connect(host);
+        ftp = FTPUtils.connect(host, userInfo);
     }
 
     public void seek(long position) {
@@ -74,7 +76,7 @@ public class SeekableFTPStreamHelper {
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
         if (ftp == null) {
-            ftp = FTPUtils.connect(host);
+            ftp = FTPUtils.connect(host, userInfo);
         }
 
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
@@ -136,7 +138,7 @@ public class SeekableFTPStreamHelper {
         if (ftp != null) {
             ftp.disconnect();
         }
-        ftp = FTPUtils.connect(host);
+        ftp = FTPUtils.connect(host, userInfo);
     }
 
 
