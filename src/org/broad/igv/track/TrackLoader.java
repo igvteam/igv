@@ -836,7 +836,7 @@ public class TrackLoader {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
                     "<br><br>Note: The index file can be created using igvtools and must be in the same directory as the .sam file.");
         } catch (Exception e) {
-            MessageUtils.showMessage("Error: " + e.getMessage());
+            MessageUtils.showMessage("Error loading " + locator.getPath() + ": " + e.getMessage());
         }
     }
 

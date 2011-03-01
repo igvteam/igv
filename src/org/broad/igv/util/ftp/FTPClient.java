@@ -45,13 +45,13 @@ public class FTPClient {
     private String passiveHost;
     private int passivePort;
     long restPosition = -1;
-
+    String host;
 
     /**
      * Connects to the given FTP host on the default port.
      */
     public FTPReply connect(String host) throws IOException {
-
+        this.host = host;
         commandSocket = new Socket(host, 21);
         commandStream = new PrintStream(commandSocket.getOutputStream());
         responseReader = new BufferedReader(new InputStreamReader(commandSocket.getInputStream()));
@@ -165,6 +165,7 @@ public class FTPClient {
     }
 
     public void closeDataStream() throws IOException {
+        log.debug("Close data stream");
         if (dataStream != null) {
             try {
                 Thread.sleep(3000);
@@ -199,6 +200,8 @@ public class FTPClient {
         commandStream = null;
         responseReader = null;
         commandSocket = null;
+
+        log.info("Disconnected from: " + host);
 
     }
 

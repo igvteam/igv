@@ -159,7 +159,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
 
     // TODO -- revisit caching scehme,  do something for ftp loads
 
-    File getIndexFile(URL bamURL) {
+    File getIndexFile(URL bamURL) throws IOException {
 
         String bamURLString = bamURL.toString();
 
@@ -184,7 +184,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         return indexName;
     }
 
-    private void loadIndexFile(String bamURL, File indexFile) {
+    private void loadIndexFile(String bamURL, File indexFile) throws IOException {
         InputStream is = null;
         OutputStream os = null;
 
@@ -212,11 +212,6 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             while ((bytesRead = is.read(buf)) != -1) {
                 os.write(buf, 0, bytesRead);
             }
-
-        }
-        catch (IOException e) {
-            MessageUtils.showMessage("Error loading index file: " + indexFile.getAbsolutePath());
-            log.error("Error downloading index file ", e);
 
         }
         finally {

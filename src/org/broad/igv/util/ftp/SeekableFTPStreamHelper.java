@@ -128,8 +128,12 @@ public class SeekableFTPStreamHelper {
 
         finally {
             ftp.closeDataStream();
-            FTPReply reply = ftp.getReply();  // <== MUST READ THE REPLY 
+            FTPReply reply = ftp.getReply();  // <== MUST READ THE REPLY
             log.debug(reply.getReplyString());
+            if(!reply.isSuccess()) {
+                ftp.disconnect();
+                ftp = null;
+            }
         }
     }
 
