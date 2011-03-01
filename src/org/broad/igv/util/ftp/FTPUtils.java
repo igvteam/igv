@@ -20,19 +20,21 @@
 package org.broad.igv.util.ftp;
 
 
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static junit.framework.Assert.assertTrue;
 
 /**
  * @author jrobinso
  * @date Aug 31, 2010
  */
 public class FTPUtils {
+
+    private static Logger log = Logger.getLogger(FTPUtils.class);
 
     public static boolean resourceAvailable(URL url) {
         InputStream is = null;
@@ -60,26 +62,45 @@ public class FTPUtils {
 
     /**
      * Connect to an FTP server anonymously
-     * 
+     *
      * @param host
+     * @param userInfo
      * @return
      * @throws IOException
      */
-    public static FTPClient connect(String host)  throws IOException {
+    public static FTPClient connect(String host, String userInfo) throws IOException {
 
         FTPClient ftp = new FTPClient();
         FTPReply reply = ftp.connect(host);
-        assertTrue(reply.isSuccess());
+        if (!reply.isSuccess()) {
+            throw new RuntimeException("Could not connect to " + host);
+        }
 
-        // TODO -- handle failures
-        reply = ftp.login("anonymous", "igv@broadinstitute.org");
-        assertTrue(reply.isSuccess());
+        String user = "anonymous";
+        String password = "igv@broadinstitute.org";
+        if(userInfo != null) {
+            String [] tmp = userInfo.split(":");
+            user = tmp[0];
+            if(tmp.length > 1) {
+                password = tmp[1];
+            }
+        }
+
+        reply = ftp.login(user, password);
+        if (!reply.isSuccess()) {
+            throw new RuntimeException("Login failure for host: " + host);
+        }
 
         reply = ftp.binary();
-        assertTrue(reply.isSuccess());
+        if (!(reply.isSuccess())) {
+            throw new RuntimeException("Could not set binary mode on host: " + host);
+        }
+
+        log.info("Connected to " + host);
 
         return ftp;
 
     }
+
 }
 

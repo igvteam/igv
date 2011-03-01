@@ -72,7 +72,7 @@ public class FTPClient {
      * commands that do not require an additional data port.
      */
     public FTPReply executeCommand(String command) throws IOException {
-        log.info("COMMAND: " + command);
+        log.debug("COMMAND: " + command);
         commandStream.println(command);
         return new FTPReply(responseReader);
     }
@@ -110,7 +110,7 @@ public class FTPClient {
 
 
         int code = reply.getCode();
-        log.info("Reply code = " + code);
+        log.debug("Reply code = " + code);
 
         int opening = response.indexOf('(');
         int closing = response.indexOf(')', opening + 1);
@@ -122,7 +122,7 @@ public class FTPClient {
                         + tokenizer.nextToken() + "." + tokenizer.nextToken();
                 passivePort = Integer.parseInt(tokenizer.nextToken()) * 256
                         + Integer.parseInt(tokenizer.nextToken());
-                log.info("passive host/port = " + passiveHost + " " + passivePort);
+                log.debug("passive host/port = " + passiveHost + " " + passivePort);
             } catch (Exception e) {
                 throw new IOException("SimpleFTP received bad data link information: "
                         + response);

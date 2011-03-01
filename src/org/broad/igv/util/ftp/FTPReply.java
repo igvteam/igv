@@ -39,7 +39,7 @@ public class FTPReply {
         do {
             
             reply = inputStream.readLine();
-            log.info("RESPONSE:" + reply);
+            log.debug("RESPONSE:" + reply);
         } while (reply != null &&
                 !(Character.isDigit(reply.charAt(0)) &&
                         Character.isDigit(reply.charAt(1)) &&

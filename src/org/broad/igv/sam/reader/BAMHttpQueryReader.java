@@ -164,7 +164,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         String bamURLString = bamURL.toString();
 
         // Create a filename unique for this url;
-        String idxFilename = getCachedIndexFilename(bamURLString);
+        String idxFilename = getTmpIndexFilename(bamURLString);
 
         indexFile = new File(this.getCacheDirectory(), idxFilename);
         if (indexFile.exists()) {
@@ -177,7 +177,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
 
     }
 
-    private String getCachedIndexFilename(String bamURL) {
+    private String getTmpIndexFilename(String bamURL) {
         int tmp = bamURL.lastIndexOf("/");
         String prefix = tmp > 0 ? bamURL.substring(tmp + 1) : "index_";
         String indexName = prefix + System.currentTimeMillis() + ".bai";
