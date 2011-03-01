@@ -68,7 +68,6 @@ public class LRUCache<K, V> {
 
     private Map<K, V> getMap() {
         if (mapReference == null || mapReference.get() == null) {
-            System.out.println("Creating map");
             createMap();
         }
         return mapReference.get();

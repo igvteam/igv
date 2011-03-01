@@ -212,7 +212,7 @@ public class AlignmentDataManager {
                 }
             });
 
-            List<AlignmentInterval.Row> tmp = (new AlignmentLoader()).loadAndPackAlignments(
+            List<AlignmentInterval.Row> tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
                     maxLevels,
                     loadedInterval.getEnd(),
@@ -238,7 +238,7 @@ public class AlignmentDataManager {
         }
         RowIterator iter = new RowIterator(referenceFrame);
 
-        List<AlignmentInterval.Row> alignmentRows = (new AlignmentLoader()).loadAndPackAlignments(
+        List<AlignmentInterval.Row> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
                 maxLevels,
                 loadedInterval.getEnd(),
@@ -308,8 +308,8 @@ public class AlignmentDataManager {
 
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels);
 
-                    final AlignmentLoader alignmentLoader = new AlignmentLoader();
-                    List<AlignmentInterval.Row> alignmentRows = alignmentLoader.loadAndPackAlignments(iter, maxLevels,
+                    final AlignmentPacker alignmentPacker = new AlignmentPacker();
+                    List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter, maxLevels,
                             intervalEnd, loadAsPairs);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,

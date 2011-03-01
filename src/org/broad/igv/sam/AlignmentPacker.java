@@ -23,10 +23,8 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.AlignmentInterval.Row;
-import org.broad.igv.ui.UIConstants;
 
 import java.util.*;
 
@@ -53,9 +51,9 @@ import java.util.*;
  *
  * @author jrobinso
  */
-public class AlignmentLoader {
+public class AlignmentPacker {
 
-    private static Logger log = Logger.getLogger(AlignmentLoader.class);
+    private static Logger log = Logger.getLogger(AlignmentPacker.class);
 
     /**
      * Minimum gap between the end of one alignment and start of another.
@@ -69,7 +67,7 @@ public class AlignmentLoader {
      * @param iter      Iterator wrapping the collection of alignments
      * @param maxLevels the maximum number of levels (rows) to create
      */
-    public List<AlignmentInterval.Row> loadAndPackAlignments(
+    public List<AlignmentInterval.Row> packAlignments(
             Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
 
         Map<String, PairedAlignment> pairs = null;
