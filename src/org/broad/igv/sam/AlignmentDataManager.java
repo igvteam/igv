@@ -212,9 +212,11 @@ public class AlignmentDataManager {
                 }
             });
 
+            // When repacking keep all currently loaded alignments (don't limit to levels)
+            int max = Integer.MAX_VALUE;
             List<AlignmentInterval.Row> tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
-                    maxLevels,
+                    max,
                     loadedInterval.getEnd(),
                     loadAsPairs);
 
@@ -226,23 +228,32 @@ public class AlignmentDataManager {
     }
 
 
+
+    public void repackAlignments(ReferenceFrame referenceFrame) {
+        repackAlignments(referenceFrame, null);
+    }
+
+
     /**
      * Repack currently loaded alignments.
      *
      * @param referenceFrame
      */
-    public void repackAlignments(ReferenceFrame referenceFrame) {
+    public void repackAlignments(ReferenceFrame referenceFrame, SortOption option) {
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) {
             return;
         }
         RowIterator iter = new RowIterator(referenceFrame);
 
+        // When repacking keep all currently loaded alignments (don't limit to levels)
+        int max = Integer.MAX_VALUE;
         List<AlignmentInterval.Row> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
-                maxLevels,
+                max,
                 loadedInterval.getEnd(),
-                loadAsPairs);
+                loadAsPairs,
+                option);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }

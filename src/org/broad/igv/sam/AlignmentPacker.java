@@ -61,6 +61,12 @@ public class AlignmentPacker {
     public static final int MIN_ALIGNMENT_SPACING = 5;
 
 
+    public List<AlignmentInterval.Row> packAlignments(
+            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
+        return packAlignments(iter, maxLevels, end, pairAlignments, null);
+    }
+
+
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
@@ -68,18 +74,8 @@ public class AlignmentPacker {
      * @param maxLevels the maximum number of levels (rows) to create
      */
     public List<AlignmentInterval.Row> packAlignments(
-            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
-
-        Map<String, PairedAlignment> pairs = null;
-        if (pairAlignments) {
-            pairs = new HashMap(1000);
-        }
-
-        List<Row> alignmentRows = new ArrayList(maxLevels);
-        if (iter == null || !iter.hasNext()) {
-            return alignmentRows;
-        }
-
+            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments,
+            AlignmentTrack.SortOption groupBy) {
 
         // Compares 2 alignments by length.
         Comparator lengthComparator = new Comparator<Alignment>() {
@@ -89,6 +85,67 @@ public class AlignmentPacker {
 
             }
         };
+
+        List<Row> alignmentRows = new ArrayList(1000);
+        if (iter == null || !iter.hasNext()) {
+            return alignmentRows;
+        }
+
+        if (groupBy == null) {
+            pack(iter, maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+        } else {
+            // Separate by group
+            List<Alignment> nullGroup = new ArrayList();
+            HashMap<String, List<Alignment>> groupedAlignments = new HashMap();
+            while (iter.hasNext()) {
+                Alignment al = iter.next();
+                String groupKey = getGroupValue(al, groupBy);
+                if (groupKey == null) nullGroup.add(al);
+                else {
+                    List<Alignment> group = groupedAlignments.get(groupKey);
+                    if (group == null) {
+                        group = new ArrayList(1000);
+                        groupedAlignments.put(groupKey, group);
+                    }
+                    group.add(al);
+                }
+            }
+            List<String> keys = new ArrayList(groupedAlignments.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
+                List<Alignment> group = groupedAlignments.get(key);
+                pack(group.iterator(), maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+            }
+            pack(nullGroup.iterator(), maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+        }
+
+        return alignmentRows;
+
+    }
+
+    private String getGroupValue(Alignment al, AlignmentTrack.SortOption groupBy) {
+        switch (groupBy) {
+
+            case STRAND:
+                return String.valueOf(al.isNegativeStrand());
+            case SAMPLE:
+                return al.getSample();
+            case READ_GROUP:
+                return al.getReadGroup();
+        }
+        return null;
+    }
+
+    private void pack(Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows) {
+
+        if(!iter.hasNext()) {
+            return;
+        }
+
+       Map<String, PairedAlignment> pairs = null;
+        if (pairAlignments) {
+            pairs = new HashMap(1000);
+        }
 
 
         // Strictly speaking we should loop discarding dupes, etc.
@@ -179,7 +236,7 @@ public class AlignmentPacker {
         long t0 = System.currentTimeMillis();
         int allocatedCount = 0;
         int nextStart = start;
-        AlignmentInterval.Row currentRow = new Row();
+        Row currentRow = new Row();
         while (allocatedCount < totalCount) { // && alignmentRows.size() < maxLevels) {
 
             // Loop through alignments until we reach the end of the interval
@@ -228,8 +285,6 @@ public class AlignmentPacker {
         if (currentRow.alignments.size() > 0 && alignmentRows.size() < maxLevels) {
             alignmentRows.add(currentRow);
         }
-
-        return alignmentRows;
 
     }
 

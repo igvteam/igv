@@ -293,11 +293,20 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
      * center appear left to right by start position
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame) {
-        dataManager.sortRows(option, referenceFrame);
+        if (option == SortOption.STRAND || option == SortOption.READ_GROUP || option == SortOption.SAMPLE) {
+            dataManager.repackAlignments(referenceFrame, option);
+        } else {
+            dataManager.sortRows(option, referenceFrame);
+        }
     }
 
     public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location) {
-        dataManager.sortRows(option, referenceFrame, location);
+
+        if (option == SortOption.STRAND || option == SortOption.READ_GROUP || option == SortOption.SAMPLE) {
+            dataManager.repackAlignments(referenceFrame, option);
+        } else {
+            dataManager.sortRows(option, referenceFrame, location);
+        }
     }
 
 
@@ -839,7 +848,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
-                        dataManager.setLoadAsPairs(item.isSelected(), te.getFrame()); 
+                        dataManager.setLoadAsPairs(item.isSelected(), te.getFrame());
                         refresh();
                     }
                 });
