@@ -321,46 +321,30 @@ public class FileUtils {
     }
 
 
-    public static void copyFile(File from, File to) throws IOException {
-
-        FileInputStream is = null;
-
-        try {
-            is = new FileInputStream(from);
-            createFileFromStream(is, to);
-
-        }
-        finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-    }
-
     /**
      * Create a file from an input stream.
      *
-     * @param in
+     * @param url
      * @param outputFile
      * @throws java.io.IOException
      */
-    public static void createFileFromStream(InputStream in, File outputFile) throws IOException {
+    public static void downloadFile(URL url, File outputFile) throws IOException {
 
         int totalSize = 0;
 
         OutputStream out = null;
-
+        InputStream is = null;
         try {
-            //log.info("Downloading to " + outputFile.getAbsolutePath());
+            is = url.openStream();
+            log.info("Downloading to " + outputFile.getAbsolutePath());
             out = new FileOutputStream(outputFile);
-            byte[] buffer = new byte[64000];
-            int bytes_read;
-            while ((bytes_read = in.read(buffer)) != -1) {
-                //log.info(" xferred " + bytes_read + " bytes");
-                out.write(buffer, 0, bytes_read);
-                totalSize += bytes_read;
+            byte[] buf = new byte[4 * 1024]; // 4K buffer
+            int bytesRead;
+            while ((bytesRead = is.read(buf)) != -1) {
+                out.write(buf, 0, bytesRead);
+                totalSize += bytesRead;
             }
-            //log.info("Download complete.  Transferred " + totalSize + " bytes");
+            log.info("Download complete.  Transferred " + totalSize + " bytes");
         }
 
 
@@ -371,6 +355,54 @@ public class FileUtils {
 
         }
         finally {
+            if(is != null) {
+                is.close();
+            }
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    /**
+     * Create a file from an input stream.
+     *
+     * @param inputFile
+     * @param outputFile
+     * @throws java.io.IOException
+     */
+    public static void copyFile(File inputFile, File outputFile) throws IOException {
+
+        int totalSize = 0;
+
+        OutputStream out = null;
+        InputStream in = null;
+        try {
+            log.info("Downloading to " + outputFile.getAbsolutePath());
+            in = new FileInputStream(inputFile);
+            out = new FileOutputStream(outputFile);
+            byte[] buffer = new byte[64000];
+            int bytes_read;
+            while ((bytes_read = in.read(buffer)) != -1) {
+                log.info(" xferred " + bytes_read + " bytes");
+                out.write(buffer, 0, bytes_read);
+                totalSize += bytes_read;
+            }
+            log.info("Download complete.  Transferred " + totalSize + " bytes");
+        }
+
+
+        catch (Exception e) {
+            outputFile.delete();
+            MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
+                    "<br/>" + e.toString());
+
+        }
+        finally {
+            if(in != null) {
+                in.close();
+            }
             if (out != null) {
                 out.flush();
                 out.close();

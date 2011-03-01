@@ -397,7 +397,6 @@ public class GenomeManager {
     private void refreshCache(File archiveFile, URL genomeArchiveURL) {
         // Look in cache first
 
-        InputStream is = null;
 
         try {
             if (archiveFile.exists()) {
@@ -406,15 +405,13 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
-                    is = IGVHttpUtils.openConnectionStream(genomeArchiveURL);
-                    FileUtils.createFileFromStream(is, tmpFile);
+                    FileUtils.downloadFile(genomeArchiveURL, tmpFile);
                     FileUtils.copyFile(tmpFile, archiveFile);
                     tmpFile.deleteOnExit();
                 }
             } else {
                 // Copy file directly from the server to local cache.
-                is = IGVHttpUtils.openConnectionStream(genomeArchiveURL);
-                FileUtils.createFileFromStream(is, archiveFile);
+                FileUtils.downloadFile(genomeArchiveURL, archiveFile);
             }
         }
         catch (Exception e) {
@@ -422,15 +419,7 @@ public class GenomeManager {
             MessageUtils.showMessage(("An error was encountered refreshing the genome cache: " + e.getMessage() +
                     "<br> If this problem persists please contact igv-help@broadinstitute.org"));
         }
-        finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    log.error("Error closing genome stream: " + genomeArchiveURL.toString(), e);
-                }
-            }
-        }
+
     }
 
 
