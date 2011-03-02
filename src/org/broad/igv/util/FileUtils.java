@@ -347,7 +347,10 @@ public class FileUtils {
             URLConnection connection = IGVHttpUtils.openConnection(url);
             int contentLength = connection.getContentLength();
 
-            while (downloaded < contentLength && nTries < maxTries) {
+            if (contentLength <= 0) {
+                log.info("Content-length = 0");
+                // Try downloading until a loop returns zero bytes
+
                 is = connection.getInputStream();
                 int bytesRead;
                 while ((bytesRead = is.read(buf)) != -1) {
@@ -355,15 +358,26 @@ public class FileUtils {
                     downloaded += bytesRead;
                 }
 
-                if (contentLength > downloaded) {
-                    is.close();
-                    connection = IGVHttpUtils.openConnection(url);
-                    connection.setRequestProperty("Range", "bytes=" + downloaded + "-");
-                    nTries++;
-                    log.info("Restarting download from position: " + downloaded);
+
+            } else {
+                while (downloaded < contentLength && nTries < maxTries) {
+                    is = connection.getInputStream();
+                    int bytesRead;
+                    while ((bytesRead = is.read(buf)) != -1) {
+                        out.write(buf, 0, bytesRead);
+                        downloaded += bytesRead;
+                    }
+
+                    if (contentLength > downloaded) {
+                        is.close();
+                        connection = IGVHttpUtils.openConnection(url);
+                        connection.setRequestProperty("Range", "bytes=" + downloaded + "-");
+                        nTries++;
+                        log.info("Restarting download from position: " + downloaded);
+                    }
+
+
                 }
-
-
             }
 
             if (downloaded < contentLength) {
@@ -376,6 +390,8 @@ public class FileUtils {
                 log.info("Download complete.  Transferred " + downloaded + " bytes");
                 return true;
             }
+
+
         }
 
 
@@ -406,6 +422,7 @@ public class FileUtils {
      * @param outputFile
      * @throws java.io.IOException
      */
+
     public static void copyFile(File inputFile, File outputFile) throws IOException {
 
         int totalSize = 0;
