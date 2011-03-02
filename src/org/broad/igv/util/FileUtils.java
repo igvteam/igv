@@ -29,6 +29,7 @@ import org.broad.tribble.util.HttpUtils;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -328,34 +329,67 @@ public class FileUtils {
      * @param outputFile
      * @throws java.io.IOException
      */
-    public static void downloadFile(URL url, File outputFile) throws IOException {
+    public static boolean downloadFile(URL url, File outputFile) throws IOException {
 
-        int totalSize = 0;
+        int maxTries = 1000;
+        int nTries = 0;
+
+        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+        int downloaded = 0;
+        byte[] buf = new byte[64 * 1024]; // 64K buffer
 
         OutputStream out = null;
         InputStream is = null;
         try {
-            is = url.openStream();
-            log.info("Downloading to " + outputFile.getAbsolutePath());
+
             out = new FileOutputStream(outputFile);
-            byte[] buf = new byte[4 * 1024]; // 4K buffer
-            int bytesRead;
-            while ((bytesRead = is.read(buf)) != -1) {
-                out.write(buf, 0, bytesRead);
-                totalSize += bytesRead;
+
+            URLConnection connection = IGVHttpUtils.openConnection(url);
+            int contentLength = connection.getContentLength();
+
+            while (downloaded < contentLength && nTries < maxTries) {
+                is = connection.getInputStream();
+                int bytesRead;
+                while ((bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                }
+
+                if (contentLength > downloaded) {
+                    is.close();
+                    connection = IGVHttpUtils.openConnection(url);
+                    connection.setRequestProperty("Range", "bytes=" + downloaded + "-");
+                    nTries++;
+                    log.info("Restarting download from position: " + downloaded);
+                }
+
+
             }
-            log.info("Download complete.  Transferred " + totalSize + " bytes");
+
+            if (downloaded < contentLength) {
+                out.close();
+                out = null;
+                outputFile.delete();
+                MessageUtils.showMessage("Error downloading file: " + outputFile.getAbsoluteFile());
+                return false;
+            } else {
+                log.info("Download complete.  Transferred " + downloaded + " bytes");
+                return true;
+            }
         }
 
 
         catch (Exception e) {
+            out.close();
+            out = null;
             outputFile.delete();
             MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
                     "<br/>" + e.toString());
+            return false;
 
         }
         finally {
-            if(is != null) {
+            if (is != null) {
                 is.close();
             }
             if (out != null) {
@@ -400,7 +434,7 @@ public class FileUtils {
 
         }
         finally {
-            if(in != null) {
+            if (in != null) {
                 in.close();
             }
             if (out != null) {
