@@ -28,6 +28,7 @@ import org.broad.tribble.util.HttpUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -348,7 +349,7 @@ public class FileUtils {
             int contentLength = connection.getContentLength();
 
             if (contentLength <= 0) {
-                log.info("Content-length = 0");
+                log.info("Content-length = " + contentLength);
                 // Try downloading until a loop returns zero bytes
 
                 is = connection.getInputStream();

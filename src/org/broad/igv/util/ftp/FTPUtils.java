@@ -21,11 +21,14 @@ package org.broad.igv.util.ftp;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.UserPasswordPane;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Hashtable;
+import java.util.Map;
 
 
 /**
@@ -35,6 +38,8 @@ import java.net.URLConnection;
 public class FTPUtils {
 
     private static Logger log = Logger.getLogger(FTPUtils.class);
+
+    static Map<String, String> userCredentials = new Hashtable();
 
     public static boolean resourceAvailable(URL url) {
         InputStream is = null;
@@ -61,6 +66,10 @@ public class FTPUtils {
 
 
     /**
+     * ftp://virothao:satio-ngeca-62@shiraz.well.ox.ac.uk/110210_SN228_0119_A702MDABXX/WTCHG_11474/WTCHG_11474_101.bam
+     * ftp://shiraz.well.ox.ac.uk/110210_SN228_0119_A702MDABXX/WTCHG_11474/WTCHG_11474_101.bam
+     * virothao:satio-ngeca-62@
+     * <p/>
      * Connect to an FTP server anonymously
      *
      * @param host
@@ -78,17 +87,41 @@ public class FTPUtils {
 
         String user = "anonymous";
         String password = "igv@broadinstitute.org";
-        if(userInfo != null) {
-            String [] tmp = userInfo.split(":");
+
+        if (userInfo == null) {
+            userInfo = userCredentials.get(host);
+        }
+        if (userInfo != null) {
+            String[] tmp = userInfo.split(":");
             user = tmp[0];
-            if(tmp.length > 1) {
+            if (tmp.length > 1) {
                 password = tmp[1];
             }
         }
 
         reply = ftp.login(user, password);
         if (!reply.isSuccess()) {
-            throw new RuntimeException("Login failure for host: " + host);
+
+            UserPasswordPane pane = new UserPasswordPane(host);
+            boolean success = false;
+            while (!success) {
+                if (pane.showDialog()) {
+                    user = pane.getUser();
+                    password = pane.getPassword();
+                    reply = ftp.login(user, password);
+                    success = reply.isSuccess();
+                } else {
+                    // canceled
+                    break;
+                }
+
+            }
+            if (success) {
+                userInfo = user + ":" + password;
+                userCredentials.put(host, userInfo);
+            } else {
+                throw new RuntimeException("Login failure for host: " + host);
+            }
         }
 
         reply = ftp.binary();
