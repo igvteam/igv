@@ -277,7 +277,7 @@ public class GFFParser implements FeatureParser {
                         getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description);
                     }
                 } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
-                        parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
+                        parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
                     String name = getName(attributes);
                     int phase = -1;
                     String phaseString = tokens[7].trim();
@@ -368,8 +368,7 @@ public class GFFParser implements FeatureParser {
             FeatureDB.addFeatures(features);
 
         }
-        catch (ParserException
-                e) {
+        catch (ParserException e) {
             throw e;
         }
         catch (Exception
