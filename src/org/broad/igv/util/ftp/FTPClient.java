@@ -166,14 +166,16 @@ public class FTPClient {
 
     public void closeDataStream() throws IOException {
         log.debug("Close data stream");
-        if (dataStream != null) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-
-            }
-            dataStream.close();
-        }
+        //  NOTE -- some ftp servers seem to need a pause before closing the data stream
+        // if (dataStream != null) {
+        //    try {
+        //        //
+        //        Thread.sleep(3000);
+        //    } catch (InterruptedException e) {
+        //
+        //    }
+        dataStream.close();
+        //}
         dataStream = null;
     }
 
