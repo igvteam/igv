@@ -79,6 +79,8 @@ public class FTPUtils {
      */
     public static FTPClient connect(String host, String userInfo) throws IOException {
 
+        log.info("connect");
+
         FTPClient ftp = new FTPClient();
         FTPReply reply = ftp.connect(host);
         if (!reply.isSuccess()) {

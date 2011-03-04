@@ -127,13 +127,15 @@ public class SeekableFTPStreamHelper {
         }
 
         finally {
-            ftp.closeDataStream();
-            FTPReply reply = ftp.getReply();  // <== MUST READ THE REPLY
-            log.debug(reply.getReplyString());
-            if(!reply.isSuccess()) {
+            //ftp.closeDataStream();
+            //FTPReply reply = ftp.getReply();  // <== MUST READ THE REPLY
+            //log.debug(reply.getReplyString());
+            //if(!reply.isSuccess()) {
+
+            // ALWAYS close ftp connection,  this is more robust and we don't want open connections hanging about
                 ftp.disconnect();
                 ftp = null;
-            }
+            //}
         }
     }
 
@@ -148,6 +150,7 @@ public class SeekableFTPStreamHelper {
 
 
     public void close() throws IOException {
+        log.info("close");
         if (ftp != null) {
             ftp.disconnect();
             ftp = null;

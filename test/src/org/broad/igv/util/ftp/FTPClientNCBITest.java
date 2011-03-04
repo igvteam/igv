@@ -43,6 +43,7 @@ public class FTPClientNCBITest {
 
     //static String host = "ftp.1000genomes.ebi.ac.uk";
     //static String file = "/vol1/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
+    //ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam
     static String host = "ftp-trace.ncbi.nih.gov";
     static String file = "/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
     static byte[] expectedBytes = {(byte) 31, (byte) 139, (byte) 8, (byte) 4, 0, 0, 0, 0, 0, (byte) 255, (byte) 6, 0,
@@ -119,7 +120,6 @@ public class FTPClientNCBITest {
 
             client.closeDataStream();
             FTPReply reply = client.getReply();  // <== MUST READ THE REPLY
-            System.out.println(reply.getReplyString());
 
         }
     }

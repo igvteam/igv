@@ -168,7 +168,7 @@ public class FTPClient {
         log.debug("Close data stream");
         if (dataStream != null) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
 
             }
