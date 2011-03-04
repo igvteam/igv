@@ -30,6 +30,8 @@ import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -67,6 +69,26 @@ public class MainPanel extends JPanel implements Paintable {
     public MainPanel(TrackManager trackManager) {
         this.trackManager = trackManager;
         initComponents();
+
+        addComponentListener(new ComponentListener() {
+
+            public void componentResized(ComponentEvent componentEvent) {
+                revalidate();
+                repaint();
+            }
+
+            public void componentMoved(ComponentEvent componentEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void componentShown(ComponentEvent componentEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void componentHidden(ComponentEvent componentEvent) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        })  ;
     }
 
 
