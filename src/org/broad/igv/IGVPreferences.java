@@ -41,8 +41,11 @@ public class IGVPreferences {
     private static Logger log = Logger.getLogger(IGVPreferences.class);
     static Hashtable<String, String> cache = null;
 
-
     public void put(String key, String value) {
+        put(key, value, true);
+    }
+
+    public void put(String key, String value, boolean store) {
         if (cache == null) {
             loadPreferences();
         }
@@ -51,7 +54,9 @@ public class IGVPreferences {
         } else {
             cache.put(key, value);
         }
-        storePreferences();
+        if (store) {
+            storePreferences();
+        }
     }
 
     public String get(String key, String defaultValue) {

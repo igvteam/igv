@@ -101,8 +101,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     public static Cursor zoomOutCursor;
     public static Cursor dragNDropCursor;
 
-    final static String ROI_BUTTON_TEXT = "Define a region of interest";
-
     //Session session;
     Session session;
     /**
@@ -271,9 +269,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
             public void windowClosing(WindowEvent e) {
                 IGVMainFrame.this.doExitApplication();
             }
-        });
-
-        addWindowListener(new WindowAdapter() {
 
             @Override
             public void windowOpened(WindowEvent e) {
@@ -292,15 +287,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
 
-    /**
-     * Convenience method
-     *
-     * @return
-     */
-    public ReferenceFrame getViewContext() {
-        return session.getReferenceFrame();
-    }
-
     public void setSelectedRegion(RegionOfInterest region) {
         //if (region != regionOfInterestPane.getSelectedRegion()) {
         //    regionOfInterestPane.setSelectedRegion(region);
@@ -317,17 +303,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
         return areResourceNodesCheckable;
     }
 
-    static void clearAllPreferences() {
 
-        try {
-            PreferenceManager.getInstance().clear();
-        } catch (Exception e) {
-            e.printStackTrace();
-            String message = "Failed to clear all preferences!";
-            MessageUtils.showAndLogErrorMessage(IGVMainFrame.theInstance, message, log, e);
-        }
-
-    }
 
     private void adjustSplitPaneDivider() {
 
@@ -471,11 +447,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-    // TODO -- move this to preferences manager class
 
-    public void setShowRegionsOfInterestBarsOn(boolean enabled) {
-        showRegionsOfInterestBarsOn = enabled;
-    }
 
     // TODO -- move this to preferences manager class
 
@@ -563,9 +535,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         toolbarPanel.add(igvCommandBar, JideBoxLayout.VARY);
     }
 
-    public void doDefineGenome() {
-        doDefineGenome(null);
-    }
 
     public void doDefineGenome(ProgressMonitor monitor) {
 
@@ -828,10 +797,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         loadTracks(locators, false);
     }
 
-    public void unloadTracks(final Collection<ResourceLocator> locators) {
-        trackManager.unloadTracks(locators);
-        this.doRefresh();
-    }
 
     /**
      * Load tracks corresponding to a collection of resource locations.
@@ -2271,9 +2236,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-    public String getDisplayedLocusString() {
-        return igvCommandBar.getSearchText();
-    }
 
     public void rebuildGenomeDropdownList(Set excludedArchivesUrls) {
         igvCommandBar.rebuildGenomeItemList(excludedArchivesUrls);

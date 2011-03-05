@@ -173,8 +173,6 @@ public class PreferenceManager implements PropertyManager {
     final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
 
 
-
-
     public static String DEFAULT_DATA_SERVER_URL;
 
     static {
@@ -374,7 +372,8 @@ public class PreferenceManager implements PropertyManager {
 
     public void overrideGenomeServerURL(String url) {
         defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, url);
-        put(GENOMES_SERVER_URL, url);
+        preferences.put(GENOMES_SERVER_URL, url, false);
+        updateCaches(GENOMES_SERVER_URL, url);
     }
 
 
@@ -589,12 +588,14 @@ public class PreferenceManager implements PropertyManager {
     /**
      * Temporarily override the data server url with the supplied value.  This override will persist for
      * the duration of the session, or until the user explicitly changes it.
+     *
      * @param url
      */
     public void overrideDataServerURL(String url) {
         DEFAULT_DATA_SERVER_URL = url;
         defaultValues.put(DATA_SERVER_URL_KEY, url);
-        put(DATA_SERVER_URL_KEY, url);
+        preferences.put(DATA_SERVER_URL_KEY, url, false);
+        updateCaches(DATA_SERVER_URL_KEY, url);
     }
 
 
@@ -901,7 +902,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
-
 
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
