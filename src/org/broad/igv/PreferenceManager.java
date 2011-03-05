@@ -372,7 +372,7 @@ public class PreferenceManager implements PropertyManager {
 
     public void overrideGenomeServerURL(String url) {
         defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, url);
-        preferences.put(GENOMES_SERVER_URL, url, false);
+        preferences.putTemp(GENOMES_SERVER_URL, url);
         updateCaches(GENOMES_SERVER_URL, url);
     }
 
@@ -594,7 +594,7 @@ public class PreferenceManager implements PropertyManager {
     public void overrideDataServerURL(String url) {
         DEFAULT_DATA_SERVER_URL = url;
         defaultValues.put(DATA_SERVER_URL_KEY, url);
-        preferences.put(DATA_SERVER_URL_KEY, url, false);
+        preferences.putTemp(DATA_SERVER_URL_KEY, url);
         updateCaches(DATA_SERVER_URL_KEY, url);
     }
 

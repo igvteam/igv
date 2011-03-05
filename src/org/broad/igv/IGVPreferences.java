@@ -39,13 +39,20 @@ import java.util.Map;
 public class IGVPreferences {
 
     private static Logger log = Logger.getLogger(IGVPreferences.class);
+
+    /**
+     * Cache for preferences which should persist for this session only
+     */
+    static Hashtable<String, String> sessionCache = new Hashtable();
+
     static Hashtable<String, String> cache = null;
 
     public void put(String key, String value) {
-        put(key, value, true);
-    }
 
-    public void put(String key, String value, boolean store) {
+        // Remove from session only, explicitly setting this overrides
+        sessionCache.remove(key);
+
+
         if (cache == null) {
             loadPreferences();
         }
@@ -54,12 +61,17 @@ public class IGVPreferences {
         } else {
             cache.put(key, value);
         }
-        if (store) {
-            storePreferences();
-        }
+        storePreferences();
+    }
+
+    public void putTemp(String key, String value) {
+        sessionCache.put(key, value);
     }
 
     public String get(String key, String defaultValue) {
+        if(sessionCache.contains(key)) {
+            return sessionCache.get(key);
+        }
         String val = get(key);
         return val == null ? defaultValue : val;
     }
@@ -73,6 +85,7 @@ public class IGVPreferences {
     }
 
     public void remove(String key) {
+        sessionCache.remove(key);
         cache.remove(key);
         storePreferences();
     }
