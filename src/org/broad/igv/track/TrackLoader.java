@@ -135,7 +135,7 @@ public class TrackLoader {
                 loadIGVFile(locator, newTracks);
             } else if (typeString.endsWith(".mut")) {
                 loadMutFile(locator, newTracks);
-            } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") || typeString.endsWith(".gbench") ||
+            } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg")  ||
                     typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
                 loadSegFile(locator, newTracks);
             } else if (typeString.endsWith(".seg.zip")) {

@@ -71,9 +71,11 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
      * @param locator
      */
     public SegmentedAsciiDataSet(ResourceLocator locator) {
-        parser = locator.getPath().toLowerCase().endsWith(".gbench") ?
-                new GBenchFileParser(locator) :
-                new SegmentFileParser(locator);
+        //parser = locator.getPath().toLowerCase().endsWith(".gbench") ?
+        //        new GBenchFileParser(locator) :
+        //        new SegmentFileParser(locator);
+
+        parser = new SegmentFileParser(locator);
         parser.loadSegments(this);
         sortLists();
 
@@ -112,7 +114,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
     /**
      *
      */
-    public void addSegment(String heading, String chr, int start, int end, float value, int snpCount) {
+    public void addSegment(String heading, String chr, int start, int end, float value, String desc) {
 
         Map<String, List<LocusScore>> chrSegments = segments.get(heading);
         if (chrSegments == null) {
@@ -126,7 +128,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
             segmentList = new ArrayList<LocusScore>();
             chrSegments.put(chr, segmentList);
         }
-        segmentList.add(new Segment(start, start, end, end, value, snpCount));
+        segmentList.add(new Segment(start, start, end, end, value, desc));
         dataMax = Math.max(dataMax, value);
         dataMin = Math.min(dataMin, value);
         if (value < 0) {
@@ -243,7 +245,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
                         int gEnd = (int) ((offset + score.getEnd()) / locationUnit);
                         if ((gEnd - gStart) > minFeatureSize) {
                             wholeGenomeScores.add(new Segment(gStart, gStart, gEnd,
-                                    gEnd, seg.getScore(), seg.getSnpCount()));
+                                    gEnd, seg.getScore(), seg.getDescription()));
                         }
                     }
 

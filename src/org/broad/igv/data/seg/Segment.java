@@ -33,13 +33,10 @@ public class Segment implements LocusScore {
     private int start;
     private int end;
     private float score;
-    private int snpCount;
+    private String description;
+
 
     public Segment(int start, int end, float score) {
-        this(start, end, score, 0);
-    }
-
-    public Segment(int start, int end, float score, int snpCount) {
         this.start = start;
         this.end = end;
         if (extendedStart < 0) {
@@ -49,24 +46,21 @@ public class Segment implements LocusScore {
             extendedEnd = end;
         }
         this.score = score;
-        this.snpCount = snpCount;
     }
 
 
-    //Segment(int start, int end,  float score, int snpCount) {
-    //    this(start, start, end, end, score, snpCount);
-    //}
-    public Segment(int start, int origStart, int end, int origEnd, float score, int snpCount) {
+
+    public Segment(int start, int origStart, int end, int origEnd, float value, String description) {
         this.start = start;
         this.end = end;
         this.extendedStart = origStart;
         this.extendedEnd = origEnd;
-        this.score = score;
-        this.snpCount = snpCount;
+        this.score = value;
+        this.description = description;
     }
 
     public Segment copy() {
-        return new Segment(start, extendedStart, end, extendedEnd, score, snpCount);
+        return new Segment(start, extendedStart, end, extendedEnd, score, description);
     }
 
     public String getChr() {
@@ -95,19 +89,14 @@ public class Segment implements LocusScore {
 
 
     public String getValueString(double position, WindowFunction ignored) {
-        String valueString = "Copy number: " + getScore();
-        if (snpCount > 0) {
-            valueString += " (" + snpCount + " markers)";
+        String valueString = "Value: " + getScore();
+        if (description != null) {
+            valueString += description;
         }
         return valueString;
     }
 
-     public void incremenetSnpCount(int inc) {
-        snpCount += inc;
+    public String getDescription() {
+        return description;
     }
-
-     public int getSnpCount() {
-        return snpCount;
-    }
-
 }

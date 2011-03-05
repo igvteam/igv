@@ -30,7 +30,16 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import java.awt.*;
+import java.util.ArrayList;
+
 /**
+ * Example
+ * CCLE_name	chrom	loc.start	loc.end	num.mark	seg.mean
+ * A2780_OVARY	1	51598	88465	17	1.0491
+ * A2780_OVARY	1	218569	55606710	30512	0.0248
+ * A2780_OVARY	1	55606801	61331401	4399	-0.0431
+ *
  * @author jrobinso
  */
 public class SegmentFileParser implements SegFileParser {
@@ -48,7 +57,7 @@ public class SegmentFileParser implements SegFileParser {
     int chrColumn = 1;
     int startColumn = 2;
     int endColumn = 3;
-    int snpCountColumn = 4;    // Default value
+    //int snpCountColumn = 4;    // Default value
     int dataColumn = 5;        // Default value
     ResourceLocator locator;
 
@@ -97,21 +106,19 @@ public class SegmentFileParser implements SegFileParser {
             if (birdsuite) {
                 //sample	sample_index	copy_number	chr	start	end	confidence
                 sampleColumn = 0;
+                dataColumn = 2;
                 chrColumn = 3;
                 startColumn = 4;
                 endColumn = 5;
-                snpCountColumn = 6;
-                dataColumn = 2;
-            } else {
-                // The data value is always the last column
-                dataColumn = headings.length - 1;
-                // We assume the snp count is next to last, but not 0-3
-                snpCountColumn = dataColumn - 1;
-                if (snpCountColumn < 4) {
-                    snpCountColumn = -1;
-                }
-            }
 
+            } else {
+                sampleColumn = 0;
+                chrColumn = 1;
+                startColumn = 2;
+                endColumn = 3;
+                dataColumn = headings.length - 1;
+            }
+ 
             String[] tokens = new String[headings.length];
 
             Genome genome = GenomeManager.getInstance().getCurrentGenome();
@@ -120,6 +127,7 @@ public class SegmentFileParser implements SegFileParser {
 
                 int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
                 if (nTokens > 4) {
+
 
                     int start;
                     int end;
@@ -146,19 +154,30 @@ public class SegmentFileParser implements SegFileParser {
 
                     String trackId = new String(tokens[sampleColumn].trim());
 
-                    int snpCount = 0;
-                    if (snpCountColumn > 0) {
-                        try {
-                            snpCount = Integer.parseInt(tokens[snpCountColumn]);
-                        } catch (NumberFormatException numberFormatException) {
-
-                            // This is an expected condition, nothing needs done.
+                    StringBuffer desc = null;
+                    if (birdsuite) {
+                        desc = new StringBuffer();
+                        desc.append("<br>");
+                        desc.append(headings[6]);
+                        desc.append("=");
+                        desc.append(tokens[6]);
+                    } else {
+                        if (tokens.length > 4) {
+                            desc = new StringBuffer();
+                            for (int i = 4; i < headings.length - 1; i++) {
+                                desc.append("<br>");
+                                desc.append(headings[i]);
+                                desc.append(": ");
+                                desc.append(tokens[i]);
+                            }
                         }
                     }
 
+
                     try {
                         float value = Float.parseFloat(tokens[dataColumn]);
-                        dataset.addSegment(trackId, chr, start, end, value, snpCount);
+                        String description = desc == null ? null : desc.toString();
+                        dataset.addSegment(trackId, chr, start, end, value, description);
                     } catch (NumberFormatException numberFormatException) {
                         log.info("Skipping line: " + nextLine);
                     }

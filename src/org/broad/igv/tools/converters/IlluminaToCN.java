@@ -104,11 +104,11 @@ public class IlluminaToCN {
                             }
                             segs.add(segment);
                         }
-                        segment = new Segment(position, position, cnv, 1);
+                        segment = new Segment(position, position, cnv);
                         currentSegments.put(sample, segment);
                     } else {
 
-                        segment.incremenetSnpCount(1);
+                        //segment.incremenetSnpCount(1);
                         segment.setEnd(position);
                     }
 
@@ -130,7 +130,7 @@ public class IlluminaToCN {
                 String sample = entry.getKey();
                 for (Segment segment : entry.getValue()) {
                     cnvWriter.println(sample + "\t" + segment.getChr() + "\t" + segment.getStart() + "\t"
-                            + segment.getEnd() + "\t" + segment.getSnpCount() + "\t" + (int) segment.getScore());
+                            + segment.getEnd() + "\t" + "" + "\t" + (int) segment.getScore());
                 }
             }
 
