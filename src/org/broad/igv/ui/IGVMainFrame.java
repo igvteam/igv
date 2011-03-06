@@ -24,11 +24,9 @@
  */
 package org.broad.igv.ui;
 
-import com.jidesoft.plaf.LookAndFeelFactory;
 import com.jidesoft.status.StatusBar;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideSplitPane;
-import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -45,7 +43,6 @@ import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.main.BatchRunner;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.tools.ui.IndexGui;
-import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.listener.StatusListener;
 import org.broad.igv.main.CommandListener;
 import org.broad.igv.session.Session;
@@ -69,6 +66,7 @@ import static org.broad.igv.ui.util.SnapshotUtilities.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 
 import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
+
 import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 
 import org.broad.igv.util.*;
@@ -136,7 +134,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     private boolean isExportingSnapshot = false;
 
 
-
     // Tracksets
     //private final Map<String, TrackPanelScrollPane> trackSetScrollPanes = new Hashtable();
 
@@ -162,6 +159,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     private IGVMainFrame() {
 
+        theInstance = this;
         session = new Session(null);
         trackManager = new TrackManager(this);
 
@@ -170,17 +168,68 @@ public class IGVMainFrame extends javax.swing.JFrame {
         createZoomCursors();
         createDragAndDropCursor();
 
-        setupIGV();
+        // Create components
+        setTitle(UIConstants.APPLICATION_NAME);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        igvCommandBar = new IGVCommandBar(this);
+        igvCommandBar.setMinimumSize(new Dimension(250, 33));
+        mainPanel = new MainPanel(trackManager);
+        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
+        createMenuAndToolbar();
 
-        // Setup a glass pane to implement a blocking wait cursor
+        statusBar = new ApplicationStatusBar();
+        statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
+        getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
+        pack();
+
+        // Create glass panes
         glassPane = getGlassPane();
         getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         getGlassPane().addMouseListener(new MouseAdapter() {
         });
-
-        // A pane for D&D
         dNdGlassPane = new GhostGlassPane();
+
+        // Add listeners
+        // Closing the window should exit the application
+        addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                IGVMainFrame.this.doExitApplication();
+            }
+        });
         IGVDatasetParser.addListener(new MyStatusListener());
+
+
+        // Application initialization
+        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
+        // TODO -- get these from user preferences
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+        //ToolTipManager.sharedInstance().setReshowDelay(your time in ms);
+        //ToolTipManager.sharedInstance().setInitialDelay(your time in ms);
+
+        // TODO -- refactor to eliminate these
+        initializeSnapshot();
+        initializeDialogs();
+
+        // Anti alias settings.   TODO = Are these neccessary anymore ?
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
+
+        // Set the application's previous location and size
+        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
+        Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
+        if (applicationBounds != null &&
+                applicationBounds.getMaxX() < screenBounds.getWidth() &&
+                applicationBounds.getMaxY() < screenBounds.getHeight()) {
+            setBounds(applicationBounds);
+        }
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+        IGVHttpUtils.updateProxySettings();
+
+
+
     }
 
     public GhostGlassPane getDnDGlassPane() {
@@ -197,85 +246,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         getGlassPane().setVisible(false);
     }
 
-
-    private void setupIGV() {
-        theInstance = this;
-
-        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-
-        disableGraphicAccelerators();
-
-        // Create the center split pane
-
-
-        // Create the command bar
-        igvCommandBar = new IGVCommandBar(this);
-        igvCommandBar.setMinimumSize(new Dimension(250, 33));
-
-        initializeDefaultUserDirectory();
-
-        setTitle(UIConstants.APPLICATION_NAME);
-        initComponents();
-
-        // TODO -- get these from user preferences
-        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
-        //ToolTipManager.sharedInstance().setReshowDelay(your time in ms);
-        //ToolTipManager.sharedInstance().setInitialDelay(your time in ms);
-
-        //initializeDisplayableAttributes(null);
-
-        // TODO -- figure out why the view context needs this reference
-        //DataPanelContainer dp = dataTrackScrollPane.getDataPanel();
-        //session.getViewContext().setDataPanel(dp);
-
-        // Setup the content pane widgets
-        configureContentPane();
-        initializeSnapshot();
-        initializeDialogs();
-
-
-        // Build the toolbar
-        createMenuAndToolbar();
-
-
-        // Macs are double buffered natively.  Double buffering in java is redundant
-        // and has a noticeable effect on performance on Macs.
-        // If os is Mac turn double buffering off.
-        if (Globals.IS_MAC) {
-            System.setProperty("apple.awt.graphics.UseQuartz", "true");
-            System.setProperty("apple.awt.rendering", "speed");
-            // NOTE:  This doesn't seem to have any effect on Leopard.  Retest on Tiger?
-            RepaintManager.currentManager(this).setDoubleBufferingEnabled(false);
-        }
-        System.setProperty("awt.useSystemAAFontSettings", "on");
-        System.setProperty("swing.aatext", "true");
-
-
-        // Must call the exit routine
-        addWindowListener(new WindowAdapter() {
-
-            @Override
-            public void windowClosing(WindowEvent e) {
-                IGVMainFrame.this.doExitApplication();
-            }
-
-            @Override
-            public void windowOpened(WindowEvent e) {
-                adjustSplitPaneDivider();
-            }
-        });
-
-        // Set the application's previous location and size
-        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
-        Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
-        if (applicationBounds != null &&
-                applicationBounds.getMaxX() < screenBounds.getWidth() &&
-                applicationBounds.getMaxY() < screenBounds.getHeight()) {
-            setBounds(applicationBounds);
-        }
-    }
-
-
     public void setSelectedRegion(RegionOfInterest region) {
         //if (region != regionOfInterestPane.getSelectedRegion()) {
         //    regionOfInterestPane.setSelectedRegion(region);
@@ -284,41 +254,14 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
 
-    private void adjustSplitPaneDivider() {
-
-        // Single track pane view if true
-        boolean isShowSingleTrackPane =
-                PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY);
-
-        if (isShowSingleTrackPane) {
-            //centerSplitPane.setDividerLocation(1.0d);
-            //centerSplitPane.setDividerSize(0);
-        } else {
-            //centerSplitPane.setDividerLocation(dividerBeforeSingleTrack);
-            //centerSplitPane.setDividerSize(3);
-        }
-    }
-
     @Override
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
     }
 
-    private void initializeDefaultUserDirectory() {
 
-        // Create the user directory
-        File defaultUserDirectory = Globals.getIgvDirectory();
-        if (!defaultUserDirectory.exists()) {
-            boolean exists = defaultUserDirectory.exists();
-            if (!exists) {
-                boolean wasSuccessful = defaultUserDirectory.mkdir();
-                if (!wasSuccessful) {
-                    log.error("Failed to create user directory!");
-                }
 
-            }
-        }
-    }
+    // TODO -- eliminate this shared file chooser,  and all "shared" dialogs like this.
 
     private void initializeDialogs() {
 
@@ -329,7 +272,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         // This hack is ugly, but I can't see any other way to set the default file filter to "All"
         trackFileChooser.setFileFilter(trackFileChooser.getChoosableFileFilters()[0]);
-       
 
 
     }
@@ -427,7 +369,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
 
-
     public void chromosomeChangeEvent() {
         chromosomeChangeEvent(true);
     }
@@ -483,10 +424,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-    private void configureContentPane() {
-
-
-    }
 
     private void createMenuAndToolbar() {
 
@@ -1321,7 +1258,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         SwingWorker worker = new SwingWorker() {
 
                             public Object doInBackground() {
-                                ProgressMonitor monitor =  new ProgressMonitor();
+                                ProgressMonitor monitor = new ProgressMonitor();
                                 doLoadGenome(monitor);
                                 return null;
                             }
@@ -1550,10 +1487,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                 try {
 
-                    // Should missing data be shown on track panel
-                    boolean value = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY);
-                    MiscStuff.setShowMissingDataEnabled(value);
-
                     //Should data and feature panels be combined ?
                     boolean singlePanel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY);
                     if (originalSingleTrackValue != singlePanel) {
@@ -1602,10 +1535,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 PreferenceManager.getInstance().setRecentSessions(recentSessions);
             }
 
-// Save application location and size
             PreferenceManager.getInstance().setApplicationFrameBounds(getBounds());
 
-            // Hide and close the application
             setVisible(false);
         } finally {
             System.exit(0);
@@ -2037,23 +1968,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         return mainPanel.getTrackPanels();
     }
 
-    private void initComponents() {
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-
-        mainPanel = new MainPanel(trackManager);
-
-        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
-
-        statusBar = new ApplicationStatusBar();
-        statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
-        getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
-
-        pack();
-
-    }
-
 
     public Session getSession() {
         return session;
@@ -2211,22 +2125,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 " track(s) currently loaded");
     }
 
-    /**
-     * Disable direct draw for windows,  and quartz for macs.  These technologies don't work
-     * well with java.
-     */
-    private void disableGraphicAccelerators() {
-
-        // Disable quartz for mac, direct draw for windows
-        if (Globals.IS_MAC) {
-            System.setProperty("apple.awt.graphics.UseQuartz", "false");
-        } else {
-            System.setProperty("sun.java2d.noddraw", "true");
-        }
-
-    }
-
-
     private void closeWindow(final ProgressBar progressBar) {
         UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
@@ -2286,198 +2184,23 @@ public class IGVMainFrame extends javax.swing.JFrame {
         }
     }
 
-    public static void main(final String args[]) {
-
-
-        //RepaintManager.setCurrentManager(new TracingRepaintManager());
-
-        log.info(Globals.applicationString());
-
-        System.setProperty("http.agent", Globals.applicationString());
-
-        FileUtils.addRollingAppenderToRootLogger();
-        log.info("Default User Directory: " + Globals.getUserDirectory());
-
-        Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
-
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
-                        "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
-
-                // Set look and feel
-                if (!Globals.IS_MAC) {
-                    try {
-                        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                            if ("Nimbus".equals(info.getName())) {
-                                UIManager.setLookAndFeel(info.getClassName());
-                                break;
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        log.error("Error installing look and feel", e);
-                    }
-                }
-
-
-                if (Globals.IS_LINUX) {
-                    try {
-                        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        UIManager.put("JideSplitPane.dividerSize", 5);
-                        UIManager.put("JideSplitPaneDivider.background", Color.darkGray);
-
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-
-                } // Todo -- what does this do?
-                LookAndFeelFactory.installJideExtension();
-
-                IGVMainFrame frame = null;
-                JWindow splashScreen = null;
-                try {
-
-                    frame = new IGVMainFrame();
-
-                    IGVHttpUtils.updateProxySettings();
-
-                    frame.startUp(args);
-
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
-
-                } catch (Exception e) {
-
-                    log.error("Fatal application error!", e);
-                    System.exit(-1);
-                } finally {
-                    if (splashScreen != null) {
-                        splashScreen.setVisible(false);
-                    }
-
-                }
-            }
-        });
-    }
-
 
     /**
      * Startup the IGV main window,  then execute batch file if supplied.
      *
      * @param args
      */
-    private void startUp(final String[] args) {
+    public void startUp(final String[] args) {
 
         if (log.isDebugEnabled()) {
             log.debug("startUp");
         }
 
-        IGVArgs igvArgs = new IGVArgs(args);
+        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
         SwingWorker worker = new StartupWorker(igvArgs);
         worker.execute();
 
 
-    }
-
-    /**
-     * Class to encapsulate IGV command line arguments.
-     */
-    static class IGVArgs {
-        private String batchFile = null;
-        private String sessionFile = null;
-        private String dataFileString = null;
-        private String locusString = null;
-        private String propertyFile = null;
-        private String genomeId = null;
-        private String port = null;
-        private String dataServerURL = null;
-        private String genomeServerURL = null;
-
-        IGVArgs(String[] args) {
-            parseArgs(args);
-        }
-
-        /**
-         * Parse arguments.  All arguments are optional,  a full set of arguments are
-         * firstArg  locusString  -b batchFile -p preferences
-         */
-        private void parseArgs(String[] args) {
-            CmdLineParser parser = new CmdLineParser();
-            CmdLineParser.Option propertyFileOption = parser.addStringOption('p', "preferences");
-            CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
-            CmdLineParser.Option portOption = parser.addStringOption('p', "port");
-            CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
-            CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
-            CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
-
-            try {
-                parser.parse(args);
-            } catch (CmdLineParser.IllegalOptionValueException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (CmdLineParser.UnknownOptionException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            propertyFile = (String) parser.getOptionValue(propertyFileOption);
-            batchFile = (String) parser.getOptionValue(batchFileOption);
-            port = (String) parser.getOptionValue(portOption);
-            genomeId = (String) parser.getOptionValue(genomeOption);
-            dataServerURL = (String) parser.getOptionValue(dataServerOption);
-            genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
-
-            String[] nonOptionArgs = parser.getRemainingArgs();
-            if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-                String firstArg = nonOptionArgs[0];
-                if (!firstArg.equals("ignore")) {
-                    if (firstArg.endsWith("xml")) {
-                        sessionFile = firstArg;
-                    } else {
-                        dataFileString = firstArg;
-                    }
-                }
-                if (nonOptionArgs.length > 1) {
-                    locusString = nonOptionArgs[1];
-                }
-            }
-
-        }
-
-        public String getBatchFile() {
-            return batchFile;
-        }
-
-        public String getSessionFile() {
-            return sessionFile;
-        }
-
-        public String getDataFileString() {
-            return dataFileString;
-        }
-
-        public String getLocusString() {
-            return locusString;
-        }
-
-        public String getPropertyFile() {
-            return propertyFile;
-        }
-
-        public String getGenomeId() {
-            return genomeId;
-        }
-
-        public String getPort() {
-            return port;
-        }
-
-        public String getDataServerURL() {
-            return dataServerURL;
-        }
-
-        public String getGenomeServerURL() {
-            return genomeServerURL;
-        }
     }
 
 
@@ -2485,9 +2208,9 @@ public class IGVMainFrame extends javax.swing.JFrame {
      * Swing worker class to startup IGV
      */
     public class StartupWorker extends SwingWorker {
-        IGVArgs igvArgs;
+        Main.IGVArgs igvArgs;
 
-        StartupWorker(IGVArgs args) {
+        StartupWorker(Main.IGVArgs args) {
             this.igvArgs = args;
 
         }
@@ -2638,5 +2361,10 @@ public class IGVMainFrame extends javax.swing.JFrame {
             }
 
         }
+    }
+
+    // THis is her for backward compatibility
+    public static void main(String [] args) {
+        Main.main(args);
     }
 }

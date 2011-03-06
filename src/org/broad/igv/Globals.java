@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  */
 public class Globals {
 
-    private static Logger logger = Logger.getLogger(Globals.class);
+    private static Logger log = Logger.getLogger(Globals.class);
 
 
     /**
@@ -117,7 +117,7 @@ public class Globals {
             properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
         }
         catch (IOException e) {
-            logger.error("*** Error retrieving version and build information! ***", e);
+            log.error("*** Error retrieving version and build information! ***", e);
         }
         VERSION = properties.getProperty("version", "???");
         BUILD = properties.getProperty("build", "???");
@@ -157,13 +157,12 @@ public class Globals {
 
     public static File getIgvDirectory() {
 
-        // Hack for know Java bug
+        // Hack for know Java / Windows bug.   Attempt to remvoe (possible) read-only bit from user directory
         if (System.getProperty("os.name").equals("Windows XP")) {
             try {
                 Runtime.getRuntime().exec("attrib -r \"" + getUserDirectory().getAbsolutePath() + "\"");
             } catch (IOException e) {
                 // Oh well, we tried
-
             }
         }
 
@@ -202,16 +201,20 @@ public class Globals {
                 } else {
                     DEFAULT_IGV_DIRECTORY = new File(rootDir, "igv");
                 }
-                if (!DEFAULT_IGV_DIRECTORY.exists()) {
-                    try {
-                        DEFAULT_IGV_DIRECTORY.mkdir();
-                    }
-                    catch (Exception e) {
-                        System.err.println("Error creating user directory");
-                        e.printStackTrace();
+            }
+            
+            if (!DEFAULT_IGV_DIRECTORY.exists()) {
+                try {
+                    boolean wasSuccessful = DEFAULT_IGV_DIRECTORY.mkdir();
+                    if (!wasSuccessful) {
+                        log.error("Failed to create user directory!");
                     }
                 }
+                catch (Exception e) {
+                    log.error("Error creating user directory", e);
+                }
             }
+
 
             // The IGV directory either doesn't exist or isn't writeable.  This situation can arise with Windows Vista
             // and Windows 7 due to a Java bug (http://bugs.sun.com/view_bug.do?bug_id=4787931)
