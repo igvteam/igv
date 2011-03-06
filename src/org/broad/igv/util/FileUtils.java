@@ -38,9 +38,8 @@ import java.util.Map;
  * @author jrobinso
  */
 public class FileUtils {
-    final private static String separator = System.getProperties().getProperty("file.separator");
+    final public static String separator = System.getProperties().getProperty("file.separator");
     public static StringBuffer buffer = new StringBuffer();
-    static private RollingFileAppender appender;
     private static Logger log = Logger.getLogger(FileUtils.class);
 
 
@@ -261,65 +260,6 @@ public class FileUtils {
         finally {
 
         }
-    }
-
-    public static void addRollingAppenderToRootLogger() {
-        addRollingAppenderToLogger(Logger.getRootLogger());
-    }
-
-    public static void addRollingAppenderToLogger(Logger logger) {
-
-        if (appender == null) {
-
-            try {
-
-                PatternLayout layout = new PatternLayout();
-                layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
-
-                // Create a log file that is ready to have text appended to it
-                appender = new RollingFileAppender();
-                appender.setName("IGV_ROLLING_APPENDER");
-                appender.setFile(getLogFilePath());
-                appender.setThreshold(Level.ALL);
-                appender.setMaxFileSize("1000KB");
-                appender.setMaxBackupIndex(1);
-                appender.setLayout(layout);
-                appender.setAppend(true);
-                appender.activateOptions();
-                logger.addAppender(appender);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    static public String getLogFilePath() {
-
-        // Build the log file path
-        StringBuffer logFilePath = new StringBuffer();
-        logFilePath.append(Globals.getIgvDirectory());
-        logFilePath.append(separator);
-        logFilePath.append("igv.log");
-
-        // Added for Linux which does notr automatically create the log file
-        File logFile = null;
-        try {
-            logFile = new File(logFilePath.toString().trim());
-            if (!logFile.getParentFile().exists()) {
-                logFile.getParentFile().mkdir();
-            }
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-        }
-        catch (Exception e) {
-            System.out.println("Error creating log file: " + logFile.getAbsolutePath());
-            e.printStackTrace();
-        }
-
-        return logFilePath.toString().trim();
     }
 
 
