@@ -198,7 +198,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 IGVMainFrame.this.doExitApplication();
             }
         });
-        IGVDatasetParser.addListener(new MyStatusListener());
 
 
         // Application initialization
@@ -2170,17 +2169,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
             RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(false);
         } else {
             RepaintManager.currentManager(getContentPane()).setDoubleBufferingEnabled(true);
-        }
-    }
-
-    private class MyStatusListener implements StatusListener {
-
-        public void statusChanged(StatusChangeEvent event) {
-            String statusMessage = event.getStatusMessage();
-
-            if (statusMessage != null) {
-                setStatusBarMessage(statusMessage);
-            }
         }
     }
 

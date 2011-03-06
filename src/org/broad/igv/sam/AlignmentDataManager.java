@@ -216,7 +216,6 @@ public class AlignmentDataManager {
             int max = Integer.MAX_VALUE;
             List<AlignmentInterval.Row> tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
-                    max,
                     loadedInterval.getEnd(),
                     loadAsPairs);
 
@@ -250,7 +249,6 @@ public class AlignmentDataManager {
         int max = Integer.MAX_VALUE;
         List<AlignmentInterval.Row> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
-                max,
                 loadedInterval.getEnd(),
                 loadAsPairs,
                 option);
@@ -320,7 +318,7 @@ public class AlignmentDataManager {
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
-                    List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter, maxLevels,
+                    List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter,
                             intervalEnd, loadAsPairs);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,

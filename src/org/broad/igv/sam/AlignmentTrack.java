@@ -257,7 +257,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             int levelNumber = 0;
             for (AlignmentInterval.Row row : tmp) {
 
-                if ((visibleRect != null && y > visibleRect.getMaxY()) || levelNumber > dataManager.getMaxLevels()) {
+                if ((visibleRect != null && y > visibleRect.getMaxY())) {
                     return;
                 }
 

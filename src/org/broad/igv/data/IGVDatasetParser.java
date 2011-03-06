@@ -21,6 +21,7 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
@@ -65,8 +66,6 @@ public class IGVDatasetParser {
     private boolean hasCalls;
     private Genome genome;
 
-
-    public static ArrayList<StatusListener> listeners = null;
     private int startBase = 0;
 
     /**
@@ -218,7 +217,7 @@ public class IGVDatasetParser {
             while ((nextLine = reader.readLine()) != null) {
 
                 if (++count % updateCount == 0) {
-                    fireStatusEvent(new StatusChangeEvent("Loaded: " + count + " / " + estLineCount + " (est)"));
+                    IGVMainFrame.getInstance().setStatusBarMessage("Loaded: " + count + " / " + estLineCount + " (est)");
                 }
                 // Distance since last sample
 
@@ -607,21 +606,4 @@ public class IGVDatasetParser {
         }
     }
 
-    public static void addListener(StatusListener s) {
-        if (listeners == null) {
-            listeners = new ArrayList();
-        }
-
-        listeners.add(s);
-    }
-
-    public void fireStatusEvent(AWTEvent evt) {
-        if (evt instanceof StatusChangeEvent) {
-            if (listeners != null) {
-                for (StatusListener listener : listeners) {
-                    listener.statusChanged((StatusChangeEvent) evt);
-                }
-            }
-        }
-    }
 }

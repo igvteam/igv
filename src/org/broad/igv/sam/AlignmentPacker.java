@@ -59,22 +59,22 @@ public class AlignmentPacker {
      * Minimum gap between the end of one alignment and start of another.
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
+    private static final int MAX_ROWS = 100000;
 
 
     public List<AlignmentInterval.Row> packAlignments(
-            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments) {
-        return packAlignments(iter, maxLevels, end, pairAlignments, null);
+            Iterator<Alignment> iter, int end, boolean pairAlignments) {
+        return packAlignments(iter, end, pairAlignments, null);
     }
 
 
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
-     * @param iter      Iterator wrapping the collection of alignments
-     * @param maxLevels the maximum number of levels (rows) to create
+     * @param iter Iterator wrapping the collection of alignments
      */
     public List<AlignmentInterval.Row> packAlignments(
-            Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments,
+            Iterator<Alignment> iter, int end, boolean pairAlignments,
             AlignmentTrack.SortOption groupBy) {
 
         // Compares 2 alignments by length.
@@ -92,7 +92,7 @@ public class AlignmentPacker {
         }
 
         if (groupBy == null) {
-            pack(iter, maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+            pack(iter, end, pairAlignments, lengthComparator, alignmentRows);
         } else {
             // Separate by group
             List<Alignment> nullGroup = new ArrayList();
@@ -114,9 +114,9 @@ public class AlignmentPacker {
             Collections.sort(keys);
             for (String key : keys) {
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
             }
-            pack(nullGroup.iterator(), maxLevels, end, pairAlignments, lengthComparator, alignmentRows);
+            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
         }
 
         return alignmentRows;
@@ -136,13 +136,13 @@ public class AlignmentPacker {
         return null;
     }
 
-    private void pack(Iterator<Alignment> iter, int maxLevels, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows) {
+    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows) {
 
-        if(!iter.hasNext()) {
+        if (!iter.hasNext()) {
             return;
         }
 
-       Map<String, PairedAlignment> pairs = null;
+        Map<String, PairedAlignment> pairs = null;
         if (pairAlignments) {
             pairs = new HashMap(1000);
         }
@@ -269,9 +269,11 @@ public class AlignmentPacker {
                 alignmentRows.add(currentRow);
             }
 
-            if (alignmentRows.size() >= maxLevels) {
+            // TO prevent infinite loops
+            if(currentRow.alignments.size() > MAX_ROWS) {
                 break;
             }
+
 
             currentRow = new Row();
             nextStart = start;
@@ -282,7 +284,7 @@ public class AlignmentPacker {
         }
 
         // Add the last row
-        if (currentRow.alignments.size() > 0 && alignmentRows.size() < maxLevels) {
+        if (currentRow.alignments.size() > 0) {
             alignmentRows.add(currentRow);
         }
 
