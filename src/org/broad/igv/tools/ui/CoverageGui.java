@@ -654,7 +654,7 @@ public class CoverageGui extends JDialog {
         if (genomeId != null) {
             mainWindow.genomeField.setText(genomeId);
             mainWindow.genomeField.setEnabled(false);
-            mainWindow.genomeField.setToolTipText("<html>To change the genome id close this window and <br>use the pulldown on the IGV main screen.");
+            mainWindow.genomeField.setToolTipText("<html>To change the genome id close this window and <br>use the pulldown on the IGV batch screen.");
         }
 
         mainWindow.setVisible(true);

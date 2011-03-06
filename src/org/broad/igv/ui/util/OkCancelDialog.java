@@ -158,7 +158,7 @@ abstract public class OkCancelDialog extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     /*
-    public static void main(String args[]) {
+    public static void batch(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 OkCancelDialog dialog = new OkCancelDialog(new javax.swing.JFrame(), true);

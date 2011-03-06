@@ -27,7 +27,7 @@ import com.jidesoft.swing.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.ProbeToLocusMap;
-import org.broad.igv.main.CommandListener;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.ui.legend.ChromosomeColorLegend;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.MessageUtils;

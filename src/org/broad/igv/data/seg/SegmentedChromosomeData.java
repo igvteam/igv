@@ -34,7 +34,7 @@ import java.util.Map;
 
 /**
  * This class encapuslates data for a single chromosome from a segmented
- * dataset.   Its main purpose is to provide a single object that can
+ * dataset.   Its batch purpose is to provide a single object that can
  * easily be serialized and passed from server to IGV clients.
  *
  * @author jrobinso

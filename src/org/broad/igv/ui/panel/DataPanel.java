@@ -31,7 +31,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -48,7 +47,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * The main panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
+ * The batch panel for displaying tracks and data.  A DataPanel is always associated with a ReferenceFrame.  Normally
  * there is a single reference frame (and thus panel), but when "gene list" or other split screen views are
  * invoked there can be multiple panels.
  *

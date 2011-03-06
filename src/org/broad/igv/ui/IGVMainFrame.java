@@ -40,11 +40,11 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.GeneListManagerUI;
-import org.broad.igv.main.BatchRunner;
+import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.tools.ui.IndexGui;
 import org.broad.igv.listener.StatusListener;
-import org.broad.igv.main.CommandListener;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.tools.IgvToolsGui;
@@ -711,7 +711,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
     /**
      * Load tracks corresponding to a collection of resource locations.
      * Note: Most of the code here is to adjust the scrollbars and split pane after loading
-     * // TODO -- why is this in the main frame (as opposed to TrackManager for example)?
+     * // TODO -- why is this in the batch frame (as opposed to TrackManager for example)?
      *
      * @param locators
      */
@@ -2186,7 +2186,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
 
     /**
-     * Startup the IGV main window,  then execute batch file if supplied.
+     * Startup the IGV batch window,  then execute batch file if supplied.
      *
      * @param args
      */

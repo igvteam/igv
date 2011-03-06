@@ -47,7 +47,7 @@ public class SaveSessionMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(SaveSessionMenuAction.class);
 
-    // TODO -- The main referenceFrame is likely to be used by many actions. Move this
+    // TODO -- The batch referenceFrame is likely to be used by many actions. Move this
     // member to a base class ?
     IGVMainFrame mainFrame;
 

@@ -24,7 +24,7 @@
 // */
 //public class PedSaver {
 //
-//    public static void main(String[] args) throws IOException {
+//    public static void batch(String[] args) throws IOException {
 //        createFeatureTestFile();
 //    }
 //

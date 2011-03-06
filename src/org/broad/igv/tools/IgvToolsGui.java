@@ -21,7 +21,6 @@ package org.broad.igv.tools;
 import javax.swing.border.*;
 
 import org.broad.igv.track.WindowFunction;
-import org.broad.tribble.TribbleException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -584,7 +583,7 @@ public class IgvToolsGui extends JDialog {
         if (genomeId != null) {
             mainWindow.genomeField.setText(genomeId);
             mainWindow.genomeField.setEnabled(false);
-            mainWindow.genomeField.setToolTipText("<html>To change the genome id close this window and <br>use the pulldown on the IGV main screen.");
+            mainWindow.genomeField.setToolTipText("<html>To change the genome id close this window and <br>use the pulldown on the IGV batch screen.");
             mainWindow.genomeButton.setEnabled(false);
             mainWindow.genomeSelectionDisabled = true;
         }

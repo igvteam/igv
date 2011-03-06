@@ -29,7 +29,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * A panel class specific to the IGV main window.  Lays out its components in a very specific way so that
+ * A panel class specific to the IGV batch window.  Lays out its components in a very specific way so that
  * children (i.e. name, attribute, and data panels) from all instances align vertically
  */
 public class IGVPanel extends JPanel implements Paintable {

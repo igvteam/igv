@@ -21,7 +21,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.main.BatchRunner;
+import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
