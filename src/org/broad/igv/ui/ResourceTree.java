@@ -233,7 +233,6 @@ public class ResourceTree {
 
         expandTree(TreeExpansionFlag.EXPAND_SELECTED_ONLY, true);
         tree.updateUI(); // Tree state not always correct without this call
-        IGVMainFrame.getInstance().setCheckingSelectedResourceNodesAllowed(true);
         return tree;
     }
 
@@ -1203,9 +1202,6 @@ public class ResourceTree {
     private void manuallySelectNode(DefaultMutableTreeNode childNode,
                                     boolean skipSelectingEnabledNodes) {
 
-        if (!IGVMainFrame.getInstance().isCheckingSelectedResourceNodesAllowed()) {
-            return;
-        }
 
         Object userObject = childNode.getUserObject();
         if (userObject instanceof CheckableResource) {

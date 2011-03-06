@@ -191,9 +191,8 @@ public class DataPanel extends JComponent implements Paintable {
                 }
             }
 
-            if (IGVMainFrame.getInstance().isShowRegionsOfInterestBarsOn()) {
-                drawAllRegions(g);
-            }
+            drawAllRegions(g);
+
 
         } finally {
 

@@ -25,6 +25,7 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.jidesoft.status.StatusBar;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideSplitPane;
 import jargs.gnu.CmdLineParser;
@@ -108,41 +109,33 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     private TrackManager trackManager;
 
-    // Panels
+    // Panels, UI elements
     private JMenu extrasMenu;
     private IGVCommandBar igvCommandBar;
     private MainPanel mainPanel;
-    private com.jidesoft.status.StatusBar statusBar;
+    private StatusBar statusBar;
+    private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
+    //TODO -- A lot of state is passed between the embedded filter in this
+    // action and the session during save and restore.  Refactor to pass
+    // this state in a single object to/from the session.
+    private FilterTracksMenuAction filterTracksAction;
 
-    // Most recent sessions
-    final private LinkedList<String> recentSessionList = new LinkedList<String>();
     // FileChooser Dialogs
     private FileChooserDialog trackFileChooser;
     private FileChooser snapshotFileChooser;
     private FileChooser genomeImportFileChooser;
 
-    // TODO -- move this to the preferences manager
-    private boolean showRegionsOfInterestBarsOn = true;
-
-    // Current track filter action.
-    //TODO -- A lot of state is passed between the embedded filter in this
-    // action and the session during save and restore.  Refactor to pass
-    // this state in a single object to/from the session.
-    FilterTracksMenuAction filterTracksAction;
-
-    // MenuItems that need to be exposed because
-    // they need to be accessed by app code
-    private JCheckBoxMenuItem menuItem;
-    private boolean isExportingSnapshot = false;
-    private boolean areResourceNodesCheckable = false;
-
-
-    private boolean igvInitialized = false;
-    RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
 
     // Glass panes
     Component glassPane;
     GhostGlassPane dNdGlassPane;
+
+
+    // Misc state
+    private LinkedList<String> recentSessionList = new LinkedList<String>();
+    private boolean isExportingSnapshot = false;
+
+
 
     // Tracksets
     //private final Map<String, TrackPanelScrollPane> trackSetScrollPanes = new Hashtable();
@@ -178,7 +171,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         createDragAndDropCursor();
 
         setupIGV();
-        igvInitialized = true;
 
         // Setup a glass pane to implement a blocking wait cursor
         glassPane = getGlassPane();
@@ -205,9 +197,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         getGlassPane().setVisible(false);
     }
 
-    public boolean isIGVIntialized() {
-        return igvInitialized;
-    }
 
     private void setupIGV() {
         theInstance = this;
@@ -293,16 +282,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         //    repaintDataPanels();
         //}
     }
-
-    public void setCheckingSelectedResourceNodesAllowed(boolean value) {
-        areResourceNodesCheckable = value;
-    }
-
-    public boolean isCheckingSelectedResourceNodesAllowed() {
-
-        return areResourceNodesCheckable;
-    }
-
 
 
     private void adjustSplitPaneDivider() {
@@ -449,12 +428,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
 
 
-    // TODO -- move this to preferences manager class
-
-    public boolean isShowRegionsOfInterestBarsOn() {
-        return showRegionsOfInterestBarsOn;
-    }
-
     public void chromosomeChangeEvent() {
         chromosomeChangeEvent(true);
     }
@@ -551,7 +524,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 return;
             }
 
-            if (isIGVIntialized() && monitor != null) {
+            if (monitor != null) {
                 bar = ProgressBar.showProgressDialog(IGVMainFrame.getInstance(),
                         "Defining Genome...", monitor, false);
             }
@@ -577,7 +550,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             igvCommandBar.addToUserDefinedGenomeItemList(genomeListItem);
             igvCommandBar.selectGenomeFromListWithNoImport(genomeListItem.getId());
 
-            if (isIGVIntialized() && monitor != null) {
+            if (monitor != null) {
                 monitor.fireProgressChange(100);
             }
 
@@ -700,7 +673,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                 // If a file selection was made
                 if (file != null) {
-                    if (isIGVIntialized() && monitor != null) {
+                    if (monitor != null) {
                         bar = ProgressBar.showProgressDialog(IGVMainFrame.getInstance(),
                                 "Loading Genome...", monitor, false);
                     }
@@ -712,7 +685,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                     try {
 
-                        if (isIGVIntialized() && monitor != null) {
+                        if (monitor != null) {
                             monitor.fireProgressChange(50);
                         }
 
@@ -727,7 +700,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         igvCommandBar.selectGenomeFromListWithNoImport(genomeListItem.getId());
 
 
-                        if (isIGVIntialized() && monitor != null) {
+                        if (monitor != null) {
                             monitor.fireProgressChange(100);
                         }
 
@@ -937,11 +910,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                             public Object doInBackground() {
 
-                                ProgressMonitor monitor = null;
-                                if (isIGVIntialized()) {
-                                    monitor = new ProgressMonitor();
-                                }
-
+                                ProgressMonitor monitor = new ProgressMonitor();
                                 doDefineGenome(monitor);
                                 return null;
                             }
@@ -1192,7 +1161,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             }
         };
         boolean isShowing = mainPanel.isExpanded();
-        menuItem = new JCheckBoxMenuItem();
+        JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem();
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
         menuItems.add(menuItem);
@@ -1352,12 +1321,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         SwingWorker worker = new SwingWorker() {
 
                             public Object doInBackground() {
-
-                                ProgressMonitor monitor = null;
-                                if (isIGVIntialized()) {
-                                    monitor = new ProgressMonitor();
-                                }
-
+                                ProgressMonitor monitor =  new ProgressMonitor();
                                 doLoadGenome(monitor);
                                 return null;
                             }
