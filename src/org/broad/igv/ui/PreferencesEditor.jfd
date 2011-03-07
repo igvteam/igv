@@ -1530,7 +1530,7 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>&lt;html&gt;&lt;i&gt;Maximum read depth to display.</string> 
+                 <string>&lt;html&gt;&lt;i&gt;Maximum read depth to load (approximate).</string> 
                 </void> 
                 <void property="name"> 
                  <string>jLabel14</string> 

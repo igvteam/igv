@@ -135,7 +135,7 @@ public class TrackLoader {
                 loadIGVFile(locator, newTracks);
             } else if (typeString.endsWith(".mut")) {
                 loadMutFile(locator, newTracks);
-            } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg")  ||
+            } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
                     typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
                 loadSegFile(locator, newTracks);
             } else if (typeString.endsWith(".seg.zip")) {
@@ -194,11 +194,10 @@ public class TrackLoader {
             }
 
             // For PLINK GWAS results files
-            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc")  || typeString.endsWith(".gwas")) {
+            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
 
-            }
-            else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
             } else {
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -386,6 +385,7 @@ public class TrackLoader {
 
     /**
      * Load GWAS PLINK result file
+     *
      * @param locator
      * @param newTracks
      * @throws IOException
@@ -785,18 +785,18 @@ public class TrackLoader {
                 }
             }
 
-            AlignmentTrack track = new AlignmentTrack(locator, dataManager);    // parser.loadTrack(locator, dsName);
-            track.setName(dsName);
+            AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager);    // parser.loadTrack(locator, dsName);
+            alignmentTrack.setName(dsName);
             if (isBed) {
-                track.setRenderer(new BedRenderer());
-                track.setHeight(40);
+                alignmentTrack.setRenderer(new BedRenderer());
+                alignmentTrack.setHeight(40);
             }
 
             // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator.getPath() + "_coverage", track.getName() + " Coverage");
+            CoverageTrack covTrack = new CoverageTrack(locator.getPath() + "_coverage", alignmentTrack.getName() + " Coverage");
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
-            track.setCoverageTrack(covTrack);
+            alignmentTrack.setCoverageTrack(covTrack);
             if (!isBed) {
                 covTrack.setDataManager(dataManager);
                 dataManager.setCoverageTrack(covTrack);
@@ -813,7 +813,7 @@ public class TrackLoader {
                     if ((new File(covPath)).exists() || (IGVHttpUtils.isURL(covPath) &&
                             IGVHttpUtils.resourceAvailable(new URL(covPath)))) {
                         TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, track.getName() + " coverage");
+                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage");
                         covTrack.setDataSource(ds);
                     }
                 } catch (MalformedURLException e) {
@@ -822,15 +822,18 @@ public class TrackLoader {
                 }
             }
 
-            SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator.getPath() + "_junctions",
-                    track.getName() + " Junctions", dataManager);
+            boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+            if (showSpliceJunctionTrack) {
+                SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator.getPath() + "_junctions",
+                        alignmentTrack.getName() + " Junctions", dataManager);
 //            spliceJunctionTrack.setDataManager(dataManager);
-            spliceJunctionTrack.setHeight(60);
-            spliceJunctionTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(
-                    PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
-            newTracks.add(spliceJunctionTrack);
+                spliceJunctionTrack.setHeight(60);
+                spliceJunctionTrack.setVisible(showSpliceJunctionTrack));
+                newTracks.add(spliceJunctionTrack);
+                alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack).
+            }
 
-            newTracks.add(track);
+            newTracks.add(alignmentTrack);
 
         } catch (IndexNotFoundException e) {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +

@@ -945,7 +945,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         mappingQualityThresholdField.setBounds(206, 76, 84, mappingQualityThresholdField.getPreferredSize().height);
 
                         //---- jLabel14 ----
-                        jLabel14.setText("<html><i>Maximum read depth to display.");
+                        jLabel14.setText("<html><i>Maximum read depth to load (approximate).");
                         jPanel11.add(jLabel14);
                         jLabel14.setBounds(296, 40, 390, 30);
 

@@ -57,7 +57,6 @@ import java.util.List;
  */
 public class AlignmentTrack extends AbstractTrack implements DragListener {
 
-
     public enum SortOption {
         START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE
     }
@@ -74,9 +73,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     private static ColorOption colorByOption = null;
 
     private SequenceTrack sequenceTrack;
-
-
     private CoverageTrack coverageTrack;
+    private SpliceJunctionFinderTrack spliceJunctionTrack;
 
     private RenderOptions renderOptions;
 
@@ -167,6 +165,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public CoverageTrack getCoverageTrack() {
         return coverageTrack;
+    }
+
+    public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
+        this.spliceJunctionTrack = spliceJunctionTrack;
+    }
+
+    public SpliceJunctionFinderTrack getSpliceJunctionTrack() {
+        return spliceJunctionTrack;
     }
 
     public void setRenderer(FeatureRenderer renderer) {

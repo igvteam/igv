@@ -504,20 +504,23 @@ public class TrackManager {
         // TODO -- replace with track.getDependentTracks(), or similar
         for (Track t : tracksToRemove) {
             if (t instanceof AlignmentTrack) {
-                CoverageTrack ct = ((AlignmentTrack) t).getCoverageTrack();
+                Track ct = ((AlignmentTrack) t).getCoverageTrack();
                 tmp.add(ct);
+                Track sjt = ((AlignmentTrack) t).getSpliceJunctionTrack();
+                if(sjt != null) {
+                    tmp.add(sjt);
+                }
+
             }
         }
 
         // Make copy of list as we will be modifying the original in the loop
         ArrayList<TrackPanelScrollPane> panes = new ArrayList(getTrackPanelScrollPanes());
         for (TrackPanelScrollPane tsp : panes) {
-            TrackPanel tsv = tsp.getTrackPanel();
-            tsv.removeTracks(tmp);
+            TrackPanel trackPanel = tsp.getTrackPanel();
+            trackPanel.removeTracks(tmp);
 
-
-            // TODO -- do we want to remove the DataPanel if its empty?
-            if (!tsv.hasTracks()) {
+            if (!trackPanel.hasTracks()) {
                 mainFrame.removeDataPanel(tsp.getTrackPanelName());
             }
         }
