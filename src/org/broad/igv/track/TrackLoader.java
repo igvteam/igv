@@ -828,9 +828,9 @@ public class TrackLoader {
                         alignmentTrack.getName() + " Junctions", dataManager);
 //            spliceJunctionTrack.setDataManager(dataManager);
                 spliceJunctionTrack.setHeight(60);
-                spliceJunctionTrack.setVisible(showSpliceJunctionTrack));
+                spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
                 newTracks.add(spliceJunctionTrack);
-                alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack).
+                alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
             }
 
             newTracks.add(alignmentTrack);
