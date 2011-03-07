@@ -49,7 +49,7 @@ public class RegionOfInterest{
      * @param end            The region starting position on the chromosome.
      * @param description
      */
-    public RegionOfInterest(String chromosomeName, Integer start, Integer end, String description) {
+    public RegionOfInterest(String chromosomeName, int start, int end, String description) {
 
         this.chr = chromosomeName;
         this.description = description;

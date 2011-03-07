@@ -100,18 +100,34 @@ public class RegionsBaseMenuAction extends MenuAction {
         }
         try {
             BufferedReader reader = null;
+            int coordConvention = 0;
+
             try {
                 reader = new BufferedReader(new FileReader(roiFile));
                 while (true) {
                     String dataRecord = reader.readLine();
                     if (dataRecord == null) {
                         return;
+                    } else if (dataRecord.startsWith("track")) {
+                        // Skip track line
+                        continue;
+                    } else if (dataRecord.startsWith("#coords")) {
+                        String[] tmp = dataRecord.split("=");
+                        if (tmp.length > 1) {
+                            try {
+                                coordConvention = Integer.parseInt(tmp[1]);
+                            } catch (NumberFormatException e) {
+                                log.error("Error parsing coordinate convention direction for file: " + roiFile);
+                            }
+                        }
                     }
                     String[] data = dataRecord.split("\t");
                     if (data.length >= 3) {
                         try {
                             String name = data.length > 3 ? data[3] : null;
-                            RegionOfInterest regionOfInterest = new RegionOfInterest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), name);
+                            int start = Integer.parseInt(data[1]) - coordConvention;
+                            int end = Integer.parseInt(data[2]);
+                            RegionOfInterest regionOfInterest = new RegionOfInterest(data[0],start, end, name);
                             mainFrame.addRegionOfInterest(regionOfInterest);
                         } catch (NumberFormatException numberFormatException) {
                         }
@@ -191,8 +207,7 @@ public class RegionsBaseMenuAction extends MenuAction {
                     if (regionOfInterest.getDescription() != null) {
                         writer.print("\t");
                         writer.println(regionOfInterest.getDescription());
-                    }
-                    else {
+                    } else {
                         writer.println();
                     }
                 }
