@@ -73,12 +73,6 @@ public class AlignmentPacker {
     }
 
 
-    public List<AlignmentInterval.Row> packAlignments(
-            Iterator<Alignment> iter, int end, boolean pairAlignments) {
-        return packAlignments(iter, end, pairAlignments, null);
-    }
-
-
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
@@ -86,7 +80,8 @@ public class AlignmentPacker {
      */
     public List<AlignmentInterval.Row> packAlignments(
             Iterator<Alignment> iter, int end, boolean pairAlignments,
-            AlignmentTrack.SortOption groupBy) {
+            AlignmentTrack.SortOption groupBy,
+            int maxLevels) {
 
 
         List<Row> alignmentRows = new ArrayList(1000);
@@ -95,7 +90,7 @@ public class AlignmentPacker {
         }
 
         if (groupBy == null) {
-            pack(iter, end, pairAlignments, lengthComparator, alignmentRows);
+            pack(iter, end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
         } else {
             // Separate by group
             List<Alignment> nullGroup = new ArrayList();
@@ -117,9 +112,9 @@ public class AlignmentPacker {
             Collections.sort(keys);
             for (String key : keys) {
                 List<Alignment> group = groupedAlignments.get(key);
-                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+                pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
             }
-            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows);
+            pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
         }
 
         return alignmentRows;
@@ -139,7 +134,8 @@ public class AlignmentPacker {
         return null;
     }
 
-    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows) {
+    private void pack(Iterator<Alignment> iter, int end, boolean pairAlignments, Comparator lengthComparator, List<Row> alignmentRows,
+                      int maxLevels) {
 
         if (!iter.hasNext()) {
             return;
@@ -257,11 +253,10 @@ public class AlignmentPacker {
                 alignmentRows.add(currentRow);
             }
 
-            // TO prevent infinite loops
-            if (currentRow.alignments.size() > MAX_ROWS) {
+            if(alignmentRows.size() >= maxLevels) {
+                currentRow = null;
                 break;
             }
-
 
             currentRow = new Row();
             nextStart = start;
@@ -272,7 +267,7 @@ public class AlignmentPacker {
         }
 
         // Add the last row
-        if (currentRow.alignments.size() > 0) {
+        if (currentRow != null && currentRow.alignments.size() > 0) {
             alignmentRows.add(currentRow);
         }
 

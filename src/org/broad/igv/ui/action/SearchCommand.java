@@ -87,11 +87,11 @@ public class SearchCommand implements Command {
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
         if (tokens.length >= 2) {
-            String chr = tokens[0];
-            int start = Integer.parseInt(tokens[1]) - 1; // Convert to UCSC convention
+            String chr = tokens[0].trim();
+            int start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
             int end = start + 1;
             if (tokens.length > 2) {
-                end = Integer.parseInt(tokens[2]);
+                end = Integer.parseInt(tokens[2].trim());
             }
             referenceFrame.jumpTo(chr, start, end);
             success = true;

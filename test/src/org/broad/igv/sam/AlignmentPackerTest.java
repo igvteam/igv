@@ -78,7 +78,7 @@ public class AlignmentPackerTest {
         int maxLevels = 1000;
 
 
-        List<AlignmentInterval.Row> result = (new AlignmentPacker()).packAlignments(iter, end, false);
+        List<AlignmentInterval.Row> result = (new AlignmentPacker()).packAlignments(iter, end, false, null, 10000);
 
     }
 

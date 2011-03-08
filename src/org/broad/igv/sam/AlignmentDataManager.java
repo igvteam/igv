@@ -56,6 +56,7 @@ public class AlignmentDataManager {
     private CoverageTrack coverageTrack;
     private int maxLevels;
     private boolean loadAsPairs = false;
+    private static final int MAX_ROWS = 1000000;
 
     public AlignmentDataManager(ResourceLocator locator) throws IOException {
 
@@ -217,7 +218,7 @@ public class AlignmentDataManager {
             List<AlignmentInterval.Row> tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
                     loadedInterval.getEnd(),
-                    loadAsPairs);
+                    loadAsPairs, null, MAX_ROWS);
 
             loadedInterval.setAlignmentRows(tmp);
 
@@ -251,7 +252,8 @@ public class AlignmentDataManager {
                 iter,
                 loadedInterval.getEnd(),
                 loadAsPairs,
-                option);
+                option,
+                MAX_ROWS);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
@@ -319,7 +321,7 @@ public class AlignmentDataManager {
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
                     List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, loadAsPairs);
+                            intervalEnd, loadAsPairs, null, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
                             alignmentRows, counts);
