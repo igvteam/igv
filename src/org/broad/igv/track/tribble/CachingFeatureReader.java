@@ -21,15 +21,14 @@
 package org.broad.igv.track.tribble;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.sam.Alignment;
 import org.broad.igv.util.LRUCache;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureSource;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -39,7 +38,7 @@ import java.util.List;
 public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
 
     private static Logger log = Logger.getLogger(CachingFeatureReader.class);
-    private static int maxBinCount = 10;
+    private static int maxBinCount = 4;
     private static int defaultBinSize = 16000; // <= 16 kb
 
     private int binSize;
@@ -192,6 +191,8 @@ public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
         int featureCount = 0;
         long t0 = System.currentTimeMillis();
         try {
+
+
             iter = reader.query(seq, start, end);
 
             while (iter != null && iter.hasNext()) {

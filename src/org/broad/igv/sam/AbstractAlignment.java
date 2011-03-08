@@ -144,11 +144,13 @@ public abstract class AbstractAlignment implements Alignment {
     public String getValueString(double position, WindowFunction windowFunction) {
 
         // First check insertions.  Position is zero based, block coords 1 based
-        for (AlignmentBlock block : this.insertions) {
-            double insertionLeft = block.getStart() + .75;
-            double insertionRight = block.getStart() + 1.25;
-            if (position > insertionLeft && position < insertionRight) {
-                return "Insertion: " + new String(block.getBases());
+        if (this.insertions != null) {
+            for (AlignmentBlock block : this.insertions) {
+                double insertionLeft = block.getStart() + .75;
+                double insertionRight = block.getStart() + 1.25;
+                if (position > insertionLeft && position < insertionRight) {
+                    return "Insertion: " + new String(block.getBases());
+                }
             }
         }
 

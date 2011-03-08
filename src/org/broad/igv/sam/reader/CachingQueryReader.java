@@ -215,6 +215,9 @@ public class CachingQueryReader {
             //activeReaders.add(this);
             iter = reader.query(chr, start, end, false);
 
+            Map<String, Alignment> mappedMates = new HashMap(1000);
+            Map<String, Alignment> unmappedMates = new HashMap(1000);
+
             int tileSize = getTileSize(chr);
             while (iter != null && iter.hasNext()) {
 
@@ -224,8 +227,36 @@ public class CachingQueryReader {
 
                 Alignment record = iter.next();
 
-                if (!record.isMapped() ||
-                        (!showDuplicates && record.isDuplicate()) ||
+                String readName = record.getReadName();
+                if (record.isPaired()) {
+                    if (record.isMapped()) {
+                        if (!record.getMate().isMapped()) {
+                            // record is mapped, mate is not
+                            Alignment mate = unmappedMates.get(readName);
+                            if (mate == null) {
+                                mappedMates.put(readName, record);
+                            } else {
+                                record.setMateSequence(mate.getReadSequence());
+                                unmappedMates.remove(readName);
+                                mappedMates.remove(readName);
+                            }
+
+                        }
+                    } else if (record.getMate().isMapped()) {
+                        // record not mapped, mate is
+                        Alignment mappedMate = mappedMates.get(readName);
+                        if (mappedMate == null) {
+                            unmappedMates.put(readName, record);
+                        } else {
+                            mappedMate.setMateSequence(record.getReadSequence());
+                            unmappedMates.remove(readName);
+                            mappedMates.remove(readName);
+                        }
+                    }
+                }
+
+
+                if (!record.isMapped() || (!showDuplicates && record.isDuplicate()) ||
                         (filterFailedReads && record.isVendorFailedRead()) ||
                         record.getMappingQuality() < qualityThreshold ||
                         (filter != null && filter.filterAlignment(record))) {
@@ -255,6 +286,16 @@ public class CachingQueryReader {
                 }
             }
 
+            // Clean up any remaining unmapped mate seqeunces
+            for (Alignment mappedMate : mappedMates.values()) {
+                Alignment mate = unmappedMates.get(mappedMate.getReadName());
+                if (mate != null) {
+                    mappedMate.setMateSequence(mate.getReadSequence());
+                }
+            }
+            mappedMates = null;
+            unmappedMates = null;
+
             for (AlignmentTile t : tiles) {
                 t.setLoaded(true);
                 cache.put(t.getTileNumber(), t);
@@ -262,7 +303,8 @@ public class CachingQueryReader {
 
             return true;
 
-        } catch (Exception e) {
+        } catch (Exception
+                e) {
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
         }
@@ -493,6 +535,7 @@ public class CachingQueryReader {
 
         /**
          * Sample the current bucket of alignments to achieve the desired depth.
+         *
          * @return
          */
         private List<Alignment> sampleCurrentBucket() {

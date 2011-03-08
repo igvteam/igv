@@ -60,6 +60,17 @@ public class AlignmentPacker {
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
     private static final int MAX_ROWS = 100000;
+    private Comparator lengthComparator;
+
+    public AlignmentPacker() {
+        lengthComparator = new Comparator<Alignment>() {
+            public int compare(Alignment row1, Alignment row2) {
+                return (row2.getEnd() - row2.getStart()) -
+                        (row1.getEnd() - row2.getStart());
+
+            }
+        };
+    }
 
 
     public List<AlignmentInterval.Row> packAlignments(
@@ -77,14 +88,6 @@ public class AlignmentPacker {
             Iterator<Alignment> iter, int end, boolean pairAlignments,
             AlignmentTrack.SortOption groupBy) {
 
-        // Compares 2 alignments by length.
-        Comparator lengthComparator = new Comparator<Alignment>() {
-            public int compare(Alignment row1, Alignment row2) {
-                return (row2.getEnd() - row2.getStart()) -
-                        (row1.getEnd() - row2.getStart());
-
-            }
-        };
 
         List<Row> alignmentRows = new ArrayList(1000);
         if (iter == null || !iter.hasNext()) {
@@ -169,22 +172,17 @@ public class AlignmentPacker {
         int totalCount = 1;
 
         //  Allocate alignments to buckets based on position
-        List<Alignment> matesUnmapped = new ArrayList(1000);
-        Map<String, Alignment> unmappedReads = new HashMap(1000);
 
         while (iter.hasNext()) {
 
             Alignment al = iter.next();
+            String readName = al.getReadName();
 
-            // Store unmapped reads in a hache, to be used later to fetch sequence
-            if (!al.isMapped()) {
-                unmappedReads.put(al.getReadName(), al);
-
-            } else {
+            if (al.isMapped()) {
 
                 Alignment alignment = al;
                 if (pairAlignments && al.isPaired() && al.isProperPair() && al.getMate().isMapped()) {
-                    String readName = al.getReadName();
+
                     PairedAlignment pair = pairs.get(readName);
                     if (pair == null) {
                         pair = new PairedAlignment(al);
@@ -217,20 +215,10 @@ public class AlignmentPacker {
                     log.debug("Alignment out of bounds: " + alignment.getStart() + " (> " + end);
                 }
 
-                if (alignment.getMate() != null && !alignment.getMate().isMapped()) {
-                    matesUnmapped.add(alignment);
-                }
+
             }
         }
 
-        // TODO -- should this be moved prior to downsampling?
-        // Get unmapped mate sequences
-        for (Alignment a : matesUnmapped) {
-            Alignment mate = unmappedReads.get(a.getReadName());
-            if (mate != null) {
-                a.setMateSequence(mate.getReadSequence());
-            }
-        }
 
         // Allocate alignments to rows
         long t0 = System.currentTimeMillis();
@@ -270,7 +258,7 @@ public class AlignmentPacker {
             }
 
             // TO prevent infinite loops
-            if(currentRow.alignments.size() > MAX_ROWS) {
+            if (currentRow.alignments.size() > MAX_ROWS) {
                 break;
             }
 
