@@ -264,7 +264,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             } else {
                 int nBases = Integer.parseInt(buffer.toString());
                 char op = next;
-                if (operatorIsMatch(showSoftClipped, op)) {
+                 if(op == HARD_CLIP) {
+                   continue;  // Just skip hardclips
+                }
+                else if (operatorIsMatch(showSoftClipped, op)) {
                     if (operatorIsMatch(showSoftClipped, prevOp)) {
                         nGaps++;   // Consecutive Ms
                     }
