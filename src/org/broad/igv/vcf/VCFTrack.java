@@ -167,10 +167,13 @@ public class VCFTrack extends FeatureTrack {
 
         this.setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
+
+        // Estimate visibility window. 
         int cnt = Math.max(1, sampleCount);
         // TODO -- set beta based on available memory
+
         int beta = 20000;
-        int visWindow = (beta / cnt) * 1000;
+        int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
     }
 
