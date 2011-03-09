@@ -165,12 +165,12 @@ public class VCFTrack extends FeatureTrack {
             samples.put("All", new ArrayList<String>(allSamples));
         }
 
-        int visWindow = 2500000;
-        if (sampleCount > 10) {
-            visWindow = Math.max(2500000, 2500000 - 100000 * (sampleCount - 10));
-            this.setDisplayMode(DisplayMode.EXPANDED);
-        }
+        this.setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
+        int cnt = Math.max(1, sampleCount);
+        // TODO -- set beta based on available memory
+        int beta = 20000;
+        int visWindow = (beta / cnt) * 1000;
         setVisibilityWindow(visWindow);
     }
 
