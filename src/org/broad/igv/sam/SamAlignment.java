@@ -119,7 +119,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
 
         Object colorTag = record.getAttribute("YC");
-        if(colorTag != null) {
+        if (colorTag != null) {
             try {
                 defaultColor = ColorUtilities.convertRGBStringToColor(colorTag.toString());
             } catch (Exception e) {
@@ -238,7 +238,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     void createAlignmentBlocks(String cigarString, byte[] readBases, byte[] readBaseQualities) {
 
-        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED); 
+        boolean showSoftClipped = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED);
 
 
         int nInsertions = 0;
@@ -262,12 +262,13 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             if (Character.isDigit(next)) {
                 buffer.append(next);
             } else {
-                int nBases = Integer.parseInt(buffer.toString());
                 char op = next;
-                 if(op == HARD_CLIP) {
-                   continue;  // Just skip hardclips
+                if (op == HARD_CLIP) {
+                    buffer = new StringBuffer(4);
+                    continue;  // Just skip hardclips
                 }
-                else if (operatorIsMatch(showSoftClipped, op)) {
+                int nBases = Integer.parseInt(buffer.toString());
+                if (operatorIsMatch(showSoftClipped, op)) {
                     if (operatorIsMatch(showSoftClipped, prevOp)) {
                         nGaps++;   // Consecutive Ms
                     }
@@ -312,6 +313,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         int gapIdx = 0;
         prevOp = 0;
         for (CigarOperator op : operators) {
+            if (op.operator == HARD_CLIP) {
+                continue;
+            }
             if (operatorIsMatch(showSoftClipped, op.operator)) {
 
                 byte[] blockBases = new byte[op.nBases];
