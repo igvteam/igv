@@ -286,7 +286,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
-        if (blocks == null) {
+        if (blocks == null || blocks.length == 0) {
             drawSimpleAlignment(alignment, rect, g, context, renderOptions.flagUnmappedPairs);
             return;
         }
