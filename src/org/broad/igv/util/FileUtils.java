@@ -289,7 +289,7 @@ public class FileUtils {
             int contentLength = connection.getContentLength();
 
             if (contentLength <= 0) {
-                log.info("Content-length = " + contentLength);
+                log.debug("Content-length = " + contentLength);
                 // Try downloading until a loop returns zero bytes
 
                 is = connection.getInputStream();
@@ -371,23 +371,21 @@ public class FileUtils {
         OutputStream out = null;
         InputStream in = null;
         try {
-            log.info("Downloading to " + outputFile.getAbsolutePath());
             in = new FileInputStream(inputFile);
             out = new FileOutputStream(outputFile);
             byte[] buffer = new byte[64000];
             int bytes_read;
             while ((bytes_read = in.read(buffer)) != -1) {
-                log.info(" xferred " + bytes_read + " bytes");
                 out.write(buffer, 0, bytes_read);
                 totalSize += bytes_read;
             }
-            log.info("Download complete.  Transferred " + totalSize + " bytes");
+
         }
 
 
         catch (Exception e) {
             outputFile.delete();
-            MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
+            MessageUtils.showMessage("<html>Error copying file: " + outputFile.getAbsoluteFile() +
                     "<br/>" + e.toString());
 
         }

@@ -17,14 +17,12 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.sam.reader;
+package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.AlignmentBlock;
 
 /**
 * @author jrobinso

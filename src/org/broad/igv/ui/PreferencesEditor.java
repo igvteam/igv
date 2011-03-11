@@ -56,6 +56,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged;
 
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -140,11 +141,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         insertSizeThresholdField = new JTextField();
         jLabel13 = new JLabel();
         jLabel15 = new JLabel();
-        jLabel18 = new JLabel();
         samMaxWindowSizeField = new JTextField();
         jLabel12 = new JLabel();
         jLabel20 = new JLabel();
         insertSizeMinThresholdField = new JTextField();
+        isizeComputeCB = new JCheckBox();
         jPanel12 = new JPanel();
         samMinBaseQualityField = new JTextField();
         samShadeMismatchedBaseCB = new JCheckBox();
@@ -919,9 +920,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jLabel26.setBounds(6, 150, 200, jLabel26.getPreferredSize().height);
 
                         //---- jLabel17 ----
-                        jLabel17.setText("Insert size flagging threshold:");
+                        jLabel17.setText("Default insert size thresholds:");
                         jPanel11.add(jLabel17);
-                        jLabel17.setBounds(6, 116, 200, jLabel17.getPreferredSize().height);
+                        jLabel17.setBounds(5, 115, 200, jLabel17.getPreferredSize().height);
 
                         //---- jLabel16 ----
                         jLabel16.setText("<html><i>Reads with qualities  below the threshold are not shown.");
@@ -964,7 +965,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(insertSizeThresholdField);
-                        insertSizeThresholdField.setBounds(320, 110, 84, insertSizeThresholdField.getPreferredSize().height);
+                        insertSizeThresholdField.setBounds(345, 109, 84, insertSizeThresholdField.getPreferredSize().height);
 
                         //---- jLabel13 ----
                         jLabel13.setText("Maximum read depth:");
@@ -975,11 +976,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jLabel15.setText("Mapping quality threshold:");
                         jPanel11.add(jLabel15);
                         jLabel15.setBounds(new Rectangle(new Point(6, 82), jLabel15.getPreferredSize()));
-
-                        //---- jLabel18 ----
-                        jLabel18.setText("<html><i>Paired end alignments with insert sizes outside of this range this value are flagged.");
-                        jPanel11.add(jLabel18);
-                        jLabel18.setBounds(450, 110, 260, 55);
 
                         //---- samMaxWindowSizeField ----
                         samMaxWindowSizeField.setText("jTextField1");
@@ -1005,7 +1001,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- jLabel20 ----
                         jLabel20.setText("to ");
                         jPanel11.add(jLabel20);
-                        jLabel20.setBounds(295, 116, 50, 16);
+                        jLabel20.setBounds(295, 115, 50, 16);
 
                         //---- insertSizeMinThresholdField ----
                         insertSizeMinThresholdField.setText("0");
@@ -1025,7 +1021,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(insertSizeMinThresholdField);
-                        insertSizeMinThresholdField.setBounds(205, 110, 84, 28);
+                        insertSizeMinThresholdField.setBounds(206, 109, 84, 28);
+
+                        //---- isizeComputeCB ----
+                        isizeComputeCB.setText("compute dynamically");
+                        isizeComputeCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                isizeComputeCBActionPerformed(e);
+                            }
+                        });
+                        jPanel11.add(isizeComputeCB);
+                        isizeComputeCB.setBounds(new Rectangle(new Point(455, 112), isizeComputeCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -2045,6 +2051,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
+    private void isizeComputeCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.SAM_COMPUTE_ISIZES,
+                String.valueOf(isizeComputeCB.isSelected()));
+    }
+
+
     private void samMaxWindowSizeFieldFocusLost(java.awt.event.FocusEvent evt) {
         String maxSAMWindowSize = samMaxWindowSizeField.getText().trim();
         try {
@@ -2286,25 +2299,25 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     private void labelYAxisCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_labelYAxisCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_Y_AXIS, String.valueOf(labelYAxisCB.isSelected()));
-    }//GEN-LAST:event_labelYAxisCBActionPerformed
+    }
 
     private void shadeCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shadeCenterCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_SHADE_CENTER, String.valueOf(shadeCenterCB.isSelected()));
 
-    }//GEN-LAST:event_shadeCenterCBActionPerformed
+    }
 
     private void showCovTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
-    }//GEN-LAST:event_showCovTrackCBActionPerformed
+    }
 
     private void showJunctionTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_JUNCTION_TRACK, String.valueOf(showJunctionTrackCB.isSelected()));
-    }//GEN-LAST:event_showCovTrackCBActionPerformed
+    }
 
     private void filterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_FILTER_ALIGNMENTS, String.valueOf(filterCB.isSelected()));
         filterURL.setEnabled(filterCB.isSelected());
-    }//GEN-LAST:event_filterCBActionPerformed
+    }
 
     private void filterURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterURLActionPerformed
         updatedPreferenceMap.put(
@@ -2565,6 +2578,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         shadeCenterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER));
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
+        isizeComputeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES));
         //dhmay adding 20110208
         showJunctionTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
         filterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS));
@@ -2722,11 +2736,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField insertSizeThresholdField;
     private JLabel jLabel13;
     private JLabel jLabel15;
-    private JLabel jLabel18;
     private JTextField samMaxWindowSizeField;
     private JLabel jLabel12;
     private JLabel jLabel20;
     private JTextField insertSizeMinThresholdField;
+    private JCheckBox isizeComputeCB;
     private JPanel jPanel12;
     private JTextField samMinBaseQualityField;
     private JCheckBox samShadeMismatchedBaseCB;

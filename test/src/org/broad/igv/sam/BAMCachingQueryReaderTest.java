@@ -26,7 +26,6 @@ package org.broad.igv.sam;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.sam.reader.CachingQueryReader;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;

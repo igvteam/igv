@@ -28,6 +28,7 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.CachingQueryReader;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;

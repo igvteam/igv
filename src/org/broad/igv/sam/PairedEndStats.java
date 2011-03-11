@@ -26,6 +26,7 @@ import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 
 /**
@@ -45,7 +46,9 @@ public class PairedEndStats {
     public static void main(String[] args) throws IOException {
 
         AlignmentQueryReader reader = SamQueryReaderFactory.getReader(args[0], false);
-        PairedEndStats stats = compute(reader.iterator());
+        CloseableIterator<Alignment> iter = reader.iterator();
+        PairedEndStats stats = compute(iter);
+        iter.close();
         reader.close();
 
         System.out.println(args[0] + "\t" + stats.averageInsertSize + "\t" + stats.medianInsertSize +
@@ -68,7 +71,9 @@ public class PairedEndStats {
         AlignmentQueryReader reader = null;
         try {
             reader = SamQueryReaderFactory.getReader(bamFile, false);
-            PairedEndStats stats = compute(reader.iterator());
+            final CloseableIterator<Alignment> alignmentCloseableIterator = reader.iterator();
+            PairedEndStats stats = compute(alignmentCloseableIterator);
+            alignmentCloseableIterator.close();
             return stats;
 
         } catch (IOException e) {
@@ -97,7 +102,7 @@ public class PairedEndStats {
         }
     }
 
-    public static PairedEndStats compute(CloseableIterator<Alignment> alignments) {
+    public static PairedEndStats compute(Iterator<Alignment> alignments) {
 
 
         double[] insertSizes = new double[MAX_PAIRS];
@@ -119,7 +124,6 @@ public class PairedEndStats {
             }
 
         }
-        alignments.close();
 
         if(nPairs == 0) {
             System.out.println("Error computing insert size distribution. No alignments in sample interval.");
@@ -139,7 +143,7 @@ public class PairedEndStats {
         double mad = 1.4826 * StatUtils.percentile(deviations, 50);
 
         double sec = StatUtils.percentile(insertSizes, 0, nPairs, .1);
-        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.8);
+        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.9);
 
         PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad, sec, max);
 

@@ -79,7 +79,9 @@ public class AlignmentPacker {
      * @param iter Iterator wrapping the collection of alignments
      */
     public List<AlignmentInterval.Row> packAlignments(
-            Iterator<Alignment> iter, int end, boolean pairAlignments,
+            Iterator<Alignment> iter,
+            int end,
+            boolean pairAlignments,
             AlignmentTrack.SortOption groupBy,
             int maxLevels) {
 
@@ -253,7 +255,7 @@ public class AlignmentPacker {
                 alignmentRows.add(currentRow);
             }
 
-            if(alignmentRows.size() >= maxLevels) {
+            if (alignmentRows.size() >= maxLevels) {
                 currentRow = null;
                 break;
             }

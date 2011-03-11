@@ -26,7 +26,6 @@ package org.broad.igv.sam;
 import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.sam.reader.AlignmentCounts;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -156,7 +155,10 @@ public class CoverageTrack extends AbstractTrack {
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 interval = dataManager.getLoadedInterval(context);
+                
             }
+
+
 
 
             if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),

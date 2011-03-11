@@ -25,8 +25,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
-import org.broad.igv.sam.reader.AlignmentCounts;
-import org.broad.igv.sam.reader.CachingQueryReader;
 import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.track.MultiFileWrapper;
@@ -228,7 +226,6 @@ public class AlignmentDataManager {
     }
 
 
-
     public void repackAlignments(ReferenceFrame referenceFrame) {
         repackAlignments(referenceFrame, null);
     }
@@ -281,6 +278,11 @@ public class AlignmentDataManager {
         }
     }
 
+    public PairedEndStats getPairedEndStats(ReferenceFrame frame) {
+        AlignmentInterval loadedInterval = loadedIntervalMap.get(frame.getName());
+        return loadedInterval == null ? null : loadedInterval.getPeStats();
+    }
+
     public void clear() {
         reader.clearCache();
         loadedIntervalMap.clear();
@@ -319,12 +321,15 @@ public class AlignmentDataManager {
 
                     iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels);
 
+                    PairedEndStats peStats = reader.getPeStats();
+
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
+
                     List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter,
                             intervalEnd, loadAsPairs, null, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
-                            alignmentRows, counts);
+                            alignmentRows, counts, peStats);
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 
 

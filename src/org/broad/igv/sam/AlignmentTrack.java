@@ -129,35 +129,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 }
             }
         }
-
-        // Estimate insert size distribution
-        if (UIConstants.isSigmaProject()) {
-            estimateSizeDistribution();
-        }
     }
 
-    private void estimateSizeDistribution() {
-        String chr = "chr1";
-        int start = 153515801;
-        int end = 153535418;
-        String sequence = dataManager.chrMappings.containsKey(chr) ? dataManager.chrMappings.get(chr) : chr;
 
-        PairedEndStats stats = PairedEndStats.compute(dataManager.getReader().getWrappedReader(), sequence, start, end);
-        if (stats == null) {
-            System.out.println("Warning: error computing stats.  Using default insert size settings");
-        } else {
-            double median = stats.getMedianInsertSize();
-            double mad = stats.getMadInsertSize();
-            //renderOptions.maxInsertSizeThreshold = (int) (median + 3 * mad);
-            //renderOptions.minInsertSizeThreshold = Math.max(50, (int) (median - 5 * mad));
-            renderOptions.setMinInsertSizeThreshold((int) stats.getMinPercentileInsertSize());
-            renderOptions.setMaxInsertSizeThreshold((int) stats.getMaxPercentileInsertSize());
-            renderOptions.setMedianInsertSizeThreshold((int) median);
-            renderOptions.setMadInsertSizeThreshold((int) mad);
-            log.debug("  median = " + median + " mad = " + mad);
-        }
-
-    }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
@@ -242,6 +216,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         try {
             log.debug("Render features");
             List<AlignmentInterval.Row> tmp = dataManager.getAlignmentRows(context); //genomeId, chr, start, end);
+
+            PairedEndStats peStats = dataManager.getPairedEndStats(context.getReferenceFrame());
+            if(peStats != null) {
+                renderOptions.minInsertSizeThreshold = (int) peStats.getMinPercentileInsertSize();
+                renderOptions.maxInsertSizeThreshold = (int) peStats.getMaxPercentileInsertSize();
+            }
 
             if (tmp == null) {
                 return;

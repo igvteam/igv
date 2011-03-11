@@ -20,7 +20,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.sam.reader;
+package org.broad.igv.sam;
 
 
 import net.sf.samtools.SAMFileHeader;
@@ -28,15 +28,13 @@ import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.EmptyAlignmentIterator;
-import org.broad.igv.sam.PairedAlignment;
+import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.RuntimeUtils;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -56,6 +54,7 @@ public class CachingQueryReader {
     private static int DEFAULT_TILE_SIZE = 16 * KB;
     private static int MAX_TILE_COUNT = 4;
     private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
+    private PairedEndStats peStats;
 
     private static void cancelReaders() {
         for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
@@ -132,6 +131,11 @@ public class CachingQueryReader {
             alignments.addAll(t.getContainedRecords());
             counts.add(t.getCounts());
         }
+
+        if (alignments.size() > 1000) {
+            peStats = PairedEndStats.compute(alignments.iterator());
+        }
+
         return new TiledIterator(start, end, alignments);
     }
 
@@ -160,7 +164,7 @@ public class CachingQueryReader {
             // The current tile is loaded,  load any preceding tiles we have pending and clear "to load" list
             if (tile.isLoaded()) {
                 if (tilesToLoad.size() > 0) {
-                    boolean success = loadTiles(seq, tilesToLoad, maxReadDepth);
+                    boolean success = loadTiles(seq, tilesToLoad);
                     if (!success) {
                         // Loading was canceled, return what we have
                         return tiles;
@@ -173,7 +177,7 @@ public class CachingQueryReader {
         }
 
         if (tilesToLoad.size() > 0) {
-            loadTiles(seq, tilesToLoad, maxReadDepth);
+            loadTiles(seq, tilesToLoad);
         }
 
         return tiles;
@@ -186,7 +190,7 @@ public class CachingQueryReader {
      * @param tiles
      * @return true if successful,  false if canceled.
      */
-    private boolean loadTiles(String chr, List<AlignmentTile> tiles, int maxReadDepth) {
+    private boolean loadTiles(String chr, List<AlignmentTile> tiles) {
 
         assert (tiles.size() > 0);
 
@@ -321,10 +325,6 @@ public class CachingQueryReader {
         }
     }
 
-    private static synchronized int confirmMaxReadCount(String msg) {
-        log.debug("Enter max read count");
-        return JOptionPane.showConfirmDialog(null, msg, msg, JOptionPane.YES_NO_OPTION);
-    }
 
     private static synchronized boolean checkMemory() {
         if (RuntimeUtils.getAvailableMemoryFraction() < 0.2) {
@@ -353,6 +353,10 @@ public class CachingQueryReader {
 
     public void clearCache() {
         if (cache != null) cache.clear();
+    }
+
+    public PairedEndStats getPeStats() {
+        return peStats;
     }
 
 
