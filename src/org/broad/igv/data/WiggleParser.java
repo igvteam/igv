@@ -49,7 +49,7 @@ public class WiggleParser {
 
     private enum Type {
 
-        FIXED, VARIABLE, BED
+        FIXED, VARIABLE, BED_GRAPH, CPG
     }
 
     ;
@@ -58,7 +58,7 @@ public class WiggleParser {
     /**
      * The type of wiggle locator (see UCSC documentation).
      */
-    private Type type = Type.BED;
+    private Type type = Type.BED_GRAPH;
 
     // State variables.  This is a serial type parser,  these variables are used to hold temporary
     // state.
@@ -89,6 +89,10 @@ public class WiggleParser {
         this.resourceLocator = locator;
         this.estArraySize = estArraySize(locator, genomeId);
         dataset = new WiggleDataset(genomeId, locator.getTrackName());
+
+        if (locator.getPath().endsWith("CpG.txt")) {
+            type = Type.CPG;
+        }
     }
 
     private int estArraySize(ResourceLocator locator, String genomeId) {
@@ -111,6 +115,10 @@ public class WiggleParser {
      * @return
      */
     public static boolean isWiggle(ResourceLocator file) {
+
+        if (file.getPath().endsWith("CpG.txt")) {
+            return true;
+        }
         AsciiLineReader reader = null;
         try {
             reader = ParsingUtils.openAsciiReader(file);
@@ -159,8 +167,8 @@ public class WiggleParser {
                 }
 
 
-                if (nextLine.startsWith("track")) {
-                    type = Type.BED;
+                if (nextLine.startsWith("track") && type != Type.CPG) {
+                    type = Type.BED_GRAPH;
                     ParsingUtils.parseTrackLine(nextLine, dataset.getTrackProperties());
                     if (dataset.getTrackProperties().getBaseCoord() == TrackProperties.BaseCoord.ZERO) {
                         this.startBase = 0;
@@ -188,9 +196,43 @@ public class WiggleParser {
                         continue;
                     }
                     try {
+                        if (type.equals(Type.CPG)) {
 
+                            if (nTokens > 3) {
+                                chr = tokens[1].trim();
+                                if (!chr.equals(lastChr)) {
+                                    changedChromosome(dataset, lastChr);
 
-                        if (type.equals(Type.BED)) {
+                                }
+                                lastChr = chr;
+
+                                int endPosition = -1;
+                                try {
+                                    endPosition = Integer.parseInt(tokens[2].trim());
+                                } catch (NumberFormatException numberFormatException) {
+                                    log.error("Column 2  is not a number");
+
+                                    throw new ParserException("Column 2 must be numeric." + " Found: " + tokens[1],
+                                            reader.getCurrentLineNumber(), nextLine);
+                                }
+                                int startPosition = endPosition - 1;
+
+                                if (startPosition < lastPosition) {
+                                    unsortedChromosomes.add(chr);
+                                }
+                                lastPosition = startPosition;
+
+                                startLocations.add(startPosition);
+                                endLocations.add(endPosition);
+
+                                float value = Float.parseFloat(tokens[4].trim());
+                                if (tokens[3].trim().equals("R")) {
+                                    value = -value;
+                                }
+
+                                data.add(value);
+                            }
+                        } else if (type.equals(Type.BED_GRAPH)) {
 
                             if (nTokens > 3) {
                                 chr = tokens[0].trim();
@@ -336,7 +378,6 @@ public class WiggleParser {
             }
         }
     }
-
 
 
     private void changedChromosome(WiggleDataset dataset, String lastChr) {

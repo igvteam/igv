@@ -114,6 +114,8 @@ public interface Track extends Persistable {
 
     public boolean isSelected();
 
+    public boolean isSortable();
+
     public boolean isLogNormalized();
 
     public boolean isShowDataRange();

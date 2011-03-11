@@ -82,18 +82,20 @@ public class FeatureTrack extends AbstractTrack {
      */
     public FeatureTrack(String id, String name) {
         super(id, name);
+        setSortable(false);
     }
 
     public FeatureTrack(String id, FeatureSource source) {
         super(id);
         init(source);
-
+        setSortable(false);
     }
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
         init(source);
         this.getMinimumHeight();
+        setSortable(false);
     }
 
     protected void init(FeatureSource source) {

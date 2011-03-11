@@ -85,8 +85,9 @@ public abstract class AbstractTrack implements Track {
 
     private TrackType trackType = TrackType.OTHER;
 
-    private boolean isSelected = false;
+    private boolean selected = false;
     private boolean visible = true;
+    private boolean sortable = true;
     boolean overlayVisible;
 
     /**
@@ -396,12 +397,12 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setSelected(boolean selected) {
-        isSelected = selected;
+        this.selected = selected;
     }
 
 
     public boolean isSelected() {
-        return isSelected;
+        return selected;
     }
 
     protected int height = -1;
@@ -943,4 +944,11 @@ public abstract class AbstractTrack implements Track {
         return true;
     }
 
+    public boolean isSortable() {
+        return sortable;
+    }
+
+    public void setSortable(boolean sortable) {
+        this.sortable = sortable;
+    }
 }

@@ -641,6 +641,7 @@ public class IgvTools {
         if (!(ext.equals(".cn") ||
                 ext.equals(".igv") ||
                 ext.equals(".wig") ||
+                ext.equals(".cpg") ||
                 ext.equals(".ewig") ||
                 ext.equals(".cn") ||
                 ext.equals(".snp") ||

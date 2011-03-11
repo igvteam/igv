@@ -20,6 +20,7 @@ package org.broad.igv.tools.parsers;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
@@ -41,7 +42,7 @@ public class WiggleParser {
 
     private enum Type {
 
-        fixedStep, variableStep, bed
+        fixedStep, variableStep, bed, cpg
     }
 
     private DataConsumer dataConsumer;
@@ -108,6 +109,10 @@ public class WiggleParser {
             }
         }
 
+
+        if (locator.getPath().endsWith("CpG.txt")) {
+            type = Type.cpg;
+        }
 
     }
 
@@ -253,7 +258,45 @@ public class WiggleParser {
                         continue;
                     }
                     try {
-                        if (type.equals(Type.bed)) {
+                        if (type.equals(Type.cpg)) {
+                            if (nTokens > 3) {
+
+                                // TODO -- validation on the data array length (# of data columns).
+                                if (dataArray == null) {
+                                    dataArray = new float[nTokens - 3];
+                                }
+
+                                chr = tokens[1].trim();
+                                if (!chr.equals(lastChr)) {
+                                     newChromosome();
+                                }
+                                lastChr = chr;
+
+                                int endPosition = -1;
+                                try {
+                                    endPosition = Integer.parseInt(tokens[2].trim());
+                                } catch (NumberFormatException numberFormatException) {
+                                    System.err.println("Column 2  is not a number");
+
+                                    throw new RuntimeException("Column 2 must be numeric." + " Found: " + tokens[1]);
+                                }
+                                int startPosition = endPosition - 1;
+
+                                if (startPosition < lastPosition) {
+                                    unsortedChromosomes.add(chr);
+                                }
+                                lastPosition = startPosition;
+
+
+
+                                float value = Float.parseFloat(tokens[4].trim());
+                                if (tokens[3].trim().equals("R")) {
+                                    value = -value;
+                                }
+                                dataArray[0] = value;    
+                                getDataConsumer().addData(chr, startPosition, endPosition, dataArray, null);
+                            }
+                        } else if (type.equals(Type.bed)) {
                             if (nTokens > 3) {
 
                                 // TODO -- validation on the data array length (# of data columns).
@@ -347,6 +390,7 @@ public class WiggleParser {
     }
 
     // fixedStep chrom=chrM strt=1 step=1
+
     private void parseStepLine(String header) {
         String[] tokens = header.split("\\s+");
         for (String token : tokens) {

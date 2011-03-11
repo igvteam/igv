@@ -74,7 +74,7 @@ public class AttributeHeaderPanel extends JPanel {
 
 
     private String getAttributeHeading(int x) {
-        int idx = x / ATTRIBUTE_COLUMN_WIDTH;
+        int idx = x / (ATTRIBUTE_COLUMN_WIDTH + COLUMN_BORDER_WIDTH);
         List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
         if (idx < keys.size()) {
             return keys.get(idx);

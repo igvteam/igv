@@ -162,7 +162,7 @@ public class TrackLoader {
                 loadIndexdBedFile(locator, newTracks);
             } else if (typeString.endsWith(".omega")) {
                 loadOmegaTrack(locator, newTracks);
-            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph"))) {
+            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) || typeString.endsWith("cpg.txt")) {
                 loadWigFile(locator, newTracks);
             } else if (typeString.endsWith(".list")) {
                 loadListFile(locator, newTracks);

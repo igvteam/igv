@@ -50,12 +50,11 @@ public class CNFreqTrack extends AbstractTrack {
         this.setColor(Color.red);
         this.setAltColor(Color.blue);
 
-
         renderer = new BarChartRenderer();
-
 
         this.setMinimumHeight(50);
         this.setHeight(50);
+        this.setSortable(false);
 
     }
 
@@ -115,4 +114,6 @@ public class CNFreqTrack extends AbstractTrack {
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
         return Integer.MIN_VALUE;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+
 }

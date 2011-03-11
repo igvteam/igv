@@ -300,7 +300,26 @@ public class TrackGroup {
                 }
             };
 
+            // Step 1,  remove non-sortable tracks and remember position
+            List<Track> unsortableTracks = new ArrayList();
+            Map<Track, Integer> trackIndecs = new HashMap();
+            for(int i = tracks.size() - 1; i >= 0; i--) {
+                if(!tracks.get(i).isSortable()) {
+                    Track t = tracks.remove(i);
+                    unsortableTracks.add(t);
+                    trackIndecs.put(t, i);
+                    
+                }
+            }
+
             Collections.sort(tracks, comparator);
+
+            if(unsortableTracks.size() > 0) {
+                for(Track t : unsortableTracks) {
+                    int index = trackIndecs.get(t);
+                    tracks.add(index, t);
+                }
+            }
         }
 
     }
