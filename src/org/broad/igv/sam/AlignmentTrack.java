@@ -26,7 +26,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.Session;
@@ -34,7 +33,7 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -94,7 +93,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager) {
         super(locator);
 
-        //AlignmentQueryReader reader = SamQueryReaderFactory.getReader(locator);
         this.dataManager = dataManager;
 
         PreferenceManager prefs = PreferenceManager.getInstance();
@@ -130,7 +128,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         }
     }
-
 
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -218,7 +215,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             List<AlignmentInterval.Row> tmp = dataManager.getAlignmentRows(context); //genomeId, chr, start, end);
 
             PairedEndStats peStats = dataManager.getPairedEndStats(context.getReferenceFrame());
-            if(peStats != null) {
+            if (peStats != null && renderOptions.isComputeIsizes()) {
                 renderOptions.minInsertSizeThreshold = (int) peStats.getMinPercentileInsertSize();
                 renderOptions.maxInsertSizeThreshold = (int) peStats.getMaxPercentileInsertSize();
             }
@@ -553,8 +550,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         addGoToMate(popupMenu, e);
         showMateRegion(popupMenu, e);
         addShowAllBasesMenuItem(popupMenu);
-        addMinInsertSizeMenuItem(popupMenu);
-        addMaxInsertSizeMenuItem(popupMenu);
+        addInsertSizeMenuItem(popupMenu);
 
         popupMenu.addSeparator();
         addShowCoverageItem(popupMenu);
@@ -934,51 +930,24 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         menu.add(item);
     }
 
-    public void addMaxInsertSizeMenuItem(JPopupMenu menu) {
+    public void addInsertSizeMenuItem(JPopupMenu menu) {
         // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Set maximum insert size threshold ...");
+        final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
             public void action() {
-                int threshold = renderOptions.maxInsertSizeThreshold;
-                String val = MessageUtils.showInputDialog("maximum insert size threshold", String.valueOf(threshold));
-                try {
-                    int newThreshold = Integer.parseInt(val);
-                    if (newThreshold != threshold) {
-                        renderOptions.maxInsertSizeThreshold = newThreshold;
-                        refresh();
-                    }
+
+                InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
+                dlg.setModal(true);
+                dlg.setVisible(true);
+                if(!dlg.isCanceled()) {
+                    renderOptions.setComputeIsizes(dlg.isComputeIsize());
+                    //renderOptions.setMinPercentile(dlg.getMinPercentile());
+                   // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
+                    renderOptions.setMinInsertSizeThreshold(dlg.getMinThreshold());
+                    renderOptions.setMaxInsertSizeThreshold(dlg.getMaxThreshold());
+                    refresh();
                 }
-                catch (NumberFormatException ex) {
-                    MessageUtils.showMessage("Insert size must be an integer value: " + val);
-                }
-
-            }
-        });
-
-
-        menu.add(item);
-    }
-
-    public void addMinInsertSizeMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Set minimum insert size threshold ...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-
-            public void action() {
-                int threshold = renderOptions.getMinInsertSizeThreshold();
-                String val = MessageUtils.showInputDialog("minimum insert size threshold", String.valueOf(threshold));
-                try {
-                    int newThreshold = Integer.parseInt(val);
-                    if (newThreshold != threshold) {
-                        renderOptions.setMinInsertSizeThreshold(newThreshold);
-                        refresh();
-                    }
-                }
-                catch (NumberFormatException ex) {
-                    MessageUtils.showMessage("Insert size must be an integer value: " + val);
-                }
-
             }
         });
 
@@ -1108,12 +1077,13 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         boolean shadeCenters;
         boolean flagUnmappedPairs;
         boolean showAllBases;
+        private boolean computeIsizes;
         private int minInsertSizeThreshold;
         private int maxInsertSizeThreshold;
-        private int medianInsertSize;
-        private int madInsertSize;
+        private double minPercentile = 0.1;
+        private double maxPercentile = 99.9;
         ColorOption colorOption;
-        ContinuousColorScale insertSizeColorScale;
+        //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
 
         RenderOptions() {
@@ -1121,15 +1091,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
+            computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
             minInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
             maxInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = colorByOption;
-            updateColorScale();
+            //updateColorScale();
         }
 
-        private void updateColorScale() {
-            int lower = minInsertSizeThreshold;
+        /*private void updateColorScale() {
             int delta = 1;
             if (medianInsertSize == 0 || madInsertSize == 0) {
                 delta = (maxInsertSizeThreshold - minInsertSizeThreshold) / 10;
@@ -1138,7 +1108,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
             insertSizeColorScale = new ContinuousColorScale(minInsertSizeThreshold, minInsertSizeThreshold + delta,
                     maxInsertSizeThreshold - delta, maxInsertSizeThreshold, Color.blue, AlignmentRenderer.grey1, Color.red);
-        }
+        }*/
 
         /**
          * Called by session writer.  Return instance variable values as a map of strings.  Used to record current state
@@ -1219,7 +1189,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         public void setMinInsertSizeThreshold(int minInsertSizeThreshold) {
             this.minInsertSizeThreshold = minInsertSizeThreshold;
-            updateColorScale();
+            //updateColorScale();
         }
 
         public int getMaxInsertSizeThreshold() {
@@ -1227,19 +1197,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         }
 
-        public void setMaxInsertSizeThreshold(int maxInsertSizeThreshold) {
-            this.maxInsertSizeThreshold = maxInsertSizeThreshold;
-            updateColorScale();
-        }
-
-        public void setMedianInsertSizeThreshold(int medianInsertSize) {
-            this.medianInsertSize = medianInsertSize;
-        }
-
-        public void setMadInsertSizeThreshold(int madInsertSize) {
-            this.madInsertSize = madInsertSize;
-            updateColorScale();
-        }
 
         public boolean isViewPairs() {
             return viewPairs;
@@ -1247,6 +1204,34 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         public void setViewPairs(boolean viewPairs) {
             this.viewPairs = viewPairs;
+        }
+
+        public boolean isComputeIsizes() {
+            return computeIsizes;
+        }
+
+        public void setComputeIsizes(boolean computeIsizes) {
+            this.computeIsizes = computeIsizes;
+        }
+
+        public double getMinPercentile() {
+            return minPercentile;
+        }
+
+        public void setMinPercentile(double minPercentile) {
+            this.minPercentile = minPercentile;
+        }
+
+        public double getMaxPercentile() {
+            return maxPercentile;
+        }
+
+        public void setMaxPercentile(double maxPercentile) {
+            this.maxPercentile = maxPercentile;
+        }
+
+        public void setMaxInsertSizeThreshold(int maxInsertSizeThreshold) {
+            this.maxInsertSizeThreshold = maxInsertSizeThreshold;
         }
     }
 

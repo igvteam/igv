@@ -21,7 +21,6 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.commons.math.stat.StatUtils;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 
@@ -47,7 +46,7 @@ public class PairedEndStats {
 
         AlignmentQueryReader reader = SamQueryReaderFactory.getReader(args[0], false);
         CloseableIterator<Alignment> iter = reader.iterator();
-        PairedEndStats stats = compute(iter);
+        PairedEndStats stats = compute(iter, .1, 99.9);
         iter.close();
         reader.close();
 
@@ -72,7 +71,7 @@ public class PairedEndStats {
         try {
             reader = SamQueryReaderFactory.getReader(bamFile, false);
             final CloseableIterator<Alignment> alignmentCloseableIterator = reader.iterator();
-            PairedEndStats stats = compute(alignmentCloseableIterator);
+            PairedEndStats stats = compute(alignmentCloseableIterator, .1, 99.9);
             alignmentCloseableIterator.close();
             return stats;
 
@@ -94,7 +93,7 @@ public class PairedEndStats {
     public static PairedEndStats compute(AlignmentQueryReader reader, String chr, int start, int end) {
         try {
 
-            PairedEndStats stats = compute(reader.query(chr, start, end, false));
+            PairedEndStats stats = compute(reader.query(chr, start, end, false), .1, 99.9);
             return stats;
         } catch (IOException e) {
             System.out.println("Error computing alignment stats");
@@ -102,7 +101,7 @@ public class PairedEndStats {
         }
     }
 
-    public static PairedEndStats compute(Iterator<Alignment> alignments) {
+    public static PairedEndStats compute(Iterator<Alignment> alignments, double minPercentile, double maxPercentile) {
 
 
         double[] insertSizes = new double[MAX_PAIRS];
@@ -142,8 +141,8 @@ public class PairedEndStats {
         // MAD, as defined at http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
         double mad = 1.4826 * StatUtils.percentile(deviations, 50);
 
-        double sec = StatUtils.percentile(insertSizes, 0, nPairs, .1);
-        double max = StatUtils.percentile(insertSizes, 0, nPairs, 99.9);
+        double sec = StatUtils.percentile(insertSizes, 0, nPairs, minPercentile);
+        double max = StatUtils.percentile(insertSizes, 0, nPairs, maxPercentile);
 
         PairedEndStats stats = new PairedEndStats(mean, median, stdDev, mad, sec, max);
 

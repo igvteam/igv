@@ -104,7 +104,15 @@
                <string>Compute thresholds dynamically</string> 
               </void> 
               <void property="name"> 
-               <string>checkBox1</string> 
+               <string>computeIsizeCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>computeIsizeCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -180,8 +188,28 @@
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>enabled</string> 
+               <boolean>false</boolean> 
+              </void> 
               <void property="name"> 
                <string>minPercentileField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>minPercentileFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>minPercentileFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -203,8 +231,28 @@
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>enabled</string> 
+               <boolean>false</boolean> 
+              </void> 
               <void property="name"> 
                <string>maxPercentileField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>maxPercentileFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>maxPercentileFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -332,6 +380,22 @@
               <void property="name"> 
                <string>minThresholdField</string> 
               </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>minThresholdFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>minThresholdFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
@@ -354,6 +418,22 @@
               <string>javax.swing.JTextField</string> 
               <void property="name"> 
                <string>maxThresholdField</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>maxThresholdFieldActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.FocusListener</string> 
+                <string>focusLost</string> 
+                <string>maxThresholdFieldFocusLost</string> 
+                <boolean>true</boolean> 
+               </object> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -440,6 +520,22 @@
             <void property="name"> 
              <string>cancelButton</string> 
             </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>cancelButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>cancelButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
            </object> 
           </void> 
           <void method="add"> 
@@ -451,6 +547,14 @@
             </void> 
             <void property="name"> 
              <string>okButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>okButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
             </void> 
            </object> 
           </void> 

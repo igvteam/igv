@@ -133,7 +133,7 @@ public class CachingQueryReader {
         }
 
         if (alignments.size() > 1000) {
-            peStats = PairedEndStats.compute(alignments.iterator());
+            peStats = PairedEndStats.compute(alignments.iterator(), .1, 99.9);
         }
 
         return new TiledIterator(start, end, alignments);

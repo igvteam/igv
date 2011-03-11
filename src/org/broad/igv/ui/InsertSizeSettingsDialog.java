@@ -23,6 +23,11 @@
 
 package org.broad.igv.ui;
 
+import java.awt.event.*;
+
+import org.broad.igv.sam.AlignmentTrack;
+import org.broad.igv.ui.util.MessageUtils;
+
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -32,24 +37,115 @@ import javax.swing.border.*;
  */
 public class InsertSizeSettingsDialog extends JDialog {
 
-    public InsertSizeSettingsDialog(Frame owner) {
+    private boolean isCanceled = false;
+
+    private boolean computeIsize;
+    private double minPercentile;
+    private double maxPercentile;
+    private int minThreshold;
+    private int maxThreshold;
+
+
+    public InsertSizeSettingsDialog(Frame owner, AlignmentTrack.RenderOptions options) {
         super(owner);
         initComponents();
+        initValues(options);
     }
 
-    public InsertSizeSettingsDialog(Dialog owner) {
-        super(owner);
-        initComponents();
+    private void initValues(AlignmentTrack.RenderOptions options) {
+
+        computeIsize = options.isComputeIsizes();
+        minPercentile = options.getMinPercentile();
+        maxPercentile = options.getMaxPercentile();
+        minThreshold = options.getMinInsertSizeThreshold();
+        maxThreshold = options.getMaxInsertSizeThreshold();
+
+        computeIsizeCB.setSelected(computeIsize);
+        minPercentileField.setText(String.valueOf(minPercentile));
+        maxPercentileField.setText(String.valueOf(maxPercentile));
+        minThresholdField.setText(String.valueOf(minThreshold));
+        maxThresholdField.setText(String.valueOf(maxThreshold));
     }
 
-    private void initComponents() {
+    private void cancelButtonActionPerformed(ActionEvent e) {
+        isCanceled = true;
+        setVisible(false);
+        dispose();
+    }
+
+    private void okButtonActionPerformed(ActionEvent e) {
+        setVisible(false);
+        dispose();
+    }
+
+
+    private void minThresholdFieldFocusLost(FocusEvent e) {
+        minThresholdFieldActionPerformed(null);
+    }
+
+    private void minThresholdFieldActionPerformed(ActionEvent e) {
+        try {
+            minThreshold = Integer.parseInt(minThresholdField.getText());
+        }
+        catch(NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        }
+    }
+
+    private void maxPercentileFieldFocusLost(FocusEvent e) {
+        maxThresholdFieldActionPerformed(null);
+    }
+
+    private void maxPercentileFieldActionPerformed(ActionEvent e) {
+        try {
+            maxPercentile = Integer.parseInt( maxPercentileField.getText());
+        }
+        catch(NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        }
+    }
+
+
+    private void maxThresholdFieldFocusLost(FocusEvent e) {
+        maxThresholdFieldActionPerformed(null);
+    }
+
+    private void maxThresholdFieldActionPerformed(ActionEvent e) {
+        try {
+            maxThreshold = Integer.parseInt(maxThresholdField.getText());
+        }
+        catch(NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        }
+     }
+
+    private void minPercentileFieldFocusLost(FocusEvent e) {
+        minPercentileFieldActionPerformed(null);
+    }
+
+    private void minPercentileFieldActionPerformed(ActionEvent e) {
+        try {
+            minPercentile = Integer.parseInt(minPercentileField.getText());
+        }
+        catch(NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        }
+    }
+
+    private void computeIsizeCBActionPerformed(ActionEvent e) {
+        computeIsize = computeIsizeCB.isSelected();
+    }
+
+
+
+   private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         label1 = new JLabel();
         panel1 = new JPanel();
-        checkBox1 = new JCheckBox();
+        computeIsizeCB = new JCheckBox();
         label4 = new JLabel();
         label5 = new JLabel();
         minPercentileField = new JTextField();
@@ -87,10 +183,15 @@ public class InsertSizeSettingsDialog extends JDialog {
                     panel1.setBorder(new TitledBorder("Dynamic options"));
                     panel1.setLayout(null);
 
-                    //---- checkBox1 ----
-                    checkBox1.setText("Compute thresholds dynamically");
-                    panel1.add(checkBox1);
-                    checkBox1.setBounds(new Rectangle(new Point(10, 25), checkBox1.getPreferredSize()));
+                    //---- computeIsizeCB ----
+                    computeIsizeCB.setText("Compute thresholds dynamically");
+                    computeIsizeCB.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            computeIsizeCBActionPerformed(e);
+                        }
+                    });
+                    panel1.add(computeIsizeCB);
+                    computeIsizeCB.setBounds(new Rectangle(new Point(10, 25), computeIsizeCB.getPreferredSize()));
 
                     //---- label4 ----
                     label4.setText("Minimum percentile:");
@@ -101,8 +202,36 @@ public class InsertSizeSettingsDialog extends JDialog {
                     label5.setText("Maximum percentile:");
                     panel1.add(label5);
                     label5.setBounds(10, 100, 175, 16);
+
+                    //---- minPercentileField ----
+                    minPercentileField.setEnabled(false);
+                    minPercentileField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            minPercentileFieldActionPerformed(e);
+                        }
+                    });
+                    minPercentileField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            minPercentileFieldFocusLost(e);
+                        }
+                    });
                     panel1.add(minPercentileField);
                     minPercentileField.setBounds(220, 64, 135, minPercentileField.getPreferredSize().height);
+
+                    //---- maxPercentileField ----
+                    maxPercentileField.setEnabled(false);
+                    maxPercentileField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            maxPercentileFieldActionPerformed(e);
+                        }
+                    });
+                    maxPercentileField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            maxPercentileFieldFocusLost(e);
+                        }
+                    });
                     panel1.add(maxPercentileField);
                     maxPercentileField.setBounds(220, 94, 135, 28);
 
@@ -137,8 +266,34 @@ public class InsertSizeSettingsDialog extends JDialog {
                     label3.setText("Default maximum threshold: ");
                     panel2.add(label3);
                     label3.setBounds(10, 60, 185, 16);
+
+                    //---- minThresholdField ----
+                    minThresholdField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            minThresholdFieldActionPerformed(e);
+                        }
+                    });
+                    minThresholdField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            minThresholdFieldFocusLost(e);
+                        }
+                    });
                     panel2.add(minThresholdField);
                     minThresholdField.setBounds(215, 24, 145, minThresholdField.getPreferredSize().height);
+
+                    //---- maxThresholdField ----
+                    maxThresholdField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            maxThresholdFieldActionPerformed(e);
+                        }
+                    });
+                    maxThresholdField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            maxThresholdFieldFocusLost(e);
+                        }
+                    });
                     panel2.add(maxThresholdField);
                     maxThresholdField.setBounds(215, 54, 145, 28);
 
@@ -182,10 +337,21 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
+                cancelButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        cancelButtonActionPerformed(e);
+                        cancelButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(cancelButton);
 
                 //---- okButton ----
                 okButton.setText("OK");
+                okButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        okButtonActionPerformed(e);
+                    }
+                });
                 buttonBar.add(okButton);
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
@@ -202,7 +368,7 @@ public class InsertSizeSettingsDialog extends JDialog {
     private JPanel contentPanel;
     private JLabel label1;
     private JPanel panel1;
-    private JCheckBox checkBox1;
+    private JCheckBox computeIsizeCB;
     private JLabel label4;
     private JLabel label5;
     private JTextField minPercentileField;
@@ -216,4 +382,28 @@ public class InsertSizeSettingsDialog extends JDialog {
     private JButton cancelButton;
     private JButton okButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
+
+    public boolean isCanceled() {
+        return isCanceled;
+    }
+
+    public boolean isComputeIsize() {
+        return computeIsize;
+    }
+
+    public double getMinPercentile() {
+        return minPercentile;
+    }
+
+    public double getMaxPercentile() {
+        return maxPercentile;
+    }
+
+    public int getMinThreshold() {
+        return minThreshold;
+    }
+
+    public int getMaxThreshold() {
+        return maxThreshold;
+    }
 }
