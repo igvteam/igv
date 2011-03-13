@@ -302,21 +302,23 @@ public class TrackGroup {
 
             // Step 1,  remove non-sortable tracks and remember position
             List<Track> unsortableTracks = new ArrayList();
-            Map<Track, Integer> trackIndecs = new HashMap();
-            for(int i = tracks.size() - 1; i >= 0; i--) {
-                if(!tracks.get(i).isSortable()) {
+            Map<Track, Integer> trackIndeces = new HashMap();
+            for (int i = tracks.size() - 1; i >= 0; i--) {
+                if (!tracks.get(i).isSortable()) {
                     Track t = tracks.remove(i);
                     unsortableTracks.add(t);
-                    trackIndecs.put(t, i);
-                    
+                    trackIndeces.put(t, i);
+
                 }
             }
 
+            // Step 2,  sort "sortable" tracks
             Collections.sort(tracks, comparator);
 
-            if(unsortableTracks.size() > 0) {
-                for(Track t : unsortableTracks) {
-                    int index = trackIndecs.get(t);
+            // Step 3, put unortable tracks back in original order
+            if (unsortableTracks.size() > 0) {
+                for (Track t : unsortableTracks) {
+                    int index = trackIndeces.get(t);
                     tracks.add(index, t);
                 }
             }
@@ -329,6 +331,18 @@ public class TrackGroup {
                           String linkingAtt,
                           final RegionScoreType type,
                           final ReferenceFrame frame) {
+        // Step 1,  remove non-sortable tracks and remember position
+        List<Track> unsortableTracks = new ArrayList();
+        Map<Track, Integer> trackIndeces = new HashMap();
+        for (int i = tracks.size() - 1; i >= 0; i--) {
+            if (!tracks.get(i).isSortable()) {
+                Track t = tracks.remove(i);
+                unsortableTracks.add(t);
+                trackIndeces.put(t, i);
+
+            }
+        }
+
         List<Track> tracksWithScore = new ArrayList(getTracks().size());
         List<Track> otherTracks = new ArrayList(getTracks().size());
         for (Track t : getTracks()) {
@@ -350,9 +364,18 @@ public class TrackGroup {
         }
         sortByAttributeOrder(otherTracks, sortedAttributes, linkingAtt);
 
-        clear();
-        addAll(tracksWithScore);
-        addAll(otherTracks);
+        tracks.clear();
+        tracks.addAll(tracksWithScore);
+        tracks.addAll(otherTracks);
+
+        // Step 3, put unortable tracks back in original order
+        if (unsortableTracks.size() > 0) {
+            for (Track t : unsortableTracks) {
+                int index = trackIndeces.get(t);
+                tracks.add(index, t);
+            }
+        }
+
     }
 
     public void sortByRegionScore(final RegionOfInterest region,
