@@ -56,7 +56,6 @@ public class IGVDataset implements Dataset {
 
     private Map<String, ChromosomeSummary> chromosomeSummaries = new LinkedHashMap();
 
-
     private GenomeSummaryData genomeSummary;
 
     private IGVDatasetParser parser;

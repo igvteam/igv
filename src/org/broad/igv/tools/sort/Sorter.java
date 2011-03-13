@@ -210,7 +210,7 @@ public abstract class Sorter {
         }
     }
 
-    abstract Parser getParser();
+    abstract Parser getParser() throws IOException;
 
     abstract String writeHeader(AsciiLineReader reader, PrintWriter writer) throws IOException;
 

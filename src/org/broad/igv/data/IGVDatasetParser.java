@@ -22,14 +22,13 @@ package org.broad.igv.data;
 
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.event.StatusChangeEvent;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.listener.StatusListener;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.*;
@@ -37,7 +36,6 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 
-import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,14 +55,18 @@ public class IGVDatasetParser {
 
     private static Logger log = Logger.getLogger(IGVDatasetParser.class);
     private ResourceLocator dataResourceLocator;
-    private int chrColumn;
-    private int startColumn;
-    private int endColumn;
-    private int firstDataColumn;
-    private int probeColumn;
-    private boolean hasEndLocations;
-    private boolean hasCalls;
+    private int chrColumn = -1;
+    private int startColumn = -1;
+    private int endColumn = -1;
+    private int firstDataColumn = -1;
+    private int lastDataColumn = -1;
+    private int probeColumn = -1;
+    private boolean hasEndLocations = false;
+    private boolean hasCalls = false;
     private Genome genome;
+    String[] tokens;
+
+
 
     private int startBase = 0;
 
@@ -77,10 +79,10 @@ public class IGVDatasetParser {
     public IGVDatasetParser(ResourceLocator copyNoFile, String genomeId) {
         this.dataResourceLocator = copyNoFile;
         this.genome = GenomeManager.getInstance().getGenome(genomeId);
-        initParameters();
+        tokens = new String[10000];
     }
 
-    private void initParameters() {
+    private void setColumnDefaults() {
         String tmp = (dataResourceLocator.getPath().endsWith(".txt")
                 ? dataResourceLocator.getPath().substring(0,
                 dataResourceLocator.getPath().length() - 4) : dataResourceLocator.getPath()).toLowerCase();
@@ -102,6 +104,7 @@ public class IGVDatasetParser {
             hasEndLocations = false;
             hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
         } else {
+            // TODO -- popup dialog and ask user to define columns,  and csv vs tsv?
             throw new ParserException("Unknown file type: ", 0);
         }
     }
@@ -185,18 +188,27 @@ public class IGVDatasetParser {
                 dataset.getTrackProperties().setWindowingFunction(WindowFunction.mean);
             }
 
-            // Parse comments, if any
+            // Parse comments and directives, if any
             nextLine = reader.readLine();
-
             while (nextLine.startsWith("#") || (nextLine.trim().length() == 0)) {
                 if (nextLine.length() > 0) {
-                    parseComment(nextLine, dataset);
+                    parseDirective(nextLine, dataset);
                 }
                 nextLine = reader.readLine();
             }
 
+            if(chrColumn < 0) {
+                  setColumnDefaults();
+            }
+
+
             // Parse column headings
             String[] data = nextLine.trim().split("\t");
+
+            // Set last data column
+            if (lastDataColumn < 0) {
+               lastDataColumn = data.length - 1;
+            }
 
             headings = getHeadings(data, skipColumns);
 
@@ -271,14 +283,6 @@ public class IGVDatasetParser {
                     if (wgData.locations.size() > 0 && wgData.locations.get(wgData.locations.size() - 1) > location) {
                         throw new ParserException("File is not sorted, .igv and .cn files must be sorted by start position." +
                                 " Use igvtools (File > Run igvtools..) to sort the file.", reader.getCurrentLineNumber());
-                    }
-
-
-                    if (nTokens > headings.length * skipColumns + firstDataColumn) {
-
-                        // TODO -- throw error here.  this will cause an index out of bounds exception
-                        log.info("Unexpected number of columns.  Expected " + headings.length + firstDataColumn +
-                                ". Found " + nTokens + "   (" + nextLine + ")");
                     }
 
                     wgData.locations.add(location);
@@ -374,11 +378,10 @@ public class IGVDatasetParser {
      * Load data for a single chromosome.
      *
      * @param chrSummary
-     * @param columnHeaders
+     * @param dataHeaders
      * @return
      */
-    public ChromosomeData loadChromosomeData(
-            ChromosomeSummary chrSummary, String[] columnHeaders) {
+    public ChromosomeData loadChromosomeData(ChromosomeSummary chrSummary, String[] dataHeaders) {
 
         // InputStream is = null;
         try {
@@ -398,7 +401,7 @@ public class IGVDatasetParser {
             List<String> probes = new ArrayList(nRowsEst);
 
             Map<String, FloatArrayList> dataMap = new HashMap();
-            for (String h : columnHeaders) {
+            for (String h : dataHeaders) {
                 dataMap.put(h, new FloatArrayList(nRowsEst));
             }
 
@@ -428,10 +431,10 @@ public class IGVDatasetParser {
 
                         startLocations.add(start);
 
-                        for (int idx = 0; idx < columnHeaders.length; idx++) {
+                        for (int idx = 0; idx < dataHeaders.length; idx++) {
                             int i = firstDataColumn + idx * skipColumns;
-                            float copyNo = i < tokens.length ? readFloat(tokens[i]) : Float.NaN;
-                            String heading = columnHeaders[idx];
+                            float copyNo = i <= lastDataColumn ? readFloat(tokens[i]) : Float.NaN;
+                            String heading = dataHeaders[idx];
                             dataMap.get(heading).add(copyNo);
                         }
 
@@ -457,7 +460,7 @@ public class IGVDatasetParser {
                 cd.setEndLocations(endLocations.toArray());
             }
 
-            for (String h : columnHeaders) {
+            for (String h : dataHeaders) {
                 cd.setData(h, dataMap.get(h).toArray());
             }
 
@@ -477,12 +480,14 @@ public class IGVDatasetParser {
      * @param comment
      * @param dataset
      */
-    private void parseComment(String comment, IGVDataset dataset) {
+    private void parseDirective(String comment, IGVDataset dataset) {
 
         String tmp = comment.substring(1, comment.length());
         if (tmp.startsWith("track")) {
             ParsingUtils.parseTrackLine(tmp, dataset.getTrackProperties());
 
+        } else if (tmp.startsWith("columns")) {
+            parseColumnLine(tmp);
         } else {
             String[] tokens = tmp.split("=");
             if (tokens.length != 2) {
@@ -543,7 +548,7 @@ public class IGVDatasetParser {
 
         ArrayList headings = new ArrayList();
         String previousHeading = null;
-        for (int i = firstDataColumn; i < tokens.length; i += skipColumns) {
+        for (int i = firstDataColumn; i <= lastDataColumn; i += skipColumns) {
             if (removeDuplicates) {
                 if (previousHeading != null && tokens[i].equals(previousHeading) || tokens[i].equals("")) {
                     continue;
@@ -558,7 +563,71 @@ public class IGVDatasetParser {
         return (String[]) headings.toArray(new String[0]);
     }
 
-    static String[] tokens = new String[10000];
+
+    private void parseColumnLine(String tmp) {
+        String[] tokens = tmp.split("\\s+");
+        if (tokens.length > 1) {
+            for (int i = 1; i < tokens.length; i++) {
+                String[] kv = tokens[i].split("=");
+                if (kv.length == 2) {
+                    if (kv[0].toLowerCase().equals("chr")) {
+                        int c = Integer.parseInt(kv[1]);
+                        if (c < 1) {
+                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                        } else {
+                            chrColumn = c - 1;
+                        }
+                    } else if (kv[0].toLowerCase().equals("start")) {
+                        int c = Integer.parseInt(kv[1]);
+                        if (c < 1) {
+                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                        } else {
+                            startColumn = c - 1;
+                        }
+
+
+                    } else if (kv[0].toLowerCase().equals("end")) {
+                        int c = Integer.parseInt(kv[1]);
+                        if (c < 1) {
+                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                        } else {
+                            endColumn = c - 1;
+                            hasEndLocations = true;
+                        }
+
+
+                    } else if (kv[0].toLowerCase().equals("probe")) {
+                        int c = Integer.parseInt(kv[1]);
+                        if (c < 1) {
+                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                        } else {
+                            probeColumn = c - 1;
+                        }
+
+
+                    } else if (kv[0].toLowerCase().equals("data")) {
+                        // examples  4,  4-8,  4-
+                        String[] se = kv[1].split("-");
+                        int c = Integer.parseInt(se[0]);
+                        if (c < 1) {
+                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                        } else {
+                            this.firstDataColumn = c - 1;
+                        }
+                        if (se.length > 1) {
+
+                            c = Integer.parseInt(se[1]);
+                            if (c < 1) {
+                                MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            } else {
+                                this.lastDataColumn = c - 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 
     private void updateWholeGenome(String currentChromosome, IGVDataset dataset, String[] headings,
