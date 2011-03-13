@@ -60,7 +60,6 @@ public abstract class DataTrack extends AbstractTrack {
     private boolean featuresLoading = false;
 
 
-
     public DataTrack(ResourceLocator locator, String id, String name) {
         super(locator, id, name);
         autoscale = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_AUTOSCALE);
@@ -149,11 +148,9 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
 
-
     public void clearCaches() {
         loadedIntervalCache.clear();
     }
-
 
 
     public void setRendererClass(Class rc) {
@@ -241,8 +238,10 @@ public abstract class DataTrack extends AbstractTrack {
 
             for (int i = interval.startIdx + 1; i < scores.size(); i++) {
                 LocusScore locusScore = scores.get(i);
-                interval.dataMax = Math.max(interval.dataMax, locusScore.getScore());
-                interval.dataMin = Math.min(interval.dataMin, locusScore.getScore());
+                float value = locusScore.getScore();
+                if (Float.isNaN(value)) value = 0;
+                interval.dataMax = Math.max(interval.dataMax, value);
+                interval.dataMin = Math.min(interval.dataMin, value);
                 if (locusScore.getStart() > end) {
                     interval.endIdx = i;
                     break;

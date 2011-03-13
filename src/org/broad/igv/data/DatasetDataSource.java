@@ -87,66 +87,24 @@ public class DatasetDataSource extends AbstractDataSource {
 
     @Override
     protected DataTile getRawData(String chr, int startLocation, int endLocation) {
-        int[] startLocs = null;
-        int[] endLocs = null;
-        float[] data = null;
-        String[] features = null;
 
         if (chr.equals(Globals.CHR_ALL) && genomeSummaryData != null) {
-            startLocs = genomeSummaryData.getLocations();
-            endLocs = startLocs;
-            data = genomeSummaryData.getData(trackId);
+            int[] startLocs = genomeSummaryData.getLocations();
+            int[] endLocs = null;
+            float[] data = genomeSummaryData.getData(trackId);
+            return new DataTile(startLocs, endLocs, data, null);
         } else {
-            startLocs = dataset.getStartLocations(chr);
-            endLocs = dataset.getEndLocations(chr);
-            data = dataset.getData(trackId, chr);
-            features = dataset.getFeatureNames(chr);
-        }
-        if (startLocs == null) {
-            return null;
-        }
+            int[] startLocs = dataset.getStartLocations(chr);;
+            int[] endLocs = dataset.getEndLocations(chr);
+            float[] data =  dataset.getData(trackId, chr);
+            String[] features = dataset.getFeatureNames(chr);
 
-        assert (startLocs.length == endLocs.length);
-        assert (startLocs.length == data.length);
-
-        int maxIndex = startLocs.length - 1;
-
-        // Until we can guarantee sorted values just use the index limits
-        int startIdx = 0;    // Math.min(maxIndex,  DataUtils.getIndexBefore(startLocs, startLocation));
-        int endIdx = maxIndex;    // Math.min(maxIndex, DataUtils.getIndexBefore(startLocs, endLocation) + 1);
-        int[] tmpStart = startLocs;
-        int[] tmpEnd = endLocs;
-        float[] tmpData = data;
-        String[] tmpFeatures = features;
-        int nPts = endIdx - startIdx + 1;
-
-        if ((tmpStart == null) || (tmpData == null) || (nPts <= 0)) {
-            return null;
-        }
-
-        startLocs = new int[nPts];
-        endLocs = ((tmpEnd == null) ? null : new int[nPts]);
-        data = new float[nPts];
-        features = (tmpFeatures == null ? null : new String[nPts]);
-
-        try {
-            System.arraycopy(tmpStart, startIdx, startLocs, 0, nPts);
-            System.arraycopy(tmpData, startIdx, data, 0, nPts);
-            if (endLocs != null) {
-                System.arraycopy(tmpEnd, startIdx, endLocs, 0, nPts);
-            }
-            if (features != null) {
-                System.arraycopy(tmpFeatures, startIdx, features, 0, nPts);
+            if (startLocs == null|| (data == null) || data.length == 0) {
+                return null;
             }
 
+            return new DataTile(startLocs, endLocs, data, features);
         }
-        catch (Exception exception) {
-            log.error("Exception getting raw data tile", exception);
-            return null;
-        }
-
-
-        return new DataTile(startLocs, endLocs, data, features);
     }
 
 
