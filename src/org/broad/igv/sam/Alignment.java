@@ -95,4 +95,6 @@ public interface Alignment extends LocusScore {
     boolean isVendorFailedRead();
 
     Color getDefaultColor();
+
+    String getLibrary();
 }

@@ -54,7 +54,10 @@ public class CachingQueryReader {
     private static int DEFAULT_TILE_SIZE = 16 * KB;
     private static int MAX_TILE_COUNT = 4;
     private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
-    private PairedEndStats peStats;
+
+    // Map of read group -> paired end stats
+
+    //private PairedEndStats peStats;
 
     private static void cancelReaders() {
         for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
@@ -105,7 +108,8 @@ public class CachingQueryReader {
         return reader.hasIndex();
     }
 
-    public CloseableIterator<Alignment> query(String sequence, int start, int end, List<AlignmentCounts> counts, int maxReadDepth) {
+    public CloseableIterator<Alignment> query(String sequence, int start, int end, List<AlignmentCounts> counts,
+                                              int maxReadDepth, Map<String, PEStats> peStats) {
 
         // Get the tiles covering this interval
         int startTile = (start + 1) / getTileSize(sequence);
@@ -114,7 +118,7 @@ public class CachingQueryReader {
         // Be a bit conservative with maxReadDepth (get a few more reads than we think neccessary)
         int readDepthPlus = (int) (1.1 * maxReadDepth);
 
-        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus);
+        List<AlignmentTile> tiles = getTiles(sequence, startTile, endTile, readDepthPlus, peStats);
         if (tiles.size() == 0) {
             return EmptyAlignmentIterator.getInstance();
         }
@@ -132,14 +136,10 @@ public class CachingQueryReader {
             counts.add(t.getCounts());
         }
 
-        if (alignments.size() > 1000) {
-            peStats = PairedEndStats.compute(alignments.iterator(), .1, 99.9);
-        }
-
         return new TiledIterator(start, end, alignments);
     }
 
-    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth) {
+    public List<AlignmentTile> getTiles(String seq, int startTile, int endTile, int maxReadDepth, Map<String, PEStats> peStats) {
 
         if (!seq.equals(cachedChr)) {
             cache.clear();
@@ -156,6 +156,7 @@ public class CachingQueryReader {
             if (tile == null) {
                 int start = t * tileSize;
                 int end = start + tileSize;
+
                 tile = new AlignmentTile(seq, t, start, end, maxReadDepth);
             }
 
@@ -164,7 +165,7 @@ public class CachingQueryReader {
             // The current tile is loaded,  load any preceding tiles we have pending and clear "to load" list
             if (tile.isLoaded()) {
                 if (tilesToLoad.size() > 0) {
-                    boolean success = loadTiles(seq, tilesToLoad);
+                    boolean success = loadTiles(seq, tilesToLoad, peStats);
                     if (!success) {
                         // Loading was canceled, return what we have
                         return tiles;
@@ -177,7 +178,7 @@ public class CachingQueryReader {
         }
 
         if (tilesToLoad.size() > 0) {
-            loadTiles(seq, tilesToLoad);
+            loadTiles(seq, tilesToLoad, peStats);
         }
 
         return tiles;
@@ -190,7 +191,7 @@ public class CachingQueryReader {
      * @param tiles
      * @return true if successful,  false if canceled.
      */
-    private boolean loadTiles(String chr, List<AlignmentTile> tiles) {
+    private boolean loadTiles(String chr, List<AlignmentTile> tiles, Map<String, PEStats> peStats) {
 
         assert (tiles.size() > 0);
 
@@ -230,6 +231,7 @@ public class CachingQueryReader {
                 }
 
                 Alignment record = iter.next();
+
 
                 String readName = record.getReadName();
                 if (record.isPaired()) {
@@ -287,6 +289,25 @@ public class CachingQueryReader {
                         cancelReaders();
                         return false;        // <=  TODO need to cancel all readers
                     }
+                }
+
+                // Update pe stats
+                if (peStats != null && record.isPaired() && record.isProperPair()) {
+                    String lb = record.getLibrary();
+                    if (lb == null) lb = "null";
+                    PEStats stats = peStats.get(lb);
+                    if (stats == null) {
+                        stats = new PEStats(lb);
+                        peStats.put(lb, stats);
+                    }
+                    stats.add(record.getInferredInsertSize());
+                }
+            }
+
+            // Compute peStats
+            if (peStats != null) {
+                for (PEStats stats : peStats.values()) {
+                    stats.compute(.1, 99.9);
                 }
             }
 
@@ -354,11 +375,6 @@ public class CachingQueryReader {
     public void clearCache() {
         if (cache != null) cache.clear();
     }
-
-    public PairedEndStats getPeStats() {
-        return peStats;
-    }
-
 
     public class TiledIterator implements CloseableIterator<Alignment> {
 
@@ -454,7 +470,6 @@ public class CachingQueryReader {
         private HashMap<String, Alignment> currentBucket;
         private List<Alignment> pairedBucket;
         private Set<String> unmappedPairs;
-        private Set<String> currentUnmappedPairs;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
 
@@ -475,7 +490,6 @@ public class CachingQueryReader {
             currentBucket = new HashMap(5 * maxDepth);
             pairedBucket = new ArrayList(maxDepth);
             unmappedPairs = new HashSet(5 * maxDepth);
-            currentUnmappedPairs = new HashSet(maxDepth);
         }
 
         public int getTileNumber() {
@@ -517,6 +531,8 @@ public class CachingQueryReader {
 
             }
             counts.incCounts(record);
+
+
         }
 
 

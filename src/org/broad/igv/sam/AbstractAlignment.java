@@ -242,6 +242,10 @@ public abstract class AbstractAlignment implements Alignment {
         return null;
     }
 
+    public String getLibrary() {
+        return null;
+    }
+
     public char[] getGapTypes() {
         return null;
     }

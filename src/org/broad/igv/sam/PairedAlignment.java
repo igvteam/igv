@@ -252,6 +252,10 @@ public class PairedAlignment implements Alignment {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public String getLibrary() {
+        return firstAlignment.getLibrary();
+    }
+
     public void setStart(int start) {
         //To change body of implemented methods use File | Settings | File Templates.
     }

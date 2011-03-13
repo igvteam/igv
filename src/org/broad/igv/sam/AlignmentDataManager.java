@@ -55,6 +55,8 @@ public class AlignmentDataManager {
     private int maxLevels;
     private boolean loadAsPairs = false;
     private static final int MAX_ROWS = 1000000;
+    Map<String, PEStats> peStats;
+    
 
     public AlignmentDataManager(ResourceLocator locator) throws IOException {
 
@@ -67,6 +69,7 @@ public class AlignmentDataManager {
         } else {
             reader = new CachingQueryReader(SamQueryReaderFactory.getReader(locator));
         }
+        peStats = new HashMap();
         initChrMap();
     }
 
@@ -86,6 +89,10 @@ public class AlignmentDataManager {
 
     public CachingQueryReader getReader() {
         return reader;
+    }
+
+    public Map<String, PEStats> getPEStats() {
+        return peStats;
     }
 
 
@@ -278,10 +285,6 @@ public class AlignmentDataManager {
         }
     }
 
-    public PairedEndStats getPairedEndStats(ReferenceFrame frame) {
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(frame.getName());
-        return loadedInterval == null ? null : loadedInterval.getPeStats();
-    }
 
     public void clear() {
         reader.clearCache();
@@ -319,9 +322,7 @@ public class AlignmentDataManager {
 
                     List<AlignmentCounts> counts = new ArrayList();
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels);
-
-                    PairedEndStats peStats = reader.getPeStats();
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels, peStats);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
@@ -329,7 +330,7 @@ public class AlignmentDataManager {
                             intervalEnd, loadAsPairs, null, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
-                            alignmentRows, counts, peStats);
+                            alignmentRows, counts);
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 
 

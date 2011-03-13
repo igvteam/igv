@@ -337,6 +337,11 @@ public class GobyAlignment implements Alignment {
         return null;
     }
 
+    public String getLibrary() {
+        //LOG.info("getReadGroup");
+        return null;
+    }
+
     public Object getAttribute(String key) {
         //LOG.info("getAttribute");
         return null;

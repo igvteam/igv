@@ -211,6 +211,10 @@ public class DotAlignedAlignment implements Alignment {
         return null;
     }
 
+    public String getLibrary() {
+        return null;
+    }
+
     public Object getAttribute(String key) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }

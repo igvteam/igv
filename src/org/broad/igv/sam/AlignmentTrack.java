@@ -214,10 +214,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             log.debug("Render features");
             List<AlignmentInterval.Row> tmp = dataManager.getAlignmentRows(context); //genomeId, chr, start, end);
 
-            PairedEndStats peStats = dataManager.getPairedEndStats(context.getReferenceFrame());
-            if (peStats != null && renderOptions.isComputeIsizes()) {
-                renderOptions.minInsertSizeThreshold = (int) peStats.getMinPercentileInsertSize();
-                renderOptions.maxInsertSizeThreshold = (int) peStats.getMaxPercentileInsertSize();
+            Map<String, PEStats> peStats = dataManager.getPEStats();
+            if (peStats != null) {
+                renderOptions.peStats = peStats;
             }
 
             if (tmp == null) {
@@ -940,10 +939,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
                 dlg.setModal(true);
                 dlg.setVisible(true);
-                if(!dlg.isCanceled()) {
+                if (!dlg.isCanceled()) {
                     renderOptions.setComputeIsizes(dlg.isComputeIsize());
                     //renderOptions.setMinPercentile(dlg.getMinPercentile());
-                   // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
+                    // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
                     renderOptions.setMinInsertSizeThreshold(dlg.getMinThreshold());
                     renderOptions.setMaxInsertSizeThreshold(dlg.getMaxThreshold());
                     refresh();
@@ -1085,6 +1084,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         ColorOption colorOption;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
+        Map<String, PEStats> peStats;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();

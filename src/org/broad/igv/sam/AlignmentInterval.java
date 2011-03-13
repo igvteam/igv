@@ -45,10 +45,8 @@ public class AlignmentInterval extends Locus {
     String genomeId;
     byte[] reference;
     int maxCount = 0;
-    PairedEndStats peStats;
 
-    public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows,
-                             List<AlignmentCounts> counts, PairedEndStats peStats) {
+    public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
         super(chr, start, end);
         this.genomeId = genomeId;
         this.alignmentRows = rows;
@@ -57,7 +55,6 @@ public class AlignmentInterval extends Locus {
         for(AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
-        this.peStats = peStats;
     }
 
     public boolean contains(String genomeId, String chr, int start, int end) {
@@ -209,10 +206,6 @@ public class AlignmentInterval extends Locus {
         }
         return 0;
      }
-
-    public PairedEndStats getPeStats() {
-        return peStats;
-    }
 
 
     public static class Row {

@@ -634,7 +634,20 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance > 0) {
-                            if (readDistance > renderOptions.getMaxInsertSizeThreshold() || readDistance < renderOptions.getMinInsertSizeThreshold()) {
+                            int minThreshold = renderOptions.getMinInsertSizeThreshold();
+                            int maxThreshold = renderOptions.getMaxInsertSizeThreshold();
+                            if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
+                                String lb = alignment.getLibrary();
+                                if (lb == null) lb = "null";
+                                PEStats stats = renderOptions.peStats.get(lb);
+                                if (stats != null) {
+                                    minThreshold = stats.getMinThreshold();
+                                    maxThreshold = stats.getMaxThreshold();
+                                }
+
+                            }
+
+                            if (readDistance < minThreshold || readDistance > maxThreshold) {
                                 c = ChromosomeColors.getColor(alignment.getChr());
                             }
                             //return renderOptions.insertSizeColorScale.getColor(readDistance);

@@ -78,7 +78,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private String mateSequence = null;
     private String pairOrientation = "";
     private Color defaultColor = AlignmentRenderer.grey1;
-
+    private String readGroup;
+    private String library;
+    private String sample;
 
     /**
      * Constructs ...
@@ -117,6 +119,19 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         setFirstReadStrand(record);
         createAlignmentBlocks(record.getCigarString(), record.getReadBases(), record.getBaseQualities());
 
+        SAMFileHeader header = record.getHeader();
+        if (header != null) {
+            readGroup = (String) record.getAttribute("RG");
+            if (readGroup != null) {
+                SAMReadGroupRecord rgRec = header.getReadGroup(readGroup);
+                if (rgRec != null) {
+                    String platform = rgRec.getPlatform();
+                    sample = rgRec.getSample();
+                    library = rgRec.getLibrary();
+
+                }
+            }
+        }
 
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
@@ -495,28 +510,15 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public String getSample() {
-
-        SAMFileHeader header = record.getHeader();
-        if (header != null) {
-            String rg = (String) record.getAttribute("RG");
-            if (rg != null) {
-                SAMReadGroupRecord rgRec = header.getReadGroup(rg);
-                if (rgRec != null) {
-                    return rgRec.getSample();
-                }
-            }
-        }
-        return null;
+        return sample;
     }
 
     public String getReadGroup() {
+        return readGroup;
+    }
 
-        SAMFileHeader header = record.getHeader();
-        if (header != null) {
-            String readGroup = (String) record.getAttribute("RG");
-            return (String) record.getAttribute("RG");
-        }
-        return null;
+    public String getLibrary() {
+        return library;
     }
 
     @Override
