@@ -314,20 +314,4 @@ public class Globals {
         return GENE_LIST_DIRECTORY;
     }
 
-    public static File getTempDirectory() {
-
-        if (IGV_TEMP_DIRECTORY == null) {
-            String path = System.getProperty("java.io.tmpdir");
-            IGV_TEMP_DIRECTORY = new File(path.toString());
-            if (!IGV_TEMP_DIRECTORY.exists()) {
-                IGV_TEMP_DIRECTORY.mkdir();
-            }
-            if (!IGV_TEMP_DIRECTORY.canRead()) {
-                throw new DataLoadException("Cannot read from user directory", IGV_TEMP_DIRECTORY.getAbsolutePath());
-            } else if (!IGV_TEMP_DIRECTORY.canWrite()) {
-                throw new DataLoadException("Cannot write to user directory", IGV_TEMP_DIRECTORY.getAbsolutePath());
-            }
-        }
-        return IGV_TEMP_DIRECTORY;
-    }
 }
