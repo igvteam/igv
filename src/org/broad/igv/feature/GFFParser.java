@@ -221,6 +221,11 @@ public class GFFParser implements FeatureParser {
 
                 // GFF files have 9 tokens
                 if (nTokens < 9) {
+                    // Maybe its a track line?
+                    if (line.startsWith("track")) {
+                        trackProperties = new TrackProperties();
+                        ParsingUtils.parseTrackLine(line, trackProperties);
+                    }
                     continue;
                 }
 
@@ -403,7 +408,7 @@ public class GFFParser implements FeatureParser {
             buf.append(" = ");
             buf.append(attValue);
             buf.append("<br>");
-            if(++count > max) {
+            if (++count > max) {
                 buf.append("...");
                 break;
             }
