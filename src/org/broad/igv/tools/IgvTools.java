@@ -641,7 +641,7 @@ public class IgvTools {
         if (!(ext.equals(".cn") ||
                 ext.equals(".igv") ||
                 ext.equals(".wig") ||
-                ext.equals(".cpg") ||
+                ifile.toLowerCase().endsWith("cpg.txt") ||
                 ext.equals(".ewig") ||
                 ext.equals(".cn") ||
                 ext.equals(".snp") ||
