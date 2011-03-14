@@ -57,14 +57,14 @@ public class HistoryMenu extends JMenu {
             }
         });
 
-        backItem = new JMenuItem("Back");
+        backItem = new JMenuItem("<html>Back&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>Alt &rarr;");
         backItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 history.back();
             }
         });
 
-        forwardItem = new JMenuItem("Forward");
+        forwardItem = new JMenuItem("<html>Forward&nbsp;&nbsp;&nbsp;<i>Alt &larr;");
         forwardItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 history.forward();
