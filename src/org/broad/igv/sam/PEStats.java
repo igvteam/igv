@@ -86,8 +86,8 @@ public class PEStats {
             minThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, minPercentile);
             maxThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, maxPercentile);
 
-            log.info(library + "  " + nPairs + "  " + minThreshold + "  " + maxThreshold + " fr =" + frCount +
-                    "  ff = " + ffCount + "  rf = " + rfCount);
+            //log.info(library + "  " + nPairs + "  " + minThreshold + "  " + maxThreshold + " fr =" + frCount +
+            //        "  ff = " + ffCount + "  rf = " + rfCount);
         }
     }
 

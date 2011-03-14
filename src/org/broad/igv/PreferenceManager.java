@@ -927,7 +927,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(FLANKING_REGION, "2000");
 
-        defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "true");
+        defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "false");
 
         defaultValues.put(GWAS_TRACK_HEIGHT, "200");
         defaultValues.put(GWAS_DESCRIPTION_CACHE_SIZE, "10000");
