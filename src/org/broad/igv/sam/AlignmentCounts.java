@@ -324,7 +324,7 @@ public class AlignmentCounts {
     private void incCount(int pos, byte b, byte q, boolean isNegativeStrand) {
 
         int offset = pos - start;
-        if (offset > 0 && offset < posA.length) {
+        if (offset >= 0 && offset < posA.length) {
             switch (b) {
                 case 'a':
                 case 'A':
