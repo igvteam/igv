@@ -52,21 +52,25 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color grey2 = new Color(165, 165, 165);
     public static Color grey1 = new Color(200, 200, 200);
 
-
-    static Font font = FontManager.getScalableFont(10);
+    private static Font font = FontManager.getScalableFont(10);
     private static Stroke thickStroke = new BasicStroke(2.0f);
-    //private static float dash[] = {4.0f, 1.0f};
-    //private static Stroke dashedStroke = new BasicStroke(2.0f, BasicStroke.CAP_BUTT,
-    //        BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
 
     private static final Color negStrandColor = new Color(110, 145, 225);
     private static final Color posStrandColor = new Color(165, 35, 39);
 
     private static HashMap<String, Color> readGroupColors = new HashMap();
 
+    private static final Color LR_COLOR = grey1; // "Normal" alignment color
+    private static final Color RL_COLOR = new Color(0, 150, 0);
+    private static final Color RR_COLOR = new Color(0, 0, 150);
+    private static final Color LL_COLOR = new Color(0, 150, 150);
+    static Map<String, Color> frOrientationColors;
+    static Map<String, Color> ffOrientationColors;
+    static Map<String, Color> rfOrientationColors;
+
     PreferenceManager prefs;
 
-    synchronized static private void initColorMap() {
+    static {
         nucleotideColors = new HashMap();
         nucleotideColors.put('A', Color.GREEN);
         nucleotideColors.put('a', Color.GREEN);
@@ -79,6 +83,62 @@ public class AlignmentRenderer implements FeatureRenderer {
         nucleotideColors.put('N', Color.gray.brighter());
         nucleotideColors.put('n', Color.gray.brighter());
 
+
+        // fr Orienations (e.g. Illumina paired-end libraries)
+        frOrientationColors = new HashMap();
+        //LR
+        frOrientationColors.put("F1R2", LR_COLOR);
+        frOrientationColors.put("F2R1", LR_COLOR);
+        frOrientationColors.put("F R ", LR_COLOR);
+        //LL
+        frOrientationColors.put("F1F2", LL_COLOR);
+        frOrientationColors.put("F2F1", LL_COLOR);
+        frOrientationColors.put("F F ", LL_COLOR);
+        frOrientationColors.put("FF", LL_COLOR);
+        //RR
+        frOrientationColors.put("R1R2", RR_COLOR);
+        frOrientationColors.put("R2R1", RR_COLOR);
+        frOrientationColors.put("R R ", RR_COLOR);
+        frOrientationColors.put("RR", RR_COLOR);
+        //RL
+        frOrientationColors.put("R1F2", RL_COLOR);
+        frOrientationColors.put("R2F1", RL_COLOR);
+        frOrientationColors.put("R F ", RL_COLOR);
+
+        // rf orienation  (e.g. Illumina mate-pair libraries)
+        rfOrientationColors = new HashMap();
+        //LR
+        rfOrientationColors.put("R1F2", LR_COLOR);
+        rfOrientationColors.put("R2F1", LR_COLOR);
+        rfOrientationColors.put("R F ", LR_COLOR);
+        //LL
+        rfOrientationColors.put("R1R2", LL_COLOR);
+        rfOrientationColors.put("R2R1", LL_COLOR);
+        rfOrientationColors.put("R r ", LL_COLOR);
+        //RR
+        rfOrientationColors.put("F1F2", RR_COLOR);
+        rfOrientationColors.put("F2F1", RR_COLOR);
+        rfOrientationColors.put("F F ", RR_COLOR);
+        //RL
+        rfOrientationColors.put("F1R2", RL_COLOR);
+        rfOrientationColors.put("F2R1", RL_COLOR);
+        rfOrientationColors.put("F R ", RL_COLOR);
+
+
+        // ff orienation  (e.g. SOLID libraries)
+        ffOrientationColors = new HashMap();
+        //LR
+        ffOrientationColors.put("F1F2", LR_COLOR);
+        ffOrientationColors.put("R2R1", LR_COLOR);
+        //LL -- switched with RR color per Bob's instructions
+        ffOrientationColors.put("F1R2", RR_COLOR);
+        ffOrientationColors.put("R2F1", RR_COLOR);
+        //RR
+        ffOrientationColors.put("R1F2", LL_COLOR);
+        ffOrientationColors.put("F2R1", LL_COLOR);
+        //RL
+        ffOrientationColors.put("R1R2", RL_COLOR);
+        ffOrientationColors.put("F2F1", RL_COLOR);
     }
 
 
@@ -87,9 +147,6 @@ public class AlignmentRenderer implements FeatureRenderer {
      */
     public AlignmentRenderer() {
         this.prefs = PreferenceManager.getInstance();
-        if (nucleotideColors == null) {
-            initColorMap();
-        }
 
     }
 
@@ -624,6 +681,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
 
+        String lb = alignment.getLibrary();
+        if (lb == null) lb = "null";
+        PEStats peStats = renderOptions.peStats.get(lb);
+
         Color c = grey1;
         switch (renderOptions.colorOption) {
             case INSERT_SIZE:
@@ -637,12 +698,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                             int minThreshold = renderOptions.getMinInsertSizeThreshold();
                             int maxThreshold = renderOptions.getMaxInsertSizeThreshold();
                             if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
-                                String lb = alignment.getLibrary();
-                                if (lb == null) lb = "null";
-                                PEStats stats = renderOptions.peStats.get(lb);
-                                if (stats != null) {
-                                    minThreshold = stats.getMinThreshold();
-                                    maxThreshold = stats.getMaxThreshold();
+                                if (peStats != null) {
+                                    minThreshold = peStats.getMinThreshold();
+                                    maxThreshold = peStats.getMaxThreshold();
                                 }
 
                             }
@@ -663,7 +721,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 break;
             case PAIR_ORIENTATION:
-                c = getOrientationColor(alignment);
+                c = getOrientationColor(alignment, peStats);
                 break;
             case READ_STRAND:
                 if (alignment.isNegativeStrand()) {
@@ -726,14 +784,31 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @return
      */
 
-    private Color getOrientationColor(Alignment alignment) {
+    private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
         if (!alignment.isProperPair() && !alignment.isSmallInsert()) {
-            if (alignment.getAttribute("CS") != null) {
-                c = getSolidScheme().get(alignment.getPairOrientation());
+            final String pairOrientation = alignment.getPairOrientation();
+            if (peStats != null) {
+                PEStats.Orientation libraryOrientation = peStats.getOrientation();
+                switch (libraryOrientation) {
+                    case FR:
+                        c = frOrientationColors.get(pairOrientation);
+                        break;
+                    case RF:
+                        c = rfOrientationColors.get(pairOrientation);
+                        break;
+                    case FF:
+                        c = ffOrientationColors.get(pairOrientation);
+                        break;
+                }
+
             } else {
-                c = getIlluminaScheme().get(alignment.getPairOrientation());
+                if (alignment.getAttribute("CS") != null) {
+                    c = ffOrientationColors.get(pairOrientation);
+                } else {
+                    c = frOrientationColors.get(pairOrientation);
+                }
             }
         }
 
@@ -741,66 +816,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     }
 
-    private static final Color LR_COLOR = grey1; // "Normal" alignment color
-    private static final Color RL_COLOR = new Color(0, 150, 0);
-    private static final Color RR_COLOR = new Color(0, 0, 150);
-    private static final Color LL_COLOR = new Color(0, 150, 150);
-
-    Map<String, Color> illuminaScheme;
-    Map<String, Color> solidScheme;
-
-    private Map<String, Color> getIlluminaScheme() {
-        if (illuminaScheme == null) {
-            illuminaScheme = new HashMap();
-            //LR
-            illuminaScheme.put("F1R2", LR_COLOR);
-            illuminaScheme.put("F2R1", LR_COLOR);
-            illuminaScheme.put("F R ", LR_COLOR);
-            illuminaScheme.put("FR", LR_COLOR);
-            //LL
-            illuminaScheme.put("F1F2", LL_COLOR);
-            illuminaScheme.put("F2F1", LL_COLOR);
-            illuminaScheme.put("F F ", LL_COLOR);
-            illuminaScheme.put("FF", LL_COLOR);
-            //RR
-            illuminaScheme.put("R1R2", RR_COLOR);
-            illuminaScheme.put("R2R1", RR_COLOR);
-            illuminaScheme.put("R R ", RR_COLOR);
-            illuminaScheme.put("RR", RR_COLOR);
-            //RL
-            illuminaScheme.put("R1F2", RL_COLOR);
-            illuminaScheme.put("R2F1", RL_COLOR);
-            illuminaScheme.put("R F ", RL_COLOR);
-            illuminaScheme.put("RF", RR_COLOR);
-        }
-        return illuminaScheme;
-    }
-
-
-    private Map<String, Color> getSolidScheme() {
-        if (solidScheme == null) {
-            solidScheme = new HashMap();
-            //LR
-            solidScheme.put("F1F2", LR_COLOR);
-            solidScheme.put("R2R1", LR_COLOR);
-            //LL -- switched with RR color per Bob's instructions
-            solidScheme.put("F1R2", RR_COLOR);
-            solidScheme.put("R2F1", RR_COLOR);
-            //RR
-            solidScheme.put("R1F2", LL_COLOR);
-            solidScheme.put("F2R1", LL_COLOR);
-            //RL
-            solidScheme.put("R1R2", RL_COLOR);
-            solidScheme.put("F2F1", RL_COLOR);
-        }
-        return solidScheme;
-    }
-
-
     public static Map<Character, Color> getNucleotideColors() {
-        if (nucleotideColors == null) {
-            initColorMap();
-        }
         return nucleotideColors;
     }
 }

@@ -300,7 +300,7 @@ public class CachingQueryReader {
                         stats = new PEStats(lb);
                         peStats.put(lb, stats);
                     }
-                    stats.add(record.getInferredInsertSize());
+                    stats.update(record);
                 }
             }
 

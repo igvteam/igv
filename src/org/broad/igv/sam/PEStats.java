@@ -22,8 +22,6 @@ package org.broad.igv.sam;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 
-import java.util.Iterator;
-
 /**
  * @author jrobinso
  * @date Mar 11, 2011
@@ -32,23 +30,54 @@ public class PEStats {
 
     private static Logger log = Logger.getLogger(PEStats.class);
 
-    private static int MAX=10000;
-    String rg;
+    public enum Orientation {FR, RF, FF};
+
+    private static int MAX = 10000;
+    String library;
     int nPairs = 0;
     private double[] insertSizes = new double[MAX];
     private int minThreshold = 10;
     private int maxThreshold = 5000;
 
-    public PEStats(String rg) {
-         this.rg = rg;
+    // Orientation counts
+    int frCount = 0;
+    int ffCount = 0;
+    int rfCount = 0;
+
+    Orientation orientation = null;
+
+    public PEStats(String library) {
+        this.library = library;
     }
 
 
-    public void add(int insertSize) {
-         if (nPairs < insertSizes.length) {
-            insertSizes[nPairs] = Math.abs(insertSize);
+    public void update(Alignment alignment) {
+
+        if (nPairs < insertSizes.length) {
+            insertSizes[nPairs] = Math.abs(alignment.getInferredInsertSize());
             nPairs++;
         }
+
+        String po = alignment.getPairOrientation();
+        if (po != null && po.length() == 4) {
+            if (po.charAt(0) == 'F') {
+                if (po.charAt(2) == 'F') {
+                    ffCount++;
+                } else if (po.charAt(2) == 'R') {
+                    frCount++;
+
+                }
+            } else if (po.charAt(0) == 'R') {
+                if (po.charAt(2) == 'F') {
+                    rfCount++;
+                } else if (po.charAt(2) == 'F') {
+                    ffCount++;
+                }
+            }
+        }
+
+        // Force recomputation of orientation
+        orientation = null;
     }
 
     public void compute(double minPercentile, double maxPercentile) {
@@ -57,7 +86,8 @@ public class PEStats {
             minThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, minPercentile);
             maxThreshold = (int) StatUtils.percentile(insertSizes, 0, nPairs, maxPercentile);
 
-            log.debug(rg + "  " + nPairs + "  " + minThreshold +  "  " + maxThreshold);
+            log.info(library + "  " + nPairs + "  " + minThreshold + "  " + maxThreshold + " fr =" + frCount +
+                    "  ff = " + ffCount + "  rf = " + rfCount);
         }
     }
 
@@ -67,5 +97,20 @@ public class PEStats {
 
     public int getMaxThreshold() {
         return maxThreshold;
+    }
+
+    public Orientation getOrientation() {
+        if(orientation == null) {
+           if(ffCount > frCount && ffCount > rfCount) {
+               orientation = Orientation.FF;
+           }
+            else if(rfCount > frCount && rfCount > ffCount) {
+               orientation = Orientation.RF;
+           }
+            else {
+               orientation = Orientation.FR;
+           }
+        }
+        return orientation;
     }
 }
