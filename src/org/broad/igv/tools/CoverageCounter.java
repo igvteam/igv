@@ -28,7 +28,6 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.PairedEndStats;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
