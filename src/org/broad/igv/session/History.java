@@ -85,7 +85,6 @@ public class History {
             return;
         }
         currPos--;
-        printStack();
         String item = activeStack.get(currPos);
         processItem(item);
     }
