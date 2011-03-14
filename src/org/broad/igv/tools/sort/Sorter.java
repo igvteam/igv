@@ -126,7 +126,10 @@ public abstract class Sorter {
     public Sorter(File inputFile, File outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
-        this.tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
+        if (!tmpDir.exists()) {
+            tmpDir.mkdir();
+        }
     }
 
     public void run() {

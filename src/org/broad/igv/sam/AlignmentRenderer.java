@@ -212,8 +212,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
                 int centerLeftP = (int) (center / locScale);
                 int centerRightP = (int) ((center + 1) / locScale);
-                float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
-                Graphics2D gBlack = context.getGraphic2DForColor(new Color(0, 0, 0, transparency));
+                //float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
+                Graphics2D gBlack = context.getGraphic2DForColor(Color.black); //new Color(0, 0, 0, transparency));
                 GraphicUtils.drawDashedLine(gBlack, centerLeftP, rect.y, centerLeftP,
                         rect.y + rect.height);
                 if ((centerRightP - centerLeftP > 2)) {
