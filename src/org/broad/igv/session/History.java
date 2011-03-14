@@ -51,6 +51,12 @@ public class History {
 
     public void push(String s) {
 
+        // If in gene list mode disable history,  with the exception of "List" items
+
+        if (FrameManager.isGeneListMode() && !s.startsWith("List")) {
+            return;
+        }
+
         log.debug("History: " + s);
         allHistory.add(s);
 
@@ -91,7 +97,9 @@ public class History {
                 IGVMainFrame.getInstance().setGeneList(listName, false);
 
             } else {
-                IGVMainFrame.getInstance().setGeneList("None", false);
+                if (FrameManager.isGeneListMode()) {
+                    IGVMainFrame.getInstance().setGeneList(null, false);
+                }
                 (new SearchCommand(FrameManager.getDefaultFrame(), item, false)).execute();
                 IGVMainFrame.getInstance().refreshCommandBar();
             }

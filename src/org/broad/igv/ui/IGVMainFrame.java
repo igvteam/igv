@@ -228,7 +228,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         IGVHttpUtils.updateProxySettings();
 
 
-
     }
 
     public GhostGlassPane getDnDGlassPane() {
@@ -257,7 +256,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
     }
-
 
 
     // TODO -- eliminate this shared file chooser,  and all "shared" dialogs like this.
@@ -1190,12 +1188,17 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void setGeneList(String listID, boolean recordHistory) {
-        GeneList gl = GeneListManager.getGeneList(listID);
 
-        if (recordHistory) {
-            session.getHistory().push("List: " + listID);
+        if (listID == null) {
+           session.setCurrentGeneList(null);
+        } else {
+            GeneList gl = GeneListManager.getGeneList(listID);
+
+            if (recordHistory) {
+                session.getHistory().push("List: " + listID);
+            }
+            session.setCurrentGeneList(gl);
         }
-        session.setCurrentGeneList(gl);
         resetFrames();
 
     }
@@ -2352,7 +2355,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     // THis is her for backward compatibility
-    public static void main(String [] args) {
+
+    public static void main(String[] args) {
         Main.main(args);
     }
 }
