@@ -66,8 +66,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private LinkedHashSet<GenomeListItem> cachedGenomeItemList;
     private JComboBox chromosomeComboBox;
     private JComboBox genomeComboBox;
-    private JPanel geneListPanel;
-    private JideButton geneListLabel;
+    //private JPanel geneListPanel;
+   // private JideButton geneListLabel;
     private JideButton goButton;
     private JideButton homeButton;
     private JPanel locationPanel;
@@ -478,11 +478,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     public void setGeneListMode(boolean geneListMode) {
 
-        if (geneListMode) {
-            geneListLabel.setText(IGVMainFrame.getInstance().getSession().getGeneListName());
-
-        }
-        geneListPanel.setVisible(geneListMode);
         locationPanel.setVisible(!geneListMode);
         //chromosomeComboBox.setVisible(!geneListMode);
         //searchTextField.setVisible(!geneListMode);
@@ -965,30 +960,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         locationPanel.add(goButton, JideBoxLayout.FIX);
 
         add(locationPanel, JideBoxLayout.FIX);
-
-        geneListPanel = new JPanel();
-        geneListPanel.setLayout(new BorderLayout());
-        geneListPanel.add(Box.createHorizontalStrut(400), BorderLayout.WEST);
-        geneListLabel = new JideButton();
-        /* geneListLabel.addMouseListener(new MouseAdapter() {
-           @Override
-           public void mousePressed(java.awt.event.MouseEvent evt) {
-               if (evt.getClickCount() == 1) {
-                   if (MessageUtils.confirm("Return to genome view?")) {
-                       owner.setGeneList("None");
-                   }
-
-               }
-           }
-       }); */
-        geneListLabel.setPreferredSize(new Dimension(300, 12));
-        geneListLabel.setBorder(BorderFactory.createEtchedBorder());
-        geneListLabel.setHorizontalAlignment(JLabel.CENTER);
-        geneListLabel.setFont(GENE_LIST_FONT);
-        geneListPanel.setVisible(false);
-        geneListPanel.add(geneListLabel, BorderLayout.CENTER);
-        geneListPanel.add(Box.createHorizontalStrut(50), BorderLayout.EAST);
-        add(geneListPanel, JideBoxLayout.FIX);
 
         add(Box.createHorizontalStrut(10), JideBoxLayout.FIX);
 
