@@ -17,10 +17,12 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.feature.tribble;
+package org.broad.igv.track;
 
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.CachingFeatureReader;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.util.ParsingUtils;

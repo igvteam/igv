@@ -53,7 +53,6 @@ import org.broad.igv.synteny.BlastMapping;
 import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
-import org.broad.igv.feature.tribble.TribbleFeatureSource;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
