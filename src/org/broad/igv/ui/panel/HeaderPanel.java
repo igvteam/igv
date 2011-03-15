@@ -219,6 +219,14 @@ public class HeaderPanel extends JPanel implements Transferable {
         // Zoom items
         popupMenu.addSeparator();
         TrackMenuUtils.addZoomItems(popupMenu, frame);
+        popupMenu.addSeparator();
+        JMenuItem item1 = new JMenuItem("Switch to standard view");
+        item1.addActionListener(new ActionListener() {
+             public void actionPerformed(ActionEvent e) {
+                 IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+             }
+         });
+        popupMenu.add(item1);
 
         popupMenu.addSeparator();
         JMenuItem item = new JMenuItem("Remove");

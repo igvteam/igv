@@ -149,7 +149,7 @@ public class TrackMenuUtils {
     public static void addZoomItems(JPopupMenu menu, final ReferenceFrame frame) {
 
         if (FrameManager.isGeneListMode()) {
-            JMenuItem item = new JMenuItem("Reset view");
+            JMenuItem item = new JMenuItem("Reset panel to '" + frame.getName() + "'");
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     frame.reset();
