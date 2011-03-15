@@ -19,11 +19,10 @@
 
 package org.broad.tribble.readers;
 
-import org.broad.igv.track.tribble.VCFCodec;
-import org.broad.igv.track.tribble.VCFFeature;
+import org.broad.igv.feature.tribble.VCFCodec;
+import org.broad.igv.feature.tribble.VCFFeature;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
-import org.broad.tribble.index.interval.IntervalIndexCreator;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.LittleEndianOutputStream;
 import org.junit.AfterClass;

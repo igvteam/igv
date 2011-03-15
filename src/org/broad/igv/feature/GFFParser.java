@@ -202,7 +202,7 @@ public class GFFParser implements FeatureParser {
 
 
                 if (line.startsWith("#")) {
-                    if (line.startsWith("#track")) {
+                    if (line.startsWith("#track") || line.startsWith("##track")) {
                         trackProperties = new TrackProperties();
                         ParsingUtils.parseTrackLine(line, trackProperties);
                     } else if (line.startsWith("#nodecode")) {

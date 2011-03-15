@@ -20,8 +20,7 @@
 
 package org.broad.igv.vcf;
 
-import org.broad.igv.track.tribble.CodecFactory;
-import org.broad.igv.track.tribble.TribbleFeatureSource;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.variantcontext.VariantContext;

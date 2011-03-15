@@ -231,7 +231,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = context.getVisibleRect().height;
-                int depth = dataManager.getMaxDepth(context.getReferenceFrame());
+                int depth = dataManager.getMaxLevels(); 
                 collapsedHeight = Math.min(maxCollapsedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = collapsedHeight;
             }
@@ -606,7 +606,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
             public void action() {
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
                 refresh();
 
             }
@@ -616,7 +616,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
             public void action() {
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
                 refresh();
 
             }
@@ -627,7 +627,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
                 refresh();
 
             }
@@ -638,7 +638,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
                 refresh();
 
             }
@@ -649,7 +649,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
                 refresh();
 
             }
@@ -660,7 +660,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
                 refresh();
 
             }
@@ -671,7 +671,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE, frame);
+                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
                 refresh();
 
             }
@@ -732,15 +732,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("by first-in-pair read strand");
-        m3.setSelected(colorByOption == ColorOption.FRAGMENT_STRAND);
-        m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                setColorOption(ColorOption.FRAGMENT_STRAND);
-                refresh();
-            }
-        });
-
         JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
         m4.setSelected(colorByOption == ColorOption.READ_GROUP);
         m4.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -762,13 +753,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m1);
         item.add(m1a);
         item.add(m2);
-        item.add(m3);
         item.add(m5);
         item.add(m4);
         group.add(m1);
         group.add(m1a);
         group.add(m2);
-        group.add(m3);
         group.add(m5);
         group.add(m4);
         menu.add(item);
@@ -785,7 +774,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
-                        IGVMainFrame.getInstance().getTrackManager().packAlignmentTracks(frame);
+                        IGVMainFrame.getInstance().getTrackManager().packAlignmentTracks();
                         refresh();
                     }
                 });
@@ -824,12 +813,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
         item.setSelected(dataManager.isLoadAsPairs());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-
             public void action() {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
-                        dataManager.setLoadAsPairs(item.isSelected(), te.getFrame());
+                        dataManager.setLoadAsPairs(item.isSelected());
                         refresh();
                     }
                 });
@@ -856,7 +844,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public void showMateRegion(JPopupMenu menu, final TrackClickEvent te) {
         // Change track height by attribute
-        JMenuItem item = new JMenuItem("Show mate region");
+        JMenuItem item = new JMenuItem("View mate region in split screen");
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
                 splitScreenMate(te);
@@ -887,10 +875,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
         item.setSelected(renderOptions.showAllBases);
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-
             public void action() {
                 UIUtilities.invokeOnEventThread(new Runnable() {
-
                     public void run() {
                         renderOptions.showAllBases = item.isSelected();
                         refresh();

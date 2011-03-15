@@ -17,42 +17,37 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.sam.reader;
+package org.broad.igv.feature.tribble;
 
-
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.FeatureWrappedAlignment;
-import org.broad.igv.feature.tribble.PSLCodec;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
-
-import java.io.IOException;
 
 /**
- * @author jrobinso
- * @date Aug 5, 2010
+ * A minimal representation of a SAM alignment.   Used for indexing only
+ *
+ * Author: jrobinso
+ *
  */
+public class Locus implements Feature {
 
-public class PSLAlignmentParser implements AlignmentParser {
+    String chr;
+    int start;
+    int end;
 
-    PSLCodec codec;
-
-    public PSLAlignmentParser() {
-        codec = new PSLCodec();
+    public Locus(String chr, int end, int start) {
+        this.chr = chr;
+        this.end = end;
+        this.start = start;
     }
 
-    public Alignment readNextRecord(AsciiLineReader reader) throws IOException {
+    public String getChr() {
+        return chr;
+    }
 
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
+    public int getStart() {
+        return start;  
+    }
 
-            Feature f = codec.decode(nextLine);
-            if(f != null && f instanceof BasicFeature) {
-                return new FeatureWrappedAlignment((BasicFeature) f);
-            }
-        }
-        return null;
-
+    public int getEnd() {
+        return end;
     }
 }

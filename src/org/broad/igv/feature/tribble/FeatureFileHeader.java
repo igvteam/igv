@@ -17,42 +17,50 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.sam.reader;
+package org.broad.igv.feature.tribble;
 
+import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.TrackType;
 
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.FeatureWrappedAlignment;
-import org.broad.igv.feature.tribble.PSLCodec;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
-
-import java.io.IOException;
+import java.util.*;
 
 /**
- * @author jrobinso
- * @date Aug 5, 2010
+ * Created by IntelliJ IDEA.
+ * User: jrobinso
+ * Date: May 22, 2010
+ * Time: 7:10:59 PM
+ * To change this template use File | Settings | File Templates.
  */
+public class FeatureFileHeader {
 
-public class PSLAlignmentParser implements AlignmentParser {
+    /* An object to collection track properties, if specified in the feature file. */
+    private TrackProperties trackProperties;
 
-    PSLCodec codec;
+    private TrackType trackType;
 
-    public PSLAlignmentParser() {
-        codec = new PSLCodec();
+    private Set<String> featuresToHide = new HashSet();
+
+    public TrackProperties getTrackProperties() {
+        return trackProperties;
     }
 
-    public Alignment readNextRecord(AsciiLineReader reader) throws IOException {
+    public TrackType getTrackType() {
+        return trackType;
+    }
 
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
+    public void setTrackProperties(TrackProperties trackProperties) {
+        this.trackProperties = trackProperties;
+    }
 
-            Feature f = codec.decode(nextLine);
-            if(f != null && f instanceof BasicFeature) {
-                return new FeatureWrappedAlignment((BasicFeature) f);
-            }
-        }
-        return null;
+    public void setTrackType(TrackType trackType) {
+        this.trackType = trackType;
+    }
 
+    public Set<String> getFeaturesToHide() {
+        return featuresToHide;
+    }
+
+    public void setFeaturesToHide(Collection<String> featuresToHide) {
+        this.featuresToHide.addAll(featuresToHide);
     }
 }

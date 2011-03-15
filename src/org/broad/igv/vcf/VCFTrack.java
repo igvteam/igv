@@ -28,7 +28,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
-import org.broad.igv.track.tribble.TribbleFeatureSource;
+import org.broad.igv.feature.tribble.TribbleFeatureSource;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.UIUtilities;

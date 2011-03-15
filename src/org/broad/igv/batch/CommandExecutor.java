@@ -251,9 +251,9 @@ public class CommandExecutor {
                 }
             }
             if (location == null) {
-                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg), FrameManager.getDefaultFrame());
+                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg));
             } else {
-                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg), FrameManager.getDefaultFrame(), location);
+                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg), location);
             }
 
         }

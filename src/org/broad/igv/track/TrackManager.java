@@ -166,26 +166,32 @@ public class TrackManager {
     }
 
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, ReferenceFrame frame) {
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option) {
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).sortRows(option, frame);
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).sortRows(option, frame);
+                }
             }
         }
     }
 
-    public void sortAlignmentTracks(AlignmentTrack.SortOption option, ReferenceFrame frame, double location) {
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, double location) {
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).sortRows(option, frame, location);
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).sortRows(option, frame, location);
+                }
             }
         }
     }
 
-    public void packAlignmentTracks(ReferenceFrame frame) {
+    public void packAlignmentTracks() {
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).packAlignments(frame);
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).packAlignments(frame);
+                }
             }
         }
     }
@@ -507,7 +513,7 @@ public class TrackManager {
                 Track ct = ((AlignmentTrack) t).getCoverageTrack();
                 tmp.add(ct);
                 Track sjt = ((AlignmentTrack) t).getSpliceJunctionTrack();
-                if(sjt != null) {
+                if (sjt != null) {
                     tmp.add(sjt);
                 }
 

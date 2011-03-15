@@ -30,6 +30,7 @@ import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ArrayHeapObjectSorter;
 import org.broad.igv.util.LongRunningTask;
@@ -46,8 +47,12 @@ public class AlignmentDataManager {
 
     private static final int DEFAULT_DEPTH = 10;
 
+    /**
+     * Map of reference frame -> alignment interval
+     */
     //TODO -- this is a  potential memory leak, this map needs cleared when the gene list changes
     private HashMap<String, AlignmentInterval> loadedIntervalMap = new HashMap(50);
+
     HashMap<String, String> chrMappings = new HashMap();
     private boolean isLoading = false;
     private CachingQueryReader reader;
@@ -56,7 +61,7 @@ public class AlignmentDataManager {
     private boolean loadAsPairs = false;
     private static final int MAX_ROWS = 1000000;
     Map<String, PEStats> peStats;
-    
+
 
     public AlignmentDataManager(ResourceLocator locator) throws IOException {
 
@@ -108,13 +113,6 @@ public class AlignmentDataManager {
         clear();
         reader.clearCache();
         this.maxLevels = maxLevels;
-    }
-
-
-    public int getMaxDepth(ReferenceFrame referenceFrame) {
-        AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
-        return loadedInterval == null ? DEFAULT_DEPTH :
-                (loadedInterval.getDepth() == 0 ? DEFAULT_DEPTH : loadedInterval.getDepth());
     }
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -178,13 +176,16 @@ public class AlignmentDataManager {
         return loadAsPairs;
     }
 
-    public void setLoadAsPairs(boolean loadAsPairs, ReferenceFrame referenceFrame) {
+    public void setLoadAsPairs(boolean loadAsPairs) {
         if (loadAsPairs == this.loadAsPairs) {
             return;
         }
         boolean currentPairState = this.loadAsPairs;
         this.loadAsPairs = loadAsPairs;
-        repackAlignments(referenceFrame, currentPairState);
+
+        for (ReferenceFrame frame : FrameManager.getFrames()) {
+            repackAlignments(frame, currentPairState);
+        }
 
     }
 

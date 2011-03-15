@@ -8,7 +8,7 @@
 // * To change this template use File | Settings | File Templates.
 // */
 //
-//import org.broad.igv.track.tribble.TribbleFeatureSource;
+//import org.broad.igv.feature.tribble.TribbleFeatureSource;
 //import org.broad.tribble.Feature;
 //import org.broad.tribble.vcf.VCFGenotypeEncoding;
 //import org.broad.tribble.vcf.VCFGenotypeRecord;
