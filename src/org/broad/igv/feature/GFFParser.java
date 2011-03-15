@@ -364,9 +364,9 @@ public class GFFParser implements FeatureParser {
 
             // Create and add IGV genes
             for (GFF3Transcript transcript : transcriptCache.values()) {
-                BasicFeature igvGene = transcript.createTranscript();
-                if (igvGene != null) {
-                    features.add(igvGene);
+                BasicFeature igvTranscript = transcript.createTranscript();
+                if (igvTranscript != null) {
+                    features.add(igvTranscript);
                 }
             }
 
@@ -527,7 +527,6 @@ public class GFFParser implements FeatureParser {
         private String id;
         private Set<Exon> exons = new HashSet();
         private List<Exon> cdss = new ArrayList();
-        private List<Exon> cdsParts = null;
         private Exon fivePrimeUTR;
         private Exon threePrimeUTR;
         private BasicFeature transcript;
@@ -574,6 +573,8 @@ public class GFFParser implements FeatureParser {
 
         void addCDS(Exon cds) {
             cdss.add(cds);
+            this.start = Math.min(cds.getStart(), start);
+            this.end = Math.max(cds.getEnd(), end);
         }
 
         void addCDSParts(String chr, int start, int end, String desc) {
@@ -602,32 +603,29 @@ public class GFFParser implements FeatureParser {
             Strand strand = Strand.NONE;
             String name = null;
 
-            // Combine exon & cds  if feature contains both CDS and CDS_parts use CDS_parts
-            List<Exon> cdsList = cdsParts;
-            if (cdsList == null) {
-                cdsList = cdss;
-            }
-            if (exons.size() > 0) {
-                while (!cdsList.isEmpty()) {
-                    Exon cds = cdsList.get(0);
-                    Exon exon = findMatchingExon(cds);
-                    if (exon == null) {
-                        exons.add(cds);
-                    } else {
-                        exon.setCodingStart(cds.getStart());
-                        exon.setCodingEnd(cds.getEnd());
-                        exon.setReadingFrame(cds.getReadingShift());
-                    }
-                    cdsList.remove(0);
+            // Combine CDS and exons
+            while (!cdss.isEmpty()) {
+                Exon cds = cdss.get(0);
+                Exon exon = findMatchingExon(cds);
+                if (exon == null) {
+                    cds.setCodingStart(cds.getStart());
+                    cds.setCodingEnd(cds.getEnd());
+                    exons.add(cds);
+                } else {
+                    exon.setCodingStart(cds.getStart());
+                    exon.setCodingEnd(cds.getEnd());
+                    exon.setReadingFrame(cds.getReadingShift());
                 }
-                for (Exon exon : exons) {
-                    chr = exon.getChr();
-                    strand = exon.getStrand();
-                    start = Math.min(exon.getStart(), start);
-                    end = Math.max(exon.getEnd(), end);
-                    name = exon.getName();
-                }
+                cdss.remove(0);
             }
+            for (Exon exon : exons) {
+                chr = exon.getChr();
+                strand = exon.getStrand();
+                start = Math.min(exon.getStart(), start);
+                end = Math.max(exon.getEnd(), end);
+                name = exon.getName();
+            }
+
 
             if (transcript == null) {
                 // transcript is implied
