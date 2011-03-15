@@ -246,7 +246,7 @@ public class SessionWriter {
 
     private void writeGeneList(Element globalElement, Document document) {
 
-        GeneList geneList = Session.getCurrentGeneList();
+        GeneList geneList = session.getCurrentGeneList();
 
         if (geneList != null) {
 

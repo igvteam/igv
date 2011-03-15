@@ -19,7 +19,11 @@
 
 package org.broad.igv.lists;
 
+import org.broad.igv.feature.Locus;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -33,6 +37,7 @@ public class GeneList {
     private String name;
     private String description;
     private List<String> loci;
+    private static Comparator<String> POSITION_COMPARTOR;
 
     public GeneList(String name, String description, String group, List<String> loci) {
         this.group = group;
@@ -86,7 +91,7 @@ public class GeneList {
     }
 
     public String getGroup() {
-        
+
         return group;
     }
 
@@ -105,4 +110,37 @@ public class GeneList {
     public void setDescription(String description) {
         this.description = description;
     }
+
+
+    /**
+     * Sort loci by "position".  This only sorts loci of the form chr1:100-200.
+     */
+    public void sortByPosition() {
+        if (POSITION_COMPARTOR == null) initComparator();
+
+        Collections.sort(loci, POSITION_COMPARTOR);
+    }
+
+
+    private static synchronized void initComparator() {
+        POSITION_COMPARTOR = new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                Locus l1 = new Locus(s1);
+                Locus l2 = new Locus(s2);
+                if (!l1.isValid() && !l2.isValid()) {
+                    return 0;
+                } else if (!l1.isValid()) {
+                    return -1;
+                } else if (!l2.isValid()) {
+                    return 1;
+                } else if (!l1.getChr().equals(l2.getChr())) {
+                    return l1.getChr().compareTo(l2.getChr());
+                } else {
+                    return l1.getStart() - l2.getStart();
+                }
+            }
+
+        };
+    }
+
 }

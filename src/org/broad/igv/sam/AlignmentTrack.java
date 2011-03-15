@@ -231,7 +231,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             double h = expandedHeight;
             if (getDisplayMode() != DisplayMode.EXPANDED) {
                 int visHeight = context.getVisibleRect().height;
-                int depth = dataManager.getMaxLevels(); 
+                int depth = dataManager.getMaxLevels();
                 collapsedHeight = Math.min(maxCollapsedHeight, Math.max(1, Math.min(expandedHeight, visHeight / depth)));
                 h = collapsedHeight;
             }
@@ -371,11 +371,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 Session currentSession = IGVMainFrame.getInstance().getSession();
 
                 // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
+
                 if (FrameManager.isGeneListMode()) {
                     currentSession.addGene(mateLocus);
+                    currentSession.getCurrentGeneList().sortByPosition();
                 } else {
                     String listName = locus1 + " <-> " + mateLocus;
                     GeneList geneList = new GeneList(listName, Arrays.asList(locus1, mateLocus));
+                    geneList.sortByPosition();
                     currentSession.setCurrentGeneList(geneList);
                 }
                 IGVMainFrame.getInstance().resetFrames();
@@ -876,15 +879,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.setSelected(renderOptions.showAllBases);
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-                    public void run() {
-                        renderOptions.showAllBases = item.isSelected();
-                        refresh();
-                    }
-                });
+                renderOptions.showAllBases = item.isSelected();
+                refresh();
             }
         });
-
         menu.add(item);
     }
 

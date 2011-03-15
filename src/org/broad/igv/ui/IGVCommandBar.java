@@ -479,7 +479,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public void setGeneListMode(boolean geneListMode) {
 
         if (geneListMode) {
-            geneListLabel.setText(Session.getGeneListName());
+            geneListLabel.setText(IGVMainFrame.getInstance().getSession().getGeneListName());
 
         }
         geneListPanel.setVisible(geneListMode);

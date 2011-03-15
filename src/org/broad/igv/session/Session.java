@@ -73,7 +73,7 @@ public class Session {
     //setChangedAndNotify() method should be called after any regions change.
     private ObserverForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
-    private static GeneList currentGeneList;
+    private GeneList currentGeneList;
 
 
     public Session(String filePath) {
@@ -307,12 +307,12 @@ public class Session {
         return getHistory().getAllHistory();
     }
 
-    public static GeneList getCurrentGeneList() {
+    public  GeneList getCurrentGeneList() {
         return currentGeneList;
     }
 
     public void setCurrentGeneList(GeneList currentGeneList) {
-        Session.currentGeneList = currentGeneList;
+        this.currentGeneList = currentGeneList;
         FrameManager.resetFrames(currentGeneList);
     }
 
@@ -328,7 +328,7 @@ public class Session {
         }
     }
 
-    public static String getGeneListName() {
+    public  String getGeneListName() {
         return getCurrentGeneList() == null ? "" : getCurrentGeneList().getName();
     }
 
