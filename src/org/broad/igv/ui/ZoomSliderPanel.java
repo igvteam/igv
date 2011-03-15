@@ -56,6 +56,7 @@ public class ZoomSliderPanel extends JPanel {
      * Should correspond to "maxZoomLevel" in class referenceFrame.
      */
     int numZoomLevels = 25;
+    private static final Color TRANSPARENT_GRAY = new Color(200, 200, 200, 150);
 
     /**
      * Creates a new instance of ZoomSliderPanel
@@ -86,13 +87,16 @@ public class ZoomSliderPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         updateTickCount();
-        if (this.isEnabled()) {
-            paintHorizontal(g);
-        }
+        //if (this.isEnabled()) {
+        paintHorizontal(g);
+        //}
 
     }
 
     protected void paintHorizontal(Graphics g) {
+
+        Graphics2D transGraphics =  (Graphics2D) g.create();
+        transGraphics.setColor(TRANSPARENT_GRAY);
 
         int buttonWidth = zoomPlus.getWidth(null);
         int buttonHeight = zoomPlus.getHeight(null);
@@ -102,17 +106,19 @@ public class ZoomSliderPanel extends JPanel {
         int panelHeight = getHeight() - insets.top - insets.bottom;
 
 
-        g.setColor(isEnabled() ? Color.BLACK : Color.LIGHT_GRAY);
+        final boolean enabled = isEnabled();
+        g.setColor(enabled ? Color.BLACK : Color.LIGHT_GRAY);
         double x = insets.left;
 
         double xStep = ((double) (panelWidth - 2 * buttonWidth - 10)) / (numZoomLevels);
 
         int y = insets.top + (panelHeight - buttonHeight) / 2;
-        if (isEnabled()) {
-            g.drawImage(zoomMinus, (int) x, y, null);
-        }
+        //if (isEnabled()) {
+        g.drawImage(zoomMinus, (int) x, y, null);
+        //}
         zoomMinusRect = new Rectangle((int) x, y, buttonWidth, buttonHeight);
-
+        transGraphics.fill(zoomMinusRect);
+        
         x += 5 + buttonWidth;
 
         int lastX = (int) (x - xStep);
@@ -131,36 +137,41 @@ public class ZoomSliderPanel extends JPanel {
         //g.drawLine(xTop, y, xBottom, y);
 
         y = insets.top + (panelHeight - buttonHeight) / 2;
-        if (isEnabled()) {
-            g.drawImage(zoomPlus, (int) x, y, null);
-        }
+        //if (isEnabled()) {
+        g.drawImage(zoomPlus, (int) x, y, null);
+        //}
         zoomPlusRect = new Rectangle((int) x, y, buttonWidth, buttonWidth);
+        transGraphics.fill(zoomPlusRect);
 
         // Draw current level -- zoomIndex is the zoom level + 1. 
 
         int zoom = (toolZoom >= 0 ? toolZoom : getViewContext().getAdjustedZoom());
-        if (zoom >= 0 && zoom < zoomLevelRects.length) {
-            Rectangle rect = zoomLevelRects[zoom];
 
-            g.setColor(TICK_BLUE);
-            ((Graphics2D) g).fill3DRect(
-                    (int) (rect.getX() + rect.getWidth() / 2) - 3,
-                    (int) rect.getY(),
-                    6,
-                    (int) rect.getHeight(),
-                    true);
+        if (enabled) {
+            if (zoom >= 0 && zoom < zoomLevelRects.length) {
+                Rectangle rect = zoomLevelRects[zoom];
 
-            //y =  (int) (rect.getY() + (rect.getHeight() - slider.getHeight(null)) / 2);
-            // temporary hack
-            //if(zoomIndex == 12) y += 15;
-            //g.drawImage(slider, x + 1, y, null);
+                g.setColor(TICK_BLUE);
+                g.fill3DRect(
+                        (int) (rect.getX() + rect.getWidth() / 2) - 3,
+                        (int) rect.getY(),
+                        6,
+                        (int) rect.getHeight(),
+                        true);
+
+                //y =  (int) (rect.getY() + (rect.getHeight() - slider.getHeight(null)) / 2);
+                // temporary hack
+                //if(zoomIndex == 12) y += 15;
+                //g.drawImage(slider, x + 1, y, null);
+            }
         }
+        transGraphics.dispose();
     }
 
     @Override
     public void setEnabled(boolean isEnabled) {
         super.setEnabled(isEnabled);
-        setVisible(isEnabled);
+        //setVisible(isEnabled);
     }
 
     void setZoom(MouseEvent e) {

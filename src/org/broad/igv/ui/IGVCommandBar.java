@@ -98,7 +98,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         boolean isWholeGenome = currentChr.equals(Globals.CHR_ALL);
 
         chromosomeComboBox.setSelectedItem(currentChr);
-        roiToggleButton.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_REGION_TOOL_KEY));
         roiToggleButton.setEnabled(!isWholeGenome);
         zoomControl.setEnabled(!isWholeGenome);
     }
@@ -478,13 +477,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     public void setGeneListMode(boolean geneListMode) {
 
-        locationPanel.setVisible(!geneListMode);
-        //chromosomeComboBox.setVisible(!geneListMode);
-        //searchTextField.setVisible(!geneListMode);
-        //goButton.setVisible(!geneListMode);
-        zoomControl.setVisible(!geneListMode);
-        //homeButton.setVisible(!geneListMode);
-        roiToggleButton.setVisible(!geneListMode);
+        genomeComboBox.setEnabled(!geneListMode);
+        locationPanel.setEnabled(!geneListMode);
+        chromosomeComboBox.setEnabled(!geneListMode);
+        searchTextField.setEnabled(!geneListMode);
+        goButton.setEnabled(!geneListMode);
+        zoomControl.setEnabled(!geneListMode);
+        homeButton.setEnabled(!geneListMode);
+        roiToggleButton.setEnabled(!geneListMode);
     }
 
 

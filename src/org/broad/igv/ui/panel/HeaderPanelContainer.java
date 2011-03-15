@@ -23,7 +23,9 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.ui.IGVMainFrame;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -72,8 +74,9 @@ public class HeaderPanelContainer extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
 
         if(FrameManager.isGeneListMode()) {
-            JLabel label = new JLabel(IGVMainFrame.getInstance().getSession().getGeneListName(), JLabel.CENTER); 
-            label.setBorder(new EmptyBorder(2,2,2,2));
+            JLabel label = new JLabel(IGVMainFrame.getInstance().getSession().getGeneListName(), JLabel.CENTER);
+            Border border = BorderFactory.createLineBorder(Color.lightGray);
+            label.setBorder(border);
             add(label, BorderLayout.NORTH);
         }
 

@@ -109,7 +109,6 @@ public class PreferenceManager implements PropertyManager {
     final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGVMainFrame.single.track.pane";
     final public static String GENOMES_SERVER_URL = "IGVMainFrame.genome.sequence.dir";
     final public static String JOIN_ADJACENT_SEGMENTS_KEY = "IGVMainFrame.join.adjacent.segments";
-    final public static String SHOW_REGION_TOOL_KEY = "IGVMainFrame.show.region.tool";
     final public static String SHOW_REGION_BARS = "SHOW_REGION_BARS";
     final public static String LAST_EXPORTED_REGION_DIRECTORY = "LAST_EXPORTED_REGION_DIRECTORY";
     final static public String LAST_TRACK_DIRECTORY = "LAST_TRACK_DIRECTORY";
@@ -600,10 +599,6 @@ public class PreferenceManager implements PropertyManager {
     }
 
 
-    public void setShowRegionTool(boolean value) {
-        put(SHOW_REGION_TOOL_KEY, Boolean.toString(value));
-    }
-
 
     public void setShowAttributeView(boolean isShowable) {
 
@@ -860,7 +855,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(COLOR_OVERLAY_KEY, "false");
         defaultValues.put(ENABLE_LINKED_SORTING, "true");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
-        defaultValues.put(SHOW_REGION_TOOL_KEY, "true");
         defaultValues.put(PORT_ENABLED, "true");
         defaultValues.put(EXPAND_FEAUTRE_TRACKS, "false");
         defaultValues.put(SHOW_ATTRIBUTE_VIEWS_KEY, "true");
