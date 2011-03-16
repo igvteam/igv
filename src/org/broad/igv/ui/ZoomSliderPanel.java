@@ -95,7 +95,7 @@ public class ZoomSliderPanel extends JPanel {
 
     protected void paintHorizontal(Graphics g) {
 
-        Graphics2D transGraphics =  (Graphics2D) g.create();
+        Graphics2D transGraphics = (Graphics2D) g.create();
         transGraphics.setColor(TRANSPARENT_GRAY);
 
         int buttonWidth = zoomPlus.getWidth(null);
@@ -113,12 +113,13 @@ public class ZoomSliderPanel extends JPanel {
         double xStep = ((double) (panelWidth - 2 * buttonWidth - 10)) / (numZoomLevels);
 
         int y = insets.top + (panelHeight - buttonHeight) / 2;
-        //if (isEnabled()) {
         g.drawImage(zoomMinus, (int) x, y, null);
-        //}
         zoomMinusRect = new Rectangle((int) x, y, buttonWidth, buttonHeight);
-        transGraphics.fill(zoomMinusRect);
-        
+
+        if (!isEnabled()) {
+            transGraphics.fill(zoomMinusRect);
+        }
+
         x += 5 + buttonWidth;
 
         int lastX = (int) (x - xStep);
@@ -141,7 +142,10 @@ public class ZoomSliderPanel extends JPanel {
         g.drawImage(zoomPlus, (int) x, y, null);
         //}
         zoomPlusRect = new Rectangle((int) x, y, buttonWidth, buttonWidth);
-        transGraphics.fill(zoomPlusRect);
+
+        if (!isEnabled()) {
+            transGraphics.fill(zoomPlusRect);
+        }
 
         // Draw current level -- zoomIndex is the zoom level + 1. 
 
