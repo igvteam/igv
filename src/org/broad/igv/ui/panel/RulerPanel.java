@@ -43,7 +43,9 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -241,7 +243,7 @@ public class RulerPanel extends JPanel {
             return;
         }
 
-        for (String chrName : genome.getChromosomeNames()) {
+        for (String chrName : chrNames) {
             Chromosome c = genome.getChromosome(chrName);
             int chrLength = c.getLength();
 
@@ -251,13 +253,19 @@ public class RulerPanel extends JPanel {
 
             int dw = (int) (chrLength / (locationUnit * getViewContext().getScale()));
             int center = x + dw / 2;
-            String chrNumber = chrName.replace("chr", "");
-            int strWidth = g.getFontMetrics().stringWidth(chrNumber);
+
+            String displayName = null;
+            if(chrName.startsWith("gi|")) {
+                displayName = Genome.getNCBIName(chrName);
+            } else {
+                displayName = chrName.replace("chr", "");
+            }
+            int strWidth = g.getFontMetrics().stringWidth(displayName);
             int strPosition = center - strWidth / 2;
 
 
             int y = (even ? getHeight() - 35 : getHeight() - 25);
-            g.drawString(chrNumber, strPosition, y);
+            g.drawString(displayName, strPosition, y);
 
             Rectangle clickRect = new Rectangle(strPosition, y - 15, 15, 15);
             String tooltipText = "Jump to chromosome: " + chrName;

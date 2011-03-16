@@ -1152,9 +1152,6 @@ public class GenomeManager {
         return new GenomeListItem(desc.getName(), null, desc.getId(), 0, false);
     }
 
-    public List<String> getChromosomeNames() {
-        return currentGenome == null ? new ArrayList() : currentGenome.getChromosomeNames();
-    }
 
     /**
      * A container for specific genome information which can be used to
@@ -1308,7 +1305,7 @@ public class GenomeManager {
 
         // Reset the frame manager
         if (!Globals.isHeadless()) {
-            FrameManager.reset(getHomeChr());
+            FrameManager.reset(currentGenome.getHomeChromosome());
             IGVMainFrame.getInstance().chromosomeChangeEvent();
         }
         return genomeId;
@@ -1321,15 +1318,6 @@ public class GenomeManager {
 
     public Genome getCurrentGenome() {
         return currentGenome;
-    }
-
-    /**
-     * Return the "home chromosome" for the current genome.
-     *
-     * @return
-     */
-    public String getHomeChr() {
-        return currentGenome == null ? Globals.CHR_ALL : currentGenome.getHomeChromosome();
     }
 
 

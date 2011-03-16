@@ -192,7 +192,10 @@ public class Session {
         try {
             Locus locus = getLocus(locusString);
             if (locus == null) {
-                getReferenceFrame().setChrName(GenomeManager.getInstance().getHomeChr());
+                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                if (genome != null) {
+                    getReferenceFrame().setChrName(genome.getHomeChromosome());
+                }
             } else {
                 getReferenceFrame().jumpTo(locus.chr, locus.start, locus.end);
             }
@@ -307,7 +310,7 @@ public class Session {
         return getHistory().getAllHistory();
     }
 
-    public  GeneList getCurrentGeneList() {
+    public GeneList getCurrentGeneList() {
         return currentGeneList;
     }
 
@@ -329,18 +332,18 @@ public class Session {
     }
 
 
-static class Locus {
-    String chr;
-    int start;
-    int end;
+    static class Locus {
+        String chr;
+        int start;
+        int end;
 
-    Locus(String chr, int start, int end) {
-        this.chr = chr;
-        this.start = start;
-        this.end = end;
+        Locus(String chr, int start, int end) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+        }
+
     }
-
-}
 
 
     static Locus getLocus(String searchString) {

@@ -30,6 +30,8 @@ import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
@@ -67,7 +69,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JComboBox chromosomeComboBox;
     private JComboBox genomeComboBox;
     //private JPanel geneListPanel;
-   // private JideButton geneListLabel;
+    // private JideButton geneListLabel;
     private JideButton goButton;
     private JideButton homeButton;
     private JPanel locationPanel;
@@ -122,7 +124,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     /**
-     * Method description
+     * This method is called once on startup
      *
      * @param monitor
      * @throws FileNotFoundException
@@ -383,9 +385,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     void updateChromosomeDropdown() {
 
-        List<String> tmp = new LinkedList(GenomeManager.getInstance().getChromosomeNames());
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (genome == null) return;
+
+        List<String> tmp = new LinkedList(genome.getChromosomeNames());
         if (tmp.size() > 1) {
-            String homeChr = GenomeManager.getInstance().getHomeChr();
+            String homeChr = genome.getHomeChromosome();
             if (homeChr.equals(Globals.CHR_ALL)) {
                 tmp.add(Globals.CHR_ALL);
             }
@@ -395,7 +400,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         Font font = chromosomeComboBox.getFont();
         FontMetrics fontMetrics = chromosomeComboBox.getFontMetrics(font);
 
-        int fontSize = font.getSize();
         int w = DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
         for (String chromosomeName : tmp) {
             Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName,
@@ -464,12 +468,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
 
     }
-
-
-    public String getSearchText() {
-        return searchTextField.getText();
-    }
-
 
     private ReferenceFrame getDefaultReferenceFrame() {
         return FrameManager.getDefaultFrame();
@@ -1106,16 +1104,19 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
-            owner.setGeneList("None");
+            owner.setGeneList(null);
         }
-        String chr = GenomeManager.getInstance().getHomeChr();
-        getDefaultReferenceFrame().setChromosomeName(chr);
-        IGVMainFrame.getInstance().getSession().getHistory().push(chr);
-        chromosomeComboBox.setSelectedItem(chr);
-        updateCurrentCoordinates();
-        owner.chromosomeChangeEvent();
-        owner.repaint();
+        if (genome != null) {
+            String chr = genome.getHomeChromosome();
+            getDefaultReferenceFrame().setChromosomeName(chr);
+            IGVMainFrame.getInstance().getSession().getHistory().push(chr);
+            chromosomeComboBox.setSelectedItem(chr);
+            updateCurrentCoordinates();
+            owner.chromosomeChangeEvent();
+            owner.repaint();
+        }
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1124,15 +1125,18 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
-        javax.swing.JComboBox combobox = ((javax.swing.JComboBox) evt.getSource());
+        JComboBox combobox = (JComboBox) evt.getSource();
         String chromosomeName = (String) combobox.getSelectedItem();
-        if (chromosomeName != null && !chromosomeName.equals(getDefaultReferenceFrame().getChrName())) {
-            getDefaultReferenceFrame().setChromosomeName(chromosomeName);
-            getDefaultReferenceFrame().recordHistory();
-            updateCurrentCoordinates();
-            owner.chromosomeChangeEvent();
-            owner.repaint();
-            PreferenceManager.getInstance().setLastChromosomeViewed(chromosomeName);
+        if (chromosomeName != null) {
+
+            if (!chromosomeName.equals(getDefaultReferenceFrame().getChrName())) {
+                getDefaultReferenceFrame().setChromosomeName(chromosomeName);
+                getDefaultReferenceFrame().recordHistory();
+                updateCurrentCoordinates();
+                owner.chromosomeChangeEvent();
+                owner.repaint();
+                PreferenceManager.getInstance().setLastChromosomeViewed(chromosomeName);
+            }
         }
     }
 

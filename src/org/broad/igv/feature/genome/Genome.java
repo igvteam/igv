@@ -61,65 +61,16 @@ public class Genome {
 
     public Genome(String id) {
         this.id = id;
-        createAliasTable();
         initAnnotationURL();
+        chrAliasTable = new HashMap();
     }
 
-    /**
-     * A temporary implementation until this is supported in the genome descriptor file
-     */
-    static Set<String> ucscGenomes = new HashSet(Arrays.asList("hg16", "hg17", "hg18", "hg19", "mm7",
-            "mm8", "mm9", "sacCer1", "sacCer2", "ce6", "canFam2", "monDom5"));
 
     private void initAnnotationURL() {
         if (id != null) {
-            if (ucscGenomes.contains(id)) {
-                annotationURL = "http://genome.ucsc.edu/cgi-bin/hgGene?hgg_gene=$$&db=" + id;
-            }
-        }
-    }
-
-
-    /**
-     * Create the alias table
-     * TODO -- this should be part of the genome definition file
-     */
-    private void createAliasTable() {
-
-        if (chrAliasTable == null) {
-            chrAliasTable = new HashMap(100);
-        }
-
-        if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
-            chrAliasTable.put("23", "chrX");
-            chrAliasTable.put("24", "chrY");
-            chrAliasTable.put("chr23", "chrX");
-            chrAliasTable.put("chr24", "chrY");
-            chrAliasTable.put("MT", "chrM");
-
-            chrAliasTable.put("chr26", "chrM");
-            chrAliasTable.put("M", "chrM");
-            chrAliasTable.put("26", "chrM");
-            chrAliasTable.put("chrMT", "chrM");
-
-        } else if (id.startsWith("mm")) {
-            chrAliasTable.put("21", "chrX");
-            chrAliasTable.put("22", "chrY");
-            chrAliasTable.put("chr21", "chrX");
-            chrAliasTable.put("chr22", "chrY");
-            chrAliasTable.put("MT", "chrM");
-        } else if (id.equals("b37")) {
-            chrAliasTable.put("chrM", "MT");
-            chrAliasTable.put("chrX", "23");
-            chrAliasTable.put("chrY", "24");
-
-            chrAliasTable.put("M", "MT");
-            chrAliasTable.put("chrMT", "MT");
-            chrAliasTable.put("26", "MT");
-            chrAliasTable.put("chr26", "MT");
-
-
-
+            //if (ucscGenomes.contains(id)) {
+            //    annotationURL = "http://genome.ucsc.edu/cgi-bin/hgGene?hgg_gene=$$&db=" + id;
+            //}
         }
     }
 
@@ -182,19 +133,37 @@ public class Genome {
         if (!chromosomesAreOrdered) {
             Collections.sort(chromosomeNames, new ChromosomeComparator());
         }
-        // Update the chromosome alias table with common variations -- don't do for genomes with large #s of scallfolds
-        if (chromosomeNames.size() < 1000) {
-            if (chrAliasTable == null) {
-                chrAliasTable = new HashMap();
+
+        // Update the chromosome alias table with common variations
+        for (String name : chromosomeNames) {
+            if (name.endsWith(".fa")) {
+                // Illumina aligner output
+                String alias = name.substring(0, name.length() - 3);
+                chrAliasTable.put(alias, name);
             }
-            for (String name : chromosomeNames) {
-                if (name.startsWith("chr") || name.startsWith("Chr")) {
-                    chrAliasTable.put(name.substring(3), name);
-                } else {
-                    chrAliasTable.put("chr" + name, name);
-                }
+            if (name.startsWith("gi|")) {
+                // NCBI
+                String alias = getNCBIName(name);
+                chrAliasTable.put(alias, name);
+                Chromosome chromosome = chromosomeMap.get(name);
+            } else if (name.toLowerCase().startsWith("chr")) {
+                // UCSC
+                chrAliasTable.put(name.substring(3), name);
+            } else {
+                chrAliasTable.put("chr" + name, name);
             }
         }
+
+    }
+
+    /**
+     * Extract the user friendly name from an NCBI accession
+     * example: gi|125745044|ref|NC_002229.3|  =>  NC_002229.3
+     */
+    public static String getNCBIName(String name) {
+
+        String[] tokens = name.split("\\|");
+        return tokens[tokens.length - 1];
     }
 
 
