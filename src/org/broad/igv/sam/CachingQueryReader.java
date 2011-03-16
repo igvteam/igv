@@ -76,6 +76,8 @@ public class CachingQueryReader {
     private AlignmentQueryReader reader;
     private boolean cancel = false;
     private LRUCache<Integer, AlignmentTile> cache;
+    private boolean pairedEnd = false;
+
 
     public CachingQueryReader(AlignmentQueryReader reader) {
         this.reader = reader;
@@ -235,6 +237,7 @@ public class CachingQueryReader {
 
                 String readName = record.getReadName();
                 if (record.isPaired()) {
+                    pairedEnd = true;
                     if (record.isMapped()) {
                         if (!record.getMate().isMapped()) {
                             // record is mapped, mate is not
@@ -374,6 +377,13 @@ public class CachingQueryReader {
 
     public void clearCache() {
         if (cache != null) cache.clear();
+    }
+
+    /**
+     * Does this file contain paired end data?  Assume not until proven otherwise.
+     */
+    public boolean isPairedEnd() {
+        return pairedEnd;
     }
 
     public class TiledIterator implements CloseableIterator<Alignment> {

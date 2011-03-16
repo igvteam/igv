@@ -328,9 +328,6 @@ public class Session {
         }
     }
 
-    public  String getGeneListName() {
-        return getCurrentGeneList() == null ? "" : getCurrentGeneList().getName();
-    }
 
 static class Locus {
     String chr;

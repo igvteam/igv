@@ -299,10 +299,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     /**
      * Copy the contents of the popup text to the system clipboard.
      */
-    public void copyToClipboard(final TrackClickEvent e) {
-        double location = e.getFrame().getChromosomePosition(e.getMouseEvent().getX());
-        double displayLocation = location + 1;
-        Alignment alignment = this.getAlignmentAt(displayLocation, e.getMouseEvent().getY(), e.getFrame());
+    public void copyToClipboard(final TrackClickEvent e, Alignment alignment, double location) {
 
         if (alignment != null) {
             StringBuffer buf = new StringBuffer();
@@ -321,12 +318,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     /**
      * Jump to the mate region
      */
-    public void gotoMate(final TrackClickEvent te) {
+    public void gotoMate(final TrackClickEvent te, Alignment alignment) {
 
-        MouseEvent e = te.getMouseEvent();
-        double location = te.getFrame().getChromosomePosition(e.getX());
-        double displayLocation = location + 1;
-        Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), te.getFrame());
 
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
@@ -343,12 +336,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
      * Split the screen so the current view and mate region are side by side.  Need a better
      * name for this method.
      */
-    public void splitScreenMate(final TrackClickEvent te) {
-
-        MouseEvent e = te.getMouseEvent();
-        double location = te.getFrame().getChromosomePosition(e.getX());
-        double displayLocation = location + 1;
-        Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), te.getFrame());
+    public void splitScreenMate(final TrackClickEvent te, Alignment alignment) {
 
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
@@ -372,15 +360,21 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
 
+                List<String> loci = null;
                 if (FrameManager.isGeneListMode()) {
-                    currentSession.addGene(mateLocus);
-                    currentSession.getCurrentGeneList().sortByPosition();
+                    loci = new ArrayList(currentSession.getCurrentGeneList().getLoci());
+                    loci.add(mateLocus);
                 } else {
-                    String listName = locus1 + " <-> " + mateLocus;
-                    GeneList geneList = new GeneList(listName, Arrays.asList(locus1, mateLocus));
-                    geneList.sortByPosition();
-                    currentSession.setCurrentGeneList(geneList);
+                    loci = Arrays.asList(locus1, mateLocus);
                 }
+                GeneList.sortByPosition(loci);
+                StringBuffer listName = new StringBuffer();
+                for (String s : loci) {
+                    listName.append(s + "   ");
+                }
+
+                GeneList geneList = new GeneList(listName.toString(), loci, false);
+                currentSession.setCurrentGeneList(geneList);
                 IGVMainFrame.getInstance().resetFrames();
 
             }
@@ -548,8 +542,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         addShadeCentersMenuItem(popupMenu);
 
         popupMenu.addSeparator();
-        addViewAsPairsMenuItem(popupMenu, e);
-        addGoToMate(popupMenu, e);
+        if (dataManager.isPairedEnd()) {
+            addViewAsPairsMenuItem(popupMenu, e);
+            addGoToMate(popupMenu, e);
+        }
         showMateRegion(popupMenu, e);
         addShowAllBasesMenuItem(popupMenu);
         addInsertSizeMenuItem(popupMenu);
@@ -614,6 +610,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m1);
 
         JMenuItem m2 = new JMenuItem("by strand");
         m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -624,6 +621,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m2);
 
         JMenuItem m3 = new JMenuItem("by base");
         m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -635,6 +633,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m3);
 
         JMenuItem m4 = new JMenuItem("by mapping quality");
         m4.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -646,6 +645,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m4);
+
 
         JMenuItem m5 = new JMenuItem("by sample");
         m5.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -657,6 +658,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m5);
 
         JMenuItem m6 = new JMenuItem("by read group");
         m6.addActionListener(new TrackMenuUtils.TrackActionListener() {
@@ -668,17 +670,21 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             }
         });
+        item.add(m6);
 
-        JMenuItem m7 = new JMenuItem("by insert size");
-        m7.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        if (dataManager.isPairedEnd()) {
+            JMenuItem m7 = new JMenuItem("by insert size");
+            m7.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
-            public void action() {
+                public void action() {
 
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
-                refresh();
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
+                    refresh();
 
-            }
-        });
+                }
+            });
+            item.add(m7);
+        }
 
 
         if (frame != null && frame.getScale() >= MIN_ALIGNMENT_SPACING) {
@@ -686,13 +692,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
 
 
-        item.add(m1);
-        item.add(m2);
-        item.add(m3);
-        item.add(m4);
-        item.add(m5);
-        item.add(m6);
-        item.add(m7);
         menu.add(item);
     }
 
@@ -704,27 +703,33 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public void addColorByMenuItem(JPopupMenu menu) {
         // Change track height by attribute
-        JMenu item = new JMenu("Color alignments");
+        JMenu colorMenu = new JMenu("Color alignments");
 
         ButtonGroup group = new ButtonGroup();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
-        m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
-        m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                setColorOption(ColorOption.INSERT_SIZE);
-                refresh();
-            }
-        });
+        if (dataManager.isPairedEnd()) {
+            JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
+            m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
+            m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
+                public void action() {
+                    setColorOption(ColorOption.INSERT_SIZE);
+                    refresh();
+                }
+            });
+            colorMenu.add(m1);
+            group.add(m1);
 
-        JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
-        m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
-        m1a.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                setColorOption(ColorOption.PAIR_ORIENTATION);
-                refresh();
-            }
-        });
+            JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
+            m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
+            m1a.addActionListener(new TrackMenuUtils.TrackActionListener() {
+                public void action() {
+                    setColorOption(ColorOption.PAIR_ORIENTATION);
+                    refresh();
+                }
+            });
+            colorMenu.add(m1a);
+            group.add(m1a);
+        }
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("by read strand");
         m2.setSelected(colorByOption == ColorOption.READ_STRAND);
@@ -734,6 +739,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 refresh();
             }
         });
+        colorMenu.add(m2);
+        group.add(m2);
 
         JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
         m4.setSelected(colorByOption == ColorOption.READ_GROUP);
@@ -743,6 +750,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 refresh();
             }
         });
+        colorMenu.add(m4);
+        group.add(m4);
 
         JRadioButtonMenuItem m5 = new JRadioButtonMenuItem("by sample");
         m5.setSelected(colorByOption == ColorOption.SAMPLE);
@@ -752,18 +761,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 refresh();
             }
         });
-
-        item.add(m1);
-        item.add(m1a);
-        item.add(m2);
-        item.add(m5);
-        item.add(m4);
-        group.add(m1);
-        group.add(m1a);
-        group.add(m2);
+        colorMenu.add(m5);
         group.add(m5);
-        group.add(m4);
-        menu.add(item);
+
+
+        menu.add(colorMenu);
 
     }
 
@@ -790,21 +792,20 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addCopyToClipboardItem(JPopupMenu menu, final TrackClickEvent te) {
 
         final MouseEvent me = te.getMouseEvent();
+        final double location = te.getFrame().getChromosomePosition(me.getX());
+        double displayLocation = location + 1;
+        final Alignment alignment = getAlignmentAt(displayLocation, me.getY(), te.getFrame());
 
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Copy read details to clipboard");
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
 
             public void action() {
-                UIUtilities.invokeOnEventThread(new Runnable() {
+                copyToClipboard(te, alignment, location);
 
-                    public void run() {
-                        copyToClipboard(te);
-                    }
-                });
             }
         });
-        if (te.getFrame() == null || te.getFrame().getScale() >= MIN_ALIGNMENT_SPACING) {
+        if (te.getFrame() == null || alignment == null) {
             item.setEnabled(false);
         }
 
@@ -817,28 +818,28 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.setSelected(dataManager.isLoadAsPairs());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                UIUtilities.invokeOnEventThread(new Runnable() {
 
-                    public void run() {
-                        dataManager.setLoadAsPairs(item.isSelected());
-                        refresh();
-                    }
-                });
+                dataManager.setLoadAsPairs(item.isSelected());
+                refresh();
+
             }
         });
-
         menu.add(item);
     }
 
     public void addGoToMate(JPopupMenu menu, final TrackClickEvent te) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Go to mate");
+        MouseEvent e = te.getMouseEvent();
+        double location = te.getFrame().getChromosomePosition(e.getX());
+        double displayLocation = location + 1;
+        final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                gotoMate(te);
+                gotoMate(te, alignment);
             }
         });
-        if (te.getFrame() == null) {
+        if (te.getFrame() == null || alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
             item.setEnabled(false);
         }
         menu.add(item);
@@ -848,12 +849,17 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void showMateRegion(JPopupMenu menu, final TrackClickEvent te) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("View mate region in split screen");
+        MouseEvent e = te.getMouseEvent();
+        double location = te.getFrame().getChromosomePosition(e.getX());
+        double displayLocation = location + 1;
+        final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
+
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                splitScreenMate(te);
+                splitScreenMate(te, alignment);
             }
         });
-        if (te.getFrame() == null) {
+        if (te.getFrame() == null || alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
             item.setEnabled(false);
         }
         menu.add(item);
@@ -934,8 +940,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         });
 
-
-        menu.add(item);
+        if (dataManager.isPairedEnd()) {
+            menu.add(item);
+        }
     }
 
     private void refresh() {

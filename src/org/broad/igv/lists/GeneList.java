@@ -37,6 +37,7 @@ public class GeneList {
     private String name;
     private String description;
     private List<String> loci;
+    private boolean showName = true;
     private static Comparator<String> POSITION_COMPARTOR;
 
     public GeneList(String name, String description, String group, List<String> loci) {
@@ -52,12 +53,24 @@ public class GeneList {
         this.loci = loci;
     }
 
+    public GeneList(String name, List<String> loci, boolean showName) {
+        this.group = GeneListManager.DEFAULT_GROUP;
+        this.name = name;
+        this.loci = loci;
+        this.showName = showName;
+    }
+
     public GeneList() {
         this.group = GeneListManager.DEFAULT_GROUP;
     }
 
     public String getName() {
         return name;
+    }
+
+
+    public String getDisplayName() {
+        return showName ? name : "";
     }
 
     public List<String> getLoci() {
@@ -115,7 +128,7 @@ public class GeneList {
     /**
      * Sort loci by "position".  This only sorts loci of the form chr1:100-200.
      */
-    public void sortByPosition() {
+    public static void sortByPosition(List<String> loci) {
         if (POSITION_COMPARTOR == null) initComparator();
 
         Collections.sort(loci, POSITION_COMPARTOR);

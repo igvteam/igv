@@ -50,7 +50,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
 
 
     public PanAndZoomTool(DataPanel owner) {
-        super(owner, IGVMainFrame.handCursor);    // Cursor.getDefaultCursor());
+        super(owner, Cursor.getDefaultCursor());
         this.dragCursor = IGVMainFrame.fistCursor;
         setName("Zoom");
     }

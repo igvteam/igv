@@ -58,6 +58,8 @@ public class AlignmentDataManager {
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
     private int maxLevels;
+
+
     private boolean loadAsPairs = false;
     private static final int MAX_ROWS = 1000000;
     Map<String, PEStats> peStats;
@@ -100,6 +102,9 @@ public class AlignmentDataManager {
         return peStats;
     }
 
+    public boolean isPairedEnd() {
+        return reader.isPairedEnd();
+    }
 
     public boolean hasIndex() {
         return reader.hasIndex();

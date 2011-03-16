@@ -20,6 +20,7 @@
 package org.broad.igv.ui.panel;
 
 
+import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGVMainFrame;
 
 import javax.swing.*;
@@ -74,7 +75,9 @@ public class HeaderPanelContainer extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
 
         if(FrameManager.isGeneListMode()) {
-            JLabel label = new JLabel(IGVMainFrame.getInstance().getSession().getGeneListName(), JLabel.CENTER);
+            GeneList gl = IGVMainFrame.getInstance().getSession().getCurrentGeneList();
+            String name = gl.getDisplayName();
+            JLabel label = new JLabel(name, JLabel.CENTER);
             Border border = BorderFactory.createLineBorder(Color.lightGray);
             label.setBorder(border);
             add(label, BorderLayout.NORTH);
