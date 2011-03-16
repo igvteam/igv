@@ -94,7 +94,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
     private static IGVMainFrame theInstance;
 
     // Cursors
-    public static Cursor handCursor;
+    //public static Cursor handCursor;
     public static Cursor fistCursor;
     public static Cursor zoomInCursor;
     public static Cursor zoomOutCursor;
@@ -1762,7 +1762,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     private void createHandCursor() throws HeadlessException, IndexOutOfBoundsException {
-        if (handCursor == null) {
+        /*if (handCursor == null) {
             BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
 
             // Make backgroun transparent
@@ -1775,7 +1775,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             g = handImage.createGraphics();
             g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.OPEN_HAND).getImage(), 0, 0, null);
             handCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
-        }
+        }*/
 
         if (fistCursor == null) {
             BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
@@ -2221,11 +2221,29 @@ public class IGVMainFrame extends javax.swing.JFrame {
                     ProgressBar.showProgressDialog(IGVMainFrame.this, "Initializing Genome...", monitor, false);
             monitor.fireProgressChange(10);
 
-            // Load the last genome and chromosome
-            String genomeId = PreferenceManager.getInstance().getDefaultGenome();
-            if (genomeId == null) {
-                genomeId = GenomeManager.getInstance().getTopGenomeListItem().getId();
+            // Optional arguments
+            if (igvArgs.getPropertyFile() != null) {
+
             }
+            if (igvArgs.getDataServerURL() != null) {
+                PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
+            }
+            if (igvArgs.getGenomeServerURL() != null) {
+                PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
+            }
+
+
+            String genomeId = igvArgs.getGenomeId();
+
+            if(genomeId == null) {
+                if(igvArgs.getGenomeServerURL() != null) {
+                    genomeId = GenomeManager.getInstance().getTopGenomeListItem().getId();
+                }
+                else {
+                    genomeId = PreferenceManager.getInstance().getDefaultGenome();
+                }
+            }
+
             setGenomeId(genomeId);
             monitor.fireProgressChange(50);
 
@@ -2243,17 +2261,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             // Done
             closeWindow(progressBar);
-
-            // Optional arguments
-            if (igvArgs.getPropertyFile() != null) {
-
-            }
-            if (igvArgs.getDataServerURL() != null) {
-                PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
-            }
-            if (igvArgs.getGenomeServerURL() != null) {
-                PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
-            }
 
             // Start up a port listener.  Port # can be overriden with "-p" command line switch
             boolean portEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED);
