@@ -288,6 +288,8 @@ public class IgvTools {
                 String bamFileList = nonOptionArgs[2];
                 String queryInterval = nonOptionArgs[3];
                 LaneCounter.run(genome, bamFileList, queryInterval);
+            } else if(command.equals("sumwigs")) {
+                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             }
             else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
@@ -297,6 +299,18 @@ public class IgvTools {
         } catch (IOException e) {
             throw new PreprocessingException("Unexpected IO error: ", e);
         }
+    }
+
+    private void sumWigs(String inputString, String outputString) throws IOException {
+
+        String [] tokens = inputString.split(",");
+        List<File> in = new ArrayList();
+        for(String f : tokens) {
+            in.add(new File(f));
+        }
+        File out = new File(outputString);
+        WigSummer.sumWigs(in, out);
+
     }
 
     private void doGCTtoIGV(String ifile, File ofile, String probefile, String genomeId, int maxRecords, String tmpDirName) throws IOException {

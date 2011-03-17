@@ -214,6 +214,7 @@ public class IGVHttpUtils {
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 String encodedUserPwd = base64Encode(proxySettings.user + ":" + proxySettings.pw);
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+                conn.setReadTimeout(60000);
             }
             return conn;
         } else {
