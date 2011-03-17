@@ -75,6 +75,7 @@ public class CoverageCounter {
     private int totalCount = 0;
     private File wigFile = null;
     private WigWriter wigWriter = null;
+    private boolean keepZeroes = false;
     private Genome genome;
 
     private String readGroup; // The read group to count
@@ -128,11 +129,11 @@ public class CoverageCounter {
                     String[] tmp = opt.split(":");
                     readGroup = tmp[1];
                 } else if (opt.startsWith("q")) {
-                    String [] tmp = opt.split("@");
+                    String[] tmp = opt.split("@");
                     interval = tmp[1];
                 } else if (opt.startsWith("i")) {
-                    writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize, false));
-                    writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize, false));
+                    writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize));
+                    writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize));
 
                     // Optionally specify mean and std dev (todo -- just specify min and max)
                     String[] tokens = opt.split(":");
@@ -161,18 +162,20 @@ public class CoverageCounter {
                     }
 
                 } else if (opt.equals("o")) {
-                    writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize, false));
-                    writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize, false));
+                    writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize));
+                    writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize));
                 } else if (opt.equals("m")) {
-                    writers.put(Event.mismatch, new WigWriter(new File(getFilenameBase() + ".mismatch.wig"), windowSize, false));
+                    writers.put(Event.mismatch, new WigWriter(new File(getFilenameBase() + ".mismatch.wig"), windowSize));
                 } else if (opt.equals("d")) {
-                    writers.put(Event.indel, new WigWriter(new File(getFilenameBase() + ".indel.wig"), windowSize, false));
+                    writers.put(Event.indel, new WigWriter(new File(getFilenameBase() + ".indel.wig"), windowSize));
                 } else if (opt.equals("u")) {
-                    writers.put(Event.unmappedMate, new WigWriter(new File(getFilenameBase() + ".nomate.wig"), windowSize, false));
+                    writers.put(Event.unmappedMate, new WigWriter(new File(getFilenameBase() + ".nomate.wig"), windowSize));
                 } else if (opt.equals("r")) {
-                    writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize, false));
+                    writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize));
                 } else if (opt.equals("h")) {
                     coverageHistogram = new Distribution(200);
+                } else if (opt.equals("a")) {
+                    keepZeroes = true;
                 } else {
                     System.out.println("Unknown coverage option: " + opt);
                 }
@@ -219,7 +222,7 @@ public class CoverageCounter {
         try {
 
             if (wigFile != null) {
-                wigWriter = new WigWriter(wigFile, windowSize, false);
+                wigWriter = new WigWriter(wigFile, windowSize);
             }
 
 
@@ -757,17 +760,14 @@ public class CoverageCounter {
         int step;
         int span;
         PrintWriter pw;
-        boolean keepZeroes = false;
 
-        WigWriter(File file, int step, boolean keepZeroes) throws IOException {
-            this.keepZeroes = keepZeroes;
+        WigWriter(File file, int step) throws IOException {
             this.step = step;
             this.span = step;
             pw = new PrintWriter(new FileWriter(file));
         }
 
-        WigWriter(File file, int step, boolean keepZeroes, Event event) throws IOException {
-            this.keepZeroes = keepZeroes;
+        WigWriter(File file, int step,Event event) throws IOException {
             this.step = step;
             this.span = step;
             pw = new PrintWriter(new FileWriter(file));

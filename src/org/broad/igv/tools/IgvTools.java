@@ -188,6 +188,9 @@ public class IgvTools {
             if (command.equals("version")) {
                 System.out.println("Version " + version);
                 return;
+            } else if(command.equals("sumwigs")) {
+                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
+                return;
             }
 
             // All remaining commands require an input file, and most need the file extension.  Do that here.
@@ -261,12 +264,12 @@ public class IgvTools {
                 String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                 doGCTtoIGV(ifile, new File(ofile), probeFile, genomeId, maxRecords, tmpDirName);
             } else if (command.equals("formatexp")) {
-                validateArgsLength(nonOptionArgs, 2);
+                validateArgsLength(nonOptionArgs, 3);
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
             } else if (command.equals("wigtobed")) {
-                validateArgsLength(nonOptionArgs, 1);
+                validateArgsLength(nonOptionArgs, 2);
                 String inputFile = nonOptionArgs[1];
                 float hetThreshold = 0.17f;
                 if(nonOptionArgs.length > 2) {
@@ -278,7 +281,7 @@ public class IgvTools {
                 }
                 WigToBed.run(inputFile, hetThreshold, homThreshold);
             } else if (command.equals("vcftobed")) {
-                validateArgsLength(nonOptionArgs, 2);
+                validateArgsLength(nonOptionArgs, 3);
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
@@ -288,8 +291,6 @@ public class IgvTools {
                 String bamFileList = nonOptionArgs[2];
                 String queryInterval = nonOptionArgs[3];
                 LaneCounter.run(genome, bamFileList, queryInterval);
-            } else if(command.equals("sumwigs")) {
-                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             }
             else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);

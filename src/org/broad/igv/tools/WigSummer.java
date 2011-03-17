@@ -71,7 +71,7 @@ public class WigSummer {
                 float v = Float.parseFloat(tokens[1]);
 
                 for (int i = 1; i < in.length; i++) {
-                    tmp = in[1].readLine();
+                    tmp = in[i].readLine();
                     tokens = tmp.split("\t");
                     int p = Integer.parseInt(tokens[0]);
 
