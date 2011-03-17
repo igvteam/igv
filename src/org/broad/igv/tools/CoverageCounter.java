@@ -31,6 +31,7 @@ import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.MergedAlignmentReader;
+import org.broad.igv.sam.reader.MergedAlignmentReader2;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.util.stats.Distribution;

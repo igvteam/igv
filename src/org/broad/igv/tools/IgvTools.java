@@ -110,6 +110,8 @@ public class IgvTools {
 
 
         RollingFileAppender appender = new RollingFileAppender();
+        PatternLayout layout = new PatternLayout();
+        layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
         appender.setName("R");
         appender.setFile("igv.log");
         appender.setThreshold(Level.ALL);
@@ -117,10 +119,11 @@ public class IgvTools {
         appender.setMaxBackupIndex(1);
         appender.setAppend(true);
         appender.activateOptions();
+        appender.setLayout(layout);
         Logger.getRootLogger().addAppender(appender);
 
         Globals.setHeadless(true);
- 
+
         (new IgvTools()).run(argv);
     }
 
@@ -303,7 +306,7 @@ public class IgvTools {
                 LaneCounter.run(genome, bamFileList, queryInterval);
             } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            }else {
+            } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
@@ -455,7 +458,7 @@ public class IgvTools {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
 
-         // Multiple files allowed for count command (a tdf and a wig)
+        // Multiple files allowed for count command (a tdf and a wig)
         File tdfFile = null;
         File wigFile = null;
         String[] files = ofile.split(",");
