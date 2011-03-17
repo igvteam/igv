@@ -30,6 +30,7 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.util.stats.Distribution;
@@ -226,7 +227,7 @@ public class CoverageCounter {
             }
 
 
-            reader = SamQueryReaderFactory.getReader(alignmentFile, false);
+            reader = getReader(alignmentFile, false);
             if (interval == null) {
                 iter = reader.iterator();
             } else {
@@ -408,6 +409,23 @@ public class CoverageCounter {
                 }
             }
         }
+    }
+
+    private AlignmentQueryReader getReader(String alignmentFile, boolean b) throws IOException {
+
+        boolean isList = alignmentFile.indexOf(",") > 0;
+        if(isList) {
+           String [] tokens = alignmentFile.split(",");
+            List<AlignmentQueryReader> readers = new ArrayList(tokens.length);
+            for(String f : tokens) {
+                readers.add(SamQueryReaderFactory.getReader(f, b));
+            }
+            return new MergedAlignmentReader(readers);
+        }
+        else {
+            return SamQueryReaderFactory.getReader(alignmentFile, b);
+        }
+
     }
 
     class ReadCounter {

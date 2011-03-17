@@ -347,10 +347,6 @@ public class Preprocessor implements DataConsumer {
         this.nZoom = nZoom;
     }
 
-    public int getSizeEstimate() {
-        return sizeEstimate;
-    }
-
 
     /**
      * Class representing a tile of raw (as opposed to summarized) data.
@@ -491,8 +487,8 @@ public class Preprocessor implements DataConsumer {
             }
 
             // Update progress -- assume uniform distribution
-            if (statusMonitor != null) {
-                int p = (int) ((100.0 * nPtsProcessed) / (1.5 * getSizeEstimate()));
+            if (statusMonitor != null && sizeEstimate > 0) {
+                int p = (int) ((100.0 * nPtsProcessed) / (1.5 * sizeEstimate));
                 if (p > percentComplete) {
                     percentComplete = p;
                     statusMonitor.setPercentComplete(percentComplete);
@@ -731,7 +727,7 @@ public class Preprocessor implements DataConsumer {
 
 
 
-        setSizeEstimate((int) (genome.getLength() / windowSizeValue));
+        this.sizeEstimate = ((int) (genome.getLength() / windowSizeValue));
         aParser.parse();
     }
 

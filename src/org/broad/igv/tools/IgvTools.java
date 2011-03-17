@@ -25,6 +25,7 @@ package org.broad.igv.tools;
 
 
 import jargs.gnu.CmdLineParser;
+import org.apache.log4j.*;
 import org.broad.igv.Globals;
 import org.broad.igv.data.seg.SegmentedDataWriter;
 import org.broad.igv.feature.GFFParser;
@@ -107,8 +108,19 @@ public class IgvTools {
      */
     public static void main(String[] argv) throws IOException, PreprocessingException {
 
-        Globals.setHeadless(true);
 
+        RollingFileAppender appender = new RollingFileAppender();
+        appender.setName("R");
+        appender.setFile("igv.log");
+        appender.setThreshold(Level.ALL);
+        appender.setMaxFileSize("10KB");
+        appender.setMaxBackupIndex(1);
+        appender.setAppend(true);
+        appender.activateOptions();
+        Logger.getRootLogger().addAppender(appender);
+
+        Globals.setHeadless(true);
+ 
         (new IgvTools()).run(argv);
     }
 
@@ -188,15 +200,13 @@ public class IgvTools {
             if (command.equals("version")) {
                 System.out.println("Version " + version);
                 return;
-            } else if(command.equals("sumwigs")) {
-                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-                return;
             }
 
             // All remaining commands require an input file, and most need the file extension.  Do that here.
             validateArgsLength(nonOptionArgs, 2);
             String ifile = nonOptionArgs[1];
-            if (!(new File(ifile)).exists()) {
+            boolean isList = ifile.indexOf(",") > 0;
+            if (!isList && !(new File(ifile)).exists()) {
                 throw new PreprocessingException("File not found: " + ifile);
             }
 
@@ -272,11 +282,11 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 2);
                 String inputFile = nonOptionArgs[1];
                 float hetThreshold = 0.17f;
-                if(nonOptionArgs.length > 2) {
+                if (nonOptionArgs.length > 2) {
                     hetThreshold = Float.parseFloat(nonOptionArgs[2]);
                 }
                 float homThreshold = 0.55f;
-                if(nonOptionArgs.length > 3) {
+                if (nonOptionArgs.length > 3) {
                     homThreshold = Float.parseFloat(nonOptionArgs[3]);
                 }
                 WigToBed.run(inputFile, hetThreshold, homThreshold);
@@ -285,14 +295,15 @@ public class IgvTools {
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
-            } else if(command.equals("lanecounter")) {
+            } else if (command.equals("lanecounter")) {
                 validateArgsLength(nonOptionArgs, 3);
                 Genome genome = loadGenome(nonOptionArgs[1]);
                 String bamFileList = nonOptionArgs[2];
                 String queryInterval = nonOptionArgs[3];
                 LaneCounter.run(genome, bamFileList, queryInterval);
-            }
-            else {
+            } else if (command.equals("sumwigs")) {
+                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
+            }else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
@@ -304,9 +315,9 @@ public class IgvTools {
 
     private void sumWigs(String inputString, String outputString) throws IOException {
 
-        String [] tokens = inputString.split(",");
+        String[] tokens = inputString.split(",");
         List<File> in = new ArrayList();
-        for(String f : tokens) {
+        for (String f : tokens) {
             in.add(new File(f));
         }
         File out = new File(outputString);
@@ -443,9 +454,8 @@ public class IgvTools {
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
-        int nLines = ParsingUtils.estimateLineCount(ifile);
 
-        // Multiple files allowed for count command (a tdf and a wig)
+         // Multiple files allowed for count command (a tdf and a wig)
         File tdfFile = null;
         File wigFile = null;
         String[] files = ofile.split(",");
@@ -466,7 +476,7 @@ public class IgvTools {
             tdfFile = new File(tdfFile.getAbsolutePath() + ".tdf");
         }
 
-        Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, nLines, null);
+        Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
         p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt);
         p.finish();
 
