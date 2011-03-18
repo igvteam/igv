@@ -477,9 +477,8 @@ public class CachingQueryReader {
          */
         //private int lastStart = -1;
         //private int bucketCount = 0;
-        private HashMap<String, Alignment> currentBucket;
-        private List<Alignment> pairedBucket;
-        private Set<String> unmappedPairs;
+        private List<Alignment> currentBucket;
+        private Set<String> pairedReadNames;
 
         private static final Random RAND = new Random(System.currentTimeMillis());
 
@@ -497,9 +496,8 @@ public class CachingQueryReader {
 
             // TODO -- compute this value from the data
             //maxBucketSize = (maxDepth / 10) + 1;
-            currentBucket = new HashMap(5 * maxDepth);
-            pairedBucket = new ArrayList(maxDepth);
-            unmappedPairs = new HashSet(5 * maxDepth);
+            currentBucket = new ArrayList((int) (1.5 * maxDepth));
+            pairedReadNames = new HashSet(5 * maxDepth);
         }
 
         public int getTileNumber() {
@@ -526,22 +524,8 @@ public class CachingQueryReader {
                 depthCount++;
             }
 
-            final String readName = record.getReadName();
-            if (unmappedPairs.contains(readName)) {
-                pairedBucket.add(record);
-                unmappedPairs.remove(readName);
-            } else {
-                if (currentBucket.containsKey(readName)) {
-                    PairedAlignment pa = new PairedAlignment(currentBucket.get(readName));
-                    pa.setSecondAlignment(record);
-                    currentBucket.put(readName, pa);
-                } else {
-                    currentBucket.put(readName, record);
-                }
-
-            }
+            currentBucket.add(record);
             counts.incCounts(record);
-
 
         }
 
@@ -558,7 +542,6 @@ public class CachingQueryReader {
                     overlappingRecords.add(alignment);
                 }
             }
-            pairedBucket.clear();
             currentBucket.clear();
         }
 
@@ -570,38 +553,43 @@ public class CachingQueryReader {
          */
         private List<Alignment> sampleCurrentBucket() {
 
-            List sampledList = new ArrayList(maxDepth);
 
-            sampledList.addAll(pairedBucket);
-
-            if (pairedBucket.size() + 2 * currentBucket.size() < maxDepth) {
-                sampledList.addAll(currentBucket.values());
+            if (currentBucket.size() < maxDepth) {
+                return currentBucket;
             } else {
+                List<Alignment> sampledList = new ArrayList(maxDepth);
 
-                ArrayList<Alignment> currentBucketList = new ArrayList(currentBucket.values());
-                while (sampledList.size() < maxDepth && currentBucketList.size() > 0) {
-                    Alignment a = currentBucketList.remove(RAND.nextInt(currentBucketList.size()));
-                    if (a instanceof PairedAlignment) {
-                        sampledList.add(((PairedAlignment) a).getFirstAlignment());
-                        sampledList.add(((PairedAlignment) a).getSecondAlignment());
-                    } else {
-                        if (a.isPaired() && a.isProperPair()) {
-                            unmappedPairs.add(a.getReadName());
-                        }
+                // First pull out any mates of reads already kept
+                List<Alignment> mates = new ArrayList(maxDepth);
+                for (Alignment a : currentBucket) {
+                    if (pairedReadNames.contains(a.getReadName())) {
                         sampledList.add(a);
                     }
                 }
-            }
 
+                while (sampledList.size() < maxDepth && currentBucket.size() > 0) {
+                    Alignment a = currentBucket.remove(RAND.nextInt(currentBucket.size()));
+                    if (pairedReadNames.contains(a.getReadName())) {
+                        continue; // <== already added
+                    } else {
+                        if (a.isPaired() && a.getMate().isMapped()) {
+                            pairedReadNames.add(a.getReadName());
+                        }
+                    }
+                    sampledList.add(a);
 
-            Collections.sort(sampledList, new Comparator<Alignment>() {
-                public int compare(Alignment alignment, Alignment alignment1) {
-                    return alignment.getStart() - alignment1.getStart();
                 }
-            });
 
-            return sampledList;
+                // Since we added in 2 passes we need to sort
+                Collections.sort(sampledList, new Comparator<Alignment>() {
+                    public int compare(Alignment alignment, Alignment alignment1) {
+                        return alignment.getStart() - alignment1.getStart();
+                    }
+                });
 
+                return sampledList;
+
+            }
         }
 
 
@@ -623,9 +611,8 @@ public class CachingQueryReader {
 
             // Empty any remaining alignments in the current bucket
             emptyBucket();
-            unmappedPairs = null;
             currentBucket = null;
-            pairedBucket = null;
+            pairedReadNames = null;
 
         }
 
