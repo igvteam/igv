@@ -424,6 +424,7 @@ public class CoverageCounter {
             return new MergedAlignmentReader(readers);
         }
         else {
+            //File f
             return SamQueryReaderFactory.getReader(alignmentFile, b);
         }
 

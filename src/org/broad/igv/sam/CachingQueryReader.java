@@ -219,11 +219,11 @@ public class CachingQueryReader {
         //log.debug("Loading : " + start + " - " + end);
         int alignmentCount = 0;
         try {
-            //activeReaders.add(this);
-            iter = reader.query(chr, start, end, false);
-
             Map<String, Alignment> mappedMates = new HashMap(1000);
             Map<String, Alignment> unmappedMates = new HashMap(1000);
+
+            activeReaders.add(new WeakReference(this));
+            iter = reader.query(chr, start, end, false);
 
             int tileSize = getTileSize(chr);
             while (iter != null && iter.hasNext()) {
@@ -234,7 +234,7 @@ public class CachingQueryReader {
 
                 Alignment record = iter.next();
 
-
+                // Set mate seqeunce of unmapped mates
                 String readName = record.getReadName();
                 if (record.isPaired()) {
                     pairedEnd = true;
@@ -458,168 +458,182 @@ public class CachingQueryReader {
      * and coverage deptgh D we do not need to store more than D/L alignments at any given start position.
      */
 
+    //
+
     public static class AlignmentTile {
 
-        private boolean loaded = false;
-        private List<Alignment> containedRecords;
-        private int end;
-        private List<Alignment> overlappingRecords;
-        private int start;
-        private int tileNumber;
-        private AlignmentCounts counts;
+         private boolean loaded = false;
+         private List<Alignment> containedRecords;
+         private int end;
+         private List<Alignment> overlappingRecords;
+         private int start;
+         private int tileNumber;
+         private AlignmentCounts counts;
 
-        int maxDepth;
-        int e1;
-        int depthCount;
+         int maxDepth;
+         int e1;
+         //int depthCount;
 
-        /**
-         * Maximum # of alignments to load with a given start position
-         */
-        //private int lastStart = -1;
-        //private int bucketCount = 0;
-        private List<Alignment> currentBucket;
-        private Set<String> pairedReadNames;
+         private Map<String, Alignment> currentBucket;
+         private Map<String, Alignment> currentMates;
+         private Set<String> pairedReadNames;
 
-        private static final Random RAND = new Random(System.currentTimeMillis());
+         private static final Random RAND = new Random(System.currentTimeMillis());
 
-        AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth) {
-            this.tileNumber = tileNumber;
-            this.start = start;
-            this.end = end;
-            containedRecords = new ArrayList(16000);
-            overlappingRecords = new ArrayList();
-            this.counts = new AlignmentCounts(chr, start, end);
+         AlignmentTile(String chr, int tileNumber, int start, int end, int maxDepth) {
+             this.tileNumber = tileNumber;
+             this.start = start;
+             this.end = end;
+             containedRecords = new ArrayList(16000);
+             overlappingRecords = new ArrayList();
+             this.counts = new AlignmentCounts(chr, start, end);
 
-            this.maxDepth = maxDepth;
-            e1 = -1;
-            depthCount = 0;
+             this.maxDepth = maxDepth;
+             e1 = -1;
+             currentBucket = new HashMap((int) (3 * maxDepth));
+             currentMates = new HashMap((int) (3 * maxDepth));
+             pairedReadNames = new HashSet(5 * maxDepth);
+         }
 
-            // TODO -- compute this value from the data
-            //maxBucketSize = (maxDepth / 10) + 1;
-            currentBucket = new ArrayList((int) (1.5 * maxDepth));
-            pairedReadNames = new HashSet(5 * maxDepth);
-        }
-
-        public int getTileNumber() {
-            return tileNumber;
-        }
+         public int getTileNumber() {
+             return tileNumber;
+         }
 
 
-        public int getStart() {
-            return start;
-        }
+         public int getStart() {
+             return start;
+         }
 
-        public void setStart(int start) {
-            this.start = start;
-        }
-
-
-        public void addRecord(Alignment record) {
-            if (record.getStart() > e1) {
-                emptyBucket();
-                e1 = record.getEnd();
-                depthCount = 0;
-            } else {
-                e1 = Math.min(e1, record.getEnd());
-                depthCount++;
-            }
-
-            currentBucket.add(record);
-            counts.incCounts(record);
-
-        }
+         public void setStart(int start) {
+             this.start = start;
+         }
 
 
-        private void emptyBucket() {
+         public void addRecord(Alignment record) {
+             if (record.getStart() > e1) {
+                 emptyBucket();
+                 e1 = record.getEnd();
+             } else {
+                 e1 = Math.min(e1, record.getEnd());
+             }
 
-            List<Alignment> sampledRecords = sampleCurrentBucket();
-            for (Alignment alignment : sampledRecords) {
-                int aStart = alignment.getAlignmentStart();
-                int aEnd = alignment.getEnd();
-                if ((aStart >= start) && (aStart < end)) {
-                    containedRecords.add(alignment);
-                } else if ((aEnd >= start) && (aStart < start)) {
-                    overlappingRecords.add(alignment);
-                }
-            }
-            currentBucket.clear();
-        }
+             final String readName = record.getReadName();
+             if (!currentBucket.containsKey(readName)) {
+                 currentBucket.put(readName, record);
+             } else {
+                 if (record.isMapped()) {
+                     currentMates.put(readName, record);
+                 } else {
+                     currentBucket.get(readName).setMateSequence(record.getReadSequence());
+                 }
+             }
+             counts.incCounts(record);
 
-
-        /**
-         * Sample the current bucket of alignments to achieve the desired depth.
-         *
-         * @return
-         */
-        private List<Alignment> sampleCurrentBucket() {
-
-
-            if (currentBucket.size() < maxDepth) {
-                return currentBucket;
-            } else {
-                List<Alignment> sampledList = new ArrayList(maxDepth);
-
-                // First pull out any mates of reads already kept
-                List<Alignment> mates = new ArrayList(maxDepth);
-                for (Alignment a : currentBucket) {
-                    if (pairedReadNames.contains(a.getReadName())) {
-                        sampledList.add(a);
-                    }
-                }
-
-                while (sampledList.size() < maxDepth && currentBucket.size() > 0) {
-                    Alignment a = currentBucket.remove(RAND.nextInt(currentBucket.size()));
-                    if (pairedReadNames.contains(a.getReadName())) {
-                        continue; // <== already added
-                    } else {
-                        if (a.isPaired() && a.getMate().isMapped()) {
-                            pairedReadNames.add(a.getReadName());
-                        }
-                    }
-                    sampledList.add(a);
-
-                }
-
-                // Since we added in 2 passes we need to sort
-                Collections.sort(sampledList, new Comparator<Alignment>() {
-                    public int compare(Alignment alignment, Alignment alignment1) {
-                        return alignment.getStart() - alignment1.getStart();
-                    }
-                });
-
-                return sampledList;
-
-            }
-        }
+         }
 
 
-        public List<Alignment> getContainedRecords() {
-            return containedRecords;
-        }
+         private void emptyBucket() {
+
+             List<Alignment> sampledRecords = sampleCurrentBucket();
+             for (Alignment alignment : sampledRecords) {
+                 int aStart = alignment.getAlignmentStart();
+                 int aEnd = alignment.getEnd();
+                 if ((aStart >= start) && (aStart < end)) {
+                     containedRecords.add(alignment);
+                 } else if ((aEnd >= start) && (aStart < start)) {
+                     overlappingRecords.add(alignment);
+                 }
+             }
+             currentBucket.clear();
+             currentMates.clear();
+         }
 
 
-        public List<Alignment> getOverlappingRecords() {
-            return overlappingRecords;
-        }
+         /**
+          * Sample the current bucket of alignments to achieve the desired depth.
+          *
+          * @return
+          */
+         private List<Alignment> sampleCurrentBucket() {
 
-        public boolean isLoaded() {
-            return loaded;
-        }
+             List<Alignment> sampledList = new ArrayList(maxDepth);
+             if (currentBucket.size() + currentMates.size() < maxDepth) {
+                 sampledList.addAll(currentBucket.values());
+                 sampledList.addAll(currentMates.values());
+             } else {
 
-        public void setLoaded(boolean loaded) {
-            this.loaded = loaded;
+                 // First pull out any mates of reads sampled from previous buckets
+                 List<String> added = new ArrayList(pairedReadNames.size());
+                 for (String readName : pairedReadNames) {
+                     if (currentBucket.containsKey(readName)) {
+                         sampledList.add(currentBucket.get(readName));
+                         currentBucket.remove(readName);
+                         added.add(readName);
+                     }
+                 }
+                 pairedReadNames.removeAll(added);
 
-            // Empty any remaining alignments in the current bucket
-            emptyBucket();
-            currentBucket = null;
-            pairedReadNames = null;
+                 List<String> keys = new ArrayList(currentBucket.keySet());
+                 while (sampledList.size() < maxDepth && keys.size() > 0) {
 
-        }
+                     // Remove a random alignment from the bucket.
+                     String key = keys.remove(RAND.nextInt(keys.size()));
+                     Alignment a = currentBucket.remove(key);
+                     sampledList.add(a);
 
-        public AlignmentCounts getCounts() {
-            return counts;
-        }
-    }
+                     // If this alignment is paired,  add its mate to the list, or if its mate is not present
+                     // in this bucket record the read name.
+                     if (a.isPaired() && a.getMate().isMapped()) {
+                         Alignment m = currentMates.remove(key);
+                         if (m != null) {
+                             sampledList.add(m);
+                         } else {
+                             pairedReadNames.add(key);
+                         }
+                     }
+                 }
+
+
+                 // Since we added in 2 passes we need to sort
+                 Collections.sort(sampledList, new Comparator<Alignment>() {
+                     public int compare(Alignment alignment, Alignment alignment1) {
+                         return alignment.getStart() - alignment1.getStart();
+                     }
+                 });
+             }
+             return sampledList;
+         }
+
+
+         public List<Alignment> getContainedRecords() {
+             return containedRecords;
+         }
+
+
+         public List<Alignment> getOverlappingRecords() {
+             return overlappingRecords;
+         }
+
+         public boolean isLoaded() {
+             return loaded;
+         }
+
+         public void setLoaded(boolean loaded) {
+             this.loaded = loaded;
+
+             if (loaded) {
+                 // Empty any remaining alignments in the current bucket
+                 emptyBucket();
+                 currentBucket = null;
+                 currentMates = null;
+                 pairedReadNames = null;
+             }
+         }
+
+         public AlignmentCounts getCounts() {
+             return counts;
+         }
+     }
 
 
 }

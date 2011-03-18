@@ -255,10 +255,10 @@ public class AlignmentPacker {
                 alignmentRows.add(currentRow);
             }
 
-            if (alignmentRows.size() >= maxLevels) {
-                currentRow = null;
-                break;
-            }
+            //if (alignmentRows.size() >= maxLevels) {
+            //    currentRow = null;
+            //    break;
+            //}
 
             currentRow = new Row();
             nextStart = start;
