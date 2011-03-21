@@ -138,7 +138,7 @@ public class FilterTracksMenuAction extends MenuAction {
         }
 
         // Update the state of the current tracks
-        mainFrame.updateTrackState();
+        mainFrame.doRefresh();
 
     }
 

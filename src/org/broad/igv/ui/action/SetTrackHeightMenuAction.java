@@ -115,7 +115,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
 
                 // Update the state of the current tracks for drawing purposes
 
-                mainFrame.updateTrackState();
+                mainFrame.doRefresh();
             }
             mainFrame.resetStatusMessage();
         }

@@ -382,7 +382,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
         // ignored
     }
 
@@ -570,7 +570,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         tmp.add(this);
         popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
 
-        popupMenu.add(TrackMenuUtils.getExpandCollapseItem(tmp));
+        TrackMenuUtils.addDisplayModeItems(tmp, popupMenu);
 
         popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmp));
 

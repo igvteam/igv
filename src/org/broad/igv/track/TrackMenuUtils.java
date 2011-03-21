@@ -46,7 +46,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -299,7 +298,7 @@ public class TrackMenuUtils {
     private static void addFeatureItems(JPopupMenu featurePopupMenu, final Collection<Track> tracks, TrackClickEvent te) {
 
 
-        featurePopupMenu.add(getExpandCollapseItem(tracks));
+        addDisplayModeItems(tracks, featurePopupMenu);
 
         featurePopupMenu.add(getChangeFontSizeItem(tracks));
 
@@ -376,7 +375,7 @@ public class TrackMenuUtils {
 
     private static void changeStatType(String statType, Collection<Track> selectedTracks) {
         for (Track track : selectedTracks) {
-            track.setStatType(WindowFunction.valueOf(statType));
+            track.setWindowFunction(WindowFunction.valueOf(statType));
         }
         refresh();
     }
@@ -573,33 +572,82 @@ public class TrackMenuUtils {
     }
 
 
-    public static JMenuItem getExpandCollapseItem(final Collection<Track> tracks) {
+    public static void addDisplayModeItems(final Collection<Track> tracks, JPopupMenu menu) {
 
-        // If any tracks are expanded show the "Collapse" option, otherwise expand
-        boolean expanded = false;
+        // Find "most representative" state from track collection
+        int expCount = 0;
+        int sqCount = 0;
+        int collCount = 0;
         for (Track track : tracks) {
-            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-                expanded = true;
-                break;
+            switch (track.getDisplayMode()) {
+                case EXPANDED:
+                    expCount++;
+                    break;
+                case SQUISHED:
+                    sqCount++;
+                    break;
+                case COLLAPSED:
+                    collCount++;
+                    break;
             }
         }
-
-        // Show Multi-Level Features
-        String text = expanded ? "Collapse Track" : "Expand Track";
-        if (tracks.size() > 1) {
-            text += "s";
+        Track.DisplayMode currentMode = null;
+        if (expCount > sqCount && expCount > collCount) {
+            currentMode = Track.DisplayMode.EXPANDED;
+        } else if (sqCount > expCount && sqCount > collCount) {
+            currentMode = Track.DisplayMode.SQUISHED;
+        } else {
+            currentMode = Track.DisplayMode.COLLAPSED;
         }
-        JMenuItem item = new JMenuItem(text);
-        item.addActionListener(new TrackActionListener() {
 
+        ButtonGroup group = new ButtonGroup();
+
+
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Expand");
+        m1.setSelected(currentMode == Track.DisplayMode.EXPANDED);
+        m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                toggleExpandedState(tracks);
-                IGVMainFrame.getInstance().doRefresh();
+                setTrackDisplayMode(tracks, Track.DisplayMode.EXPANDED);
+                refresh();
             }
         });
 
-        return item;
+        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squish");
+        m2.setSelected(currentMode == Track.DisplayMode.SQUISHED);
+        m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
+            public void action() {
+                setTrackDisplayMode(tracks, Track.DisplayMode.SQUISHED);
+                refresh();
+            }
+        });
+
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Collapse");
+        m3.setSelected(currentMode == Track.DisplayMode.COLLAPSED);
+        m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
+            public void action() {
+                setTrackDisplayMode(tracks, Track.DisplayMode.COLLAPSED);
+                refresh();
+            }
+        });
+
+        group.add(m1);
+        group.add(m2);
+        group.add(m3);
+        menu.add(m1);
+        menu.add(m2);
+        menu.add(m3);
+
+
     }
+
+
+    private static void setTrackDisplayMode(Collection<Track> tracks, Track.DisplayMode mode) {
+
+        for (Track t : tracks) {
+            t.setDisplayMode(mode);
+        }
+    }
+
 
     public static JMenuItem getRemoveMenuItem(final Collection<Track> selectedTracks) {
 
@@ -638,32 +686,12 @@ public class TrackMenuUtils {
                 }
 
                 IGVMainFrame.getInstance().getTrackManager().removeTracks(selectedTracks);
-                IGVMainFrame.getInstance().updateTrackState();
+                IGVMainFrame.getInstance().doRefresh();
             }
         });
         return item;
     }
 
-    /**
-     * Toggle selected multi-level tracks
-     * if (track instanceof FeatureTrack) {
-     * if (((FeatureTrack) track).getDisplayMode() == Track.DisplayMode.EXPANDED) {
-     * expanded = true;
-     * break;
-     * }
-     * }
-     */
-    public static void toggleExpandedState(final Collection<Track> selectedTracks) {
-
-        for (Track track : selectedTracks) {
-            boolean expanded = track.getDisplayMode() == Track.DisplayMode.EXPANDED;
-            if (!expanded) {
-                track.setDisplayMode(Track.DisplayMode.EXPANDED);
-            } else {
-                track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-            }
-        }
-    }
 
     public static void changeRenderer(final Collection<Track> selectedTracks, Class rendererClass) {
         for (Track track : selectedTracks) {
@@ -912,13 +940,8 @@ public class TrackMenuUtils {
     }
 
     public static void refresh() {
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-
-                IGVMainFrame.getInstance().showLoadedTrackCount();
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
+        IGVMainFrame.getInstance().showLoadedTrackCount();
+        IGVMainFrame.getInstance().doRefresh();
     }
 
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {

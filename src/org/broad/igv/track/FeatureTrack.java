@@ -137,11 +137,12 @@ public class FeatureTrack extends AbstractTrack {
         if (!isVisible()) {
             return 0;
         }
-        return super.getHeight() * Math.max(1, getNumberOfFeatureLevels());
+        int effectiveHeight = getDisplayMode() == DisplayMode.SQUISHED ? super.getHeight() / 2 : super.getHeight();
+        return effectiveHeight * Math.max(1, getNumberOfFeatureLevels());
     }
 
     public int getNumberOfFeatureLevels() {
-        if (getDisplayMode() == DisplayMode.EXPANDED && packedFeaturesMap.size() > 0) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED && packedFeaturesMap.size() > 0) {
             int n = 0;
             for (PackedFeatures pf : packedFeaturesMap.values()) {
                 //dhmay adding null check.  To my mind this shouldn't be necessary, but we're encountering
@@ -404,7 +405,7 @@ public class FeatureTrack extends AbstractTrack {
 
 
         //dhmay adding selection of an expanded feature row
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
             if (levelRects != null) {
                 for (int i = 0; i < levelRects.size(); i++) {
                     Rectangle rect = levelRects.get(i);
@@ -560,7 +561,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderFeatureImpl(RenderContext context, Rectangle inputRect, PackedFeatures packedFeatures) {
-        if (getDisplayMode() == DisplayMode.EXPANDED) {
+        if (getDisplayMode() != DisplayMode.COLLAPSED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
 
@@ -672,7 +673,6 @@ public class FeatureTrack extends AbstractTrack {
 
     @Override
     public void setHeight(int newHeight) {
-
         int levelCount = this.getNumberOfFeatureLevels();
         int newLevelHeight = newHeight;
         if (levelCount > 0)
@@ -681,7 +681,7 @@ public class FeatureTrack extends AbstractTrack {
     }
 
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
         // Ignored for feature tracks
     }
 

@@ -1499,7 +1499,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 } finally {
 
                     // Update the state of the current tracks for drawing purposes
-                    updateTrackState();
+                    doRefresh();
                     resetStatusMessage();
 
                 }
@@ -1899,7 +1899,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             // TODO -- HOLDING THIS STATE ON THE ACTION OBJECT SEEMS BAD
             filterTracksAction.updateTrackFilter();
             // Update the state of the current tracks
-            updateTrackState();
+            doRefresh();
         }
     }
 

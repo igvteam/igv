@@ -64,7 +64,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
         for (TrackPanelScrollPane sp : IGVMainFrame.getInstance().getTrackManager().getTrackPanelScrollPanes()) {
             fitTracksToPanel(sp.getDataPanel());
         }
-        mainFrame.updateTrackState();
+        mainFrame.doRefresh();
 
     }
 

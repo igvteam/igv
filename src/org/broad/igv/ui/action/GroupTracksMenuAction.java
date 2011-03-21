@@ -98,7 +98,7 @@ public class GroupTracksMenuAction extends MenuAction {
             int selIndex = dlg.getSelectedIndex();
             String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
             IGVMainFrame.getInstance().getTrackManager().setGroupByAttribute(selectedAttribute);
-            mainFrame.updateTrackState();
+            mainFrame.doRefresh();
 
         }
 
