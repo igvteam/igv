@@ -61,6 +61,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.vcf.VCFTrack;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -129,8 +130,8 @@ public class TrackLoader {
                 loadRnaiGctFile(locator, newTracks);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks);
-            } else if (typeString.endsWith(".cn") || typeString.endsWith("xcn") || typeString.endsWith("snp") ||
-                    typeString.endsWith(".igv") || typeString.endsWith("loh")) {
+            } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
+                    typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
                 loadIGVFile(locator, newTracks);
             } else if (typeString.endsWith(".mut")) {
                 loadMutFile(locator, newTracks);
@@ -161,7 +162,8 @@ public class TrackLoader {
                 loadIndexdBedFile(locator, newTracks);
             } else if (typeString.endsWith(".omega")) {
                 loadOmegaTrack(locator, newTracks);
-            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) || typeString.endsWith("cpg.txt")) {
+            } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
+                    typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks);
             } else if (typeString.endsWith(".list")) {
                 loadListFile(locator, newTracks);
@@ -458,7 +460,7 @@ public class TrackLoader {
         // Counter for generating ID
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
-        for (String trackName : ds.getDataHeadings()) {
+        for (String trackName : ds.getTrackNames()) {
             Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
             String trackId = path + "_" + trackName;
@@ -487,7 +489,7 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         TrackType type = ds.getType();
-        for (String trackName : ds.getDataHeadings()) {
+        for (String trackName : ds.getTrackNames()) {
 
             Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
@@ -581,9 +583,9 @@ public class TrackLoader {
         }
 
         String path = locator.getPath();
-        boolean multiTrack = ds.getDataHeadings().length > 1;
+        boolean multiTrack = ds.getTrackNames().length > 1;
 
-        for (String heading : ds.getDataHeadings()) {
+        for (String heading : ds.getTrackNames()) {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
@@ -598,6 +600,12 @@ public class TrackLoader {
             track.setTrackProperties(props);
 
             track.setTrackType(ds.getType());
+
+            if (ds.getType() == TrackType.EXPR) {
+                track.setWindowFunction(WindowFunction.none);
+            }
+
+
             newTracks.add(track);
         }
     }
