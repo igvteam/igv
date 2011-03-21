@@ -515,10 +515,11 @@ public class CachingQueryReader {
 
         /**
          * Add an alignment record to this tile.  This record is not neccessarily retained after down-sampling.
+         *
          * @param record
          */
         public void addRecord(Alignment record) {
-          
+
             if (record.getStart() > e1) {
                 emptyBucket();
                 e1 = record.getEnd();
@@ -527,9 +528,11 @@ public class CachingQueryReader {
             }
 
             final String readName = record.getReadName();
-            if (!currentBucket.containsKey(readName)) {
+            if (readName.equals("*")) {
+                overflows.add(record);
+            } else if (!currentBucket.containsKey(readName)) {
                 currentBucket.put(readName, record);
-            } else if(!currentMates.containsKey(readName)){
+            } else if (!currentMates.containsKey(readName)) {
                 currentMates.put(readName, record);
             } else {
                 overflows.add(record);
@@ -603,7 +606,7 @@ public class CachingQueryReader {
                 }
 
                 //If there's still room,  sample the "overflows"
-                while(sampledList.size() < maxDepth && (overflows.size() > 0)) {
+                while (sampledList.size() < maxDepth && (overflows.size() > 0)) {
                     sampledList.add(overflows.remove(RAND.nextInt(overflows.size())));
                 }
 
