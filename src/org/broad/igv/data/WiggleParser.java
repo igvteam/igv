@@ -21,6 +21,7 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
@@ -38,7 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class description
+ * Parser for wiggle and "wiggle-like" formats.
  *
  * @author Enter your name here...
  * @version Enter version here..., 08/10/31
@@ -46,10 +47,14 @@ import java.util.Set;
 public class WiggleParser {
 
     private static Logger log = Logger.getLogger(WiggleParser.class);
+    private int chrColumn = 0;
+    private int startColumn = 1;
+    private int endColumn = 2;
+    private int dataColumn = 3;
 
     private enum Type {
 
-        FIXED, VARIABLE, BED_GRAPH, CPG
+        FIXED, VARIABLE, BED_GRAPH, CPG, EXPR
     }
 
     ;
@@ -92,6 +97,15 @@ public class WiggleParser {
 
         if (locator.getPath().endsWith("CpG.txt")) {
             type = Type.CPG;
+        } else if (locator.getPath().toLowerCase().endsWith(".expr")) {
+            //gene_id	bundle_id	chr	left	right	FPKM	FPKM_conf_lo	FPKM_conf_hi
+            type = Type.EXPR;
+            chrColumn = 2;
+            startColumn = 3;
+            endColumn = 4;
+            dataColumn = 5;
+            startBase = 1;
+            dataset.setType(TrackType.EXPR);
         }
     }
 
@@ -116,7 +130,7 @@ public class WiggleParser {
      */
     public static boolean isWiggle(ResourceLocator file) {
 
-        if (file.getPath().endsWith("CpG.txt")) {
+        if (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr")) {
             return true;
         }
         AsciiLineReader reader = null;
@@ -156,6 +170,10 @@ public class WiggleParser {
 
         try {
             reader = ParsingUtils.openAsciiReader(resourceLocator);
+
+            if (type == type.EXPR) {
+                reader.readLine(); // Skip header line
+            }
 
             int position = -1;
 
@@ -232,10 +250,10 @@ public class WiggleParser {
 
                                 data.add(value);
                             }
-                        } else if (type.equals(Type.BED_GRAPH)) {
+                        } else if (type.equals(Type.BED_GRAPH) || type.equals(Type.EXPR)) {
 
                             if (nTokens > 3) {
-                                chr = tokens[0].trim();
+                                chr = tokens[chrColumn].trim();
                                 if (!chr.equals(lastChr)) {
                                     changedChromosome(dataset, lastChr);
 
@@ -244,11 +262,12 @@ public class WiggleParser {
 
                                 int startPosition = -1;
                                 try {
-                                    startPosition = Integer.parseInt(tokens[1].trim());
+                                    startPosition = Integer.parseInt(tokens[startColumn].trim());
                                 } catch (NumberFormatException numberFormatException) {
-                                    log.error("Column 2  is not a number");
+                                    log.error("Column " + (startColumn + 1) + "  is not a number");
 
-                                    throw new ParserException("Column 2 must be numeric." + " Found: " + tokens[1],
+                                    throw new ParserException("Column (startColumn + 1) must be numeric." + " Found: " +
+                                            tokens[startColumn],
                                             reader.getCurrentLineNumber(), nextLine);
                                 }
 
@@ -261,20 +280,20 @@ public class WiggleParser {
 
 
                                 try {
-                                    int endPosition = Integer.parseInt(tokens[2].trim());
+                                    int endPosition = Integer.parseInt(tokens[endColumn].trim());
                                     endLocations.add(endPosition);
                                     int length = endPosition - startPosition;
                                     updateLongestFeature(length);
                                 }
                                 catch (NumberFormatException numberFormatException) {
-                                    log.error("Column 3  is not a number");
+                                    log.error("Column " + (endColumn + 1) + " is not a number");
 
-                                    throw new ParserException("Column 3 must be numeric." + " Found: " + tokens[2],
+                                    throw new ParserException("Column " + (endColumn + 1) +
+                                            " must be numeric." + " Found: " + tokens[endColumn],
                                             reader.getCurrentLineNumber(), nextLine);
                                 }
 
-
-                                data.add(Float.parseFloat(tokens[3].trim()));
+                                data.add(Float.parseFloat(tokens[dataColumn].trim()));
                             }
                         } else if (type.equals(Type.VARIABLE)) {
                             if (nTokens > 1) {

@@ -101,7 +101,6 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
                 if (iter.hasNext()) {
                     iterators.add(new RecordIterWrapper(iter));
                 }
-                iter.close();
             }
         }
 

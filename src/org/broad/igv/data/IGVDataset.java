@@ -92,10 +92,6 @@ public class IGVDataset implements Dataset {
         }
     }
 
-    public IGVDataset(String genomeId, File file) {
-        this(genomeId, new ResourceLocator(file.getAbsolutePath()));
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -116,14 +112,6 @@ public class IGVDataset implements Dataset {
         return type;
     }
 
-    public void setGenome(String genomeId) {
-        this.genomeId = genomeId;
-    }
-
-    public String getGenome() {
-        return genomeId;
-    }
-
     public String[] getChromosomes() {
         return chromosomeSummaries.keySet().toArray(new String[]{});
     }
@@ -132,7 +120,7 @@ public class IGVDataset implements Dataset {
         this.dataHeadings = dataHeadings;
     }
 
-    public String[] getDataHeadings() {
+    public String[] getTrackNames() {
         return dataHeadings;
     }
 
@@ -149,10 +137,6 @@ public class IGVDataset implements Dataset {
     public String[] getFeatureNames(String chr) {
         ChromosomeData cd = getChromosomeData(chr);
         return cd == null ? null : cd.getProbes();
-    }
-
-    public int getWindowSpan() {
-        return 1;
     }
 
     public float[] getData(String heading, String chr) {

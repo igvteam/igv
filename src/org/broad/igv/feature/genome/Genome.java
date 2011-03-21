@@ -154,6 +154,23 @@ public class Genome {
             }
         }
 
+        // These are legacy mappings,  these are now defined in the genomes alias file
+        if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
+            chrAliasTable.put("23", "chrX");
+            chrAliasTable.put("24", "chrY");
+            chrAliasTable.put("MT", "chrM");
+        } else if (id.startsWith("mm")) {
+            chrAliasTable.put("21", "chrX");
+            chrAliasTable.put("22", "chrY");
+            chrAliasTable.put("MT", "chrM");
+        } else if (id.equals("b37")) {
+            chrAliasTable.put("chrM", "MT");
+            chrAliasTable.put("chrX", "23");
+            chrAliasTable.put("chrY", "24");
+
+        }
+
+
     }
 
     /**

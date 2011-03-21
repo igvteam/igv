@@ -27,25 +27,28 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 
 /**
+ * A dataset is an in-memory representation of a numerical dataset.  It is used for non-indexed data formats that are
+ * read into memory as opposed to read off disk as needed.   The use of objects is eschewed in favor of simple arrays
+ * to minimize memory.  
+ *
+ *
  * @author jrobinso
  */
 public interface Dataset {
-
-    public void setName(String name);
 
     public String getName();
 
     public TrackType getType();
 
-    public String getGenome();
-
+    public TrackProperties getTrackProperties();
+    
     public float getDataMin();
 
     public float getDataMax();
 
     public String[] getChromosomes();
 
-    public String[] getDataHeadings();
+    public String[] getTrackNames();
 
     public int[] getStartLocations(String chr);
 
@@ -53,14 +56,9 @@ public interface Dataset {
 
     public String[] getFeatureNames(String chr);
 
-    public int getWindowSpan();
+    public float[] getData(String trackName, String chr);
 
     public boolean isLogNormalized();
-
-    public float[] getData(String heading, String chr);
-
-    public TrackProperties getTrackProperties();
-
 
     Integer getLongestFeature(String chr);
 }

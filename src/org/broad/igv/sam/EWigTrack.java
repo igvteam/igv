@@ -74,7 +74,7 @@ public class EWigTrack extends AbstractTrack {
         paint(context, rect);
     }
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
     }
 
     public WindowFunction getWindowFunction() {

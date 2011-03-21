@@ -97,7 +97,7 @@ public class DataSourceTrack extends DataTrack {
      * @param statType
      */
     @Override
-    public void setStatType(WindowFunction statType) {
+    public void setWindowFunction(WindowFunction statType) {
         clearCaches();
         dataSource.setWindowFunction(statType);
 

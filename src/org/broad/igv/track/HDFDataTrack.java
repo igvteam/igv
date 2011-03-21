@@ -159,7 +159,7 @@ public class HDFDataTrack extends DataTrack {
      *
      * @param statType
      */
-    public void setStatType(WindowFunction statType) {
+    public void setWindowFunction(WindowFunction statType) {
         dataSource.setWindowFunction(statType);
 
     }

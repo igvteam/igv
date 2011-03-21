@@ -67,7 +67,6 @@ public class IGVDatasetParser {
     String[] tokens;
 
 
-
     private int startBase = 0;
 
     /**
@@ -103,6 +102,17 @@ public class IGVDatasetParser {
             firstDataColumn = 3;
             hasEndLocations = false;
             hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
+        } else if (tmp.endsWith(".expr")) {
+            //gene_id	bundle_id	chr	left	right	FPKM	FPKM_conf_lo	FPKM_conf_hi
+            probeColumn = 0;
+            chrColumn = 2;
+            startColumn = 3;
+            endColumn = 4;
+            startBase = 1;
+            firstDataColumn = 5;
+            lastDataColumn = 5;
+            hasEndLocations = true;
+
         } else {
             // TODO -- popup dialog and ask user to define columns,  and csv vs tsv?
             throw new ParserException("Unknown file type: ", 0);
@@ -197,8 +207,8 @@ public class IGVDatasetParser {
                 nextLine = reader.readLine();
             }
 
-            if(chrColumn < 0) {
-                  setColumnDefaults();
+            if (chrColumn < 0) {
+                setColumnDefaults();
             }
 
 
@@ -207,7 +217,7 @@ public class IGVDatasetParser {
 
             // Set last data column
             if (lastDataColumn < 0) {
-               lastDataColumn = data.length - 1;
+                lastDataColumn = data.length - 1;
             }
 
             headings = getHeadings(data, skipColumns);

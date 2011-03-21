@@ -83,7 +83,7 @@ public class IGVFileLoader extends AbstractLoader implements TrackLoader {
         String path = locator.getPath();
         TrackType type = ds.getType();
 
-        for (String trackName : ds.getDataHeadings()) {
+        for (String trackName : ds.getTrackNames()) {
 
             Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);

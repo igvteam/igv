@@ -14,7 +14,7 @@ import java.io.File;
  *         Date: Feb 11, 2011
  *         Time: 11:47:28 AM
  */
-public class AlignmentFileFilter extends FileFilter {
+public class AlignmentFileFilter extends FileFilter implements java.io.FileFilter {
 
     public boolean accept(File file) {
         String extension = FilenameUtils.getExtension(file.getName());

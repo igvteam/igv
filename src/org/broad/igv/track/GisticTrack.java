@@ -244,7 +244,7 @@ public class GisticTrack extends AbstractTrack {
      *
      * @param type
      */
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
 
         // ignored
     }

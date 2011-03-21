@@ -107,7 +107,7 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
         }
     }
 
-    public String[] getDataHeadings() {
+    public String[] getTrackNames() {
         return columnHeadings;
     }
 
@@ -128,9 +128,6 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
         return startLocationMap.isEmpty();
     }
 
-    public String getGenome() {
-        return genomeId;
-    }
 
     public String[] getChromosomes() {
         return startLocationMap.keySet().toArray(new String[0]);
@@ -164,12 +161,6 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
         }
 
         return endLocationMap.get(chr);
-    }
-
-    // Not relevant to feature datasets
-
-    public int getWindowSpan() {
-        return -1;
     }
 
     public boolean isLogNormalized() {

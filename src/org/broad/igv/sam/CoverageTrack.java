@@ -208,7 +208,7 @@ public class CoverageTrack extends AbstractTrack {
         }
     }
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
     }
 
     public WindowFunction getWindowFunction() {

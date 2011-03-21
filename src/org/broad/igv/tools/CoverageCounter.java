@@ -34,8 +34,11 @@ import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.sam.reader.MergedAlignmentReader2;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
+import org.broad.igv.ui.filefilters.AlignmentFileFilter;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.stats.Distribution;
 import org.broad.tribble.Feature;
+import org.broad.tribble.util.HttpUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -379,6 +382,10 @@ public class CoverageCounter {
             consumer.setAttribute("totalCount", String.valueOf(totalCount));
             consumer.parsingComplete();
 
+            if (iter != null) {
+                iter.close();
+            }
+
             if (reader != null) {
                 try {
                     reader.close();
@@ -387,9 +394,6 @@ public class CoverageCounter {
                 }
             }
 
-            if (iter != null) {
-                iter.close();
-            }
 
             if (wigWriter != null) {
                 wigWriter.close();
@@ -415,16 +419,24 @@ public class CoverageCounter {
     private AlignmentQueryReader getReader(String alignmentFile, boolean b) throws IOException {
 
         boolean isList = alignmentFile.indexOf(",") > 0;
-        if(isList) {
-           String [] tokens = alignmentFile.split(",");
+        if (isList) {
+            String[] tokens = alignmentFile.split(",");
             List<AlignmentQueryReader> readers = new ArrayList(tokens.length);
-            for(String f : tokens) {
+            for (String f : tokens) {
                 readers.add(SamQueryReaderFactory.getReader(f, b));
             }
             return new MergedAlignmentReader(readers);
-        }
-        else {
-            //File f
+        } else {
+            if (!FileUtils.isRemote(alignmentFile)) {
+                File f = new File(alignmentFile);
+                if (f.isDirectory()) {
+                    List<AlignmentQueryReader> readers = new ArrayList();
+                    for (File file : f.listFiles(new AlignmentFileFilter())) {
+                        readers.add(SamQueryReaderFactory.getReader(file.getAbsolutePath(), b));
+                    }
+                    return new MergedAlignmentReader(readers);
+                }
+            }
             return SamQueryReaderFactory.getReader(alignmentFile, b);
         }
 
@@ -672,10 +684,13 @@ public class CoverageCounter {
             //}
 
             int offset = position - start;
-            byte refBase = ref[offset];
-            getBaseCount()[offset]++;
-            if (refBase != base) {
-                mismatchCount += quality;
+            baseCount[offset]++;
+
+            if (ref != null) {
+                byte refBase = ref[offset];
+                if (refBase != base) {
+                    mismatchCount += quality;
+                }
             }
             count++;
             qualityCount += quality;
@@ -787,7 +802,7 @@ public class CoverageCounter {
             pw = new PrintWriter(new FileWriter(file));
         }
 
-        WigWriter(File file, int step,Event event) throws IOException {
+        WigWriter(File file, int step, Event event) throws IOException {
             this.step = step;
             this.span = step;
             pw = new PrintWriter(new FileWriter(file));

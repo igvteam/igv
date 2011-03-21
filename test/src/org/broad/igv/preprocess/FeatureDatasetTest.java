@@ -64,17 +64,10 @@ public class FeatureDatasetTest {
     @Test
     public void getDataHeadings() {
         int expectedSize = 16;
-        String[] headings = dataset.getDataHeadings();
+        String[] headings = dataset.getTrackNames();
         assertEquals(expectedSize, headings.length);
     }
 
-    /**
-     * Test of getGenome method, of class GCTDataset.
-     */
-    @Test
-    public void getGenome() {
-        assertEquals(genome, dataset.getGenome());
-    }
 
     /**
      * Test of getChromosomes method, of class GCTDataset.

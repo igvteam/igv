@@ -758,7 +758,7 @@ public class GWASTrack extends AbstractTrack {
         super(dataResourceLocator, id, name);
     }
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

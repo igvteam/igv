@@ -102,7 +102,7 @@ public interface Track extends Persistable {
 
     public void setAltColor(Color color);
 
-    public void setStatType(WindowFunction type);
+    public void setWindowFunction(WindowFunction type);
 
     public WindowFunction getWindowFunction();
 

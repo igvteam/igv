@@ -556,7 +556,7 @@ public abstract class AbstractTrack implements Track {
             setRendererClass(trackProperties.getRendererClass());
         }
         if (trackProperties.getWindowingFunction() != null) {
-            setStatType(trackProperties.getWindowingFunction());
+            setWindowFunction(trackProperties.getWindowingFunction());
         }
         if (trackProperties.getUrl() != null) {
             setUrl(trackProperties.getUrl());
@@ -767,7 +767,7 @@ public abstract class AbstractTrack implements Track {
 
         // Set window function
         if (windowFunction != null) {
-            setStatType(WindowFunction.getWindowFunction(windowFunction));
+            setWindowFunction(WindowFunction.getWindowFunction(windowFunction));
         }
 
         // Set DataRange
@@ -924,7 +924,7 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
         // Required method for track interface, ignore
     }
 

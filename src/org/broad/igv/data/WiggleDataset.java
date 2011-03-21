@@ -51,6 +51,7 @@ public class WiggleDataset implements Dataset {
     float dataMin = 0;
     float dataMax = 0;
     private Map<String, Integer> longestFeatureMap;
+    private TrackType type = TrackType.OTHER;
 
 
     /**
@@ -181,12 +182,7 @@ public class WiggleDataset implements Dataset {
 
 
     public TrackType getType() {
-        return TrackType.OTHER;
-    }
-
-
-    public String getGenome() {
-        return genome;
+        return type;
     }
 
     public String[] getChromosomes() {
@@ -194,7 +190,7 @@ public class WiggleDataset implements Dataset {
     }
 
 
-    public String[] getDataHeadings() {
+    public String[] getTrackNames() {
         return new String[]{getName()};
     }
 
@@ -230,10 +226,6 @@ public class WiggleDataset implements Dataset {
         return null;
     }
 
-    public int getWindowSpan() {
-        return 1;
-    }
-
     public boolean isLogNormalized() {
         return false;
     }
@@ -253,5 +245,9 @@ public class WiggleDataset implements Dataset {
 
     public void setLongestFeatureMap(Map<String, Integer> longestFeatureMap) {
         this.longestFeatureMap = longestFeatureMap;
+    }
+
+    public void setType(TrackType type) {
+        this.type = type;
     }
 }

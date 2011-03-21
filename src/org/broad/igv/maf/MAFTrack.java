@@ -193,7 +193,7 @@ public class MAFTrack extends AbstractTrack {
 
     }
 
-    public void setStatType(WindowFunction type) {
+    public void setWindowFunction(WindowFunction type) {
         // Ignored
     }
 
