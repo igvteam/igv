@@ -27,16 +27,13 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.stats.KMPlotTest;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.renderer.*;
-import org.broad.igv.ui.DataRangeDialog;
-import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.HeatmapScaleDialog;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -58,7 +55,6 @@ public class TrackMenuUtils {
 
     static Logger log = Logger.getLogger(TrackMenuUtils.class);
     final static String LEADING_HEADING_SPACER = "  ";
-    static Font boldFont = FontManager.getScalableFont(Font.BOLD, 12);
     private static final WindowFunction[] ORDERED_WINDOW_FUNCTIONS = new WindowFunction[]{
             WindowFunction.min,
             WindowFunction.percentile2,
@@ -76,7 +72,7 @@ public class TrackMenuUtils {
         JidePopupMenu menu = new JidePopupMenu();
 
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
-        popupTitle.setFont(boldFont);
+        popupTitle.setFont(UIConstants.boldFont);
         if (popupTitle != null) {
             menu.add(popupTitle);
             menu.addSeparator();
@@ -199,7 +195,7 @@ public class TrackMenuUtils {
         //JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
 
         JLabel rendererHeading = new JLabel(LEADING_HEADING_SPACER + "Type of Graph", JLabel.LEFT);
-        rendererHeading.setFont(boldFont);
+        rendererHeading.setFont(UIConstants.boldFont);
 
         menu.add(rendererHeading);
 
@@ -247,7 +243,7 @@ public class TrackMenuUtils {
 
         if (!avaibleWindowFunctions.isEmpty() || !currentWindowFunctions.isEmpty()) {
             JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
-            statisticsHeading.setFont(boldFont);
+            statisticsHeading.setFont(UIConstants.boldFont);
 
             menu.add(statisticsHeading);
 
@@ -270,7 +266,7 @@ public class TrackMenuUtils {
         }
 
         JLabel scaleHeading = new JLabel(LEADING_HEADING_SPACER + "Data Range", JLabel.LEFT);
-        scaleHeading.setFont(boldFont);
+        scaleHeading.setFont(UIConstants.boldFont);
         menu.add(scaleHeading);
 
         menu.add(getDataRangeItem(tracks));

@@ -106,50 +106,50 @@ public class HeaderPanel extends JPanel implements Transferable {
 
             final MouseAdapter mouseAdapter = new MouseAdapter() {
 
-               boolean isDragging = false;
-               Point mousePressPoint;
+                boolean isDragging = false;
+                Point mousePressPoint;
 
-               @Override
-               public void mouseClicked(MouseEvent mouseEvent) {
-                   if (mouseEvent.getClickCount() > 1) {
-                       IGVMainFrame.getInstance().setDefaultFrame(frame.name);
-                   }
-               }
-
-
-               public void mousePressed(MouseEvent evt) {
-                   if (evt.isPopupTrigger()) {
-                       getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
-                   }
-               }
-
-               @Override
-               public void mouseReleased(MouseEvent evt) {
-
-                   if (evt.isPopupTrigger()) {
-                       getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
-                   }
-                   isDragging = false;
-
-               }
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+                    if (mouseEvent.getClickCount() > 1) {
+                        IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+                    }
+                }
 
 
-               @Override()
-               public void mouseDragged(MouseEvent e) {
+                public void mousePressed(MouseEvent evt) {
+                    if (evt.isPopupTrigger()) {
+                        getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
+                    }
+                }
 
-                   if (isDragging) {
-                       return;
-                   }
+                @Override
+                public void mouseReleased(MouseEvent evt) {
 
-                   isDragging = true;
-                   JComponent c = HeaderPanel.this;
-                   TransferHandler handler = c.getTransferHandler();
-                   if (handler != null) {
-                       handler.exportAsDrag(c, e, TransferHandler.MOVE);
-                   }
+                    if (evt.isPopupTrigger()) {
+                        getPopupMenu(HeaderPanel.this, frame).show(HeaderPanel.this, evt.getX(), evt.getY());
+                    }
+                    isDragging = false;
 
-               }
-           };
+                }
+
+
+                @Override()
+                public void mouseDragged(MouseEvent e) {
+
+                    if (isDragging) {
+                        return;
+                    }
+
+                    isDragging = true;
+                    JComponent c = HeaderPanel.this;
+                    TransferHandler handler = c.getTransferHandler();
+                    if (handler != null) {
+                        handler.exportAsDrag(c, e, TransferHandler.MOVE);
+                    }
+
+                }
+            };
 
             cytobandPanel.addMouseListener(mouseAdapter);
             cytobandPanel.addMouseMotionListener(mouseAdapter);
@@ -207,13 +207,13 @@ public class HeaderPanel extends JPanel implements Transferable {
     // TODO -- this is a partial copy of the RegionOfInterestPanel method.  Refactor to share
 
 
-    protected  JPopupMenu getPopupMenu(final HeaderPanel parent, final ReferenceFrame frame) {
+    protected JPopupMenu getPopupMenu(final HeaderPanel parent, final ReferenceFrame frame) {
 
         int start = (int) frame.getOrigin();
         int end = (int) frame.getEnd();
         final RegionOfInterest roi = new RegionOfInterest(frame.getChrName(), start, end, "");
 
-        JPopupMenu popupMenu = new RegionMenu(roi, frame);
+        JPopupMenu popupMenu = new RegionMenu(roi, frame, frame.getName() + " Panel");
 
 
         // Zoom items
@@ -222,14 +222,14 @@ public class HeaderPanel extends JPanel implements Transferable {
         popupMenu.addSeparator();
         JMenuItem item1 = new JMenuItem("Switch to standard view");
         item1.addActionListener(new ActionListener() {
-             public void actionPerformed(ActionEvent e) {
-                 IGVMainFrame.getInstance().setDefaultFrame(frame.name);
-             }
-         });
+            public void actionPerformed(ActionEvent e) {
+                IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+            }
+        });
         popupMenu.add(item1);
 
         popupMenu.addSeparator();
-        JMenuItem item = new JMenuItem("Remove");
+        JMenuItem item = new JMenuItem("Remove panel");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 parent.removeFrame(frame);

@@ -19,10 +19,12 @@
 
 package org.broad.igv.ui.panel;
 
+import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -33,19 +35,31 @@ import java.util.Set;
  * @author jrobinso
  * @date Sep 18, 2010
  */
-public class RegionMenu extends JPopupMenu {
+public class RegionMenu extends JidePopupMenu {
 
     RegionOfInterest roi;
     ReferenceFrame frame;
 
     public RegionMenu(final RegionOfInterest roi, final ReferenceFrame frame) {
-         
+        this(roi, frame, null);
+    }
+
+    public RegionMenu(final RegionOfInterest roi, final ReferenceFrame frame, String title) {
+
         this.roi = roi;
         this.frame = frame;
 
+        if (title != null) {
+            JLabel heading = new JLabel("   " + title, JLabel.CENTER);
+            heading.setFont(UIConstants.boldFont);
+            add(heading);
+            addSeparator();
+        }
+
+
         Set<TrackType> loadedTypes = IGVMainFrame.getInstance().getTrackManager().getLoadedTypes();
 
-         if (loadedTypes.contains(TrackType.COPY_NUMBER) ||
+        if (loadedTypes.contains(TrackType.COPY_NUMBER) ||
                 loadedTypes.contains(TrackType.ALLELE_SPECIFIC_COPY_NUMBER) ||
                 loadedTypes.contains(TrackType.CNV)) {
             JMenuItem item = new JMenuItem("Sort by amplification");
