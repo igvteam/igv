@@ -70,7 +70,7 @@ public class FrameManager {
             }
         }
         frames.add(defaultFrame);
-
+        defaultFrame.recordHistory();
     }
 
 

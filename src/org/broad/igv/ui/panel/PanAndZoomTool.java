@@ -38,11 +38,11 @@ import java.awt.event.MouseEvent;
 public class PanAndZoomTool extends AbstractDataPanelTool {
 
     private int previousYDirection = 0;    // Drag Directions: 1=up, 0=none 0r -1=down
-    private int lastMousePressedY;
+    //private int lastMousePressedY;
     private int cumulativeDeltaX;
     private int cumulativeDeltaY;
     private Point lastMousePoint;
-    private JViewport viewport;
+    //private JViewport viewport;
     private Container panel;
     private JScrollBar verticalScrollBar;
     private boolean isDragging = false;
@@ -69,7 +69,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
         panel.setCursor(dragCursor);
 
         lastMousePoint = e.getPoint();
-        lastMousePressedY = (int) e.getPoint().getY();
+        //lastMousePressedY = (int) e.getPoint().getY();
         cumulativeDeltaX = 0;
         cumulativeDeltaY = 0;
 
@@ -81,7 +81,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
             if (parentContainer != null) {
                 Container parentOfParent = parentContainer.getParent();
                 if ((parentOfParent != null) && (parentOfParent instanceof JViewport)) {
-                    viewport = (JViewport) parentOfParent;
+                    //viewport = (JViewport) parentOfParent;
                 }
             }
         }
@@ -90,7 +90,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
 
     public void mouseReleased(final MouseEvent e) {
 
-        viewport = null;
+        // viewport = null;
         if (isDragging) {
             getReferenceFame().snapToGrid();
             isDragging = false;
@@ -121,53 +121,48 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
                 cumulativeDeltaX += Math.abs(deltaX);
                 cumulativeDeltaY += Math.abs(deltaY);
 
+
                 // Test for horizontal vs vertical panning.
                 if (cumulativeDeltaX > cumulativeDeltaY) {
 
                     // Horizontal scrolling
                     getReferenceFame().shiftOriginPixels(deltaX);
-                    return;
-                }
+                } else {
+                    // Vertical Scrolling 
+                    int totalYChange = (int) (lastMousePoint.getY() - e.getY());
+                    if (totalYChange != 0) {
 
-                int totalYChange = lastMousePressedY - e.getY();
-
-                // Vertical Scrolling
-                if ((viewport != null) && (totalYChange != 0)) {
-
-                    // This section handles false drag direction changes
-                    int currentYDirection = 0;
-                    try {
+                        // This section handles false drag direction changes
+                        int currentYDirection = 0;
 
                         // Figure out the current drag direction
                         currentYDirection = totalYChange / Math.abs(totalYChange);
+
 
                         // If the previous direction is 0 we were not moving before
                         if (previousYDirection != 0) {
 
                             // See if we changed direction
                             boolean changedYDirection = currentYDirection != previousYDirection;
-                            if (changedYDirection) {
+                            if (!changedYDirection) {
 
                                 // Don't save lastMousePressedPoint because may
                                 // be incorrect (this is the problem we are
                                 // solving with the direction flag) instead
                                 // we'll just check the next drag Point to be
                                 // sure of the correct direction.
-                                return;
+                                previousYDirection = currentYDirection;
+
+                                // If we have a vertical scrollbar use it to move
+                                if (verticalScrollBar != null) {
+                                    int adjustedScrollbarValue = verticalScrollBar.getValue();
+                                    adjustedScrollbarValue += totalYChange;
+                                    verticalScrollBar.setValue(adjustedScrollbarValue);
+                                }
                             }
                         }
-
-                    } finally {
-
-                        // Save the current direction indicator for next time
                         previousYDirection = currentYDirection;
-                    }
 
-                    // If we have a vertical scrollbar use it to move
-                    if (verticalScrollBar != null) {
-                        int adjustedScrollbarValue = verticalScrollBar.getValue();
-                        adjustedScrollbarValue += totalYChange;
-                        verticalScrollBar.setValue(adjustedScrollbarValue);
                     }
                 }
             }
@@ -178,7 +173,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
 
 
     /**
-     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom). 
+     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom).
      *
      * @param e
      */
@@ -204,7 +199,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
             } finally {
                 WaitCursorManager.removeWaitCursor(token);
             }
-        } 
+        }
 
     }
 }

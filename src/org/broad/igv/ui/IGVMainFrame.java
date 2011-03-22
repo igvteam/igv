@@ -1226,6 +1226,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     public void setDefaultFrame(String searchString) {
         FrameManager.setToDefaultFrame(searchString);
+
         resetFrames();
     }
 

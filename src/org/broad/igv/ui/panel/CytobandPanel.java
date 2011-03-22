@@ -170,6 +170,7 @@ public class CytobandPanel extends JPanel {
                     WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                     try {
                         getReferenceFrame().setOrigin(viewOrigin);
+                        getReferenceFrame().recordHistory();
                     } finally {
                         WaitCursorManager.removeWaitCursor(token);
                     }

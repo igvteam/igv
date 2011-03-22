@@ -224,6 +224,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         item1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+
             }
         });
         popupMenu.add(item1);
