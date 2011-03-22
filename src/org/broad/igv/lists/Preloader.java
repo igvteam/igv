@@ -41,7 +41,7 @@ public class Preloader {
     public static synchronized void preload() {
 
         Collection<Track> trackList = IGVMainFrame.getInstance().getTrackManager().getAllTracks(true);
-        int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
+        int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
         String genomeId = GenomeManager.getInstance().getGenomeId();
         for (ReferenceFrame frame : FrameManager.getFrames()) {
             Locus locus = frame.getLocus();
@@ -52,9 +52,8 @@ public class Preloader {
                         if (track instanceof DataTrack) {
                             DataTrack dt = (DataTrack) track;
                             RenderContext context = new RenderContext(genomeId, null, null, frame, null);
-                            // Expand interval by 10%
-                            int start = (int) (0.9 * (Math.max(0, locus.getStart()) - flankingRegion));
-                            int end = (int) (1.1 * (locus.getEnd() + flankingRegion));
+                            int start = Math.max(0, locus.getStart() - flankingRegion);
+                            int end = locus.getEnd() + flankingRegion;
                             dt.load(context, locus.getChr(), start, end, frame.getZoom());
                         }
                     }

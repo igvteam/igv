@@ -67,7 +67,7 @@ public class AbstractDataSourceTest {
 
         TestDataSource ds = new TestDataSource(starts, ends, values);
 
-        SummaryTile tile = ds.computeSummaryTile("chr20", 0, s, e);
+        SummaryTile tile = ds.computeSummaryTile("chr20", 0, s, e, 1);
         List<LocusScore> scores = tile.getScores();
 
         // Scores should be within 10 +/- 0.5,  and the mean should be very close to 10
@@ -87,7 +87,7 @@ public class AbstractDataSourceTest {
 
         TestDataSource ds = new TestDataSource();
 
-        SummaryTile tile = ds.computeSummaryTile("", 0, 0, 10000);
+        SummaryTile tile = ds.computeSummaryTile("", 0, 0, 10000,1 );
 
         List<LocusScore> scores = tile.getScores();
 

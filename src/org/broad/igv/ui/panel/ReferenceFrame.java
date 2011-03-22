@@ -336,7 +336,7 @@ public class ReferenceFrame {
     }
 
     private void imputeZoom(double start, double end) {
-        int z = (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2) + 1;
+        int z = (int) (Math.log(getChromosomeLength() / (end - start)) / Globals.log2);
         if (z != this.zoom) {
             zoom = Math.min(maxZoom, Math.max(minZoom, z));
             nTiles = (int) Math.pow(2, zoom);
