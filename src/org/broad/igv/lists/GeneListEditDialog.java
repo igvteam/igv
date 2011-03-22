@@ -229,7 +229,7 @@ public class GeneListEditDialog extends JDialog {
         geneList.setName(name);
         geneList.setLoci(Arrays.asList(genes));
         geneList.setDescription(descriptionField.getText().trim());
-        GeneListManager.saveGeneList(geneList);
+        GeneListManager.getInstance().saveGeneList(geneList);
     }
 
 

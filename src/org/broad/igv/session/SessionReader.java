@@ -625,7 +625,7 @@ public class SessionReader {
         String txt = element.getTextContent();
         String[] genes = txt.trim().split("\\s+");
         GeneList gl = new GeneList(name, Arrays.asList(genes));
-        GeneListManager.addGeneList(gl);
+        GeneListManager.getInstance().addGeneList(gl);
         session.setCurrentGeneList(gl);
 
         // Adjust frames

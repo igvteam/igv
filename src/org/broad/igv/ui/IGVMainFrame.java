@@ -1187,19 +1187,40 @@ public class IGVMainFrame extends javax.swing.JFrame {
         setGeneList(listID, true);
     }
 
-    public void setGeneList(String listID, boolean recordHistory) {
+    public void setGeneList(final String listID, final boolean recordHistory) {
 
-        if (listID == null) {
-           session.setCurrentGeneList(null);
-        } else {
-            GeneList gl = GeneListManager.getGeneList(listID);
+        //LongRunningTask.submit(new NamedRunnable() {
+        //    public String getName() {
+        //        return "setGeneList";
+        //    }
+        //
+        //    public void run() {
 
-            if (recordHistory) {
-                session.getHistory().push("List: " + listID);
-            }
-            session.setCurrentGeneList(gl);
-        }
-        resetFrames();
+        final CursorToken token = WaitCursorManager.showWaitCursor();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    if (listID == null) {
+                        session.setCurrentGeneList(null);
+                    } else {
+                        GeneList gl = GeneListManager.getInstance().getGeneList(listID);
+
+                        if (recordHistory) {
+                            session.getHistory().push("List: " + listID);
+                        }
+                        session.setCurrentGeneList(gl);
+                    }
+                    resetFrames();
+                } finally {
+                    WaitCursorManager.removeWaitCursor(token);
+
+                }
+             }
+        });
+       //  }
+       // });
+
 
     }
 
@@ -2235,11 +2256,10 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             String genomeId = igvArgs.getGenomeId();
 
-            if(genomeId == null) {
-                if(igvArgs.getGenomeServerURL() != null) {
+            if (genomeId == null) {
+                if (igvArgs.getGenomeServerURL() != null) {
                     genomeId = GenomeManager.getInstance().getTopGenomeListItem().getId();
-                }
-                else {
+                } else {
                     genomeId = PreferenceManager.getInstance().getDefaultGenome();
                 }
             }

@@ -37,43 +37,48 @@ public class GeneListManager {
     private static Logger log = Logger.getLogger(GeneListManager.class);
 
     public static final String[] DEFAULT_GENE_LISTS = {
-            "examples.gmt", /*"biocarta_cancer_cp.gmt",*/  "reactome_cp.gmt", "kegg_cancer_cp.gmt", "mckd1.gmt"};
+            /*"biocarta_cancer_cp.gmt",*/  "reactome_cp.gmt", "kegg_cancer_cp.gmt"};
 
+    public static final String USER_GROUP = "My lists";
 
-    private static LinkedHashSet<String> groups = new LinkedHashSet();
+    private LinkedHashSet<String> groups = new LinkedHashSet();
 
-    private static HashMap<String, File> importedFiles = new HashMap();
+    private HashMap<String, File> importedFiles = new HashMap();
 
-    private static LinkedHashMap<String, GeneList> geneLists = new LinkedHashMap();
-    public static final String DEFAULT_GROUP = "My lists";
+    private LinkedHashMap<String, GeneList> geneLists = new LinkedHashMap();
 
+    static GeneListManager theInstance;
 
-    /**
-     * Static initializer, called once when class is loaded.
-     */
-    static {
+    public static GeneListManager getInstance() {
+        if (theInstance == null) {
+            theInstance = new GeneListManager();
+        }
+        return theInstance;
+    }
+
+    private GeneListManager() {
         loadDefaultLists();
         loadUserLists();
     }
 
 
-    public static GeneList getGeneList(String listID) {
+    public GeneList getGeneList(String listID) {
         return geneLists.get(listID);
     }
 
-    public static LinkedHashMap<String, GeneList> getGeneLists() {
+    public LinkedHashMap<String, GeneList> getGeneLists() {
         return geneLists;
     }
     // Gene lists -- these don't belong here obviously
 
 
-    public static void addGeneList(GeneList genes) {
+    public void addGeneList(GeneList genes) {
         geneLists.put(genes.getName(), genes);
         groups.add(genes.getGroup());
     }
 
 
-    private static void loadDefaultLists() {
+    private void loadDefaultLists() {
 
         for (String geneListFile : DEFAULT_GENE_LISTS) {
             InputStream is = GeneListManager.class.getResourceAsStream(geneListFile);
@@ -93,6 +98,8 @@ public class GeneListManager {
                 }
             } catch (IOException e) {
                 log.error("Error loading default gene lists", e);
+                MessageUtils.showMessage("<html>Error encountered loading gene lists (" + e.toString() + ")" +
+                        "<br/>See log for more details");
             } finally {
                 try {
                     reader.close();
@@ -103,7 +110,7 @@ public class GeneListManager {
         }
     }
 
-    private static void loadUserLists() {
+    private void loadUserLists() {
         File dir = Globals.getGeneListDirectory();
         if (dir.exists()) {
             for (File f : dir.listFiles()) {
@@ -112,20 +119,27 @@ public class GeneListManager {
                         importGMTFile(f);
                     } else {
                         GeneList geneList = loadGRPFile(f);
-                        geneList.setGroup(DEFAULT_GROUP);
+                        geneList.setGroup(USER_GROUP);
                         if (geneList != null) {
                             addGeneList(geneList);
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error("Error loading user gene lists: ", e);
+                    MessageUtils.showMessage("<html>Error encountered loading user gene lists (" + e.toString() + ")" +
+                            "<br/>See log for more details");
                 }
             }
 
         }
+
+        // Add empty group if there are no lists
+        if (!groups.contains(USER_GROUP)) {
+            groups.add(USER_GROUP);
+        }
     }
 
-    static GeneList loadGRPFile(File grpFile) throws IOException {
+    GeneList loadGRPFile(File grpFile) throws IOException {
 
         // First copy file to gene list directory
         File f = grpFile;
@@ -136,7 +150,7 @@ public class GeneListManager {
         }
 
         String name = f.getName();
-        String group = DEFAULT_GROUP;
+        String group = USER_GROUP;
         String description = null;
         List<String> genes = new ArrayList();
         BufferedReader reader = null;
@@ -155,7 +169,7 @@ public class GeneListManager {
                     } else if (nextLine.startsWith("#description")) {
                         String[] tokens = nextLine.split("=");
                         if (tokens.length > 1) {
-                           description = tokens[1];
+                            description = tokens[1];
                         }
 
                     }
@@ -185,7 +199,7 @@ public class GeneListManager {
         return null;
     }
 
-    static void importGMTFile(File gmtFile) throws IOException {
+    void importGMTFile(File gmtFile) throws IOException {
 
         File f = gmtFile;
         File dir = Globals.getGeneListDirectory();
@@ -215,7 +229,7 @@ public class GeneListManager {
         }
     }
 
-    private static List<GeneList> loadGMT(String group, BufferedReader reader) throws IOException {
+    private List<GeneList> loadGMT(String group, BufferedReader reader) throws IOException {
         String nextLine;
         List<GeneList> lists = new ArrayList();
         while ((nextLine = reader.readLine()) != null) {
@@ -242,7 +256,7 @@ public class GeneListManager {
         return lists;
     }
 
-    public static void saveGeneList(GeneList geneList) {
+    public void saveGeneList(GeneList geneList) {
 
         File file = null;
         PrintWriter pw = null;
@@ -296,15 +310,15 @@ public class GeneListManager {
     /**
      * Test to see of group was imported by the user  Needed to determine if group can be removed.
      */
-    public static boolean isImported(String groupName) {
+    public boolean isImported(String groupName) {
         return importedFiles.containsKey(groupName);
     }
 
-    public static LinkedHashSet<String> getGroups() {
+    public LinkedHashSet<String> getGroups() {
         return groups;
     }
 
-    public static void deleteGroup(String selectedGroup) {
+    public void deleteGroup(String selectedGroup) {
         File f = importedFiles.get(selectedGroup);
         if (f.exists()) {
             f.delete();
@@ -326,7 +340,7 @@ public class GeneListManager {
      *
      * @param listName
      */
-    public static boolean deleteList(String listName) {
+    public boolean deleteList(String listName) {
 
 
         File f = importedFiles.get(listName);
@@ -339,15 +353,16 @@ public class GeneListManager {
             String group = geneLists.get(listName).getGroup();
             geneLists.remove(listName);
 
-            // If the group is empty remove it as well
-
-            for (GeneList gl : geneLists.values()) {
-                if (gl.getGroup().equals(group)) {
-                    return false;
+            // If the group is empty remove it as well, except for user group
+            if (!group.equals(USER_GROUP)) {
+                for (GeneList gl : geneLists.values()) {
+                    if (gl.getGroup().equals(group)) {
+                        return false;
+                    }
                 }
+                groups.remove(group);
+                return true;
             }
-            groups.remove(group);
-            return true;
         }
         return false;
     }

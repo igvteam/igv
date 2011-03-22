@@ -66,16 +66,19 @@ public class GeneListManagerUI extends JDialog {
      */
     Map<String, GeneList> geneLists;
     private String selectedList;
+    
+    GeneListManager manager;
 
 
     public GeneListManagerUI(Frame owner) {
         super(owner);
+        manager = GeneListManager.getInstance();
         initComponents();
         initLists();
     }
 
     private void initLists() {
-        geneLists = GeneListManager.getGeneLists();
+        geneLists = manager.getGeneLists();
 
         groupJList.setModel(new AbstractListModel() {
 
@@ -83,8 +86,7 @@ public class GeneListManagerUI extends JDialog {
 
             {
                 groups.add(ALL);
-                groups.add(GeneListManager.DEFAULT_GROUP);
-                groups.addAll(GeneListManager.getGroups());
+                groups.addAll(manager.getGroups());
             }
 
 
@@ -115,7 +117,7 @@ public class GeneListManagerUI extends JDialog {
     private void groupsValueChanged(ListSelectionEvent e) {
         selectedGroup = (String) groupJList.getSelectedValue();
         lastSelectedGroup = selectedGroup;
-        deleteGroupButton.setEnabled(selectedGroup != null && GeneListManager.isImported(selectedGroup));
+        deleteGroupButton.setEnabled(selectedGroup != null && manager.isImported(selectedGroup));
         updateListModel();
     }
 
@@ -131,7 +133,7 @@ public class GeneListManagerUI extends JDialog {
             lociJList.setModel(geneListModel);
             lociJList.updateUI();
 
-            final boolean isImported = GeneListManager.isImported(selectedList);
+            final boolean isImported = manager.isImported(selectedList);
             editButton.setEnabled(isImported);
             deleteButton.setEnabled(isImported);
         }
@@ -197,8 +199,8 @@ public class GeneListManagerUI extends JDialog {
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
-            geneList.setGroup(GeneListManager.DEFAULT_GROUP);
-            GeneListManager.addGeneList(geneList);
+            geneList.setGroup(manager.USER_GROUP);
+            manager.addGeneList(geneList);
             listModel.add(geneList);
             glJList.updateUI();
             glJList.setSelectedValue(geneList.getName(), true);
@@ -228,10 +230,10 @@ public class GeneListManagerUI extends JDialog {
     private void deleteButtonActionPerformed(ActionEvent e) {
         String selection = (String) glJList.getSelectedValue();
         if (selection != null) {
-            if (MessageUtils.confirm("Are you sure you want to delete list '" + selection + "' ?" +
+            if (MessageUtils.confirm("<html>Are you sure you want to delete list '" + selection + "' ?" +
                     "<br>associated lists? &nbsp;<b>This action cannot be undone")) {
 
-                boolean groupRemoved = GeneListManager.deleteList(selection);
+                boolean groupRemoved = manager.deleteList(selection);
                 if (groupRemoved) {
                     initLists();
                 } else {
@@ -252,7 +254,7 @@ public class GeneListManagerUI extends JDialog {
         if (gmtFile != null) {
 
             try {
-                GeneListManager.importGMTFile(gmtFile);
+                manager.importGMTFile(gmtFile);
                 initLists();
             } catch (IOException e1) {
                 MessageUtils.showAndLogErrorMessage(this, "Error importing .gmt file", log, e1);
@@ -266,7 +268,7 @@ public class GeneListManagerUI extends JDialog {
         if (selectedGroup != null && MessageUtils.confirm(this, "<html>Are you sure you want to delete group '" +
                 selectedGroup + "' and all " +
                 "<br>associated lists? &nbsp;<b>This action cannot be undone")) {
-            GeneListManager.deleteGroup(selectedGroup);
+            manager.deleteGroup(selectedGroup);
             initLists();
         }
     }

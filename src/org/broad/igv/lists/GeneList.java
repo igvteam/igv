@@ -48,20 +48,20 @@ public class GeneList {
     }
 
     public GeneList(String name, List<String> loci) {
-        this.group = GeneListManager.DEFAULT_GROUP;
+        this.group = GeneListManager.USER_GROUP;
         this.name = name;
         this.loci = loci;
     }
 
     public GeneList(String name, List<String> loci, boolean showName) {
-        this.group = GeneListManager.DEFAULT_GROUP;
+        this.group = GeneListManager.USER_GROUP;
         this.name = name;
         this.loci = loci;
         this.showName = showName;
     }
 
     public GeneList() {
-        this.group = GeneListManager.DEFAULT_GROUP;
+        this.group = GeneListManager.USER_GROUP;
     }
 
     public String getName() {
