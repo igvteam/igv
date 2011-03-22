@@ -52,7 +52,7 @@ public class CNFreqTrack extends AbstractTrack {
 
         renderer = new BarChartRenderer();
 
-        this.setMinimumHeight(50);
+        this.setMinimumHeight(25);
         this.setHeight(50);
         this.setSortable(false);
 

@@ -23,6 +23,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.IGVMainFrame;
@@ -49,6 +50,11 @@ public class FeatureTrack extends AbstractTrack {
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
+    private static final int DEFAULT_EXPANDED_HEIGHT = 35;
+    private static final int DEFAULT_SQUISHED_HEIGHT = 12;
+
+    private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
+    private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
 
     protected List<Rectangle> levelRects = new ArrayList();
 
@@ -58,7 +64,7 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected Map<String, PackedFeatures<IGVFeature>> packedFeaturesMap = new HashMap();
 
-    private FeatureRenderer renderer =  new IGVFeatureRenderer();
+    private FeatureRenderer renderer = new IGVFeatureRenderer();
 
     private DataRenderer coverageRenderer;
 
@@ -77,6 +83,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Does not initialize with the featuresource
+     *
      * @param id
      * @param name
      */
@@ -110,6 +117,24 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
+
+    @Override
+    public int getHeight() {
+        if (!isVisible()) {
+            return 0;
+        }
+        int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
+        int minHeight = rowHeight * Math.max(1, getNumberOfFeatureLevels());
+        return Math.max(minHeight, super.getHeight());
+    }
+
+
+    @Override
+    public void setHeight(int newHeight) {
+        super.setHeight(newHeight);
+    }
+
+
     public void setRendererClass(Class rc) {
         try {
             renderer = (FeatureRenderer) rc.newInstance();
@@ -118,7 +143,7 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
-    public void setMargin(int margin)  {
+    public void setMargin(int margin) {
         this.margin = margin;
     }
 
@@ -131,14 +156,9 @@ public class FeatureTrack extends AbstractTrack {
 
     }
 
-    @Override
-    public int getHeight() {
 
-        if (!isVisible()) {
-            return 0;
-        }
-        int effectiveHeight = getDisplayMode() == DisplayMode.SQUISHED ? super.getHeight() / 2 : super.getHeight();
-        return effectiveHeight * Math.max(1, getNumberOfFeatureLevels());
+    public void setWindowFunction(WindowFunction type) {
+        // Ignored for feature tracks
     }
 
     public int getNumberOfFeatureLevels() {
@@ -494,6 +514,9 @@ public class FeatureTrack extends AbstractTrack {
             renderCoverage(context, renderRect);
         }
 
+        Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
+        borderGraphics.draw(rect);
+
     }
 
     private void renderCoverage(RenderContext context, Rectangle inputRect) {
@@ -555,7 +578,7 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
 
-       renderFeatureImpl(context, inputRect, packedFeatures);
+        renderFeatureImpl(context, inputRect, packedFeatures);
 
 
     }
@@ -636,7 +659,7 @@ public class FeatureTrack extends AbstractTrack {
                         //This should probably be switched somewhere else, but that would require a big refactor.
                         PackedFeatures pf = null;
                         if (getRenderer() instanceof SpliceJunctionRenderer)
-                            pf = new PackedFeaturesSpliceJunctions(chr, expandedStart, expandedEnd, iter, getName());                            
+                            pf = new PackedFeaturesSpliceJunctions(chr, expandedStart, expandedEnd, iter, getName());
                         else
                             pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
@@ -669,20 +692,6 @@ public class FeatureTrack extends AbstractTrack {
             runnable.run();
         }
 
-    }
-
-    @Override
-    public void setHeight(int newHeight) {
-        int levelCount = this.getNumberOfFeatureLevels();
-        int newLevelHeight = newHeight;
-        if (levelCount > 0)
-            Math.max(getMinimumHeight(), newHeight / levelCount);
-        super.setHeight(newLevelHeight);
-    }
-
-
-    public void setWindowFunction(WindowFunction type) {
-        // Ignored for feature tracks
     }
 
 

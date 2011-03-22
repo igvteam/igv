@@ -28,6 +28,7 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -169,7 +170,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
         List<Track> tmp = new ArrayList(group.getTracks());
         for (Track track : tmp) {
-            if(track == null) continue;
+            if (track == null) continue;
             track.setTop(regionY);
             int trackHeight = track.getHeight();
             if (track.isVisible()) {

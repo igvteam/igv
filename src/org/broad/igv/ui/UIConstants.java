@@ -127,6 +127,7 @@ public class UIConstants {
     final static public String RESET_FACTORY_TOOLTIP =
             "Restores all user preferences to their default settings.";
     public static final String NAVIGATE_REGION_TOOLTIP = "Navigate regions";
+    public static final Color TRACK_BORDER_GRAY = new Color(225, 225, 225);
 
     public static int getDoubleClickInterval() {
 

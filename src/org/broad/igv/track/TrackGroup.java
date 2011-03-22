@@ -319,7 +319,11 @@ public class TrackGroup {
             if (unsortableTracks.size() > 0) {
                 for (Track t : unsortableTracks) {
                     int index = trackIndeces.get(t);
-                    tracks.add(index, t);
+                    if (index < tracks.size()) {
+                        tracks.add(index, t);
+                    } else {
+                        tracks.add(t);
+                    }
                 }
             }
         }

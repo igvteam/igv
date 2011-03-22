@@ -90,8 +90,9 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
 
-        blockHeight = track.getDisplayMode() == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
-        thinBlockHeight = track.getDisplayMode() == Track.DisplayMode.SQUISHED ? THIN_BLOCK_HEIGHT / 2 : THIN_BLOCK_HEIGHT;
+        final Track.DisplayMode displayMode = track.getDisplayMode();
+        blockHeight = displayMode == Track.DisplayMode.SQUISHED ? BLOCK_HEIGHT / 2 : BLOCK_HEIGHT;
+        thinBlockHeight = displayMode == Track.DisplayMode.SQUISHED ? THIN_BLOCK_HEIGHT / 2 : THIN_BLOCK_HEIGHT;
 
         // Clear values
         lastFeatureLineMaxY = 0;
@@ -190,16 +191,16 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 : context.getGraphic2DForColor(Color.WHITE);
 
                         // Draw the directional arrows
-                        drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, arrowGraphics);
+                        drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
 
                         if (hasExons) {
-                            drawExons(feature, pixelYCenter, context, g2D, trackRectangle);
+                            drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode);
                         }
 
                     }
 
                     // Draw name
-                    if (track.getDisplayMode() != Track.DisplayMode.SQUISHED) {
+                    if (displayMode != Track.DisplayMode.SQUISHED) {
                         String name = feature.getName();
                         if (name != null) {
                             LineMetrics lineMetrics = font.getLineMetrics(name, g2D.getFontRenderContext());
@@ -312,7 +313,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     protected void drawExons(IGVFeature gene, int yOffset, RenderContext context,
-                             Graphics2D g2D, Rectangle trackRectangle) {
+                             Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode) {
 
         Graphics exonNumberGraphics = g2D.create();
         exonNumberGraphics.setColor(Color.BLACK);
@@ -376,7 +377,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                 }
 
                 Graphics2D arrowGraphics = context.getGraphic2DForColor(Color.white);
-                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, yOffset, arrowGraphics);
+                drawStrandArrows(gene, pStart + ARROW_SPACING / 2, pEnd, yOffset, mode, arrowGraphics);
 
 
                 if (locationScale < 0.25) {
@@ -394,7 +395,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
     }
 
-    protected void drawStrandArrows(IGVFeature feature, int pixelStart, int pixelEnd, int yOffset, Graphics2D g2D) {
+    protected void drawStrandArrows(IGVFeature feature, int pixelStart, int pixelEnd, int yOffset, Track.DisplayMode mode,
+                                    Graphics2D g2D) {
 
         // Don't draw strand arrows for very small regions
         if ((pixelEnd - pixelStart < 6)) {
@@ -406,6 +408,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         int vEnd = 10000;
 
         // Draw the directional arrows on the feature
+        final int sz = mode == Track.DisplayMode.EXPANDED ? 3 : 2;
         if (feature.getStrand().equals(Strand.POSITIVE)) {
 
             for (int i = pixelEnd; i > pixelStart; i -= ARROW_SPACING) {
@@ -414,8 +417,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     break;
                 }
                 if (i < vEnd) {
-                    g2D.drawLine(i, yOffset, i - 3, yOffset + 3);
-                    g2D.drawLine(i, yOffset, i - 3, yOffset - 3);
+                    g2D.drawLine(i, yOffset, i - sz, yOffset + sz);
+                    g2D.drawLine(i, yOffset, i - sz, yOffset - sz);
                 }
 
             }
@@ -429,8 +432,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     break;
                 }
                 if ((i > vStart) && (i < vEnd)) {
-                    g2D.drawLine(i, yOffset, i + 3, yOffset + 3);
-                    g2D.drawLine(i, yOffset, i + 3, yOffset - 3);
+                    g2D.drawLine(i, yOffset, i + sz, yOffset + sz);
+                    g2D.drawLine(i, yOffset, i + sz, yOffset - sz);
                 }
             }
         }

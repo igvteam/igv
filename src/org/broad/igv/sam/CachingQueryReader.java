@@ -528,9 +528,7 @@ public class CachingQueryReader {
             }
 
             final String readName = record.getReadName();
-            if (readName.equals("*")) {
-                overflows.add(record);
-            } else if (!currentBucket.containsKey(readName)) {
+            if (!currentBucket.containsKey(readName)) {
                 currentBucket.put(readName, record);
             } else if (!currentMates.containsKey(readName)) {
                 currentMates.put(readName, record);

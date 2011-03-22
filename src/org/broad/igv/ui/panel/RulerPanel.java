@@ -35,6 +35,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 
 import javax.swing.*;
@@ -43,9 +44,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso
@@ -85,7 +84,7 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
-        initialize();
+        init();
     }
 
     private boolean isWholeGenomeView() {
@@ -319,9 +318,9 @@ public class RulerPanel extends JPanel {
         }
     }
 
-    private void initialize() {
+    private void init() {
 
-        setBorder(BorderFactory.createLineBorder(new Color(0f, 0f, 0f, 0.2f)));
+        setBorder(BorderFactory.createLineBorder(UIConstants.VERY_LIGHT_GRAY));
 
         setCursor(Cursor.getDefaultCursor());
         if (isWholeGenomeView()) {
