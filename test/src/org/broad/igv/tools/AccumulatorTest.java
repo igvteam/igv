@@ -88,7 +88,7 @@ public class AccumulatorTest {
     public void testAll() {
 
         // Compute stats for 1,000,000 points
-        Accumulator accum = new Accumulator(wfs);
+        ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < numberOfPoints; i++) {
             accum.add((float) Math.random());
         }
@@ -109,7 +109,7 @@ public class AccumulatorTest {
     public void testZeroes() {
 
         // Compute stats for 1,000,000 points
-        Accumulator accum = new Accumulator(wfs);
+        ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < numberOfPoints; i++) {
             accum.add(0);
         }
@@ -130,7 +130,7 @@ public class AccumulatorTest {
     @Test
     public void testEmpty() {
 
-        Accumulator accum = new Accumulator(wfs);
+        ListAccumulator accum = new ListAccumulator(wfs);
 
         accum.finish();
 
@@ -148,7 +148,7 @@ public class AccumulatorTest {
     @Test
     public void testNaN() {
 
-        Accumulator accum = new Accumulator(wfs);
+        ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < 1000; i++) {
             accum.add(Float.NaN);
         }
@@ -169,45 +169,45 @@ public class AccumulatorTest {
     @Test
     public void testChunkSize() {
 
-        Accumulator accum = new Accumulator(wfs);
-        for (int i = 0; i < Accumulator.MAX_VALUE_COUNT; i++) {
+        ListAccumulator accum = new ListAccumulator(wfs);
+        for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT; i++) {
             accum.add((float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {
             double v = accum.getValue(wf);
             if (wf == WindowFunction.count) {
-                assertEquals(wf.getDisplayName(), Accumulator.MAX_VALUE_COUNT, v, 1.0e-2);
+                assertEquals(wf.getDisplayName(), ListAccumulator.MAX_VALUE_COUNT, v, 1.0e-2);
             } else {
                 assertEquals(wf.getDisplayName(), values.get(wf), v, 1.0e-2);
             }
 
         }
 
-        accum = new Accumulator(wfs);
-        for (int i = 0; i < Accumulator.MAX_VALUE_COUNT - 1; i++) {
+        accum = new ListAccumulator(wfs);
+        for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT - 1; i++) {
             accum.add((float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {
             double v = accum.getValue(wf);
             if (wf == WindowFunction.count) {
-                assertEquals(wf.getDisplayName(), Accumulator.MAX_VALUE_COUNT - 1, v, 1.0e-2);
+                assertEquals(wf.getDisplayName(), ListAccumulator.MAX_VALUE_COUNT - 1, v, 1.0e-2);
             } else {
                 assertEquals(wf.getDisplayName(), values.get(wf), v, 1.0e-2);
             }
 
         }
 
-        accum = new Accumulator(wfs);
-        for (int i = 0; i < Accumulator.MAX_VALUE_COUNT + 1; i++) {
+        accum = new ListAccumulator(wfs);
+        for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT + 1; i++) {
             accum.add((float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {
             double v = accum.getValue(wf);
             if (wf == WindowFunction.count) {
-                assertEquals(wf.getDisplayName(), Accumulator.MAX_VALUE_COUNT + 1, v, 1.0e-2);
+                assertEquals(wf.getDisplayName(), ListAccumulator.MAX_VALUE_COUNT + 1, v, 1.0e-2);
             } else {
                 assertEquals(wf.getDisplayName(), values.get(wf), v, 1.0e-2);
             }

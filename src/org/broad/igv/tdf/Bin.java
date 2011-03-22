@@ -21,7 +21,7 @@ package org.broad.igv.tdf;
 
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.tools.Accumulator;
+import org.broad.igv.tools.ListAccumulator;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class Bin implements LocusScore {
         this.start = start;
         this.end = end;
         this.values = new FloatArrayList(maxValues);
-        this.accumulator = new Accumulator(Arrays.asList(windowFunction));
+        this.accumulator = new Accumulator(windowFunction);
         this.windowFunction = windowFunction;
         addValue(probeName, initialValue);
     }
@@ -121,7 +121,7 @@ public class Bin implements LocusScore {
             score = Float.NaN;
         } else {
             accumulator.finish();
-            score = accumulator.getValue(windowFunction);
+            score = accumulator.getValue();
         }
     }
 

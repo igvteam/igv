@@ -24,10 +24,11 @@
 package org.broad.igv.data;
 
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.tdf.Accumulator;
+import org.broad.igv.tools.ListAccumulator;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
-import org.broad.igv.tools.Accumulator;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.Arrays;
@@ -108,7 +109,7 @@ public class GenomeSummaryData {
                 for (String s : dataMap.get(chr).keySet()) {
                     Accumulator dp = dataPoints.get(s);
                     dp.finish();
-                    dataMap.get(chr).get(s).add(dp.getValue(WindowFunction.mean));
+                    dataMap.get(chr).get(s).add(dp.getValue());
                 }
                 dataPoints.clear();
             }
@@ -117,7 +118,7 @@ public class GenomeSummaryData {
                 float[] data = sampleData.get(s);
                 Accumulator dp = dataPoints.get(s);
                 if (dp == null) {
-                    dp = new Accumulator(Arrays.asList(WindowFunction.mean));
+                    dp = new Accumulator(WindowFunction.mean);
                     dataPoints.put(s, dp);
                 }
                 try {

@@ -252,22 +252,7 @@ public abstract class AbstractDataSource implements DataSource {
             } else {
                 Bin[] bins = new Bin[nBins];
                 
-                List<LocusScore> scores = new ArrayList(700);
-
-                /* for (int i = 0; i < starts.length; i++) {
-                   int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
-
-                    if (e < startLocation) {
-                        continue;
-                    } else if (s > endLocation) {
-                        break;
-                    }
-                   String probeName = features == null ? null : features[i];
-                   scores.add(new Bin(s, e, probeName, values[i], windowFunction));
-
-               }
-                */
+                List<LocusScore> scores = new ArrayList(nBins);
 
                 for (int i = 0; i < starts.length; i++) {
                     int s = starts[i];

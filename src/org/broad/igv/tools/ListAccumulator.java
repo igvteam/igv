@@ -35,11 +35,11 @@ import java.util.*;
  *
  * @author jrobinso
  */
-public class Accumulator {
+public class ListAccumulator {
 
     static Set<WindowFunction> PERCENTILE_WINDOW_FUNCTIONS = new HashSet();
     public static int MAX_VALUE_COUNT = 100000;
-    private static Logger log = Logger.getLogger(Accumulator.class);
+    private static Logger log = Logger.getLogger(ListAccumulator.class);
 
     static {
         PERCENTILE_WINDOW_FUNCTIONS.add(WindowFunction.median);
@@ -54,12 +54,12 @@ public class Accumulator {
 
     List<WindowFunction> windowFunctions;
     List<WindowFunction> quantileFunctions;
+    Map<WindowFunction, List<PercentileValue>> percentiles = new HashMap();
     DoubleArrayList values = null;
     float sum = 0.0f;
     int nPts = 0;
 
 
-    Map<WindowFunction, List<PercentileValue>> percentiles = new HashMap();
 
 
     float min = Float.NaN;
@@ -72,7 +72,7 @@ public class Accumulator {
     float percentile98 = Float.NaN;
 
 
-    public Accumulator(Collection<WindowFunction> windowFunctions) {
+    public ListAccumulator(Collection<WindowFunction> windowFunctions) {
         this.windowFunctions = new ArrayList(windowFunctions);
         quantileFunctions = new ArrayList();
         for (WindowFunction wf : windowFunctions) {

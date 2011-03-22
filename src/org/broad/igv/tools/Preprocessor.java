@@ -66,7 +66,7 @@ public class Preprocessor implements DataConsumer {
     Raw rawData;
     Zoom genomeZoom;
     File outputFile;
-    Accumulator allDataStats;
+    ListAccumulator allDataStats;
     List<String> chromosomes = new ArrayList();
     Set<String> visitedChromosomes = new HashSet();
     Map<String, String> attributes = new HashMap();
@@ -96,7 +96,7 @@ public class Preprocessor implements DataConsumer {
         this.windowFunctions = windowFunctions;
         this.sizeEstimate = sizeEstimate;
         this.genome = genome;
-        allDataStats = new Accumulator(allDataFunctions);
+        allDataStats = new ListAccumulator(allDataFunctions);
 
         if (statusMonitor == null) {
             statusMonitor = new CommandLineStatusMonitor();
@@ -580,7 +580,7 @@ public class Preprocessor implements DataConsumer {
         float binWidth;
         int nBins;
         int nonEmptyBins;
-        Accumulator[][] accumulators;
+        ListAccumulator[][] accumulators;
         Map<WindowFunction, TDFDataset> datasets;
 
         Tile(Map<WindowFunction, TDFDataset> datasets, int zoomLevel, int tileNumber, int nBins, int tileWidth) {
@@ -591,7 +591,7 @@ public class Preprocessor implements DataConsumer {
             this.tileStart = tileNumber * tileWidth;
             this.nBins = nBins;
             this.binWidth = ((float) tileWidth) / nBins;
-            this.accumulators = new Accumulator[nTracks][nBins];
+            this.accumulators = new ListAccumulator[nTracks][nBins];
         }
 
         /**
@@ -620,7 +620,7 @@ public class Preprocessor implements DataConsumer {
 
                 for (int b = startBin; b <= endBin; b++) {
                     if (accumulators[t][b] == null) {
-                        accumulators[t][b] = new Accumulator(datasets.keySet());
+                        accumulators[t][b] = new ListAccumulator(datasets.keySet());
                     }
                     accumulators[t][b].add(data[t]);
                 }
@@ -659,7 +659,7 @@ public class Preprocessor implements DataConsumer {
                     int n = 0;
                     for (int i = 0; i < nBins; i++) {
                         for (int t = 0; t < nTracks; t++) {
-                            Accumulator acc = accumulators[t][i];
+                            ListAccumulator acc = accumulators[t][i];
                             if (acc != null) {
                                 data[t][n] = acc.getValue(wf);
                                 if (t == nTracks - 1) {
