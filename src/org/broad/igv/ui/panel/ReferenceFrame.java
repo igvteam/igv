@@ -97,6 +97,7 @@ public class ReferenceFrame {
     private double locationScale;
 
     private boolean locationScaleValid = false;
+    private Locus locus;
 
 
     public ReferenceFrame(String name) {
@@ -600,11 +601,13 @@ public class ReferenceFrame {
     }
 
     public void setInterval(Locus locus) {
+        this.locus = locus;
         setInterval(locus.getChr(), locus.getStart(), locus.getEnd());
     }
 
 
     public void setInterval(String chr, int start, int end) {
+        
         this.chrName = chr;
         this.origin = start;
         this.end = end;
@@ -623,6 +626,10 @@ public class ReferenceFrame {
 
     public String getName() {
         return name;
+    }
+
+    public Locus getLocus() {
+        return locus;
     }
 
     public static class Range {

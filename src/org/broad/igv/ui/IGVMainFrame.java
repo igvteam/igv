@@ -41,6 +41,7 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.batch.BatchRunner;
+import org.broad.igv.lists.Preloader;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.tools.ui.IndexGui;
 import org.broad.igv.listener.StatusListener;
@@ -1198,7 +1199,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         final CursorToken token = WaitCursorManager.showWaitCursor();
 
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new NamedRunnable() {
             public void run() {
                 try {
                     if (listID == null) {
@@ -1211,12 +1212,17 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         }
                         session.setCurrentGeneList(gl);
                     }
+                    Preloader.preload();
                     resetFrames();
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
 
                 }
              }
+
+            public String getName() {
+                return "Set gene list";
+            }
         });
        //  }
        // });
@@ -1226,7 +1232,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     public void setDefaultFrame(String searchString) {
         FrameManager.setToDefaultFrame(searchString);
-
         resetFrames();
     }
 
