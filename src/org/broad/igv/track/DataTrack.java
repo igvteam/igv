@@ -201,11 +201,6 @@ public abstract class DataTrack extends AbstractTrack {
 
     abstract public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom);
 
-    public boolean handleClick(int x, int y) {
-
-        // Ignore
-        return false;
-    }
 
     @Override
     public void setColor(Color color) {

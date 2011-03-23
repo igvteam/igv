@@ -364,7 +364,7 @@ public class MAFAlignment extends MultipleAlignment {
 				}
 				/*
 				if(lastMA != null && referenceEnd > 0 && !lastMA.overlaps(reference)) {
-					alignments.pop(); // multiple alignment just built does overlap desired region.�
+					alignments.pop(); // multiple alignment just built does overlap desired region.
 					AlignedSequence refAln = lastMA.getAlignedSequence(reference.getContainingSequenceId());
 					System.out.println("Reference seq<"+reference.getContainingSequenceId() +"> lastMA aligned seqs : " + lastMA.getAlignedSequenceIds());
 					if (refAln.getStart() > referenceEnd) {

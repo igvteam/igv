@@ -57,7 +57,7 @@ public class SnpFileParser extends AbstractFeatureParser {
             }
         }
 
-        // TODO -- rest of fileß
+        // TODO -- rest of file
 
         return feature;
     }
