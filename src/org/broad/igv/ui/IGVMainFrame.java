@@ -30,8 +30,6 @@ import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.IGVDatasetParser;
-import org.broad.igv.event.StatusChangeEvent;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.GenomeBuilderDialog;
 import org.broad.igv.feature.genome.GenomeDescriptor;
@@ -44,7 +42,6 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.tools.ui.IndexGui;
-import org.broad.igv.listener.StatusListener;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
@@ -1875,7 +1872,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
         session = new Session(sessionName);
 
         mainPanel.resetPanels();
-
 
         doRefresh();
 
