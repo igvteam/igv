@@ -39,6 +39,7 @@ import org.broad.igv.util.LRUCache;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -205,12 +206,33 @@ public class TDFDataSource implements DataSource {
                 }
             }
         } else {
-            scores = computeSummaryScores(chr, startLocation, endLocation, zoom);
+
+            int chrLength = getChrLength(chr);
+            if (chrLength == 0) {
+                return Collections.emptyList();
+            }
+            endLocation = Math.min(endLocation, chrLength);
+            // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+            int nTiles = (int) Math.pow(2, zoom);
+            float binSize = ((float) chrLength) / (nTiles * 700);
+
+            scores = computeSummaryScores(chr, startLocation, endLocation, zoom, binSize);
         }
         return scores;
     }
 
-    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+
+    public int getChrLength(String chr) {
+        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        if (chr.equals(Globals.CHR_ALL)) {
+            return (int) (genome.getLength() / 1000);
+        } else {
+            Chromosome c = genome.getChromosome(chr);
+            return c == null ? 0 : c.getLength();
+        }
+    }
+
+    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, int zoom, float binSize) {
 
         List<LocusScore> scores = new ArrayList(1000);
 
@@ -248,8 +270,8 @@ public class TDFDataSource implements DataSource {
                 } else {
 
                     // The minimum bins size is 1 bp
-                    int nBins = Math.min(700, endLocation - startLocation);
-                    double binSize = ((float) (endLocation - startLocation)) / nBins;
+                    int nBins = (int) ((endLocation - startLocation) / binSize + 1);
+
                     Bin[] bins = new Bin[nBins];
 
                     for (TDFTile rawTile : rawTiles) {

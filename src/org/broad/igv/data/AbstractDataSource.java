@@ -153,10 +153,10 @@ public abstract class AbstractDataSource implements DataSource {
             }
             endLocation = Math.min(endLocation, chrLength);
 
-            // By definition there are 700 * 2^z bins per chromosome, where z is the zoom level.   The bin size is then...
+            // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
             int nTiles = (int) Math.pow(2, z);
             float binSize = ((float) chrLength) / (nTiles * 700);
-            
+
             int adjustedStart = Math.max(0, startLocation);
             int adjustedEnd = Math.min(chrLength, endLocation);
 
@@ -174,6 +174,7 @@ public abstract class AbstractDataSource implements DataSource {
                     String key = chr + "_" + z + "_" + t + getWindowFunction();
                     SummaryTile summaryTile = summaryTileCache.get(key);
                     if (summaryTile == null) {
+
                         summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, binSize);
 
                         if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
@@ -362,4 +363,144 @@ public abstract class AbstractDataSource implements DataSource {
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return wfs;
     }
+
+
+
+    /*
+    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, float binSize) {
+
+
+        // TODO -- we should use an index here
+        int longestGene = getLongestFeature(chr);
+
+        int adjustedStart = Math.max(startLocation - longestGene, 0);
+        DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
+        SummaryTile tile = null;
+
+        int nBins = (int) ((endLocation - startLocation) / binSize + 1);
+
+        if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
+            int[] starts = rawTile.getStartLocations();
+            int[] ends = rawTile.getEndLocations();
+            float[] values = rawTile.getValues();
+            String[] features = rawTile.getFeatureNames();
+
+            tile = new SummaryTile(tileNumber, startLocation);
+
+            if (windowFunction == WindowFunction.none) {
+
+                for (int i = 0; i < starts.length; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+
+                    if (e < startLocation) {
+                        continue;
+                    } else if (s > endLocation) {
+                        break;
+                    }
+
+                    String probeName = features == null ? null : features[i];
+                    float v = values[i];
+
+                    BasicScore score = new BasicScore(s, e, v);
+                    tile.addScore(score);
+
+                }
+
+
+            } else {
+                List<Bin> bins = new ArrayList();
+
+                int startIdx = 0;
+                int endIdx = starts.length;
+                for (int i = 0; i < starts.length; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                    if (e < startLocation) {
+                        startIdx = i;
+                        continue;
+                    } else if (s > endLocation) {
+                        endIdx = i;
+                        break;
+                    }
+                }
+
+
+                for (int i = startIdx; i < endIdx; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                    float v = values[i];
+                    String probeName = features == null ? null : features[i];
+
+                    int start = binPosition(binSize, s);
+                    int end = binPosition(binSize, e);
+
+                    // Previous bins are already sliced into non-overlapping section.  The current bin can (1) contribute
+                    // to previous bins, (2) slice a previous bin if end intersects it, or (3) start a new bin
+                    // if start is >= the end of the last previous bin
+
+                    int lastEnd = 0;
+                    int binIdx = 0;
+                    for (Bin b : bins) {
+                        int bEnd = b.getEnd();
+                        lastEnd = bEnd;
+                        if (b.getStart() >= end) {
+                            // This should never happen?
+                            break;
+                        }
+                        if (b.getEnd() <= start) {
+                            continue;
+                        }
+
+                        if (b.getStart() < start) {
+                            //    [     ]            <= b
+                            //        [     ]
+                            // Shift end of bin
+                            b.setEnd(start);
+
+                            // Create the merged bin, representing the overlapped region
+                            Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
+                            mergedBin.mergeValues(b);
+                            bins.add(mergedBin);
+
+                            // Create a new bin for the non-overlapped part
+                            Bin newBin = new Bin(bEnd, end, probeName, v, windowFunction);
+                            bins.add(newBin);
+
+                        } else {
+                            //     [     ]          <= b
+                            //       [ ]
+                            // Shift end of bin
+                            b.setEnd(start);
+
+                            // Create the merged bin, representing the overlapped region
+                            Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
+                            mergedBin.mergeValues(b);
+                            bins.add(mergedBin);
+
+                            // Create a new bin for the non-overlapped part
+                            Bin newBin = new Bin(bEnd, end, windowFunction);
+                            newBin.mergeValues(b);
+                            bins.add(newBin);
+                        }
+                        binIdx++;
+                    }
+
+                    if (start >= lastEnd) {
+                        bins.add(new Bin(start, end, probeName, v, windowFunction));
+                    }
+
+                }
+
+                tile.addAllScores(bins);
+            }
+        }
+
+        return tile;
+    }
+
+    private int binPosition(float binSize, int s) {
+        return (int) (Math.round(s / binSize) * binSize);
+    }  */
+    
 }

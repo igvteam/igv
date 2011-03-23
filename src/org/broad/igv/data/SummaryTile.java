@@ -62,7 +62,7 @@ public class SummaryTile {
     }
 
 
-    public void addAllScores(Collection<LocusScore> scores) {
+    public void addAllScores(Collection<? extends LocusScore> scores) {
         summaryScores.addAll(scores);
     }
 

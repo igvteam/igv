@@ -42,10 +42,18 @@ public class Bin implements LocusScore {
     private float score = Float.MIN_VALUE;
 
     Accumulator accumulator;
-    FloatArrayList values;
-    List<String> names;
+    private FloatArrayList values;
+    private List<String> names;
     WindowFunction windowFunction;
     private static final int maxValues = 5;
+
+    public Bin(int start, int end, WindowFunction windowFunction) {
+        this.start = start;
+        this.end = end;
+        this.values = new FloatArrayList(maxValues);
+        this.accumulator = new Accumulator(windowFunction);
+        this.windowFunction = windowFunction;
+    }
 
     public Bin(int start, int end, String probeName, float initialValue, WindowFunction windowFunction) {
         this.start = start;
@@ -160,4 +168,22 @@ public class Bin implements LocusScore {
         return sb.toString();
     }
 
+    public FloatArrayList getValues() {
+        return values;
+    }
+
+    public List<String> getNames() {
+        return names;
+    }
+
+    public void mergeValues(Bin b) {
+        FloatArrayList vList = b.getValues();
+        List<String> probes = b.getNames();
+        if(vList.size() != probes.size()) {
+            // TODO -- error?
+        }
+        for(int i=0; i<probes.size(); i++) {
+            this.addValue(probes.get(i), vList.get(i));
+        }
+    }
 }
