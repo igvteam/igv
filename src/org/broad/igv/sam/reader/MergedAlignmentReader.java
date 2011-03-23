@@ -90,7 +90,6 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
                 if (iter.hasNext()) {
                     iterators.add(new RecordIterWrapper(iter));
                 }
-                iter.close();
             }
         }
 
@@ -114,7 +113,7 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
             if (wrapper.hasNext()) {
                 iterators.add(wrapper);
             } else {
-                //   wrapper.close();
+                wrapper.close();
             }
             return next;
         }
