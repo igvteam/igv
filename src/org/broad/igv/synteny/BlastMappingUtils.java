@@ -20,13 +20,13 @@
 
 package org.broad.igv.synteny;
 
-//~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataUtils;
 import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.File;
@@ -108,7 +108,7 @@ public class BlastMappingUtils {
 
                 FeatureUtils.sortFeatureList(scores);
                 for (BasicScore s : scores) {
-                    pw.println(s.getChromosome() + "\t" + s.getStart() + "\t" +
+                    pw.println(s.getChr() + "\t" + s.getStart() + "\t" +
                             (s.getEnd() + 1) + "\t\t" + s.getScore());
 
                 }
@@ -120,6 +120,72 @@ public class BlastMappingUtils {
         finally {
             pw.close();
         }
+    }
+
+
+    static class BasicScore implements LocusScore {
+
+        String chr;
+    int start;
+    int end;
+    float score;
+
+    public BasicScore(String chromosome, int start, int end, float score) {
+        this.chr = chromosome;
+        this.start = start;
+        this.end = end;
+        this.score = score;
+    }
+
+    public BasicScore(BasicScore bs) {
+        this.chr = bs.chr;
+        this.start = bs.start;
+        this.end = bs.end;
+        this.score = bs.score;
+    }
+
+    public BasicScore copy() {
+        return new BasicScore(this);
+    }
+
+    public String getChr() {
+        return chr;
+    }
+
+
+
+    public int getStart() {
+        return start;
+    }
+
+    public float getScore() {
+        return score;
+    }
+
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    public int getEnd() {
+        return end;
+    }
+
+    public void setEnd(int end) {
+        this.end = end;
+    }
+
+    public String getValueString(double position, WindowFunction windowFunction) {
+        return "Value: " + score;
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getExtendedStart() {
+        return getStart();
+    }
+
+    public int getExtendedEnd() {
+        return getEnd();
+    }
     }
 
 

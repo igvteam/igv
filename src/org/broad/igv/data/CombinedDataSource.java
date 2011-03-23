@@ -63,19 +63,19 @@ public class CombinedDataSource implements DataSource {
                     scoresToClose.add(ps);
 
                 } else {
-                    BasicScore newScore = new BasicScore(ps.getChr(), ps.getStart(), start, ps.getScore());
+                    BasicScore newScore = new BasicScore(ps.getStart(), start, ps.getScore());
                     mergedScores.add(newScore);
 
 
                     // The common chunk, we know ps.end is > score.start
                     int end = Math.min(ps.getEnd(), score.getEnd());
                     float newVal = combineScores(ps, score);
-                    newScore = new BasicScore(ps.getChr(), start, end, newVal);
+                    newScore = new BasicScore(start, end, newVal);
                     pendingScores.add(newScore);
 
                     // The "tail" of ps,  if any
                     if (ps.getEnd() > score.getEnd()) {
-                        newScore = new BasicScore(ps.getChr(), score.getEnd(), ps.getEnd(), ps.getScore());
+                        newScore = new BasicScore(score.getEnd(), ps.getEnd(), ps.getScore());
                         pendingScores.add(newScore);
                     }
                 }

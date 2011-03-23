@@ -197,7 +197,7 @@ public class TDFDataSource implements DataSource {
                                 float v = tile.getValue(trackNumber, i);
                                 if (!Float.isNaN(v)) {
                                     v *= normalizationFactor;
-                                    scores.add(new BasicScore(chr, tile.getStartPosition(i), tile.getEndPosition(i), v));
+                                    scores.add(new BasicScore(tile.getStartPosition(i), tile.getEndPosition(i), v));
                                 }
                             }
                         }
@@ -239,7 +239,7 @@ public class TDFDataSource implements DataSource {
                                 if (!Float.isNaN(v)) {
                                     v *= normalizationFactor;
                                 }
-                                scores.add(new BasicScore(chr, s, e, v));
+                                scores.add(new BasicScore(s, e, v));
                             }
                         }
                     }

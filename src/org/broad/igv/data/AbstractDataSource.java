@@ -243,7 +243,7 @@ public abstract class AbstractDataSource implements DataSource {
                     String probeName = features == null ? null : features[i];
                     float v = values[i];
 
-                    BasicScore score = new BasicScore(chr, s, e, v);
+                    BasicScore score = new BasicScore(s, e, v);
                     tile.addScore(score);
 
                 }
@@ -263,6 +263,8 @@ public abstract class AbstractDataSource implements DataSource {
                     } else if (s > endLocation) {
                         break;
                     }
+
+
 
                     String probeName = features == null ? null : features[i];
                     float v = values[i];

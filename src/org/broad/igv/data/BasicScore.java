@@ -31,20 +31,19 @@ import org.broad.igv.track.WindowFunction;
  */
 public class BasicScore implements LocusScore {
 
-    String chr;
     int start;
     int end;
     float score;
 
-    public BasicScore(String chromosome, int start, int end, float score) {
-        this.chr = chromosome;
+    public BasicScore(int start, int end, float score) {
+
         this.start = start;
         this.end = end;
         this.score = score;
     }
 
     public BasicScore(BasicScore bs) {
-        this.chr = bs.chr;
+
         this.start = bs.start;
         this.end = bs.end;
         this.score = bs.score;
@@ -54,12 +53,12 @@ public class BasicScore implements LocusScore {
         return new BasicScore(this);
     }
 
-    public String getChromosome() {
-        return chr;
-    }
-
+    /**
+     * This method is required by the Tribble interface but not used.  To save space the chromosome is not stored, return null
+     * @return
+     */
     public String getChr() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public int getStart() {
