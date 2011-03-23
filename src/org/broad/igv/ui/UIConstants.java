@@ -128,7 +128,6 @@ public class UIConstants {
             "Restores all user preferences to their default settings.";
     public static final String NAVIGATE_REGION_TOOLTIP = "Navigate regions";
 
-    public static final Color TRACK_BORDER_GRAY = new Color(210, 210, 210);
     public static Font boldFont = FontManager.getScalableFont(Font.BOLD, 12);
 
     public static int getDoubleClickInterval() {
@@ -186,17 +185,13 @@ public class UIConstants {
     final public static String IGV_LOG_SERVER_URL = SERVER_BASE_URL + "igv/LogServlet";
     // Colors
     // float[] hsb = Color.RGBtoHSB(255, 255, 210, null);
-    /**
-     * Field description
-     */
+
     final static public Color LIGHT_YELLOW = new Color(255, 244, 201);
-    /**
-     * Field description
-     */
+
     final public static Color VERY_LIGHT_GRAY = new Color(238, 239, 240);
-    /**
-     * Field description
-     */
+
+    final public static Color TRACK_BORDER_GRAY = new Color(200, 200, 210);
+
     public static Color NO_DATA_COLOR = new Color(200, 200, 200, 150);
     // GENOME
     /**

@@ -50,8 +50,8 @@ public class RegionMenu extends JidePopupMenu {
         this.frame = frame;
 
         if (title != null) {
-            JLabel heading = new JLabel("   " + title, JLabel.CENTER);
-            heading.setFont(UIConstants.boldFont);
+            JLabel heading = new JLabel("<html>&nbsp;<b>" + title);
+            //heading.setFont(UIConstants.boldFont);
             add(heading);
             addSeparator();
         }

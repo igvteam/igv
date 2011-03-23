@@ -320,7 +320,7 @@ public class RulerPanel extends JPanel {
 
     private void init() {
 
-        setBorder(BorderFactory.createLineBorder(UIConstants.VERY_LIGHT_GRAY));
+        setBorder(BorderFactory.createLineBorder(UIConstants.TRACK_BORDER_GRAY));
 
         setCursor(Cursor.getDefaultCursor());
         if (isWholeGenomeView()) {

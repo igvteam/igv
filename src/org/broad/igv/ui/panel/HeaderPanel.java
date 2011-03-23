@@ -213,7 +213,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         int end = (int) frame.getEnd();
         final RegionOfInterest roi = new RegionOfInterest(frame.getChrName(), start, end, "");
 
-        JPopupMenu popupMenu = new RegionMenu(roi, frame, frame.getName() + " Panel");
+        JPopupMenu popupMenu = new RegionMenu(roi, frame, "Panel: " + frame.getName() );
 
 
         // Zoom items
