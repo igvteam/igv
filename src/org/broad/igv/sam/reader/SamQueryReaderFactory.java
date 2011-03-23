@@ -23,13 +23,17 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 //import org.broad.igv.goby.GobyAlignmentQueryReader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -86,7 +90,11 @@ public class SamQueryReaderFactory {
                 reader = new BAMRemoteQueryReader(locator);
             }
         } else if (path.endsWith(".bam.list")) {
-            reader = new BAMRemoteQueryReader(locator);
+            if (locator.getServerURL() != null) {
+                reader = new BAMRemoteQueryReader(locator);
+            } else {
+                reader = getMergedReader(path, requireIndex);
+            }
         } else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
                 reader = new GobyAlignmentQueryReader(locator.getPath());
@@ -100,5 +108,35 @@ public class SamQueryReaderFactory {
 
         return reader;
     }
+
+    static MergedAlignmentReader getMergedReader(String listFile, boolean requireIndex) {
+
+        List<AlignmentQueryReader> readers = new ArrayList();
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(listFile);
+            String nextLine = null;
+            while ((nextLine = reader.readLine()) != null) {
+                String f = nextLine.trim();
+                readers.add(SamQueryReaderFactory.getReader(f, requireIndex));
+            }
+            return new MergedAlignmentReader(readers);
+        }
+        catch (IOException e) {
+            log.error("Error parsing " + listFile, e);
+            throw new RuntimeException("Error parsing: " + listFile + " (" + e.toString() + ")");
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+
+    }
+
 }
 
