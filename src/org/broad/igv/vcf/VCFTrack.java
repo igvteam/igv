@@ -54,27 +54,22 @@ public class VCFTrack extends FeatureTrack {
 
     private final int EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int SQUISHED_GENOTYPE_HEIGHT = 4;
-
-    private final int DEFAULT_ALLELE_HEIGHT = 25;
+    private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final int MAX_FILTER_LINES = 15;
 
     private VCFRenderer renderer = new VCFRenderer();
-
     private VCFMenu menu = new VCFMenu(this);
 
-    int visibleHeight = 0;
-
-    //private int genotypeBandHeight = EXPANDED_GENOTYPE_HEIGHT;
-    private int alleleBandHeight = DEFAULT_ALLELE_HEIGHT;
-    //private int savedBandHeight = genotypeBandHeight;
+    private int top;
+    private int visibleHeight = 0;
+    private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
     // Samples, organized by pedigree or other grouping
-    private LinkedHashMap<String, List<String>> samples;
+    private LinkedHashMap<String, List<String>> samples = new LinkedHashMap();
     int groupCount;
     int sampleCount;
 
     private ColorMode coloring = ColorMode.ZYGOSITY;
-    //private boolean hideReference = true;
     private boolean hideAncestral = false;
 
 
@@ -85,10 +80,8 @@ public class VCFTrack extends FeatureTrack {
     DecimalFormat numFormat = new DecimalFormat("#.###");
 
     // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
-    int top;
+    //int top;
 
-    private static Stroke dashedStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
-            BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f);
     private static final Color OFF_WHITE = new Color(170, 170, 170);
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
@@ -100,78 +93,16 @@ public class VCFTrack extends FeatureTrack {
         VCFHeader header = (VCFHeader) source.getHeader();
 
         Set<String> allSamples = header.getGenotypeSamples();
-        samples = new LinkedHashMap();
-        if (UIConstants.isSigmaProject() && locator.getPath().toLowerCase().contains("mckd1")) {
-            samples.put("L Unaffected", new ArrayList());
-            samples.put("AA", new ArrayList());
-            samples.put("BIP", new ArrayList());
-            samples.put("L", new ArrayList());
-            samples.put("LA", new ArrayList());
-            samples.put("OK", new ArrayList());
-            //samples.put("S", new ArrayList());
-            samples.put("WC", new ArrayList());
-            samples.put("CC", new ArrayList());
-            samples.put("WC", new ArrayList());
-            samples.put("PA", new ArrayList());
-            samples.put("Other", new ArrayList());
-            sampleCount = 0;
+        groupCount = 1;
+        sampleCount = allSamples.size();
+        samples.put("All", new ArrayList<String>(allSamples));
 
-            for (String s : header.getGenotypeSamples()) {
-                if (s.endsWith("-375") || s.equals("375")) {
-                    samples.get("L Unaffected").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-259") || s.endsWith("-265") || s.endsWith("-266") ||
-                        s.equals("259") || s.equals("265") || s.equals("266")) {
-                    samples.get("AA").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-701") || s.endsWith("-564") || s.equals("701") || s.equals("564")) {
-                    samples.get("BIP").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-352") || s.endsWith("-414") || s.equals("352") || s.equals("414")) {
-                    samples.get("L").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-4") || s.endsWith("-8") || s.endsWith("-13") || s.endsWith("-15") ||
-                        s.equals("4") || s.equals("8") || s.equals("13") || s.equals("15")) {
-                    samples.get("LA").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-563") || s.endsWith("-566") || s.equals("563") || s.equals("566")) {
-                    samples.get("OK").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-384") || s.endsWith("-391") || s.equals("384") || s.equals("391")) {
-                    // skip
-                    //samples.get("S").add(s);
-                    // sampleCount++;
-                } else if (s.endsWith("-467") || s.equals("467")) {
-                    samples.get("PA").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-469") || s.equals("469")) {
-                    samples.get("CC").add(s);
-                    sampleCount++;
-                } else if (s.endsWith("-491") || s.endsWith("-497") || s.equals("491") || s.equals("497")) {
-                    samples.get("WC").add(s);
-                    sampleCount++;
-                } else {
-                    samples.get("Other").add(s);
-                    sampleCount++;
-                }
-
-
-            }
-            groupCount = samples.size();
-
-        } else {
-            groupCount = 1;
-            sampleCount = allSamples.size();
-            samples.put("All", new ArrayList<String>(allSamples));
-        }
 
         this.setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
 
-        // Estimate visibility window. 
+        // Estimate visibility window.   TODO -- set beta based on available memory
         int cnt = Math.max(1, sampleCount);
-        // TODO -- set beta based on available memory
-
         int beta = 20000;
         int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
@@ -192,9 +123,9 @@ public class VCFTrack extends FeatureTrack {
 
     public int getHeight() {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
-            return alleleBandHeight;
+            return variantBandHeight;
         } else {
-            return alleleBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
+            return variantBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
         }
 
     }
@@ -219,15 +150,16 @@ public class VCFTrack extends FeatureTrack {
         Graphics2D g2D = context.getGraphics();
 
         // A hack
-        top = trackRectangle.y;
+        int top = trackRectangle.y;
 
+        top = trackRectangle.y;
         Rectangle visibleRectangle = context.getVisibleRect();
         visibleHeight = visibleRectangle.height;
 
         // A disposable rect -- note this gets modified all over the place, bad practice
         Rectangle rect = new Rectangle(trackRectangle);
         rect.height = getGenotypeBandHeight();
-        rect.y = trackRectangle.y + alleleBandHeight;
+        rect.y = trackRectangle.y + variantBandHeight;
         colorBackground(g2D, rect, visibleRectangle, false, false);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
@@ -262,7 +194,7 @@ public class VCFTrack extends FeatureTrack {
                     ZygosityCount zygCounts = getZygosityCounts(variant);
 
                     rect.y = top;
-                    rect.height = alleleBandHeight;
+                    rect.height = variantBandHeight;
                     if (rect.intersects(visibleRectangle)) {
                         if (samples.size() == 0) {
                             renderer.renderVariant(variant, rect, pX, dX, context);
@@ -309,7 +241,7 @@ public class VCFTrack extends FeatureTrack {
 
             }
         } else {
-            rect.height = alleleBandHeight;
+            rect.height = variantBandHeight;
             rect.y = trackRectangle.y;
             g2D.setColor(Color.gray);
             GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
@@ -437,7 +369,7 @@ public class VCFTrack extends FeatureTrack {
 
 
         // A hack
-        top = trackRectangle.y;
+        int top = trackRectangle.y;
 
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
@@ -454,7 +386,7 @@ public class VCFTrack extends FeatureTrack {
 
 
         g2D.setColor(Color.black);
-        rect.height = alleleBandHeight;
+        rect.height = variantBandHeight;
         if (rect.intersects(visibleRectangle)) {
             GraphicUtils.drawWrappedText(getName(), rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
         }
@@ -477,36 +409,21 @@ public class VCFTrack extends FeatureTrack {
 
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        double currentWindow = frame.getScale() * 1000;
-
+        //double currentWindow = frame.getScale() * 1000;
         VariantContext variant = (VariantContext) getFeatureAt(chr, position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
         if (variant != null) {
-            String poi = getMousePOI(y);
-            if (poi.equals("VARIANTBAND")) {
+
+            if (y < top + variantBandHeight) {
                 return getVariantToolTip(variant);
             } else {
-                if (currentWindow < source.getFeatureWindowSize()) {
-                    return getSampleToolTip(poi, variant);
-                }
+                int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
+                String sample = samples.get("All").get(sampleNumber);
+                return getSampleToolTip(sample, variant);
             }
         }
-        return " ";
+        return null;
     }
 
-    private String getMousePOI(int pY) {
-        String poi = "VARIANTBAND";
-        if (pY > (top + alleleBandHeight)) {
-            int sampleNumber = (pY - top - alleleBandHeight) / getGenotypeBandHeight();
-
-            try {
-                //poi = samples.get(sampleNumber);
-            } catch (IndexOutOfBoundsException ioe) {
-                log.error(ioe);
-
-            }
-        }
-        return poi;
-    }
 
     protected String getVariantInfo(VariantContext variant) {
         Set<String> keys = variant.getAttributes().keySet();
