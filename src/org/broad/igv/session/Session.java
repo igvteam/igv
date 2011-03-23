@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -56,6 +57,9 @@ public class Session {
     };
 
     private static int versionNumber = 3;
+
+    private TrackManager trackManager;
+
     private String filePath;
     private String groupTracksBy;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
@@ -80,6 +84,9 @@ public class Session {
         log.debug("New session");
 
         this.filePath = filePath;
+
+
+
         regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
         regionsOfInterestObservable =
                 new ObserverForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);

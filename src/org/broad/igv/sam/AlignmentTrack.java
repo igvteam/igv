@@ -362,7 +362,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 List<String> loci = null;
                 if (FrameManager.isGeneListMode()) {
-                    loci = new ArrayList(currentSession.getCurrentGeneList().getLoci());
+                    loci = new ArrayList(FrameManager.getFrames().size());
+                    for(ReferenceFrame ref : FrameManager.getFrames()) {
+                        loci.add(ref.getLocus().toString());
+                    }
                     loci.add(mateLocus);
                 } else {
                     loci = Arrays.asList(locus1, mateLocus);

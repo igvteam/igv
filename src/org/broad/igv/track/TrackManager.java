@@ -84,6 +84,13 @@ public class TrackManager {
     public static final String DATA_PANEL_NAME = "DataPanel";
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
 
+
+    public TrackManager(IGVMainFrame mainFrame) {
+
+        this.mainFrame = mainFrame;
+        loader = new TrackLoader();
+    }
+
     public Track getGeneTrack() {
         return geneTrack;
     }
@@ -97,12 +104,6 @@ public class TrackManager {
         return loadedTypes;
     }
 
-
-    public TrackManager(IGVMainFrame mainFrame) {
-
-        this.mainFrame = mainFrame;
-        loader = new TrackLoader();
-    }
 
     public void putScrollPane(String name, TrackPanelScrollPane sp) {
         trackPanelScrollPanes.put(name, sp);
@@ -136,6 +137,7 @@ public class TrackManager {
         if (tsp != null) {
             tsp.getTrackPanel().reset();
         }
+        loadedTypes.clear();
     }
 
 
