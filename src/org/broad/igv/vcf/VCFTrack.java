@@ -60,6 +60,7 @@ public class VCFTrack extends FeatureTrack {
     private VCFRenderer renderer = new VCFRenderer();
     private VCFMenu menu = new VCFMenu(this);
 
+    // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
     private int top;
     private int visibleHeight = 0;
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
@@ -78,9 +79,6 @@ public class VCFTrack extends FeatureTrack {
 
     private static float dash[] = {4.0f, 1.0f};
     DecimalFormat numFormat = new DecimalFormat("#.###");
-
-    // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
-    //int top;
 
     private static final Color OFF_WHITE = new Color(170, 170, 170);
     private static final int GROUP_BORDER_WIDTH = 3;
@@ -409,7 +407,7 @@ public class VCFTrack extends FeatureTrack {
 
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        //double currentWindow = frame.getScale() * 1000;
+
         VariantContext variant = (VariantContext) getFeatureAt(chr, position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
         if (variant != null) {
 

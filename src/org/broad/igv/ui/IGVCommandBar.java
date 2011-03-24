@@ -965,43 +965,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         toolPanel.setAlignmentX(RIGHT_ALIGNMENT);
         toolPanel.setLayout(new JideBoxLayout(toolPanel, JideBoxLayout.X_AXIS));
 
-        // toolPanel.setBorder(
-        // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-/*        backButton = new JideButton();
-        backButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/toolbarButtonGraphics/navigation/Back24.gif")));    // NOI18N
-
-        backButton.setToolTipText("Back");
-        backButton.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                String locus = ReferenceFrame.getInstance().history.back();
-                if (locus != null) {
-                    (new SearchCommand(ReferenceFrame.getInstance(), locus, false)).execute();
-                }
-
-            }
-        });
-        toolPanel.add(backButton, JideBoxLayout.FIX);
-
-        forwardButton = new JideButton();
-        forwardButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/toolbarButtonGraphics/navigation/Forward24.gif")));    // NOI18N
-        forwardButton.setToolTipText("Forward");
-        forwardButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                String locus = ReferenceFrame.getInstance().history.forward();
-                if (locus != null) {
-                    (new SearchCommand(ReferenceFrame.getInstance(), locus, false)).execute();
-                }
-
-            }
-        });
-        toolPanel.add(forwardButton, JideBoxLayout.FIX);
-*/
-
         homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
 
@@ -1018,6 +981,36 @@ public class IGVCommandBar extends javax.swing.JPanel {
         toolPanel.add(homeButton, JideBoxLayout.FIX);
 
 
+        // toolPanel.setBorder(
+        // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        backButton = new JideButton("<");
+        //backButton.setIcon(
+        //        new javax.swing.ImageIcon(
+        //                getClass().getResource("/toolbarButtonGraphics/navigation/Back24.gif")));    // NOI18N
+
+        backButton.setToolTipText("Back");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                IGVMainFrame.getInstance().getSession().getHistory().back();
+
+            }
+        });
+        toolPanel.add(backButton, JideBoxLayout.FIX);
+
+        forwardButton = new JideButton(">");
+        //forwardButton.setIcon(
+        //        new javax.swing.ImageIcon(
+        //                getClass().getResource("/toolbarButtonGraphics/navigation/Forward24.gif")));    // NOI18N
+        forwardButton.setToolTipText("Forward");
+        forwardButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                IGVMainFrame.getInstance().getSession().getHistory().forward();
+            }
+        });
+        toolPanel.add(forwardButton, JideBoxLayout.FIX);
+
+ 
         refreshButton = new com.jidesoft.swing.JideButton();
         refreshButton.setAlignmentX(RIGHT_ALIGNMENT);
         refreshButton.setIcon(
