@@ -432,11 +432,11 @@ public class DataPanel extends JComponent implements Paintable {
 
         String puText = popupTextBuffer.toString().trim();
         if (puText.length() > 0) {
-
-            //popupTextBuffer.append("<br>Location: ");
-            //popupTextBuffer.append(frame.getChrName() + ":" + locationFormatter.format((int) displayLocation));
-
-            setToolTipText("<html>" + puText);
+            if (!puText.equals(getToolTipText())) {
+                setToolTipText("<html>" + puText);
+            }
+        } else {
+            setToolTipText(null);
         }
     }
 

@@ -147,16 +147,6 @@ public class BasicFeature extends AbstractFeature {
     public String getValueString(double position, WindowFunction ignored) {
         StringBuffer valueString = new StringBuffer();
 
-        // Get exon number, if over an exon
-        int posZero = (int) position - 1;
-        if (this.exons != null) {
-            for (Exon exon : exons) {
-                if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
-                    valueString.append(exon.getValueString(position, ignored) + "<br>");
-                    return valueString.toString();
-                }
-            }
-        }
 
         String name = getName();
         if (name != null) {
@@ -175,6 +165,22 @@ public class BasicFeature extends AbstractFeature {
         if (description != null) {
             valueString.append("<br>" + description);
         }
+
+        // Get exon number, if over an exon
+        int posZero = (int) position - 1;
+        if (this.exons != null) {
+            for (Exon exon : exons) {
+                if (posZero >= exon.getStart() && posZero < exon.getEnd()) {
+                    String exonString = exon.getValueString(position, ignored);
+                    if (exonString != null && exonString.length() > 0) {
+                        valueString.append("<br>--------------<br>");
+                        valueString.append(exonString);
+                    }
+
+                }
+            }
+        }
+
         return valueString.toString();
     }
 

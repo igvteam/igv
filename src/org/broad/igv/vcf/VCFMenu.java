@@ -182,7 +182,7 @@ public class VCFMenu {
         return item;
     }
 
-   /*
+
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
 
         JMenuItem item = new JMenuItem("Genotype");
@@ -261,7 +261,6 @@ public class VCFMenu {
         }
         return item;
     }
-    */
 
     public void changeVisibilityWindow() {
         int value = getIntValue("Visibility Window", track.getVisibilityWindow());
@@ -289,18 +288,18 @@ public class VCFMenu {
         }
     }
 
-   /* private void sortSamples(VariantContext variant, Comparator<String> compare) {
+    private void sortSamples(VariantContext variant, Comparator<String> compare) {
         try {
-            List<String> samples = track.getSamples();
+            List<String> samples = track.getAllSamples();
             setSampleGenotypes(variant, samples);
             if ((sampleGenotypes.size() > 1)) {
                 Collections.sort(samples, compare);
-                track.setSamples(samples);
+                track.setAllSamples(samples);
             }
         } catch (Exception e) {
             log.error(e);
         }
-    }   */
+    }
 
     public void setSampleGenotypes(VariantContext variant, List<String> samples) {
         for (String sample : samples) {
@@ -316,10 +315,10 @@ public class VCFMenu {
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
         VariantContext variant = (VariantContext) closestFeature;
 
-       // items.add(getGenotypeSortItem(variant));
-       // items.add(getSampleNameSortItem(variant));
-       // items.add(getDepthSortItem(variant));
-       // items.add(getQualitySortItem(variant));
+        items.add(getGenotypeSortItem(variant));
+        items.add(getSampleNameSortItem(variant));
+        items.add(getDepthSortItem(variant));
+        items.add(getQualitySortItem(variant));
         return items;
     }
 
@@ -386,7 +385,7 @@ public class VCFMenu {
     }
 
 
-    class DepthComparator implements Comparator<String>  {
+    class DepthComparator implements Comparator<String> {
 
         public int compare(String s1, String s2) {
 

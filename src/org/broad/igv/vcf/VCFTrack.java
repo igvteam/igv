@@ -107,6 +107,17 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    // TODO -- make this work with grouping
+
+    public List<String> getAllSamples() {
+        return samples.get("All");
+    }
+
+    public void setAllSamples(List<String> allSamples) {
+        samples.put("All", allSamples);
+    }
+
+
     public int getGenotypeBandHeight() {
         switch (getDisplayMode()) {
             case SQUISHED:
@@ -458,7 +469,7 @@ public class VCFTrack extends FeatureTrack {
             }
             return tooltip;
         }
-        return " ";
+        return null;
     }
 
     public static enum ColorMode {
@@ -533,8 +544,6 @@ public class VCFTrack extends FeatureTrack {
         if (genotype != null) {
             toolTip = toolTip.concat(getSampleInfo(genotype) + "<br>");
         }
-
-        toolTip = toolTip.concat("<br>" + "<b>Cursor Location</b>");
         return toolTip;
     }
 
@@ -564,7 +573,6 @@ public class VCFTrack extends FeatureTrack {
         toolTip = toolTip.concat("<br><b>Genotypes:</b>");
         toolTip = toolTip.concat(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
         toolTip = toolTip.concat(getVariantInfo(variant) + "<br>");
-        toolTip = toolTip.concat("<br>" + "<b>Cursor Location</b>");
         return toolTip;
     }
 

@@ -46,7 +46,7 @@ public class FeatureTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
-    public static final int MINIMUM_FEATURE_SPACING = 1;
+    public static final int MINIMUM_FEATURE_SPACING = 2;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);

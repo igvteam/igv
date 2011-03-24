@@ -599,7 +599,7 @@ public class TrackMenuUtils {
         ButtonGroup group = new ButtonGroup();
 
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Expand");
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Expanded");
         m1.setSelected(currentMode == Track.DisplayMode.EXPANDED);
         m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
@@ -608,7 +608,7 @@ public class TrackMenuUtils {
             }
         });
 
-        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squish");
+        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
         m2.setSelected(currentMode == Track.DisplayMode.SQUISHED);
         m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
@@ -617,7 +617,7 @@ public class TrackMenuUtils {
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Collapse");
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Collapsed");
         m3.setSelected(currentMode == Track.DisplayMode.COLLAPSED);
         m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
@@ -629,9 +629,9 @@ public class TrackMenuUtils {
         group.add(m1);
         group.add(m2);
         group.add(m3);
-        menu.add(m1);
-        menu.add(m2);
         menu.add(m3);
+        menu.add(m2);
+        menu.add(m1);
 
 
     }
