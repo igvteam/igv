@@ -70,7 +70,7 @@ public class VCFTrack extends FeatureTrack {
     int groupCount;
     int sampleCount;
 
-    private ColorMode coloring = ColorMode.ZYGOSITY;
+    private ColorMode coloring = ColorMode.GENOTYPE;
     private boolean hideAncestral = false;
 
 
@@ -473,7 +473,7 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public static enum ColorMode {
-        ZYGOSITY, VARIANT, ALLELE
+        GENOTYPE, ALLELE
     }
 
     ;

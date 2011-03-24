@@ -107,8 +107,7 @@ public class VCFMenu {
     public JMenu getColorMenuItem() {
         JMenu colorMenu = new JMenu("Color By");
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
-        items.add(getColorByZygosity());
-        items.add(getColorByVariant());
+        items.add(getColorByGenotype());
         items.add(getColorByAllele());
         for (JMenuItem item : items) {
             colorMenu.add(item);
@@ -116,27 +115,17 @@ public class VCFMenu {
         return colorMenu;
     }
 
-    private JMenuItem getColorByZygosity() {
-        final JMenuItem item = new JCheckBoxMenuItem("Zygosity", track.getColorMode() == VCFTrack.ColorMode.ZYGOSITY);
+    private JMenuItem getColorByGenotype() {
+        final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VCFTrack.ColorMode.GENOTYPE);
         item.addActionListener(new TrackMenuUtils.TrackActionListener() {
             public void action() {
-                track.setColorMode(VCFTrack.ColorMode.ZYGOSITY);
+                track.setColorMode(VCFTrack.ColorMode.GENOTYPE);
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
         });
         return item;
     }
 
-    private JMenuItem getColorByVariant() {
-        final JMenuItem item = new JCheckBoxMenuItem("Variant", track.getColorMode() == VCFTrack.ColorMode.VARIANT);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
-                track.setColorMode(VCFTrack.ColorMode.VARIANT);
-                IGVMainFrame.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
-    }
 
     private JMenuItem getColorByAllele() {
         final JMenuItem item = new JCheckBoxMenuItem("Allele", track.getColorMode() == VCFTrack.ColorMode.ALLELE);

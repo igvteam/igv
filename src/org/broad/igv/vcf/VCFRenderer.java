@@ -19,10 +19,8 @@
 
 package org.broad.igv.vcf;
 
-import org.broad.igv.renderer.FeatureRenderer;
-import org.broad.igv.track.FeatureTrack;
+import org.apache.log4j.Logger;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.util.variantcontext.Allele;
@@ -40,6 +38,7 @@ import java.util.*;
 
 public class VCFRenderer { //extends FeatureRenderer {
 
+    private static Logger log = Logger.getLogger(VCFRenderer.class);
 
     private static float alphaValue = 0.2f;
     public static Color colorHomRef = new Color(235, 235, 235);
@@ -206,7 +205,7 @@ public class VCFRenderer { //extends FeatureRenderer {
 
         Genotype genotype = variant.getGenotype(sampleName);
         if (genotype == null) {
-            System.out.println("Now what?");
+            log.error("Now what?");
         } else {
             char b1 = getFirstBase(genotype.getAlleles().get(0));
             char b2 = getFirstBase(genotype.getAlleles().get(1));
@@ -214,10 +213,7 @@ public class VCFRenderer { //extends FeatureRenderer {
             Color b2Color;
 
             //Assign proper coloring
-            if (coloring == VCFTrack.ColorMode.ZYGOSITY) {
-                b1Color = getGenotypeColor(genotype, isFiltered);
-                b2Color = b1Color;
-            } else if (coloring == VCFTrack.ColorMode.VARIANT) {
+            if (coloring == VCFTrack.ColorMode.GENOTYPE) {
                 b1Color = getGenotypeColor(genotype, isFiltered);
                 b2Color = b1Color;
             } else if (coloring == VCFTrack.ColorMode.ALLELE) {
@@ -235,7 +231,7 @@ public class VCFRenderer { //extends FeatureRenderer {
                 int offset = dX / 2;
                 pX0 = pX0 + offset;
             }
-            if (coloring == VCFTrack.ColorMode.ZYGOSITY || coloring == VCFTrack.ColorMode.VARIANT) {
+            if (coloring == VCFTrack.ColorMode.GENOTYPE ) {
                 g.setColor(b1Color);
                 g.fillRect(pX0, pY, dX, dY);
             } else {
