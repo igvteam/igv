@@ -149,6 +149,8 @@ public class VCFRenderer { //extends FeatureRenderer {
         Color refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;
 
         Graphics2D g = context.getGraphic2DForColor(alleleColor);
+
+
         g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
         g = context.getGraphic2DForColor(refColor);
         g.fillRect(pX0, bandRectangle.y + 3, dX, remainderHeight);
@@ -223,7 +225,6 @@ public class VCFRenderer { //extends FeatureRenderer {
                 b1Color = colorNoCall;
                 b2Color = b1Color;
             }
-
 
             //Temp remove to see if no-calls are clearer
             if (b1 == '.' || b2 == '.') {

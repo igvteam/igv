@@ -134,12 +134,12 @@ public class FeatureUtils {
             if (oneBased) {
                 effectiveEnd += 1;
             }
+            double effectiveWidth = Math.max(minWidth, effectiveEnd - effectiveStart);
 
-            if (position >= effectiveStart) {
+            if (position >= effectiveStart - effectiveWidth/2) {
 
-                double effectiveWidth = Math.max(minWidth, effectiveEnd - effectiveStart);
-
-                if (position <= effectiveStart + effectiveWidth) {
+ 
+                if (position <= effectiveEnd + effectiveWidth/2) {
                     return features.get(idx);
                 } else {
                     if (idx == startIdx) {

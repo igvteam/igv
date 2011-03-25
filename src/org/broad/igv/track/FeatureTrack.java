@@ -46,7 +46,7 @@ public class FeatureTrack extends AbstractTrack {
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
     final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
-    public static final int MINIMUM_FEATURE_SPACING = 2;
+    public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
@@ -260,7 +260,7 @@ public class FeatureTrack extends AbstractTrack {
             if (scores == null) {
                 return "";
             } else {
-                // give a 2 pixel window, otherwise very narrow features will be missed.
+                // give a minimum  window, otherwise very narrow features will be missed.
                 double bpPerPixel = frame.getScale();
                 double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;    /* * */
                 LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);

@@ -52,17 +52,20 @@ public class VCFTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(VCFTrack.class);
 
+    private static final Color OFF_WHITE = new Color(170, 170, 170);
+    private static final int GROUP_BORDER_WIDTH = 3;
+    private static final Color BAND1_COLOR = new Color(245, 245, 245);
+    private static final Color BAND2_COLOR = Color.white;
+
     private final int EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int SQUISHED_GENOTYPE_HEIGHT = 4;
     private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final int MAX_FILTER_LINES = 15;
 
     private VCFRenderer renderer = new VCFRenderer();
-    private VCFMenu menu = new VCFMenu(this);
 
     // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
     private int top;
-    private int visibleHeight = 0;
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
     // Samples, organized by pedigree or other grouping
@@ -80,10 +83,7 @@ public class VCFTrack extends FeatureTrack {
     private static float dash[] = {4.0f, 1.0f};
     DecimalFormat numFormat = new DecimalFormat("#.###");
 
-    private static final Color OFF_WHITE = new Color(170, 170, 170);
-    private static final int GROUP_BORDER_WIDTH = 3;
-    private static final Color BAND1_COLOR = new Color(245, 245, 245);
-    private static final Color BAND2_COLOR = Color.white;
+    Feature selectedVariant;
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
@@ -158,12 +158,8 @@ public class VCFTrack extends FeatureTrack {
 
         Graphics2D g2D = context.getGraphics();
 
-        // A hack
-        int top = trackRectangle.y;
-
         top = trackRectangle.y;
         Rectangle visibleRectangle = context.getVisibleRect();
-        visibleHeight = visibleRectangle.height;
 
         // A disposable rect -- note this gets modified all over the place, bad practice
         Rectangle rect = new Rectangle(trackRectangle);
@@ -198,6 +194,13 @@ public class VCFTrack extends FeatureTrack {
                 if (pX > pXEnd) {
                     break;
                 }
+                int w = dX;
+                int x = pX;
+                if (w < 3) {
+                    w = 3;
+                    x--;
+                }
+
 
                 if (pX + dX > lastPX) {
                     ZygosityCount zygCounts = getZygosityCounts(variant);
@@ -205,11 +208,12 @@ public class VCFTrack extends FeatureTrack {
                     rect.y = top;
                     rect.height = variantBandHeight;
                     if (rect.intersects(visibleRectangle)) {
-                        if (samples.size() == 0) {
+                        if (getAllSamples().size() == 0) {
                             renderer.renderVariant(variant, rect, pX, dX, context);
                         } else {
                             AlleleCount alleleCounts = new AlleleCount(zygCounts);
-                            renderer.renderAlleleBand(variant, rect, pX, dX, context, hideFiltered, alleleCounts);
+                            renderer.renderAlleleBand(variant, rect, x, w, context, hideFiltered, alleleCounts);
+
                         }
                     }
 
@@ -222,19 +226,8 @@ public class VCFTrack extends FeatureTrack {
 
                             for (String sample : entry.getValue()) {
                                 if (rect.intersects(visibleRectangle)) {
-                                    //    if (variant.isSNP()) {
-
-                                    int w = dX;
-                                    int x = pX;
-                                    if (w < 3) {
-                                        w = 3;
-                                        x--;
-                                    }
-
-
                                     renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
                                             hideFiltered);
-                                    //    }
                                 }
                                 rect.y += rect.height;
                             }
@@ -245,7 +238,16 @@ public class VCFTrack extends FeatureTrack {
 
                         }
                     }
+
+
+                    boolean isSelected = selectedVariant != null && selectedVariant == variant;
+                    if(isSelected) {
+                        Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
+                        selectionGraphics.drawRect(x, top, w, getHeight());
+                    }
+
                     lastPX = pX + dX;
+
                 }
 
             }
@@ -426,7 +428,7 @@ public class VCFTrack extends FeatureTrack {
                 return getVariantToolTip(variant);
             } else {
                 int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                String sample = samples.get("All").get(sampleNumber);
+                String sample = getAllSamples().get(sampleNumber);
                 return getSampleToolTip(sample, variant);
             }
         }
@@ -470,6 +472,10 @@ public class VCFTrack extends FeatureTrack {
             return tooltip;
         }
         return null;
+    }
+
+    public void clearSelectedVariant() {
+        selectedVariant = null;
     }
 
     public static enum ColorMode {
@@ -520,60 +526,60 @@ public class VCFTrack extends FeatureTrack {
 
     private String getSampleToolTip(String sample, VariantContext variant) {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
-        String toolTip = "<b>Summary</b>";
-        toolTip = toolTip.concat("<br>Chr:" + variant.getChr());
-        toolTip = toolTip.concat("<br>Position:" + variant.getStart());
-        toolTip = toolTip.concat("<br>ID: " + id + "<br>");
-        toolTip = toolTip.concat("<br><b>Sample Information</b>");
-        toolTip = toolTip.concat("<br>Sample: " + sample);
-        toolTip = toolTip.concat("<br>Position:" + variant.getStart());
+        StringBuffer toolTip = new StringBuffer();
+        toolTip = toolTip.append("<Chr:" + variant.getChr());
+        toolTip = toolTip.append("<br>Position:" + variant.getStart());
+        toolTip = toolTip.append("<br>ID: " + id + "<br>");
+        toolTip = toolTip.append("<br><b>Sample Information</b>");
+        toolTip = toolTip.append("<br>Sample: " + sample);
+        toolTip = toolTip.append("<br>Position:" + variant.getStart());
 
         Genotype genotype = variant.getGenotype(sample);
         if (genotype != null) {
-            toolTip = toolTip.concat("<br>Bases: " + genotype.getGenotypeString());
-            toolTip = toolTip.concat("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
-            toolTip = toolTip.concat("<br>Type: " + genotype.getType());
+            toolTip = toolTip.append("<br>Bases: " + genotype.getGenotypeString());
+            toolTip = toolTip.append("<br>Quality: " + numFormat.format(genotype.getPhredScaledQual()));
+            toolTip = toolTip.append("<br>Type: " + genotype.getType());
         }
         if (variant.isFiltered()) {
-            toolTip = toolTip.concat("<br>Is Filtered Out: Yes</b>");
-            toolTip = toolTip.concat(getFilterTooltip(variant));
+            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
+            toolTip = toolTip.append(getFilterTooltip(variant));
         } else {
-            toolTip = toolTip.concat("<br>Is Filtered Out: No</b><br>");
+            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
         }
 
         if (genotype != null) {
-            toolTip = toolTip.concat(getSampleInfo(genotype) + "<br>");
+            toolTip = toolTip.append(getSampleInfo(genotype) + "<br>");
         }
-        return toolTip;
+        return toolTip.toString();
     }
 
     private String getVariantToolTip(VariantContext variant) {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
-        String toolTip = "<b>Summary</b>";
-        toolTip = toolTip.concat("<br>Chr:" + variant.getChr());
-        toolTip = toolTip.concat("<br>Position:" + variant.getStart());
-        toolTip = toolTip.concat("<br>ID: " + id);
-        toolTip = toolTip.concat("<br>Reference: " + variant.getReference().toString());
+        StringBuffer toolTip = new StringBuffer();
+        toolTip = toolTip.append("Chr:" + variant.getChr());
+        toolTip = toolTip.append("<br>Position:" + variant.getStart());
+        toolTip = toolTip.append("<br>ID: " + id);
+        toolTip = toolTip.append("<br>Reference: " + variant.getReference().toString());
         Set alternates = variant.getAlternateAlleles();
         if (alternates.size() > 0) {
-            toolTip = toolTip.concat("<br>Alternate: " + alternates.toString());
+            toolTip = toolTip.append("<br>Alternate: " + alternates.toString());
         }
 
-        toolTip = toolTip.concat("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
-        toolTip = toolTip.concat("<br>Type: " + variant.getType());
+        toolTip = toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
+        toolTip = toolTip.append("<br>Type: " + variant.getType());
         if (variant.isFiltered()) {
-            toolTip = toolTip.concat("<br>Is Filtered Out: Yes</b>");
-            toolTip = toolTip.concat(getFilterTooltip(variant));
+            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
+            toolTip = toolTip.append(getFilterTooltip(variant));
         } else {
-            toolTip = toolTip.concat("<br>Is Filtered Out: No</b><br>");
+            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
         }
-        toolTip = toolTip.concat("<br><b>Alleles:</b>");
-        toolTip = toolTip.concat(getAlleleToolTip(getZygosityCounts(variant)));
-        toolTip = toolTip.concat("<br>Allele Frequency: " + numFormat.format(getAlleleFreq(variant)) + "<br>");
-        toolTip = toolTip.concat("<br><b>Genotypes:</b>");
-        toolTip = toolTip.concat(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
-        toolTip = toolTip.concat(getVariantInfo(variant) + "<br>");
-        return toolTip;
+        toolTip = toolTip.append("<br><b>Alleles:</b>");
+        toolTip = toolTip.append(getAlleleToolTip(getZygosityCounts(variant)));
+        toolTip = toolTip.append("<br>Allele Frequency: " + numFormat.format(getAlleleFreq(variant)) + "<br>");
+        toolTip = toolTip.append("<br><b>Genotypes:</b>");
+        toolTip = toolTip.append(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
+        toolTip = toolTip.append(getVariantInfo(variant) + "<br>");
+        return toolTip.toString();
     }
 
     private String getFilterTooltip(VariantContext variant) {
@@ -648,12 +654,9 @@ public class VCFTrack extends FeatureTrack {
 
     public ZygosityCount getZygosityCounts(VariantContext variant) {
         ZygosityCount zc = new ZygosityCount();
-
-        for (List<String> sampleList : samples.values()) {
-            for (String sample : sampleList) {
-                Genotype genotype = variant.getGenotype(sample);
-                zc.incrementCount(genotype);
-            }
+        for (String sample : getAllSamples()) {
+            Genotype genotype = variant.getGenotype(sample);
+            zc.incrementCount(genotype);
         }
         return zc;
     }
@@ -676,7 +679,7 @@ public class VCFTrack extends FeatureTrack {
 
 
         public AlleleCount(ZygosityCount zygCounts) {
-            totalAlleles = samples.size() * 2;
+            totalAlleles = getAllSamples().size() * 2;
             alleleNum = (zygCounts.getHomVar() + zygCounts.getHet() + zygCounts.getHomRef()) * 2;
             alleleCount = zygCounts.getHomVar() * 2 + zygCounts.getHet();
         }
@@ -742,11 +745,14 @@ public class VCFTrack extends FeatureTrack {
     // }
 
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
-        Feature f = null;
+        VariantContext f = null;
         if (te.getFrame() != null && te.getFrame().getName() != null) {
-            f = getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+            f = (VariantContext) getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
+            selectedVariant = f;
+            IGVMainFrame.getInstance().doRefresh();
         }
-        return menu.getDataPanelMenu(te, f);
+
+        return new VCFMenu(this, te, f);
     }
 
     public static void refresh() {

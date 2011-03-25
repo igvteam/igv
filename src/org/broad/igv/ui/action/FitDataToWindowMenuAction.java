@@ -69,9 +69,9 @@ public class FitDataToWindowMenuAction extends MenuAction {
     }
 
     /**
-     * Adjust the height of all tracks so that all tracks fit in the available
+     * Adjust the height of  tracks so that all tracks fit in the available
      * height of the panel.  This is not possible in all cases as the
-     * minimum height for a track is 1 pixel.
+     * minimum height for tracks is respected.
      *
      * @param dataPanel
      * @return
@@ -82,17 +82,22 @@ public class FitDataToWindowMenuAction extends MenuAction {
 
         int visibleHeight = dataPanel.getVisibleHeight();
         int visibleTrackCount = 0;
-        int geneTrackHeight = 0;
 
         // Process data tracks first
         Collection<TrackGroup> groups = dataPanel.getTrackGroups();
 
-        // Count visible tracks and note gene track 'was found' and ist height
+        // Count visible tracks.
         for (TrackGroup group : groups) {
             List<Track> tracks = group.getTracks();
             for (Track track : tracks) {
+
                 if (track.isVisible()) {
-                    ++visibleTrackCount;
+                    if (track.getMinimumHeight() > 1) {
+                        visibleHeight -= track.getMinimumHeight();
+                    } else {
+
+                        ++visibleTrackCount;
+                    }
                 }
             }
         }
@@ -101,32 +106,30 @@ public class FitDataToWindowMenuAction extends MenuAction {
         // Auto resize the height of the visible tracks
         if (visibleTrackCount > 0) {
             int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
-            int adjustedVisibleHeight = visibleHeight - groupGapHeight;
+            int adjustedVisibleHeight = Math.max(1, visibleHeight - groupGapHeight);
 
-            if (adjustedVisibleHeight > 0) {
+            float delta = (float) adjustedVisibleHeight / visibleTrackCount;
 
-                float delta = (float) adjustedVisibleHeight / visibleTrackCount;
+            // If the new track height is less than 1 theres nothing we
+            // can do to force all tracks to fit so we do nothing
+            if (delta < 1) {
+                delta = 1;
+            }
 
-                // If the new track height is less than 1 theres nothing we 
-                // can do to force all tracks to fit so we do nothing
-                if (delta < 1) {
-                    delta = 1;
-                }
-
-                int iTotal = 0;
-                float target = 0;
-                for (TrackGroup group : groups) {
-                    List<Track> tracks = group.getTracks();
-                    for (Track track : tracks) {
-                        target += delta;
-                        int newHeight = (int) Math.round(target - iTotal);
-                        iTotal += newHeight;
-                        if (track.isVisible()) {
-                            track.setHeight(newHeight);
-                        }
+            int iTotal = 0;
+            float target = 0;
+            for (TrackGroup group : groups) {
+                List<Track> tracks = group.getTracks();
+                for (Track track : tracks) {
+                    target += delta;
+                    int newHeight = Math.round(target - iTotal);
+                    iTotal += newHeight;
+                    if (track.isVisible()) {
+                        track.setHeight(newHeight);
                     }
                 }
             }
+
         }
 
         return success;

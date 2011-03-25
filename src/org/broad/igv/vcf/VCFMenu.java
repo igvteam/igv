@@ -19,7 +19,6 @@
 
 package org.broad.igv.vcf;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
@@ -30,7 +29,11 @@ import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 
@@ -38,65 +41,96 @@ import java.util.List;
  * User: Jesse Whitworth
  * Date: Jul 16, 2010
  */
-public class VCFMenu {
+public class VCFMenu extends JPopupMenu {
 
     private static Logger log = Logger.getLogger(VCFMenu.class);
     private VCFTrack track;
     Map<String, Genotype> sampleGenotypes;
+    List<String> samples;
 
-    public VCFMenu(VCFTrack track) {
-        this.track = track;
-        sampleGenotypes = new HashMap<String, Genotype>();
-    }
+    static boolean depthSortingDirection;
+    static boolean genotypeSortingDirection;
+    static boolean sampleSortingDirection;
+    static boolean qualitySortingDirection;
 
-    public JPopupMenu getDataPanelMenu(TrackClickEvent te, Feature f) {
+    public VCFMenu(VCFTrack t, TrackClickEvent te, VariantContext variant) {
+        this.track = t;
+
+        this.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
+
+            }
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
+                close();
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
+                close();
+            }
+
+            private void close() {
+                track.clearSelectedVariant();
+                IGVMainFrame.getInstance().repaint();
+            }
+
+        });
+
+        samples = track.getAllSamples();
+        if (samples != null) {
+            sampleGenotypes = new HashMap<String, Genotype>();
+            for (String sample : samples) {
+                Genotype genotype = variant.getGenotype(sample);
+                if (genotype != null) {
+                    sampleGenotypes.put(sample, genotype);
+                }
+            }
+        }
 
 
         //Title
-        JPopupMenu popupMenu = new JidePopupMenu();
-        JLabel popupTitle = new JLabel("  " + track.getName(), JLabel.CENTER);
-        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
+        JLabel popupTitle = new JLabel("<html><b>" + track.getName(), JLabel.CENTER);
+        Font newFont = getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
-        popupMenu.add(popupTitle);
+        add(popupTitle);
 
         //Change Track Settings
-        popupMenu.addSeparator();
-        popupMenu.add(getFeatureVisibilityItem());
+        addSeparator();
+        add(getFeatureVisibilityItem());
 
         //Hides
-        popupMenu.addSeparator();
-        JLabel hideHeading = new JLabel("Display Options", JLabel.LEFT);
-        popupMenu.add(hideHeading);
-        popupMenu.add(getColorMenuItem());
-        popupMenu.add(getHideFilteredItem());
-        popupMenu.add(getRenderIDItem());
+        addSeparator();
+        JLabel hideHeading = new JLabel("<html>&nbsp;&nbsp;<b>Display Options", JLabel.LEFT);
+        add(hideHeading);
+        add(getColorMenuItem());
+        add(getHideFilteredItem());
+        //add(getRenderIDItem());
 
         //Sorter
-        popupMenu.addSeparator();
-        JLabel sortHeading = new JLabel("Sort Variant By", JLabel.LEFT);
-        popupMenu.add(sortHeading);
-        for (JMenuItem item : getSortMenuItems(te, f)) {
-            popupMenu.add(item);
+        addSeparator();
+        JLabel sortHeading = new JLabel("<html>&nbsp;&nbsp;<b>Sort Variant By", JLabel.LEFT);
+        add(sortHeading);
+        for (JMenuItem item : getSortMenuItems(te, variant)) {
+            add(item);
         }
 
         //Variant Information
-        popupMenu.addSeparator();
+        addSeparator();
         JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
-        popupMenu.add(displayHeading);
+        add(displayHeading);
         for (JMenuItem item : getDisplayModeItems()) {
-            popupMenu.add(item);
+            add(item);
         }
 
-        popupMenu.addSeparator();
-        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
+        addSeparator();
+        add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
 
-        return popupMenu;
     }
 
     private JMenuItem getFeatureVisibilityItem() {
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 changeVisibilityWindow();
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -117,8 +151,8 @@ public class VCFMenu {
 
     private JMenuItem getColorByGenotype() {
         final JMenuItem item = new JCheckBoxMenuItem("Genotype", track.getColorMode() == VCFTrack.ColorMode.GENOTYPE);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setColorMode(VCFTrack.ColorMode.GENOTYPE);
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -129,8 +163,8 @@ public class VCFMenu {
 
     private JMenuItem getColorByAllele() {
         final JMenuItem item = new JCheckBoxMenuItem("Allele", track.getColorMode() == VCFTrack.ColorMode.ALLELE);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setColorMode(VCFTrack.ColorMode.ALLELE);
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -140,8 +174,8 @@ public class VCFMenu {
 
     private JMenuItem getRenderIDItem() {
         JMenuItem item = new JCheckBoxMenuItem("Display Variant Names", track.getRenderID());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setRenderID(!track.getRenderID());
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -151,8 +185,8 @@ public class VCFMenu {
 
     private JMenuItem getHideFilteredItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Filtered Sites", track.getHideFiltered());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setHideFiltered(!track.getHideFiltered());
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -162,8 +196,8 @@ public class VCFMenu {
 
     private JMenuItem getHideAncestralItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Ancestral Genotypes", track.getHideAncestral());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setHideAncestral(!track.getHideAncestral());
                 IGVMainFrame.getInstance().getContentPane().repaint();
             }
@@ -177,9 +211,10 @@ public class VCFMenu {
         JMenuItem item = new JMenuItem("Genotype");
         try {
             variant.getAlleles();
-            item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                public void action() {
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
                     GenotypeComparator compare = new GenotypeComparator();
+                    genotypeSortingDirection = !genotypeSortingDirection;
                     sortSamples(variant, compare);
                     IGVMainFrame.getInstance().getContentPane().repaint();
                 }
@@ -194,13 +229,18 @@ public class VCFMenu {
         JMenuItem item = new JMenuItem("Sample Name");
         try {
             variant.getAlleles();
-            item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                public void action() {
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
                     Comparator<String> compare = new Comparator<String>() {
                         public int compare(String o, String o1) {
-                            return o.compareTo(o1);
+                            if (sampleSortingDirection) {
+                                return o.compareTo(o1);
+                            } else {
+                                return o1.compareTo(o);
+                            }
                         }
                     };
+                    sampleSortingDirection = !sampleSortingDirection;
                     sortSamples(variant, compare);
                     IGVMainFrame.getInstance().getContentPane().repaint();
                 }
@@ -217,9 +257,10 @@ public class VCFMenu {
             String variantDepth = variant.getAttributeAsString("DP");
             int depth = Integer.valueOf(variantDepth);
             if (depth > -1) {
-                item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                    public void action() {
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
                         DepthComparator compare = new DepthComparator();
+                        depthSortingDirection = !depthSortingDirection;
                         sortSamples(variant, compare);
                         IGVMainFrame.getInstance().getContentPane().repaint();
                     }
@@ -237,9 +278,10 @@ public class VCFMenu {
         try {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
-                item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                    public void action() {
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt) {
                         QualityComparator compare = new QualityComparator();
+                        qualitySortingDirection = !qualitySortingDirection;
                         sortSamples(variant, compare);
                         IGVMainFrame.getInstance().getContentPane().repaint();
                     }
@@ -279,8 +321,6 @@ public class VCFMenu {
 
     private void sortSamples(VariantContext variant, Comparator<String> compare) {
         try {
-            List<String> samples = track.getAllSamples();
-            setSampleGenotypes(variant, samples);
             if ((sampleGenotypes.size() > 1)) {
                 Collections.sort(samples, compare);
                 track.setAllSamples(samples);
@@ -290,14 +330,6 @@ public class VCFMenu {
         }
     }
 
-    public void setSampleGenotypes(VariantContext variant, List<String> samples) {
-        for (String sample : samples) {
-            Genotype genotype = variant.getGenotype(sample);
-            if (genotype != null) {
-                sampleGenotypes.put(sample, genotype);
-            }
-        }
-    }
 
     public Collection<JMenuItem> getSortMenuItems(TrackClickEvent te, Feature closestFeature) {
 
@@ -321,8 +353,8 @@ public class VCFMenu {
 
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapsed");
         m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
-        m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.COLLAPSED);
                 IGVMainFrame.getInstance().repaint();
             }
@@ -330,8 +362,8 @@ public class VCFMenu {
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
         m2.setSelected(displayMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.SQUISHED);
                 IGVMainFrame.getInstance().repaint();
             }
@@ -339,8 +371,8 @@ public class VCFMenu {
 
         JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expanded");
         m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
-        m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
                 IGVMainFrame.getInstance().repaint();
             }
@@ -367,9 +399,10 @@ public class VCFMenu {
             if (genotype2 == genotype1) {
                 return 0;
             } else if (genotype2 > genotype1) {
-                return 1;
+                return genotypeSortingDirection ? 1 : -1;
+            } else {
+                return genotypeSortingDirection ? -1 : 1;
             }
-            return -1;
         }
     }
 
@@ -377,6 +410,7 @@ public class VCFMenu {
     class DepthComparator implements Comparator<String> {
 
         public int compare(String s1, String s2) {
+
 
             String readDepth1 = sampleGenotypes.get(s1).getAttributeAsString("DP");
             String readDepth2 = sampleGenotypes.get(s2).getAttributeAsString("DP");
@@ -397,9 +431,9 @@ public class VCFMenu {
             if (depth2 == depth1) {
                 return 0;
             } else if (depth2 < depth1) {
-                return -1;
+                return depthSortingDirection ? -1 : 1;
             } else {
-                return 1;
+                return depthSortingDirection ? 1 : 1;
             }
         }
     }
@@ -414,9 +448,9 @@ public class VCFMenu {
             if (qual2 == qual1) {
                 return 0;
             } else if (qual2 < qual1) {
-                return -1;
+                return qualitySortingDirection ? -1 : 1;
             } else {
-                return 1;
+                return qualitySortingDirection ? 1 : 1;
             }
         }
     }
@@ -434,5 +468,6 @@ public class VCFMenu {
         }
         return -1; //Unknown
     }
+
 
 }

@@ -45,6 +45,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.NumberFormat;
@@ -586,9 +588,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addSelecteByNameItem(JPopupMenu menu) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Select by name...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 String val = MessageUtils.showInputDialog("Enter read name: ");
                 if (val != null && val.trim().length() > 0) {
                     selectedReadNames.put(val, ColorUtilities.randomColor(selectedReadNames.size() + 1));
@@ -605,9 +607,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         JMenu item = new JMenu("Sort alignments");
 
         JMenuItem m1 = new JMenuItem("by start location");
-        m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m1.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
                 refresh();
 
@@ -616,9 +618,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m1);
 
         JMenuItem m2 = new JMenuItem("by strand");
-        m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m2.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
                 refresh();
 
@@ -627,9 +629,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m2);
 
         JMenuItem m3 = new JMenuItem("by base");
-        m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m3.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
                 refresh();
@@ -639,9 +641,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m3);
 
         JMenuItem m4 = new JMenuItem("by mapping quality");
-        m4.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m4.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
                 refresh();
@@ -652,9 +654,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
         JMenuItem m5 = new JMenuItem("by sample");
-        m5.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m5.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
                 refresh();
@@ -664,9 +666,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         item.add(m5);
 
         JMenuItem m6 = new JMenuItem("by read group");
-        m6.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        m6.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
                 refresh();
@@ -677,9 +679,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         if (dataManager.isPairedEnd()) {
             JMenuItem m7 = new JMenuItem("by insert size");
-            m7.addActionListener(new TrackMenuUtils.TrackActionListener() {
+            m7.addActionListener(new ActionListener() {
 
-                public void action() {
+                public void actionPerformed(ActionEvent aEvt) {
 
                     IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
                     refresh();
@@ -713,8 +715,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (dataManager.isPairedEnd()) {
             JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
             m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
-            m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                public void action() {
+            m1.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.INSERT_SIZE);
                     refresh();
                 }
@@ -724,8 +726,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
             m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
-            m1a.addActionListener(new TrackMenuUtils.TrackActionListener() {
-                public void action() {
+            m1a.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.PAIR_ORIENTATION);
                     refresh();
                 }
@@ -736,8 +738,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("by read strand");
         m2.setSelected(colorByOption == ColorOption.READ_STRAND);
-        m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 setColorOption(ColorOption.READ_STRAND);
                 refresh();
             }
@@ -747,8 +749,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
         m4.setSelected(colorByOption == ColorOption.READ_GROUP);
-        m4.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 setColorOption(ColorOption.READ_GROUP);
                 refresh();
             }
@@ -758,8 +760,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         JRadioButtonMenuItem m5 = new JRadioButtonMenuItem("by sample");
         m5.setSelected(colorByOption == ColorOption.SAMPLE);
-        m5.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m5.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 setColorOption(ColorOption.SAMPLE);
                 refresh();
             }
@@ -776,9 +778,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addPackMenuItem(JPopupMenu menu, final ReferenceFrame frame) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Re-pack alignments");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
@@ -801,9 +803,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Copy read details to clipboard");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 copyToClipboard(te, alignment, location);
 
             }
@@ -819,8 +821,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
         item.setSelected(dataManager.isLoadAsPairs());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 dataManager.setLoadAsPairs(item.isSelected());
                 refresh();
@@ -837,8 +839,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         double location = te.getFrame().getChromosomePosition(e.getX());
         double displayLocation = location + 1;
         final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 gotoMate(te, alignment);
             }
         });
@@ -857,8 +859,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         double displayLocation = location + 1;
         final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
 
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 splitScreenMate(te, alignment);
             }
         });
@@ -871,9 +873,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addClearSelectionsMenuItem(JPopupMenu menu) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Clear selections");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 selectedReadNames.clear();
                 refresh();
             }
@@ -886,8 +888,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
         item.setSelected(renderOptions.showAllBases);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent aEvt) {
                 renderOptions.showAllBases = item.isSelected();
                 refresh();
             }
@@ -898,9 +900,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addCoverageDepthMenuItem(JPopupMenu menu) {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 int maxLevels = dataManager.getMaxLevels();
                 String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
                 try {
@@ -925,9 +927,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addInsertSizeMenuItem(JPopupMenu menu) {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
 
                 InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
                 dlg.setModal(true);
@@ -956,9 +958,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
         item.setSelected(renderOptions.shadeBases);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
@@ -976,9 +978,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Shade alignments intersecting center");
         item.setSelected(renderOptions.shadeCenters);
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
@@ -998,9 +1000,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Show coverage track");
         item.setSelected(getCoverageTrack() != null && getCoverageTrack().isVisible());
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
@@ -1020,9 +1022,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public void addLoadCoverageDataItem(JPopupMenu menu) {
         // Change track height by attribute
         final JMenuItem item = new JCheckBoxMenuItem("Load coverage data...");
-        item.addActionListener(new TrackMenuUtils.TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent aEvt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {

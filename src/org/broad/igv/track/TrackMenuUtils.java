@@ -38,6 +38,8 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -68,7 +70,18 @@ public class TrackMenuUtils {
     };
 
 
-    public static JidePopupMenu getEmptyPopup(String title) {
+    /**
+     * Return a popup menu with items applicable to the collection of tracks.
+     *
+     * @param tracks
+     * @return
+     */
+    public static JPopupMenu getPopupMenu(final Collection<Track> tracks, String title, TrackClickEvent te) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("enter getPopupMenu");
+        }
+
         JidePopupMenu menu = new JidePopupMenu();
 
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
@@ -77,23 +90,29 @@ public class TrackMenuUtils {
             menu.add(popupTitle);
             menu.addSeparator();
         }
-        return menu;
-    }
 
-    /**
-     * Return a popup menu with items applicable to the collection of tracks.
-     *
-     * @param tracks
-     * @return
-     */
-    public static JPopupMenu getPopupMenu(Collection<Track> tracks, String title, TrackClickEvent te) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("enter getPopupMenu");
-        }
-
-        JidePopupMenu menu = getEmptyPopup(title);
         addStandardItems(menu, tracks, te);
+
+        menu.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
+
+            }
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
+                close();
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
+                close();
+            }
+
+            private void close() {
+                IGVMainFrame.getInstance().getTrackManager().clearSelections();
+                IGVMainFrame.getInstance().repaint();
+            }
+
+        });
+
         return menu;
 
     }
@@ -155,18 +174,18 @@ public class TrackMenuUtils {
         }
 
         JMenuItem zoomInItem = new JMenuItem("Zoom in");
-        zoomInItem.addActionListener(new TrackActionListener() {
+        zoomInItem.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 frame.incrementZoom(1);
             }
         });
         menu.add(zoomInItem);
 
         JMenuItem zoomOutItem = new JMenuItem("Zoom out");
-        zoomOutItem.addActionListener(new TrackActionListener() {
+        zoomOutItem.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 frame.incrementZoom(-1);
             }
         });
@@ -214,8 +233,8 @@ public class TrackMenuUtils {
             if (currentRenderers.contains(rendererClass)) {
                 item.setSelected(true);
             }
-            item.addActionListener(new TrackActionListener() {
-                public void action() {
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
                     changeRenderer(tracks, rendererClass);
                 }
             });
@@ -253,9 +272,9 @@ public class TrackMenuUtils {
                     if (currentWindowFunctions.contains(wf)) {
                         item.setSelected(true);
                     }
-                    item.addActionListener(new TrackActionListener() {
+                    item.addActionListener(new ActionListener() {
 
-                        public void action() {
+                        public void actionPerformed(ActionEvent evt) {
                             changeStatType(wf.toString(), tracks);
                         }
                     });
@@ -344,8 +363,8 @@ public class TrackMenuUtils {
         String colorLabel = hasFeatureTracks
                 ? "Change Track Color" : "Change Track Color (Positive Values)";
         JMenuItem item = new JMenuItem(colorLabel);
-        item.addActionListener(new TrackActionListener() {
-            public void action() {
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 changeTrackColor(tracks);
             }
         });
@@ -357,8 +376,8 @@ public class TrackMenuUtils {
             item = new JMenuItem("Change Track Color (Negative Values)");
             item.setToolTipText(
                     "Change the alternate track color.  This color is used when graphing negative values");
-            item.addActionListener(new TrackActionListener() {
-                public void action() {
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
                     changeAltTrackColor(tracks);
                 }
             });
@@ -380,9 +399,9 @@ public class TrackMenuUtils {
     public static JMenuItem getTrackRenameItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Rename Track");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 UIUtilities.invokeOnEventThread(new Runnable() {
 
                     public void run() {
@@ -401,9 +420,9 @@ public class TrackMenuUtils {
 
         JMenuItem item = new JMenuItem("Set Heatmap Scale...");
 
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 if (selectedTracks.size() > 0) {
 
                     ContinuousColorScale colorScale = selectedTracks.iterator().next().getColorScale();
@@ -430,9 +449,9 @@ public class TrackMenuUtils {
     public static JMenuItem getDataRangeItem(final Collection<Track> selectedTracks) {
         JMenuItem item = new JMenuItem("Set Data Range...");
 
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 if (selectedTracks.size() > 0) {
                     // Create a datarange that spans the extent of prev tracks range
                     float mid = 0;
@@ -485,9 +504,9 @@ public class TrackMenuUtils {
         final JCheckBoxMenuItem logScaleItem = new JCheckBoxMenuItem("Log scale");
         final boolean logScale = selectedTracks.iterator().next().getDataRange().isLog();
         logScaleItem.setSelected(logScale);
-        logScaleItem.addActionListener(new TrackActionListener() {
+        logScaleItem.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 DataRange.Type scaleType = logScaleItem.isSelected() ?
                         DataRange.Type.LOG :
                         DataRange.Type.LINEAR;
@@ -517,9 +536,9 @@ public class TrackMenuUtils {
             }
 
             autoscaleItem.setSelected(autoScale);
-            autoscaleItem.addActionListener(new TrackActionListener() {
+            autoscaleItem.addActionListener(new ActionListener() {
 
-                public void action() {
+                public void actionPerformed(ActionEvent evt) {
 
                     boolean autoScale = autoscaleItem.isSelected();
                     for (Track t : selectedTracks) {
@@ -550,9 +569,9 @@ public class TrackMenuUtils {
             }
 
             item.setSelected(showDataRange);
-            item.addActionListener(new TrackActionListener() {
+            item.addActionListener(new ActionListener() {
 
-                public void action() {
+                public void actionPerformed(ActionEvent evt) {
 
                     boolean showDataRange = item.isSelected();
                     for (Track t : selectedTracks) {
@@ -601,8 +620,8 @@ public class TrackMenuUtils {
 
         JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Expanded");
         m1.setSelected(currentMode == Track.DisplayMode.EXPANDED);
-        m1.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 setTrackDisplayMode(tracks, Track.DisplayMode.EXPANDED);
                 refresh();
             }
@@ -610,8 +629,8 @@ public class TrackMenuUtils {
 
         JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("Squished");
         m2.setSelected(currentMode == Track.DisplayMode.SQUISHED);
-        m2.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 setTrackDisplayMode(tracks, Track.DisplayMode.SQUISHED);
                 refresh();
             }
@@ -619,8 +638,8 @@ public class TrackMenuUtils {
 
         JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Collapsed");
         m3.setSelected(currentMode == Track.DisplayMode.COLLAPSED);
-        m3.addActionListener(new TrackMenuUtils.TrackActionListener() {
-            public void action() {
+        m3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 setTrackDisplayMode(tracks, Track.DisplayMode.COLLAPSED);
                 refresh();
             }
@@ -650,9 +669,9 @@ public class TrackMenuUtils {
         boolean multiple = selectedTracks.size() > 1;
 
         JMenuItem item = new JMenuItem("Remove Track" + (multiple ? "s" : ""));
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 if (selectedTracks.isEmpty()) {
                     return;
                 }
@@ -864,9 +883,9 @@ public class TrackMenuUtils {
 
     public static JMenuItem getCopyDetailsItem(final Feature f, final TrackClickEvent evt) {
         JMenuItem item = new JMenuItem("Copy Details to Clipboard");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent e) {
 
                 ReferenceFrame frame = evt.getFrame();
                 int mouseX = evt.getMouseEvent().getX();
@@ -891,9 +910,9 @@ public class TrackMenuUtils {
 
     public static JMenuItem getCopySequenceItem(final Feature f) {
         JMenuItem item = new JMenuItem("Copy Sequence");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 String genomeId = GenomeManager.getInstance().getGenomeId();
                 String chr = f.getChr();
                 int start = f.getStart();
@@ -943,9 +962,9 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Change Track Height...");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 changeTrackHeight(selectedTracks);
             }
         });
@@ -955,9 +974,9 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeKMPlotItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Kaplan-Meier Plot...");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 KMPlotTest.openPlot(selectedTracks);
             }
         });
@@ -967,9 +986,9 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeFeatureWindow(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Set Feature Visibility Window...");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 changeFeatureVisibilityWindow(selectedTracks);
             }
         });
@@ -979,24 +998,14 @@ public class TrackMenuUtils {
     public static JMenuItem getChangeFontSizeItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
         JMenuItem item = new JMenuItem("Change Font Size");
-        item.addActionListener(new TrackActionListener() {
+        item.addActionListener(new ActionListener() {
 
-            public void action() {
+            public void actionPerformed(ActionEvent evt) {
                 changeFontSize(selectedTracks);
             }
         });
         return item;
     }
 
-    public static abstract class TrackActionListener implements ActionListener {
-
-        public abstract void action();
-
-        public void actionPerformed(ActionEvent actionEvent) {
-            action();
-            IGVMainFrame.getInstance().getTrackManager().clearSelections();
-
-        }
-    }
 }
 
