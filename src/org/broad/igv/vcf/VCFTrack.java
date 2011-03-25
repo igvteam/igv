@@ -527,7 +527,7 @@ public class VCFTrack extends FeatureTrack {
     private String getSampleToolTip(String sample, VariantContext variant) {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
         StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("<Chr:" + variant.getChr());
+        toolTip = toolTip.append("Chr:" + variant.getChr());
         toolTip = toolTip.append("<br>Position:" + variant.getStart());
         toolTip = toolTip.append("<br>ID: " + id + "<br>");
         toolTip = toolTip.append("<br><b>Sample Information</b>");
