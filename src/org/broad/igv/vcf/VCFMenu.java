@@ -71,7 +71,7 @@ public class VCFMenu extends JPopupMenu {
 
             private void close() {
                 track.clearSelectedVariant();
-                IGVMainFrame.getInstance().repaint();
+                //IGVMainFrame.getInstance().repaint();
             }
 
         });

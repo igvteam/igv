@@ -32,6 +32,8 @@ import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -176,7 +178,23 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
-        menu.show(e.getComponent(), e.getX(), e.getY());
+        if (menu != null) {
+            menu.addPopupMenuListener(new PopupMenuListener() {
+                public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
+
+                }
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
+                    clearTrackSelections();
+
+                }
+
+                public void popupMenuCanceled(PopupMenuEvent popupMenuEvent) {
+                    clearTrackSelections();
+                }
+
+            });
+            menu.show(e.getComponent(), e.getX(), e.getY());
+        }
 
     }
 
@@ -191,6 +209,7 @@ abstract public class TrackPanelComponent extends JPanel {
 
     protected void clearTrackSelections() {
         IGVMainFrame.getInstance().getTrackManager().clearSelections();
+        IGVMainFrame.getInstance().repaint();
     }
 
     protected void selectTracks(MouseEvent e) {

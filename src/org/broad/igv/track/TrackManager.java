@@ -508,32 +508,18 @@ public class TrackManager {
      */
     public void removeTracks(Collection<Track> tracksToRemove) {
 
-        Set<Track> tmp = new HashSet<Track>(tracksToRemove);
-        // TODO -- replace with track.getDependentTracks(), or similar
-        for (Track t : tracksToRemove) {
-            if (t instanceof AlignmentTrack) {
-                Track ct = ((AlignmentTrack) t).getCoverageTrack();
-                tmp.add(ct);
-                Track sjt = ((AlignmentTrack) t).getSpliceJunctionTrack();
-                if (sjt != null) {
-                    tmp.add(sjt);
-                }
-
-            }
-        }
-
         // Make copy of list as we will be modifying the original in the loop
         ArrayList<TrackPanelScrollPane> panes = new ArrayList(getTrackPanelScrollPanes());
         for (TrackPanelScrollPane tsp : panes) {
             TrackPanel trackPanel = tsp.getTrackPanel();
-            trackPanel.removeTracks(tmp);
+            trackPanel.removeTracks(tracksToRemove);
 
             if (!trackPanel.hasTracks()) {
                 mainFrame.removeDataPanel(tsp.getTrackPanelName());
             }
         }
 
-        for (Track t : tmp) {
+        for (Track t : tracksToRemove) {
             if (t instanceof DragListener) {
                 DragEventManager.getInstance().removeDragListener((DragListener) t);
             }

@@ -153,6 +153,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     @Override
+    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+        return new PopupMenu(te);
+    }
+
+    @Override
     public void setHeight(int preferredHeight) {
         super.setHeight(preferredHeight);
         minHeight = preferredHeight;
@@ -365,7 +370,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 List<String> loci = null;
                 if (FrameManager.isGeneListMode()) {
                     loci = new ArrayList(FrameManager.getFrames().size());
-                    for(ReferenceFrame ref : FrameManager.getFrames()) {
+                    for (ReferenceFrame ref : FrameManager.getFrames()) {
                         loci.add(ref.getLocus().toString());
                     }
                     loci.add(mateLocus);
@@ -502,556 +507,36 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             return super.handleDataClick(te);
         } else if (e.getButton() == MouseEvent.BUTTON1 &&
                 (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
-            double location = te.getFrame().getChromosomePosition(e.getX());
-            double displayLocation = location + 1;
-            Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), te.getFrame());
-            if (alignment != null) {
-                if (selectedReadNames.containsKey(alignment.getReadName())) {
-                    selectedReadNames.remove(alignment.getReadName());
-                } else {
-                    Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
-                            ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
-                    selectedReadNames.put(alignment.getReadName(), c);
-                }
-                Object source = e.getSource();
-                if (source instanceof JComponent) {
-                    ((JComponent) source).repaint();
-                }
-            }
-            return true;
+            final ReferenceFrame frame = te.getFrame();
 
+            if (frame != null) {
+                double location = frame.getChromosomePosition(e.getX());
+                double displayLocation = location + 1;
+                Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), frame);
+                if (alignment != null) {
+                    if (selectedReadNames.containsKey(alignment.getReadName())) {
+                        selectedReadNames.remove(alignment.getReadName());
+                    } else {
+                        Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
+                                ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
+                        selectedReadNames.put(alignment.getReadName(), c);
+                    }
+                    Object source = e.getSource();
+                    if (source instanceof JComponent) {
+                        ((JComponent) source).repaint();
+                    }
+                }
+                return true;
+            }
         }
         return false;
     }
 
 
-    public JPopupMenu getPopupMenu(final TrackClickEvent e) {
-
-        JPopupMenu popupMenu = new JidePopupMenu();
-
-        JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
-
-        Font newFont = popupMenu.getFont().deriveFont(Font.BOLD, 12);
-        popupTitle.setFont(newFont);
-        if (popupTitle != null) {
-            popupMenu.add(popupTitle);
-        }
-
-        addSortMenuItem(popupMenu, e.getFrame());
-        addPackMenuItem(popupMenu, e.getFrame());
-        addCoverageDepthMenuItem(popupMenu);
-        popupMenu.addSeparator();
-        addColorByMenuItem(popupMenu);
-
-        addShadeBaseMenuItem(popupMenu);
-        addShadeCentersMenuItem(popupMenu);
-
-        popupMenu.addSeparator();
-        if (dataManager.isPairedEnd()) {
-            addViewAsPairsMenuItem(popupMenu, e);
-            addGoToMate(popupMenu, e);
-        }
-        showMateRegion(popupMenu, e);
-        addShowAllBasesMenuItem(popupMenu);
-        addInsertSizeMenuItem(popupMenu);
-
-        popupMenu.addSeparator();
-        addShowCoverageItem(popupMenu);
-        addLoadCoverageDataItem(popupMenu);
-
-        addCopyToClipboardItem(popupMenu, e);
-        popupMenu.addSeparator();
-
-        addSelecteByNameItem(popupMenu);
-        popupMenu.addSeparator();
-
-        JLabel trackSettingsHeading = new JLabel("  Track Settings", JLabel.LEFT);
-        trackSettingsHeading.setFont(newFont);
-
-        popupMenu.add(trackSettingsHeading);
-
-
-        Collection<Track> tmp = new ArrayList();
-        tmp.add(this);
-        popupMenu.add(TrackMenuUtils.getTrackRenameItem(tmp));
-
-        TrackMenuUtils.addDisplayModeItems(tmp, popupMenu);
-
-        popupMenu.add(TrackMenuUtils.getRemoveMenuItem(tmp));
-
-        popupMenu.addSeparator();
-        addClearSelectionsMenuItem(popupMenu);
-
-        return popupMenu;
-    }
-
-    public void addSelecteByNameItem(JPopupMenu menu) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Select by name...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                String val = MessageUtils.showInputDialog("Enter read name: ");
-                if (val != null && val.trim().length() > 0) {
-                    selectedReadNames.put(val, ColorUtilities.randomColor(selectedReadNames.size() + 1));
-                    refresh();
-                }
-            }
-        });
-
-        menu.add(item);
-    }
-
-    public void addSortMenuItem(JPopupMenu menu, final ReferenceFrame frame) {
-        // Change track height by attribute
-        JMenu item = new JMenu("Sort alignments");
-
-        JMenuItem m1 = new JMenuItem("by start location");
-        m1.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
-                refresh();
-
-            }
-        });
-        item.add(m1);
-
-        JMenuItem m2 = new JMenuItem("by strand");
-        m2.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
-                refresh();
-
-            }
-        });
-        item.add(m2);
-
-        JMenuItem m3 = new JMenuItem("by base");
-        m3.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
-                refresh();
-
-            }
-        });
-        item.add(m3);
-
-        JMenuItem m4 = new JMenuItem("by mapping quality");
-        m4.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
-                refresh();
-
-            }
-        });
-        item.add(m4);
-
-
-        JMenuItem m5 = new JMenuItem("by sample");
-        m5.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
-                refresh();
-
-            }
-        });
-        item.add(m5);
-
-        JMenuItem m6 = new JMenuItem("by read group");
-        m6.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-
-                IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
-                refresh();
-
-            }
-        });
-        item.add(m6);
-
-        if (dataManager.isPairedEnd()) {
-            JMenuItem m7 = new JMenuItem("by insert size");
-            m7.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
-                    refresh();
-
-                }
-            });
-            item.add(m7);
-        }
-
-
-        if (frame != null && frame.getScale() >= MIN_ALIGNMENT_SPACING) {
-            item.setEnabled(false);
-        }
-
-
-        menu.add(item);
-    }
-
-
-    private void setColorOption(ColorOption option) {
-        colorByOption = option;
-        PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY, option.toString());
-    }
-
-    public void addColorByMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        JMenu colorMenu = new JMenu("Color alignments");
-
-        ButtonGroup group = new ButtonGroup();
-
-        if (dataManager.isPairedEnd()) {
-            JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
-            m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
-            m1.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.INSERT_SIZE);
-                    refresh();
-                }
-            });
-            colorMenu.add(m1);
-            group.add(m1);
-
-            JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
-            m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
-            m1a.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.PAIR_ORIENTATION);
-                    refresh();
-                }
-            });
-            colorMenu.add(m1a);
-            group.add(m1a);
-        }
-
-        JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("by read strand");
-        m2.setSelected(colorByOption == ColorOption.READ_STRAND);
-        m2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                setColorOption(ColorOption.READ_STRAND);
-                refresh();
-            }
-        });
-        colorMenu.add(m2);
-        group.add(m2);
-
-        JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
-        m4.setSelected(colorByOption == ColorOption.READ_GROUP);
-        m4.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                setColorOption(ColorOption.READ_GROUP);
-                refresh();
-            }
-        });
-        colorMenu.add(m4);
-        group.add(m4);
-
-        JRadioButtonMenuItem m5 = new JRadioButtonMenuItem("by sample");
-        m5.setSelected(colorByOption == ColorOption.SAMPLE);
-        m5.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                setColorOption(ColorOption.SAMPLE);
-                refresh();
-            }
-        });
-        colorMenu.add(m5);
-        group.add(m5);
-
-
-        menu.add(colorMenu);
-
-    }
-
-
-    public void addPackMenuItem(JPopupMenu menu, final ReferenceFrame frame) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Re-pack alignments");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        IGVMainFrame.getInstance().getTrackManager().packAlignmentTracks();
-                        refresh();
-                    }
-                });
-            }
-        });
-
-        menu.add(item);
-    }
-
-    public void addCopyToClipboardItem(JPopupMenu menu, final TrackClickEvent te) {
-
-        final MouseEvent me = te.getMouseEvent();
-        final double location = te.getFrame().getChromosomePosition(me.getX());
-        double displayLocation = location + 1;
-        final Alignment alignment = getAlignmentAt(displayLocation, me.getY(), te.getFrame());
-
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Copy read details to clipboard");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                copyToClipboard(te, alignment, location);
-
-            }
-        });
-        if (te.getFrame() == null || alignment == null) {
-            item.setEnabled(false);
-        }
-
-        menu.add(item);
-    }
-
-    public void addViewAsPairsMenuItem(JPopupMenu menu, final TrackClickEvent te) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
-        item.setSelected(dataManager.isLoadAsPairs());
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-
-                dataManager.setLoadAsPairs(item.isSelected());
-                refresh();
-
-            }
-        });
-        menu.add(item);
-    }
-
-    public void addGoToMate(JPopupMenu menu, final TrackClickEvent te) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Go to mate");
-        MouseEvent e = te.getMouseEvent();
-        double location = te.getFrame().getChromosomePosition(e.getX());
-        double displayLocation = location + 1;
-        final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                gotoMate(te, alignment);
-            }
-        });
-        if (te.getFrame() == null || alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
-            item.setEnabled(false);
-        }
-        menu.add(item);
-    }
-
-
-    public void showMateRegion(JPopupMenu menu, final TrackClickEvent te) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("View mate region in split screen");
-        MouseEvent e = te.getMouseEvent();
-        double location = te.getFrame().getChromosomePosition(e.getX());
-        double displayLocation = location + 1;
-        final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), te.getFrame());
-
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                splitScreenMate(te, alignment);
-            }
-        });
-        if (te.getFrame() == null || alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
-            item.setEnabled(false);
-        }
-        menu.add(item);
-    }
-
-    public void addClearSelectionsMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        JMenuItem item = new JMenuItem("Clear selections");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                selectedReadNames.clear();
-                refresh();
-            }
-        });
-
-        menu.add(item);
-    }
-
-    public void addShowAllBasesMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
-        item.setSelected(renderOptions.showAllBases);
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent aEvt) {
-                renderOptions.showAllBases = item.isSelected();
-                refresh();
-            }
-        });
-        menu.add(item);
-    }
-
-    public void addCoverageDepthMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                int maxLevels = dataManager.getMaxLevels();
-                String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
-                try {
-                    int newMaxLevels = Integer.parseInt(val);
-                    if (newMaxLevels != maxLevels) {
-                        dataManager.setMaxLevels(newMaxLevels);
-                        //dataManager.reload();
-                        refresh();
-                    }
-                }
-                catch (NumberFormatException ex) {
-                    MessageUtils.showMessage("Insert size must be an integer value: " + val);
-                }
-
-            }
-        });
-
-
-        menu.add(item);
-    }
-
-    public void addInsertSizeMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-
-                InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
-                dlg.setModal(true);
-                dlg.setVisible(true);
-                if (!dlg.isCanceled()) {
-                    renderOptions.setComputeIsizes(dlg.isComputeIsize());
-                    //renderOptions.setMinPercentile(dlg.getMinPercentile());
-                    // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
-                    renderOptions.setMinInsertSizeThreshold(dlg.getMinThreshold());
-                    renderOptions.setMaxInsertSizeThreshold(dlg.getMaxThreshold());
-                    refresh();
-                }
-            }
-        });
-
-        if (dataManager.isPairedEnd()) {
-            menu.add(item);
-        }
-    }
-
     private void refresh() {
         IGVMainFrame.getInstance().repaintDataPanels();
     }
 
-    public void addShadeBaseMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
-        item.setSelected(renderOptions.shadeBases);
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        renderOptions.shadeBases = item.isSelected();
-                        refresh();
-                    }
-                });
-            }
-        });
-
-        menu.add(item);
-    }
-
-    public void addShadeCentersMenuItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Shade alignments intersecting center");
-        item.setSelected(renderOptions.shadeCenters);
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-
-                        renderOptions.shadeCenters = item.isSelected();
-                        refresh();
-                    }
-                });
-            }
-        });
-
-        menu.add(item);
-    }
-
-
-    public void addShowCoverageItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Show coverage track");
-        item.setSelected(getCoverageTrack() != null && getCoverageTrack().isVisible());
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        if (getCoverageTrack() != null) {
-                            getCoverageTrack().setVisible(item.isSelected());
-                            refresh();
-                            IGVMainFrame.getInstance().repaintNamePanels();
-                        }
-                    }
-                });
-            }
-        });
-
-        menu.add(item);
-    }
-
-    public void addLoadCoverageDataItem(JPopupMenu menu) {
-        // Change track height by attribute
-        final JMenuItem item = new JCheckBoxMenuItem("Load coverage data...");
-        item.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent aEvt) {
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-
-                        FileChooserDialog trackFileDialog = IGVMainFrame.getInstance().getTrackFileChooser();
-                        trackFileDialog.setMultiSelectionEnabled(false);
-                        trackFileDialog.setVisible(true);
-                        if (!trackFileDialog.isCanceled()) {
-                            File file = trackFileDialog.getSelectedFile();
-                            String path = file.getAbsolutePath();
-                            if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-
-                                TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                                TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage");
-                                getCoverageTrack().setDataSource(ds);
-                                refresh();
-                            } else {
-                                MessageUtils.showMessage("Coverage data must be in .tdf format");
-                            }
-                        }
-                    }
-                });
-            }
-        });
-
-        menu.add(item);
-    }
 
     @Override
     public Map<String, String> getPersistentState() {
@@ -1229,6 +714,549 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         public void setMaxInsertSizeThreshold(int maxInsertSizeThreshold) {
             this.maxInsertSizeThreshold = maxInsertSizeThreshold;
         }
+    }
+
+    class PopupMenu extends JidePopupMenu {
+
+        PopupMenu(final TrackClickEvent e) {
+
+            JLabel popupTitle = new JLabel("  " + AlignmentTrack.this.getName(), JLabel.CENTER);
+
+            Font newFont = getFont().deriveFont(Font.BOLD, 12);
+            popupTitle.setFont(newFont);
+            if (popupTitle != null) {
+                add(popupTitle);
+            }
+
+            addSortMenuItem(e.getFrame());
+            addPackMenuItem();
+            addCoverageDepthMenuItem();
+            addSeparator();
+            addColorByMenuItem();
+
+            addShadeBaseMenuItem();
+            addShadeCentersMenuItem();
+
+            addSeparator();
+            if (dataManager.isPairedEnd()) {
+                addViewAsPairsMenuItem();
+                addGoToMate(e);
+            }
+            showMateRegion(e);
+            addShowAllBasesMenuItem();
+            addInsertSizeMenuItem();
+
+            addSeparator();
+            addShowCoverageItem();
+            addLoadCoverageDataItem();
+
+            addCopyToClipboardItem(e);
+            addSeparator();
+
+            addSelecteByNameItem();
+            addSeparator();
+
+            JLabel trackSettingsHeading = new JLabel("  Track Settings", JLabel.LEFT);
+            trackSettingsHeading.setFont(newFont);
+
+            add(trackSettingsHeading);
+
+
+            Collection<Track> tmp = new ArrayList();
+            tmp.add(AlignmentTrack.this);
+            add(TrackMenuUtils.getTrackRenameItem(tmp));
+
+            TrackMenuUtils.addDisplayModeItems(tmp, this);
+
+            add(TrackMenuUtils.getRemoveMenuItem(tmp));
+
+            addSeparator();
+            addClearSelectionsMenuItem();
+
+            return;
+        }
+
+        public void addSelecteByNameItem() {
+            // Change track height by attribute
+            JMenuItem item = new JMenuItem("Select by name...");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    String val = MessageUtils.showInputDialog("Enter read name: ");
+                    if (val != null && val.trim().length() > 0) {
+                        selectedReadNames.put(val, ColorUtilities.randomColor(selectedReadNames.size() + 1));
+                        refresh();
+                    }
+                }
+            });
+
+            add(item);
+        }
+
+        public void addSortMenuItem(ReferenceFrame frame) {
+            // Change track height by attribute
+            JMenu item = new JMenu("Sort alignments");
+
+            JMenuItem m1 = new JMenuItem("by start location");
+            m1.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
+                    refresh();
+
+                }
+            });
+            item.add(m1);
+
+            JMenuItem m2 = new JMenuItem("by strand");
+            m2.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
+                    refresh();
+
+                }
+            });
+            item.add(m2);
+
+            JMenuItem m3 = new JMenuItem("by base");
+            m3.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
+                    refresh();
+
+                }
+            });
+            item.add(m3);
+
+            JMenuItem m4 = new JMenuItem("by mapping quality");
+            m4.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
+                    refresh();
+
+                }
+            });
+            item.add(m4);
+
+
+            JMenuItem m5 = new JMenuItem("by sample");
+            m5.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
+                    refresh();
+
+                }
+            });
+            item.add(m5);
+
+            JMenuItem m6 = new JMenuItem("by read group");
+            m6.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
+                    refresh();
+
+                }
+            });
+            item.add(m6);
+
+            if (dataManager.isPairedEnd()) {
+                JMenuItem m7 = new JMenuItem("by insert size");
+                m7.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+
+                        IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
+                        refresh();
+
+                    }
+                });
+                item.add(m7);
+            }
+
+
+            if (frame != null && frame.getScale() >= MIN_ALIGNMENT_SPACING) {
+                item.setEnabled(false);
+            }
+
+
+            add(item);
+        }
+
+
+        private void setColorOption(ColorOption option) {
+            colorByOption = option;
+            PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY, option.toString());
+        }
+
+        public void addColorByMenuItem() {
+            // Change track height by attribute
+            JMenu colorMenu = new JMenu("Color alignments");
+
+            ButtonGroup group = new ButtonGroup();
+
+            if (dataManager.isPairedEnd()) {
+                JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
+                m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
+                m1.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        setColorOption(ColorOption.INSERT_SIZE);
+                        refresh();
+                    }
+                });
+                colorMenu.add(m1);
+                group.add(m1);
+
+                JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
+                m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
+                m1a.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        setColorOption(ColorOption.PAIR_ORIENTATION);
+                        refresh();
+                    }
+                });
+                colorMenu.add(m1a);
+                group.add(m1a);
+            }
+
+            JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("by read strand");
+            m2.setSelected(colorByOption == ColorOption.READ_STRAND);
+            m2.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.READ_STRAND);
+                    refresh();
+                }
+            });
+            colorMenu.add(m2);
+            group.add(m2);
+
+            JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
+            m4.setSelected(colorByOption == ColorOption.READ_GROUP);
+            m4.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.READ_GROUP);
+                    refresh();
+                }
+            });
+            colorMenu.add(m4);
+            group.add(m4);
+
+            JRadioButtonMenuItem m5 = new JRadioButtonMenuItem("by sample");
+            m5.setSelected(colorByOption == ColorOption.SAMPLE);
+            m5.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.SAMPLE);
+                    refresh();
+                }
+            });
+            colorMenu.add(m5);
+            group.add(m5);
+
+
+            add(colorMenu);
+
+        }
+
+
+        public void addPackMenuItem() {
+            // Change track height by attribute
+            JMenuItem item = new JMenuItem("Re-pack alignments");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            IGVMainFrame.getInstance().getTrackManager().packAlignmentTracks();
+                            refresh();
+                        }
+                    });
+                }
+            });
+
+            add(item);
+        }
+
+        public void addCopyToClipboardItem(final TrackClickEvent te) {
+
+            final MouseEvent me = te.getMouseEvent();
+            JMenuItem item = new JMenuItem("Copy read details to clipboard");
+
+            final ReferenceFrame frame = te.getFrame();
+            if (frame == null) {
+                item.setEnabled(false);
+            } else {
+                final double location = frame.getChromosomePosition(me.getX());
+                double displayLocation = location + 1;
+                final Alignment alignment = getAlignmentAt(displayLocation, me.getY(), frame);
+
+                // Change track height by attribute
+                item.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+                        copyToClipboard(te, alignment, location);
+
+                    }
+                });
+                if (alignment == null) {
+                    item.setEnabled(false);
+                }
+            }
+
+            add(item);
+        }
+
+        public void addViewAsPairsMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("View as pairs");
+            item.setSelected(dataManager.isLoadAsPairs());
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    dataManager.setLoadAsPairs(item.isSelected());
+                    refresh();
+
+                }
+            });
+            add(item);
+        }
+
+        public void addGoToMate(final TrackClickEvent te) {
+            // Change track height by attribute
+            JMenuItem item = new JMenuItem("Go to mate");
+            MouseEvent e = te.getMouseEvent();
+
+            final ReferenceFrame frame = te.getFrame();
+            if (frame == null) {
+                item.setEnabled(false);
+            } else {
+                double location = frame.getChromosomePosition(e.getX());
+
+                double displayLocation = location + 1;
+                final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), frame);
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        gotoMate(te, alignment);
+                    }
+                });
+                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
+                    item.setEnabled(false);
+                }
+            }
+            add(item);
+        }
+
+
+        public void showMateRegion(final TrackClickEvent te) {
+            // Change track height by attribute
+            JMenuItem item = new JMenuItem("View mate region in split screen");
+            MouseEvent e = te.getMouseEvent();
+
+            final ReferenceFrame frame = te.getFrame();
+            if (frame == null) {
+                item.setEnabled(false);
+            } else {
+                double location = frame.getChromosomePosition(e.getX());
+                double displayLocation = location + 1;
+                final Alignment alignment = getAlignmentAt(displayLocation, e.getY(), frame);
+
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        splitScreenMate(te, alignment);
+                    }
+                });
+                if (alignment == null || !alignment.isPaired() || !alignment.getMate().isMapped()) {
+                    item.setEnabled(false);
+                }
+            }
+            add(item);
+        }
+
+        public void addClearSelectionsMenuItem() {
+            // Change track height by attribute
+            JMenuItem item = new JMenuItem("Clear selections");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    selectedReadNames.clear();
+                    refresh();
+                }
+            });
+            add(item);
+        }
+
+        public void addShowAllBasesMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
+            item.setSelected(renderOptions.showAllBases);
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    renderOptions.showAllBases = item.isSelected();
+                    refresh();
+                }
+            });
+            add(item);
+        }
+
+        public void addCoverageDepthMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Set maximum coverage depth ...");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    int maxLevels = dataManager.getMaxLevels();
+                    String val = MessageUtils.showInputDialog("Maximum coverage depth", String.valueOf(maxLevels));
+                    try {
+                        int newMaxLevels = Integer.parseInt(val);
+                        if (newMaxLevels != maxLevels) {
+                            dataManager.setMaxLevels(newMaxLevels);
+                            //dataManager.reload();
+                            refresh();
+                        }
+                    }
+                    catch (NumberFormatException ex) {
+                        MessageUtils.showMessage("Insert size must be an integer value: " + val);
+                    }
+
+                }
+            });
+            add(item);
+        }
+
+        public void addInsertSizeMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Set insert size options ...");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+
+                    InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
+                    dlg.setModal(true);
+                    dlg.setVisible(true);
+                    if (!dlg.isCanceled()) {
+                        renderOptions.setComputeIsizes(dlg.isComputeIsize());
+                        //renderOptions.setMinPercentile(dlg.getMinPercentile());
+                        // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
+                        renderOptions.setMinInsertSizeThreshold(dlg.getMinThreshold());
+                        renderOptions.setMaxInsertSizeThreshold(dlg.getMaxThreshold());
+                        refresh();
+                    }
+                }
+            });
+
+            if (dataManager.isPairedEnd()) {
+                add(item);
+            }
+        }
+
+
+        public void addShadeBaseMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Shade base by quality");
+            item.setSelected(renderOptions.shadeBases);
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            renderOptions.shadeBases = item.isSelected();
+                            refresh();
+                        }
+                    });
+                }
+            });
+
+            add(item);
+        }
+
+        public void addShadeCentersMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Shade alignments intersecting center");
+            item.setSelected(renderOptions.shadeCenters);
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+
+                            renderOptions.shadeCenters = item.isSelected();
+                            refresh();
+                        }
+                    });
+                }
+            });
+
+            add(item);
+        }
+
+
+        public void addShowCoverageItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Show coverage track");
+            item.setSelected(getCoverageTrack() != null && getCoverageTrack().isVisible());
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            if (getCoverageTrack() != null) {
+                                getCoverageTrack().setVisible(item.isSelected());
+                                refresh();
+                                IGVMainFrame.getInstance().repaintNamePanels();
+                            }
+                        }
+                    });
+                }
+            });
+
+            add(item);
+        }
+
+        public void addLoadCoverageDataItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Load coverage data...");
+            item.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+
+                            FileChooserDialog trackFileDialog = IGVMainFrame.getInstance().getTrackFileChooser();
+                            trackFileDialog.setMultiSelectionEnabled(false);
+                            trackFileDialog.setVisible(true);
+                            if (!trackFileDialog.isCanceled()) {
+                                File file = trackFileDialog.getSelectedFile();
+                                String path = file.getAbsolutePath();
+                                if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
+
+                                    TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
+                                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage");
+                                    getCoverageTrack().setDataSource(ds);
+                                    refresh();
+                                } else {
+                                    MessageUtils.showMessage("Coverage data must be in .tdf format");
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            add(item);
+        }
+
     }
 
 

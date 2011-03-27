@@ -234,7 +234,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     showGroupNames = item.isSelected();
-                    clearTrackSelections();
                     repaint();
                 }
             });
@@ -245,7 +244,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             item2.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     showSampleNamesWhenGrouped = item2.isSelected();
-                    clearTrackSelections();
                     repaint();
                 }
             });
