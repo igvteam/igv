@@ -55,6 +55,7 @@ public class CytobandPanel extends JPanel {
     double cytobandScale;
     ReferenceFrame frame;
     private Rectangle currentRegionRect;
+    private CytobandRenderer cytobandRenderer;
 
     public CytobandPanel(ReferenceFrame frame) {
         this(frame, true);
@@ -70,6 +71,7 @@ public class CytobandPanel extends JPanel {
         if (mouseable) {
             initMouseAdapter();
         }
+        cytobandRenderer = (new CytobandRenderer());
     }
 
     
@@ -99,7 +101,7 @@ public class CytobandPanel extends JPanel {
             return;
         }
 
-        (new CytobandRenderer()).draw(cytobands, g, cytoRect, frame);
+        cytobandRenderer.draw(cytobands, g, cytoRect, frame);
 
         int chromosomeLength = getReferenceFrame().getChromosomeLength();
         cytobandScale = ((double) chromosomeLength) / dataPanelWidth;

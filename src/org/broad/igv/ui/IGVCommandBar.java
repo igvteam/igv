@@ -30,19 +30,17 @@ import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
-import org.broad.igv.session.Session;
+import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
@@ -82,7 +80,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     final private int DEFAULT_CHROMOSOME_DROPDOWN_WIDTH = 120;
     private JideButton backButton;
     private JideButton forwardButton;
-    private JButton fitToWindowButton;
+    private JideButton fitToWindowButton;
     private static final Font GENE_LIST_FONT = FontManager.getScalableFont(Font.BOLD, 14);
 
     /**
@@ -467,6 +465,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         });
 
+        final History history = owner.getSession().getHistory();
+        forwardButton.setEnabled(history.canGoForward());
+        backButton.setEnabled(history.canGoBack());
+
+
     }
 
     private ReferenceFrame getDefaultReferenceFrame() {
@@ -484,7 +487,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         homeButton.setEnabled(!geneListMode);
         roiToggleButton.setEnabled(!geneListMode);
     }
-
 
     static class ComboBoxRenderer implements ListCellRenderer {
 
@@ -967,6 +969,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
+        homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
 
         homeButton.setIcon(
                 new javax.swing.ImageIcon(
@@ -983,10 +986,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         // toolPanel.setBorder(
         // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        backButton = new JideButton("<");
-        //backButton.setIcon(
-        //        new javax.swing.ImageIcon(
-        //                getClass().getResource("/toolbarButtonGraphics/navigation/Back24.gif")));    // NOI18N
+        backButton = new JideButton();
+        backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        backButton.setIcon(
+                new javax.swing.ImageIcon(
+                        getClass().getResource("/images/left-arrow.gif")));    // NOI18N
 
         backButton.setToolTipText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
@@ -996,22 +1000,26 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
             }
         });
+        backButton.setEnabled(false);
         toolPanel.add(backButton, JideBoxLayout.FIX);
 
-        forwardButton = new JideButton(">");
-        //forwardButton.setIcon(
-        //        new javax.swing.ImageIcon(
-        //                getClass().getResource("/toolbarButtonGraphics/navigation/Forward24.gif")));    // NOI18N
+        forwardButton = new JideButton();
+        forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        forwardButton.setIcon(
+                new javax.swing.ImageIcon(
+                        getClass().getResource("/images/right-arrow.gif")));    // NOI18N
         forwardButton.setToolTipText("Forward");
         forwardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 IGVMainFrame.getInstance().getSession().getHistory().forward();
             }
         });
+        forwardButton.setEnabled(false);
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
 
  
         refreshButton = new com.jidesoft.swing.JideButton();
+        refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         refreshButton.setAlignmentX(RIGHT_ALIGNMENT);
         refreshButton.setIcon(
                 new javax.swing.ImageIcon(
@@ -1030,6 +1038,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 IconFactory.getInstance().getIcon(IconFactory.IconID.REGION_OF_INTEREST);
 
         roiToggleButton = new JideToggleButton(regionOfInterestIcon);
+        roiToggleButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         roiToggleButton.setAlignmentX(RIGHT_ALIGNMENT);
         roiToggleButton.setToolTipText("Define a region of interest.");
         roiToggleButton.setMaximumSize(new java.awt.Dimension(32, 32));
@@ -1047,6 +1056,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 IconFactory.getInstance().getIcon(IconFactory.IconID.REGION_OF_INTEREST);
 
         fitToWindowButton = new JideButton();
+        fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
         fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/collapseall.gif")));
         fitToWindowButton.setToolTipText("Squish tracks to fit in window.");
@@ -1104,7 +1114,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if (genome != null) {
             String chr = genome.getHomeChromosome();
             getDefaultReferenceFrame().setChromosomeName(chr);
-            IGVMainFrame.getInstance().getSession().getHistory().push(chr);
+            IGVMainFrame.getInstance().getSession().getHistory().push(chr, getDefaultReferenceFrame().getZoom());
             chromosomeComboBox.setSelectedItem(chr);
             updateCurrentCoordinates();
             owner.chromosomeChangeEvent();

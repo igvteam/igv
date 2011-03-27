@@ -147,7 +147,7 @@ public class RegionOfInterestPanel extends JPanel {
                 frame.jumpTo(roi.getChr(), roi.getStart(), roi.getEnd());
 
                 String locusString = roi.getLocusString();
-                IGVMainFrame.getInstance().getSession().getHistory().push(locusString);
+                IGVMainFrame.getInstance().getSession().getHistory().push(locusString, frame.getZoom());
 
             }
         });

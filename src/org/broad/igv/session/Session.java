@@ -105,7 +105,8 @@ public class Session {
 
 
     public void recordHistory() {
-        history.push(FrameManager.getDefaultFrame().getFormattedLocusString());
+        final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
+        history.push(defaultFrame.getFormattedLocusString(), defaultFrame.getZoom());
     }
 
     public String getSessionVersion() {
@@ -201,12 +202,12 @@ public class Session {
             if (locus == null) {
                 Genome genome = GenomeManager.getInstance().getCurrentGenome();
                 if (genome != null) {
-                    getReferenceFrame().setChrName(genome.getHomeChromosome());
+                    referenceFrame.setChrName(genome.getHomeChromosome());
                 }
             } else {
-                getReferenceFrame().jumpTo(locus.chr, locus.start, locus.end);
+               referenceFrame.jumpTo(locus.chr, locus.start, locus.end);
             }
-            getHistory().push(locusString);
+            getHistory().push(locusString, referenceFrame.getZoom());
         }
         catch (Exception e) {
             MessageUtils.showMessage("Error setting locus string: " + locusString + " (" + e.toString() + ")");
@@ -313,7 +314,7 @@ public class Session {
         return history;
     }
 
-    public List<String> getAllHistory() {
+    public List<History.Entry> getAllHistory() {
         return getHistory().getAllHistory();
     }
 

@@ -135,7 +135,7 @@ public class ReferenceFrame {
             }
 
             if (zoom > maxZoom) {
-                setZoom(maxZoom);
+                zoomTo(maxZoom);
             }
         }
 
@@ -143,8 +143,7 @@ public class ReferenceFrame {
         // TODO -- fire chromosome changed event rather than this
     }
 
-    private void setZoom(int newZoom) {
-
+    private void zoomTo(int newZoom) {
         // All  zoom events "release" the frame, enabling pan and zoom
         end = -1;   // <= A lousy convention, means end is computed (free to float)
 
@@ -157,7 +156,14 @@ public class ReferenceFrame {
         if (IGVMainFrame.hasInstance()) {
             IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
         }
+    }
 
+    /**
+     * This setter is provided to restore state, it does not do a "zoom" action
+     * @param zoom
+     */
+    public void setZoom(int zoom) {
+        this.zoom = zoom;
     }
 
     public void incrementZoom(int increment) {
@@ -191,7 +197,7 @@ public class ReferenceFrame {
         } else {
             if (zoom != newZoom) {
 
-                setZoom(newZoom);
+                zoomTo(newZoom);
                 computeLocationScale();
 
                 double newLocationScale = getScale();
@@ -210,7 +216,7 @@ public class ReferenceFrame {
     }
 
     public void recordHistory() {
-        IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString());
+        IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
 
     private void jumpToChromosomeForGenomeLocation(double locationMB) {
@@ -245,7 +251,7 @@ public class ReferenceFrame {
             chrName = chr;
             computeMaxZoom();
             if (zoom > maxZoom) {
-                setZoom(maxZoom);
+                zoomTo(maxZoom);
             }
         }
         double windowWidth = (pixelWidth * getScale()) / 2;
@@ -396,7 +402,7 @@ public class ReferenceFrame {
         if ((chrName == null) || !name.equals(chrName) || force) {
             chrName = name;
             origin = 0;
-            setZoom(0);
+            zoomTo(0);
             computeMaxZoom();
 
             //dhmay: if there's a RegionNavigatorDialog around, need to update it.

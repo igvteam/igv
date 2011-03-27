@@ -182,7 +182,7 @@ public class SearchCommand implements Command {
 
         if (success) {
             if (recordHistory) {
-                IGVMainFrame.getInstance().getSession().getHistory().push(searchString);
+                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
             }
         } else {
             if (!IGVMainFrame.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {

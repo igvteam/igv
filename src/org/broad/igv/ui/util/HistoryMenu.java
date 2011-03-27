@@ -79,7 +79,8 @@ public class HistoryMenu extends JMenu {
                 final History history = IGVMainFrame.getInstance().getSession().getHistory();
 
 
-                List<String> allLoci = IGVMainFrame.getInstance().getSession().getAllHistory();
+                List<History.Entry> allLoci = IGVMainFrame.getInstance().getSession().getAllHistory();
+                
                 boolean hasBack = history.peekBack() != null;
                 boolean hasForward = history.peekForward() != null;
                 backItem.setEnabled(hasBack);
@@ -97,11 +98,11 @@ public class HistoryMenu extends JMenu {
                 // Do in reverse order
 
                 for (int idx = allLoci.size() - 1; idx >= 0; idx--) {
-                    String s = allLoci.get(idx);
-                    final JMenuItem item = new JMenuItem(s);
+                    final History.Entry s = allLoci.get(idx);
+                    final JMenuItem item = new JMenuItem(s.toString());
                     item.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
-                            IGVMainFrame.getInstance().getSession().getHistory().processItem(item.getText());
+                            IGVMainFrame.getInstance().getSession().getHistory().processItem(s);
                         }
                     });
                     add(item);

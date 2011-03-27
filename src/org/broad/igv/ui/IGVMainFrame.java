@@ -1205,7 +1205,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         GeneList gl = GeneListManager.getInstance().getGeneList(listID);
 
                         if (recordHistory) {
-                            session.getHistory().push("List: " + listID);
+                            session.getHistory().push("List: " + listID, 0);
                         }
                         session.setCurrentGeneList(gl);
                     }
@@ -2213,9 +2213,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
         Main.IGVArgs igvArgs = new Main.IGVArgs(args);
         SwingWorker worker = new StartupWorker(igvArgs);
         worker.execute();
-
-
     }
+
 
 
     /**
@@ -2359,6 +2358,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
             if (igvArgs.getLocusString() != null) {
                 goToLocus(igvArgs.getLocusString());
             }
+
+            session.recordHistory();
 
 
             UIUtilities.invokeOnEventThread(new Runnable() {

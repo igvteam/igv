@@ -39,8 +39,8 @@ public class History {
     int maxEntries = 100;
     int currPos = 0;
 
-    LinkedList<String> activeStack;
-    List<String> allHistory;
+    LinkedList<Entry> activeStack;
+    List<Entry> allHistory;
 
     public History(int maxEntries) {
         this.maxEntries = maxEntries;
@@ -49,71 +49,81 @@ public class History {
     }
 
 
-    public void push(String s) {
+    public void push(String s, int zoom) {
 
+        if (s == null || s.length() == 0) {
+            return;
+        }
         // If in gene list mode disable history,  with the exception of "List" items
-
         if (FrameManager.isGeneListMode() && !s.startsWith("List")) {
             return;
         }
 
+
         log.debug("History: " + s);
-        allHistory.add(s);
+        allHistory.add(new Entry(s, zoom));
 
         while (currPos > 0) {
             activeStack.removeFirst();
             currPos--;
         }
-        activeStack.addFirst(s);
-
-
+        activeStack.addFirst(new Entry(s, zoom));
     }
 
 
     public void back() {
-        if (activeStack.size() == 0 || currPos >= (activeStack.size() - 1)) {
-            return;
+        if (canGoBack()) {
+            currPos++;
+            Entry item = activeStack.get(currPos);
+            processItem(item);
         }
-        currPos++;
-        String item = activeStack.get(currPos);
-        processItem(item);
     }
 
     public void forward() {
 
-        if (activeStack.size() == 0 || currPos == 0) {
-            return;
+        if (canGoForward()) {
+            currPos--;
+            Entry item = activeStack.get(currPos);
+            processItem(item);
         }
-        currPos--;
-        String item = activeStack.get(currPos);
-        processItem(item);
     }
 
-    public void processItem(String item) {
-        if (item != null) {
-            if (item.startsWith("List: ")) {
-                String listName = item.substring(6);
+    public boolean canGoBack() {
+        return activeStack.size() > 0 && currPos < (activeStack.size() - 1);
+    }
+
+    public boolean canGoForward() {
+        return activeStack.size() > 0 && currPos > 0;
+    }
+
+    public void processItem(Entry entry) {
+
+        if (entry != null) {
+            String locus = entry.getLocus();
+            if (locus.startsWith("List: ")) {
+                String listName = locus.substring(6);
                 IGVMainFrame.getInstance().setGeneList(listName, false);
 
             } else {
                 if (FrameManager.isGeneListMode()) {
                     IGVMainFrame.getInstance().setGeneList(null, false);
                 }
-                (new SearchCommand(FrameManager.getDefaultFrame(), item, false)).execute();
+                (new SearchCommand(FrameManager.getDefaultFrame(), locus, false)).execute();
+                FrameManager.getDefaultFrame().setZoom(entry.getZoom());
                 IGVMainFrame.getInstance().refreshCommandBar();
             }
         }
     }
 
 
-    public String peekBack() {
+    public Entry peekBack() {
         if (activeStack.size() == 0 || (currPos + 1) >= activeStack.size()) {
             return null;
         }
         return activeStack.get(currPos + 1);
     }
 
-    public String peekForward() {
+    public Entry peekForward() {
         if (activeStack.size() == 0 || (currPos - 1) < 0) {
             return null;
         }
@@ -128,14 +138,32 @@ public class History {
 
     public void printStack() {
         System.out.println("curr pos=" + currPos);
-        for (String s : activeStack) {
-            System.out.println(s);
+        for (Entry s : activeStack) {
+            System.out.println(s.getLocus());
         }
         System.out.println();
     }
 
-    public List<String> getAllHistory() {
+    public List<Entry> getAllHistory() {
         return allHistory;
+    }
+
+    public static class Entry {
+        private String locus;
+        private int zoom;
+
+        public Entry(String s, int zoom) {
+            this.locus = s;
+            this.zoom = zoom;
+        }
+
+        public String getLocus() {
+            return locus;
+        }
+
+        public int getZoom() {
+            return zoom;
+        }
     }
 
 }

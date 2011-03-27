@@ -47,8 +47,7 @@ public class CytobandRenderer {
     boolean drawLabels = true;
     static final public int CYTOBAND_Y_OFFSET = 5;
     static final public int LABEL_OFFSET = 25;
-    private static Map<Integer, Color> stainColors =
-            new HashMap<Integer, Color>();
+    private static Map<Integer, Color> stainColors = new HashMap<Integer, Color>();
 
     public void draw(List<Cytoband> data, Graphics g2D, Rectangle graphicRect, ReferenceFrame frame) {
 
