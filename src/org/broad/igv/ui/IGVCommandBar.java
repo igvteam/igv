@@ -919,7 +919,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         genomeComboBox.setMinimumSize(new Dimension(180, 27));
         genomeComboBox.setPreferredSize(new Dimension(180, 27));
         locationPanel.add(genomeComboBox, JideBoxLayout.FIX);
-        locationPanel.add(Box.createHorizontalStrut(10), JideBoxLayout.FIX);
+        locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
         chromosomeComboBox = new javax.swing.JComboBox();
         chromosomeComboBox.setToolTipText("Select a chromosome to view");
@@ -933,13 +933,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         });
         locationPanel.add(chromosomeComboBox, JideBoxLayout.FIX);
-        locationPanel.add(Box.createHorizontalStrut(10), JideBoxLayout.FIX);
+        locationPanel.add(Box.createHorizontalStrut(5), JideBoxLayout.FIX);
 
         searchTextField = new SearchTextField();
         searchTextField.setToolTipText("Enter a gene of locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
         searchTextField.setMaximumSize(new java.awt.Dimension(250, 15));
         searchTextField.setMinimumSize(new java.awt.Dimension(100, 28));
-        searchTextField.setPreferredSize(new java.awt.Dimension(250, 28));
+        searchTextField.setPreferredSize(new java.awt.Dimension(200, 28));
         searchTextField.setAlignmentY(CENTER_ALIGNMENT);
         locationPanel.add(searchTextField, JideBoxLayout.FIX);
 
@@ -970,13 +970,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
         homeButton = new com.jidesoft.swing.JideButton();
         homeButton.setAlignmentX(RIGHT_ALIGNMENT);
         homeButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-
-        homeButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/toolbarButtonGraphics/navigation/Home24.gif")));    // NOI18N
+        homeButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/toolbarButtonGraphics/navigation/Home24.gif")));
+        homeButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        homeButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        homeButton.setPreferredSize(new java.awt.Dimension(32, 32));
         homeButton.setToolTipText("Jump to whole genome view");
         homeButton.addActionListener(new java.awt.event.ActionListener() {
-
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 homeButtonActionPerformed(evt);
             }
@@ -988,13 +988,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
         // new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         backButton = new JideButton();
         backButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        backButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/images/left-arrow.gif")));    // NOI18N
-
+        backButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/images/left-arrow.gif")));
+        backButton.setToolTipText("Go back");
+        backButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        backButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        backButton.setPreferredSize(new java.awt.Dimension(32, 32));
         backButton.setToolTipText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
-
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 IGVMainFrame.getInstance().getSession().getHistory().back();
 
@@ -1005,10 +1006,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         forwardButton = new JideButton();
         forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
-        forwardButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/images/right-arrow.gif")));    // NOI18N
+        forwardButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/images/right-arrow.gif")));    // NOI18N
         forwardButton.setToolTipText("Forward");
+        forwardButton.setToolTipText("Go forward");
+        forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        forwardButton.setPreferredSize(new java.awt.Dimension(32, 32));
         forwardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 IGVMainFrame.getInstance().getSession().getHistory().forward();
@@ -1017,16 +1021,17 @@ public class IGVCommandBar extends javax.swing.JPanel {
         forwardButton.setEnabled(false);
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
 
- 
+
         refreshButton = new com.jidesoft.swing.JideButton();
         refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         refreshButton.setAlignmentX(RIGHT_ALIGNMENT);
-        refreshButton.setIcon(
-                new javax.swing.ImageIcon(
-                        getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));    // NOI18N
+        refreshButton.setIcon(new javax.swing.ImageIcon(
+                getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));    // NOI18N
+        refreshButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        refreshButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        refreshButton.setPreferredSize(new java.awt.Dimension(32, 32));
         refreshButton.setToolTipText("Refresh the screen");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
-
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
@@ -1059,6 +1064,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         fitToWindowButton.setAlignmentX(RIGHT_ALIGNMENT);
         fitToWindowButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/collapseall.gif")));
+        fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setToolTipText("Squish tracks to fit in window.");
         fitToWindowButton.addActionListener(new java.awt.event.ActionListener() {
 
