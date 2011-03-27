@@ -39,6 +39,7 @@ import org.broad.igv.ui.action.FitDataToWindowMenuAction;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.action.SearchCommand;
+import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.NamedRunnable;

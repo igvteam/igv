@@ -25,10 +25,9 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-package org.broad.igv.ui;
+package org.broad.igv.ui.panel;
 
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;

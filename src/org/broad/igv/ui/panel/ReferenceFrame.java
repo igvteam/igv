@@ -160,10 +160,12 @@ public class ReferenceFrame {
 
     /**
      * This setter is provided to restore state, it does not do a "zoom" action
-     * @param zoom
+     *
+     * @param z
      */
-    public void setZoom(int zoom) {
-        this.zoom = zoom;
+    public void setZoom(int z) {
+        if (z > 0)
+            this.zoom = z;
     }
 
     public void incrementZoom(int increment) {
@@ -613,7 +615,7 @@ public class ReferenceFrame {
 
 
     public void setInterval(String chr, int start, int end) {
-        
+
         this.chrName = chr;
         this.origin = start;
         this.end = end;
