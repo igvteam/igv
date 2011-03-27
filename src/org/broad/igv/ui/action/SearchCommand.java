@@ -93,8 +93,12 @@ public class SearchCommand implements Command {
             if (tokens.length > 2) {
                 end = Integer.parseInt(tokens[2].trim());
             }
+            if (recordHistory) {
+                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+            }
             referenceFrame.jumpTo(chr, start, end);
             success = true;
+
         }
 
         // Feature search
@@ -106,6 +110,9 @@ public class SearchCommand implements Command {
                 int start = Math.max(0, feature.getStart() - flankingRegion);
                 int end = feature.getEnd() + flankingRegion;
 
+                if (recordHistory) {
+                    IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                }
                 if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
                     referenceFrame.jumpTo(feature.getChr(), start, end);
                 } else {
@@ -117,6 +124,7 @@ public class SearchCommand implements Command {
                     log.debug("End search: " + searchString);
                 }
                 success = true;
+
             }
 
 
@@ -135,6 +143,10 @@ public class SearchCommand implements Command {
                     startEnd = getStartEnd(posString);
 
                     if (startEnd != null) {
+                        if (recordHistory) {
+                            IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                        }
+
                         referenceFrame.jumpTo(chr, startEnd[0], startEnd[1]);
 
                         if (log.isDebugEnabled()) {
@@ -151,6 +163,10 @@ public class SearchCommand implements Command {
                         // Presense of a dash indicates this is a locus string in the current chromosome
                         startEnd = getStartEnd(searchString);
                         if (startEnd != null) {
+                            if (recordHistory) {
+                                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                            }
+
                             referenceFrame.jumpTo(null, startEnd[0], startEnd[1]);
 
                             if (log.isDebugEnabled()) {
@@ -164,6 +180,10 @@ public class SearchCommand implements Command {
                         // No dash, this is either a chromosome or an unkown search string
                         Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(searchString);
                         if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
+                            if (recordHistory) {
+                                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                            }
+
                             referenceFrame.setChromosomeName(searchString, true);
                             IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
                             IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
@@ -180,11 +200,7 @@ public class SearchCommand implements Command {
         }
 
 
-        if (success) {
-            if (recordHistory) {
-                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-            }
-        } else {
+        if (!success) {
             if (!IGVMainFrame.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
                 showError("Cannot find feature or locus: " + searchString);
             }

@@ -110,7 +110,6 @@ public class History {
                 }
                 (new SearchCommand(FrameManager.getDefaultFrame(), locus, false)).execute();
                 FrameManager.getDefaultFrame().setZoom(entry.getZoom());
-                IGVMainFrame.getInstance().refreshCommandBar();
             }
         }
     }
@@ -163,6 +162,10 @@ public class History {
 
         public int getZoom() {
             return zoom;
+        }
+
+        public String toString() {
+            return locus;
         }
     }
 

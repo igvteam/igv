@@ -1153,7 +1153,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_goButtonActionPerformed
         String searchText = searchTextField.getText();
-
         searchByLocus(searchText);
     }
 
