@@ -940,7 +940,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         searchTextField.setToolTipText("Enter a gene of locus, e.f. EGFR,   chr1,   or chr1:100,000-200,000");
         searchTextField.setMaximumSize(new java.awt.Dimension(250, 15));
         searchTextField.setMinimumSize(new java.awt.Dimension(100, 28));
-        searchTextField.setPreferredSize(new java.awt.Dimension(200, 28));
+        searchTextField.setPreferredSize(new java.awt.Dimension(230, 28));
         searchTextField.setAlignmentY(CENTER_ALIGNMENT);
         locationPanel.add(searchTextField, JideBoxLayout.FIX);
 

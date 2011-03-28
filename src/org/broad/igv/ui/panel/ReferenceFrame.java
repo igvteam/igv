@@ -278,19 +278,21 @@ public class ReferenceFrame {
     /**
      * Method description
      *
-     * @param newOrigin
+     * @param position
      */
-    public void setOrigin(double newOrigin) {
+    public void setOrigin(double position) {
 
-        // All movements "release" the frame, enabling pan and zoom
-        //end = -1;   // <= A lousy convention, means end is computed (free to float)
 
         int windowLengthBP = (int) (pixelWidth * getScale());
+        double newOrigin = origin;
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
-            origin = Math.max(-1000, Math.min(newOrigin, getChromosomeLength() + 1000 - windowLengthBP));
+            newOrigin = Math.max(-1000, Math.min(position, getChromosomeLength() + 1000 - windowLengthBP));
         } else {
-            origin = Math.max(0, Math.min(newOrigin, getChromosomeLength() - windowLengthBP));
+            newOrigin = Math.max(0, Math.min(position, getChromosomeLength() - windowLengthBP));
         }
+        double delta = newOrigin - origin;
+        origin = newOrigin;
+        end += delta;
 
         // If zoomed in sufficiently track the center position
         //if (locationScale < 10) {
