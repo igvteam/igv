@@ -70,11 +70,21 @@ public class IGVPanel extends JPanel implements Paintable {
             int h = getHeight(); //getPreferredSize().height;
             Component[] children = getComponents();
 
-            children[0].setBounds(mainPanel.getNamePanelX(), 0, mainPanel.getNamePanelWidth(), h);
-            children[1].setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
-            children[2].setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+            int nw = mainPanel.getNamePanelWidth();
+            int grabBarWidth = nw - 10;
 
-            children[2].doLayout();
+            int idx = 0;
+            if (children.length > 3) {
+                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, 10, h);
+                children[idx++].setBounds(mainPanel.getNamePanelX() + 10, 0, nw - 10, h);
+            } else {
+                children[idx++].setBounds(mainPanel.getNamePanelX(), 0, nw, h);
+
+            }
+            children[idx++].setBounds(mainPanel.getAttributePanelX(), 0, mainPanel.getAttributePanelWidth(), h);
+            children[idx].setBounds(mainPanel.getDataPanelX(), 0, mainPanel.getDataPanelWidth(), h);
+
+            children[idx].doLayout();
         }
     }
 

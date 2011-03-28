@@ -27,6 +27,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
 
 import javax.swing.*;
@@ -101,6 +102,9 @@ public class Main {
                 } catch (Exception e) {
 
                     log.error("Fatal application error!", e);
+                    MessageUtils.showMessage("<html>A fatal error was encountered on startup: <br>" +
+                            e.toString() + "<br>" +
+                            "Please contact igv-help@broadinstitute.org");
                     System.exit(-1);
                 } finally {
                     if (splashScreen != null) {
@@ -161,102 +165,102 @@ public class Main {
     }
 
 
-/**
- * Class to encapsulate IGV command line arguments.
- */
-static class IGVArgs {
-    private String batchFile = null;
-    private String sessionFile = null;
-    private String dataFileString = null;
-    private String locusString = null;
-    private String propertyFile = null;
-    private String genomeId = null;
-    private String port = null;
-    private String dataServerURL = null;
-    private String genomeServerURL = null;
-
-    IGVArgs(String[] args) {
-        parseArgs(args);
-    }
-
     /**
-     * Parse arguments.  All arguments are optional,  a full set of arguments are
-     * firstArg  locusString  -b batchFile -p preferences
+     * Class to encapsulate IGV command line arguments.
      */
-    private void parseArgs(String[] args) {
-        CmdLineParser parser = new CmdLineParser();
-        CmdLineParser.Option propertyFileOption = parser.addStringOption('p', "preferences");
-        CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
-        CmdLineParser.Option portOption = parser.addStringOption('p', "port");
-        CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
-        CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
-        CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
+    static class IGVArgs {
+        private String batchFile = null;
+        private String sessionFile = null;
+        private String dataFileString = null;
+        private String locusString = null;
+        private String propertyFile = null;
+        private String genomeId = null;
+        private String port = null;
+        private String dataServerURL = null;
+        private String genomeServerURL = null;
 
-        try {
-            parser.parse(args);
-        } catch (CmdLineParser.IllegalOptionValueException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (CmdLineParser.UnknownOptionException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        IGVArgs(String[] args) {
+            parseArgs(args);
         }
-        propertyFile = (String) parser.getOptionValue(propertyFileOption);
-        batchFile = (String) parser.getOptionValue(batchFileOption);
-        port = (String) parser.getOptionValue(portOption);
-        genomeId = (String) parser.getOptionValue(genomeOption);
-        dataServerURL = (String) parser.getOptionValue(dataServerOption);
-        genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
 
-        String[] nonOptionArgs = parser.getRemainingArgs();
-        if (nonOptionArgs != null && nonOptionArgs.length > 0) {
-            String firstArg = nonOptionArgs[0];
-            if (!firstArg.equals("ignore")) {
-                if (firstArg.endsWith("xml")) {
-                    sessionFile = firstArg;
-                } else {
-                    dataFileString = firstArg;
+        /**
+         * Parse arguments.  All arguments are optional,  a full set of arguments are
+         * firstArg  locusString  -b batchFile -p preferences
+         */
+        private void parseArgs(String[] args) {
+            CmdLineParser parser = new CmdLineParser();
+            CmdLineParser.Option propertyFileOption = parser.addStringOption('p', "preferences");
+            CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
+            CmdLineParser.Option portOption = parser.addStringOption('p', "port");
+            CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
+            CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
+            CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
+
+            try {
+                parser.parse(args);
+            } catch (CmdLineParser.IllegalOptionValueException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (CmdLineParser.UnknownOptionException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            propertyFile = (String) parser.getOptionValue(propertyFileOption);
+            batchFile = (String) parser.getOptionValue(batchFileOption);
+            port = (String) parser.getOptionValue(portOption);
+            genomeId = (String) parser.getOptionValue(genomeOption);
+            dataServerURL = (String) parser.getOptionValue(dataServerOption);
+            genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
+
+            String[] nonOptionArgs = parser.getRemainingArgs();
+            if (nonOptionArgs != null && nonOptionArgs.length > 0) {
+                String firstArg = nonOptionArgs[0];
+                if (!firstArg.equals("ignore")) {
+                    if (firstArg.endsWith("xml")) {
+                        sessionFile = firstArg;
+                    } else {
+                        dataFileString = firstArg;
+                    }
+                }
+                if (nonOptionArgs.length > 1) {
+                    locusString = nonOptionArgs[1];
                 }
             }
-            if (nonOptionArgs.length > 1) {
-                locusString = nonOptionArgs[1];
-            }
+
         }
 
-    }
+        public String getBatchFile() {
+            return batchFile;
+        }
 
-    public String getBatchFile() {
-        return batchFile;
-    }
+        public String getSessionFile() {
+            return sessionFile;
+        }
 
-    public String getSessionFile() {
-        return sessionFile;
-    }
+        public String getDataFileString() {
+            return dataFileString;
+        }
 
-    public String getDataFileString() {
-        return dataFileString;
-    }
+        public String getLocusString() {
+            return locusString;
+        }
 
-    public String getLocusString() {
-        return locusString;
-    }
+        public String getPropertyFile() {
+            return propertyFile;
+        }
 
-    public String getPropertyFile() {
-        return propertyFile;
-    }
+        public String getGenomeId() {
+            return genomeId;
+        }
 
-    public String getGenomeId() {
-        return genomeId;
-    }
+        public String getPort() {
+            return port;
+        }
 
-    public String getPort() {
-        return port;
-    }
+        public String getDataServerURL() {
+            return dataServerURL;
+        }
 
-    public String getDataServerURL() {
-        return dataServerURL;
+        public String getGenomeServerURL() {
+            return genomeServerURL;
+        }
     }
-
-    public String getGenomeServerURL() {
-        return genomeServerURL;
-    }
-}
 }

@@ -59,6 +59,10 @@ public class History {
             return;
         }
 
+       if(activeStack.size() > 0 && s.equals(activeStack.peek().locus)) {
+            return;
+        }
+
 
         log.debug("History: " + s);
         allHistory.add(new Entry(s, zoom));

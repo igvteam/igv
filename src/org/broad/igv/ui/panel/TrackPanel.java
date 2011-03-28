@@ -29,6 +29,7 @@ import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -41,6 +42,7 @@ public class TrackPanel extends IGVPanel {
     private static Logger log = Logger.getLogger(TrackPanel.class);
 
     private String name = null;
+    //private JPanel grabPanel;
     private TrackNamePanel namePanel;
     private AttributePanel attributePanel;
     private DataPanelContainer dataPanelContainer;
@@ -69,9 +71,14 @@ public class TrackPanel extends IGVPanel {
 
 
     private void init() {
+        //grabPanel = new JPanel();
+        //grabPanel.setBackground(Color.lightGray);
+        //grabPanel.setBorder(BorderFactory.createBevelBorder(2));
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
+
+        //add(grabPanel);
         add(namePanel);
         add(attributePanel);
         add(dataPanelContainer);
@@ -404,7 +411,7 @@ public class TrackPanel extends IGVPanel {
                     if (groups.size() > 1) {
                         height += UIConstants.groupGap;
                     }
-                    height += group.getPreferredHeight();
+                    height += group.getHeight();
                 }
             }
         }

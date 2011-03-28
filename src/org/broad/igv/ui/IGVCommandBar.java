@@ -995,7 +995,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         backButton.setMaximumSize(new java.awt.Dimension(32, 32));
         backButton.setMinimumSize(new java.awt.Dimension(32, 32));
         backButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        backButton.setToolTipText("Back");
         backButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 IGVMainFrame.getInstance().getSession().getHistory().back();
@@ -1009,7 +1008,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         forwardButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         forwardButton.setIcon(new javax.swing.ImageIcon(
                 getClass().getResource("/images/right-arrow.gif")));    // NOI18N
-        forwardButton.setToolTipText("Forward");
         forwardButton.setToolTipText("Go forward");
         forwardButton.setMaximumSize(new java.awt.Dimension(32, 32));
         forwardButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -1021,7 +1019,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         forwardButton.setEnabled(false);
         toolPanel.add(forwardButton, JideBoxLayout.FIX);
-
 
         refreshButton = new com.jidesoft.swing.JideButton();
         refreshButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
