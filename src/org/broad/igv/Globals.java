@@ -108,6 +108,7 @@ public class Globals {
     private static final String GENE_LIST_FOLDER_NAME = "lists";
     public static final String IGV_DIR_USERPREF = "igvDir";
     public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
+    public static final String DEFAULT_GENOME = "hg18";
 
     // Default user folder
 

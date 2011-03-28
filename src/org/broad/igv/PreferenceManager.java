@@ -624,7 +624,7 @@ public class PreferenceManager implements PropertyManager {
 
     public String getDefaultGenome() {
 
-        String genome = get(DEFAULT_GENOME_KEY, null);
+        String genome = get(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
         return genome;
     }
 
@@ -910,7 +910,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
-        defaultValues.put(DEFAULT_GENOME_KEY, "hg18");
+        defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
         defaultValues.put(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
 
         defaultValues.put(USE_PROXY, "false");
