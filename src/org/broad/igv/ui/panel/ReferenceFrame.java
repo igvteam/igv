@@ -89,8 +89,6 @@ public class ReferenceFrame {
      */
     private double origin = 0;
 
-    private double end = -1;
-
     /**
      * The location (x axis) locationScale in base pairs / virtual pixel
      */
@@ -145,7 +143,6 @@ public class ReferenceFrame {
 
     private void zoomTo(int newZoom) {
         // All  zoom events "release" the frame, enabling pan and zoom
-        end = -1;   // <= A lousy convention, means end is computed (free to float)
 
         zoom = Math.min(maxZoom, newZoom);
         nTiles = (int) Math.pow(2, Math.max(minZoom, zoom));
@@ -292,7 +289,6 @@ public class ReferenceFrame {
         }
         double delta = newOrigin - origin;
         origin = newOrigin;
-        end += delta;
 
         // If zoomed in sufficiently track the center position
         //if (locationScale < 10) {
@@ -327,7 +323,6 @@ public class ReferenceFrame {
                 setLocationScale(((double) (end - start)) / pixelWidth);
             }
             origin = start;
-            this.end = end;
         }
 
         if (log.isDebugEnabled()) {
@@ -467,17 +462,12 @@ public class ReferenceFrame {
 
             computeMinZoom();
 
-            if (end < 0) {
                 double virtualPixelSize = getTilesTimesBinsPerTile();
 
                 double nPixel = Math.max(virtualPixelSize, pixelWidth);
 
                 setLocationScale(((double) getChromosomeLength()) / nPixel);
-            } else {
-                int w = pixelWidth;
-                setLocationScale((end - origin) / w);
-            }
-        }
+         }
     }
 
     /**
@@ -603,7 +593,7 @@ public class ReferenceFrame {
 
     private void setLocationScale(double locationScale) {
         if (log.isDebugEnabled()) {
-            log.debug("Set location scale: " + locationScale + "  origin=" + origin + "  end=" + end);
+            log.debug("Set location scale: " + locationScale + "  origin=" + origin);
         }
         this.locationScale = locationScale;
         locationScaleValid = true;
@@ -620,7 +610,6 @@ public class ReferenceFrame {
 
         this.chrName = chr;
         this.origin = start;
-        this.end = end;
         if (pixelWidth > 0) {
             locationScale = (end - origin) / pixelWidth;
             locationScaleValid = true;

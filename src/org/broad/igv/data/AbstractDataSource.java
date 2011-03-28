@@ -155,7 +155,7 @@ public abstract class AbstractDataSource implements DataSource {
 
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
             int nTiles = (int) Math.pow(2, z);
-            float binSize = ((float) chrLength) / (nTiles * 700);
+            float binSize = (((float) chrLength) / nTiles) / 700;
 
             int adjustedStart = Math.max(0, startLocation);
             int adjustedEnd = Math.min(chrLength, endLocation);
