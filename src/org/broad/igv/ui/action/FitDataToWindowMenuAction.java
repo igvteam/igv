@@ -80,22 +80,23 @@ public class FitDataToWindowMenuAction extends MenuAction {
 
         boolean success = true;
 
-        int visibleHeight = dataPanel.getVisibleHeight();
+        int availableHeight = dataPanel.getVisibleHeight();
         int visibleTrackCount = 0;
 
         // Process data tracks first
         Collection<TrackGroup> groups = dataPanel.getTrackGroups();
 
+        // Do tracks need expanded or contracted?
+        boolean reduce = (dataPanel.getHeight() > availableHeight);
+
         // Count visible tracks.
         for (TrackGroup group : groups) {
             List<Track> tracks = group.getTracks();
             for (Track track : tracks) {
-
                 if (track.isVisible()) {
-                    if (track.getMinimumHeight() > 1) {
-                        visibleHeight -= track.getMinimumHeight();
+                    if (track.getMinimumHeight() > 1 && reduce) {
+                        availableHeight -= track.getMinimumHeight();
                     } else {
-
                         ++visibleTrackCount;
                     }
                 }
@@ -106,9 +107,9 @@ public class FitDataToWindowMenuAction extends MenuAction {
         // Auto resize the height of the visible tracks
         if (visibleTrackCount > 0) {
             int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
-            int adjustedVisibleHeight = Math.max(1, visibleHeight - groupGapHeight);
+            int adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
 
-            float delta = (float) adjustedVisibleHeight / visibleTrackCount;
+            float delta = (float) adjustedAvailableHeight / visibleTrackCount;
 
             // If the new track height is less than 1 theres nothing we
             // can do to force all tracks to fit so we do nothing
@@ -122,7 +123,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
                 List<Track> tracks = group.getTracks();
                 for (Track track : tracks) {
                     target += delta;
-                    int newHeight = Math.round(target - iTotal);
+                    int newHeight = Math.min(track.getPreferredHeight(), Math.round(target - iTotal));
                     iTotal += newHeight;
                     if (track.isVisible()) {
                         track.setHeight(newHeight);

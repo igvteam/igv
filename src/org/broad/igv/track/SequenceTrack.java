@@ -131,6 +131,11 @@ public class SequenceTrack extends AbstractTrack {
                 0;
     }
 
+    @Override
+    public int getPreferredHeight() {
+        return getHeight();
+    }
+
 
     @Override
     public boolean handleDataClick(TrackClickEvent e) {
@@ -209,6 +214,7 @@ public class SequenceTrack extends AbstractTrack {
     }
 
     // SequenceTrack does not expose its renderer
+
     public Renderer getRenderer() {
         return null;
     }

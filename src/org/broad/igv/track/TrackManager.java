@@ -683,6 +683,7 @@ public class TrackManager {
 
         geneFeatureTrack.setMinimumHeight(5);
         geneFeatureTrack.setHeight(35);
+        geneFeatureTrack.setPreferredHeight(35);
         geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
         geneFeatureTrack.setColor(Color.BLUE.darker());
 

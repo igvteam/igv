@@ -273,6 +273,7 @@ public class TrackLoader {
 
                 if (ffh.getTrackType() == TrackType.REPMASK) {
                     t.setHeight(15);
+                    t.setPreferredHeight(15);
                 }
             }
             newTracks.add(t);
@@ -329,6 +330,7 @@ public class TrackLoader {
         for (FeatureTrack t : tracks) {
             t.setMinimumHeight(10);
             t.setHeight(30);
+            t.setPreferredHeight(30);
             t.setDisplayMode(Track.DisplayMode.EXPANDED);
 
         }
@@ -413,11 +415,12 @@ public class TrackLoader {
             String path = locator.getPath();
             for (RNAIDataSource ds : dataSources) {
                 String trackId = path + "_" + ds.getName();
-                Track track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
 
                 // Set attributes.
                 track.setAttributeValue("SCREEN", ds.getScreen());
                 track.setHeight(80);
+                track.setPreferredHeight(80);
                 newTracks.add(track);
             }
         }
@@ -503,6 +506,7 @@ public class TrackLoader {
             if (type == TrackType.ALLELE_FREQUENCY) {
                 track.setRendererClass(ScatterplotRenderer.class);
                 track.setHeight(40);
+                track.setPreferredHeight(40);
             }
             newTracks.add(track);
         }
@@ -719,7 +723,7 @@ public class TrackLoader {
         for (RNAIDataSource ds : dataSources) {
             String name = ds.getName();
             String trackId = path + "_" + name;
-            Track track = new DataSourceTrack(locator, trackId, name, ds);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds);
 
             // Set attributes.  This "hack" is neccessary to register these attributes with the
             // attribute manager to get displayed.
@@ -728,6 +732,7 @@ public class TrackLoader {
                 track.setAttributeValue("CONDITION", ds.getCondition());
             }
             track.setHeight(80);
+            track.setPreferredHeight(80);
             //track.setDataRange(new DataRange(-3, 0, 3));
             newTracks.add(track);
         }
@@ -758,6 +763,7 @@ public class TrackLoader {
         OmegaTrack track = new OmegaTrack(locator, ds);
         track.setName("Conservation (Omega)");
         track.setHeight(40);
+        track.setPreferredHeight(40);
         newTracks.add(track);
     }
 
@@ -796,6 +802,7 @@ public class TrackLoader {
             alignmentTrack.setName(dsName);
             if (isBed) {
                 alignmentTrack.setRenderer(new BedRenderer());
+                alignmentTrack.setPreferredHeight(40);
                 alignmentTrack.setHeight(40);
             }
 
@@ -835,6 +842,7 @@ public class TrackLoader {
                         alignmentTrack.getName() + " Junctions", dataManager);
 //            spliceJunctionTrack.setDataManager(dataManager);
                 spliceJunctionTrack.setHeight(60);
+                spliceJunctionTrack.setPreferredHeight(60);
                 spliceJunctionTrack.setVisible(showSpliceJunctionTrack);
                 newTracks.add(spliceJunctionTrack);
                 alignmentTrack.setSpliceJunctionTrack(spliceJunctionTrack);
@@ -1000,11 +1008,13 @@ public class TrackLoader {
             track.setRendererClass(CosmicFeatureRenderer.class);
             track.setMinimumHeight(2);
             track.setHeight(20);
+            track.setPreferredHeight(20);
             track.setDisplayMode(Track.DisplayMode.EXPANDED);
         } else {
             track.setRendererClass(IGVFeatureRenderer.class);
             track.setMinimumHeight(35);
             track.setHeight(45);
+            track.setPreferredHeight(45);
         }
         currentTracks.add(track);
     }

@@ -49,7 +49,7 @@ public class TDFDataSource implements DataSource {
 
     private static Logger log = Logger.getLogger(TDFDataSource.class);
     // TODO -- read from file
-    int maxZoom = 6;
+    int maxPrecomputedZoom = 6;
     TDFReader reader;
     private int trackNumber = 0;
     String trackName;
@@ -76,7 +76,7 @@ public class TDFDataSource implements DataSource {
 
         TDFGroup rootGroup = reader.getGroup("/");
         try {
-            maxZoom = Integer.parseInt(rootGroup.getAttribute("maxZoom"));
+            maxPrecomputedZoom = Integer.parseInt(rootGroup.getAttribute("maxZoom"));
         } catch (Exception e) {
             log.error("Error reading attribute 'maxZoom'", e);
         }
@@ -185,7 +185,7 @@ public class TDFDataSource implements DataSource {
 
     private List<LocusScore> getSummaryScores(String chr, int zoom, int startLocation, int endLocation) {
         List<LocusScore> scores;
-        if (zoom <= this.maxZoom) {
+        if (zoom <= this.maxPrecomputedZoom) {
             scores = new ArrayList(1000);
             TDFDataset ds = reader.getDataset(chr, zoom, windowFunction);
             if (ds != null) {

@@ -105,6 +105,7 @@ public abstract class AbstractTrack implements Track {
     private DataRange dataRange;
     protected int visibilityWindow = -1;
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
+    private int preferredHeight = 25;
 
 
     public AbstractTrack(
@@ -418,7 +419,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public int getPreferredHeight() {
-        return getHeight();
+        return preferredHeight;
     }
 
 
@@ -950,5 +951,9 @@ public abstract class AbstractTrack implements Track {
 
     public void setSortable(boolean sortable) {
         this.sortable = sortable;
+    }
+
+    public void setPreferredHeight(int preferredHeight) {
+        this.preferredHeight = preferredHeight;
     }
 }
