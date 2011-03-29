@@ -337,7 +337,9 @@ public class CoverageCounter {
                                     if (bases != null && baseIdx >= 0 && baseIdx < bases.length) {
                                         base = bases[baseIdx];
                                     }
-                                    byte quality = block.qualities[pos - blockStart];
+                                    int idx = pos - blockStart;
+                                    byte quality = (idx >= 0 && idx < block.qualities.length) ?
+                                            block.qualities[pos - blockStart] : (byte) 0;
                                     counter.incrementCount(pos, base, quality);
                                 }
 
