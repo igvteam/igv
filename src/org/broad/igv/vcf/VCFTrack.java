@@ -752,7 +752,7 @@ public class VCFTrack extends FeatureTrack {
             IGVMainFrame.getInstance().doRefresh();
         }
 
-        return new VCFMenu(this, te, f);
+        return new VCFMenu(this, f);
     }
 
     public static void refresh() {

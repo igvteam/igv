@@ -53,7 +53,7 @@ public class VCFMenu extends JPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    public VCFMenu(VCFTrack t, TrackClickEvent te, VariantContext variant) {
+    public VCFMenu(VCFTrack t, VariantContext variant) {
         this.track = t;
 
         this.addPopupMenuListener(new PopupMenuListener() {
@@ -77,7 +77,7 @@ public class VCFMenu extends JPopupMenu {
         });
 
         samples = track.getAllSamples();
-        if (samples != null) {
+        if (samples != null && variant != null) {
             sampleGenotypes = new HashMap<String, Genotype>();
             for (String sample : samples) {
                 Genotype genotype = variant.getGenotype(sample);
@@ -98,28 +98,30 @@ public class VCFMenu extends JPopupMenu {
         addSeparator();
         add(getFeatureVisibilityItem());
 
-        //Hides
-        addSeparator();
-        JLabel hideHeading = new JLabel("<html>&nbsp;&nbsp;<b>Display Options", JLabel.LEFT);
-        add(hideHeading);
-        add(getColorMenuItem());
-        add(getHideFilteredItem());
-        //add(getRenderIDItem());
+        if (variant != null) {
+            //Hides
+            addSeparator();
+            JLabel hideHeading = new JLabel("<html>&nbsp;&nbsp;<b>Display Options", JLabel.LEFT);
+            add(hideHeading);
+            add(getColorMenuItem());
+            add(getHideFilteredItem());
+            //add(getRenderIDItem());
 
-        //Sorter
-        addSeparator();
-        JLabel sortHeading = new JLabel("<html>&nbsp;&nbsp;<b>Sort Variant By", JLabel.LEFT);
-        add(sortHeading);
-        for (JMenuItem item : getSortMenuItems(te, variant)) {
-            add(item);
-        }
+            //Sorter
+            addSeparator();
+            JLabel sortHeading = new JLabel("<html>&nbsp;&nbsp;<b>Sort Variant By", JLabel.LEFT);
+            add(sortHeading);
+            for (JMenuItem item : getSortMenuItems(variant)) {
+                add(item);
+            }
 
-        //Variant Information
-        addSeparator();
-        JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
-        add(displayHeading);
-        for (JMenuItem item : getDisplayModeItems()) {
-            add(item);
+            //Variant Information
+            addSeparator();
+            JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
+            add(displayHeading);
+            for (JMenuItem item : getDisplayModeItems()) {
+                add(item);
+            }
         }
 
         addSeparator();
@@ -215,7 +217,7 @@ public class VCFMenu extends JPopupMenu {
                 public void actionPerformed(ActionEvent evt) {
                     GenotypeComparator compare = new GenotypeComparator();
                     genotypeSortingDirection = !genotypeSortingDirection;
-                    sortSamples(variant, compare);
+                    sortSamples(compare);
                     IGVMainFrame.getInstance().getContentPane().repaint();
                 }
             });
@@ -241,7 +243,7 @@ public class VCFMenu extends JPopupMenu {
                         }
                     };
                     sampleSortingDirection = !sampleSortingDirection;
-                    sortSamples(variant, compare);
+                    sortSamples(compare);
                     IGVMainFrame.getInstance().getContentPane().repaint();
                 }
             });
@@ -261,7 +263,7 @@ public class VCFMenu extends JPopupMenu {
                     public void actionPerformed(ActionEvent evt) {
                         DepthComparator compare = new DepthComparator();
                         depthSortingDirection = !depthSortingDirection;
-                        sortSamples(variant, compare);
+                        sortSamples(compare);
                         IGVMainFrame.getInstance().getContentPane().repaint();
                     }
                 });
@@ -282,7 +284,7 @@ public class VCFMenu extends JPopupMenu {
                     public void actionPerformed(ActionEvent evt) {
                         QualityComparator compare = new QualityComparator();
                         qualitySortingDirection = !qualitySortingDirection;
-                        sortSamples(variant, compare);
+                        sortSamples(compare);
                         IGVMainFrame.getInstance().getContentPane().repaint();
                     }
                 });
@@ -319,7 +321,7 @@ public class VCFMenu extends JPopupMenu {
         }
     }
 
-    private void sortSamples(VariantContext variant, Comparator<String> compare) {
+    private void sortSamples(Comparator<String> compare) {
         try {
             if ((sampleGenotypes.size() > 1)) {
                 Collections.sort(samples, compare);
@@ -331,7 +333,7 @@ public class VCFMenu extends JPopupMenu {
     }
 
 
-    public Collection<JMenuItem> getSortMenuItems(TrackClickEvent te, Feature closestFeature) {
+    public Collection<JMenuItem> getSortMenuItems(Feature closestFeature) {
 
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
         VariantContext variant = (VariantContext) closestFeature;
