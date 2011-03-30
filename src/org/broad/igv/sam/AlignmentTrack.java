@@ -282,7 +282,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
      * center appear left to right by start position
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame) {
-        if (option == SortOption.STRAND || option == SortOption.READ_GROUP || option == SortOption.SAMPLE) {
+        if (option == SortOption.READ_GROUP || option == SortOption.SAMPLE) {
             dataManager.repackAlignments(referenceFrame, option);
         } else {
             dataManager.sortRows(option, referenceFrame);
@@ -728,7 +728,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 add(popupTitle);
             }
 
-            addSortMenuItem(e.getFrame());
+            addSortMenuItem();
             addPackMenuItem();
             addCoverageDepthMenuItem();
             addSeparator();
@@ -793,7 +793,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             add(item);
         }
 
-        public void addSortMenuItem(ReferenceFrame frame) {
+        public void addSortMenuItem() {//ReferenceFrame frame) {
             // Change track height by attribute
             JMenu item = new JMenu("Sort alignments");
 
@@ -880,11 +880,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                     }
                 });
                 item.add(m7);
-            }
-
-
-            if (frame != null && frame.getScale() >= MIN_ALIGNMENT_SPACING) {
-                item.setEnabled(false);
             }
 
 

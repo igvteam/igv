@@ -2022,11 +2022,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>385</int> 
+                 <int>375</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>76</int> 
+                 <int>10</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2061,46 +2061,11 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>6</int> 
+                 <int>10</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
                  <int>290</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JCheckBox</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Show reference sequence</string> 
-                </void> 
-                <void property="name"> 
-                 <string>showRefSeqCB</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>showRefSeqCBActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>385</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>6</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>270</int> 
                 </void> 
                </object> 
               </void> 
@@ -2132,7 +2097,7 @@
                 <string>javax.swing.JCheckBox</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Filter alignments</string> 
+                 <string>Filter alignments by read group</string> 
                 </void> 
                 <void property="name"> 
                  <string>filterCB</string> 
@@ -2158,7 +2123,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>144</int> 
+                 <int>244</int> 
                 </void> 
                </object> 
               </void> 
@@ -2197,15 +2162,15 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>190</int> 
+                 <int>275</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>185</int> 
+                 <int>178</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>482</int> 
+                 <int>440</int> 
                 </void> 
                </object> 
               </void> 
@@ -2241,41 +2206,6 @@
                 <void method="setProperty"> 
                  <string>width</string> 
                  <int>310</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JCheckBox</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Shade alignments intersecting center</string> 
-                </void> 
-                <void property="name"> 
-                 <string>shadeCenterCB</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>shadeCenterCBActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>385</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>41</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>450</int> 
                 </void> 
                </object> 
               </void> 
@@ -2438,6 +2368,10 @@
                  <string>text</string> 
                  <string>Show splice junction track</string> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>visible</string> 
+                 <boolean>false</boolean> 
+                </void> 
                 <void property="name"> 
                  <string>showJunctionTrackCB</string> 
                 </void> 
@@ -2454,11 +2388,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>385</int> 
+                 <int>375</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>110</int> 
+                 <int>41</int> 
                 </void> 
                </object> 
               </void> 

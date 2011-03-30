@@ -152,12 +152,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxBaseQualityField = new JTextField();
         showCovTrackCB = new JCheckBox();
         samFilterDuplicatesCB = new JCheckBox();
-        showRefSeqCB = new JCheckBox();
         jLabel19 = new JLabel();
         filterCB = new JCheckBox();
         filterURL = new JTextField();
         samFlagUnmappedPairCB = new JCheckBox();
-        shadeCenterCB = new JCheckBox();
         jLabel10 = new JLabel();
         legendPanel = new ChromosomeColorLegend();
         filterFailedReadsCB = new JCheckBox();
@@ -1104,7 +1102,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showCovTrackCB);
-                        showCovTrackCB.setBounds(385, 76, 270, showCovTrackCB.getPreferredSize().height);
+                        showCovTrackCB.setBounds(375, 10, 270, showCovTrackCB.getPreferredSize().height);
 
                         //---- samFilterDuplicatesCB ----
                         samFilterDuplicatesCB.setText("Filter duplicate reads");
@@ -1114,17 +1112,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samFilterDuplicatesCB);
-                        samFilterDuplicatesCB.setBounds(6, 6, 290, samFilterDuplicatesCB.getPreferredSize().height);
-
-                        //---- showRefSeqCB ----
-                        showRefSeqCB.setText("Show reference sequence");
-                        showRefSeqCB.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                showRefSeqCBActionPerformed(e);
-                            }
-                        });
-                        jPanel12.add(showRefSeqCB);
-                        showRefSeqCB.setBounds(385, 6, 270, showRefSeqCB.getPreferredSize().height);
+                        samFilterDuplicatesCB.setBounds(6, 10, 290, samFilterDuplicatesCB.getPreferredSize().height);
 
                         //---- jLabel19 ----
                         jLabel19.setText("Min: ");
@@ -1132,14 +1120,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jLabel19.setBounds(new Rectangle(new Point(285, 145), jLabel19.getPreferredSize()));
 
                         //---- filterCB ----
-                        filterCB.setText("Filter alignments");
+                        filterCB.setText("Filter alignments by read group");
                         filterCB.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 filterCBActionPerformed(e);
                             }
                         });
                         jPanel12.add(filterCB);
-                        filterCB.setBounds(6, 181, 144, filterCB.getPreferredSize().height);
+                        filterCB.setBounds(6, 181, 244, filterCB.getPreferredSize().height);
 
                         //---- filterURL ----
                         filterURL.setText("URL or path to filter file");
@@ -1156,7 +1144,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterURL);
-                        filterURL.setBounds(190, 185, 482, filterURL.getPreferredSize().height);
+                        filterURL.setBounds(275, 178, 440, filterURL.getPreferredSize().height);
 
                         //---- samFlagUnmappedPairCB ----
                         samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1167,16 +1155,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         });
                         jPanel12.add(samFlagUnmappedPairCB);
                         samFlagUnmappedPairCB.setBounds(6, 76, 310, samFlagUnmappedPairCB.getPreferredSize().height);
-
-                        //---- shadeCenterCB ----
-                        shadeCenterCB.setText("Shade alignments intersecting center");
-                        shadeCenterCB.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                shadeCenterCBActionPerformed(e);
-                            }
-                        });
-                        jPanel12.add(shadeCenterCB);
-                        shadeCenterCB.setBounds(385, 41, 450, shadeCenterCB.getPreferredSize().height);
 
                         //---- jLabel10 ----
                         jLabel10.setText("<html>Chromosome color legend &nbsp;&nbsp;&nbsp;<i>Used to flag paired end reads with mates on other chromosomes");
@@ -1227,13 +1205,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- showJunctionTrackCB ----
                         showJunctionTrackCB.setText("Show splice junction track");
+                        showJunctionTrackCB.setVisible(false);
                         showJunctionTrackCB.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 showJunctionTrackCBActionPerformed(e);
                             }
                         });
                         jPanel12.add(showJunctionTrackCB);
-                        showJunctionTrackCB.setBounds(new Rectangle(new Point(385, 110), showJunctionTrackCB.getPreferredSize()));
+                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 41), showJunctionTrackCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -2247,12 +2226,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 showMissingDataCB.isSelected()));
     }
 
-    private void showRefSeqCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(
-                PreferenceManager.SAM_SHOW_REF_SEQ,
-                String.valueOf(showRefSeqCB.isSelected()));
-
-    }
 
     private void filterVendorFailedReadsCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
@@ -2301,10 +2274,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_Y_AXIS, String.valueOf(labelYAxisCB.isSelected()));
     }
 
-    private void shadeCenterCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shadeCenterCBActionPerformed
-        updatedPreferenceMap.put(PreferenceManager.SAM_SHADE_CENTER, String.valueOf(shadeCenterCB.isSelected()));
-
-    }
 
     private void showCovTrackCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showCovTrackCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SAM_SHOW_COV_TRACK, String.valueOf(showCovTrackCB.isSelected()));
@@ -2570,13 +2539,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS));
         showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
         samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
-        showRefSeqCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_REF_SEQ));
         samShadeMismatchedBaseCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY));
         samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN))));
         samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX))));
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
-        shadeCenterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER));
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
         isizeComputeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES));
         //dhmay adding 20110208
@@ -2747,12 +2714,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField samMaxBaseQualityField;
     private JCheckBox showCovTrackCB;
     private JCheckBox samFilterDuplicatesCB;
-    private JCheckBox showRefSeqCB;
     private JLabel jLabel19;
     private JCheckBox filterCB;
     private JTextField filterURL;
     private JCheckBox samFlagUnmappedPairCB;
-    private JCheckBox shadeCenterCB;
     private JLabel jLabel10;
     private JPanel legendPanel;
     private JCheckBox filterFailedReadsCB;

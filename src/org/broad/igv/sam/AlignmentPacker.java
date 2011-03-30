@@ -179,7 +179,7 @@ public class AlignmentPacker {
             if (al.isMapped()) {
 
                 Alignment alignment = al;
-                if (pairAlignments && al.isPaired() && al.isProperPair() && al.getMate().isMapped()) {
+                if (pairAlignments && al.isPaired() && al.getMate().isMapped() && al.getChr().equals(al.getMate().getChr())) {
 
                     PairedAlignment pair = pairs.get(readName);
                     if (pair == null) {

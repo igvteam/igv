@@ -688,7 +688,7 @@ public class CoverageCounter {
             int offset = position - start;
             baseCount[offset]++;
 
-            if (ref != null) {
+            if (ref != null && ref.length > offset) {
                 byte refBase = ref[offset];
                 if (refBase != base) {
                     mismatchCount += quality;
