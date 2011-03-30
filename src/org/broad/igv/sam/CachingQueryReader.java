@@ -52,7 +52,7 @@ public class CachingQueryReader {
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
     private static int DEFAULT_TILE_SIZE = 16 * KB;
-    private static int MAX_TILE_COUNT = 4;
+    private static int MAX_TILE_COUNT = 2;
     private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
 
     // Map of read group -> paired end stats
