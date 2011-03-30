@@ -42,6 +42,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     // Static because all alignment tracks are in color space, or none are
     public static boolean colorSpace;
 
+    private static Color smallISizeColor = Color.blue;
+    private static Color largeISizeColor = Color.red;
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
@@ -705,8 +707,10 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                             }
 
-                            if (readDistance < minThreshold || readDistance > maxThreshold) {
-                                c = ChromosomeColors.getColor(alignment.getChr());
+                            if (readDistance < minThreshold) {
+                                c = smallISizeColor;
+                            } else if (readDistance > maxThreshold) {
+                                c = largeISizeColor;
                             }
                             //return renderOptions.insertSizeColorScale.getColor(readDistance);
                         }
