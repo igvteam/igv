@@ -145,6 +145,7 @@ public class TrackMenuUtils {
             menu.addSeparator();
             addDataItems(menu, tracks);
         } else if (featureTracksOnly) {
+            menu.add(getChangeFontSizeItem(tracks));           
             menu.addSeparator();
             addFeatureItems(menu, tracks, te);
         }
@@ -315,7 +316,6 @@ public class TrackMenuUtils {
 
         addDisplayModeItems(tracks, featurePopupMenu);
 
-        featurePopupMenu.add(getChangeFontSizeItem(tracks));
 
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();

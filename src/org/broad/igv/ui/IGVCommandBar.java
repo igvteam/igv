@@ -429,8 +429,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     protected void chromosomeChanged(String chrName) {
-        roiToggleButton.setEnabled(chrName.equals(Globals.CHR_ALL));
-        zoomControl.setEnabled(chrName.equals(Globals.CHR_ALL));
+        roiToggleButton.setEnabled(!chrName.equals(Globals.CHR_ALL));
+        zoomControl.setEnabled(!chrName.equals(Globals.CHR_ALL));
 
         if (chromosomeComboBox.getSelectedItem() != null) {
             if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
