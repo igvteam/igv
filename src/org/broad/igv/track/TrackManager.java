@@ -282,8 +282,16 @@ public class TrackManager {
             List<Track> newTracks = loader.load(locator);
             if (newTracks.size() > 0) {
                 for (Track track : newTracks) {
+                    String fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf ("/");
+                    if(lastSlashIdx < 0) {
+                       lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if(lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx);
+                    }
                     track.setAttributeValue("NAME", track.getName());
-                    track.setAttributeValue("DATA FILE", locator.getPath());
+                    track.setAttributeValue("DATA FILE", fn);
                     track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
 
 

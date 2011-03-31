@@ -17,7 +17,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util.ftp;
+package org.broad.igv.util.stream;
 
 
 import org.apache.log4j.Logger;

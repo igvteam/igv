@@ -19,7 +19,7 @@
 
 package org.broad.igv.util.ftp;
 
-import org.broad.igv.util.ftp.SeekableFTPStream;
+import org.broad.igv.util.stream.SeekableFTPStream;
 import org.junit.Test;
 
 import java.io.IOException;

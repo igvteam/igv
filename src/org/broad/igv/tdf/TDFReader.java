@@ -28,8 +28,8 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.*;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
-import org.broad.igv.util.IGVSeekableStreamFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

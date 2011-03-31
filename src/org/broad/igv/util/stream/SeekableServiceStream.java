@@ -17,15 +17,15 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util;
+package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;

@@ -29,6 +29,7 @@ import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.remote.SequenceServletWrapper;
 import org.broad.igv.util.*;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.File;

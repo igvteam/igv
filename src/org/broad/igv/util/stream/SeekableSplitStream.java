@@ -17,9 +17,10 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util;
+package org.broad.igv.util.stream;
 
 
+import org.broad.igv.util.IGVHttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.BufferedReader;

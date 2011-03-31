@@ -447,7 +447,15 @@ public class SessionReader {
                             }
                             trackList.add(track);
 
-                            track.setAttributeValue("DATA FILE", locator.getPath());
+                            String fn = locator.getPath();
+                            int lastSlashIdx = fn.lastIndexOf("/");
+                            if(lastSlashIdx < 0) {
+                               lastSlashIdx = fn.lastIndexOf("\\");
+                            }
+                            if(lastSlashIdx > 0) {
+                                fn = fn.substring(lastSlashIdx + 1);
+                            }
+                            track.setAttributeValue("DATA FILE", fn);
                             track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
 
                         }

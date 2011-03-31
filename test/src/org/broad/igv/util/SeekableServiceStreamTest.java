@@ -20,8 +20,8 @@
 package org.broad.igv.util;
 
 import junit.framework.TestCase;
+import org.broad.igv.util.stream.SeekableServiceStream;
 import org.broad.tribble.util.SeekableHTTPStream;
-import org.broad.tribble.util.SeekableStream;
 import org.junit.Test;
 
 import java.net.URL;

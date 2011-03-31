@@ -1591,7 +1591,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     final public void doRefresh() {
 
-        rootPane.revalidate();
+        mainPanel.revalidate();
         repaint();
         //getContentPane().repaint();
     }

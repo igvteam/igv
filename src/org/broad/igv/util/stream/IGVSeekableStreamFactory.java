@@ -17,9 +17,9 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util;
+package org.broad.igv.util.stream;
 
-import org.broad.igv.util.ftp.SeekableFTPStream;
+import org.broad.igv.util.IGVHttpUtils;
 import org.broad.tribble.util.SeekableFileStream;
 import org.broad.tribble.util.SeekableHTTPStream;
 import org.broad.tribble.util.SeekableStream;
@@ -48,6 +48,8 @@ public class IGVSeekableStreamFactory {
                     is = new SeekableServiceStream(path);
                 }
             } else if (path.toLowerCase().startsWith("ftp:")) {
+
+                
                 is = new SeekableFTPStream(new URL(path));
             } else {
                 is = new SeekableFileStream(new File(path));

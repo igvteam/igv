@@ -17,9 +17,12 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util.ftp;
+package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.ftp.FTPClient;
+import org.broad.igv.util.ftp.FTPReply;
+import org.broad.igv.util.ftp.FTPUtils;
 
 import java.io.EOFException;
 import java.io.IOException;

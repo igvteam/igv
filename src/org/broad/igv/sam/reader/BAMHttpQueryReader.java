@@ -30,7 +30,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
-import org.broad.igv.util.ftp.SeekablePicardFtpStream;
+import org.broad.igv.util.stream.SeekablePicardFtpStream;
 
 import java.io.*;
 import java.net.Proxy;
