@@ -54,6 +54,8 @@ public interface Track extends Persistable {
 
     public void overlay(RenderContext context, Rectangle rect);
 
+    void chromosomeChanged(String chrName);
+
     public void setName(String name);
 
     public String getName();

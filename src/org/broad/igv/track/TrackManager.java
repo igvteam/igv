@@ -154,6 +154,12 @@ public class TrackManager {
     }
 
 
+    public void chromosomeChanged(String chrName) {
+        for (Track t : getAllTracks(true)) {
+            t.chromosomeChanged(chrName); 
+        }
+    }
+
     /**
      * A (hopefully) temporary solution to force SAM track reloads,  until we have a better
      * dependency scheme

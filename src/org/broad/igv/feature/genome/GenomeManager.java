@@ -42,7 +42,6 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.Utilities;
 
-import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -1306,7 +1305,7 @@ public class GenomeManager {
         // Reset the frame manager
         if (!Globals.isHeadless()) {
             FrameManager.reset(currentGenome.getHomeChromosome());
-            IGVMainFrame.getInstance().chromosomeChangeEvent();
+            IGVMainFrame.getInstance().chromosomeChangeEvent(currentGenome.getHomeChromosome());
         }
         return genomeId;
 

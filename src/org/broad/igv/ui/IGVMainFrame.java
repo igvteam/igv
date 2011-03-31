@@ -364,12 +364,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
 
-    public void chromosomeChangeEvent() {
-        chromosomeChangeEvent(true);
+    public void chromosomeChangeEvent(String chrName) {
+        chromosomeChangeEvent(chrName, true);
     }
 
-    public void chromosomeChangeEvent(boolean updateCommandBar) {
-        igvCommandBar.chromosomeChanged();
+    public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
+        igvCommandBar.chromosomeChanged(chrName);
+        trackManager.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
 
     }

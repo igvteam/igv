@@ -192,7 +192,7 @@ public class ReferenceFrame {
             // DISABLE ZOOMING FOR GENOME VIEW
             // Translate the location to chromosome number
             jumpToChromosomeForGenomeLocation(newCenter);
-            IGVMainFrame.getInstance().chromosomeChangeEvent();
+            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
         } else {
             if (zoom != newZoom) {
 

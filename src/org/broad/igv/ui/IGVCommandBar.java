@@ -428,13 +428,13 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
-    protected void chromosomeChanged() {
-        roiToggleButton.setEnabled(!getDefaultReferenceFrame().getChrName().equals(Globals.CHR_ALL));
-        zoomControl.setEnabled(!getDefaultReferenceFrame().getChrName().equals(Globals.CHR_ALL));
+    protected void chromosomeChanged(String chrName) {
+        roiToggleButton.setEnabled(chrName.equals(Globals.CHR_ALL));
+        zoomControl.setEnabled(chrName.equals(Globals.CHR_ALL));
 
         if (chromosomeComboBox.getSelectedItem() != null) {
-            if (!chromosomeComboBox.getSelectedItem().equals(getDefaultReferenceFrame().getChrName())) {
-                chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
+            if (!chromosomeComboBox.getSelectedItem().equals(chrName)) {
+                chromosomeComboBox.setSelectedItem(chrName);
             }
         }
     }
@@ -445,17 +445,17 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public void updateCurrentCoordinates() {
         searchTextField.setText("");
 
-        final String chr = getDefaultReferenceFrame().getChrName();
+        final String chrName = getDefaultReferenceFrame().getChrName();
 
-        if (!chr.equals(chromosomeComboBox.getSelectedItem())) {
-            chromosomeChanged();
-            chromosomeComboBox.setSelectedItem(chr);
-            owner.chromosomeChangeEvent(false);
+        if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
+            chromosomeChanged(chrName);
+            chromosomeComboBox.setSelectedItem(chrName);
+            owner.chromosomeChangeEvent(chrName, false);
         }
 
         String p = "";
 
-        if (!chr.equals(Globals.CHR_ALL)) {
+        if (!chrName.equals(Globals.CHR_ALL)) {
             p = getDefaultReferenceFrame().getFormattedLocusString();
         }
         final String position = p;
@@ -1118,12 +1118,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
             owner.setGeneList(null);
         }
         if (genome != null) {
-            String chr = genome.getHomeChromosome();
-            getDefaultReferenceFrame().setChromosomeName(chr);
-            IGVMainFrame.getInstance().getSession().getHistory().push(chr, getDefaultReferenceFrame().getZoom());
-            chromosomeComboBox.setSelectedItem(chr);
+            String chrName = genome.getHomeChromosome();
+            getDefaultReferenceFrame().setChromosomeName(chrName);
+            IGVMainFrame.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
+            chromosomeComboBox.setSelectedItem(chrName);
             updateCurrentCoordinates();
-            owner.chromosomeChangeEvent();
+            owner.chromosomeChangeEvent(chrName);
             owner.repaint();
         }
     }
@@ -1135,16 +1135,16 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
-        String chromosomeName = (String) combobox.getSelectedItem();
-        if (chromosomeName != null) {
+        String chrName = (String) combobox.getSelectedItem();
+        if (chrName != null) {
 
-            if (!chromosomeName.equals(getDefaultReferenceFrame().getChrName())) {
-                getDefaultReferenceFrame().setChromosomeName(chromosomeName);
+            if (!chrName.equals(getDefaultReferenceFrame().getChrName())) {
+                getDefaultReferenceFrame().setChromosomeName(chrName);
                 getDefaultReferenceFrame().recordHistory();
                 updateCurrentCoordinates();
-                owner.chromosomeChangeEvent();
+                owner.chromosomeChangeEvent(chrName);
                 owner.repaint();
-                PreferenceManager.getInstance().setLastChromosomeViewed(chromosomeName);
+                PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
             }
         }
     }

@@ -345,10 +345,11 @@ public class RulerPanel extends JPanel {
                     } else {
                         for (ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
-                                getViewContext().setChrName(link.value);
+                                final String chrName = link.value;
+                                getViewContext().setChrName(chrName);
                                 getViewContext().recordHistory();
                                 // TODO -- get rid of this ugly reference to IGVMainFrame.theInstance
-                                IGVMainFrame.getInstance().chromosomeChangeEvent();
+                                IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
 
                                 return;
                             }

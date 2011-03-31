@@ -117,11 +117,23 @@ public class FeatureTrack extends AbstractTrack {
         }
     }
 
+    @Override
+    public void chromosomeChanged(String chrName) {
+        if(chrName.equals(Globals.CHR_ALL)) {
+            showFeatures = false;
+        }
+        else if(showFeatures == false) {
+            // Currently showing coverage data.
+        }
+    }
 
     @Override
     public int getHeight() {
         if (!isVisible()) {
             return 0;
+        }
+        if (!showFeatures) {
+            return Math.min(expandedRowHeight, super.getHeight());
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
         int minHeight = rowHeight * Math.max(1, getNumberOfFeatureLevels());
@@ -511,6 +523,7 @@ public class FeatureTrack extends AbstractTrack {
         if (showFeatures) {
             renderFeatures(context, renderRect);
         } else {
+            setDisplayMode(DisplayMode.COLLAPSED);
             renderCoverage(context, renderRect);
         }
 

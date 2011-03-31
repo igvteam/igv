@@ -281,6 +281,10 @@ public abstract class AbstractTrack implements Track {
     public void overlay(RenderContext context, Rectangle rect) {
     }
 
+    public void chromosomeChanged(String chrName) {
+        // Nothing to do by default
+    }
+
 
     public Color getColor() {
         return posColor;
