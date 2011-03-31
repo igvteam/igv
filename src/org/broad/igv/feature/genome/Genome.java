@@ -301,6 +301,10 @@ public class Genome {
         return null;
     }
 
+    public void setAnnotationURL(String annotationURL) {
+        this.annotationURL = annotationURL;
+    }
+
 
     public static class ChromosomeCoordinate {
         private String chr;

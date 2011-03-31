@@ -139,6 +139,7 @@ public class GenomeManager {
             Genome genome = new Genome(genomeDescriptor.getId());
             LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
             genome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
+            genome.setAnnotationURL(genomeDescriptor.getUrl());
 
             InputStream aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
@@ -513,6 +514,9 @@ public class GenomeManager {
                         }
                     }
 
+                   String url =  properties.getProperty(Globals.GENOME_URL_KEY);
+
+
                     // The new descriptor
                     genomeDescriptor = new GenomeZipDescriptor(
                             properties.getProperty(Globals.GENOME_ARCHIVE_NAME_KEY),
@@ -528,6 +532,10 @@ public class GenomeManager {
                             zipEntries,
                             userDefined,
                             chromosomesAreOrdered);
+
+                    if(url != null) {
+                        genomeDescriptor.setUrl(url);
+                    }
 
                 }
                 zipEntry = zipInputStream.getNextEntry();

@@ -49,7 +49,7 @@ public class FeatureTrack extends AbstractTrack {
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
-    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(50, 170, 50, 30);
+    protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
     private static final int DEFAULT_EXPANDED_HEIGHT = 35;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
 
@@ -615,7 +615,7 @@ public class FeatureTrack extends AbstractTrack {
                         getRenderer().render(row.features, context, rect, this);
                         if (selectedFeatureRowIndex == i) {
                             Graphics2D fontGraphics =
-                                    (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR).create();
+                                    (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
                             fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
                         }
                         rect.y += h;

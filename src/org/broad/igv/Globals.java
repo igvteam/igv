@@ -65,6 +65,7 @@ public class Globals {
     final public static String GENOME_ARCHIVE_VERSION_KEY = "version";
     final public static String GENOME_ORDERED_KEY = "ordered";
     final public static String GENOME_GENETRACK_NAME = "geneTrackName";
+    final public static String GENOME_URL_KEY = "url";
     final public static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
     final public static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
     final public static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";

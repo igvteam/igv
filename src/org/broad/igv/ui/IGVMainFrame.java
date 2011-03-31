@@ -906,9 +906,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         //dhmay adding 2010/11/16
         // Navigate Regions
-        menuAction = new NavigateRegionsMenuAction("Navigate Regions ...", this);
-        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Separator
         /*menuItems.add(new JSeparator());
@@ -1142,6 +1139,11 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", this);
+        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
 
 
         /*
