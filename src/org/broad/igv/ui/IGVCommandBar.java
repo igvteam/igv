@@ -61,7 +61,7 @@ import java.util.List;
 public class IGVCommandBar extends javax.swing.JPanel {
 
     private static Logger log = Logger.getLogger(IGVCommandBar.class);
-    private IGVMainFrame owner;
+    //private IGVContentPane owner;
     private LinkedHashSet<GenomeListItem> userDefinedGenomeItemList;
     private LinkedHashSet<GenomeListItem> serverGenomeItemList;
     private LinkedHashSet<GenomeListItem> cachedGenomeItemList;
@@ -86,11 +86,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     /**
      * Creates new form IGVCommandBar
-     *
-     * @param owner
+
      */
-    public IGVCommandBar(IGVMainFrame owner) {
-        this.owner = owner;
+    public IGVCommandBar() {
         initComponents();
 
         // Initialize controls
@@ -450,7 +448,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
             chromosomeChanged(chrName);
             chromosomeComboBox.setSelectedItem(chrName);
-            owner.chromosomeChangeEvent(chrName, false);
+            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName, false);
         }
 
         String p = "";
@@ -466,7 +464,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         });
 
-        final History history = owner.getSession().getHistory();
+        final History history = IGVMainFrame.getInstance().getSession().getHistory();
         forwardButton.setEnabled(history.canGoForward());
         backButton.setEnabled(history.canGoBack());
 
@@ -1069,7 +1067,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         fitToWindowButton.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                (new FitDataToWindowMenuAction(null, 0, owner)).actionPerformed(evt);
+                (new FitDataToWindowMenuAction(null, 0, IGVMainFrame.getInstance())).actionPerformed(evt);
             }
         });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
@@ -1115,7 +1113,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
-            owner.setGeneList(null);
+            IGVMainFrame.getInstance().setGeneList(null);
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
@@ -1123,14 +1121,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
             IGVMainFrame.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
             chromosomeComboBox.setSelectedItem(chrName);
             updateCurrentCoordinates();
-            owner.chromosomeChangeEvent(chrName);
-            owner.repaint();
+            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
+            IGVMainFrame.getInstance().repaint();
         }
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //LRUCache.clearCaches();
-        owner.doRefresh();
+        IGVMainFrame.getInstance().doRefresh();
     }
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1142,8 +1140,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 getDefaultReferenceFrame().setChromosomeName(chrName);
                 getDefaultReferenceFrame().recordHistory();
                 updateCurrentCoordinates();
-                owner.chromosomeChangeEvent(chrName);
-                owner.repaint();
+                IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
+                IGVMainFrame.getInstance().repaint();
                 PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
             }
         }
@@ -1176,9 +1174,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private void roiToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_roiToggleButtonActionPerformed
         if (roiToggleButton.isSelected()) {
-            owner.beginROI(roiToggleButton);
+            IGVMainFrame.getInstance().beginROI(roiToggleButton);
         } else {
-            owner.endROI();
+            IGVMainFrame.getInstance().endROI();
         }
     }
 

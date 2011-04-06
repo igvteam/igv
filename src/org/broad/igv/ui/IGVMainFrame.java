@@ -105,17 +105,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     private TrackManager trackManager;
 
-    // Panels, UI elements
-    private JMenu extrasMenu;
-    private IGVCommandBar igvCommandBar;
-    private MainPanel mainPanel;
-    private StatusBar statusBar;
-    private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
-    //TODO -- A lot of state is passed between the embedded filter in this
-    // action and the session during save and restore.  Refactor to pass
-    // this state in a single object to/from the session.
-    private FilterTracksMenuAction filterTracksAction;
-
     // FileChooser Dialogs
     private FileChooserDialog trackFileChooser;
     private FileChooser snapshotFileChooser;
@@ -169,15 +158,10 @@ public class IGVMainFrame extends javax.swing.JFrame {
         // Create components
         setTitle(UIConstants.APPLICATION_NAME);
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        igvCommandBar = new IGVCommandBar(this);
-        igvCommandBar.setMinimumSize(new Dimension(250, 33));
-        mainPanel = new MainPanel(trackManager);
-        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
-        createMenuAndToolbar();
 
-        statusBar = new ApplicationStatusBar();
-        statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
-        getContentPane().add(statusBar, java.awt.BorderLayout.SOUTH);
+        setContentPane(new IGVContentPane(trackManager));
+        setJMenuBar(new IGVMenuBar());
+
         pack();
 
         // Create glass panes
@@ -369,7 +353,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
-        igvCommandBar.chromosomeChanged(chrName);
+
+        ((IGVContentPane) getContentPane()).chromosomeChanged(chrName);
         trackManager.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
 
@@ -384,9 +369,9 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        mainPanel.repaint();
+        repaint();
         if (updateCommandBar) {
-            igvCommandBar.updateCurrentCoordinates();
+            ((IGVContentPane) getContentPane()).updateCurrentCoordinates();
         }
     }
 
@@ -405,13 +390,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void repaintStatusAndZoomSlider() {
-        igvCommandBar.repaint();
+        ((IGVContentPane) getContentPane()).getCommandBar().repaint();
     }
 
 
     public void selectGenomeFromList(String genome) {
         try {
-            igvCommandBar.selectGenomeFromList(genome);
+            ((IGVContentPane) getContentPane()).getCommandBar().selectGenomeFromList(genome);
         } catch (FileNotFoundException e) {
             log.error("File not found while intializing genome!", e);
         } catch (NoRouteToHostException e) {
@@ -420,26 +405,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-
-    private void createMenuAndToolbar() {
-
-        // Setup the menus
-        setJMenuBar(MenuAndToolbarUtils.createMenuBar(createMenus()));
-
-        // Setup the toolbar panel.
-        JPanel toolbarPanel = new JPanel();
-        toolbarPanel.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
-
-        getContentPane().add(toolbarPanel, BorderLayout.NORTH);
-        toolbarPanel.setLayout(new JideBoxLayout(toolbarPanel));
-
-        // Nothing for this toolbar yet, basically used as a space
-        //JPanel namePanelToolBar = new JPanel();
-        //namePanelToolBar.setLayout(new JideBoxLayout(namePanelToolBar));
-        //namePanelToolBar.setPreferredSize(new Dimension(180, 10));
-        //toolbarPanel.add(namePanelToolBar, JideBoxLayout.FLEXIBLE);
-        toolbarPanel.add(igvCommandBar, JideBoxLayout.VARY);
-    }
 
 
     public void doDefineGenome(ProgressMonitor monitor) {
@@ -480,8 +445,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             enableRemoveGenomes();
 
-            igvCommandBar.addToUserDefinedGenomeItemList(genomeListItem);
-            igvCommandBar.selectGenomeFromListWithNoImport(genomeListItem.getId());
+            ((IGVContentPane) getContentPane()).getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+            ((IGVContentPane) getContentPane()).getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
             if (monitor != null) {
                 monitor.fireProgressChange(100);
@@ -515,7 +480,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public GenomeListItem getGenomeSelectedInDropdown() {
-        return igvCommandBar.getGenomeSelectedInDropdown();
+        return ((IGVContentPane) getContentPane()).getCommandBar().getGenomeSelectedInDropdown();
     }
 
     /**
@@ -524,11 +489,11 @@ public class IGVMainFrame extends javax.swing.JFrame {
      * @return Set of display names.
      */
     public Collection<String> getGenomeDisplayNames() {
-        return igvCommandBar.getGenomeDisplayNames();
+        return ((IGVContentPane) getContentPane()).getCommandBar().getGenomeDisplayNames();
     }
 
     public Collection<String> getGenomeIds() {
-        return igvCommandBar.getGenomeIds();
+        return ((IGVContentPane) getContentPane()).getCommandBar().getGenomeIds();
     }
 
     public GenomeListItem doLoadGenome(ProgressMonitor monitor) {
@@ -629,8 +594,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
                         }
                         genomeListItem = GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), true, monitor);
 
-                        igvCommandBar.addToUserDefinedGenomeItemList(genomeListItem);
-                        igvCommandBar.selectGenomeFromListWithNoImport(genomeListItem.getId());
+                        ((IGVContentPane) getContentPane()).getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+                        ((IGVContentPane) getContentPane()).getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
 
                         if (monitor != null) {
@@ -672,26 +637,10 @@ public class IGVMainFrame extends javax.swing.JFrame {
         return genomeListItem;
     }
 
-    private List<AbstractButton> createMenus() {
-
-        List<AbstractButton> menus = new ArrayList<AbstractButton>();
-        menus.add(createFileMenu());
-        menus.add(createViewMenu());
-        menus.add(createTracksMenu());
-
-        extrasMenu = createExtrasMenu();
-        extrasMenu.setVisible(false);
-        menus.add(extrasMenu);
-
-        menus.add(createHelpMenu());
-
-        // Experimental -- remove for production release
-
-        return menus;
-    }
 
     public void enableExtrasMenu() {
-        extrasMenu.setVisible(true);
+
+        ((IGVMenuBar) getJMenuBar()).enableExtrasMenu();
     }
 
     /**
@@ -713,7 +662,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     public void loadTracks(final Collection<ResourceLocator> locators, boolean doInBackground) {
 
-        ((ApplicationStatusBar) statusBar).setMessage("Loading ...");
+        ((IGVContentPane) getContentPane()).getStatusBar().setMessage("Loading ...");
 
         log.debug("Run loadTracks");
 
@@ -754,7 +703,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                 // Adjust dividers for data panel.  The data panel divider can be
                 // zero if there are no data tracks loaded.
-                final JideSplitPane centerSplitPane = mainPanel.getCenterSplitPane();
+                final JideSplitPane centerSplitPane = ((IGVContentPane) getContentPane()).getMainPanel().getCenterSplitPane();
                 int htotal = centerSplitPane.getHeight();
                 int y = 0;
                 int i = 0;
@@ -773,7 +722,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        mainPanel.doLayout();
+                        ((IGVContentPane) getContentPane()).getMainPanel().doLayout();
 
 
                     }
@@ -799,389 +748,6 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     }
 
-    private JMenu createFileMenu() {
-
-        List<JComponent> menuItems = new ArrayList<JComponent>();
-        MenuAction menuAction = null;
-
-        menuItems.add(new JSeparator());
-
-        // Load menu items
-        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        // Session menu items
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        menuAction =
-                new MenuAction(UIConstants.IMPORT_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_D) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-
-                        SwingWorker worker = new SwingWorker() {
-
-                            public Object doInBackground() {
-
-                                ProgressMonitor monitor = new ProgressMonitor();
-                                doDefineGenome(monitor);
-                                return null;
-                            }
-                        };
-                        worker.execute();
-                    }
-                };
-
-        menuAction.setToolTipText(IMPORT_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        boolean hasImportedGenomes = true;
-        try {
-            hasImportedGenomes = !GenomeManager.getInstance().getUserDefinedGenomeArchiveList().isEmpty();
-
-        } catch (IOException iOException) {
-            // Ignore
-        }
-        removeImportedGenomeAction = new RemoveUserDefinedGenomeMenuAction(
-                UIConstants.REMOVE_GENOME_LIST_MENU_ITEM, KeyEvent.VK_R);
-        removeImportedGenomeAction.setEnabled(hasImportedGenomes);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(removeImportedGenomeAction));
-
-        //menuAction = new ClearGenomeCacheAction("Clear Genome Cache...");
-        //menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        // ***** Snapshots
-        // Snapshot Application
-        menuAction =
-                new MenuAction("Save Image ...", null, KeyEvent.VK_A) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        doApplicationSnapshot(mainPanel);
-
-                    }
-                };
-
-        menuAction.setToolTipText(SAVE_IMAGE_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        // Export Regions
-        menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Import Regions
-        menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, this);
-        menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Import Regions
-        menuAction = new ClearRegionsMenuAction("Clear Regions ...", this);
-        menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        //dhmay adding 2010/11/16
-        // Navigate Regions
-
-        // Separator
-        /*menuItems.add(new JSeparator());
-        menuAction =
-                new MenuAction("Preprocess ...", null, KeyEvent.VK_P) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new PreprocessorDialog(IGVMainFrame.this, false)).setVisible(true);
-                    }
-                };
-
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        */
-
-        // batch script
-        menuItems.add(new JSeparator());
-
-        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // igvtools
-        menuItems.add(new JSeparator());
-        menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, this) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.COVERAGE);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, this) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.TILE);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        menuAction = new SortTracksMenuAction("Create index...", KeyEvent.VK_T, this) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IndexGui.launch(false);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, this) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());      // Exit
-        menuAction =
-                new MenuAction("Exit", null, KeyEvent.VK_X) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        doExitApplication();
-                    }
-                };
-
-        menuAction.setToolTipText(EXIT_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Empty the recent sessions list before we start to do
-        // anything with it
-        recentSessionList.clear();
-
-        // Retrieve the stored session paths
-        String recentSessions = PreferenceManager.getInstance().getRecentSessions();
-        if (recentSessions != null) {
-            String[] sessions = recentSessions.split(";");
-            for (String sessionPath : sessions) {
-                if (!recentSessionList.contains(sessionPath)) {
-                    recentSessionList.add(sessionPath);
-                }
-
-            }
-        }
-
-        if (!recentSessionList.isEmpty()) {
-
-            menuItems.add(new JSeparator());
-
-            // Now add menu items
-            for (final String session : recentSessionList) {
-                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, new File(session), this);
-                menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
-            }
-
-        }
-
-        MenuAction fileMenuAction = new MenuAction("File", null, KeyEvent.VK_F);
-        return MenuAndToolbarUtils.createMenu(menuItems, fileMenuAction);
-    }
-
-    private JMenu createTracksMenu() {
-
-        List<JComponent> menuItems = new ArrayList<JComponent>();
-        MenuAction menuAction = null;
-
-        // Sort Context
-        menuAction = new SortTracksMenuAction("Sort Tracks ...", KeyEvent.VK_S, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new GroupTracksMenuAction("Group Tracks  ... ", KeyEvent.VK_G, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks ...", KeyEvent.VK_F, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
-
-        menuItems.add(new JSeparator());
-
-        // Reset Tracks
-        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        // Set track height
-        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        MenuAction dataMenuAction = new MenuAction("Tracks", null, KeyEvent.VK_K);
-        return MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
-    }
-
-
-    private JMenu createViewMenu() {
-
-        List<JComponent> menuItems = new ArrayList<JComponent>();
-        MenuAction menuAction = null;
-
-        // Preferences
-        menuAction =
-                new MenuAction("Preferences...", null, KeyEvent.VK_P) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-
-                        UIUtilities.invokeOnEventThread(new Runnable() {
-
-                            public void run() {
-                                doViewPreferences();
-                            }
-                        });
-                    }
-                };
-        menuAction.setToolTipText(PREFERENCE_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction =
-                new MenuAction("Color Legends ...", null, KeyEvent.VK_H) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new LegendDialog(IGVMainFrame.this, false)).setVisible(true);
-                    }
-                };
-        menuAction.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                if (menuItem.isSelected()) {
-                    mainPanel.expandNamePanel();
-                } else {
-                    mainPanel.collapseNamePanel();
-                }
-                doRefresh();
-            }
-        };
-        boolean isShowing = mainPanel.isExpanded();
-        JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem();
-        menuItem.setSelected(isShowing);
-        menuItem.setAction(menuAction);
-        menuItems.add(menuItem);
-
-        // Hide or Show the attribute panels
-        boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);
-        doShowAttributeDisplay(isShow);  // <= WEIRD doing this here!
-
-        menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                PreferenceManager.getInstance().setShowAttributeView(menuItem.getState());
-                mainPanel.invalidate();
-                doRefresh();
-            }
-        };
-        menuAction.setToolTipText(SHOW_ATTRIBUTE_DISPLAY_TOOLTIP);
-        menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, isShow);
-        menuItems.add(menuItem);
-
-
-        menuAction =
-                new MenuAction("Select Attributes to Show...", null, KeyEvent.VK_S) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        doSelectDisplayableAttribute();
-                    }
-                };
-        menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new JSeparator());
-
-        //
-        menuAction =
-                new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new GeneListManagerUI(IGVMainFrame.this)).setVisible(true);
-                    }
-                };
-        menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", this);
-        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-
-        /*
-        menuAction =
-                new MenuAction("Show Region Bars", null, KeyEvent.VK_A) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-
-                        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                        PreferenceManager.getInstance().setShowRegionBars(menuItem.isSelected());
-                        repaintDataPanels();
-                    }
-                };
-                */
-        //menuAction.setToolTipText(SHOW_ATTRIBUTE_DISPLAY_TOOLTIP);
-        // menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, PreferenceManager.getInstance().isShowRegionBars());
-        // menuItems.add(menuItem);
-
-        menuItems.add(new JSeparator());
-        menuAction =
-                new MenuAction("Refresh", null, KeyEvent.VK_R) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        doRefresh();
-                    }
-                };
-        menuAction.setToolTipText(REFRESH_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuItems.add(new HistoryMenu("Go to"));
-
-
-        // Add to IGVPanel menu
-        MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
-        return MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
-    }
 
 
     public void setGeneList(String listID) {
@@ -1236,227 +802,21 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void resetFrames() {
-        mainPanel.headerPanelContainer.createHeaderPanels();
+        ((IGVContentPane) getContentPane()).getMainPanel().headerPanelContainer.createHeaderPanels();
         for (TrackPanelScrollPane tp : trackManager.getTrackPanelScrollPanes()) {
             tp.getTrackPanel().createDataPanels();
         }
 
-        igvCommandBar.setGeneListMode(FrameManager.isGeneListMode());
-        mainPanel.revalidate();
-        mainPanel.applicationHeaderPanel.revalidate();
-        mainPanel.repaint();
+        ((IGVContentPane) getContentPane()).getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
+        ((IGVContentPane) getContentPane()).getMainPanel().revalidate();
+        ((IGVContentPane) getContentPane()).getMainPanel().applicationHeaderPanel.revalidate();
+        ((IGVContentPane) getContentPane()).getMainPanel().repaint();
     }
 
-
-    private JMenu createExtrasMenu() {
-
-        List<JComponent> menuItems = new ArrayList<JComponent>();
-
-        MenuAction menuAction = null;
-
-        // Preferences reset
-        menuAction = new ResetPreferencesAction("Reset Preferences", this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Linked sorting
-        menuAction =
-                new MenuAction("Use Linked Sorting", null, KeyEvent.VK_C) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        JCheckBoxMenuItem menuItem =
-                                (JCheckBoxMenuItem) e.getSource();
-                        boolean isSelected = menuItem.getState();
-                        PreferenceManager.getInstance().put(PreferenceManager.ENABLE_LINKED_SORTING, String.valueOf(isSelected));
-                    }
-                };
-        boolean linkedSorting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_LINKED_SORTING);
-        menuAction.setToolTipText("Enable linked sorting");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, linkedSorting));
-
-
-        menuItems.add(new JSeparator());
-
-        // Load genome
-        menuAction =
-                new MenuAction(LOAD_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_I) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-
-                        SwingWorker worker = new SwingWorker() {
-
-                            public Object doInBackground() {
-                                ProgressMonitor monitor = new ProgressMonitor();
-                                doLoadGenome(monitor);
-                                return null;
-                            }
-                        };
-                        worker.execute();
-                    }
-                };
-
-        menuAction.setToolTipText(LOAD_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Set frame dimensions
-        menuAction =
-                new MenuAction("Set window dimensions", null, KeyEvent.VK_C) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        String value = JOptionPane.showInputDialog("Enter dimensions, e.g. 800x400");
-                        String[] vals = value.split("x");
-                        if (vals.length == 2) {
-                            int w = Integer.parseInt(vals[0]);
-                            int h = Integer.parseInt(vals[1]);
-                            IGVMainFrame.getInstance().setSize(w, h);
-                        }
-                    }
-                };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        // Save entire window
-        menuAction =
-                new MenuAction("Save Screenshot ...", null, KeyEvent.VK_A) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        doApplicationSnapshot(getContentPane());
-
-                    }
-                };
-
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        //
-        JMenu lfMenu = new JMenu("L&F");
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-
-            final String lfName = info.getName();
-            JMenuItem cb = new JMenuItem(lfName);
-            //cb.setSelected(info.getClassName().equals(lf.getClass().getName());
-            cb.addActionListener(new AbstractAction() {
-
-                public void actionPerformed(ActionEvent actionEvent) {
-                    for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-
-                        if (lfName.equals(info.getName())) {
-                            try {
-                                UIManager.setLookAndFeel(info.getClassName());
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (InstantiationException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            } catch (UnsupportedLookAndFeelException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            }
-                            break;
-                        }
-                    }
-                }
-            });
-            lfMenu.add(cb);
-        }
-
-        menuAction = new ExportTrackNamesMenuAction("Export track names...", this);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        MenuAction extrasMenuAction = new MenuAction("Extras");
-        JMenu menu = MenuAndToolbarUtils.createMenu(menuItems, extrasMenuAction);
-
-        menu.add(lfMenu);
-
-        menu.setVisible(false);
-
-
-        return menu;
-    }
-
-    private JMenu createHelpMenu() {
-
-        List<JComponent> menuItems = new ArrayList<JComponent>();
-
-        MenuAction menuAction = null;
-
-        menuAction =
-                new MenuAction("Help ... ") {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            BrowserLauncher.openURL(SERVER_BASE_URL + "igv/UserGuide");
-                        } catch (IOException ex) {
-                            log.error("Error opening browser", ex);
-                        }
-
-                    }
-                };
-        menuAction.setToolTipText(HELP_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        menuAction =
-                new MenuAction("Tutorial ... ") {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            BrowserLauncher.openURL(SERVER_BASE_URL + "igv/QuickStart");
-                        } catch (IOException ex) {
-                            log.error("Error opening browser", ex);
-                        }
-
-                    }
-                };
-        menuAction.setToolTipText(TUTORIAL_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        if (Desktop.isDesktopSupported()) {
-            final Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.MAIL)) {
-
-                menuAction =
-                        new MenuAction("Contact Support") {
-
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                try {
-                                    URI uri = new URI("mailto:igv-help@broadinstitute.org");
-                                    Desktop.getDesktop().mail(uri);
-                                } catch (Exception ex) {
-                                    log.error("Error opening email client", ex);
-                                }
-
-                            }
-                        };
-                menuAction.setToolTipText("Email support");
-                menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-            }
-        }
-
-        menuAction =
-                new MenuAction("About IGV ") {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new AboutDialog(IGVMainFrame.this, true)).setVisible(true);
-                    }
-                };
-        menuAction.setToolTipText(ABOUT_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        MenuAction toolMenuAction = new MenuAction("Help");
-        return MenuAndToolbarUtils.createMenu(menuItems, toolMenuAction);
-    }
 
     public void enableRemoveGenomes() {
-        if (removeImportedGenomeAction != null) {
-            removeImportedGenomeAction.setEnabled(true);
-        }
+
+        ((IGVMenuBar) getJMenuBar()).enableRemoveGenomes();
 
     }
 
@@ -1540,12 +900,12 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         try {
 
-            ((ApplicationStatusBar) statusBar).setMessage("Exiting...");
+            ((IGVContentPane) getContentPane()).getStatusBar().setMessage("Exiting...");
 
             // Store recent sessions
-            if (!recentSessionList.isEmpty()) {
+            if (!getRecentSessionList().isEmpty()) {
 
-                int size = recentSessionList.size();
+                int size = getRecentSessionList().size();
                 if (size > UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST) {
                     size = UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST;
                 }
@@ -1553,7 +913,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 String recentSessions = "";
                 for (int i = 0; i <
                         size; i++) {
-                    recentSessions += recentSessionList.get(i);
+                    recentSessions += getRecentSessionList().get(i);
 
                     if (i < (size - 1)) {
                         recentSessions += ";";
@@ -1594,13 +954,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
     final public void doRefresh() {
 
-        mainPanel.revalidate();
+        ((IGVContentPane) getContentPane()).getMainPanel().revalidate();
         repaint();
         //getContentPane().repaint();
     }
 
     final public void refreshCommandBar() {
-        igvCommandBar.updateCurrentCoordinates();
+        ((IGVContentPane) getContentPane()).getCommandBar().updateCurrentCoordinates();
     }
 
 
@@ -1623,7 +983,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
 
     final public void doApplicationSnapshot(Component target) {
-        ((ApplicationStatusBar) statusBar).setMessage("Creating snapshot...");
+        ((IGVContentPane) getContentPane()).getStatusBar().setMessage("Creating snapshot...");
         File defaultFile = new File("igv_snapshot.png");
         try {
             //createSnapshot(this, defaultFile);
@@ -1646,7 +1006,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            ((ApplicationStatusBar) statusBar).setMessage("Exporting image: " + defaultFile.getAbsolutePath());
+            ((IGVContentPane) getContentPane()).getStatusBar().setMessage("Exporting image: " + defaultFile.getAbsolutePath());
             File file = selectSnapshotFile(defaultFile);
             if (file == null) {
                 return;
@@ -1666,7 +1026,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
 
     public void createSnapshotNonInteractive(File file) {
-        createSnapshotNonInteractive(mainPanel, file);
+        createSnapshotNonInteractive(((IGVContentPane) getContentPane()).getMainPanel(), file);
     }
 
     protected void createSnapshotNonInteractive(Component target, File file) {
@@ -1769,8 +1129,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
         }
 
 
-        if (igvCommandBar != null) {
-            igvCommandBar.updateChromosomeDropdown();
+        if (((IGVContentPane) getContentPane()).getCommandBar() != null) {
+            ((IGVContentPane) getContentPane()).getCommandBar().updateChromosomeDropdown();
         }
 
         PreferenceManager.getInstance().setDefaultGenome(gid);
@@ -1867,14 +1227,12 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
         setTitle(UIConstants.APPLICATION_NAME);
 
-        if (filterTracksAction != null) {
-            filterTracksAction.resetTrackFilter();
-        }
+        ((IGVMenuBar) getJMenuBar()).resetSessionActions();
 
         AttributeManager.getInstance().clearAllAttributes();
         session = new Session(sessionName);
 
-        mainPanel.resetPanels();
+        ((IGVContentPane) getContentPane()).getMainPanel().resetPanels();
 
         doRefresh();
 
@@ -1892,7 +1250,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
             resetStatusMessage();
         }
 
-        ((ApplicationStatusBar) statusBar).setMessage(message);
+        ((IGVContentPane) getContentPane()).getStatusBar().setMessage(message);
     }
 
     /**
@@ -1920,43 +1278,21 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
 
-    public void updateTrackFilter() {
-        if (filterTracksAction != null) {
-            // TODO -- HOLDING THIS STATE ON THE ACTION OBJECT SEEMS BAD
-            filterTracksAction.updateTrackFilter();
-            // Update the state of the current tracks
-            doRefresh();
-        }
-    }
-
     public void setFilterMatchAll(boolean value) {
-        if (filterTracksAction != null) {
-            filterTracksAction.setFilterMatchAll(value);
-        }
-
+       ((IGVMenuBar) getJMenuBar()).setFilterMatchAll(value);
     }
 
     public boolean isFilterMatchAll() {
-        if (filterTracksAction != null) {
-            return filterTracksAction.isFilterMatchAll();
-        }
-
-        return false;
+        return ((IGVMenuBar) getJMenuBar()).isFilterMatchAll();
     }
 
     public void setFilterShowAllTracks(boolean value) {
-        if (filterTracksAction != null) {
-            filterTracksAction.setFilterShowAllTracks(value);
-        }
+        ((IGVMenuBar) getJMenuBar()).setFilterShowAllTracks(value);
 
     }
 
     public boolean isFilterShowAllTracks() {
-        if (filterTracksAction != null) {
-            return filterTracksAction.getShowAllTracksFilterCheckBox().isSelected();
-        }
-
-        return false;
+       return ((IGVMenuBar) getJMenuBar()).isFilterShowAllTracks();
     }
 
     /**
@@ -1964,7 +1300,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     public TrackPanelScrollPane addDataPanel(String name) {
 
-        return mainPanel.addDataPanel(name);
+        return ((IGVContentPane) getContentPane()).getMainPanel().addDataPanel(name);
     }
 
 
@@ -1993,7 +1329,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
      * the track panels need to be stored in order.
      */
     public List<TrackPanel> getTrackPanels() {
-        return mainPanel.getTrackPanels();
+        return ((IGVContentPane) getContentPane()).getMainPanel().getTrackPanels();
     }
 
 
@@ -2016,8 +1352,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
                 doRestoreSession(inputStream, sessionFile.getAbsolutePath(), locus, false);
 
                 String sessionFilePath = sessionFile.getAbsolutePath();
-                if (!recentSessionList.contains(sessionFilePath)) {
-                    recentSessionList.addFirst(sessionFilePath);
+                if (!getRecentSessionList().contains(sessionFilePath)) {
+                    getRecentSessionList().addFirst(sessionFilePath);
                 }
 
             } catch (Exception e) {
@@ -2111,7 +1447,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             // NOTE: Nothing to do if chr == all
             if (!FrameManager.isGeneListMode() && searchText != null && !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
-                igvCommandBar.searchByLocus(searchText);
+                ((IGVContentPane) getContentPane()).getCommandBar().searchByLocus(searchText);
 
 
             }
@@ -2137,18 +1473,18 @@ public class IGVMainFrame extends javax.swing.JFrame {
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
-        ((ApplicationStatusBar) statusBar).setMessage("" +
+        ((IGVContentPane) getContentPane()).getStatusBar().setMessage("" +
                 IGVMainFrame.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
 
     }
 
 
     public void rebuildGenomeDropdownList(Set excludedArchivesUrls) {
-        igvCommandBar.rebuildGenomeItemList(excludedArchivesUrls);
+        ((IGVContentPane) getContentPane()).getCommandBar().rebuildGenomeItemList(excludedArchivesUrls);
     }
 
     public void showLoadedTrackCount() {
-        ((ApplicationStatusBar) statusBar).setMessage("" +
+        ((IGVContentPane) getContentPane()).getStatusBar().setMessage("" +
                 IGVMainFrame.getInstance().getTrackManager().getVisibleTrackCount() +
                 " track(s) currently loaded");
     }
@@ -2168,7 +1504,7 @@ public class IGVMainFrame extends javax.swing.JFrame {
      */
     public void goToLocus(String locus) {
 
-        igvCommandBar.searchByLocus(locus);
+        ((IGVContentPane) getContentPane()).getCommandBar().searchByLocus(locus);
     }
 
 
@@ -2177,19 +1513,19 @@ public class IGVMainFrame extends javax.swing.JFrame {
     }
 
     public void tweakPanelDivider() {
-        mainPanel.tweakPanelDivider();
+        ((IGVContentPane) getContentPane()).getMainPanel().tweakPanelDivider();
     }
 
     public void removeDataPanel(String name) {
-        mainPanel.removeDataPanel(name);
+        ((IGVContentPane) getContentPane()).getMainPanel().removeDataPanel(name);
     }
 
     public void layoutMainPanel() {
-        mainPanel.doLayout();
+        ((IGVContentPane) getContentPane()).getMainPanel().doLayout();
     }
 
-    public Component getMainPanel() {
-        return mainPanel;
+    public MainPanel getMainPanel() {
+        return ((IGVContentPane) getContentPane()).getMainPanel();
     }
 
     public void setExportingSnapshot(boolean exportingSnapshot) {
@@ -2218,7 +1554,13 @@ public class IGVMainFrame extends javax.swing.JFrame {
         worker.execute();
     }
 
+    public LinkedList<String> getRecentSessionList() {
+        return recentSessionList;
+    }
 
+    public void setRecentSessionList(LinkedList<String> recentSessionList) {
+        this.recentSessionList = recentSessionList;
+    }
 
     /**
      * Swing worker class to startup IGV
@@ -2273,8 +1615,8 @@ public class IGVMainFrame extends javax.swing.JFrame {
 
             genomeId = GenomeManager.getInstance().getGenomeId(); // <= might have changed
             try {
-                igvCommandBar.initializeGenomeList(monitor);
-                igvCommandBar.selectGenomeFromListWithNoImport(genomeId);
+                ((IGVContentPane) getContentPane()).getCommandBar().initializeGenomeList(monitor);
+                ((IGVContentPane) getContentPane()).getCommandBar().selectGenomeFromListWithNoImport(genomeId);
             } catch (FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(IGVMainFrame.this, "Error initializing genome list: " + ex.getMessage());
                 log.error("Error initializing genome list: ", ex);
