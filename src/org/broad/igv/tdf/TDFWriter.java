@@ -48,7 +48,7 @@ public class TDFWriter {
     static private Logger log = Logger.getLogger(TDFWriter.class);
     static private int version = 3;
     OutputStream fos = null;
-    int bytesWritten = 0;
+    long bytesWritten = 0;
 
     File file;
     Map<String, TDFGroup> groupCache = new LinkedHashMap();
