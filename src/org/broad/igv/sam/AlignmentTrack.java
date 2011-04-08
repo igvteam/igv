@@ -446,10 +446,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         AlignmentInterval.Row row = alignmentRows.get(levelNumber);
         List<Alignment> features = row.alignments;
 
-        // give posA 2 pixel window, otherwise very narrow features will be missed.
-        double bpPerPixel = frame.getScale();
-        double minWidth = 2 * bpPerPixel;    /* * */
-        return (Alignment) FeatureUtils.getFeatureAt(position, minWidth, features);
+        // No buffer for alignments,  you must zoom in far enough for them to be visible
+        int buffer = 0;
+        return (Alignment) FeatureUtils.getFeatureAt(position, buffer, features);
 
     }
 

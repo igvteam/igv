@@ -121,7 +121,7 @@ public class FeatureUtilsTest {
         double minWidth = 0.0;
         List<? extends LocusScore> features = null;
         LocusScore expResult = null;
-        LocusScore result = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, features);
+        LocusScore result = (LocusScore) FeatureUtils.getFeatureAt(position, 0, features);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

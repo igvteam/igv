@@ -349,13 +349,13 @@ public class GisticTrack extends AbstractTrack {
         LocusScore amp = null;
         List<GisticScore> ampScores = ampScoreMap.get(chr);
         if (ampScores != null) {
-            amp = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, ampScores);
+            amp = (LocusScore) FeatureUtils.getFeatureAt(position, 0, ampScores);
         }
 
         LocusScore del = null;
         List<GisticScore> delScores = delScoreMap.get(chr);
         if (delScores != null) {
-            del = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, delScores);
+            del = (LocusScore) FeatureUtils.getFeatureAt(position, 0, delScores);
         }
 
         if ((amp == null) && (del == null)) {

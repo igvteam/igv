@@ -102,9 +102,9 @@ public class FeatureUtils {
         });
     }
 
-    public static Feature getFeatureAt(double position, double minWidth,
+    public static Feature getFeatureAt(double position, int buffer,
                                        List<? extends Feature> features) {
-        return getFeatureAt(position, minWidth, features, false);
+        return getFeatureAt(position, buffer, features, false);
 
     }
 
@@ -112,12 +112,12 @@ public class FeatureUtils {
      * Return a feature from the supplied list at the given position.
      *
      * @param position
-     * @param minWidth
+     * @param buffer
      * @param features
      * @param oneBased
      * @return
      */
-    public static Feature getFeatureAt(double position, double minWidth,
+    public static Feature getFeatureAt(double position, int buffer,
                                        List<? extends Feature> features,
                                        boolean oneBased) {
 
@@ -134,12 +134,11 @@ public class FeatureUtils {
             if (oneBased) {
                 effectiveEnd += 1;
             }
-            double effectiveWidth = Math.max(minWidth, effectiveEnd - effectiveStart);
 
-            if (position >= effectiveStart - effectiveWidth/2) {
+            if (position >= effectiveStart - buffer) {
 
  
-                if (position <= effectiveEnd + effectiveWidth/2) {
+                if (position <= effectiveEnd + buffer) {
                     return features.get(idx);
                 } else {
                     if (idx == startIdx) {

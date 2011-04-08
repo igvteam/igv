@@ -272,9 +272,9 @@ public class FeatureTrack extends AbstractTrack {
             if (scores == null) {
                 return "";
             } else {
-                // give a minimum  window, otherwise very narrow features will be missed.
+                // give a +/- 2 pixel buffer, otherwise very narrow features will be missed.
                 double bpPerPixel = frame.getScale();
-                double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;    /* * */
+                int minWidth = (int) (2 * bpPerPixel);    /* * */
                 LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
                 return score == null ? "" : "Mean count: " + score.getScore();
             }
@@ -384,9 +384,9 @@ public class FeatureTrack extends AbstractTrack {
         }
         if (features != null) {
 
-            // give a 2 pixel window, otherwise very narrow features will be missed.
+            // give a +/- 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = MINIMUM_FEATURE_SPACING * bpPerPixel;
+            int minWidth = (int) (2 * bpPerPixel);
             feature = FeatureUtils.getFeatureAt(position, minWidth, features, true);
         }
         return feature;

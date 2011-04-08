@@ -275,7 +275,7 @@ public class CoverageTrack extends AbstractTrack {
         if (scores == null) {
             return "";
         } else {
-            LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+            LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, 0, scores);
             return score == null ? "" : "Mean count: " + score.getScore();
         }
     }

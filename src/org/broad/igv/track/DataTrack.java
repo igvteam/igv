@@ -189,12 +189,12 @@ public abstract class DataTrack extends AbstractTrack {
 
         // give a 2 pixel window, otherwise very narrow features will be missed.
         double bpPerPixel = frame.getScale();
-        double minWidth = 2 * bpPerPixel;    /* * */
+        int buffer = (int) (2 * bpPerPixel);    /* * */
 
         if (scores == null) {
             return null;
         } else {
-            return (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
+            return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
         }
     }
 

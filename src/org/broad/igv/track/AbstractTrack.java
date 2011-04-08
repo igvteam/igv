@@ -452,9 +452,9 @@ public abstract class AbstractTrack implements Track {
 
     // Assumes features are sorted by start position
 
-    protected Feature getFeatureAt(double position, double minWidth, List<? extends LocusScore> features) {
+    protected Feature getFeatureAt(double position, int buffer, List<? extends LocusScore> features) {
 
-        return FeatureUtils.getFeatureAt(position, minWidth, features);
+        return FeatureUtils.getFeatureAt(position, buffer, features);
     }
 
 

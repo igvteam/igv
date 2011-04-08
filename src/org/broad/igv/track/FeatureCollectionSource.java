@@ -329,7 +329,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
-            double minWidth = 2 * bpPerPixel;    /* * */
+            int minWidth = (int) (2 * bpPerPixel);    /* * */
 
             if (scores == null) {
                 return "";
