@@ -88,14 +88,14 @@ public class RulerPanel extends JPanel {
     }
 
     private boolean isWholeGenomeView() {
-        return getViewContext().getChrName().equals("All");
+        return getViewContext().getChrName().equals(Globals.CHR_ALL);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
 
         super.paintComponent(g);
-        
+
         g.setColor(Color.black);
 
         if (isWholeGenomeView()) {
@@ -180,7 +180,7 @@ public class RulerPanel extends JPanel {
     private void drawTicks(Graphics g) {
 
         int w = getWidth();
-        if(w < 200) {
+        if (w < 200) {
             return;
         }
 
@@ -247,36 +247,43 @@ public class RulerPanel extends JPanel {
             int chrLength = c.getLength();
 
             int x = (int) (offset / (locationUnit * getViewContext().getScale()));
-
-            g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
-
             int dw = (int) (chrLength / (locationUnit * getViewContext().getScale()));
-            int center = x + dw / 2;
 
-            String displayName = null;
-            if(chrName.startsWith("gi|")) {
-                displayName = Genome.getNCBIName(chrName);
-            } else {
-                displayName = chrName.replace("chr", "");
+            // Dont draw very small chromosome & contigs in whole genome view
+            if (dw > 1) {
+
+                g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
+
+                // Don't label chromosome if its width is < 5 pixels
+                if (dw > 5) {
+                    int center = x + dw / 2;
+
+                    String displayName = null;
+                    if (chrName.startsWith("gi|")) {
+                        displayName = Genome.getNCBIName(chrName);
+                    } else {
+                        displayName = chrName.replace("chr", "");
+                    }
+                    int strWidth = g.getFontMetrics().stringWidth(displayName);
+                    int strPosition = center - strWidth / 2;
+
+
+                    int y = (even ? getHeight() - 35 : getHeight() - 25);
+                    g.drawString(displayName, strPosition, y);
+
+                    Rectangle clickRect = new Rectangle(strPosition, y - 15, 15, 15);
+                    String tooltipText = "Jump to chromosome: " + chrName;
+                    chromosomeRects.add(new ClickLink(clickRect, chrName, tooltipText));
+
+                    even = !even;
+                }
             }
-            int strWidth = g.getFontMetrics().stringWidth(displayName);
-            int strPosition = center - strWidth / 2;
-
-
-            int y = (even ? getHeight() - 35 : getHeight() - 25);
-            g.drawString(displayName, strPosition, y);
-
-            Rectangle clickRect = new Rectangle(strPosition, y - 15, 15, 15);
-            String tooltipText = "Jump to chromosome: " + chrName;
-            chromosomeRects.add(new ClickLink(clickRect, chrName, tooltipText));
-
-            even = !even;
 
             offset += chrLength;
         }
     }
 
-    public static  String formatNumber(double position) {
+    public static String formatNumber(double position) {
 
         //NumberFormatter f = new NumberFormatter();
         DecimalFormat formatter = new DecimalFormat();
@@ -517,7 +524,7 @@ public class RulerPanel extends JPanel {
         }
     }
 
-    // TODO -- possibly generalize?
+// TODO -- possibly generalize?
 
     class ClickLink {
 
