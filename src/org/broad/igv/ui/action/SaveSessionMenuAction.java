@@ -29,7 +29,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.FileDialogUtils;
@@ -49,7 +49,7 @@ public class SaveSessionMenuAction extends MenuAction {
 
     // TODO -- The batch referenceFrame is likely to be used by many actions. Move this
     // member to a base class ?
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
     /**
      * Constructs ...
@@ -58,7 +58,7 @@ public class SaveSessionMenuAction extends MenuAction {
      * @param mnemonic
      * @param mainFrame
      */
-    public SaveSessionMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public SaveSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.SAVE_SESSION_TOOLTIP);
@@ -124,7 +124,7 @@ public class SaveSessionMenuAction extends MenuAction {
             PreferenceManager.getInstance().setLastSessionDirectory(sf.getParentFile());
 
         } catch (Exception e2) {
-            JOptionPane.showMessageDialog(mainFrame, "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");
+            JOptionPane.showMessageDialog(mainFrame.getMainFrame(), "There was an error writing to " + sf.getName() + "(" + e2.getMessage() + ")");
             log.error("Failed to save session!", e2);
         } finally {
             WaitCursorManager.removeWaitCursor(token);

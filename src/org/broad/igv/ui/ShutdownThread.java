@@ -23,7 +23,6 @@ package org.broad.igv.ui;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.ui.util.FileDialogUtils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -31,7 +30,6 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * This thread is registered upon startup and will get executed upon exit.
@@ -55,7 +53,7 @@ public class ShutdownThread extends Thread {
                 cleanupJnlpFiles(downloads);
             }
 
-            if (IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest().size() > 0) {
+            if (IGV.getInstance().getSession().getAllRegionsOfInterest().size() > 0) {
                 File file = new File("Regions_" + System.currentTimeMillis() + ".bed");
 
                 if (file != null) {
@@ -133,7 +131,7 @@ public class ShutdownThread extends Thread {
             return;
         }
         try {
-            Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
+            Collection<RegionOfInterest> regions = IGV.getInstance().getSession().getAllRegionsOfInterest();
 
             if (regions == null || regions.isEmpty()) {
                 return;

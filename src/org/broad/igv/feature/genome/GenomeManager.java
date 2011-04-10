@@ -31,8 +31,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 
 import org.broad.igv.ui.util.ConfirmDialog;
@@ -1264,7 +1264,7 @@ public class GenomeManager {
 
         if (genomeId != null && !genomeId.equals(newGenome)) {
             if (!Globals.isHeadless()) {
-                IGVMainFrame.getInstance().getSession().getHistory().clear();
+                IGV.getInstance().getSession().getHistory().clear();
             }
         }
 
@@ -1313,7 +1313,7 @@ public class GenomeManager {
         // Reset the frame manager
         if (!Globals.isHeadless()) {
             FrameManager.reset(currentGenome.getHomeChromosome());
-            IGVMainFrame.getInstance().chromosomeChangeEvent(currentGenome.getHomeChromosome());
+            IGV.getInstance().chromosomeChangeEvent(currentGenome.getHomeChromosome());
         }
         return genomeId;
 

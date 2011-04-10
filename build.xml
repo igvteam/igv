@@ -127,7 +127,7 @@
             <manifest>
             <attribute name="Class-Path" value="${class-path}" />
             <attribute name="Built-By" value="${user.name}" />
-            <attribute name="Main-Class" value="org.broad.igv.ui.IGVMainFrame"/>
+            <attribute name="Main-Class" value="org.broad.igv.ui.Main"/>
             </manifest>
         </jar>
     </target>

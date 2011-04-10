@@ -21,9 +21,8 @@ package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
@@ -71,7 +70,7 @@ public class VCFMenu extends JPopupMenu {
 
             private void close() {
                 track.clearSelectedVariant();
-                //IGVMainFrame.getInstance().repaint();
+                //IGV.getInstance().repaint();
             }
 
         });
@@ -134,7 +133,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 changeVisibilityWindow();
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -156,7 +155,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setColorMode(VCFTrack.ColorMode.GENOTYPE);
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -168,7 +167,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setColorMode(VCFTrack.ColorMode.ALLELE);
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -179,7 +178,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setRenderID(!track.getRenderID());
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -190,7 +189,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setHideFiltered(!track.getHideFiltered());
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -201,7 +200,7 @@ public class VCFMenu extends JPopupMenu {
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setHideAncestral(!track.getHideAncestral());
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getContentPane().repaint();
             }
         });
         return item;
@@ -218,7 +217,7 @@ public class VCFMenu extends JPopupMenu {
                     GenotypeComparator compare = new GenotypeComparator();
                     genotypeSortingDirection = !genotypeSortingDirection;
                     sortSamples(compare);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getContentPane().repaint();
                 }
             });
         } catch (Exception e) {
@@ -244,7 +243,7 @@ public class VCFMenu extends JPopupMenu {
                     };
                     sampleSortingDirection = !sampleSortingDirection;
                     sortSamples(compare);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getContentPane().repaint();
                 }
             });
         } catch (Exception e) {
@@ -264,7 +263,7 @@ public class VCFMenu extends JPopupMenu {
                         DepthComparator compare = new DepthComparator();
                         depthSortingDirection = !depthSortingDirection;
                         sortSamples(compare);
-                        IGVMainFrame.getInstance().getContentPane().repaint();
+                        IGV.getInstance().getContentPane().repaint();
                     }
                 });
                 return item;
@@ -285,7 +284,7 @@ public class VCFMenu extends JPopupMenu {
                         QualityComparator compare = new QualityComparator();
                         qualitySortingDirection = !qualitySortingDirection;
                         sortSamples(compare);
-                        IGVMainFrame.getInstance().getContentPane().repaint();
+                        IGV.getInstance().getContentPane().repaint();
                     }
                 });
             }
@@ -305,7 +304,7 @@ public class VCFMenu extends JPopupMenu {
     private static int getIntValue(String parameter, int value) {
         while (true) {
             String height = JOptionPane.showInputDialog(
-                    IGVMainFrame.getInstance(), parameter + ": ",
+                    IGV.getMainFrame(), parameter + ": ",
                     String.valueOf(value));
             if ((height == null) || height.trim().equals("")) {
                 return Integer.MIN_VALUE;   // <= the logical "null" value
@@ -315,7 +314,7 @@ public class VCFMenu extends JPopupMenu {
                 value = Integer.parseInt(height);
                 return value;
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         parameter + " must be an integer number.");
             }
         }
@@ -358,7 +357,7 @@ public class VCFMenu extends JPopupMenu {
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().repaint();
             }
         });
 
@@ -367,7 +366,7 @@ public class VCFMenu extends JPopupMenu {
         m2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().repaint();
             }
         });
 
@@ -376,7 +375,7 @@ public class VCFMenu extends JPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().repaint();
             }
         });
 

@@ -20,7 +20,7 @@
 package org.broad.igv.ui.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,7 +73,7 @@ public class FileDialogUtils {
     private static File chooseNative(String title, File initialDirectory, File initialFile, boolean directories, int mode) {
 
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
-        FileDialog fd = new FileDialog(IGVMainFrame.getInstance(), title);
+        FileDialog fd = new FileDialog(IGV.getMainFrame(), title);
         if (initialDirectory != null) {
             fd.setDirectory(initialDirectory.getAbsolutePath());
         }
@@ -109,9 +109,9 @@ public class FileDialogUtils {
 
         boolean approve = false;
         if (mode == LOAD) {
-            approve = fileChooser.showOpenDialog(IGVMainFrame.getInstance()) == JFileChooser.APPROVE_OPTION;
+            approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
         } else {
-            approve = fileChooser.showSaveDialog(IGVMainFrame.getInstance()) == JFileChooser.APPROVE_OPTION;
+            approve = fileChooser.showSaveDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
         }
 
         if (approve) {

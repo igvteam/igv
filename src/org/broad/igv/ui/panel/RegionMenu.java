@@ -23,8 +23,7 @@ import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -57,7 +56,7 @@ public class RegionMenu extends JidePopupMenu {
         }
 
 
-        Set<TrackType> loadedTypes = IGVMainFrame.getInstance().getTrackManager().getLoadedTypes();
+        Set<TrackType> loadedTypes = IGV.getInstance().getTrackManager().getLoadedTypes();
 
         if (loadedTypes.contains(TrackType.COPY_NUMBER) ||
                 loadedTypes.contains(TrackType.ALLELE_SPECIFIC_COPY_NUMBER) ||
@@ -66,7 +65,7 @@ public class RegionMenu extends JidePopupMenu {
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.AMPLIFICATION, frame);
+                    IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.AMPLIFICATION, frame);
 
                 }
             });
@@ -78,8 +77,8 @@ public class RegionMenu extends JidePopupMenu {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.DELETION, frame);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.DELETION, frame);
+                    IGV.getInstance().getContentPane().repaint();
                 }
             });
             add(item);
@@ -89,8 +88,8 @@ public class RegionMenu extends JidePopupMenu {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.FLUX, frame);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.FLUX, frame);
+                    IGV.getInstance().getContentPane().repaint();
                 }
             });
             add(item);
@@ -102,8 +101,8 @@ public class RegionMenu extends JidePopupMenu {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.EXPRESSION, frame);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.EXPRESSION, frame);
+                    IGV.getInstance().getContentPane().repaint();
 
                 }
             });
@@ -117,8 +116,8 @@ public class RegionMenu extends JidePopupMenu {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.MUTATION_COUNT, frame);
-                    IGVMainFrame.getInstance().getContentPane().repaint();
+                    IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.MUTATION_COUNT, frame);
+                    IGV.getInstance().getContentPane().repaint();
 
                 }
             });
@@ -131,8 +130,8 @@ public class RegionMenu extends JidePopupMenu {
 
             public void actionPerformed(ActionEvent e) {
 
-                IGVMainFrame.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.SCORE, frame);
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.SCORE, frame);
+                IGV.getInstance().getContentPane().repaint();
 
             }
         });

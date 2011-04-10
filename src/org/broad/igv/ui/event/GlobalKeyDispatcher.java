@@ -27,14 +27,13 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.vcf.VCFTrack;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
@@ -42,9 +41,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * @author jrobinso
@@ -53,11 +50,11 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     private final InputMap keyStrokes = new InputMap();
     private final ActionMap actions = new ActionMap();
-    private IGVMainFrame mainFrame;
+    private IGV mainFrame;
 
     public GlobalKeyDispatcher() {
         init();
-        mainFrame = IGVMainFrame.getInstance();
+        mainFrame = IGV.getInstance();
     }
 
     public InputMap getInputMap() {
@@ -71,8 +68,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
     public boolean dispatchKeyEvent(KeyEvent event) {
 
         if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            IGVMainFrame.getInstance().getTrackManager().clearSelections();
-            IGVMainFrame.getInstance().repaint();
+            IGV.getInstance().getTrackManager().clearSelections();
+            IGV.getInstance().repaint();
             return true;
         }
 
@@ -125,7 +122,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
             public void actionPerformed(ActionEvent e) {
                 setEnabled(false); // stop any other events from interfering
-                IGVMainFrame.getInstance().enableExtrasMenu();
+                IGV.getInstance().enableExtrasMenu();
                 setEnabled(true);
             }
         };
@@ -180,7 +177,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 currentRange.getEnd(),
                                 null);
                 // TODO -- get this ugly reference out of here
-                IGVMainFrame.getInstance().addRegionOfInterest(regionOfInterest);
+                IGV.getInstance().addRegionOfInterest(regionOfInterest);
                 setEnabled(true);
             }
         };
@@ -188,13 +185,13 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final Action backAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                IGVMainFrame.getInstance().getSession().getHistory().back();
+                IGV.getInstance().getSession().getHistory().back();
             }
         };
         final Action forwardAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
-                IGVMainFrame.getInstance().getSession().getHistory().forward();
+                IGV.getInstance().getSession().getHistory().forward();
             }
         };
 
@@ -240,11 +237,11 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
         ReferenceFrame vc = FrameManager.getDefaultFrame();
-        Collection<Track> tracks = IGVMainFrame.getInstance().getTrackManager().getSelectedTracks();
+        Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
                 if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
-                    //JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                    //JOptionPane.showMessageDialog(IGV.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;
                 }
@@ -329,12 +326,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
         ReferenceFrame vc = FrameManager.getDefaultFrame();
-        Collection<Track> tracks = IGVMainFrame.getInstance().getTrackManager().getSelectedTracks();
+        Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
         if (tracks.size() == 1) {
             try {
                 Track t = tracks.iterator().next();
                 if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
-                    //JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                    //JOptionPane.showMessageDialog(IGV.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;
                 }

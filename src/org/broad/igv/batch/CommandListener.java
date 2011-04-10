@@ -20,9 +20,10 @@ package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -176,7 +177,7 @@ public class CommandListener implements Runnable {
             } else {
                 String command = parts[0];
                 Map<String, String> params = parseParameters(parts[1]);
-                final IGVMainFrame mainFrame = IGVMainFrame.getInstance();
+                final Frame mainFrame = IGV.getMainFrame();
 
                 // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
                 mainFrame.toFront();
@@ -189,7 +190,7 @@ public class CommandListener implements Runnable {
                         String mergeValue = params.get("merge");
                         String locus = params.get("locus");
                         if (genomeID != null) {
-                            mainFrame.selectGenomeFromList(genomeID);
+                            IGV.getInstance().selectGenomeFromList(genomeID);
                         }
 
                         // Default for merge is "true"
@@ -201,7 +202,7 @@ public class CommandListener implements Runnable {
                     }
                 } else if (command.equals("/reload") || command.equals("/goto")) {
                     String locus = params.get("locus");
-                    mainFrame.goToLocus(locus);
+                    IGV.getInstance().goToLocus(locus);
                 } else {
                     return ("ERROR Unknown command: " + command);
                 }

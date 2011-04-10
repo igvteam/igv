@@ -19,7 +19,6 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.data.seg.SegmentedDataSource;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -28,7 +27,7 @@ import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.panel.FrameManager;
@@ -283,10 +282,10 @@ public class SessionReader {
         addLeftoverTracks(trackDictionary.values());
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-            IGVMainFrame.getInstance().getTrackManager().setGroupByAttribute(session.getGroupTracksBy());
+            IGV.getInstance().getTrackManager().setGroupByAttribute(session.getGroupTracksBy());
         }
 
-        IGVMainFrame.getInstance().getTrackManager().resetOverlayTracks();
+        IGV.getInstance().getTrackManager().resetOverlayTracks();
 
         return session;
     }
@@ -299,7 +298,7 @@ public class SessionReader {
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
                     if (track.getResourceLocator() != null) {
-                        TrackPanel group = IGVMainFrame.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
+                        TrackPanel group = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
                         group.addTrack(track);
                     }
                 }
@@ -372,7 +371,7 @@ public class SessionReader {
 
     private void processGlobal(Session session, Element element, HashMap additionalInformation) {
 
-        IGVMainFrame.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
+        IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
@@ -620,7 +619,7 @@ public class SessionReader {
         String description = getAttribute(element, SessionAttribute.DESCRIPTION.getText());
 
         RegionOfInterest region = new RegionOfInterest(chromosome, new Integer(start), new Integer(end), description);
-        IGVMainFrame.getInstance().addRegionOfInterest(region);
+        IGV.getInstance().addRegionOfInterest(region);
 
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation);
@@ -673,7 +672,7 @@ public class SessionReader {
                 FrameManager.setFrames(reorderedFrames);
             }
         }
-        IGVMainFrame.getInstance().resetFrames();
+        IGV.getInstance().resetFrames();
     }
 
     private void processFilter(Session session, Element element, HashMap additionalInformation) {
@@ -693,15 +692,15 @@ public class SessionReader {
 
         // Set filter properties
         if ("all".equalsIgnoreCase(match)) {
-            IGVMainFrame.getInstance().setFilterMatchAll(true);
+            IGV.getInstance().setFilterMatchAll(true);
         } else if ("any".equalsIgnoreCase(match)) {
-            IGVMainFrame.getInstance().setFilterMatchAll(false);
+            IGV.getInstance().setFilterMatchAll(false);
         }
 
         if ("true".equalsIgnoreCase(showAllTracks)) {
-            IGVMainFrame.getInstance().setFilterShowAllTracks(true);
+            IGV.getInstance().setFilterShowAllTracks(true);
         } else {
-            IGVMainFrame.getInstance().setFilterShowAllTracks(false);
+            IGV.getInstance().setFilterShowAllTracks(false);
         }
     }
 
@@ -752,7 +751,7 @@ public class SessionReader {
             }
         }
 
-        TrackPanel panel = IGVMainFrame.getInstance().getDataPanel(panelName);
+        TrackPanel panel = IGV.getInstance().getDataPanel(panelName);
         if (height == 0) {
             height = panel.getPreferredPanelHeight();
         }

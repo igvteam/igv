@@ -30,7 +30,7 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SetTrackHeightMenuAction extends MenuAction {
 
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
     static Logger log = Logger.getLogger(SetTrackHeightMenuAction.class);
 
     static int lastTrackHeight = -1;
@@ -55,7 +55,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
      * @param mnemonic
      * @param mainFrame
      */
-    public SetTrackHeightMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public SetTrackHeightMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.SET_DEFAULT_TRACK_HEIGHT_TOOLTIP);
@@ -90,7 +90,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
             int repTrackHeight = getRepresentativeTrackHeight();
             trackHeightField.setText(String.valueOf(repTrackHeight));
 
-            int status = JOptionPane.showConfirmDialog(mainFrame, container, "Set Track Height",
+            int status = JOptionPane.showConfirmDialog(mainFrame.getMainFrame(), container, "Set Track Height",
                     JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
             if ((status == JOptionPane.CANCEL_OPTION) || (status == JOptionPane.CLOSED_OPTION)) {
@@ -99,12 +99,12 @@ public class SetTrackHeightMenuAction extends MenuAction {
 
             try {
                 int newTrackHeight = Integer.parseInt(trackHeightField.getText().trim());
-                IGVMainFrame.getInstance().getTrackManager().setAllTrackHeights(newTrackHeight);
+                IGV.getInstance().getTrackManager().setAllTrackHeights(newTrackHeight);
                 lastTrackHeight = newTrackHeight;
                 doRefresh = true;
             }
             catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(mainFrame, "Track height must be an integer number.");
+                JOptionPane.showMessageDialog(mainFrame.getMainFrame(), "Track height must be an integer number.");
             }
 
         }
@@ -135,7 +135,7 @@ public class SetTrackHeightMenuAction extends MenuAction {
         }
 
         // Get all tracks except the gene track
-        List<Track> tracks = IGVMainFrame.getInstance().getTrackManager().getAllTracks(false);
+        List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
 
 
         double[] heights = new double[tracks.size()];

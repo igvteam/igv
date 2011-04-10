@@ -26,7 +26,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.MessageUtils;
@@ -45,9 +45,9 @@ import java.util.List;
 public class LoadFilesMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public LoadFilesMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public LoadFilesMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
@@ -71,7 +71,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
         // Get Track Files
         FileChooserDialog trackFileDialog = mainFrame.getTrackFileChooser();
-        trackFileDialog.setLocationRelativeTo(mainFrame);
+        trackFileDialog.setLocationRelativeTo(mainFrame.getMainFrame());
         trackFileDialog.setTitle("Select Files");
         trackFileDialog.setMultiSelectionEnabled(true);
         trackFileDialog.setSelectedFile(null);
@@ -121,7 +121,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
                     String path = file.getAbsolutePath();
                     if (path.endsWith(Globals.SESSION_FILE_EXTENSION)) {
-                        MessageUtils.showAndLogErrorMessage(mainFrame,
+                        MessageUtils.showAndLogErrorMessage(mainFrame.getMainFrame(),
                                 "File " + path +
                                         " appears to be an IGV Session file - " +
                                         "please use the Open Session menu item " +
@@ -135,7 +135,7 @@ public class LoadFilesMenuAction extends MenuAction {
             files = validFileList.toArray(new File[validFileList.size()]);
 
             if (!allFilesExist) {
-                MessageUtils.showAndLogErrorMessage(mainFrame, buffer.toString(), log);
+                MessageUtils.showAndLogErrorMessage(mainFrame.getMainFrame(), buffer.toString(), log);
             }
 
             if (files.length > 0) {

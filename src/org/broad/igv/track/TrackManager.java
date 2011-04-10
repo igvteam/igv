@@ -26,11 +26,10 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GeneManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.sam.CoverageTrack;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.UIConstants;
@@ -57,7 +56,7 @@ public class TrackManager {
     /**
      * Owning object
      */
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
     private TrackLoader loader;
 
@@ -85,7 +84,7 @@ public class TrackManager {
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
 
 
-    public TrackManager(IGVMainFrame mainFrame) {
+    public TrackManager(IGV mainFrame) {
 
         this.mainFrame = mainFrame;
         loader = new TrackLoader();
@@ -170,7 +169,7 @@ public class TrackManager {
                 ((AlignmentTrack) t).clearCaches();
             }
         }
-        IGVMainFrame.getInstance().repaintDataPanels();
+        IGV.getInstance().repaintDataPanels();
     }
 
 
@@ -347,7 +346,7 @@ public class TrackManager {
         overlayTracksMap.clear();
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY)) {
-            String overlayAttribute = IGVMainFrame.getInstance().getSession().getOverlayAttribute();
+            String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
             if (overlayAttribute != null) {
                 for (Track track : getAllTracks(false)) {
                     if (track != null) {
@@ -370,7 +369,7 @@ public class TrackManager {
             }
         }
 
-        boolean displayOverlays = IGVMainFrame.getInstance().getSession().getDisplayOverlayTracks();
+        boolean displayOverlays = IGV.getInstance().getSession().getDisplayOverlayTracks();
 
         for (Track track : getAllTracks(false)) {
             if (track != null) {
@@ -637,7 +636,7 @@ public class TrackManager {
                     TrackPanel tsv = tsp.getTrackPanel();
                     tsv.sortByRegionsScore(r, type, frame);
                 }
-                IGVMainFrame.getInstance().getContentPane().repaint();
+                IGV.getMainFrame().repaint();
             }
         };
 
@@ -662,7 +661,7 @@ public class TrackManager {
      * @return
      */
     public List<Track> getOverlayTracks(Track track) {
-        String overlayAttribute = IGVMainFrame.getInstance().getSession().getOverlayAttribute();
+        String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
         String value = track.getAttributeValue(overlayAttribute);
         return overlayTracksMap.get(value);
 

@@ -25,7 +25,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
 
@@ -44,11 +44,11 @@ import java.io.File;
 public class OpenSessionMenuAction extends MenuAction {
 
     private static Logger log = Logger.getLogger(OpenSessionMenuAction.class);
-    private IGVMainFrame mainFrame;
+    private IGV mainFrame;
     private File sessionFile = null;
     private boolean autoload = false;
 
-    public OpenSessionMenuAction(String label, File sessionFile, IGVMainFrame mainFrame) {
+    public OpenSessionMenuAction(String label, File sessionFile, IGV mainFrame) {
         super(label);
         this.sessionFile = sessionFile;
         this.mainFrame = mainFrame;
@@ -56,7 +56,7 @@ public class OpenSessionMenuAction extends MenuAction {
         autoload = true;
     }
 
-    public OpenSessionMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public OpenSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.RESTORE_SESSION_TOOLTIP);
@@ -69,7 +69,7 @@ public class OpenSessionMenuAction extends MenuAction {
         if (sessionFile == null || autoload == false)
         {
 
-            FileChooserDialog dialog = new FileChooserDialog(mainFrame, true);
+            FileChooserDialog dialog = new FileChooserDialog(mainFrame.getMainFrame(), true);
             dialog.setTitle("Open Session");
             dialog.setSelectedFile(null);
             dialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -93,10 +93,10 @@ public class OpenSessionMenuAction extends MenuAction {
 
         // If anything has been loaded warn the users.  Popping up the
         // warning all the time will get annoying.
-        if (IGVMainFrame.getInstance().getTrackManager().getAllTracks(false).size() > 0) {
+        if (IGV.getInstance().getTrackManager().getAllTracks(false).size() > 0) {
             int status =
                     JOptionPane.showConfirmDialog(
-                            mainFrame,
+                            mainFrame.getMainFrame(),
                             UIConstants.OVERWRITE_SESSION_MESSAGE,
                             null,
                             JOptionPane.OK_CANCEL_OPTION,

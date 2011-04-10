@@ -227,7 +227,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                                 final ProgressMonitor monitor = new ProgressMonitor();
                                 final ProgressBar bar =
-                                        ProgressBar.showProgressDialog(IGVMainFrame.getInstance(),
+                                        ProgressBar.showProgressDialog(IGV.getMainFrame(),
                                                 "Loading Genome...", monitor,
                                                 false);
 
@@ -244,7 +244,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                             cachedGenomeItemList.add(genomeListItem);
                                         }
 
-                                        IGVMainFrame.getInstance().doChooseGenome(
+                                        IGV.getInstance().doChooseGenome(
                                                 GenomeManager.getInstance().getGenomeDescriptor(
                                                         requestedGenomeId));
 
@@ -266,7 +266,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                                             public void run() {
                                                 JOptionPane.showMessageDialog(
-                                                        IGVMainFrame.getInstance(),
+                                                        IGV.getMainFrame(),
                                                         UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
                                             }
                                         });
@@ -284,7 +284,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                                         int choice =
                                                 JOptionPane.showConfirmDialog(
-                                                        IGVMainFrame.getInstance(), "The genome file [" + e.getMessage() + "] could not be located. " + "Would you like to remove the selected entry?", "", JOptionPane.OK_CANCEL_OPTION);
+                                                        IGV.getMainFrame(), "The genome file [" + e.getMessage() + "] could not be located. " + "Would you like to remove the selected entry?", "", JOptionPane.OK_CANCEL_OPTION);
 
                                         if (choice == JOptionPane.OK_OPTION) {
                                             Set<String> excludedArchivesUrls = new HashSet();
@@ -297,7 +297,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                         reselectPreviousGenome();
                                         return null;
                                     } finally {
-                                        IGVMainFrame.getInstance().repaint();
+                                        IGV.getMainFrame().repaint();
                                     }
                                 }
                             }
@@ -359,7 +359,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                     public void run() {
                         JOptionPane.showMessageDialog(
-                                IGVMainFrame.getInstance(),
+                                IGV.getMainFrame(),
                                 UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
                     }
                 });
@@ -448,7 +448,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         if (!chrName.equals(chromosomeComboBox.getSelectedItem())) {
             chromosomeChanged(chrName);
             chromosomeComboBox.setSelectedItem(chrName);
-            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName, false);
+            IGV.getInstance().chromosomeChangeEvent(chrName, false);
         }
 
         String p = "";
@@ -464,7 +464,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
         });
 
-        final History history = IGVMainFrame.getInstance().getSession().getHistory();
+        final History history = IGV.getInstance().getSession().getHistory();
         forwardButton.setEnabled(history.canGoForward());
         backButton.setEnabled(history.canGoBack());
 
@@ -561,7 +561,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 GenomeListItem genomeListItem = (GenomeListItem) object;
                 genomeComboBox.setSelectedIndex(i);
                 String id = genomeListItem.getId();
-                IGVMainFrame.getInstance().setGenomeId(id);
+                IGV.getInstance().setGenomeId(id);
                 break;
             }
         }
@@ -627,7 +627,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 String id = genomeListItem.getId();
                 if ((id != null) && id.trim().equalsIgnoreCase(genomeId)) {
                     genomeComboBox.setSelectedIndex(i);
-                    IGVMainFrame.getInstance().setGenomeId(id);
+                    IGV.getInstance().setGenomeId(id);
                     break;
                 }
             }
@@ -687,7 +687,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                     genomeComboBox.setSelectedIndex(i);
                                     wasFound = true;
 
-                                    IGVMainFrame.getInstance().setGenomeId(genomeId);
+                                    IGV.getInstance().setGenomeId(genomeId);
 
                                     break;
                                 }
@@ -715,7 +715,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             try {
                                 GenomeManager.getInstance().loadGenome(item, item.isUserDefined());
 
-                                IGVMainFrame.getInstance().setGenomeId(item.getId());
+                                IGV.getInstance().setGenomeId(item.getId());
                                 genomeComboBox.setSelectedIndex(i);
                                 break;
                             } catch (FileNotFoundException ex) {
@@ -822,9 +822,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         return;
         }
 
-        IGVMainFrame.getInstance().addInaccessibleGenomeId(idOfFirstServerGenomeInList);
+        IGV.getInstance().addInaccessibleGenomeId(idOfFirstServerGenomeInList);
         selectGenomeFromList(idOfFirstServerGenomeInList);
-        IGVMainFrame.getInstance().removeInaccessibleGenomeId(
+        IGV.getInstance().removeInaccessibleGenomeId(
         idOfFirstServerGenomeInList);
         break;
         }
@@ -911,7 +911,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     // Only allow selection of genomes
                     super.setSelectedIndex(index);
                 } else if (text.equals(UIConstants.LOAD_GENOME_LIST_MENU_ITEM)) {
-                    IGVMainFrame.getInstance().doLoadGenome(null);
+                    IGV.getInstance().doLoadGenome(null);
                 }
             }
         };
@@ -995,7 +995,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         backButton.setPreferredSize(new java.awt.Dimension(32, 32));
         backButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                IGVMainFrame.getInstance().getSession().getHistory().back();
+                IGV.getInstance().getSession().getHistory().back();
 
             }
         });
@@ -1012,7 +1012,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         forwardButton.setPreferredSize(new java.awt.Dimension(32, 32));
         forwardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                IGVMainFrame.getInstance().getSession().getHistory().forward();
+                IGV.getInstance().getSession().getHistory().forward();
             }
         });
         forwardButton.setEnabled(false);
@@ -1067,7 +1067,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         fitToWindowButton.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                (new FitDataToWindowMenuAction(null, 0, IGVMainFrame.getInstance())).actionPerformed(evt);
+                (new FitDataToWindowMenuAction(null, 0, IGV.getInstance())).actionPerformed(evt);
             }
         });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
@@ -1113,22 +1113,22 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         Genome genome = GenomeManager.getInstance().getCurrentGenome();
         if (FrameManager.isGeneListMode()) {
-            IGVMainFrame.getInstance().setGeneList(null);
+            IGV.getInstance().setGeneList(null);
         }
         if (genome != null) {
             String chrName = genome.getHomeChromosome();
             getDefaultReferenceFrame().setChromosomeName(chrName);
-            IGVMainFrame.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
+            IGV.getInstance().getSession().getHistory().push(chrName, getDefaultReferenceFrame().getZoom());
             chromosomeComboBox.setSelectedItem(chrName);
             updateCurrentCoordinates();
-            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
-            IGVMainFrame.getInstance().repaint();
+            IGV.getInstance().chromosomeChangeEvent(chrName);
+            IGV.getMainFrame().repaint();
         }
     }
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {
         //LRUCache.clearCaches();
-        IGVMainFrame.getInstance().doRefresh();
+        IGV.getInstance().doRefresh();
     }
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
@@ -1140,8 +1140,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 getDefaultReferenceFrame().setChromosomeName(chrName);
                 getDefaultReferenceFrame().recordHistory();
                 updateCurrentCoordinates();
-                IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().chromosomeChangeEvent(chrName);
+                IGV.getMainFrame().repaint();
                 PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
             }
         }
@@ -1174,9 +1174,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private void roiToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {    // GEN-FIRST:event_roiToggleButtonActionPerformed
         if (roiToggleButton.isSelected()) {
-            IGVMainFrame.getInstance().beginROI(roiToggleButton);
+            IGV.getInstance().beginROI(roiToggleButton);
         } else {
-            IGVMainFrame.getInstance().endROI();
+            IGV.getInstance().endROI();
         }
     }
 

@@ -34,7 +34,6 @@ import org.broad.igv.data.HDFDataManager;
 import org.broad.igv.data.HDFDataSource;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.h5.ObjectNotFoundException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.util.ResourceLocator;
@@ -122,7 +121,7 @@ public class HDFDataTrack extends DataTrack {
         }
     }
 
-    // TODO add zoom as an argument, remove reference to IGVMainFrame
+    // TODO add zoom as an argument, remove reference to IGV
     /**
      * Method description
      *

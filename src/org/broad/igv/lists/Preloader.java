@@ -19,11 +19,10 @@
 
 package org.broad.igv.lists;
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -40,7 +39,7 @@ public class Preloader {
 
     public static synchronized void preload() {
 
-        Collection<Track> trackList = IGVMainFrame.getInstance().getTrackManager().getAllTracks(true);
+        Collection<Track> trackList = IGV.getInstance().getTrackManager().getAllTracks(true);
         int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
         String genomeId = GenomeManager.getInstance().getGenomeId();
         for (ReferenceFrame frame : FrameManager.getFrames()) {

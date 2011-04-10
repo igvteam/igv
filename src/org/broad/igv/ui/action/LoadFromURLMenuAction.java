@@ -24,7 +24,7 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -44,9 +44,9 @@ public class LoadFromURLMenuAction extends MenuAction {
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
     public static final String LOAD_FROM_DAS = "Load from DAS...";
     public static final String LOAD_FROM_URL = "Load from URL...";
-    private IGVMainFrame mainFrame;
+    private IGV mainFrame;
 
-    public LoadFromURLMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public LoadFromURLMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
@@ -58,7 +58,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         JPanel ta = new JPanel();
         ta.setPreferredSize(new Dimension(600, 20));
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
-            String url = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
+            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 if (url.endsWith(".xml")) {
                     try {
@@ -73,7 +73,7 @@ public class LoadFromURLMenuAction extends MenuAction {
                 }
             }
         } else if ((e.getActionCommand().equalsIgnoreCase(LOAD_FROM_DAS))) {
-            String url = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), ta, "Enter DAS feature source URL",
+            String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter DAS feature source URL",
                     JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
                 ResourceLocator rl = new ResourceLocator(url.trim());

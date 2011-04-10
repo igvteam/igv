@@ -241,7 +241,7 @@ public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
             if (iter != null) {
                 //iter.close();
             }
-            //IGVMainFrame.getInstance().resetStatusMessage();
+            //IGV.getInstance().resetStatusMessage();
         }
     }
 

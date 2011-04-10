@@ -31,15 +31,9 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
-
-import static org.broad.igv.ui.IGVMainFrame.getInstance;
-
-import org.broad.igv.ui.util.Packable;
-import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -159,8 +153,8 @@ public class AttributeHeaderPanel extends JPanel {
     final public void sortTrackByAttribute(String sortKey, boolean isSortAscending) {
 
         if (sortKey != null) {
-            IGVMainFrame.getInstance().getTrackManager().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
-            IGVMainFrame.getInstance().getContentPane().repaint();
+            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
+            IGV.getMainFrame().repaint();
         }
     }
 

@@ -21,11 +21,10 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -40,9 +39,9 @@ import java.io.PrintWriter;
 public class ExportTrackNamesMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(ClearRegionsMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public ExportTrackNamesMenuAction(String label, IGVMainFrame mainFrame) {
+    public ExportTrackNamesMenuAction(String label, IGV mainFrame) {
         super(label, null);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
@@ -51,7 +50,7 @@ public class ExportTrackNamesMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        FileDialog fd = new FileDialog(mainFrame);
+        FileDialog fd = new FileDialog(mainFrame.getMainFrame());
         fd.setModal(true);
         fd.setMode(FileDialog.SAVE);
         fd.setVisible(true);

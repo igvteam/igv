@@ -22,7 +22,7 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
@@ -175,7 +175,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 for (File file : files) {
                     try {
 
-                        IGVMainFrame.getInstance().getTrackManager().load(file, panel);
+                        IGV.getInstance().getTrackManager().load(file, panel);
                     }
                     catch (DataLoadException de) {
                         messages.append(de.getMessage());
@@ -183,13 +183,13 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 }
                 String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
                 if (IGVHttpUtils.isURL(obj)) {
-                    IGVMainFrame.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
+                    IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
                 } else {
 
                 }
 
                 if (messages != null && !messages.isEmpty()) {
-                    MessageUtils.showAndLogErrorMessage(IGVMainFrame.getInstance(), messages.getFormattedMessage(), log);
+                    MessageUtils.showAndLogErrorMessage(IGV.getMainFrame(), messages.getFormattedMessage(), log);
                 }
             }
             catch (Exception e) {
@@ -197,14 +197,14 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 try {
                     obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
                     if (IGVHttpUtils.isURL(obj)) {
-                        IGVMainFrame.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
+                        IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
                     }
                 }
                 catch (Exception e1) {
                     log.error(e1);
                 }
             }
-            IGVMainFrame.getInstance().repaint();
+            IGV.getMainFrame().repaint();
             event.dropComplete(true);
         }
 

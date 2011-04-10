@@ -107,8 +107,8 @@ public class TrackMenuUtils {
             }
 
             private void close() {
-                IGVMainFrame.getInstance().getTrackManager().clearSelections();
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().repaint();
             }
 
         });
@@ -426,7 +426,7 @@ public class TrackMenuUtils {
                 if (selectedTracks.size() > 0) {
 
                     ContinuousColorScale colorScale = selectedTracks.iterator().next().getColorScale();
-                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGVMainFrame.getInstance(), colorScale);
+                    HeatmapScaleDialog dlg = new HeatmapScaleDialog(IGV.getMainFrame(), colorScale);
 
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -436,7 +436,7 @@ public class TrackMenuUtils {
                         for (Track track : selectedTracks) {
                             track.setColorScale(colorScale);
                         }
-                        IGVMainFrame.getInstance().repaint();
+                        IGV.getInstance().repaint();
                     }
 
                 }
@@ -472,7 +472,7 @@ public class TrackMenuUtils {
                     }
 
                     DataRange prevAxisDefinition = new DataRange(min, mid, max, drawBaseline);
-                    DataRangeDialog dlg = new DataRangeDialog(IGVMainFrame.getInstance(), prevAxisDefinition);
+                    DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
                         min = Math.min(dlg.getMax(), dlg.getMin());
@@ -488,7 +488,7 @@ public class TrackMenuUtils {
                                 ((DataTrack) track).setAutoscale(false);
                             }
                         }
-                        IGVMainFrame.getInstance().repaint();
+                        IGV.getInstance().repaint();
                     }
 
                 }
@@ -513,7 +513,7 @@ public class TrackMenuUtils {
                 for (Track t : selectedTracks) {
                     t.getDataRange().setType(scaleType);
                 }
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
             }
         });
 
@@ -546,7 +546,7 @@ public class TrackMenuUtils {
                             ((DataTrack) t).setAutoscale(autoScale);
                         }
                     }
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
             });
         }
@@ -579,7 +579,7 @@ public class TrackMenuUtils {
                             ((DataTrack) t).setShowDataRange(showDataRange);
                         }
                     }
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
             });
         }
@@ -692,7 +692,7 @@ public class TrackMenuUtils {
                         JOptionPane.PLAIN_MESSAGE,
                         JOptionPane.YES_NO_OPTION);
                 optionPane.setPreferredSize(new Dimension(550, 500));
-                JDialog dialog = optionPane.createDialog(IGVMainFrame.getInstance(), "Remove The Following Tracks");
+                JDialog dialog = optionPane.createDialog(IGV.getMainFrame(), "Remove The Following Tracks");
                 dialog.setVisible(true);
 
                 Object choice = optionPane.getValue();
@@ -700,8 +700,8 @@ public class TrackMenuUtils {
                     return;
                 }
 
-                IGVMainFrame.getInstance().getTrackManager().removeTracks(selectedTracks);
-                IGVMainFrame.getInstance().doRefresh();
+                IGV.getInstance().getTrackManager().removeTracks(selectedTracks);
+                IGV.getInstance().doRefresh();
             }
         });
         return item;
@@ -729,7 +729,7 @@ public class TrackMenuUtils {
             return;
         }
         Track t = selectedTracks.iterator().next();
-        String newName = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), "Enter new name: ", t.getName());
+        String newName = JOptionPane.showInputDialog(IGV.getMainFrame(), "Enter new name: ", t.getName());
 
         if (newName == null || newName.trim() == "") {
             return;
@@ -818,7 +818,7 @@ public class TrackMenuUtils {
         while (true) {
 
             String height = JOptionPane.showInputDialog(
-                    IGVMainFrame.getInstance(), parameter + ": ",
+                    IGV.getMainFrame(), parameter + ": ",
                     String.valueOf(value));
 
             if ((height == null) || height.trim().equals("")) {
@@ -829,7 +829,7 @@ public class TrackMenuUtils {
                 value = Integer.parseInt(height);
                 return value;
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         parameter + " must be an integer number.");
             }
         }
@@ -955,8 +955,8 @@ public class TrackMenuUtils {
     }
 
     public static void refresh() {
-        IGVMainFrame.getInstance().showLoadedTrackCount();
-        IGVMainFrame.getInstance().doRefresh();
+        IGV.getInstance().showLoadedTrackCount();
+        IGV.getInstance().doRefresh();
     }
 
     public static JMenuItem getChangeTrackHeightItem(final Collection<Track> selectedTracks) {

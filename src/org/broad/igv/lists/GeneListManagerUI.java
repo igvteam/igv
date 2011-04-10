@@ -33,7 +33,7 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -280,7 +280,7 @@ public class GeneListManagerUI extends JDialog {
 
     private void loadButtonActionPerformed(ActionEvent e) {
         if (selectedList != null) {
-            IGVMainFrame.getInstance().setGeneList(selectedList);
+            IGV.getInstance().setGeneList(selectedList);
             setVisible(false);
             dispose();
         }

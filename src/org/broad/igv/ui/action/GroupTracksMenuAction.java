@@ -25,15 +25,13 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.AttributeSelectionDialog;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,9 +40,9 @@ import java.util.List;
 public class GroupTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(GroupTracksMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public GroupTracksMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public GroupTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.GROUP_TRACKS_TOOLTIP);
@@ -64,7 +62,7 @@ public class GroupTracksMenuAction extends MenuAction {
 
     final public void doGroupBy() {
 
-        final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame, true);
+        final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), true);
 
         List<String> attributeKeys = AttributeManager.getInstance().getAttributeKeys();
 
@@ -85,7 +83,7 @@ public class GroupTracksMenuAction extends MenuAction {
         dlg.setModel(new javax.swing.DefaultComboBoxModel(selArray));
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        String currentSelection = IGVMainFrame.getInstance().getTrackManager().getGroupByAttribute();
+        String currentSelection = IGV.getInstance().getTrackManager().getGroupByAttribute();
         if (currentSelection == null) {
             dlg.setSelectedIndex(0);
         } else {
@@ -97,7 +95,7 @@ public class GroupTracksMenuAction extends MenuAction {
         if (!dlg.isCanceled()) {
             int selIndex = dlg.getSelectedIndex();
             String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
-            IGVMainFrame.getInstance().getTrackManager().setGroupByAttribute(selectedAttribute);
+            IGV.getInstance().getTrackManager().setGroupByAttribute(selectedAttribute);
             mainFrame.doRefresh();
 
         }

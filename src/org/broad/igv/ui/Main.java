@@ -32,6 +32,8 @@ import org.broad.igv.util.IGVHttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 
@@ -46,58 +48,27 @@ public class Main {
 
     public static void main(final String args[]) {
 
-        initializeLog();
-        log.info("Startup  " + Globals.applicationString());
-        log.info("Default User Directory: " + Globals.getUserDirectory());
-        System.setProperty("http.agent", Globals.applicationString());
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
-                        "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
-
-                // Set look and feel
-                if (!Globals.IS_MAC) {
-                    try {
-                        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                            if ("Nimbus".equals(info.getName())) {
-                                UIManager.setLookAndFeel(info.getClassName());
-                                break;
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        log.error("Error installing look and feel", e);
-                    }
-                }
-
-
-                if (Globals.IS_LINUX) {
-                    try {
-                        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-                        UIManager.put("JideSplitPane.dividerSize", 5);
-                        UIManager.put("JideSplitPaneDivider.background", Color.darkGray);
-
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-
-                } // Todo -- what does this do?
-                LookAndFeelFactory.installJideExtension();
-
-                JWindow splashScreen = null;
                 try {
 
-                    IGVMainFrame frame = IGVMainFrame.getInstance();
+                    Frame frame = new JFrame();
+                    // Add listeners
+                    // Closing the window should exit the application
+                    //frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+                    frame.addWindowListener(new WindowAdapter() {
 
-                    IGVHttpUtils.updateProxySettings();
+                        @Override
+                        public void windowClosing(WindowEvent e) {
+                            IGV.getInstance().doExitApplication();
+                        }
+                    });
 
-                    frame.startUp(args);
-
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+                    open(frame, args);
 
                 } catch (Exception e) {
 
@@ -106,14 +77,69 @@ public class Main {
                             e.toString() + "<br>" +
                             "Please contact igv-help@broadinstitute.org");
                     System.exit(-1);
-                } finally {
-                    if (splashScreen != null) {
-                        splashScreen.setVisible(false);
-                    }
-
                 }
             }
         });
+    }
+
+    private static void initializeLookAndFeel() {
+        com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
+                "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
+
+        // Set look and feel
+        if (!Globals.IS_MAC) {
+            try {
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            }
+            catch (Exception e) {
+                log.error("Error installing look and feel", e);
+            }
+        }
+
+
+        if (Globals.IS_LINUX) {
+            try {
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                UIManager.put("JideSplitPane.dividerSize", 5);
+                UIManager.put("JideSplitPaneDivider.background", Color.darkGray);
+
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+
+        } // Todo -- what does this do?
+        LookAndFeelFactory.installJideExtension();
+    }
+
+    public static void open(JFrame frame) {
+
+        open(frame, new String [] {});
+    }
+
+
+    public static void open(Frame frame, String[] args) {
+
+        initializeLog();
+        log.info("Startup  " + Globals.applicationString());
+        log.info("Default User Directory: " + Globals.getUserDirectory());
+        System.setProperty("http.agent", Globals.applicationString());
+
+
+        initializeLookAndFeel();
+
+        IGV.createInstance(frame);
+
+        IGVHttpUtils.updateProxySettings();
+
+        IGV.getInstance().startUp(args);
+
+        // Should this be done here?
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
     }
 
     public static void initializeLog() {
@@ -180,7 +206,9 @@ public class Main {
         private String genomeServerURL = null;
 
         IGVArgs(String[] args) {
-            parseArgs(args);
+            if (args != null) {
+                parseArgs(args);
+            }
         }
 
         /**

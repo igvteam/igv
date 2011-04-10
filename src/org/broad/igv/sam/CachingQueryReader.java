@@ -30,7 +30,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
 import org.broad.igv.util.RuntimeUtils;
@@ -289,7 +289,7 @@ public class CachingQueryReader {
                 alignmentCount++;
                 if (alignmentCount % 1000 == 0) {
                     if (cancel) return false;
-                    IGVMainFrame.getInstance().setStatusBarMessage("Reads loaded: " + alignmentCount);
+                    IGV.getInstance().setStatusBarMessage("Reads loaded: " + alignmentCount);
                     if (checkMemory() == false) {
                         cancelReaders();
                         return false;        // <=  TODO need to cancel all readers
@@ -347,7 +347,7 @@ public class CachingQueryReader {
             if (iter != null) {
                 iter.close();
             }
-            IGVMainFrame.getInstance().resetStatusMessage();
+            IGV.getInstance().resetStatusMessage();
         }
     }
 

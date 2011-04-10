@@ -21,7 +21,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -258,7 +258,7 @@ public class IGVHttpUtils {
         passPanel.add(password);
         passPanel.add(passwordField);
 
-        int a = JOptionPane.showConfirmDialog(IGVMainFrame.getInstance(), passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int a = JOptionPane.showConfirmDialog(IGV.getMainFrame(), passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (a == JOptionPane.CANCEL_OPTION) {
             return false;

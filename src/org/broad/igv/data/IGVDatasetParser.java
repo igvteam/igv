@@ -21,7 +21,7 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
@@ -239,7 +239,7 @@ public class IGVDatasetParser {
             while ((nextLine = reader.readLine()) != null) {
 
                 if (++count % updateCount == 0) {
-                    IGVMainFrame.getInstance().setStatusBarMessage("Loaded: " + count + " / " + estLineCount + " (est)");
+                    IGV.getInstance().setStatusBarMessage("Loaded: " + count + " / " + estLineCount + " (est)");
                 }
                 // Distance since last sample
 

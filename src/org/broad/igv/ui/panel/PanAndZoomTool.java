@@ -24,7 +24,7 @@ package org.broad.igv.ui.panel;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.AbstractDataPanelTool;
 import org.broad.igv.ui.WaitCursorManager;
 
@@ -51,7 +51,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
 
     public PanAndZoomTool(DataPanel owner) {
         super(owner, Cursor.getDefaultCursor());
-        this.dragCursor = IGVMainFrame.fistCursor;
+        this.dragCursor = IGV.fistCursor;
         setName("Zoom");
     }
 

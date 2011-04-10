@@ -26,8 +26,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -36,7 +35,6 @@ import org.broad.igv.util.Utilities;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -212,9 +210,9 @@ public class AttributeManager {
             loadedResources.add(locator);
 
             //createCurrentAttributeFileString(files);
-            IGVMainFrame.getInstance().getTrackManager().resetOverlayTracks();
+            IGV.getInstance().getTrackManager().resetOverlayTracks();
 
-            IGVMainFrame.getInstance().doRefresh();
+            IGV.getInstance().doRefresh();
 
         } catch (IOException ex) {
             log.error("Error loading attribute file", ex);

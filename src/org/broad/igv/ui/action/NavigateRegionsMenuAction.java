@@ -23,16 +23,12 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.RegionNavigatorDialog;
-import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.UIUtilities;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.Collection;
 
 /**
  * @author Damon May
@@ -41,11 +37,11 @@ import java.util.Collection;
 public class NavigateRegionsMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(NavigateRegionsMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
 
 
-    public NavigateRegionsMenuAction(String label, IGVMainFrame mainFrame) {
+    public NavigateRegionsMenuAction(String label, IGV mainFrame) {
         super(label, null);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
@@ -57,7 +53,7 @@ public class NavigateRegionsMenuAction extends MenuAction {
         UIUtilities.invokeOnEventThread(new Runnable() {
 
             public void run() {
-//                Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
+//                Collection<RegionOfInterest> regions = IGV.getInstance().getSession().getAllRegionsOfInterest();
 //                if (regions == null || regions.isEmpty())
 //                {
 //                    //todo dhmay -- I don't fully understand this call.  Clean this up.
@@ -68,7 +64,7 @@ public class NavigateRegionsMenuAction extends MenuAction {
 //                {
                     if (RegionNavigatorDialog.getActiveInstance() == null)
                     {
-                        RegionNavigatorDialog regionNavDialog = new RegionNavigatorDialog(mainFrame);
+                        RegionNavigatorDialog regionNavDialog = new RegionNavigatorDialog(mainFrame.getMainFrame());
                     }
                     RegionNavigatorDialog.getActiveInstance().setVisible(true);
 //                }

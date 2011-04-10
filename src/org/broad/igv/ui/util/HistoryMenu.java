@@ -19,10 +19,8 @@
 
 package org.broad.igv.ui.util;
 
-import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.session.History;
-import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.action.SearchCommand;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -48,7 +46,7 @@ public class HistoryMenu extends JMenu {
 
     public HistoryMenu(String name) {
         super(name);
-        final History history = IGVMainFrame.getInstance().getSession().getHistory();
+        final History history = IGV.getInstance().getSession().getHistory();
 
         clearAllItem = new JMenuItem("Clear all");
         clearAllItem.addActionListener(new ActionListener() {
@@ -76,10 +74,10 @@ public class HistoryMenu extends JMenu {
         this.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent menuEvent) {
 
-                final History history = IGVMainFrame.getInstance().getSession().getHistory();
+                final History history = IGV.getInstance().getSession().getHistory();
 
 
-                List<History.Entry> allLoci = IGVMainFrame.getInstance().getSession().getAllHistory();
+                List<History.Entry> allLoci = IGV.getInstance().getSession().getAllHistory();
                 
                 boolean hasBack = history.peekBack() != null;
                 boolean hasForward = history.peekForward() != null;
@@ -102,7 +100,7 @@ public class HistoryMenu extends JMenu {
                     final JMenuItem item = new JMenuItem(s.toString());
                     item.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent actionEvent) {
-                            IGVMainFrame.getInstance().getSession().getHistory().processItem(s);
+                            IGV.getInstance().getSession().getHistory().processItem(s);
                         }
                     });
                     add(item);

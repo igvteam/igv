@@ -22,11 +22,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -134,7 +131,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
     }
 
     private List<RegionOfInterest> retrieveRegionsAsList() {
-        return new ArrayList<RegionOfInterest>(IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest());
+        return new ArrayList<RegionOfInterest>(IGV.getInstance().getSession().getAllRegionsOfInterest());
     }
 
     /**
@@ -158,7 +155,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         synchRegions();
 
-        IGVMainFrame.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
+        IGV.getInstance().getSession().getRegionsOfInterestObservable().addObserver(this);
 
         //resize window if small number of regions.  By default, tables are initialized with 20
         //rows, and that can look ungainly for empty windows or windows with a few rows.
@@ -543,17 +540,17 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
         public void actionPerformed(ActionEvent e) {
             String chr = FrameManager.getDefaultFrame().getChrName();
             if (chr == null || chr.isEmpty())
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "No chromosome is specified. Can't create a region without a chromosome.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             else if (chr.equalsIgnoreCase("All"))
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             else {
                 RegionOfInterest newRegion = new RegionOfInterest(FrameManager.getDefaultFrame().getChrName(),
                         1, 100, "");
-                IGVMainFrame.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
+                IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
         }
     }
@@ -578,11 +575,11 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                     selectedRegions.add(regions.get(selectedModelRow));
                 }
                 regionTable.clearSelection();
-                IGVMainFrame.getInstance().getSession().removeRegionsOfInterest(selectedRegions);
+                IGV.getInstance().getSession().removeRegionsOfInterest(selectedRegions);
 
             } else {
                 //todo dhmay -- I don't fully understand this call.  Clean this up.
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), "No regions have been selected for removal.",
+                JOptionPane.showMessageDialog(IGV.getMainFrame(), "No regions have been selected for removal.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             }
         }

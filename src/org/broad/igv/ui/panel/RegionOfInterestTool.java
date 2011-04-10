@@ -25,7 +25,7 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.AbstractDataPanelTool;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -99,8 +99,8 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                                             end,
                                             null);
                             // TODO -- get this ugly reference out of here
-                            IGVMainFrame.getInstance().endROI();
-                            IGVMainFrame.getInstance().addRegionOfInterest(regionOfInterest);
+                            IGV.getInstance().endROI();
+                            IGV.getInstance().addRegionOfInterest(regionOfInterest);
 
                         } finally {
                             roiButton.setSelected(false);
@@ -108,7 +108,7 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
                     }
                 }
 
-                IGVMainFrame.getInstance().doRefresh();
+                IGV.getInstance().doRefresh();
             }
         }
     }

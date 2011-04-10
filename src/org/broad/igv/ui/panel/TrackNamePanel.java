@@ -28,13 +28,10 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.dnd.AbstractGhostDropManager;
 import org.broad.igv.ui.dnd.GhostDropEvent;
@@ -297,7 +294,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                 Collection<Track> clickedTracks = mouseRegion.getTracks();
                 if (clickedTracks != null && clickedTracks.size() > 0) {
                     Track t = clickedTracks.iterator().next();
-                    IGVMainFrame.getInstance().getTrackManager().shiftSelectTracks(t);
+                    IGV.getInstance().getTrackManager().shiftSelectTracks(t);
                 }
                 return;
             }
@@ -388,7 +385,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             }
 
 
-            IGVMainFrame.getInstance().repaintNamePanels();
+            IGV.getInstance().repaintNamePanels();
 
         }
 
@@ -403,8 +400,8 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
                 Component c = e.getComponent();
 
-                IGVMainFrame.getInstance().endDnD();
-                GhostGlassPane glassPane = IGVMainFrame.getInstance().getDnDGlassPane();
+                IGV.getInstance().endDnD();
+                GhostGlassPane glassPane = IGV.getInstance().getDnDGlassPane();
 
                 Point p = (Point) e.getPoint().clone();
                 SwingUtilities.convertPointToScreen(p, c);
@@ -437,7 +434,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                         !e.isShiftDown()) {
                     clearTrackSelections();
                     selectTracks(e);
-                    IGVMainFrame.getInstance().repaintNamePanels();
+                    IGV.getInstance().repaintNamePanels();
                 }
             }
 
@@ -465,15 +462,15 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                 }
 
                 dragStart.x = getWidth() / 2;
-                IGVMainFrame.getInstance().startDnD();
+                IGV.getInstance().startDnD();
 
                 if (dndImage == null) {
                     createDnDImage();
                 }
-                IGVMainFrame.getInstance().getDnDGlassPane().setImage(dndImage);
+                IGV.getInstance().getDnDGlassPane().setImage(dndImage);
                 isDragging = true;
                 dragTracks.clear();
-                dragTracks.addAll(IGVMainFrame.getInstance().getTrackManager().getSelectedTracks());
+                dragTracks.addAll(IGV.getInstance().getTrackManager().getSelectedTracks());
 
 
                 if (getGroups().size() > 0) {
@@ -487,7 +484,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             }
             if (isDragging) {
 
-                final GhostGlassPane glassPane = IGVMainFrame.getInstance().getDnDGlassPane();
+                final GhostGlassPane glassPane = IGV.getInstance().getDnDGlassPane();
 
                 Point p = (Point) e.getPoint().clone();
                 p.x = getWidth() / 2;

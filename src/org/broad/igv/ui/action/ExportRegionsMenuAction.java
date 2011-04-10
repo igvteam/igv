@@ -24,7 +24,7 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -37,7 +37,7 @@ public class ExportRegionsMenuAction extends RegionsBaseMenuAction {
 
     static Logger log = Logger.getLogger(ExportRegionsMenuAction.class);
 
-    public ExportRegionsMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public ExportRegionsMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);

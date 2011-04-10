@@ -27,7 +27,7 @@ package org.broad.igv.ui.legend;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.UIUtilities;
@@ -87,7 +87,7 @@ abstract public class LegendPanel extends JPanel {
 
         }
         finally {
-            IGVMainFrame.getInstance().resetStatusMessage();
+            IGV.getInstance().resetStatusMessage();
         }
 
     }

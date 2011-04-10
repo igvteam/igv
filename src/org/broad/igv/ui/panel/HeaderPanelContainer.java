@@ -21,12 +21,10 @@ package org.broad.igv.ui.panel;
 
 
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -75,7 +73,7 @@ public class HeaderPanelContainer extends JPanel {
         add(contentPanel, BorderLayout.CENTER);
 
         if(FrameManager.isGeneListMode()) {
-            GeneList gl = IGVMainFrame.getInstance().getSession().getCurrentGeneList();
+            GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
             String name = gl.getDisplayName();
             JLabel label = new JLabel(name, JLabel.CENTER);
             Border border = BorderFactory.createLineBorder(Color.lightGray);
@@ -194,7 +192,7 @@ class HeaderDropTargetListener implements DropTargetListener {
         // Request relayout contents, or else won't update GUI following drop.
         // Will add back in the order to which we just sorted
         FrameManager.setFrames(orderedPanels);
-        IGVMainFrame.getInstance().resetFrames();
+        IGV.getInstance().resetFrames();
     }
 } // HeaderDropTargetListener
 

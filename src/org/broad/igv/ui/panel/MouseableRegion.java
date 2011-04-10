@@ -24,7 +24,7 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -121,7 +121,7 @@ public class MouseableRegion {
 
         public Set<Track> getTracks() {
             Set<Track> selectedTracks = new HashSet();
-            for (Track track : IGVMainFrame.getInstance().getTrackManager().getAllTracks(true)) {
+            for (Track track : IGV.getInstance().getTrackManager().getAllTracks(true)) {
                 String attributeValue = track.getAttributeValue(key);
                 if (attributeValue == null) {
                     continue;

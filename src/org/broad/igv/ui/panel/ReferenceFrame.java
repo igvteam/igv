@@ -29,7 +29,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.text.NumberFormat;
@@ -150,8 +150,8 @@ public class ReferenceFrame {
         invalidateLocationScale();
 
         // TODO -- do this with events,
-        if (IGVMainFrame.hasInstance()) {
-            IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+        if (IGV.hasInstance()) {
+            IGV.getInstance().repaintStatusAndZoomSlider();
         }
     }
 
@@ -192,7 +192,7 @@ public class ReferenceFrame {
             // DISABLE ZOOMING FOR GENOME VIEW
             // Translate the location to chromosome number
             jumpToChromosomeForGenomeLocation(newCenter);
-            IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
+            IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
             if (zoom != newZoom) {
 
@@ -215,7 +215,7 @@ public class ReferenceFrame {
     }
 
     public void recordHistory() {
-        IGVMainFrame.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
+        IGV.getInstance().getSession().getHistory().push(getFormattedLocusString(), zoom);
     }
 
     private void jumpToChromosomeForGenomeLocation(double locationMB) {
@@ -292,12 +292,12 @@ public class ReferenceFrame {
 
         // If zoomed in sufficiently track the center position
         //if (locationScale < 10) {
-        //    IGVMainFrame.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
+        //    IGV.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
         //}
 
         // Repaint
-        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
-        IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+        IGV.getInstance().repaintDataAndHeaderPanels();
+        IGV.getInstance().repaintStatusAndZoomSlider();
     }
 
     public void jumpTo(String chr, int start, int end) {
@@ -335,8 +335,8 @@ public class ReferenceFrame {
 
 
         // Repaint
-        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
-        IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+        IGV.getInstance().repaintDataAndHeaderPanels();
+        IGV.getInstance().repaintStatusAndZoomSlider();
 
     }
 
@@ -620,7 +620,7 @@ public class ReferenceFrame {
 
     public void reset() {
         setInterval(FrameManager.getLocus(name));
-        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
+        IGV.getInstance().repaintDataAndHeaderPanels();
     }
 
     public String getName() {

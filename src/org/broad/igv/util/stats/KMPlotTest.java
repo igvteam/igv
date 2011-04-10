@@ -19,9 +19,8 @@
 
 package org.broad.igv.util.stats;
 
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -170,7 +169,7 @@ public class KMPlotTest {
 
 
         KMPlotFrame frame = new KMPlotFrame();
-        frame.setLocationRelativeTo(IGVMainFrame.getInstance());
+        frame.setLocationRelativeTo(IGV.getMainFrame());
         frame.setPlotPanel(plotPanel);
 
         frame.setVisible(true);

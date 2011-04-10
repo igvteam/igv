@@ -32,7 +32,6 @@ import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 
 import javax.swing.*;
-import javax.swing.ProgressMonitor;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -101,28 +100,28 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         // Load menu items
-        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, IGVMainFrame.getInstance());
+        menuAction = new LoadFilesMenuAction("Load from File...", KeyEvent.VK_L, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, IGVMainFrame.getInstance());
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_URL, KeyEvent.VK_U, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, IGVMainFrame.getInstance());
+        menuAction = new LoadFromServerAction("Load from Server...", KeyEvent.VK_S, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGVMainFrame.getInstance());
+        menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
 
         // Session menu items
-        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, IGVMainFrame.getInstance());
+        menuAction = new NewSessionMenuAction("New Session...", KeyEvent.VK_N, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, IGVMainFrame.getInstance());
+        menuAction = new OpenSessionMenuAction("Open Session...", KeyEvent.VK_O, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, IGVMainFrame.getInstance());
+        menuAction = new SaveSessionMenuAction("Save Session...", KeyEvent.VK_V, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
@@ -138,7 +137,7 @@ public class IGVMenuBar extends JMenuBar {
                             public Object doInBackground() {
 
                                 org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                                IGVMainFrame.getInstance().doDefineGenome(monitor);
+                                IGV.getInstance().doDefineGenome(monitor);
                                 return null;
                             }
                         };
@@ -173,7 +172,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGVMainFrame.getInstance().doApplicationSnapshot(IGVMainFrame.getInstance().getMainPanel());
+                        IGV.getInstance().doApplicationSnapshot(IGV.getInstance().getMainPanel());
 
                     }
                 };
@@ -184,17 +183,17 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         // Export Regions
-        menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGVMainFrame.getInstance());
+        menuAction = new ExportRegionsMenuAction("Export Regions ...", KeyEvent.VK_E, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         // Import Regions
-        menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGVMainFrame.getInstance());
+        menuAction = new ImportRegionsMenuAction("Import Regions ...", KeyEvent.VK_I, IGV.getInstance());
         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Import Regions
-        menuAction = new ClearRegionsMenuAction("Clear Regions ...", IGVMainFrame.getInstance());
+        menuAction = new ClearRegionsMenuAction("Clear Regions ...", IGV.getInstance());
         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -208,7 +207,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new PreprocessorDialog(IGVMainFrame.IGVMainFrame.getInstance(), false)).setVisible(true);
+                        (new PreprocessorDialog(IGV.IGV.getInstance(), false)).setVisible(true);
                     }
                 };
 
@@ -218,12 +217,12 @@ public class IGVMenuBar extends JMenuBar {
         // batch script
         menuItems.add(new JSeparator());
 
-        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, IGVMainFrame.getInstance());
+        menuAction = new RunScriptMenuAction("Run Batch Script...", KeyEvent.VK_X, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
         menuItems.add(new JSeparator());
-        menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGVMainFrame.getInstance()) {
+        menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.COVERAGE);
@@ -231,7 +230,7 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGVMainFrame.getInstance()) {
+        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.TILE);
@@ -240,7 +239,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-        menuAction = new SortTracksMenuAction("Create index...", KeyEvent.VK_T, IGVMainFrame.getInstance()) {
+        menuAction = new SortTracksMenuAction("Create index...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IndexGui.launch(false);
@@ -248,7 +247,7 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGVMainFrame.getInstance()) {
+        menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
@@ -262,7 +261,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGVMainFrame.getInstance().doExitApplication();
+                        IGV.getInstance().doExitApplication();
                     }
                 };
 
@@ -272,27 +271,27 @@ public class IGVMenuBar extends JMenuBar {
 
         // Empty the recent sessions list before we start to do
         // anything with it
-        IGVMainFrame.getInstance().getRecentSessionList().clear();
+        IGV.getInstance().getRecentSessionList().clear();
 
         // Retrieve the stored session paths
         String recentSessions = PreferenceManager.getInstance().getRecentSessions();
         if (recentSessions != null) {
             String[] sessions = recentSessions.split(";");
             for (String sessionPath : sessions) {
-                if (!IGVMainFrame.getInstance().getRecentSessionList().contains(sessionPath)) {
-                    IGVMainFrame.getInstance().getRecentSessionList().add(sessionPath);
+                if (!IGV.getInstance().getRecentSessionList().contains(sessionPath)) {
+                    IGV.getInstance().getRecentSessionList().add(sessionPath);
                 }
 
             }
         }
 
-        if (!IGVMainFrame.getInstance().getRecentSessionList().isEmpty()) {
+        if (!IGV.getInstance().getRecentSessionList().isEmpty()) {
 
             menuItems.add(new JSeparator());
 
             // Now add menu items
-            for (final String session : IGVMainFrame.getInstance().getRecentSessionList()) {
-                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, new File(session), IGVMainFrame.getInstance());
+            for (final String session : IGV.getInstance().getRecentSessionList()) {
+                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, new File(session), IGV.getInstance());
                 menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
             }
 
@@ -308,25 +307,25 @@ public class IGVMenuBar extends JMenuBar {
         MenuAction menuAction = null;
 
         // Sort Context
-        menuAction = new SortTracksMenuAction("Sort Tracks ...", KeyEvent.VK_S, IGVMainFrame.getInstance());
+        menuAction = new SortTracksMenuAction("Sort Tracks ...", KeyEvent.VK_S, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new GroupTracksMenuAction("Group Tracks  ... ", KeyEvent.VK_G, IGVMainFrame.getInstance());
+        menuAction = new GroupTracksMenuAction("Group Tracks  ... ", KeyEvent.VK_G, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Filter Tracks
-        filterTracksAction = new FilterTracksMenuAction("Filter Tracks ...", KeyEvent.VK_F, IGVMainFrame.getInstance());
+        filterTracksAction = new FilterTracksMenuAction("Filter Tracks ...", KeyEvent.VK_F, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(filterTracksAction));
 
         menuItems.add(new JSeparator());
 
         // Reset Tracks
-        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGVMainFrame.getInstance());
+        menuAction = new FitDataToWindowMenuAction("Fit Data to Window", KeyEvent.VK_W, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         // Set track height
-        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGVMainFrame.getInstance());
+        menuAction = new SetTrackHeightMenuAction("Set Track Height...", KeyEvent.VK_H, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
@@ -350,7 +349,7 @@ public class IGVMenuBar extends JMenuBar {
                         UIUtilities.invokeOnEventThread(new Runnable() {
 
                             public void run() {
-                                IGVMainFrame.getInstance().doViewPreferences();
+                                IGV.getInstance().doViewPreferences();
                             }
                         });
                     }
@@ -363,7 +362,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new LegendDialog(IGVMainFrame.getInstance(), false)).setVisible(true);
+                        (new LegendDialog(IGV.getMainFrame(), false)).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);
@@ -377,14 +376,14 @@ public class IGVMenuBar extends JMenuBar {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 if (menuItem.isSelected()) {
-                    IGVMainFrame.getInstance().getMainPanel().expandNamePanel();
+                    IGV.getInstance().getMainPanel().expandNamePanel();
                 } else {
-                    IGVMainFrame.getInstance().getMainPanel().collapseNamePanel();
+                    IGV.getInstance().getMainPanel().collapseNamePanel();
                 }
-                IGVMainFrame.getInstance().doRefresh();
+                IGV.getInstance().doRefresh();
             }
         };
-        boolean isShowing = IGVMainFrame.getInstance().getMainPanel().isExpanded();
+        boolean isShowing = IGV.getInstance().getMainPanel().isExpanded();
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem();
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
@@ -392,7 +391,7 @@ public class IGVMenuBar extends JMenuBar {
 
         // Hide or Show the attribute panels
         boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);
-        IGVMainFrame.getInstance().doShowAttributeDisplay(isShow);  // <= WEIRD doing IGVMainFrame.getInstance() here!
+        IGV.getInstance().doShowAttributeDisplay(isShow);  // <= WEIRD doing IGV.getInstance() here!
 
         menuAction = new MenuAction("Show Attribute Display", null, KeyEvent.VK_A) {
             @Override
@@ -400,8 +399,8 @@ public class IGVMenuBar extends JMenuBar {
 
                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
                 PreferenceManager.getInstance().setShowAttributeView(menuItem.getState());
-                IGVMainFrame.getInstance().getMainPanel().invalidate();
-                IGVMainFrame.getInstance().doRefresh();
+                IGV.getInstance().getMainPanel().invalidate();
+                IGV.getInstance().doRefresh();
             }
         };
         menuAction.setToolTipText(SHOW_ATTRIBUTE_DISPLAY_TOOLTIP);
@@ -414,7 +413,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGVMainFrame.getInstance().doSelectDisplayableAttribute();
+                        IGV.getInstance().doSelectDisplayableAttribute();
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
@@ -428,13 +427,13 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new GeneListManagerUI(IGVMainFrame.getInstance())).setVisible(true);
+                        (new GeneListManagerUI(IGV.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGVMainFrame.getInstance());
+        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGV.getInstance());
         menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
@@ -462,7 +461,7 @@ menuAction =
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGVMainFrame.getInstance().doRefresh();
+                        IGV.getInstance().doRefresh();
                     }
                 };
         menuAction.setToolTipText(REFRESH_TOOLTIP);
@@ -544,7 +543,7 @@ menuAction =
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new AboutDialog(IGVMainFrame.getInstance(), true)).setVisible(true);
+                        (new AboutDialog(IGV.getMainFrame(), true)).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(ABOUT_TOOLTIP);
@@ -561,7 +560,7 @@ menuAction =
         MenuAction menuAction = null;
 
         // Preferences reset
-        menuAction = new ResetPreferencesAction("Reset Preferences", IGVMainFrame.getInstance());
+        menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Linked sorting
@@ -594,7 +593,7 @@ menuAction =
 
                             public Object doInBackground() {
                                 org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                                IGVMainFrame.getInstance().doLoadGenome(monitor);
+                                IGV.getInstance().doLoadGenome(monitor);
                                 return null;
                             }
                         };
@@ -616,7 +615,7 @@ menuAction =
                         if (vals.length == 2) {
                             int w = Integer.parseInt(vals[0]);
                             int h = Integer.parseInt(vals[1]);
-                            IGVMainFrame.getInstance().setSize(w, h);
+                            IGV.getMainFrame().setSize(w, h);
                         }
                     }
                 };
@@ -628,7 +627,7 @@ menuAction =
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGVMainFrame.getInstance().doApplicationSnapshot(IGVMainFrame.getInstance().getContentPane());
+                        IGV.getInstance().doApplicationSnapshot(IGV.getInstance().getContentPane());
 
                     }
                 };
@@ -668,7 +667,7 @@ menuAction =
             lfMenu.add(cb);
         }
 
-        menuAction = new ExportTrackNamesMenuAction("Export track names...", IGVMainFrame.getInstance());
+        menuAction = new ExportTrackNamesMenuAction("Export track names...", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         MenuAction extrasMenuAction = new MenuAction("Extras");

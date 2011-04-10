@@ -25,15 +25,12 @@ import javax.swing.border.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileDialogUtils;
 
 import javax.swing.*;
 import java.io.File;
 import java.util.Collection;
-
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 
 /**
  * @author eflakes
@@ -180,7 +177,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             return false;
         }
 
-        Collection<String> inUseIds = IGVMainFrame.getInstance().getGenomeIds();
+        Collection<String> inUseIds = IGV.getInstance().getGenomeIds();
         if (inUseIds.contains(id)) {
             JOptionPane.showMessageDialog(this,
                     "The genome ID '" + id + "' is already in use - please select another!");
@@ -197,7 +194,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             return false;
         }
 
-        Collection<String> inUseDisplayNames = IGVMainFrame.getInstance().getGenomeDisplayNames();
+        Collection<String> inUseDisplayNames = IGV.getInstance().getGenomeDisplayNames();
 
         if (inUseDisplayNames.contains(displayName)) {
             JOptionPane.showMessageDialog(this,

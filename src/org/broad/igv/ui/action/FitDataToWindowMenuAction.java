@@ -26,15 +26,11 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.panel.DataPanelContainer;
 import org.broad.igv.ui.panel.TrackPanelScrollPane;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.List;
@@ -45,9 +41,9 @@ import java.util.List;
 public class FitDataToWindowMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(FitDataToWindowMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public FitDataToWindowMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public FitDataToWindowMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.FIT_DATA_TO_WINDOW_TOOLTIP);
@@ -61,7 +57,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
      */
     public void actionPerformed(ActionEvent e) {
 
-        for (TrackPanelScrollPane sp : IGVMainFrame.getInstance().getTrackManager().getTrackPanelScrollPanes()) {
+        for (TrackPanelScrollPane sp : IGV.getInstance().getTrackManager().getTrackPanelScrollPanes()) {
             fitTracksToPanel(sp.getDataPanel());
         }
         mainFrame.doRefresh();

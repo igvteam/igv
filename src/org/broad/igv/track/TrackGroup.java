@@ -27,7 +27,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
@@ -534,7 +534,7 @@ public class TrackGroup {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
-        TrackManager tm = IGVMainFrame.getInstance().getTrackManager();
+        TrackManager tm = IGV.getInstance().getTrackManager();
         tm.clearSelections();
         tm.setTrackSelections(new HashSet(tracks));
 

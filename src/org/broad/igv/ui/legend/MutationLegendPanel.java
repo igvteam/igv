@@ -27,10 +27,9 @@ package org.broad.igv.ui.legend;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Mutation;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ColorTable;
 import org.broad.igv.ui.util.PropertyDialog;
 import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
@@ -95,7 +94,7 @@ public class MutationLegendPanel extends LegendPanel {
     public void doUserPreferences() {
 
 
-        IGVMainFrame.getInstance().setStatusBarMessage("Setting view properties...");
+        IGV.getInstance().setStatusBarMessage("Setting view properties...");
 
         // Add view preference items to the display
         LinkedHashMap<String, PreferenceDescriptor> labelTextToKey = addPreferences();
@@ -106,7 +105,7 @@ public class MutationLegendPanel extends LegendPanel {
         PropertyDialog dialog = new PropertyDialog(PreferenceManager.getInstance(),
                 labelTextToKey, (Dialog) window, true);
 
-        Component parent = IGVMainFrame.getInstance();
+        Component parent = IGV.getMainFrame();
 
         dialog.setLocationRelativeTo(parent);
         dialog.setTitle("Color Preferences");
@@ -114,7 +113,7 @@ public class MutationLegendPanel extends LegendPanel {
 
 
         if (dialog.isCanceled()) {
-            IGVMainFrame.getInstance().resetStatusMessage();
+            IGV.getInstance().resetStatusMessage();
             return;
         }
 
@@ -129,7 +128,7 @@ public class MutationLegendPanel extends LegendPanel {
                     SwingUtilities.getWindowAncestor(MutationLegendPanel.this).toFront();
                 }
             });
-            IGVMainFrame.getInstance().resetStatusMessage();
+            IGV.getInstance().resetStatusMessage();
         }
 
     }

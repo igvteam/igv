@@ -31,7 +31,7 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 /**
@@ -94,7 +94,7 @@ public class SearchCommand implements Command {
                 end = Integer.parseInt(tokens[2].trim());
             }
             if (recordHistory) {
-                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
             }
             referenceFrame.jumpTo(chr, start, end);
             success = true;
@@ -111,7 +111,7 @@ public class SearchCommand implements Command {
                 int end = feature.getEnd() + flankingRegion;
 
                 if (recordHistory) {
-                    IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                    IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
                 }
                 if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
                     referenceFrame.jumpTo(feature.getChr(), start, end);
@@ -144,7 +144,7 @@ public class SearchCommand implements Command {
 
                     if (startEnd != null) {
                         if (recordHistory) {
-                            IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                            IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
                         }
 
                         referenceFrame.jumpTo(chr, startEnd[0], startEnd[1]);
@@ -164,7 +164,7 @@ public class SearchCommand implements Command {
                         startEnd = getStartEnd(searchString);
                         if (startEnd != null) {
                             if (recordHistory) {
-                                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
                             }
 
                             referenceFrame.jumpTo(null, startEnd[0], startEnd[1]);
@@ -181,12 +181,12 @@ public class SearchCommand implements Command {
                         Chromosome chromosome = GenomeManager.getInstance().getCurrentGenome().getChromosome(searchString);
                         if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
                             if (recordHistory) {
-                                IGVMainFrame.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
                             }
 
                             referenceFrame.setChromosomeName(searchString, true);
-                            IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
-                            IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+                            IGV.getInstance().repaintDataAndHeaderPanels();
+                            IGV.getInstance().repaintStatusAndZoomSlider();
 
                             if (log.isDebugEnabled()) {
                                 log.debug("End search: " + searchString);
@@ -201,7 +201,7 @@ public class SearchCommand implements Command {
 
 
         if (!success) {
-            if (!IGVMainFrame.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
+            if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
                 showError("Cannot find feature or locus: " + searchString);
             }
         }

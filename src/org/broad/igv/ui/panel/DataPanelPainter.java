@@ -30,11 +30,10 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -129,7 +128,7 @@ public class DataPanelPainter {
 
         // Get overlays
 
-        List<Track> overlayTracks = IGVMainFrame.getInstance().getTrackManager().getOverlayTracks(track);
+        List<Track> overlayTracks = IGV.getInstance().getTrackManager().getOverlayTracks(track);
         if (overlayTracks != null) {
             for (Track overlayTrack : overlayTracks) {
 

@@ -203,7 +203,7 @@ public class EWigTrack extends AbstractTrack {
         if (e.isPopupTrigger()) {
             getPopupMenu(e).show(e.getComponent(), e.getX(), e.getY());
             //sortRows();
-            //IGVMainFrame.getInstance().repaintDataPanels();
+            //IGV.getInstance().repaintDataPanels();
             return true;
         } else {
             return super.handleDataClick(te);

@@ -29,7 +29,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.UserDefinedGenomeCheckList;
 import org.broad.igv.ui.util.UIUtilities;
@@ -79,12 +79,12 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                     GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
 
             if (genomeItemList.isEmpty()) {
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "There are no imported genomes to remove.");
             } else {
 
                 GenomeListItem currentlySelectedDropdownGenome =
-                        IGVMainFrame.getInstance().getGenomeSelectedInDropdown();
+                        IGV.getInstance().getGenomeSelectedInDropdown();
                 List<String> genomeNames = new ArrayList();
                 UserDefinedGenomeCheckList checkList = new UserDefinedGenomeCheckList(false);
                 for (GenomeListItem genomeListItem : genomeItemList) {
@@ -92,7 +92,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                 }
                 checkList.addItems(genomeNames);
                 checkList.sort();
-                int status = JOptionPane.showConfirmDialog(IGVMainFrame.getInstance(), checkList,
+                int status = JOptionPane.showConfirmDialog(IGV.getMainFrame(), checkList,
                         "Imported Genomes to Remove", JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.PLAIN_MESSAGE, null);
 
@@ -113,7 +113,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
 
                     if (currentlySelectedDropdownGenome.getDisplayableName().equalsIgnoreCase(genomeName)) {
                         JOptionPane.showMessageDialog(
-                                IGVMainFrame.getInstance(),
+                                IGV.getMainFrame(),
                                 "<html>Genome [" + genomeName + "] is currently in use and cannot be removed." +
                                         "<br>Please select another genome to view before trying to remove it.</html>");
                         continue;
@@ -127,12 +127,12 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
 
                 if (removed) {
                     GenomeManager.getInstance().rebuildClientGenomeList(genomeItemList);
-                    IGVMainFrame.getInstance().rebuildGenomeDropdownList(null);
+                    IGV.getInstance().rebuildGenomeDropdownList(null);
                 }
             }
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+            JOptionPane.showMessageDialog(IGV.getMainFrame(),
                     "Error encontered while removing genomes: "
                             + e.getMessage());
             logger.error("Error removing genomes from the imported genome list.", e);

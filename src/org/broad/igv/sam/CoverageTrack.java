@@ -42,7 +42,7 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -781,9 +781,7 @@ public class CoverageTrack extends AbstractTrack {
                 if (selectedTracks.size() > 0) {
 
                     DataRange prevAxisDefinition = selectedTracks.iterator().next().getDataRange();
-                    DataRangeDialog dlg = new DataRangeDialog(
-                            IGVMainFrame.getInstance(),
-                            prevAxisDefinition);
+                    DataRangeDialog dlg = new DataRangeDialog( IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setHideMid(true);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -799,7 +797,7 @@ public class CoverageTrack extends AbstractTrack {
                         for (Track track : selectedTracks) {
                             track.setDataRange(dataRange);
                         }
-                        IGVMainFrame.getInstance().repaint();
+                        IGV.getMainFrame().repaint();
                     }
                 }
 
@@ -824,7 +822,7 @@ public class CoverageTrack extends AbstractTrack {
                 try {
                     float tmp = Float.parseFloat(value);
                     snpThreshold = tmp;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
                 catch (Exception exc) {
                     //log
@@ -845,7 +843,7 @@ public class CoverageTrack extends AbstractTrack {
             public void actionPerformed(ActionEvent e) {
 
 
-                FileChooserDialog trackFileDialog = IGVMainFrame.getInstance().getTrackFileChooser();
+                FileChooserDialog trackFileDialog = IGV.getInstance().getTrackFileChooser();
                 trackFileDialog.setMultiSelectionEnabled(false);
                 trackFileDialog.setVisible(true);
                 if (!trackFileDialog.isCanceled()) {
@@ -856,7 +854,7 @@ public class CoverageTrack extends AbstractTrack {
                         TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                         TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage");
                         setDataSource(ds);
-                        IGVMainFrame.getInstance().repaintDataPanels();
+                        IGV.getInstance().repaintDataPanels();
                     } else {
                         MessageUtils.showMessage("Coverage data must be in .tdf format");
                     }
@@ -880,7 +878,7 @@ public class CoverageTrack extends AbstractTrack {
                 if (autoScale) {
                     rescale();
                 }
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -902,7 +900,7 @@ public class CoverageTrack extends AbstractTrack {
                         DataRange.Type.LOG :
                         DataRange.Type.LINEAR;
                 dataRange.setType(scaleType);
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
             }
         });
 

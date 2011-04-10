@@ -31,7 +31,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.TrackManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -98,7 +98,7 @@ public class Session {
         boolean resetRequired = FrameManager.getFrames().size() > 1;
         setCurrentGeneList(null);
         if (resetRequired) {
-            IGVMainFrame.getInstance().resetFrames();
+            IGV.getInstance().resetFrames();
         }
 
     }

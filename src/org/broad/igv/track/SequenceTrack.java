@@ -28,10 +28,8 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.panel.TrackPanelComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -161,7 +159,7 @@ public class SequenceTrack extends AbstractTrack {
     private void flipStrand(Object source) {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
         repaint();
-        IGVMainFrame.getInstance().getTrackManager().clearSelections();
+        IGV.getInstance().getTrackManager().clearSelections();
     }
 
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
@@ -197,7 +195,7 @@ public class SequenceTrack extends AbstractTrack {
             public void actionPerformed(ActionEvent e) {
                 setShouldShowTranslation(m2.isSelected());
                 repaint();
-                IGVMainFrame.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().getTrackManager().clearSelections();
             }
         });
 
@@ -210,7 +208,7 @@ public class SequenceTrack extends AbstractTrack {
 
     private void repaint() {
         // TODO -- what's really needed is a repaint of all panels the sequence track intersects
-        IGVMainFrame.getInstance().getContentPane().repaint();
+        IGV.getMainFrame().repaint();
     }
 
     // SequenceTrack does not expose its renderer

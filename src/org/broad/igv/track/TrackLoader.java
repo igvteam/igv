@@ -53,7 +53,7 @@ import org.broad.igv.synteny.BlastMapping;
 import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
@@ -61,7 +61,6 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.vcf.VCFTrack;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -227,7 +226,7 @@ public class TrackLoader {
                     track.setSampleId(locator.getSampleId());
                 }
 
-                IGVMainFrame.getInstance().getTrackManager().addLoadedType(track.getTrackType());
+                IGV.getInstance().getTrackManager().addLoadedType(track.getTrackType());
             }
 
 
@@ -453,7 +452,7 @@ public class TrackLoader {
         ds.setLogValues(true);
 
         /*
-         * File outputFile = new File(IGVMainFrame.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
+         * File outputFile = new File(IGV.DEFAULT_USER_DIRECTORY, file.getName() + ".h5");
          * OverlappingProcessor proc = new OverlappingProcessor(ds);
          * proc.setZoomMax(0);
          * proc.process(outputFile.getAbsolutePath());

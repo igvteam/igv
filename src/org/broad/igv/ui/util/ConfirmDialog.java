@@ -26,7 +26,7 @@ package org.broad.igv.ui.util;
 import java.awt.event.*;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import javax.swing.*;
@@ -165,7 +165,7 @@ public class ConfirmDialog extends JDialog {
 
         boolean show = PreferenceManager.getInstance().getAsBoolean(key);
         if (show) {
-            ConfirmDialog dlg = new ConfirmDialog(IGVMainFrame.getInstance(), message, key);
+            ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
             dlg.okButton.setText("OK");
             dlg.cancelButton.setVisible(false);
             dlg.setVisible(true);
@@ -177,7 +177,7 @@ public class ConfirmDialog extends JDialog {
 
         boolean show = PreferenceManager.getInstance().getAsBoolean(key);
         if (show) {
-            ConfirmDialog dlg = new ConfirmDialog(IGVMainFrame.getInstance(), message, key);
+            ConfirmDialog dlg = new ConfirmDialog(IGV.getMainFrame(), message, key);
 
             dlg.setVisible(true);
             return dlg.okPressed;

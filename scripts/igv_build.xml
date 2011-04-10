@@ -24,7 +24,7 @@
 
     <property name="scripts.dir" value="${basedir}/scripts"/>
 
-    <property name="main-class" value="org.broad.igv.ui.IGVMainFrame"/>
+    <property name="main-class" value="org.broad.igv.ui.Main"/>
     <property name="alias" value="Broad-alias"/>
     <property name="key-password" value="Broad-keypass"/>
     <property name="store-password" value="Broad-storepass"/>

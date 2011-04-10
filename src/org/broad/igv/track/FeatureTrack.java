@@ -23,10 +23,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.Feature;
@@ -450,7 +450,7 @@ public class FeatureTrack extends AbstractTrack {
                             //select the appropriate row
                             setSelectedFeatureRowIndex(i);
                         }
-                        IGVMainFrame.getInstance().doRefresh();
+                        IGV.getInstance().doRefresh();
                         break;
                     }
                 }
@@ -586,7 +586,7 @@ public class FeatureTrack extends AbstractTrack {
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
             featuresLoading = true;
             loadFeatures(chr, start, end, context);
-            if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
+            if (!IGV.getInstance().isExportingSnapshot()) {
                 return;
             }
         }
@@ -678,7 +678,7 @@ public class FeatureTrack extends AbstractTrack {
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 
-                    IGVMainFrame.getInstance().layoutMainPanel();
+                    IGV.getInstance().layoutMainPanel();
                     if (context.getPanel() != null) context.getPanel().repaint();
                 } catch (Throwable e) {
                     // Mark the interval with an empty feature list to prevent an endless loop of load

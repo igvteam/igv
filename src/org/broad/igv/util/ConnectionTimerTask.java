@@ -23,7 +23,7 @@
  */
 package org.broad.igv.util;
 
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class ConnectionTimerTask extends TimerTask {
     public void run() {
         try {
             urlConn.getInputStream().close();
-            JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+            JOptionPane.showMessageDialog(IGV.getMainFrame(),
                     "Connection to the server has timed out.  " +
                             "If this problem persists please contact igv-help@broadinstitute.org.");
 

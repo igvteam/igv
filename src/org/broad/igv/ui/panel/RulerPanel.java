@@ -34,7 +34,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
 
@@ -355,8 +355,8 @@ public class RulerPanel extends JPanel {
                                 final String chrName = link.value;
                                 getViewContext().setChrName(chrName);
                                 getViewContext().recordHistory();
-                                // TODO -- get rid of this ugly reference to IGVMainFrame.theInstance
-                                IGVMainFrame.getInstance().chromosomeChangeEvent(chrName);
+                                // TODO -- get rid of this ugly reference to IGV.theInstance
+                                IGV.getInstance().chromosomeChangeEvent(chrName);
 
                                 return;
                             }

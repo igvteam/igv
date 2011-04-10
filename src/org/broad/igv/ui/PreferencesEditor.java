@@ -1877,7 +1877,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             // Overlays
             if (updateOverlays) {
-                IGVMainFrame.getInstance().getTrackManager().resetOverlayTracks();
+                IGV.getInstance().getTrackManager().resetOverlayTracks();
             }
 
             // Proxies
@@ -1886,7 +1886,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
 
             updatedPreferenceMap.clear();
-            IGVMainFrame.getInstance().repaint();
+            IGV.getInstance().repaint();
             setVisible(false);
         } else {
             resetValidation();
@@ -2088,7 +2088,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }//GEN-LAST:event_topBorderCBActionPerformed
 
     private void chooseOverlayColorsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        (new LegendDialog(IGVMainFrame.getInstance(), true)).setVisible(true);
+        (new LegendDialog(IGV.getMainFrame(), true)).setVisible(true);
     }//GEN-LAST:event_chooseOverlayColorsButtonActionPerformed
 
     private void colorOverlyCBActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2208,7 +2208,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void showAttributesDisplayCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
         boolean state = ((JCheckBox) evt.getSource()).isSelected();
         updatedPreferenceMap.put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, String.valueOf(state));
-        IGVMainFrame.getInstance().doShowAttributeDisplay(state);
+        IGV.getInstance().doShowAttributeDisplay(state);
     }
 
     private void joinSegmentsCBActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2588,8 +2588,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 }
             }
             if (reloadSAM) {
-                IGVMainFrame.getInstance().getTrackManager().reloadSAMTracks();
-                IGVMainFrame.getInstance().repaint();
+                IGV.getInstance().getTrackManager().reloadSAMTracks();
+                IGV.getInstance().repaint();
 
 
             }

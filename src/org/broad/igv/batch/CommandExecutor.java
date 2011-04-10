@@ -30,7 +30,7 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
@@ -64,7 +64,7 @@ public class CommandExecutor {
         List<String> args = getArgs(StringUtils.breakQuotedString(command, ' ').toArray(new String[]{}));
 
         String result = "OK";
-        final IGVMainFrame mainFrame = IGVMainFrame.getInstance();
+        final IGV mainFrame = IGV.getInstance();
 
         System.out.println();
         log.debug("Executing: " + command);
@@ -104,7 +104,7 @@ public class CommandExecutor {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     expand(trackName);
                 } else if (cmd.equals("tweakdivider")) {
-                    IGVMainFrame.getInstance().tweakPanelDivider();
+                    IGV.getInstance().tweakPanelDivider();
                 } else if (cmd.equals("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equals("exit")) {
@@ -116,7 +116,7 @@ public class CommandExecutor {
             } else {
                 return "Empty command string";
             }
-            IGVMainFrame.getInstance().doRefresh();
+            IGV.getInstance().doRefresh();
 
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
                 log.debug("Clearing caches");
@@ -152,7 +152,7 @@ public class CommandExecutor {
         }
         String result;
         String genomeID = param1;
-        IGVMainFrame.getInstance().selectGenomeFromList(genomeID);
+        IGV.getInstance().selectGenomeFromList(genomeID);
         result = "OK";
         return result;
     }
@@ -203,32 +203,32 @@ public class CommandExecutor {
             return "ERROR: missing locus parameter";
         }
         String locus = param1;
-        IGVMainFrame.getInstance().goToLocus(locus);
+        IGV.getInstance().goToLocus(locus);
         return "OK";
     }
 
     private void collapse(String trackName) {
         if (trackName == null) {
-            IGVMainFrame.getInstance().getTrackManager().collapseTracks();
+            IGV.getInstance().getTrackManager().collapseTracks();
         } else {
-            IGVMainFrame.getInstance().getTrackManager().collapseTrack(trackName);
+            IGV.getInstance().getTrackManager().collapseTrack(trackName);
         }
-        IGVMainFrame.getInstance().repaintDataPanels();
+        IGV.getInstance().repaintDataPanels();
     }
 
 
     private void expand(String trackName) {
         if (trackName == null) {
-            IGVMainFrame.getInstance().getTrackManager().expandTracks();
+            IGV.getInstance().getTrackManager().expandTracks();
         } else {
-            IGVMainFrame.getInstance().getTrackManager().expandTrack(trackName);
+            IGV.getInstance().getTrackManager().expandTrack(trackName);
         }
-        IGVMainFrame.getInstance().repaintDataPanels();
+        IGV.getInstance().repaintDataPanels();
     }
 
 
     private void sort(String sortArg, String locusString, String param3) {
-        TrackManager tm = IGVMainFrame.getInstance().getTrackManager();
+        TrackManager tm = IGV.getInstance().getTrackManager();
         RegionScoreType regionSortOption = getRegionSortOption(sortArg);
         if (regionSortOption != null) {
             RegionOfInterest roi = null;
@@ -257,7 +257,7 @@ public class CommandExecutor {
             }
 
         }
-        IGVMainFrame.getInstance().repaintDataPanels();
+        IGV.getInstance().repaintDataPanels();
     }
 
     private String loadFiles(final String fileString, final String locus, final boolean merge) {
@@ -272,7 +272,7 @@ public class CommandExecutor {
             List<String> sessionPaths = new ArrayList<String>();
 
             if (!merge) {
-                IGVMainFrame.getInstance().createNewSession(null);
+                IGV.getInstance().createNewSession(null);
             }
 
             for (String f : files) {
@@ -288,7 +288,7 @@ public class CommandExecutor {
                 InputStream is = null;
                 try {
                     is = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
-                    IGVMainFrame.getInstance().doRestoreSession(is, sessionPath, locus, merge);
+                    IGV.getInstance().doRestoreSession(is, sessionPath, locus, merge);
                 }
                 catch (IOException e) {
                     log.error(e.getMessage(), e);
@@ -305,10 +305,10 @@ public class CommandExecutor {
             }
 
             //TODO Find a better way to get the message back up to the socket.
-            IGVMainFrame.getInstance().loadTracks(fileLocators);
+            IGV.getInstance().loadTracks(fileLocators);
 
             if (locus != null) {
-                IGVMainFrame.getInstance().goToLocus(locus);
+                IGV.getInstance().goToLocus(locus);
             }
         }
         finally {
@@ -320,7 +320,7 @@ public class CommandExecutor {
     }
 
     private void createSnapshot(String filename) {
-        IGVMainFrame mainFrame = IGVMainFrame.getInstance();
+        IGV mainFrame = IGV.getInstance();
 
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();

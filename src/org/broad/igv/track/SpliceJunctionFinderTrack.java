@@ -28,7 +28,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.sam.*;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
 
@@ -253,7 +253,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
             }
             else if (packedFeatures != null)
                 packedFeaturesMap.put(context.getReferenceFrame().getName(), null);
-            if (!IGVMainFrame.getInstance().isExportingSnapshot()) {
+            if (!IGV.getInstance().isExportingSnapshot()) {
                 return;
             }
         }
@@ -330,7 +330,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 try {
                     int tmp = Integer.parseInt(value);
                     minReadFlankingWidth = tmp;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
                 catch (Exception exc) {
                     //log
@@ -365,7 +365,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 try {
                     int tmp = Integer.parseInt(value);
                     minJunctionCoverage = tmp;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
                 catch (Exception exc) {
                     //log

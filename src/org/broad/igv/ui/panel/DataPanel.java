@@ -237,9 +237,9 @@ public class DataPanel extends JComponent implements Paintable {
      */
     public void drawAllRegions(final Graphics g) {
 
-        // TODO -- get rid of this ugly reference to IGVMainFrame
+        // TODO -- get rid of this ugly reference to IGV
         Collection<RegionOfInterest> regions =
-                IGVMainFrame.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
+                IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
 
         if ((regions == null) || regions.isEmpty()) {
             return;
@@ -412,7 +412,7 @@ public class DataPanel extends JComponent implements Paintable {
 
                     // First see if there is an overlay track.  If there is, give
                     // it first crack
-                    List<Track> overlays = IGVMainFrame.getInstance().getTrackManager().getOverlayTracks(track);
+                    List<Track> overlays = IGV.getInstance().getTrackManager().getOverlayTracks(track);
 
                     if (overlays != null) {
                         for (Track overlay : overlays) {
@@ -605,7 +605,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         @Override
         public void mouseExited(MouseEvent e) {
-            IGVMainFrame.getInstance().setSelectedRegion(null);
+            IGV.getInstance().setSelectedRegion(null);
         }
 
 
@@ -615,7 +615,7 @@ public class DataPanel extends JComponent implements Paintable {
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
                 String position = frame.getChrName() + ":" + locationFormatter.format(location);
-                IGVMainFrame.getInstance().setStatusBarMessage(position);
+                IGV.getInstance().setStatusBarMessage(position);
             }
         }
 
@@ -631,7 +631,7 @@ public class DataPanel extends JComponent implements Paintable {
             }
 
             if (e.isPopupTrigger()) {
-                IGVMainFrame.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().getTrackManager().clearSelections();
                 parent.selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);
@@ -650,7 +650,7 @@ public class DataPanel extends JComponent implements Paintable {
         public void mouseReleased(MouseEvent e) {
 
             if (e.isPopupTrigger()) {
-                IGVMainFrame.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().getTrackManager().clearSelections();
                 parent.selectTracks(e);
                 TrackClickEvent te = new TrackClickEvent(e, frame);
                 parent.openPopupMenu(te);

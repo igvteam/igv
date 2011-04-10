@@ -25,11 +25,10 @@ import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -286,7 +285,7 @@ public class TrackPanel extends IGVPanel {
                                    final ReferenceFrame frame) {
 
         boolean useLinkedSorting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_LINKED_SORTING);
-        String linkingAtt = IGVMainFrame.getInstance().getSession().getOverlayAttribute();
+        String linkingAtt = IGV.getInstance().getSession().getOverlayAttribute();
 
         sortGroupsByRegionScore(trackGroups, region, type, frame);
 

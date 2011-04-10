@@ -30,7 +30,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -749,7 +749,7 @@ public class VCFTrack extends FeatureTrack {
         if (te.getFrame() != null && te.getFrame().getName() != null) {
             f = (VariantContext) getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
             selectedVariant = f;
-            IGVMainFrame.getInstance().doRefresh();
+            IGV.getInstance().doRefresh();
         }
 
         return new VCFMenu(this, f);
@@ -758,7 +758,7 @@ public class VCFTrack extends FeatureTrack {
     public static void refresh() {
         UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
-                IGVMainFrame.getInstance().doRefresh();
+                IGV.getInstance().doRefresh();
             }
         });
     }

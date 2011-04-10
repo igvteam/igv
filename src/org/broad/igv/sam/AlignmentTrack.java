@@ -32,7 +32,7 @@ import org.broad.igv.session.Session;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileChooserDialog;
@@ -363,7 +363,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 String endStr = NumberFormat.getInstance().format(e2);
                 String mateLocus = mateChr + ":" + startStr + "-" + endStr;
 
-                Session currentSession = IGVMainFrame.getInstance().getSession();
+                Session currentSession = IGV.getInstance().getSession();
 
                 // If we are already in gene list mode add the mate as another panel, otherwise switch to gl mode
 
@@ -385,7 +385,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 GeneList geneList = new GeneList(listName.toString(), loci, false);
                 currentSession.setCurrentGeneList(geneList);
-                IGVMainFrame.getInstance().resetFrames();
+                IGV.getInstance().resetFrames();
 
             }
         }
@@ -457,7 +457,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         //if (PreferenceManager.getInstance().getSAMPreferences().isAutosort() &&
         //        ReferenceFrame.getInstance().getScale() < 1) {
         //    sortRows(SortOption.START);
-        //    IGVMainFrame.getInstance().repaintDataPanels();
+        //    IGV.getInstance().repaintDataPanels();
         //}
     }
 
@@ -533,7 +533,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
     private void refresh() {
-        IGVMainFrame.getInstance().repaintDataPanels();
+        IGV.getInstance().repaintDataPanels();
     }
 
 
@@ -800,7 +800,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             m1.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
                     refresh();
 
                 }
@@ -811,7 +811,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             m2.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
                     refresh();
 
                 }
@@ -823,7 +823,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
                     refresh();
 
                 }
@@ -835,7 +835,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
                     refresh();
 
                 }
@@ -848,7 +848,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
                     refresh();
 
                 }
@@ -860,7 +860,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
+                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
                     refresh();
 
                 }
@@ -873,7 +873,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                     public void actionPerformed(ActionEvent aEvt) {
 
-                        IGVMainFrame.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
+                        IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
                         refresh();
 
                     }
@@ -969,7 +969,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                     UIUtilities.invokeOnEventThread(new Runnable() {
 
                         public void run() {
-                            IGVMainFrame.getInstance().getTrackManager().packAlignmentTracks();
+                            IGV.getInstance().getTrackManager().packAlignmentTracks();
                             refresh();
                         }
                     });
@@ -1132,7 +1132,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGVMainFrame.getInstance(), renderOptions);
+                    InsertSizeSettingsDialog dlg = new InsertSizeSettingsDialog(IGV.getMainFrame(), renderOptions);
                     dlg.setModal(true);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
@@ -1207,7 +1207,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                             if (getCoverageTrack() != null) {
                                 getCoverageTrack().setVisible(item.isSelected());
                                 refresh();
-                                IGVMainFrame.getInstance().repaintNamePanels();
+                                IGV.getInstance().repaintNamePanels();
                             }
                         }
                     });
@@ -1227,7 +1227,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                         public void run() {
 
-                            FileChooserDialog trackFileDialog = IGVMainFrame.getInstance().getTrackFileChooser();
+                            FileChooserDialog trackFileDialog = IGV.getInstance().getTrackFileChooser();
                             trackFileDialog.setMultiSelectionEnabled(false);
                             trackFileDialog.setVisible(true);
                             if (!trackFileDialog.isCanceled()) {

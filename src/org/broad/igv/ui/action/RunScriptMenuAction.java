@@ -22,7 +22,7 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.batch.BatchRunner;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
 
@@ -34,9 +34,9 @@ import java.io.File;
 public class RunScriptMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public RunScriptMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public RunScriptMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
@@ -73,7 +73,7 @@ public class RunScriptMenuAction extends MenuAction {
 
         // Get Track Files
         FileChooserDialog trackFileDialog = mainFrame.getTrackFileChooser();
-        trackFileDialog.setLocationRelativeTo(mainFrame);
+        trackFileDialog.setLocationRelativeTo(mainFrame.getMainFrame());
         trackFileDialog.setTitle("Select Script");
         trackFileDialog.setMultiSelectionEnabled(true);
         trackFileDialog.setSelectedFile(null);

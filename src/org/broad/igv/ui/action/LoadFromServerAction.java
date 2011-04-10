@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.AttributeManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
@@ -53,13 +53,13 @@ import java.util.*;
 public class LoadFromServerAction extends MenuAction {
 
     static Logger log = Logger.getLogger(LoadFromServerAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
     // Keep track of authorization failures so user isn't constantly harranged
     static HashSet<String> failedURLs = new HashSet();
 
 
-    public LoadFromServerAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public LoadFromServerAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.LOAD_SERVER_DATA_TOOLTIP);
@@ -117,7 +117,7 @@ public class LoadFromServerAction extends MenuAction {
             }
 
             if (urls == null || urls.isEmpty()) {
-                JOptionPane.showMessageDialog(mainFrame,
+                JOptionPane.showMessageDialog(mainFrame.getMainFrame(),
                         "No datasets are available for the current genome (" + genomeId + ").");
             } else {
 
@@ -257,7 +257,7 @@ public class LoadFromServerAction extends MenuAction {
 
             }
             if (xmlParsingError) {
-                JOptionPane.showMessageDialog(mainFrame, buffer.toString());
+                JOptionPane.showMessageDialog(mainFrame.getMainFrame(), buffer.toString());
             }
 
 
@@ -265,11 +265,12 @@ public class LoadFromServerAction extends MenuAction {
              * Resource Tree
              */
             HashSet<ResourceLocator> selectedLocators =
-                    ResourceTree.getInstance().showResourceTreeDialog(mainFrame, masterDocument, "Available Datasets");
+                    ResourceTree.getInstance().showResourceTreeDialog(mainFrame.getMainFrame(),
+                            masterDocument, "Available Datasets");
 
             List<ResourceLocator> newLoadList = new ArrayList();
 
-            Set<ResourceLocator> loadedResources = IGVMainFrame.getInstance().getTrackManager().getDataResourceLocators();
+            Set<ResourceLocator> loadedResources = IGV.getInstance().getTrackManager().getDataResourceLocators();
             loadedResources.addAll(AttributeManager.getInstance().getLoadedResources());
 
             if (selectedLocators != null) {

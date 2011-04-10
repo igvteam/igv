@@ -27,7 +27,7 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -60,7 +60,7 @@ public class ClearGenomeCacheAction extends MenuAction {
     public void actionPerformed(ActionEvent evt) {
 
         try {
-            int option = (JOptionPane.showConfirmDialog(IGVMainFrame.getInstance(),
+            int option = (JOptionPane.showConfirmDialog(IGV.getMainFrame(),
                     "Clear the genome cache ?", "Clear the genome cache ?",
                     JOptionPane.YES_NO_OPTION));
             if (option == JOptionPane.YES_OPTION) {
@@ -69,8 +69,8 @@ public class ClearGenomeCacheAction extends MenuAction {
                     GenomeManager.getInstance().clearGenomeCache();
                     UIUtilities.invokeOnEventThread(new Runnable() {
                         public void run() {
-                            IGVMainFrame.getInstance().rebuildGenomeDropdownList(null);
-                            IGVMainFrame.getInstance().setGenomeId(genomeId);
+                            IGV.getInstance().rebuildGenomeDropdownList(null);
+                            IGV.getInstance().setGenomeId(genomeId);
                         }
                     });
                 }
@@ -78,9 +78,8 @@ public class ClearGenomeCacheAction extends MenuAction {
 
         }
         catch (Exception e) {
-            JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
-                    "Error encontered while removing genomes: "
-                            + e.getMessage());
+            JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                    "Error encontered while removing genomes: " + e.getMessage());
             logger.error("Error removing genomes from the user-defined genome list.", e);
         }
     }

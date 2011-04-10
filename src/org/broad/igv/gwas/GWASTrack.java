@@ -10,7 +10,7 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
@@ -555,7 +555,7 @@ public class GWASTrack extends AbstractTrack {
                 singleColor = false;
                 useChrColors = true;
                 alternatingColors = false;
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -573,7 +573,7 @@ public class GWASTrack extends AbstractTrack {
                 singleColor = false;
                 useChrColors = false;
                 alternatingColors = true;
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
 
             }
@@ -592,7 +592,7 @@ public class GWASTrack extends AbstractTrack {
                 singleColor = true;
                 useChrColors = false;
                 alternatingColors = false;
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -617,7 +617,7 @@ public class GWASTrack extends AbstractTrack {
                     primaryColor = color;
                 }
 
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -642,7 +642,7 @@ public class GWASTrack extends AbstractTrack {
                     secondaryColor = color;
                 }
 
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
 
             }
         });
@@ -696,26 +696,25 @@ public class GWASTrack extends AbstractTrack {
 
 
         String tmpValue = JOptionPane.showInputDialog(
-                IGVMainFrame.getInstance(), "Minimum point size in pixels (1-20):",
-                String.valueOf(value));
+                IGV.getMainFrame(), "Minimum point size in pixels (1-20):", String.valueOf(value));
 
         if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
 
             try {
                 value = Integer.parseInt(tmpValue);
                 if (value < 1 || value > 20) {
-                    JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                    JOptionPane.showMessageDialog(IGV.getMainFrame(),
                             "Minimum point size must be an integer number between 1 and 20.");
                 } else {
                     if (value > this.maxPointSize)
                         this.maxPointSize = value;
 
                     this.minPointSize = value;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "Point size must be an integer number.");
             }
         }
@@ -727,7 +726,7 @@ public class GWASTrack extends AbstractTrack {
 
 
         String tmpValue = JOptionPane.showInputDialog(
-                IGVMainFrame.getInstance(), "Maximum point size in pixels (1-20):",
+                IGV.getMainFrame(), "Maximum point size in pixels (1-20):",
                 String.valueOf(value));
 
         if (!(tmpValue == null) || !tmpValue.trim().equals("")) {
@@ -735,18 +734,18 @@ public class GWASTrack extends AbstractTrack {
             try {
                 value = Integer.parseInt(tmpValue);
                 if (value < 1 || value > 20) {
-                    JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                    JOptionPane.showMessageDialog(IGV.getMainFrame(),
                             "Maximum point size must be an integer number between 1 and 20.");
                 } else {
                     if (value < this.minPointSize)
                         this.minPointSize = value;
 
                     this.maxPointSize = value;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
 
             } catch (NumberFormatException numberFormatException) {
-                JOptionPane.showMessageDialog(IGVMainFrame.getInstance(),
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "Point size must be an integer number.");
             }
         }

@@ -24,7 +24,6 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.IGVFeatureRenderer;
@@ -32,8 +31,7 @@ import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGVMainFrame;
-import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -49,7 +47,7 @@ import java.util.List;
  */
 public abstract class AbstractFeatureParser implements FeatureParser {
 
-    private static Logger log = Logger.getLogger(IGVMainFrame.class);
+    private static Logger log = Logger.getLogger(IGV.class);
     private String filePath;
     protected Genome genome;
     protected int startBase = 0;

@@ -24,7 +24,7 @@ package org.broad.igv.ui.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -127,7 +127,7 @@ public class UIUtilities {
         chooser.setColor(defaultColor);
         while (true) {
 
-            int response = JOptionPane.showConfirmDialog(IGVMainFrame.getInstance(), chooser,
+            int response = JOptionPane.showConfirmDialog(IGV.getMainFrame(), chooser,
                     dialogTitle, JOptionPane.OK_CANCEL_OPTION);
 
             if ((response == JOptionPane.CANCEL_OPTION) || (response == JOptionPane.CLOSED_OPTION)) {

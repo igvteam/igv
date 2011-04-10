@@ -31,7 +31,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.DataRenderer;
@@ -316,7 +316,7 @@ public abstract class DataTrack extends AbstractTrack {
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                List<Track> overlayTracks = IGVMainFrame.getInstance().getTrackManager().getOverlayTracks(this);
+                List<Track> overlayTracks = IGV.getInstance().getTrackManager().getOverlayTracks(this);
                 float count = 0;
                 if (overlayTracks != null) {
                     for (Track t : overlayTracks) {

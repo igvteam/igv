@@ -28,7 +28,7 @@ import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.StringUtil;
 import org.broad.igv.Globals;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.FileUtils;
 
 import java.io.File;
@@ -69,8 +69,8 @@ public class SamUtils {
             newIdxFile = getUserIdxFile(samFile);
         }
 
-        SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(IGVMainFrame.getInstance(), true, samFile, newIdxFile);
-        dialog.setLocationRelativeTo(IGVMainFrame.getInstance());
+        SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
+        dialog.setLocationRelativeTo(IGV.getMainFrame());
         dialog.setVisible(true);
         return dialog.getIndex();
     }

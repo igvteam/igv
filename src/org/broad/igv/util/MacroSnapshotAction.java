@@ -25,8 +25,8 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.IGVMainFrame;
 
 import java.io.File;
 import java.util.List;
@@ -52,7 +52,7 @@ public class MacroSnapshotAction {
         final List<String> loci = ParsingUtils.loadRegions(regionFile);
 
         for (String locus : loci) {
-            IGVMainFrame.getInstance().goToLocus(locus);
+            IGV.getInstance().goToLocus(locus);
             createSnapshot(outputDirectory, null);
         }
     }
@@ -70,7 +70,7 @@ public class MacroSnapshotAction {
     }
 
     private static synchronized void createSnapshot(File outputDirectory, String filename) {
-        IGVMainFrame mainFrame = IGVMainFrame.getInstance();
+        IGV mainFrame = IGV.getInstance();
 
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
@@ -78,8 +78,8 @@ public class MacroSnapshotAction {
         }
 
         // Repaint
-        IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
-        IGVMainFrame.getInstance().repaintStatusAndZoomSlider();
+        IGV.getInstance().repaintDataAndHeaderPanels();
+        IGV.getInstance().repaintStatusAndZoomSlider();
 
 
         File file = new File(outputDirectory, filename);

@@ -24,13 +24,12 @@
 package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.SortDialog;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,9 +38,9 @@ import java.util.List;
 public class SortTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(SortTracksMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public SortTracksMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public SortTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.SORT_TRACKS_TOOLTIP);
@@ -66,7 +65,7 @@ public class SortTracksMenuAction extends MenuAction {
         //            AttributeManager.getInstance().getAttributeComparator());
         //}
         Object availableSortKeys[] = keys.toArray();
-        SortDialog dialog = new SortDialog(mainFrame, true, availableSortKeys);
+        SortDialog dialog = new SortDialog(mainFrame.getMainFrame(), true, availableSortKeys);
         dialog.setVisible(true);
 
         if (dialog.isCanceled()) {
@@ -75,9 +74,9 @@ public class SortTracksMenuAction extends MenuAction {
 
         String[] selectedSortKeys = dialog.getSelectedSortKeys();
         if (selectedSortKeys != null) {
-            IGVMainFrame.getInstance().getTrackManager().sortAllTracksByAttributes(
+            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(
                     selectedSortKeys, dialog.isAscending());
-            mainFrame.repaint();
+            mainFrame.getMainFrame().repaint();
         }
 
 

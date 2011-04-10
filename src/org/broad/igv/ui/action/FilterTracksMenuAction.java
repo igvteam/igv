@@ -25,7 +25,7 @@ package org.broad.igv.ui.action;
 
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterPane;
 import org.broad.igv.ui.UIConstants;
@@ -37,7 +37,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,7 +45,7 @@ import java.util.List;
 public class FilterTracksMenuAction extends MenuAction {
 
     //static Logger log = Logger.getLogger(FilterTracksMenuAction.class);
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
     private JCheckBox showAllTracksFilterCheckBox = new JCheckBox();
 
@@ -56,7 +55,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
     private TrackFilterPane trackFilterPane;
 
-    public FilterTracksMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public FilterTracksMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.FILTER_TRACKS_TOOLTIP);
@@ -103,11 +102,11 @@ public class FilterTracksMenuAction extends MenuAction {
         }
 
         trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGVMainFrame.getInstance().getTrackManager().getAllTracks(false));
+        trackFilterPane.addTracks(IGV.getInstance().getTrackManager().getAllTracks(false));
 
         while (true) {
 
-            Integer response = createFilterTrackDialog(mainFrame, trackFilterPane, "Filter Tracks");
+            Integer response = createFilterTrackDialog(mainFrame.getMainFrame(), trackFilterPane, "Filter Tracks");
 
             if (response == null) {
                 continue;
@@ -270,14 +269,14 @@ public class FilterTracksMenuAction extends MenuAction {
         boolean showAllTracks = showAllTracksFilterCheckBox.isSelected();
         if (showAllTracks) {
 
-            List<Track> tracks = IGVMainFrame.getInstance().getTrackManager().getAllTracks(false);
+            List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
             for (Track track : tracks) {
                 track.setVisible(showAllTracks);
             }
 
         } else {
             TrackFilter filter = trackFilterPane.getFilter();
-            IGVMainFrame.getInstance().getSession().setFilter(filter);
+            IGV.getInstance().getSession().setFilter(filter);
             // Evaluate the filter elements
             filter.evaluate();
         }
@@ -286,7 +285,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
     public void resetTrackFilter() {
         trackFilterPane = null;
-        IGVMainFrame.getInstance().getSession().setFilter(null);
+        IGV.getInstance().getSession().setFilter(null);
         setFilterShowAllTracks(false);
     }
 
@@ -302,7 +301,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
     public void updateTrackFilter() {
 
-        TrackFilter trackFilter = IGVMainFrame.getInstance().getSession().getFilter();
+        TrackFilter trackFilter = IGV.getInstance().getSession().getFilter();
 
         if (trackFilter == null) {
             return;
@@ -321,7 +320,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
         trackFilterPane = new TrackFilterPane(uniqueAttributeKeys, "Show tracks whose attribute", trackFilter);
         trackFilterPane.clearTracks();
-        trackFilterPane.addTracks(IGVMainFrame.getInstance().getTrackManager().getAllTracks(false));
+        trackFilterPane.addTracks(IGV.getInstance().getTrackManager().getAllTracks(false));
 
         // Evaluate the filter elements
         trackFilter.evaluate();

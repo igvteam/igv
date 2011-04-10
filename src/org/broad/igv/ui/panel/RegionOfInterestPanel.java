@@ -28,7 +28,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.SequenceManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -133,7 +133,7 @@ public class RegionOfInterestPanel extends JPanel {
 
     protected static JPopupMenu getPopupMenu(final Component parent, final RegionOfInterest roi, final ReferenceFrame frame) {
 
-        //Set<TrackType> loadedTypes = IGVMainFrame.getInstance().getTrackManager().getLoadedTypes();
+        //Set<TrackType> loadedTypes = IGV.getInstance().getTrackManager().getLoadedTypes();
 
         JPopupMenu popupMenu = new RegionMenu(roi, frame);
 
@@ -147,7 +147,7 @@ public class RegionOfInterestPanel extends JPanel {
                 frame.jumpTo(roi.getChr(), roi.getStart(), roi.getEnd());
 
                 String locusString = roi.getLocusString();
-                IGVMainFrame.getInstance().getSession().getHistory().push(locusString, frame.getZoom());
+                IGV.getInstance().getSession().getHistory().push(locusString, frame.getZoom());
 
             }
         });
@@ -207,8 +207,8 @@ public class RegionOfInterestPanel extends JPanel {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                IGVMainFrame.getInstance().getSession().getRegionsOfInterest(frame.getChrName()).remove(roi);
-                IGVMainFrame.getInstance().repaintDataAndHeaderPanels();
+                IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName()).remove(roi);
+                IGV.getInstance().repaintDataAndHeaderPanels();
             }
         });
         popupMenu.add(item);
@@ -247,13 +247,13 @@ public class RegionOfInterestPanel extends JPanel {
                 setToolTipText(roi.getTooltip());
                 if (selectedRegion != roi) {
                     selectedRegion = roi;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
 
             } else {
                 if (selectedRegion != null) {
                     selectedRegion = null;
-                    IGVMainFrame.getInstance().repaintDataPanels();
+                    IGV.getInstance().repaintDataPanels();
                 }
                 setToolTipText("");
                 setCursor(Cursor.getDefaultCursor());
@@ -264,7 +264,7 @@ public class RegionOfInterestPanel extends JPanel {
         public void mouseExited(MouseEvent mouseEvent) {
             if (selectedRegion != null) {
                 selectedRegion = null;
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
             }
         }
 
@@ -285,6 +285,6 @@ public class RegionOfInterestPanel extends JPanel {
      */
 
     private  Collection<RegionOfInterest> getRegions() {
-        return IGVMainFrame.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
+        return IGV.getInstance().getSession().getRegionsOfInterest(frame.getChrName());
     }
 }

@@ -23,7 +23,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -34,9 +34,9 @@ import java.awt.event.ActionEvent;
  */
 public class NewSessionMenuAction extends MenuAction {
 
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public NewSessionMenuAction(String label, int mnemonic, IGVMainFrame mainFrame) {
+    public NewSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
         super(label, null, mnemonic);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);

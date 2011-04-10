@@ -26,7 +26,6 @@ import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.h5.ObjectNotFoundException;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.ArrayList;

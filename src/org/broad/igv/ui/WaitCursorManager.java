@@ -58,7 +58,7 @@ public class WaitCursorManager {
      *         the wait cursr.  This should be done in a finally block to insure removal.
      */
     public static CursorToken showWaitCursor() {
-        IGVMainFrame.getInstance().getGlassPane().setVisible(true);
+        IGV.getRootPane().getGlassPane().setVisible(true);
         CursorToken token = new CursorToken();
         tokens.add(token);
         // Return a token representing this wait cursor set.  The token is used to release the
@@ -77,7 +77,7 @@ public class WaitCursorManager {
     public static void removeWaitCursor(CursorToken token) {
         tokens.remove(token);
         if (tokens.isEmpty()) {
-            IGVMainFrame.getInstance().getGlassPane().setVisible(false);
+            IGV.getRootPane().getGlassPane().setVisible(false);
         }
     }
 

@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.FileChooser;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -45,7 +45,7 @@ public class RegionsBaseMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(RegionsBaseMenuAction.class);
 
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
     protected enum Direction {
 
@@ -151,9 +151,9 @@ public class RegionsBaseMenuAction extends MenuAction {
 
         // Display the dialog
         if (isSave) {
-            exportedRegionFileChooser.showSaveDialog(mainFrame);
+            exportedRegionFileChooser.showSaveDialog(mainFrame.getMainFrame());
         } else {
-            exportedRegionFileChooser.showOpenDialog(mainFrame);
+            exportedRegionFileChooser.showOpenDialog(mainFrame.getMainFrame());
         }
 
         mainFrame.resetStatusMessage();
@@ -175,7 +175,7 @@ public class RegionsBaseMenuAction extends MenuAction {
             return;
         }
         try {
-            Collection<RegionOfInterest> regions = IGVMainFrame.getInstance().getSession().getAllRegionsOfInterest();
+            Collection<RegionOfInterest> regions = IGV.getInstance().getSession().getAllRegionsOfInterest();
 
             if (regions == null || regions.isEmpty()) {
                 return;

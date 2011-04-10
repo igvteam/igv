@@ -26,7 +26,7 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -234,8 +234,8 @@ public class MAFTrack extends AbstractTrack {
 
     private void configureTrack() {
         MAFConfigurationDialog dialog = new MAFConfigurationDialog(
-                IGVMainFrame.getInstance(), true, mgr);
-        dialog.setLocationRelativeTo(IGVMainFrame.getInstance());
+                IGV.getMainFrame(), true, mgr);
+        dialog.setLocationRelativeTo(IGV.getMainFrame());
         dialog.addWindowListener(new java.awt.event.WindowAdapter() {
 
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -249,7 +249,7 @@ public class MAFTrack extends AbstractTrack {
             List<String> selectedSpecies = dialog.getSelectedSpecies();
             mgr.setSelectedSpecies(selectedSpecies);
             PreferenceManager.getInstance().setMafSpecies(selectedSpecies);
-            IGVMainFrame.getInstance().repaint();
+            IGV.getInstance().repaint();
         }
 
     }

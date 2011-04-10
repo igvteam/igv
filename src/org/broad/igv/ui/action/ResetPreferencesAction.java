@@ -23,7 +23,7 @@
  */
 package org.broad.igv.ui.action;
 
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -37,9 +37,9 @@ public class ResetPreferencesAction extends MenuAction {
 
     // TODO -- The batch referenceFrame is likely to be used by many actions. Move this
     // member to a base class ?
-    IGVMainFrame mainFrame;
+    IGV mainFrame;
 
-    public ResetPreferencesAction(String label, IGVMainFrame mainFrame) {
+    public ResetPreferencesAction(String label, IGV mainFrame) {
         super(label);
         this.mainFrame = mainFrame;
         setToolTipText(UIConstants.RESET_FACTORY_TOOLTIP);
@@ -59,7 +59,7 @@ public class ResetPreferencesAction extends MenuAction {
 
         int status =
                 JOptionPane.showConfirmDialog(
-                        mainFrame,
+                        mainFrame.getMainFrame(),
                         "All application preferences will be reset to" +
                                 " their default settings." +
                                 "\n Continue?",

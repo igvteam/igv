@@ -34,7 +34,7 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.Packable;
@@ -347,7 +347,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                 openPopupMenu(te);
 
             }
-            IGVMainFrame.getInstance().repaintNamePanels();
+            IGV.getInstance().repaintNamePanels();
         }
 
         public void mouseReleased(MouseEvent e) {

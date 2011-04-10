@@ -25,7 +25,6 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;

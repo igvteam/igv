@@ -19,54 +19,17 @@
 
 package org.broad.igv.ui;
 
-import com.jidesoft.status.StatusBar;
 import com.jidesoft.swing.JideBoxLayout;
-import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.batch.BatchRunner;
-import org.broad.igv.batch.CommandListener;
-import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.GenomeBuilderDialog;
-import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.lists.GeneList;
-import org.broad.igv.lists.GeneListManager;
-import org.broad.igv.lists.GeneListManagerUI;
-import org.broad.igv.lists.Preloader;
-import org.broad.igv.session.Session;
-import org.broad.igv.session.SessionReader;
-import org.broad.igv.tools.IgvToolsGui;
-import org.broad.igv.tools.ui.CoverageGui;
-import org.broad.igv.tools.ui.IndexGui;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.TrackManager;
-import org.broad.igv.ui.action.*;
-import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
-import org.broad.igv.util.*;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.*;
-import java.net.NoRouteToHostException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.util.*;
 
-import static org.broad.igv.ui.UIConstants.*;
-import static org.broad.igv.ui.util.SnapshotUtilities.doComponentSnapshot;
 import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
 
 /**
@@ -94,7 +57,7 @@ public class IGVContentPane extends JPanel {
     private TrackManager trackManager;
 
     /**
-     * Creates new form IGVMainFrame
+     * Creates new form IGV
      */
     public IGVContentPane(TrackManager trackManager) {
 
@@ -264,7 +227,7 @@ public class IGVContentPane extends JPanel {
      */
     public void resetStatusMessage() {
         ((ApplicationStatusBar) statusBar).setMessage("" +
-                IGVMainFrame.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
+                IGV.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
 
     }
 
@@ -275,7 +238,7 @@ public class IGVContentPane extends JPanel {
 
     public void showLoadedTrackCount() {
         ((ApplicationStatusBar) statusBar).setMessage("" +
-                IGVMainFrame.getInstance().getTrackManager().getVisibleTrackCount() +
+                IGV.getInstance().getTrackManager().getVisibleTrackCount() +
                 " track(s) currently loaded");
     }
 

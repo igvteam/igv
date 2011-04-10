@@ -58,7 +58,7 @@ public class UserPasswordPane {
 
 
     public boolean showDialog() {
-        int a = JOptionPane.showConfirmDialog(IGVMainFrame.getInstance(), passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int a = JOptionPane.showConfirmDialog(IGV.getMainFrame(), passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (a == JOptionPane.CANCEL_OPTION) {
             return false;

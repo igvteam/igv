@@ -25,7 +25,7 @@ package org.broad.igv.ui.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,14 +42,14 @@ public class MessageUtils {
         if (Globals.isHeadless() || Globals.isSuppressMessages()) {
             log.info(message);
         } else {
-            JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), message);
+            JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
         }
     }
 
 
     public static boolean confirm(String message) {
 
-        return confirm(IGVMainFrame.getInstance(), message);
+        return confirm(IGV.getMainFrame(), message);
 
     }
 
@@ -95,12 +95,12 @@ public class MessageUtils {
     }
 
     public static String showInputDialog(String message, String defaultValue) {
-        String val = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), message, defaultValue);
+        String val = JOptionPane.showInputDialog(IGV.getMainFrame(), message, defaultValue);
         return val;
     }
 
     public static String showInputDialog(String message) {
-        String val = JOptionPane.showInputDialog(IGVMainFrame.getInstance(), message);
+        String val = JOptionPane.showInputDialog(IGV.getInstance(), message);
         return val;
     }
 }

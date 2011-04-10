@@ -31,7 +31,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
@@ -88,9 +88,9 @@ public class HeatmapLegendPanel extends LegendPanel {
 
             public void run() {
 
-                IGVMainFrame.getInstance().setStatusBarMessage("Setting view properties...");
+                IGV.getInstance().setStatusBarMessage("Setting view properties...");
 
-                HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGVMainFrame.getInstance(),
+                HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getMainFrame(),
                         true, type, colorScale);
 
                 dialog.setTitle("HeatMap Preferences");
@@ -98,7 +98,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
 
                 if (dialog.isCanceled()) {
-                    IGVMainFrame.getInstance().resetStatusMessage();
+                    IGV.getInstance().resetStatusMessage();
                     return;
                 }
                 // TODO -- temporary hack.  We need some specific knowledge fo the implementation
@@ -106,7 +106,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
                 colorScale = dialog.getColorScheme();
                 PreferenceManager.getInstance().setColorScale(type, colorScale);
-                IGVMainFrame.getInstance().repaintDataPanels();
+                IGV.getInstance().repaintDataPanels();
                 try {
 
                     reloadPreferences();
@@ -120,7 +120,7 @@ public class HeatmapLegendPanel extends LegendPanel {
                             SwingUtilities.getWindowAncestor(HeatmapLegendPanel.this).toFront();
                         }
                     });
-                    IGVMainFrame.getInstance().resetStatusMessage();
+                    IGV.getInstance().resetStatusMessage();
                 }
             }
         });

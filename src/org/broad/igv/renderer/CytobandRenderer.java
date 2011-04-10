@@ -31,7 +31,7 @@ import org.broad.igv.feature.Cytoband;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -55,7 +55,7 @@ public class CytobandRenderer {
 
             // If we are in the process of exporting to an image file
             // we need to write out the cytoband locus on the image
-            if (IGVMainFrame.getInstance().isExportingSnapshot() || FrameManager.isGeneListMode()) {
+            if (IGV.getInstance().isExportingSnapshot() || FrameManager.isGeneListMode()) {
                 String locus = frame.getChrName();
                 if (locus != null) {
                     Graphics g2 = g2D.create();

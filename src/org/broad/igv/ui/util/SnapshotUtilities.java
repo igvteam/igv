@@ -28,12 +28,9 @@ package org.broad.igv.ui.util;
 
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
-import org.apache.batik.svggen.SVGGraphics2DIOException;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.ui.svg.SVGGraphics;
@@ -41,7 +38,6 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -345,7 +341,7 @@ public class SnapshotUtilities {
         }
 
         try {
-            IGVMainFrame.getInstance().setExportingSnapshot(true);
+            IGV.getInstance().setExportingSnapshot(true);
 
             Rectangle rect = target.getBounds();
 
@@ -377,7 +373,7 @@ public class SnapshotUtilities {
             }
 
         } finally {
-            IGVMainFrame.getInstance().setExportingSnapshot(false);
+            IGV.getInstance().setExportingSnapshot(false);
         }
 
     }

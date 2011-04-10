@@ -29,7 +29,7 @@ import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
 import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ArrayHeapObjectSorter;
@@ -349,12 +349,12 @@ public class AlignmentDataManager {
 
                     //TODO -- this has to be done after every load in every panel.  Centralize this somewhere?  Have
                     //TODO --  a "DataLoadRunnable"?
-                    IGVMainFrame.getInstance().layoutMainPanel();
+                    IGV.getInstance().layoutMainPanel();
 
 
                 } catch (Exception exception) {
                     log.error("Error loading alignments", exception);
-                    JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), "Error reading file: " + exception.getMessage());
+                    JOptionPane.showMessageDialog(IGV.getMainFrame(), "Error reading file: " + exception.getMessage());
                 } finally {
                     isLoading = false;
                     if (iter != null) {

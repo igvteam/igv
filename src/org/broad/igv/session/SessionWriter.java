@@ -29,13 +29,12 @@ import org.broad.igv.session.SessionReader.SessionAttribute;
 import org.broad.igv.session.SessionReader.SessionElement;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
-import org.broad.igv.ui.panel.TrackPanelScrollPane;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.DOMException;
@@ -133,7 +132,7 @@ public class SessionWriter {
             }
             //}
 
-            String groupBy = IGVMainFrame.getInstance().getTrackManager().getGroupByAttribute();
+            String groupBy = IGV.getInstance().getTrackManager().getGroupByAttribute();
             if (groupBy != null) {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
@@ -172,7 +171,7 @@ public class SessionWriter {
         } catch (Exception e) {
             String message = "An error has occurred while trying to create the session!";
             log.error(message, e);
-            JOptionPane.showMessageDialog(IGVMainFrame.getInstance(), message);
+            JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
             throw new RuntimeException(e);
         }
 
@@ -187,15 +186,15 @@ public class SessionWriter {
 
             filter.setAttribute(SessionAttribute.NAME.getText(), trackFilter.getName());
 
-            if (IGVMainFrame.getInstance().isFilterMatchAll()) {
+            if (IGV.getInstance().isFilterMatchAll()) {
                 filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "all");
-            } else if (!IGVMainFrame.getInstance().isFilterMatchAll()) {
+            } else if (!IGV.getInstance().isFilterMatchAll()) {
                 filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "any");
             } else {    // Defaults to match all
                 filter.setAttribute(SessionAttribute.FILTER_MATCH.getText(), "all");
             }
 
-            if (IGVMainFrame.getInstance().isFilterShowAllTracks()) {
+            if (IGV.getInstance().isFilterShowAllTracks()) {
                 filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS.getText(), "true");
             } else {    // Defaults
                 filter.setAttribute(SessionAttribute.FILTER_SHOW_ALL_TRACKS.getText(), "false");
@@ -342,7 +341,7 @@ public class SessionWriter {
 
     private void writePanels(Element globalElement, Document document) throws DOMException {
 
-        for (TrackPanel trackPanel : IGVMainFrame.getInstance().getTrackPanels()) {
+        for (TrackPanel trackPanel : IGV.getInstance().getTrackPanels()) {
 
             // TODO -- loop through panels groups, rather than skipping groups to tracks
 
@@ -388,7 +387,7 @@ public class SessionWriter {
         Collection<ResourceLocator> locators = new ArrayList();
 
         Collection<ResourceLocator> currentTrackFileLocators =
-                IGVMainFrame.getInstance().getTrackManager().getDataResourceLocators();
+                IGV.getInstance().getTrackManager().getDataResourceLocators();
 
         if (currentTrackFileLocators != null) {
             for (ResourceLocator locator : currentTrackFileLocators) {

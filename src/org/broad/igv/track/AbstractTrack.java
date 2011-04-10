@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.RendererFactory;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureUtils;
@@ -142,7 +142,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     private void init() {
-        overlayVisible = IGVMainFrame.getInstance().getSession().getDisplayOverlayTracks();
+        overlayVisible = IGV.getInstance().getSession().getDisplayOverlayTracks();
         showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
@@ -190,7 +190,7 @@ public abstract class AbstractTrack implements Track {
 
     private String getDisplayName() {
 
-        String sampleKey = IGVMainFrame.getInstance().getSession().getTrackAttributeName();
+        String sampleKey = IGV.getInstance().getSession().getTrackAttributeName();
         if (sampleKey != null && sampleKey.trim().length() > 0) {
             String name = getAttributeValue(sampleKey.trim());
             if (name != null) {
@@ -596,7 +596,7 @@ public abstract class AbstractTrack implements Track {
     public ContinuousColorScale getColorScale() {
         if (colorScale == null) {
 
-            ContinuousColorScale defaultScale = IGVMainFrame.getInstance().getSession().getColorScale(trackType);
+            ContinuousColorScale defaultScale = IGV.getInstance().getSession().getColorScale(trackType);
             if (defaultScale != null) {
                 return defaultScale;
             }

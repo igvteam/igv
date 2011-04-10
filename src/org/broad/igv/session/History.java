@@ -20,7 +20,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
 
@@ -106,11 +106,11 @@ public class History {
             String locus = entry.getLocus();
             if (locus.startsWith("List: ")) {
                 String listName = locus.substring(6);
-                IGVMainFrame.getInstance().setGeneList(listName, false);
+                IGV.getInstance().setGeneList(listName, false);
 
             } else {
                 if (FrameManager.isGeneListMode()) {
-                    IGVMainFrame.getInstance().setGeneList(null, false);
+                    IGV.getInstance().setGeneList(null, false);
                 }
                 (new SearchCommand(FrameManager.getDefaultFrame(), locus, false)).execute();
                 FrameManager.getDefaultFrame().setZoom(entry.getZoom());

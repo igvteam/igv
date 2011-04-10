@@ -22,9 +22,7 @@ package org.broad.igv.renderer;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGVMainFrame;
-import org.broad.tribble.Feature;
-import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 
@@ -54,7 +52,7 @@ public class MutationRenderer extends FeatureRenderer {
 
             Rectangle lastRect = null;
 
-            boolean colorOverlay = IGVMainFrame.getInstance().getSession().getColorOverlay();
+            boolean colorOverlay = IGV.getInstance().getSession().getColorOverlay();
             for (IGVFeature feature : featureList) {
                 // Note -- don't cast these to an int until the range is checked.
                 // could get an overflow.

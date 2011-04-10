@@ -29,24 +29,20 @@
 package org.broad.igv.ui.panel;
 
 
-import com.jidesoft.swing.JideButton;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
-import org.broad.igv.ui.IGVMainFrame;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SwitchingLabelUI;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -112,7 +108,7 @@ public class HeaderPanel extends JPanel implements Transferable {
                 @Override
                 public void mouseClicked(MouseEvent mouseEvent) {
                     if (mouseEvent.getClickCount() > 1) {
-                        IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+                        IGV.getInstance().setDefaultFrame(frame.name);
                     }
                 }
 
@@ -223,7 +219,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         JMenuItem item1 = new JMenuItem("Switch to standard view");
         item1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                IGVMainFrame.getInstance().setDefaultFrame(frame.name);
+                IGV.getInstance().setDefaultFrame(frame.name);
 
             }
         });
@@ -246,9 +242,9 @@ public class HeaderPanel extends JPanel implements Transferable {
         FrameManager.removeFrame(frame);
         java.util.List<ReferenceFrame> remainingFrames = FrameManager.getFrames();
         if (remainingFrames.size() == 1) {
-            IGVMainFrame.getInstance().setDefaultFrame(remainingFrames.get(0).name);
+            IGV.getInstance().setDefaultFrame(remainingFrames.get(0).name);
         } else {
-            IGVMainFrame.getInstance().resetFrames();
+            IGV.getInstance().resetFrames();
         }
     }
 
@@ -346,7 +342,7 @@ public class HeaderPanel extends JPanel implements Transferable {
             HeaderPanel droppedPanel = (HeaderPanel) transferableObj;
             ReferenceFrame droppedFrame = droppedPanel.frame;
             if (droppedFrame == frame) {
-                IGVMainFrame.getInstance().resetFrames();
+                IGV.getInstance().resetFrames();
             } else {
                 final int dropXLoc = dtde.getLocation().x;
                 boolean before = dropXLoc < getWidth() / 2;
@@ -379,7 +375,7 @@ public class HeaderPanel extends JPanel implements Transferable {
                 // Request relayout contents, or else won't update GUI following drop.
                 // Will add back in the order to which we just sorted
                 FrameManager.setFrames(orderedPanels);
-                IGVMainFrame.getInstance().resetFrames();
+                IGV.getInstance().resetFrames();
             }
         }
     } // HeaderDropTargetListener

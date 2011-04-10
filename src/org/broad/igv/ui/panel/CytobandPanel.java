@@ -213,7 +213,7 @@ public class CytobandPanel extends JPanel {
         addMouseListener(mouseAdapter);
     }
 
-    // TODO remove reference to IGVMainFrame.theInstance
+    // TODO remove reference to IGV.theInstance
 
     private ReferenceFrame getReferenceFrame() {
         return frame;
