@@ -25,7 +25,6 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.ui.CoverageGui;
-import org.broad.igv.tools.ui.IndexGui;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.*;
@@ -172,7 +171,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doApplicationSnapshot(IGV.getInstance().getMainPanel());
+                        IGV.getInstance().saveImage(IGV.getInstance().getMainPanel());
 
                     }
                 };
@@ -230,7 +229,7 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
+       /* menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.TILE);
@@ -246,6 +245,7 @@ public class IGVMenuBar extends JMenuBar {
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        */
 
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
@@ -627,7 +627,7 @@ menuAction =
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doApplicationSnapshot(IGV.getInstance().getContentPane());
+                        IGV.getInstance().saveImage(IGV.getInstance().getContentPane());
 
                     }
                 };

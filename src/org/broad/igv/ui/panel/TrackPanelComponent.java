@@ -34,6 +34,8 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
@@ -177,11 +179,23 @@ abstract public class TrackPanelComponent extends JPanel {
             }
         }
 
+        // Add saveImage
+        menu.addSeparator();
+        JMenuItem item = new JMenuItem("Save image...");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveImage();
+            }
+        });
+        menu.add(item);
+
+
         if (menu != null) {
             menu.addPopupMenuListener(new PopupMenuListener() {
                 public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
 
                 }
+
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent popupMenuEvent) {
                     clearTrackSelections();
 
@@ -238,5 +252,11 @@ abstract public class TrackPanelComponent extends JPanel {
         }
         return false;
     }
+
+
+    public void saveImage() {
+        IGV.getInstance().saveImage(getTrackPanel().getParent(), "igv_panel");
+    }
+
 
 }

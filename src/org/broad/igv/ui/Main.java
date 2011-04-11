@@ -34,10 +34,32 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 
 
 /**
+ * Utility class for launching IGV.  Provides a "main" method and an "open"  method for opening IGV in a supplied Frame.
+ * <p/>
+ * Note: The "open" methods must be executed on the event thread.  See the example below.
+ * <p/>
+ * public static void main(String[] args) {
+ * <p/>
+ * EventQueue.invokeLater(new Runnable() {
+ * <p/>
+ * public void run() {
+ * try {
+ * Frame frame = new Frame();
+ * <p/>
+ * org.broad.igv.ui.Main.open(frame);
+ * }
+ * catch (Exception e) {
+ * e.printStackTrace();
+ * }
+ * }
+ * });
+ * }
+ *
  * @author jrobinso
  * @date Feb 7, 2011
  */
@@ -45,21 +67,24 @@ public class Main {
 
     private static Logger log = Logger.getLogger(Main.class);
 
-
+    /**
+     * Launch an igv instance as a stand-alone application in its own Frame.
+     *
+     * @param args
+     */
     public static void main(final String args[]) {
-
 
         Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler());
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        initApplication();
+
+        EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 try {
 
                     Frame frame = new JFrame();
-                    // Add listeners
-                    // Closing the window should exit the application
-                    //frame.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+                    // Add listener to exit the application on close
                     frame.addWindowListener(new WindowAdapter() {
 
                         @Override
@@ -82,11 +107,70 @@ public class Main {
         });
     }
 
+    private static void initApplication() {
+        initializeLog();
+        log.info("Startup  " + Globals.applicationString());
+        log.info("Default User Directory: " + Globals.getUserDirectory());
+        System.setProperty("http.agent", Globals.applicationString());
+
+        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
+
+        // TODO -- get these from user preferences
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+        //ToolTipManager.sharedInstance().setReshowDelay(your time in ms);
+        //ToolTipManager.sharedInstance().setInitialDelay(your time in ms);
+
+
+        // Anti alias settings.   TODO = Are these neccessary anymore ?
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
+
+        IGVHttpUtils.updateProxySettings();
+
+    }
+
+
+    /**
+     * Open an IGV instance in the supplied Frame.
+     *
+     * @param frame
+     */
+    public static void open(Frame frame) {
+
+        open(frame, new String[]{});
+    }
+
+
+    /**
+     * Open an IGV instance in the supplied frame.
+     *
+     * @param frame
+     * @param args  command-line arguments
+     */
+    public static void open(Frame frame, String[] args) {
+
+        // Add a listener for the "close" icon, unless its a JFrame
+        if (!(frame instanceof JFrame)) {
+            frame.addWindowListener(new WindowClosingListener());
+        }
+
+        initializeLookAndFeel();
+
+        IGVHttpUtils.updateProxySettings();
+
+        IGV.createInstance(frame).startUp(args);
+
+        // TODO Should this be done here?  Will this step on other key dispatchers?
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
+
+
+    }
+
     private static void initializeLookAndFeel() {
         com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
-        // Set look and feel
+        // Set look and feel.  Use Nimbus for all platforms except Mac
         if (!Globals.IS_MAC) {
             try {
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -112,37 +196,13 @@ public class Main {
                 exception.printStackTrace();
             }
 
-        } // Todo -- what does this do?
+        }
+        // Todo -- what does this do?
         LookAndFeelFactory.installJideExtension();
     }
 
-    public static void open(JFrame frame) {
-
-        open(frame, new String [] {});
-    }
-
-
-    public static void open(Frame frame, String[] args) {
-
-        initializeLog();
-        log.info("Startup  " + Globals.applicationString());
-        log.info("Default User Directory: " + Globals.getUserDirectory());
-        System.setProperty("http.agent", Globals.applicationString());
-
-
-        initializeLookAndFeel();
-
-        IGV.createInstance(frame);
-
-        IGVHttpUtils.updateProxySettings();
-
-        IGV.getInstance().startUp(args);
-
-        // Should this be done here?
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
-    }
-
     public static void initializeLog() {
+
         Logger logger = Logger.getRootLogger();
 
         PatternLayout layout = new PatternLayout();
@@ -289,6 +349,37 @@ public class Main {
 
         public String getGenomeServerURL() {
             return genomeServerURL;
+        }
+    }
+
+    static class WindowClosingListener implements WindowListener {
+
+        public void windowOpened(WindowEvent windowEvent) {
+            // ignore
+        }
+
+        public void windowClosing(WindowEvent windowEvent) {
+            windowEvent.getComponent().setVisible(false);
+        }
+
+        public void windowClosed(WindowEvent windowEvent) {
+            // ignore
+        }
+
+        public void windowIconified(WindowEvent windowEvent) {
+            // ignore
+        }
+
+        public void windowDeiconified(WindowEvent windowEvent) {
+            // ignore
+        }
+
+        public void windowActivated(WindowEvent windowEvent) {
+            // ignore
+        }
+
+        public void windowDeactivated(WindowEvent windowEvent) {
+            // ignore
         }
     }
 }

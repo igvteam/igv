@@ -52,19 +52,7 @@ public class ShutdownThread extends Thread {
             if (downloads.exists() && downloads.isDirectory()) {
                 cleanupJnlpFiles(downloads);
             }
-
-            if (IGV.getInstance().getSession().getAllRegionsOfInterest().size() > 0) {
-                File file = new File("Regions_" + System.currentTimeMillis() + ".bed");
-
-                if (file != null) {
-                    writeRegionsOfInterestFile(file);
-                }
-
-            }
-
-
         }
-
     }
 
 

@@ -91,8 +91,8 @@ public class IGV {
     private IGVMenuBar menuBar;
 
     // Glass panes
-     Component glassPane;
-     GhostGlassPane dNdGlassPane;
+    Component glassPane;
+    GhostGlassPane dNdGlassPane;
 
     // Cursors
     public static Cursor fistCursor;
@@ -117,13 +117,12 @@ public class IGV {
     private boolean isExportingSnapshot = false;
 
 
-
-    public static void createInstance(Frame frame) {
-         theInstance =  new IGV(frame);
-    }
-
-    public static boolean hasInstance() {
-        return theInstance != null;
+    public static IGV createInstance(Frame frame) {
+        if (theInstance != null) {
+            throw new RuntimeException("Only a single instance is allowed.");
+        }
+        theInstance = new IGV(frame);
+        return theInstance;
     }
 
     public static IGV getInstance() {
@@ -134,6 +133,11 @@ public class IGV {
     }
 
 
+    public static boolean hasInstance() {
+        return theInstance != null;
+    }
+
+
     public static JRootPane getRootPane() {
         return getInstance().rootPane;
     }
@@ -141,7 +145,6 @@ public class IGV {
     public static Frame getMainFrame() {
         return getInstance().mainFrame;
     }
-
 
 
     /**
@@ -185,20 +188,9 @@ public class IGV {
 
         mainFrame.pack();
 
-        // Application initialization
-        Runtime.getRuntime().addShutdownHook(new ShutdownThread());
-        // TODO -- get these from user preferences
-        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
-        //ToolTipManager.sharedInstance().setReshowDelay(your time in ms);
-        //ToolTipManager.sharedInstance().setInitialDelay(your time in ms);
-
         // TODO -- refactor to eliminate these
         initializeSnapshot();
         initializeDialogs();
-
-        // Anti alias settings.   TODO = Are these neccessary anymore ?
-        System.setProperty("awt.useSystemAAFontSettings", "on");
-        System.setProperty("swing.aatext", "true");
 
         // Set the application's previous location and size
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
@@ -209,10 +201,7 @@ public class IGV {
             mainFrame.setBounds(applicationBounds);
         }
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());
-        IGVHttpUtils.updateProxySettings();
     }
-
 
 
     public void repaint() {
@@ -985,9 +974,13 @@ public class IGV {
     }
 
 
-    final public void doApplicationSnapshot(Component target) {
-        contentPane.getStatusBar().setMessage("Creating snapshot...");
-        File defaultFile = new File("igv_snapshot.png");
+    final public void saveImage(Component target) {
+        saveImage(target, "igv_snapshot");
+    }
+
+    final public void saveImage(Component target, String title) {
+        contentPane.getStatusBar().setMessage("Creating image...");
+        File defaultFile = new File(title + ".png");
         try {
             //createSnapshot(this, defaultFile);
             createSnapshot(target, defaultFile);
