@@ -1205,7 +1205,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         //---- showJunctionTrackCB ----
                         showJunctionTrackCB.setText("Show splice junction track");
-                        showJunctionTrackCB.setVisible(false);
                         showJunctionTrackCB.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 showJunctionTrackCBActionPerformed(e);

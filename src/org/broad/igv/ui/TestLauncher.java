@@ -27,13 +27,13 @@ import java.awt.*;
  */
 public class TestLauncher {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 Frame frame = new Frame();
-                org.broad.igv.ui.Main.open(frame);
+                org.broad.igv.ui.Main.open(frame, args);
             }
         });
     }

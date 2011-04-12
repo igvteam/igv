@@ -275,7 +275,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
         if (context.getScale() > minVisibleScale)
             return;
-        if (getDisplayMode() != DisplayMode.SQUISHED) {
+        if (getDisplayMode() == DisplayMode.EXPANDED) {
             List<PackedFeatures.FeatureRow> rows = packedFeatures.getRows();
             if (rows != null && rows.size() > 0) {
 

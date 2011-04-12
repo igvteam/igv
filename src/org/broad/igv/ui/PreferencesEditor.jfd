@@ -2368,10 +2368,6 @@
                  <string>text</string> 
                  <string>Show splice junction track</string> 
                 </void> 
-                <void method="setProperty"> 
-                 <string>visible</string> 
-                 <boolean>false</boolean> 
-                </void> 
                 <void property="name"> 
                  <string>showJunctionTrackCB</string> 
                 </void> 
