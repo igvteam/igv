@@ -433,7 +433,6 @@ public class AlignmentDataManager {
             });
 
             for (AlignmentInterval.Row r : getAlignmentRows(referenceFrame)) {
-                r.resetIdx();
                 rows.add(r);
             }
 
@@ -462,8 +461,9 @@ public class AlignmentDataManager {
             AlignmentInterval.Row nextRow = null;
             while (nextAlignment == null && !rows.isEmpty()) {
                 while ((nextRow = rows.poll()) != null) {
-                    if (nextRow.hasNext()) {
-                        nextAlignment = nextRow.nextAlignment();
+                    Iterator<Alignment> iter = nextRow.iterator();
+                    if (iter.hasNext()) {
+                        nextAlignment = iter.next();
                         break;
                     }
                 }

@@ -42,7 +42,7 @@ import java.util.List;
 
 /**
  * @author dhmay
- * Finds splice junctions in real time and renders them as Features
+ *         Finds splice junctions in real time and renders them as Features
  */
 public class SpliceJunctionFinderTrack extends FeatureTrack {
 
@@ -70,8 +70,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      */
     protected class SpliceJunctionFinderFeatureSource implements FeatureSource {
 
-        public SpliceJunctionFinderFeatureSource()
-        {
+        public SpliceJunctionFinderFeatureSource() {
         }
 
         public Iterator getFeatures(String chr, int start, int end) throws IOException {
@@ -82,16 +81,17 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
             AlignmentInterval interval = null;
             if (dataManager != null) {
+
                 //This method is called in a Runnable in its own thread, so we can enter a long while loop here
                 //and make sure the features get loaded, without hanging the interface
                 interval = dataManager.getLoadedInterval(context);
-                if (dataManager.isLoading())
-                {
+                if (dataManager.isLoading()) {
                     while (dataManager.isLoading())
                         try {
-                            Thread.sleep(50);
+                            Thread.sleep(100);
                         }
-                        catch (InterruptedException e) {}
+                        catch (InterruptedException e) {
+                        }
                     interval = dataManager.getLoadedInterval(context);
                 }
             }
@@ -108,15 +108,13 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
                 List<AlignmentInterval.Row> alignmentRows = interval.getAlignmentRows();
 
-                for (AlignmentInterval.Row row : alignmentRows)
-                {
-                    //todo: is this dangerous?  Might something else depend on this not being reset?
-                    row.resetIdx();
+                for (AlignmentInterval.Row row : alignmentRows) {
 
-                    while (row.hasNext())
-                    {
+                    Iterator<Alignment> iter = row.iterator();
+
+                    while (iter.hasNext()) {
                         //Any alignment with 2 or more blocks is considered to be a splice junction
-                        Alignment alignment = row.nextAlignment();
+                        Alignment alignment = iter.next();
                         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                         if (blocks.length < 2)
                             continue;
@@ -133,26 +131,22 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                         int flankingStart = -1;
                         int junctionStart = -1;
                         //for each pair of blocks, create or add evidence to a splice junction
-                        for (AlignmentBlock block : blocks)
-                        {
+                        for (AlignmentBlock block : blocks) {
                             int flankingEnd = block.getEnd();
                             int junctionEnd = block.getStart();
-                            if (junctionStart != -1)
-                            {
+                            if (junctionStart != -1) {
                                 //only proceed if the flanking regions are both bigger than the minimum
                                 if (minReadFlankingWidth == 0 ||
                                         ((junctionStart - flankingStart >= minReadFlankingWidth) &&
-                                        (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
+                                                (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
                                     Map<Integer, SpliceJunctionFeature> endJunctionsMap =
                                             startEndJunctionsMapThisStrand.get(junctionStart);
-                                    if (endJunctionsMap == null)
-                                    {
+                                    if (endJunctionsMap == null) {
                                         endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
                                         startEndJunctionsMapThisStrand.put(junctionStart, endJunctionsMap);
                                     }
                                     SpliceJunctionFeature junction = endJunctionsMap.get(junctionEnd);
-                                    if (junction == null)
-                                    {
+                                    if (junction == null) {
                                         junction = new SpliceJunctionFeature(chr, junctionStart, junctionEnd,
                                                 isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
                                         endJunctionsMap.put(junctionEnd, junction);
@@ -168,8 +162,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 }
 
                 //get rid of any features without enough coverage
-                if (minJunctionCoverage > 1)
-                {
+                if (minJunctionCoverage > 1) {
                     List<SpliceJunctionFeature> coveredFeatures =
                             new ArrayList<SpliceJunctionFeature>(spliceJunctionFeatures.size());
                     for (SpliceJunctionFeature feature : spliceJunctionFeatures)
@@ -179,8 +172,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 }
 
                 //Sort by increasing beginning of start flanking region, as required by the renderer
-                Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>()
-                {
+                Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>() {
                     public int compare(IGVFeature o1, IGVFeature o2) {
                         return o1.getStart() - o2.getStart();
                     }
@@ -209,9 +201,10 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     /**
      * Determine whether we should show the features. Relies on context
+     *
      * @return
      */
-    protected boolean shouldShowFeatures()  {
+    protected boolean shouldShowFeatures() {
         //todo: add preference specifically for splice junctions
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
@@ -222,9 +215,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     }
 
 
-
     /**
      * Render features in the given input rectangle.
+     *
      * @param context
      * @param inputRect
      */
@@ -250,20 +243,20 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 featuresLoading = true;
                 loadFeatures(chr, start, end, context);
 
-            }
-            else if (packedFeatures != null)
+            } else if (packedFeatures != null)
                 packedFeaturesMap.put(context.getReferenceFrame().getName(), null);
             if (!IGV.getInstance().isExportingSnapshot()) {
                 return;
             }
         }
 
-       renderFeatureImpl(context, inputRect, packedFeatures);
+        renderFeatureImpl(context, inputRect, packedFeatures);
     }
 
     /**
      * Render the track decorations and tell the renderer to render the features if appropriate
      * todo: make the horizontal center line appear even if not rendering features
+     *
      * @param context
      * @param inputRect
      * @param packedFeatures
@@ -312,6 +305,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     /**
      * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
      * If either the start OR the end flanking region is less than this, the read is not used
+     *
      * @param menu
      * @return
      */
@@ -347,6 +341,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     /**
      * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
      * If either the start OR the end flanking region is less than this, the read is not used
+     *
      * @param menu
      * @return
      */
