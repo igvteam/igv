@@ -268,6 +268,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             return;
         }
 
+
+        // Create list of cigar operators
         boolean firstOperator = true;
         int softClippedBaseCount = 0;
         int nGaps = 0;
@@ -311,18 +313,18 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         alignmentBlocks = new AlignmentBlock[nBlocks];
         insertions = new AlignmentBlock[nInsertions];
         if (nGaps > 0)
-
         {
             gapTypes = new char[nGaps];
         }
 
-        // Adjust start and fill new arrays
+        // Adjust start to include soft clipped bases a
         if (showSoftClipped) {
             start -= softClippedBaseCount;
         }
         int fromIdx = showSoftClipped ? 0 : softClippedBaseCount;
         int blockStart = start;
 
+        // Create blocks
         int blockIdx = 0;
         int insertionIdx = 0;
         int gapIdx = 0;
@@ -338,7 +340,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 //Default value
                 Arrays.fill(blockQualities, (byte) 126);
 
-                // TODO -- represent missing sequence ("*") explicitly rather.
+                // TODO -- represent missing sequence ("*") explicitly for efficiency.
                 if (readBases == null || readBases.length == 0) {
                     Arrays.fill(blockBases, (byte) '=');
                 } else {

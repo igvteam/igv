@@ -28,7 +28,10 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -49,7 +52,7 @@ public class AlignmentInterval extends Locus {
         this.alignmentRows = rows;
         reference = SequenceManager.readSequence(this.genomeId, chr, start, end);
         this.counts = counts;
-        for (AlignmentCounts c : counts) {
+        for(AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
     }
@@ -121,7 +124,7 @@ public class AlignmentInterval extends Locus {
         sortRows(option, center);
     }
 
-    public void sortRows(AlignmentTrack.SortOption option, double location) {
+    public void sortRows(AlignmentTrack.SortOption option,  double location) {
         if (alignmentRows == null) {
             return;
         }
@@ -193,7 +196,7 @@ public class AlignmentInterval extends Locus {
             }
         }
         return 0;
-    }
+     }
 
     public int getPosCount(int pos, byte b) {
         for (AlignmentCounts c : counts) {
@@ -202,16 +205,18 @@ public class AlignmentInterval extends Locus {
             }
         }
         return 0;
-    }
+     }
 
 
     public static class Row {
+        int nextIdx;
         private double score = 0;
         List<Alignment> alignments;
         private int start;
         private int lastEnd;
 
         public Row() {
+            nextIdx = 0;
             this.alignments = new ArrayList(100);
         }
 
@@ -266,15 +271,40 @@ public class AlignmentInterval extends Locus {
                         setScore(score);
                         break;
                     case INSERT_SIZE:
-                        setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
-                        break;
-                }
+                         setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
+                         break;
+                 }
             }
         }
 
 
         // Used for iterating over all alignments, e.g. for packing
 
+        public Alignment nextAlignment() {
+            if (nextIdx < alignments.size()) {
+                Alignment tmp = alignments.get(nextIdx);
+                nextIdx++;
+                return tmp;
+            } else {
+                return null;
+            }
+        }
+
+        public int getNextStartPos() {
+            if (nextIdx < alignments.size()) {
+                return alignments.get(nextIdx).getStart();
+            } else {
+                return Integer.MAX_VALUE;
+            }
+        }
+
+        public boolean hasNext() {
+            return nextIdx < alignments.size();
+        }
+
+        public void resetIdx() {
+            nextIdx = 0;
+        }
 
         /**
          * @return the score
@@ -296,42 +326,6 @@ public class AlignmentInterval extends Locus {
 
         public int getLastEnd() {
             return lastEnd;
-        }
-
-        public int getNextStartPos() {
-            if (alignments.size() == 0) {
-                return 0;
-
-            } else {
-                return alignments.get(alignments.size() - 1).getStart();
-            }
-        }
-
-        public Iterator<Alignment> iterator() {
-
-
-            return new Iterator<Alignment>() {
-
-                int nextIdx = 0;
-
-                public boolean hasNext() {
-                    return nextIdx < alignments.size();
-                }
-
-                public Alignment next() {
-                    if (nextIdx < alignments.size()) {
-                        Alignment tmp = alignments.get(nextIdx);
-                        nextIdx++;
-                        return tmp;
-                    } else {
-                        return null;
-                    }
-                }
-
-                public void remove() {
-                    //To change body of implemented methods use File | Settings | File Templates.
-                }
-            };
         }
     }
 }
