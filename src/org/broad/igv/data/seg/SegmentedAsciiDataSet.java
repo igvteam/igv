@@ -32,6 +32,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.*;
@@ -225,7 +226,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(heading);
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             int locationUnit = 1000;
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             // Compute the smallest concievable feature that could be viewed on the
             // largest screen.  Be conservative.   The smallest feature is one at

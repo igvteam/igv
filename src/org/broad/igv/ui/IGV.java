@@ -84,6 +84,8 @@ public class IGV {
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
 
+    private static IGV firstInstance;
+
     // Window components
     private Frame mainFrame;
     private JRootPane rootPane;
@@ -103,8 +105,9 @@ public class IGV {
     //Session session;
     Session session;
 
-    //Helper class for managing tracks
+    // Manager classes
     private TrackManager trackManager;
+    private GenomeManager genomeManager;
 
     // FileChooser Dialogs
     private FileChooserDialog trackFileChooser;
@@ -122,14 +125,23 @@ public class IGV {
             throw new RuntimeException("Only a single instance is allowed.");
         }
         theInstance = new IGV(frame);
+        firstInstance = theInstance;
         return theInstance;
     }
 
     public static IGV getInstance() {
         if (theInstance == null) {
-            throw new RuntimeException("Main Frame has not been initialized.  Must call createInstance(Frame) first");
+            throw new RuntimeException("IGV has not been initialized.  Must call createInstance(Frame) first");
         }
         return theInstance;
+    }
+
+
+    public static IGV getFirstInstance() {
+        if (firstInstance == null) {
+            throw new RuntimeException("IGV has not been initialized.  Must call createInstance(Frame) first");
+        }
+        return firstInstance;
     }
 
 
@@ -153,6 +165,8 @@ public class IGV {
     private IGV(Frame frame) {
 
         theInstance = this;
+
+        genomeManager = new GenomeManager(this);
 
         mainFrame = frame;
 
@@ -200,7 +214,6 @@ public class IGV {
                 applicationBounds.getMaxY() < screenBounds.getHeight()) {
             mainFrame.setBounds(applicationBounds);
         }
-
     }
 
 
@@ -350,7 +363,7 @@ public class IGV {
 
     public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
 
-        ((IGVContentPane) rootPane.getContentPane()).chromosomeChanged(chrName);
+        contentPane.chromosomeChanged(chrName);
         trackManager.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
 
@@ -367,7 +380,7 @@ public class IGV {
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
         rootPane.repaint();
         if (updateCommandBar) {
-            ((IGVContentPane) rootPane.getContentPane()).updateCurrentCoordinates();
+            contentPane.updateCurrentCoordinates();
         }
     }
 
@@ -386,13 +399,13 @@ public class IGV {
     }
 
     public void repaintStatusAndZoomSlider() {
-        ((IGVContentPane) rootPane.getContentPane()).getCommandBar().repaint();
+        contentPane.getCommandBar().repaint();
     }
 
 
     public void selectGenomeFromList(String genome) {
         try {
-            ((IGVContentPane) rootPane.getContentPane()).getCommandBar().selectGenomeFromList(genome);
+            contentPane.getCommandBar().selectGenomeFromList(genome);
         } catch (FileNotFoundException e) {
             log.error("File not found while intializing genome!", e);
         } catch (NoRouteToHostException e) {
@@ -409,8 +422,7 @@ public class IGV {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            GenomeBuilderDialog genomeBuilderDialog =
-                    new GenomeBuilderDialog(mainFrame, true);
+            GenomeBuilderDialog genomeBuilderDialog = new GenomeBuilderDialog(this, true);
 
             genomeBuilderDialog.setVisible(true);
             if (genomeBuilderDialog.isCanceled()) {
@@ -432,15 +444,15 @@ public class IGV {
             String genomeId = genomeBuilderDialog.getGenomeId();
             String genomeFileName = genomeBuilderDialog.getArchiveFileName();
 
-            GenomeListItem genomeListItem = GenomeManager.getInstance().defineGenome(
+            GenomeListItem genomeListItem = IGV.getInstance().getGenomeManager().defineGenome(
                     genomeZipLocation, cytobandFileName, refFlatFileName,
                     fastaFileName, chrAliasFile, relativeSequenceLocation, genomeDisplayName,
                     genomeId, genomeFileName, monitor, seqLocationOverride);
 
             enableRemoveGenomes();
 
-            ((IGVContentPane) rootPane.getContentPane()).getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-            ((IGVContentPane) rootPane.getContentPane()).getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+            contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+            contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
             if (monitor != null) {
                 monitor.fireProgressChange(100);
@@ -474,7 +486,7 @@ public class IGV {
     }
 
     public GenomeListItem getGenomeSelectedInDropdown() {
-        return ((IGVContentPane) rootPane.getContentPane()).getCommandBar().getGenomeSelectedInDropdown();
+        return contentPane.getCommandBar().getGenomeSelectedInDropdown();
     }
 
     /**
@@ -483,11 +495,11 @@ public class IGV {
      * @return Set of display names.
      */
     public Collection<String> getGenomeDisplayNames() {
-        return ((IGVContentPane) rootPane.getContentPane()).getCommandBar().getGenomeDisplayNames();
+        return contentPane.getCommandBar().getGenomeDisplayNames();
     }
 
     public Collection<String> getGenomeIds() {
-        return ((IGVContentPane) rootPane.getContentPane()).getCommandBar().getGenomeIds();
+        return contentPane.getCommandBar().getGenomeIds();
     }
 
     public GenomeListItem doLoadGenome(ProgressMonitor monitor) {
@@ -585,10 +597,10 @@ public class IGV {
                         if (log.isDebugEnabled()) {
                             log.debug("Call loadGenome");
                         }
-                        genomeListItem = GenomeManager.getInstance().loadGenome(file.getAbsolutePath(), true, monitor);
+                        genomeListItem = IGV.getInstance().getGenomeManager().loadGenome(file.getAbsolutePath(), true, monitor);
 
-                        ((IGVContentPane) rootPane.getContentPane()).getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-                        ((IGVContentPane) rootPane.getContentPane()).getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+                        contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+                        contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
 
                         if (monitor != null) {
@@ -655,7 +667,7 @@ public class IGV {
      */
     public void loadTracks(final Collection<ResourceLocator> locators, boolean doInBackground) {
 
-        ((IGVContentPane) rootPane.getContentPane()).getStatusBar().setMessage("Loading ...");
+        contentPane.getStatusBar().setMessage("Loading ...");
 
         log.debug("Run loadTracks");
 
@@ -696,7 +708,7 @@ public class IGV {
 
                 // Adjust dividers for data panel.  The data panel divider can be
                 // zero if there are no data tracks loaded.
-                final JideSplitPane centerSplitPane = ((IGVContentPane) rootPane.getContentPane()).getMainPanel().getCenterSplitPane();
+                final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
                 int htotal = centerSplitPane.getHeight();
                 int y = 0;
                 int i = 0;
@@ -715,7 +727,7 @@ public class IGV {
 
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        ((IGVContentPane) rootPane.getContentPane()).getMainPanel().doLayout();
+                        contentPane.getMainPanel().doLayout();
 
 
                     }
@@ -826,7 +838,7 @@ public class IGV {
             if (genomeType != null) {
 
                 final String genomeId = genomeType.getId();
-                String currentGenomeId = GenomeManager.getInstance().getGenomeId();
+                String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
                 if (currentGenomeId != null && genomeId.equalsIgnoreCase(currentGenomeId)) {
                     // Nothing to do if genome already loaded
                     return;
@@ -1105,20 +1117,20 @@ public class IGV {
             log.debug("Setting current genome id");
         }
 
-        String currentGenomeId = GenomeManager.getInstance().getGenomeId();
+        String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         if (currentGenomeId != null && id.equalsIgnoreCase(currentGenomeId)) {
             // Nothing to do if genome already loaded
             return;
         }
 
-        String gid = GenomeManager.getInstance().setGenomeId(id);
+        String gid = IGV.getInstance().getGenomeManager().setGenomeId(id);
 
         FeatureDB.clearFeatures();
 
         IGV.getInstance().getTrackManager().loadGeneTrack(gid);
 
 
-        for (Chromosome chr : GenomeManager.getInstance().getCurrentGenome().getChromosomes()) {
+        for (Chromosome chr : IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomes()) {
             for (Cytoband cyto : chr.getCytobands()) {
                 FeatureDB.addFeature(cyto.getLongName(), cyto);
             }
@@ -1435,7 +1447,7 @@ public class IGV {
                 createNewSession(sessionPath);
             }
 
-            (new SessionReader()).loadSession(inputStream, session, sessionPath);
+            (new SessionReader(this)).loadSession(inputStream, session, sessionPath);
             String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
@@ -1554,6 +1566,10 @@ public class IGV {
         return contentPane;
     }
 
+    public GenomeManager getGenomeManager() {
+        return genomeManager;
+    }
+
     /**
      * Swing worker class to startup IGV
      */
@@ -1596,7 +1612,7 @@ public class IGV {
 
             if (genomeId == null) {
                 if (igvArgs.getGenomeServerURL() != null) {
-                    genomeId = GenomeManager.getInstance().getTopGenomeListItem().getId();
+                    genomeId = IGV.getInstance().getGenomeManager().getTopGenomeListItem().getId();
                 } else {
                     genomeId = PreferenceManager.getInstance().getDefaultGenome();
                 }
@@ -1605,7 +1621,7 @@ public class IGV {
             setGenomeId(genomeId);
             monitor.fireProgressChange(50);
 
-            genomeId = GenomeManager.getInstance().getGenomeId(); // <= might have changed
+            genomeId = IGV.getInstance().getGenomeManager().getGenomeId(); // <= might have changed
             try {
                 contentPane.getCommandBar().initializeGenomeList(monitor);
                 contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeId);

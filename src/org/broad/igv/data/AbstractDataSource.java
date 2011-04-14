@@ -27,6 +27,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tdf.Bin;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
 
@@ -82,7 +83,7 @@ public abstract class AbstractDataSource implements DataSource {
 
 
     public int getChrLength(String chr) {
-        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (chr.equals(Globals.CHR_ALL)) {
             return (int) (genome.getLength() / 1000);
         } else {
@@ -116,7 +117,7 @@ public abstract class AbstractDataSource implements DataSource {
     //{
     //
     //    if (getTrackType() == TrackType.GENE_EXPRESSION) {
-    //        String genomeId = GenomeManager.getInstance().getGenomeId();
+    //        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
     //        GeneManager gm = GeneManager.getGeneManager(genomeId);
     //        return (gm == null) ? 1000000 : gm.getLongestGeneLength(chr);
     //    } else {

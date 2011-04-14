@@ -26,6 +26,7 @@ package org.broad.igv.feature;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,7 +118,7 @@ public class CommandLineGenomeBuilder {
         genomeId = genomeId.trim();
 
         if (genomeId == null || genomeId.length() == 0) {
-            genomeId = GenomeManager.getInstance().generateGenomeKeyFromText(genomeDisplayName);
+            genomeId = IGV.getInstance().getGenomeManager().generateGenomeKeyFromText(genomeDisplayName);
         }
 
         String genomeFileName = null;
@@ -139,7 +140,7 @@ public class CommandLineGenomeBuilder {
             }
         }
 
-        GenomeManager.GenomeListItem item = GenomeManager.getInstance().defineGenome(
+        GenomeManager.GenomeListItem item = IGV.getInstance().getGenomeManager().defineGenome(
                 genomeZipOutputLocation,
                 cytobandFileName,
                 refFlatFileName,

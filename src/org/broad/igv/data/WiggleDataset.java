@@ -26,6 +26,7 @@ package org.broad.igv.data;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.igv.track.TrackProperties;
@@ -71,7 +72,7 @@ public class WiggleDataset implements Dataset {
     // TODO -- keep track of sortedness as data is loaded and skip this sort if unneccessary.
 
     public void sort(Set<String> unsortedChromosomes) {
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         for (String c : unsortedChromosomes) {
             String chr = genome.getChromosomeAlias(c);
 

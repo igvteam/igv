@@ -26,6 +26,7 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -121,7 +122,7 @@ public class SegmentFileParser implements SegFileParser {
  
             String[] tokens = new String[headings.length];
 
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 

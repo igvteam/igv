@@ -652,7 +652,7 @@ public class FeatureTrack extends AbstractTrack {
                     featuresLoading = true;
 
                     int maxEnd = end;
-                    Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                     if (genome != null) {
                         Chromosome c = genome.getChromosome(chr);
                         if (c != null) maxEnd = Math.max(c.getLength(), end);
@@ -733,7 +733,7 @@ public class FeatureTrack extends AbstractTrack {
             if (f == null) {
                 int binSize = source.getFeatureWindowSize();
 
-                final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                 if (forward == true) {
                     // Forward
                     int nextStart = packedFeatures.getEnd();

@@ -65,8 +65,8 @@ public class ClearGenomeCacheAction extends MenuAction {
                     JOptionPane.YES_NO_OPTION));
             if (option == JOptionPane.YES_OPTION) {
                 {
-                    final String genomeId = GenomeManager.getInstance().getGenomeId();
-                    GenomeManager.getInstance().clearGenomeCache();
+                    final String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+                    IGV.getInstance().getGenomeManager().clearGenomeCache();
                     UIUtilities.invokeOnEventThread(new Runnable() {
                         public void run() {
                             IGV.getInstance().rebuildGenomeDropdownList(null);

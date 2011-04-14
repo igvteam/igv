@@ -25,6 +25,7 @@ import org.broad.igv.data.DataTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 
@@ -143,7 +144,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
     protected void sampleGenomeFeatures() {
         List<Feature> chrAllFeatures = new ArrayList(1000);
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         int sampleLength = (int) ((double) currentGenome.getLength() / (1000 * 700));
         int lastFeaturePosition = -1;
         for (String chr : currentGenome.getChromosomeNames()) {
@@ -188,7 +189,7 @@ public class FeatureCollectionSource implements FeatureSource {
         float[] values = new float[nBins];
         Arrays.fill(values, 0);
 
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         double step = ((double) currentGenome.getLength() / 1000) / nBins;
         for (int i = 0; i < nBins; i++) {
             starts[i] = (int) (i * step);
@@ -292,7 +293,7 @@ public class FeatureCollectionSource implements FeatureSource {
             float[] values = new float[nBins];
             Arrays.fill(values, 0);
 
-            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             double step = ((double) currentGenome.getLength() / 1000) / nBins;
             for (int i = 0; i < nBins; i++) {
                 starts[i] = (int) (i * step);

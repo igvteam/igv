@@ -27,6 +27,7 @@ package org.broad.igv.feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -46,7 +47,7 @@ public class GenomeManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        genomeManager = GenomeManager.getInstance();
+        genomeManager = IGV.getInstance().getGenomeManager();
     }
 
     @AfterClass

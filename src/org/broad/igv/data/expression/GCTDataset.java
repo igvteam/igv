@@ -33,6 +33,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 
 import java.util.HashMap;
@@ -81,8 +82,8 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
      */
     public GCTDataset(String genomeId) {
         this.genomeId = genomeId;
-        //GenomeManager.getInstance().findGenomeAndLoad(genomeId);
-        this.genome = GenomeManager.getInstance().getGenome(genomeId);
+        //IGV.getInstance().getGenomeManager().findGenomeAndLoad(genomeId);
+        this.genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (this.genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }

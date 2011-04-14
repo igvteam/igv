@@ -120,7 +120,7 @@ public class GWASTrack extends AbstractTrack {
      */
     public void render(RenderContext context, Rectangle arect) {
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.trackMinY = arect.getMinY();
         Rectangle adjustedRect = calculateDrawingRect(arect);
         double adjustedRectMaxX = adjustedRect.getMaxX();
@@ -476,7 +476,7 @@ public class GWASTrack extends AbstractTrack {
         // Convert from All view chr coordinates
         if (chr.equals("All")) {
 
-            Genome.ChromosomeCoordinate chrCoordinate = GenomeManager.getInstance().getCurrentGenome().getChromosomeCoordinate(location);
+            Genome.ChromosomeCoordinate chrCoordinate = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeCoordinate(location);
             chr = chrCoordinate.getChr();
             location = chrCoordinate.getCoordinate();
             maxDistance = maxDistance * 1000;

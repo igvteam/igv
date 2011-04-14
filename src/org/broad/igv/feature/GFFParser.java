@@ -28,6 +28,7 @@ import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -192,7 +193,7 @@ public class GFFParser implements FeatureParser {
         String line = null;
         try {
 
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             Set<String> featuresToHide = new HashSet();
             while ((line = reader.readLine()) != null) {
 

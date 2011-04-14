@@ -92,7 +92,7 @@ public class RegionOfInterestPanel extends JPanel {
 
             // This is ugly, but neccessary the way the "whole genome" is treated as another chromosome
             if (frame.getChrName().equals(Globals.CHR_ALL)) {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                 regionStart = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionStart);
                 regionEnd = genome.getGenomeCoordinate(regionOfInterest.getChr(), regionEnd);
             }
@@ -177,7 +177,7 @@ public class RegionOfInterestPanel extends JPanel {
                     }
 
                     public void run() {
-                        String genomeId = GenomeManager.getInstance().getGenomeId();
+                        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
                         byte[] seqBytes = SequenceManager.readSequence(genomeId, roi.getChr(), roi.getStart(), roi.getEnd());
                         if (seqBytes == null) {
                             MessageUtils.showMessage("Sequence not available");

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -57,7 +58,7 @@ public class TestData {
     static public void generateIGVTestFiles(File cnFileLocation) {
         int numberOfSamples = 100;
         int fileLength = 10000;
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -75,7 +76,7 @@ public class TestData {
      */
     static public void generateCNTestFiles(File cnFileLocation) {
 
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -131,7 +132,7 @@ public class TestData {
      */
     static public void generateVeryLargeCNTestFile(File cnFileLocation) {
 
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -375,7 +376,7 @@ public class TestData {
     static public void generateGctTestFiles(File outputLocation) {
 
         //ReferenceFrame context = ReferenceFrame.getInstance();
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }

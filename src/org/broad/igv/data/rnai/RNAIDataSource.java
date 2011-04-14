@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 
 import java.util.*;
 
@@ -94,7 +95,7 @@ public class RNAIDataSource implements DataSource {
             chrAllScores = new ArrayList(500);
             dataMap.put(Globals.CHR_ALL, chrAllScores);
         }
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         RNAIGeneScore genomeScore = new RNAIGeneScore(dpt);
         int genomeStart = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getStart());
         int genomeEnd = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getEnd());

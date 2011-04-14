@@ -68,6 +68,7 @@ public class IGVDatasetParser {
 
 
     private int startBase = 0;
+    private IGV igv;
 
     /**
      * Constructs ...
@@ -75,9 +76,10 @@ public class IGVDatasetParser {
      * @param copyNoFile
      * @param genomeId
      */
-    public IGVDatasetParser(ResourceLocator copyNoFile, String genomeId) {
+    public IGVDatasetParser(ResourceLocator copyNoFile, String genomeId, IGV igv) {
+        this.igv = igv;
         this.dataResourceLocator = copyNoFile;
-        this.genome = GenomeManager.getInstance().getGenome(genomeId);
+        this.genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         tokens = new String[10000];
     }
 
@@ -238,8 +240,8 @@ public class IGVDatasetParser {
             long lastPosition = 0;
             while ((nextLine = reader.readLine()) != null) {
 
-                if (++count % updateCount == 0) {
-                    IGV.getInstance().setStatusBarMessage("Loaded: " + count + " / " + estLineCount + " (est)");
+                if (igv != null && ++count % updateCount == 0) {
+                    igv.setStatusBarMessage("Loaded: " + count + " / " + estLineCount + " (est)");
                 }
                 // Distance since last sample
 

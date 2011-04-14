@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
@@ -94,7 +95,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         String refName = record.getReferenceName();
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
 

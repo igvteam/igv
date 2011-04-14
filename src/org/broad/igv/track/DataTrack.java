@@ -125,7 +125,7 @@ public abstract class DataTrack extends AbstractTrack {
         try {
             featuresLoading = true;
             int maxEnd = end;
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             if (genome != null) {
                 Chromosome c = genome.getChromosome(chr);

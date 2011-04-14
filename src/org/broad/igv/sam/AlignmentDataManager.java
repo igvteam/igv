@@ -82,7 +82,7 @@ public class AlignmentDataManager {
 
 
     private void initChrMap() {
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (genome != null) {
             Set<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {

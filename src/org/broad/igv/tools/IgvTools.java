@@ -37,6 +37,7 @@ import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -81,6 +82,7 @@ public class IgvTools {
     public static final int INTERVAL_SIZE = 1000;
     public static final int LINEAR_INDEX = 1;
     public static final int INTERVAL_INDEX = 2;
+    private static GenomeManager genomeManager;
 
     /**
      * The general usage string
@@ -625,7 +627,7 @@ public class IgvTools {
 
         String rootDir = FileUtils.getInstallDirectory();
 
-        Genome genome = GenomeManager.getInstance().getGenome(genomeFileOrID);
+        Genome genome = getGenomeManager().getGenome(genomeFileOrID);
         if (genome != null) {
             return genome;
         }
@@ -642,14 +644,21 @@ public class IgvTools {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
 
-        GenomeManager.GenomeListItem item = GenomeManager.getInstance().loadGenomeFromLocalFile(genomeFile);
+        GenomeManager.GenomeListItem item = IGV.getInstance().getGenomeManager().loadGenomeFromLocalFile(genomeFile);
         String genomeId = item.getId();
         if (genomeId == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
-        GenomeManager.getInstance().setGenomeId(genomeId);
-        genome = GenomeManager.getInstance().getGenome(genomeId);
+        IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
+        genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         return genome;
+    }
+
+    private static GenomeManager getGenomeManager() {
+        if(genomeManager == null) {
+            genomeManager = new GenomeManager();
+        }
+        return genomeManager;
     }
 
 

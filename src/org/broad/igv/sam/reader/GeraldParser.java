@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.GeraldAlignment;
 import org.broad.igv.sam.ReadMate;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -79,7 +80,7 @@ public class GeraldParser implements AlignmentParser {
     public GeraldParser()
 
     {
-        genome = GenomeManager.getInstance().getCurrentGenome();
+        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
     public GeraldAlignment readNextRecord(AsciiLineReader reader) {

@@ -1897,7 +1897,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void clearGenomeCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearGenomeCacheButtonActionPerformed
-        GenomeManager.getInstance().clearGenomeCache();
+        IGV.getInstance().getGenomeManager().clearGenomeCache();
         JOptionPane.showMessageDialog(this, "<html>Cached genomes have been removed.");
     }
 

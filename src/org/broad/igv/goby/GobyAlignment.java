@@ -34,6 +34,7 @@ import com.google.protobuf.ByteString;
 import java.awt.*;
 
 import it.unimi.dsi.lang.MutableString;
+import org.broad.igv.ui.IGV;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -131,7 +132,7 @@ public class GobyAlignment implements Alignment {
     }
 
     private byte[] buildBases() {
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         String genomeId = genome.getId();
 
         String reference = iterator.getReference();

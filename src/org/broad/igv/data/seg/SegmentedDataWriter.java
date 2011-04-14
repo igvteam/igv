@@ -28,6 +28,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 
@@ -206,7 +207,7 @@ public class SegmentedDataWriter {
 
         // TODO -- remove the need for this hack
         System.out.println("Setting genome: " + genomeId);
-       GenomeManager.getInstance().setGenomeId(genomeId);
+       IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
 
         SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(new ResourceLocator(inputFile));
 

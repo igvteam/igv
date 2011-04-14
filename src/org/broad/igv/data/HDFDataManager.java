@@ -31,6 +31,7 @@ package org.broad.igv.data;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.h5.DataAccessException;
 import org.broad.igv.h5.HDF5Reader;
@@ -661,7 +662,7 @@ public class HDFDataManager {
     private synchronized int getLongestFeature(String chr) {
 
         if (!longestFeatureCache.containsKey(chr)) {
-            String genomeId = GenomeManager.getInstance().getGenomeId();
+            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
             // Put a limit on the "longest feature" to prevent outliers from dictating
             // huge data loads.  This is neccessary due to a flaw in the indexing scheme.
             int maxLongestFeature = GeneManager.getGeneManager(genomeId).getLongestGeneLength(chr) + 100;

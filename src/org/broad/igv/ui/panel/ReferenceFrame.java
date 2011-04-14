@@ -350,7 +350,7 @@ public class ReferenceFrame {
     }
 
     private Genome getGenome() {
-        return GenomeManager.getInstance().getCurrentGenome();
+        return IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
     public double getOrigin() {

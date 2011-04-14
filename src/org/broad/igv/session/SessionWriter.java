@@ -120,7 +120,7 @@ public class SessionWriter {
 
             globalElement.setAttribute(SessionAttribute.VERSION.getText(), session.getSessionVersion());
 
-            String genome = GenomeManager.getInstance().getGenomeId();
+            String genome = IGV.getInstance().getGenomeManager().getGenomeId();
             if (genome != null) {
                 globalElement.setAttribute(SessionAttribute.GENOME.getText(), genome);
             }

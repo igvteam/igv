@@ -20,6 +20,7 @@
 package org.broad.igv.util;
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 
 import java.io.File;
 
@@ -31,11 +32,11 @@ public class TestUtils {
 
     public static void loadGenome(String genomeId) {
 
-        if (GenomeManager.getInstance().getGenome(genomeId) == null) {
+        if (IGV.getInstance().getGenomeManager().getGenome(genomeId) == null) {
             File genomeFile = new File("test/data/genome/" + genomeId + ".genome");
-            GenomeManager.GenomeListItem item = GenomeManager.getInstance().loadGenomeFromLocalFile(genomeFile);
+            GenomeManager.GenomeListItem item = IGV.getInstance().getGenomeManager().loadGenomeFromLocalFile(genomeFile);
         }
-        GenomeManager.getInstance().setGenomeId(genomeId);
+        IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
 
     }
 }

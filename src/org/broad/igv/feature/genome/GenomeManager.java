@@ -75,25 +75,21 @@ public class GenomeManager {
     private LinkedHashSet<GenomeListItem> cachedGenomeArchiveList;
     private LinkedHashSet<GenomeListItem> serverGenomeArchiveList;
 
+    IGV igv;
 
     /**
      * Creates a new instance of GenomeManager
      */
-    private GenomeManager() {
+    public GenomeManager(IGV igv) {
         genomeDescriptorMap = new HashMap();
         genomes = new Hashtable();
+        this.igv = igv;
     }
 
-    /**
-     * Get the shared instance of the GenomeManager.
-     *
-     * @return GenomeManager
-     */
-    public static synchronized GenomeManager getInstance() {
-        if (theInstance == null) {
-            theInstance = new GenomeManager();
-        }
-        return theInstance;
+    public GenomeManager() {
+        genomeDescriptorMap = new HashMap();
+        genomes = new Hashtable();
+        this.igv = null;
     }
 
     /**
@@ -514,7 +510,7 @@ public class GenomeManager {
                         }
                     }
 
-                   String url =  properties.getProperty(Globals.GENOME_URL_KEY);
+                    String url = properties.getProperty(Globals.GENOME_URL_KEY);
 
 
                     // The new descriptor
@@ -533,7 +529,7 @@ public class GenomeManager {
                             userDefined,
                             chromosomesAreOrdered);
 
-                    if(url != null) {
+                    if (url != null) {
                         genomeDescriptor.setUrl(url);
                     }
 
@@ -1263,8 +1259,8 @@ public class GenomeManager {
     public String setGenomeId(String newGenome) {
 
         if (genomeId != null && !genomeId.equals(newGenome)) {
-            if (!Globals.isHeadless()) {
-                IGV.getInstance().getSession().getHistory().clear();
+            if (igv != null) {
+                igv.getSession().getHistory().clear();
             }
         }
 
@@ -1311,9 +1307,9 @@ public class GenomeManager {
 
 
         // Reset the frame manager
-        if (!Globals.isHeadless()) {
+        if (igv != null) {
             FrameManager.reset(currentGenome.getHomeChromosome());
-            IGV.getInstance().chromosomeChangeEvent(currentGenome.getHomeChromosome());
+            igv.chromosomeChangeEvent(currentGenome.getHomeChromosome());
         }
         return genomeId;
 

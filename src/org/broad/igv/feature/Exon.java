@@ -24,6 +24,7 @@ package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -173,7 +174,7 @@ public class Exon extends AbstractFeature {
             int readStart = (codingStart > start) ? codingStart : start + readingFrame;
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
-                String genome = GenomeManager.getInstance().getGenomeId();
+                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
                 byte[] seqBytes = SequenceManager.readSequence(genome, chr, readStart, readEnd);
                 aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
             }
@@ -187,7 +188,7 @@ public class Exon extends AbstractFeature {
             int codonStart = readStart + codonNumber * 3;
             int codonEnd = Math.min(codonStart + 3, codingEnd);
             if (codonEnd - codonStart == 3) {
-                String genome = GenomeManager.getInstance().getGenomeId();
+                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
                 return SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
             }
         }
@@ -201,7 +202,7 @@ public class Exon extends AbstractFeature {
             int codonStart = readStart + codonNumber * 3;
             int codonEnd = Math.min(codonStart + 3, codingEnd);
             if (codonEnd - codonStart == 3) {
-                String genome = GenomeManager.getInstance().getGenomeId();
+                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
                 byte [] refBytes = SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
                 int delta = position - codonStart;
                 if(delta > 3) {

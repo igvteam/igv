@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.IGVHttpUtils;
@@ -282,7 +283,7 @@ public class ProbeToLocusMap {
 
     public String[] getLociForProbe(String probeId) {
 
-        String genomeId = GenomeManager.getInstance().getGenomeId();
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         Platform platform = getPlatform(probeId);
 
         if (platform == Platform.unknown) {

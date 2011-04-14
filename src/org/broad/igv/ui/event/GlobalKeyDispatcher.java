@@ -50,11 +50,9 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     private final InputMap keyStrokes = new InputMap();
     private final ActionMap actions = new ActionMap();
-    private IGV mainFrame;
 
     public GlobalKeyDispatcher() {
         init();
-        mainFrame = IGV.getInstance();
     }
 
     public InputMap getInputMap() {
@@ -345,7 +343,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
                 if (f != null) {
-                    String chr = GenomeManager.getInstance().getCurrentGenome().getChromosomeAlias(f.getChr());
+                    String chr = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
                     if (!chr.equals(vc.getChrName())) {
                         int zoom = vc.getZoom();

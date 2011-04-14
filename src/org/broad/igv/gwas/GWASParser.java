@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -130,7 +131,7 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         boolean hitFound = false;
         int cacheSize = gData.getDescriptionCache().getMaxSize();
 
@@ -249,7 +250,7 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         boolean hitFound = false;
         String resultLine = "";
 
@@ -341,7 +342,7 @@ public class GWASParser {
 
         AsciiLineReader reader = null;
         String nextLine = null;
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
 
         try {

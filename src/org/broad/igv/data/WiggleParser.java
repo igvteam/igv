@@ -22,6 +22,7 @@ package org.broad.igv.data;
 
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
@@ -115,7 +116,7 @@ public class WiggleParser {
         if (locator.getServerURL() == null) {
             estLines = ParsingUtils.estimateLineCount(locator.getPath());
         }
-        int nChromosomes = GenomeManager.getInstance().getGenome(genomeId).getChromosomeNames().size();
+        int nChromosomes = IGV.getInstance().getGenomeManager().getGenome(genomeId).getChromosomeNames().size();
         return Math.max(1000, (int) (estLines / nChromosomes));
 
     }
@@ -401,7 +402,7 @@ public class WiggleParser {
 
     private void changedChromosome(WiggleDataset dataset, String lastChr) {
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (startLocations != null && startLocations.size() > 0) {
 
             String convertedChr = genome.getChromosomeAlias(lastChr);

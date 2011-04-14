@@ -41,11 +41,13 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
     private String genomeArchiveLocation;
     private String genomeFilename;
     GenomeImporter importer;
+    IGV igv;
 
     /**
      * Creates new form GenomeBuilder
      */
-    public GenomeBuilderPane() {
+    public GenomeBuilderPane(IGV igv) {
+        this.igv = igv;
         initComponents();
         importer = new GenomeImporter();
     }
@@ -177,7 +179,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             return false;
         }
 
-        Collection<String> inUseIds = IGV.getInstance().getGenomeIds();
+        Collection<String> inUseIds = igv.getGenomeIds();
         if (inUseIds.contains(id)) {
             JOptionPane.showMessageDialog(this,
                     "The genome ID '" + id + "' is already in use - please select another!");
@@ -194,7 +196,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             return false;
         }
 
-        Collection<String> inUseDisplayNames = IGV.getInstance().getGenomeDisplayNames();
+        Collection<String> inUseDisplayNames = igv.getGenomeDisplayNames();
 
         if (inUseDisplayNames.contains(displayName)) {
             JOptionPane.showMessageDialog(this,

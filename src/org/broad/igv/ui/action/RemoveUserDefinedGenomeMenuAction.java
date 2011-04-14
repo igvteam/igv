@@ -76,7 +76,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
         try {
 
             LinkedHashSet<GenomeListItem> genomeItemList =
-                    GenomeManager.getInstance().getUserDefinedGenomeArchiveList();
+                    IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList();
 
             if (genomeItemList.isEmpty()) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
@@ -126,7 +126,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                 }
 
                 if (removed) {
-                    GenomeManager.getInstance().rebuildClientGenomeList(genomeItemList);
+                    IGV.getInstance().getGenomeManager().rebuildClientGenomeList(genomeItemList);
                     IGV.getInstance().rebuildGenomeDropdownList(null);
                 }
             }

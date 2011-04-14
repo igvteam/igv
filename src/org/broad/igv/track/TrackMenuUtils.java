@@ -913,7 +913,7 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                String genomeId = GenomeManager.getInstance().getGenomeId();
+                String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
                 String chr = f.getChr();
                 int start = f.getStart();
                 int end = f.getEnd();

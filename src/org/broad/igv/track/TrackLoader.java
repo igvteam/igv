@@ -78,6 +78,8 @@ public class TrackLoader {
 
     private static Logger log = Logger.getLogger(TrackLoader.class);
 
+    private IGV igv;
+
     /**
      * Switches on various attributes of locator (mainly locator path extension and whether the locator is indexed)
      * to call the appropriate loading method.
@@ -85,7 +87,9 @@ public class TrackLoader {
      * @param locator
      * @return
      */
-    public List<Track> load(ResourceLocator locator) {
+    public List<Track> load(ResourceLocator locator, IGV igv) {
+
+        this.igv = igv;
 
         try {
             String typeString = locator.getType();
@@ -226,7 +230,7 @@ public class TrackLoader {
                     track.setSampleId(locator.getSampleId());
                 }
 
-                IGV.getInstance().getTrackManager().addLoadedType(track.getTrackType());
+               igv.getTrackManager().addLoadedType(track.getTrackType());
             }
 
 
@@ -441,7 +445,7 @@ public class TrackLoader {
         // TODO -- handle remote resource
         try {
             parser = new GCTDatasetParser(locator, null,
-                    GenomeManager.getInstance().getGenomeId());
+                    IGV.getInstance().getGenomeManager().getGenomeId());
         } catch (IOException e) {
             log.error("Error creating GCT parser.", e);
             throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());
@@ -463,7 +467,7 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         for (String trackName : ds.getTrackNames()) {
-            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
             String trackId = path + "_" + trackName;
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
@@ -483,9 +487,9 @@ public class TrackLoader {
 
 
         String dsName = locator.getTrackName();
-        String currentGenomeId = GenomeManager.getInstance().getGenomeId();
+        String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
 
-        IGVDataset ds = new IGVDataset(currentGenomeId, locator);
+        IGVDataset ds = new IGVDataset(currentGenomeId, locator, igv);
         ds.setName(dsName);
 
         TrackProperties trackProperties = ds.getTrackProperties();
@@ -493,7 +497,7 @@ public class TrackLoader {
         TrackType type = ds.getType();
         for (String trackName : ds.getTrackNames()) {
 
-            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
             String trackId = path + "_" + trackName;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
@@ -570,7 +574,7 @@ public class TrackLoader {
             }
         }
 
-        String genome = GenomeManager.getInstance().getGenomeId();
+        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
 
         WiggleDataset ds = (new WiggleParser(locator, genome)).parse();
         TrackProperties props = ds.getTrackProperties();
@@ -593,7 +597,7 @@ public class TrackLoader {
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
 
-            Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackId, ds);
 
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
@@ -714,7 +718,7 @@ public class TrackLoader {
     private void loadRNAiGeneScoreFile(ResourceLocator locator,
                                        List<Track> newTracks, RNAIGeneScoreParser.Type type) {
 
-        String genomeId = GenomeManager.getInstance().getGenomeId();
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         RNAIGeneScoreParser parser = new RNAIGeneScoreParser(locator.getPath(), genomeId, type);
 
         Collection<RNAIDataSource> dataSources = parser.parse();

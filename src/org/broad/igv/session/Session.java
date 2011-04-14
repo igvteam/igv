@@ -200,7 +200,7 @@ public class Session {
         try {
             Locus locus = getLocus(locusString);
             if (locus == null) {
-                Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                 if (genome != null) {
                     referenceFrame.setChrName(genome.getHomeChromosome());
                 }
@@ -388,7 +388,7 @@ public class Session {
                         return new Locus(feature.getChr(), feature.getStart(), feature.getEnd());
                     } else {
 
-                        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+                        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                         if (genome.getChromosome(searchString) != null) {
                             // No dash, this is either a chromosome or an unkown search string
                             return new Locus(searchString, -1, -1);

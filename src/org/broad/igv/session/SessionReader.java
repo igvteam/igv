@@ -68,6 +68,8 @@ public class SessionReader {
     private boolean panelElementPresent = false;
     private int version;
 
+    private IGV igv;
+
 
     /**
      * Map of track id -> track.  It is important to maintin the order in which tracks are added, thus
@@ -115,31 +117,15 @@ public class SessionReader {
             this.name = name;
         }
 
-        /**
-         * Method description
-         *
-         * @return
-         */
         public String getText() {
             return name;
         }
 
-        /**
-         * Method description
-         *
-         * @return
-         */
         @Override
         public String toString() {
             return getText();
         }
 
-        /**
-         * Method description
-         *
-         * @param value
-         * @return
-         */
         static public SessionElement findEnum(String value) {
 
             if (value == null) {
@@ -243,6 +229,11 @@ public class SessionReader {
                 return SessionAttribute.valueOf(value);
             }
         }
+    }
+
+
+    public SessionReader(IGV igv) {
+        this.igv = igv;
     }
 
 
@@ -433,7 +424,7 @@ public class SessionReader {
             for (ResourceLocator locator : dataFiles) {
                 //TODO Go through the tracks and reassign them to the resourceLocator
                 try {
-                    List<Track> tracks = loader.load(locator);
+                    List<Track> tracks = loader.load(locator, igv);
                     if (tracks.size() > 0) {
                         for (Track track : tracks) {
 

@@ -145,7 +145,7 @@ public class DataPanel extends JComponent implements Paintable {
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle damageRect = clipBounds == null ? getVisibleRect() : clipBounds.intersection(getVisibleRect());
             Graphics2D graphics2D = (Graphics2D) g; //(Graphics2D) g.create();
-            String genomeId = GenomeManager.getInstance().getGenomeId();
+            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
 
             context = new RenderContext(genomeId, this, graphics2D, frame, this.getVisibleRect());
 
@@ -213,7 +213,7 @@ public class DataPanel extends JComponent implements Paintable {
         RenderContext context = null;
         try {
 
-            String genomeId = GenomeManager.getInstance().getGenomeId();
+            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
 
             context = new RenderContext(genomeId, null, g, frame, rect);
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());

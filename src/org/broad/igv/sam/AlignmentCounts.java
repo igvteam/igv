@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 
 /**
 * @author jrobinso
@@ -60,7 +61,7 @@ public class AlignmentCounts {
 
     public AlignmentCounts(String chr, int start, int end) {
 
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.genomeId = genome.getId();
         String chrAlias = genome.getChromosomeAlias(chr);
         this.start = start;

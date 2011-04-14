@@ -149,7 +149,7 @@ public class IGVMenuBar extends JMenuBar {
 
         boolean hasImportedGenomes = true;
         try {
-            hasImportedGenomes = !GenomeManager.getInstance().getUserDefinedGenomeArchiveList().isEmpty();
+            hasImportedGenomes = !IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList().isEmpty();
 
         } catch (IOException iOException) {
             // Ignore
@@ -224,7 +224,7 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.COVERAGE);
+                CoverageGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId(), CoverageGui.Mode.COVERAGE);
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -232,7 +232,7 @@ public class IGVMenuBar extends JMenuBar {
        /* menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, GenomeManager.getInstance().getGenomeId(), CoverageGui.Mode.TILE);
+                CoverageGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId(), CoverageGui.Mode.TILE);
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
@@ -250,7 +250,7 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                IgvToolsGui.launch(false, GenomeManager.getInstance().getGenomeId());
+                IgvToolsGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId());
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));

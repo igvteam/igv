@@ -41,7 +41,7 @@ public class Preloader {
 
         Collection<Track> trackList = IGV.getInstance().getTrackManager().getAllTracks(true);
         int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
-        String genomeId = GenomeManager.getInstance().getGenomeId();
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         for (ReferenceFrame frame : FrameManager.getFrames()) {
             Locus locus = frame.getLocus();
             if (locus != null) {

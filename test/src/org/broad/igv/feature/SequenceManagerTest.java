@@ -28,6 +28,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -46,7 +47,7 @@ public class SequenceManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        GenomeManager.getInstance().findGenomeAndLoad("hg18");
+        IGV.getInstance().getGenomeManager().findGenomeAndLoad("hg18");
         Globals.setHeadless(true);
     }
 
@@ -97,7 +98,7 @@ public class SequenceManagerTest {
         int start = 5;
         int end = 10;
         String expSequence = "ATTGC";
-        GenomeManager.getInstance().findGenomeAndLoad(genome); 
+        IGV.getInstance().getGenomeManager().findGenomeAndLoad(genome);
 
         byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
         assertEquals(expSequence, new String(seq));
@@ -121,7 +122,7 @@ public class SequenceManagerTest {
     @Test
     public void testURL1() {
 
-        GenomeDescriptor descriptor = GenomeManager.getInstance().getGenomeDescriptor("hg18");
+        GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
         descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/SequenceServlet/hg18");
         readEGFRSequence();
     }
@@ -129,7 +130,7 @@ public class SequenceManagerTest {
     @Test
     public void testURL2() {
 
-        GenomeDescriptor descriptor = GenomeManager.getInstance().getGenomeDescriptor("hg18");
+        GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
         descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/sequence/hg18");
         readEGFRSequence();
     }
@@ -137,7 +138,7 @@ public class SequenceManagerTest {
     @Test
     public void testURL3() {
 
-        GenomeDescriptor descriptor = GenomeManager.getInstance().getGenomeDescriptor("hg18");
+        GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
         descriptor.setSequenceLocation("http://igv.broadinstitute.org/genomes/seq/hg18");
         readEGFRSequence();
     }
@@ -145,7 +146,7 @@ public class SequenceManagerTest {
     @Test
     public void testURL4() {
 
-        GenomeDescriptor descriptor = GenomeManager.getInstance().getGenomeDescriptor("hg18");
+        GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
         descriptor.setSequenceLocation("http://igvdata.broadinstitute.org/genomes/seq/hg18");
         readEGFRSequence();
     }

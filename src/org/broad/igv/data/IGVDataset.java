@@ -27,6 +27,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.ResourceLocator;
 
@@ -70,17 +71,17 @@ public class IGVDataset implements Dataset {
 
     private Map<String, Integer> longestFeatureMap;
 
-    public IGVDataset(String genomeId, ResourceLocator locator) {
+    public IGVDataset(String genomeId, ResourceLocator locator, IGV igv) {
         this.genomeId = genomeId;
 
-        //GenomeManager.getInstance().findGenomeAndLoad(genomeId);
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        //IGV.getInstance().getGenomeManager().findGenomeAndLoad(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
 
 
-        parser = new IGVDatasetParser(locator, genomeId);
+        parser = new IGVDatasetParser(locator, genomeId, igv);
 
         List<ChromosomeSummary> summaries = parser.scan(this);
 

@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
@@ -55,7 +56,7 @@ public class IndexedBEDFeatureSource implements FeatureSource {
 
     private void initChrMap() {
         if (featureIndex != null) {
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             if (genome != null) {
                 Set<String> seqNames = featureIndex.getIndexedChromosomes();
                 if (seqNames != null) {

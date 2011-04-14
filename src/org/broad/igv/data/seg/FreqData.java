@@ -25,6 +25,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class FreqData {
         this.logNormalized = ds.isLogNormalized();
 
         // Initialize bins.  We assume the data is not sparse.
-        Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
         // 200 kb bin size
         int binSize = 200000;

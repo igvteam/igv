@@ -25,6 +25,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -107,7 +108,7 @@ public class MutationParser {
         try {
 
 
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             reader = ParsingUtils.openAsciiReader(locator);
 

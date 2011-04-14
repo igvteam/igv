@@ -31,6 +31,7 @@ package org.broad.igv.data.expression;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
@@ -398,7 +399,7 @@ public class GCTDatasetParser {
         dataset.setLongestFeatureMap(longestProbeMap);
 
         if ((dataset == null) || dataset.isEmpty()) {
-            String genome = GenomeManager.getInstance().getCurrentGenome().getId();
+            String genome = IGV.getInstance().getGenomeManager().getCurrentGenome().getId();
             throw new ProbeMappingException(fn, genome);
         }
     }

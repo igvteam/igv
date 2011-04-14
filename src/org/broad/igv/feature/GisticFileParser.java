@@ -33,6 +33,7 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.GisticTrack;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -61,7 +62,7 @@ public class GisticFileParser {
 
         String nextLine = null;
         try {
-            Genome genome = GenomeManager.getInstance().getCurrentGenome();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             reader = ParsingUtils.openAsciiReader(locator);
 
@@ -124,7 +125,7 @@ public class GisticFileParser {
                 throw new RuntimeException("No gistic scores were found.");
             } else {
                 track.setScores(scores);
-                computeWholeGenome(GenomeManager.getInstance().getGenomeId(), track);
+                computeWholeGenome(IGV.getInstance().getGenomeManager().getGenomeId(), track);
                 return track;
             }
 
@@ -162,7 +163,7 @@ public class GisticFileParser {
 
         String chrAll = "All";
         List<GisticScore> allFeatures = new ArrayList(1000);
-        Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }

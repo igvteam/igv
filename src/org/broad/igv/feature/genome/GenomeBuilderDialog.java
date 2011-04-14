@@ -20,6 +20,7 @@
 package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.OkCancelDialog;
 
 import javax.swing.*;
@@ -36,10 +37,10 @@ public class GenomeBuilderDialog extends OkCancelDialog {
     private GenomeBuilderPane builderPane;
     private File genomeArchiveFile = null;
 
-    public GenomeBuilderDialog(java.awt.Frame parent, boolean modal) {
+    public GenomeBuilderDialog(IGV igv, boolean modal) {
 
-        super(parent, modal);
-        builderPane = new GenomeBuilderPane();
+        super(igv.getMainFrame(), modal);
+        builderPane = new GenomeBuilderPane(igv);
         setTitle("Import Genome");
 
         setSize(800, 500);
@@ -47,7 +48,7 @@ public class GenomeBuilderDialog extends OkCancelDialog {
         JPanel contentPane = getDialogPanel();
         contentPane.add(builderPane);
         setResizable(false);
-        setLocationRelativeTo(parent);
+        setLocationRelativeTo(igv.getMainFrame());
         setOkButtonText(" Save ");
     }
 

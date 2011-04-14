@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,7 @@ public class FeatureDB {
             return;
         }
 
-        Genome currentGenome = GenomeManager.getInstance().getCurrentGenome();
+        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
 
             if (feature.getName() != null && feature.getName().length() > 0) {
@@ -92,7 +93,7 @@ public class FeatureDB {
 
 
         // First search genes for current genome.  This obviously needs some refactoring.
-        String currentGenome = GenomeManager.getInstance().getGenomeId();
+        String currentGenome = IGV.getInstance().getGenomeManager().getGenomeId();
         GeneManager gm = GeneManager.getGeneManager(currentGenome);
         IGVFeature gene = null;
         if (gm != null) {

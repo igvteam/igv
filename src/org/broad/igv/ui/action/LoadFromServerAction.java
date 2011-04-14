@@ -72,7 +72,7 @@ public class LoadFromServerAction extends MenuAction {
         mainFrame.setStatusBarMessage("Loading ...");
 
         String urlString = PreferenceManager.getInstance().getDataServerURL();
-        String genomeId = GenomeManager.getInstance().getGenomeId();
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         try {
 

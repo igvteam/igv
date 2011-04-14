@@ -58,7 +58,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     TrackType trackType;
 
     public AbstractFeatureParser() {
-        genome = GenomeManager.getInstance().getCurrentGenome();
+        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
     /**

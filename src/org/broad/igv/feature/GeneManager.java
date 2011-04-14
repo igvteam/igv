@@ -31,6 +31,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackProperties;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ResourceLocator;
@@ -74,7 +75,7 @@ public class GeneManager {
      * @param genomeId
      */
     public GeneManager(String genomeId, String geneTrackName) {
-        genome = GenomeManager.getInstance().getGenome(genomeId);
+        genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -259,7 +260,7 @@ public class GeneManager {
 
         GeneManager geneManager = geneManagerCache.get(genomeId);
         if (geneManager == null) {
-            GenomeDescriptor genomeDescriptor = GenomeManager.getInstance().getGenomeDescriptor(genomeId);
+            GenomeDescriptor genomeDescriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genomeId);
             if (genomeDescriptor != null) {
                 AsciiLineReader reader = getGeneReader(genomeDescriptor);
                 if (reader != null) {

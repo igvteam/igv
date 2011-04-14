@@ -633,7 +633,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             } else {
                                 try {
                                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                    String genomeId = GenomeManager.getInstance().getGenomeId();
+                                    String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
                                     byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
                                     if (seqBytes == null) {
                                         MessageUtils.showMessage("Sequence not available");

@@ -56,7 +56,7 @@ public class TrackManager {
     /**
      * Owning object
      */
-    IGV mainFrame;
+    IGV igv;
 
     private TrackLoader loader;
 
@@ -84,9 +84,9 @@ public class TrackManager {
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
 
 
-    public TrackManager(IGV mainFrame) {
+    public TrackManager(IGV igv) {
 
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         loader = new TrackLoader();
     }
 
@@ -284,7 +284,7 @@ public class TrackManager {
     public List<Track> load(ResourceLocator locator) {
 
         try {
-            List<Track> newTracks = loader.load(locator);
+            List<Track> newTracks = loader.load(locator, igv);
             if (newTracks.size() > 0) {
                 for (Track track : newTracks) {
                     String fn = locator.getPath();
@@ -528,7 +528,7 @@ public class TrackManager {
             trackPanel.removeTracks(tracksToRemove);
 
             if (!trackPanel.hasTracks()) {
-                mainFrame.removeDataPanel(tsp.getTrackPanelName());
+                igv.removeDataPanel(tsp.getTrackPanelName());
             }
         }
 
@@ -566,17 +566,17 @@ public class TrackManager {
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return mainFrame.getDataPanel(DATA_PANEL_NAME);
+            return igv.getDataPanel(DATA_PANEL_NAME);
         } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
                 path.endsWith(".aligned") || path.endsWith(".sorted.txt")) {
 
             String newPanelName = "Panel" + System.currentTimeMillis();
-            return mainFrame.addDataPanel(newPanelName).getTrackPanel();
+            return igv.addDataPanel(newPanelName).getTrackPanel();
             //} else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
             //        path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
             //    String newPanelName = "Panel" + System.currentTimeMillis();
-            //    return mainFrame.addDataPanel(newPanelName).getTrackPanel();
+            //    return igv.addDataPanel(newPanelName).getTrackPanel();
         } else {
             return getDefaultPanel(locator);
         }
@@ -586,7 +586,7 @@ public class TrackManager {
     private TrackPanel getDefaultPanel(ResourceLocator locator) {
 
         if (locator.getType() != null && locator.getType().equalsIgnoreCase("das")) {
-            return mainFrame.getDataPanel(FEATURE_PANEL_NAME);
+            return igv.getDataPanel(FEATURE_PANEL_NAME);
         }
 
         String filename = locator.getPath().toLowerCase();
@@ -605,9 +605,9 @@ public class TrackManager {
                 filename.endsWith("bed") || filename.endsWith("gistic") ||
                 filename.endsWith("bedz") || filename.endsWith("repmask") ||
                 filename.contains("dranger")) {
-            return mainFrame.getDataPanel(FEATURE_PANEL_NAME);
+            return igv.getDataPanel(FEATURE_PANEL_NAME);
         } else {
-            return mainFrame.getDataPanel(DATA_PANEL_NAME);
+            return igv.getDataPanel(DATA_PANEL_NAME);
         }
     }
 
@@ -711,7 +711,7 @@ public class TrackManager {
             FeatureTrack gt = geneFeatureTrack;
             gt.setName(geneTrackName);
 
-            Genome genome = GenomeManager.getInstance().getGenome(genomeId);
+            Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
             if (genome != null && gt.getUrl() == null) {
                 gt.setUrl(genome.getAnnotationURL());
             }
@@ -752,7 +752,7 @@ public class TrackManager {
 
         if (!foundGeneTrack || !foundSeqTrack) {
             TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY) ?
-                    mainFrame.getDataPanel(DATA_PANEL_NAME) : mainFrame.getDataPanel(FEATURE_PANEL_NAME);
+                    igv.getDataPanel(DATA_PANEL_NAME) : igv.getDataPanel(FEATURE_PANEL_NAME);
 
             if (!foundSeqTrack) panel.addTrack(newSeqTrack);
             if (!foundGeneTrack && newGeneTrack != null) panel.addTrack(newGeneTrack);

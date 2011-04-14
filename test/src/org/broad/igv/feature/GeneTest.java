@@ -24,6 +24,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +56,7 @@ public class GeneTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        GenomeManager.getInstance().findGenomeAndLoad("hg18");
+        IGV.getInstance().getGenomeManager().findGenomeAndLoad("hg18");
         geneManager = GeneManager.getGeneManager("hg18");
         egfr = (BasicFeature) geneManager.getGene("egfr");
         GTPBP6 = (BasicFeature) geneManager.getGene("GTPBP6");

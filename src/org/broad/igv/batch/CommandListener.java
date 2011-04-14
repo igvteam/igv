@@ -190,7 +190,7 @@ public class CommandListener implements Runnable {
                         String mergeValue = params.get("merge");
                         String locus = params.get("locus");
                         if (genomeID != null) {
-                            IGV.getInstance().selectGenomeFromList(genomeID);
+                            IGV.getFirstInstance().selectGenomeFromList(genomeID);
                         }
 
                         // Default for merge is "true"
@@ -202,7 +202,7 @@ public class CommandListener implements Runnable {
                     }
                 } else if (command.equals("/reload") || command.equals("/goto")) {
                     String locus = params.get("locus");
-                    IGV.getInstance().goToLocus(locus);
+                    IGV.getFirstInstance().goToLocus(locus);
                 } else {
                     return ("ERROR Unknown command: " + command);
                 }

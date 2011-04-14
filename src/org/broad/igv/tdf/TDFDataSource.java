@@ -34,6 +34,7 @@ import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
 
@@ -83,7 +84,7 @@ public class TDFDataSource implements DataSource {
         try {
             String dataGenome = rootGroup.getAttribute("genome");
             // TODO -- throw exception if data genome != current genome
-            genome = GenomeManager.getInstance().getCurrentGenome();
+            genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         } catch (Exception e) {
             log.error("Unknown genome " + rootGroup.getAttribute("genome"));
             throw new RuntimeException("Unknown genome " + rootGroup.getAttribute("genome"));
@@ -223,7 +224,7 @@ public class TDFDataSource implements DataSource {
 
 
     public int getChrLength(String chr) {
-        final Genome genome = GenomeManager.getInstance().getCurrentGenome();
+        final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (chr.equals(Globals.CHR_ALL)) {
             return (int) (genome.getLength() / 1000);
         } else {
@@ -342,7 +343,7 @@ public class TDFDataSource implements DataSource {
 
     /*
      *
-    Chromosome chromosome = GenomeManager.getInstance().getGenome().getChr(chr);
+    Chromosome chromosome = IGV.getInstance().getGenomeManager().getGenome().getChr(chr);
     if(chromosome == null) {
     return null;
     }

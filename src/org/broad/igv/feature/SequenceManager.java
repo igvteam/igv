@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.remote.SequenceServletWrapper;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.*;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
@@ -107,7 +108,7 @@ public class SequenceManager {
         File rootDirectory = null;
 
         try {
-            GenomeDescriptor descriptor = GenomeManager.getInstance().getGenomeDescriptor(genome);
+            GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genome);
             if (descriptor != null) {
                 String location = descriptor.getSequenceLocation();
                 if (location != null) {

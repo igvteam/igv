@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -58,7 +59,7 @@ public class RNAIGCTDatasetParser {
 
         dataStartColumn = 2;
 
-        String genome = GenomeManager.getInstance().getGenomeId();
+        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
 
         this.geneManager = GeneManager.getGeneManager(genome);
 
