@@ -313,8 +313,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         alignmentBlocks = new AlignmentBlock[nBlocks];
         insertions = new AlignmentBlock[nInsertions];
-        if (nGaps > 0)
-        {
+        if (nGaps > 0) {
             gapTypes = new char[nGaps];
         }
 
@@ -331,70 +330,84 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         int gapIdx = 0;
         prevOp = 0;
         for (CigarOperator op : operators) {
-            if (op.operator == HARD_CLIP) {
-                continue;
-            }
-            if (operatorIsMatch(showSoftClipped, op.operator)) {
+            try {
 
-                byte[] blockBases = new byte[op.nBases];
-                byte[] blockQualities = new byte[op.nBases];
-                //Default value
-                Arrays.fill(blockQualities, (byte) 126);
-
-                // TODO -- represent missing sequence ("*") explicitly for efficiency.
-                if (readBases == null || readBases.length == 0) {
-                    Arrays.fill(blockBases, (byte) '=');
-                } else {
-                    System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
+                if (op.operator == HARD_CLIP) {
+                    continue;
                 }
+                if (operatorIsMatch(showSoftClipped, op.operator)) {
 
-                if (readBaseQualities == null || readBaseQualities.length == 0) {
+                    byte[] blockBases = new byte[op.nBases];
+                    byte[] blockQualities = new byte[op.nBases];
+
+
+                    //Default value
                     Arrays.fill(blockQualities, (byte) 126);
-                } else {
-                    System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
-                }
 
-                AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities);
-                if (op.operator == SOFT_CLIP) {
-                    block.setSoftClipped(true);
-                }
-                alignmentBlocks[blockIdx++] = block;
+                    int nBasesAvailable = readBases.length - fromIdx;
 
-                fromIdx += op.nBases;
-                blockStart += op.nBases;
+                    // TODO -- represent missing sequence ("*") explicitly for efficiency.
+                    if (readBases == null || readBases.length == 0) {
+                        Arrays.fill(blockBases, (byte) '=');
+                    } else if (nBasesAvailable < op.nBases) {
+                        Arrays.fill(blockBases, (byte) '*');
+                    } else {
+                        System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
 
-                if (operatorIsMatch(showSoftClipped, prevOp)) {
+                    }
+
+                    nBasesAvailable = readBaseQualities.length - fromIdx;
+                    if (readBaseQualities == null || readBaseQualities.length == 0 || nBasesAvailable < op.nBases) {
+                        Arrays.fill(blockQualities, (byte) 126);
+                    } else {
+                        System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
+                    }
+
+                    AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities);
+                    if (op.operator == SOFT_CLIP) {
+                        block.setSoftClipped(true);
+                    }
+                    alignmentBlocks[blockIdx++] = block;
+
+                    fromIdx += op.nBases;
+                    blockStart += op.nBases;
+
+                    if (operatorIsMatch(showSoftClipped, prevOp)) {
+                        gapTypes[gapIdx++] = ZERO_GAP;
+                    }
+
+                } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
+                    blockStart += op.nBases;
+                    gapTypes[gapIdx++] = op.operator;
+                } else if (op.operator == INSERTION) {
+
+                    // This gap is between blocks split by insertion.   It is posA zero
+                    // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
+
+                    byte[] blockBases = new byte[op.nBases];
+                    byte[] blockQualities = new byte[op.nBases];
+
+                    if (readBases == null || readBases.length == 0) {
+                        Arrays.fill(blockBases, (byte) '=');
+                    } else {
+                        System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
+                    }
+
+                    if (readBaseQualities == null || readBaseQualities.length == 0) {
+                        Arrays.fill(blockQualities, (byte) 126);
+                    } else {
+                        System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
+                    }
+
+                    insertions[insertionIdx++] = new AlignmentBlock(blockStart, blockBases, blockQualities);
+
+
+                    fromIdx += op.nBases;
+
                 }
-
-            } else if (op.operator == DELETION || op.operator == SKIPPED_REGION) {
-                blockStart += op.nBases;
-                gapTypes[gapIdx++] = op.operator;
-            } else if (op.operator == INSERTION) {
-
-                // This gap is between blocks split by insertion.   It is posA zero
-                // length gap but must be accounted for.
-                gapTypes[gapIdx++] = ZERO_GAP;
-
-                byte[] blockBases = new byte[op.nBases];
-                byte[] blockQualities = new byte[op.nBases];
-
-                if (readBases == null || readBases.length == 0) {
-                    Arrays.fill(blockBases, (byte) '=');
-                } else {
-                    System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
-                }
-
-                if (readBaseQualities == null || readBaseQualities.length == 0) {
-                    Arrays.fill(blockQualities, (byte) 126);
-                } else {
-                    System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
-                }
-
-                insertions[insertionIdx++] = new AlignmentBlock(blockStart, blockBases, blockQualities);
-
-                fromIdx += op.nBases;
-
+            } catch (Exception e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
             prevOp = op.operator;
         }
