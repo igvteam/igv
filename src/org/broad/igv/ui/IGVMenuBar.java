@@ -261,7 +261,8 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doExitApplication();
+                        IGV.getMainFrame().setVisible(false);
+                        IGV.getMainFrame().dispose();
                     }
                 };
 

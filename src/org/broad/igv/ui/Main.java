@@ -85,14 +85,9 @@ public class Main {
 
                     Frame frame = new JFrame();
                     // Add listener to exit the application on close
-                    frame.addWindowListener(new WindowAdapter() {
 
-                        @Override
-                        public void windowClosing(WindowEvent e) {
-                            IGV.getInstance().doExitApplication();
-                        }
-                    });
-
+                    ((JFrame) frame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                   
                     open(frame, args);
 
                 } catch (Exception e) {
@@ -151,7 +146,12 @@ public class Main {
 
         // Add a listener for the "close" icon, unless its a JFrame
         if (!(frame instanceof JFrame)) {
-            frame.addWindowListener(new WindowClosingListener());
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent windowEvent) {
+                    windowEvent.getComponent().setVisible(false);
+                }
+            });
         }
 
         initializeLookAndFeel();
@@ -352,34 +352,4 @@ public class Main {
         }
     }
 
-    static class WindowClosingListener implements WindowListener {
-
-        public void windowOpened(WindowEvent windowEvent) {
-            // ignore
-        }
-
-        public void windowClosing(WindowEvent windowEvent) {
-            windowEvent.getComponent().setVisible(false);
-        }
-
-        public void windowClosed(WindowEvent windowEvent) {
-            // ignore
-        }
-
-        public void windowIconified(WindowEvent windowEvent) {
-            // ignore
-        }
-
-        public void windowDeiconified(WindowEvent windowEvent) {
-            // ignore
-        }
-
-        public void windowActivated(WindowEvent windowEvent) {
-            // ignore
-        }
-
-        public void windowDeactivated(WindowEvent windowEvent) {
-            // ignore
-        }
-    }
 }

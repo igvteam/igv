@@ -83,9 +83,8 @@ public class IGV {
 
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
-
-    private static IGV firstInstance;
-
+    static List<IGV> instances = new LinkedList();
+    
     // Window components
     private Frame mainFrame;
     private JRootPane rootPane;
@@ -120,12 +119,12 @@ public class IGV {
     private boolean isExportingSnapshot = false;
 
 
+
     public static IGV createInstance(Frame frame) {
         if (theInstance != null) {
             throw new RuntimeException("Only a single instance is allowed.");
         }
         theInstance = new IGV(frame);
-        firstInstance = theInstance;
         return theInstance;
     }
 
@@ -138,10 +137,10 @@ public class IGV {
 
 
     public static IGV getFirstInstance() {
-        if (firstInstance == null) {
+        if (instances.isEmpty()) {
             throw new RuntimeException("IGV has not been initialized.  Must call createInstance(Frame) first");
         }
-        return firstInstance;
+        return instances.get(0);
     }
 
 
@@ -165,10 +164,22 @@ public class IGV {
     private IGV(Frame frame) {
 
         theInstance = this;
+        instances.add(this);
 
         genomeManager = new GenomeManager(this);
 
         mainFrame = frame;
+        mainFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                instances.remove(this);
+            }
+
+            @Override
+            public void windowClosed(WindowEvent windowEvent) {
+                instances.remove(this);
+            }
+        });
 
         session = new Session(null);
         trackManager = new TrackManager(this);
@@ -1733,8 +1744,6 @@ public class IGV {
             if (igvArgs.getBatchFile() != null) {
                 LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
             }
-
         }
     }
-
 }
