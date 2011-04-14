@@ -140,7 +140,7 @@ public class GFFParser implements FeatureParser {
     }
 
 
-    public List<FeatureTrack> loadTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         if (locator.getPath().toLowerCase().endsWith("gff3") || locator.getPath().toLowerCase().endsWith("gff3.gz")) {
             helper = new GFF3Helper();
@@ -152,7 +152,7 @@ public class GFFParser implements FeatureParser {
 
             List<org.broad.tribble.Feature> features = loadFeatures(reader);
 
-            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features));
+            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
             track.setName(locator.getTrackName());
             track.setRendererClass(IGVFeatureRenderer.class);
             track.setMinimumHeight(35);

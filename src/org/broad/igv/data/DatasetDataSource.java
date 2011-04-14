@@ -31,6 +31,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,8 @@ public class DatasetDataSource extends AbstractDataSource {
      * @param trackId
      * @param dataset
      */
-    public DatasetDataSource(Genome genome, String trackId, Dataset dataset) {
+    public DatasetDataSource(String trackId, Dataset dataset, Genome genome) {
+        super(genome);
         this.trackId = trackId;
         this.dataset = dataset;
 

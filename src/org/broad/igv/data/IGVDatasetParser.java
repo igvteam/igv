@@ -64,22 +64,16 @@ public class IGVDatasetParser {
     private boolean hasEndLocations = false;
     private boolean hasCalls = false;
     private Genome genome;
+    private IGV igv;
     String[] tokens;
 
 
     private int startBase = 0;
-    private IGV igv;
 
-    /**
-     * Constructs ...
-     *
-     * @param copyNoFile
-     * @param genomeId
-     */
-    public IGVDatasetParser(ResourceLocator copyNoFile, String genomeId, IGV igv) {
-        this.igv = igv;
+    public IGVDatasetParser(ResourceLocator copyNoFile, Genome genome, IGV igv) {
         this.dataResourceLocator = copyNoFile;
-        this.genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        this.genome = genome;
+        this.igv = igv;
         tokens = new String[10000];
     }
 

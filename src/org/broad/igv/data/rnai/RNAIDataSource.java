@@ -53,6 +53,8 @@ public class RNAIDataSource implements DataSource {
 
     private boolean scoresAreSorted = false;
 
+    private Genome genome;
+
     /**
      * Map of chr -> sorted list of data points.  Data is sorted by increasing
      * start location.
@@ -65,7 +67,8 @@ public class RNAIDataSource implements DataSource {
      * @param screen
      * @param condition
      */
-    public RNAIDataSource(String screen, String condition) {
+    public RNAIDataSource(String screen, String condition, Genome genome) {
+        this.genome = genome;
         this.screen = screen;
         this.condition = condition;
         this.displayName = screen;
@@ -95,13 +98,16 @@ public class RNAIDataSource implements DataSource {
             chrAllScores = new ArrayList(500);
             dataMap.put(Globals.CHR_ALL, chrAllScores);
         }
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        RNAIGeneScore genomeScore = new RNAIGeneScore(dpt);
-        int genomeStart = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getStart());
-        int genomeEnd = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getEnd());
-        genomeScore.setStart(genomeStart);
-        genomeScore.setEnd(genomeEnd);
-        chrAllScores.add(genomeScore);
+
+        // If a genome is supplied update the "whole genome view"
+        if (genome != null) {
+            RNAIGeneScore genomeScore = new RNAIGeneScore(dpt);
+            int genomeStart = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getStart());
+            int genomeEnd = genome.getGenomeCoordinate(dpt.getGene().getChr(), dpt.getEnd());
+            genomeScore.setStart(genomeStart);
+            genomeScore.setEnd(genomeEnd);
+            chrAllScores.add(genomeScore);
+        }
     }
 
     /**

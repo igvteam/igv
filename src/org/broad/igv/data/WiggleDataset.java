@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class WiggleDataset implements Dataset {
 
-    String genome;
+    Genome genome;
     private String name;
     private TrackProperties trackProperties;
     Map<String, IntArrayList> startLocationsMap = new HashMap();
@@ -55,14 +55,8 @@ public class WiggleDataset implements Dataset {
     private TrackType type = TrackType.OTHER;
 
 
-    /**
-     * Constructs ...
-     *
-     * @param genomeId
-     * @param name
-     */
-    public WiggleDataset(String genomeId, String name) {
-        this.genome = genomeId;
+    public WiggleDataset(Genome genome, String name) {
+        this.genome = genome;
         this.name = name;
         this.trackProperties = new TrackProperties();
 
@@ -72,7 +66,6 @@ public class WiggleDataset implements Dataset {
     // TODO -- keep track of sortedness as data is loaded and skip this sort if unneccessary.
 
     public void sort(Set<String> unsortedChromosomes) {
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         for (String c : unsortedChromosomes) {
             String chr = genome.getChromosomeAlias(c);
 

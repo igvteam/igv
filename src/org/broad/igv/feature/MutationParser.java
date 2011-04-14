@@ -77,13 +77,13 @@ public class MutationParser {
 
     }
 
-    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadMutationTracks(ResourceLocator locator, Genome genome) {
 
         List<FeatureTrack> tracks = new ArrayList();
-        Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator);
+        Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator, genome);
         for (String sampleId : features.keySet()) {
 
-            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features.get(sampleId)));
+            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features.get(sampleId), genome));
             track.setHeight(15);
             track.setName(sampleId);
 
@@ -101,16 +101,14 @@ public class MutationParser {
      * @param locator
      * @return
      */
-    private Map<String, List<org.broad.tribble.Feature>> loadMutations(ResourceLocator locator) {
+    private Map<String, List<org.broad.tribble.Feature>> loadMutations(ResourceLocator locator, Genome genome) {
         AsciiLineReader reader = null;
         String nextLine = null;
 
         try {
 
 
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
-            reader = ParsingUtils.openAsciiReader(locator);
+              reader = ParsingUtils.openAsciiReader(locator);
 
             // first line
             String[] headers = reader.readLine().split("\t");

@@ -25,6 +25,8 @@
 package org.broad.igv.maf.conservation;
 
 import org.broad.igv.data.DataTile;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,7 +53,8 @@ public class OmegaDataSourceTest {
      */
     @Test
     public void testGetRawData() {
-        OmegaDataSource ds = new OmegaDataSource();
+        Genome genome = TestUtils.loadGenome("hg18");
+        OmegaDataSource ds = new OmegaDataSource(genome);
 
         DataTile dt = ds.getRawData("chr7", 1, 2);
 

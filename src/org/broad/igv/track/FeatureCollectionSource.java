@@ -43,13 +43,14 @@ public class FeatureCollectionSource implements FeatureSource {
 
     private TrackType type;
 
-    private TrackProperties properties;
-
     private Map<String, List<org.broad.tribble.Feature>> featureMap;
 
     CoverageDataSource coverageData;
 
-    public FeatureCollectionSource(List<Feature> allFeatures) {
+    Genome genome;
+
+    public FeatureCollectionSource(List<Feature> allFeatures, Genome genome) {
+        this.genome = genome;
         initFeatures(allFeatures);
         coverageData = new CoverageDataSource();
         coverageData.computeGenomeCoverage();
@@ -61,7 +62,8 @@ public class FeatureCollectionSource implements FeatureSource {
      *
      * @param features
      */
-    public FeatureCollectionSource(Map<String, List<Feature>> features) {
+    public FeatureCollectionSource(Map<String, List<Feature>> features, Genome genome) {
+        this.genome = genome;
         this.featureMap = features;
         coverageData = new CoverageDataSource();
         coverageData.computeGenomeCoverage();
@@ -86,7 +88,7 @@ public class FeatureCollectionSource implements FeatureSource {
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
 
         List<Feature> features = featureMap.get(chr);
-        if(features == null || features.size() == 0) {
+        if (features == null || features.size() == 0) {
             return null;
         }
 
@@ -144,13 +146,12 @@ public class FeatureCollectionSource implements FeatureSource {
 
     protected void sampleGenomeFeatures() {
         List<Feature> chrAllFeatures = new ArrayList(1000);
-        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        int sampleLength = (int) ((double) currentGenome.getLength() / (1000 * 700));
+        int sampleLength = (int) ((double) genome.getLength() / (1000 * 700));
         int lastFeaturePosition = -1;
-        for (String chr : currentGenome.getChromosomeNames()) {
+        for (String chr : genome.getChromosomeNames()) {
             List<Feature> features = getFeatures(chr);
             if (features != null) {
-                long offset = currentGenome.getCumulativeOffset(chr);
+                long offset = genome.getCumulativeOffset(chr);
                 for (Feature feature : features) {
                     if (feature instanceof IGVFeature) {
                         IGVFeature f = (IGVFeature) feature;
@@ -224,6 +225,10 @@ public class FeatureCollectionSource implements FeatureSource {
         double dataMax = 0;
 
         Map<String, DataTile> dataCache = new HashMap();
+
+        CoverageDataSource() {
+            super(genome);
+        }
 
         protected int getNumZoomLevels(String chr) {
             return 0;
@@ -308,8 +313,8 @@ public class FeatureCollectionSource implements FeatureSource {
                     for (Feature f : features) {
                         int genStart = (int) ((offset + f.getStart()) / 1000);
                         int genEnd = (int) ((offset + f.getEnd()) / 1000);
-                        int binStart = Math.min(values.length-1, (int) (genStart / step));
-                        int binEnd = Math.min(values.length-1, (int) (genEnd / step));
+                        int binStart = Math.min(values.length - 1, (int) (genStart / step));
+                        int binEnd = Math.min(values.length - 1, (int) (genEnd / step));
                         for (int i = binStart; i <= binEnd; i++) {
                             values[i] = values[i] + 1;
                             dataMax = Math.max(dataMax, values[i]);

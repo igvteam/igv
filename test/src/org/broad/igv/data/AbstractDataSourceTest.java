@@ -104,6 +104,8 @@ public class AbstractDataSourceTest {
 
 
     class TestDataSource extends AbstractDataSource {
+
+
         private int nPts;
         int[] starts;
         int[] ends;
@@ -111,6 +113,7 @@ public class AbstractDataSourceTest {
         String[] probes;
 
         TestDataSource(int[] starts, int[] ends, float[] values) {
+            super(null);
             nPts = starts.length;
             this.starts = starts;
             this.ends = ends;
@@ -119,6 +122,7 @@ public class AbstractDataSourceTest {
         }
 
         TestDataSource() {
+            super(null);
             nPts = 10000;
             starts = new int[nPts];
             ends = new int[nPts];

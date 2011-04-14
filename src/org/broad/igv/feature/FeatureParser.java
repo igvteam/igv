@@ -28,6 +28,7 @@ package org.broad.igv.feature;
 //~--- JDK imports ------------------------------------------------------------
 
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -41,7 +42,7 @@ import java.util.List;
 public interface FeatureParser {
 
 
-    List<FeatureTrack> loadTracks(ResourceLocator locator);
+    List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome);
 
     /**
      * Method description

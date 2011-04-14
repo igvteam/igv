@@ -66,7 +66,7 @@ public class DRangerParser {
     //1	    chr1	(+)	21083863	chr1	(+)	25279578
     // tumreads	normreads	class	span	site1	site2	quality	score
     // 48	    0	    long_range	4195715	3'-UTR of ENST0000037493
-    public List<FeatureTrack> loadTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         String[] tokens = new String[100];
         List<FeatureTrack> tracks = new ArrayList();
@@ -76,8 +76,6 @@ public class DRangerParser {
         int parseColumn = -1;
         String nextLine = null;
         try {
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
             reader = ParsingUtils.openAsciiReader(locator);
             setColumns(reader.readLine());
             while ((nextLine = reader.readLine()) != null) {
@@ -144,7 +142,7 @@ public class DRangerParser {
             }
         }
 
-        FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features));
+        FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
         track.setName(locator.getTrackName());
         track.setRendererClass(DRangerRenderer.class);
         tracks.add(track);

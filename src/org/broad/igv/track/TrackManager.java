@@ -155,7 +155,7 @@ public class TrackManager {
 
     public void chromosomeChanged(String chrName) {
         for (Track t : getAllTracks(true)) {
-            t.chromosomeChanged(chrName); 
+            t.chromosomeChanged(chrName);
         }
     }
 
@@ -288,11 +288,11 @@ public class TrackManager {
             if (newTracks.size() > 0) {
                 for (Track track : newTracks) {
                     String fn = locator.getPath();
-                    int lastSlashIdx = fn.lastIndexOf ("/");
-                    if(lastSlashIdx < 0) {
-                       lastSlashIdx = fn.lastIndexOf("\\");
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
                     }
-                    if(lastSlashIdx > 0) {
+                    if (lastSlashIdx > 0) {
                         fn = fn.substring(lastSlashIdx);
                     }
                     track.setAttributeValue("NAME", track.getName());
@@ -692,7 +692,8 @@ public class TrackManager {
             featureMap = new HashMap<String, List<org.broad.tribble.Feature>>();
         }
 
-        FeatureTrack geneFeatureTrack = new FeatureTrack("Genes", new FeatureCollectionSource(featureMap));
+        Genome genome = igv.getGenomeManager().getCurrentGenome();
+        FeatureTrack geneFeatureTrack = new FeatureTrack("Genes", new FeatureCollectionSource(featureMap, genome));
 
         geneFeatureTrack.setMinimumHeight(5);
         geneFeatureTrack.setHeight(35);
@@ -711,7 +712,6 @@ public class TrackManager {
             FeatureTrack gt = geneFeatureTrack;
             gt.setName(geneTrackName);
 
-            Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
             if (genome != null && gt.getUrl() == null) {
                 gt.setUrl(genome.getAnnotationURL());
             }

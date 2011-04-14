@@ -44,6 +44,11 @@ public abstract class AbstractDataSource implements DataSource {
     boolean cacheSummaryTiles = true;
     WindowFunction windowFunction = WindowFunction.mean;
     LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this, 20);
+    Genome genome;
+
+    public AbstractDataSource(Genome genome) {
+        this.genome = genome;
+    }
 
     // abstract DataManager getDataManager();
 
@@ -83,7 +88,6 @@ public abstract class AbstractDataSource implements DataSource {
 
 
     public int getChrLength(String chr) {
-        final Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (chr.equals(Globals.CHR_ALL)) {
             return (int) (genome.getLength() / 1000);
         } else {

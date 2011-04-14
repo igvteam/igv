@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -67,7 +68,7 @@ public class EmblFeatureTableParser implements FeatureParser {
      * @param locator
      * @return
      */
-    public List<FeatureTrack> loadTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         AsciiLineReader reader = null;
         try {
@@ -78,7 +79,7 @@ public class EmblFeatureTableParser implements FeatureParser {
             if (features.isEmpty()) {
                 return null;
             } else {
-                FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features));
+                FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
                 track.setName(locator.getTrackName());
                 track.setRendererClass(IGVFeatureRenderer.class);
                 track.setMinimumHeight(35);

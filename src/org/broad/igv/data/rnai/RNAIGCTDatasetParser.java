@@ -22,6 +22,7 @@ package org.broad.igv.data.rnai;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -48,20 +49,19 @@ public class RNAIGCTDatasetParser {
     private int descriptionColumn = 1;
     private final String RNAI_MAPPING_FILE = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
     GeneManager geneManager = null;
+    Genome genome;
 
     /**
      * Constructs ...
      *
      * @param gctFile
      */
-    public RNAIGCTDatasetParser(ResourceLocator gctFile) {
+    public RNAIGCTDatasetParser(ResourceLocator gctFile, Genome genome) {
         this.dataFileLocator = gctFile;
-
+        this.genome = genome;
         dataStartColumn = 2;
 
-        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
-
-        this.geneManager = GeneManager.getGeneManager(genome);
+        this.geneManager = GeneManager.getGeneManager(genome.getId());
 
     }
 
@@ -70,7 +70,7 @@ public class RNAIGCTDatasetParser {
         AsciiLineReader reader = null;
         List dataSources = null;
         String nextLine = null;
-         InputStream probeMappingStream = null;
+        InputStream probeMappingStream = null;
 
         try {
             String[] tokens = new String[1000];
@@ -194,7 +194,7 @@ public class RNAIGCTDatasetParser {
             log.error("Error parsing RNAi file", ex);
             throw new RuntimeException(ex);
         } finally {
-            if(probeMappingStream != null) {
+            if (probeMappingStream != null) {
                 try {
                     probeMappingStream.close();
                 } catch (IOException e) {
@@ -216,7 +216,7 @@ public class RNAIGCTDatasetParser {
         while (samplesIt.hasNext()) {
             String sample = (String) samplesIt.next();
             HashMap geneMap = sampleGeneScoreMap.get(sample);
-            RNAIDataSource ds = new RNAIDataSource(sample, "");
+            RNAIDataSource ds = new RNAIDataSource(sample, "", genome);
             Iterator geneScoreIt = geneMap.keySet().iterator();
             while (geneScoreIt.hasNext()) {
                 String gene = (String) geneScoreIt.next();

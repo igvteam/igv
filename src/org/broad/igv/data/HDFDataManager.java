@@ -30,6 +30,7 @@ package org.broad.igv.data;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -107,6 +108,7 @@ public class HDFDataManager {
     private WindowFunction windowFunction;
     private TrackProperties trackProperties;
     private ResourceLocator locator;
+    private Genome genome;
 
     /**
      * Creates a new instance of FeatureTileManager for a given track and chromosome
@@ -114,8 +116,13 @@ public class HDFDataManager {
      * @param locator
      * @throws DataAccessException
      */
-    public HDFDataManager(ResourceLocator locator) throws DataAccessException {
 
+    public HDFDataManager(ResourceLocator locator) throws DataAccessException {
+        this(locator, null);
+    }
+
+    public HDFDataManager(ResourceLocator locator, Genome genome) throws DataAccessException {
+        this.genome = genome;
         int rootGroup = -1;
         try {
             setGroupPaths();
@@ -662,10 +669,14 @@ public class HDFDataManager {
     private synchronized int getLongestFeature(String chr) {
 
         if (!longestFeatureCache.containsKey(chr)) {
-            String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-            // Put a limit on the "longest feature" to prevent outliers from dictating
-            // huge data loads.  This is neccessary due to a flaw in the indexing scheme.
-            int maxLongestFeature = GeneManager.getGeneManager(genomeId).getLongestGeneLength(chr) + 100;
+            int maxLongestFeature = 1000;
+
+            if (genome != null) {
+                String genomeId = genome.getId();
+                // Put a limit on the "longest feature" to prevent outliers from dictating
+                // huge data loads.  This is neccessary due to a flaw in the indexing scheme.
+                maxLongestFeature = GeneManager.getGeneManager(genomeId).getLongestGeneLength(chr) + 100;
+            }
             int longestFeature = 1000;
 
             String groupName = featureGroupPath + chr + "/raw";

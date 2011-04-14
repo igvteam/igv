@@ -58,7 +58,7 @@ public class WiggleParser {
         FIXED, VARIABLE, BED_GRAPH, CPG, EXPR
     }
 
-    ;
+    Genome genome;
 
     WiggleDataset dataset;
     /**
@@ -83,18 +83,15 @@ public class WiggleParser {
     int estArraySize;
     Map<String, Integer> longestFeatureMap = new HashMap();
 
+    public WiggleParser(ResourceLocator locator) {
+        this(locator, null);
+    }
 
-    /**
-     * Constructs ...
-     *
-     * @param locator
-     * @param genomeId
-     */
-    public WiggleParser(ResourceLocator locator, String genomeId) {
-
+    public WiggleParser(ResourceLocator locator, Genome genome) {
+        this.genome = genome;
         this.resourceLocator = locator;
-        this.estArraySize = estArraySize(locator, genomeId);
-        dataset = new WiggleDataset(genomeId, locator.getTrackName());
+        this.estArraySize = estArraySize(locator, genome);
+        dataset = new WiggleDataset(genome, locator.getTrackName());
 
         if (locator.getPath().endsWith("CpG.txt")) {
             type = Type.CPG;
@@ -110,13 +107,13 @@ public class WiggleParser {
         }
     }
 
-    private int estArraySize(ResourceLocator locator, String genomeId) {
+    private int estArraySize(ResourceLocator locator, Genome genome) {
 
         int estLines = 100000;
         if (locator.getServerURL() == null) {
             estLines = ParsingUtils.estimateLineCount(locator.getPath());
         }
-        int nChromosomes = IGV.getInstance().getGenomeManager().getGenome(genomeId).getChromosomeNames().size();
+        int nChromosomes = genome.getChromosomeNames().size();
         return Math.max(1000, (int) (estLines / nChromosomes));
 
     }
@@ -402,10 +399,9 @@ public class WiggleParser {
 
     private void changedChromosome(WiggleDataset dataset, String lastChr) {
 
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (startLocations != null && startLocations.size() > 0) {
 
-            String convertedChr = genome.getChromosomeAlias(lastChr);
+            String convertedChr = genome == null ? lastChr : genome.getChromosomeAlias(lastChr);
             dataset.addDataChunk(convertedChr, startLocations, endLocations, data);
             //sz = startLocations.size();
         }

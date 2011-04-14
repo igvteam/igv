@@ -90,6 +90,7 @@ public class TrackLoader {
     public List<Track> load(ResourceLocator locator, IGV igv) {
 
         this.igv = igv;
+        Genome genome = igv.getGenomeManager().getCurrentGenome();
 
         try {
             String typeString = locator.getType();
@@ -130,14 +131,14 @@ public class TrackLoader {
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
                 loadH5File(locator, newTracks);
             } else if (typeString.endsWith(".rnai.gct")) {
-                loadRnaiGctFile(locator, newTracks);
+                loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
                 loadGctFile(locator, newTracks);
             } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
                 loadIGVFile(locator, newTracks);
             } else if (typeString.endsWith(".mut")) {
-                loadMutFile(locator, newTracks);
+                loadMutFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
                     typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
                 loadSegFile(locator, newTracks);
@@ -146,13 +147,13 @@ public class TrackLoader {
             } else if (typeString.endsWith(".gistic")) {
                 loadGisticFile(locator, newTracks);
             } else if (typeString.endsWith(".gs")) {
-                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.GENE_SCORE);
+                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.GENE_SCORE, genome);
             } else if (typeString.endsWith(".riger")) {
-                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.POOLED);
+                loadRNAiGeneScoreFile(locator, newTracks, RNAIGeneScoreParser.Type.POOLED, genome);
             } else if (typeString.endsWith(".hp")) {
                 loadRNAiHPScoreFile(locator);
             } else if (typeString.endsWith("gene")) {
-                loadGeneFile(locator, newTracks);
+                loadGeneFile(locator, newTracks, genome);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
             } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
@@ -171,19 +172,19 @@ public class TrackLoader {
             } else if (typeString.endsWith(".list")) {
                 loadListFile(locator, newTracks);
             } else if (typeString.contains(".dranger")) {
-                loadDRangerFile(locator, newTracks);
+                loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks);
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
-                loadPslFile(locator, newTracks);
+                loadPslFile(locator, newTracks, genome);
                 //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
             } else if (AbstractFeatureParser.getInstanceFor(locator) != null) {
-                loadFeatureFile(locator, newTracks);
+                loadFeatureFile(locator, newTracks, genome);
             } else if (MutationParser.isMutationAnnotationFile(locator)) {
-                this.loadMutFile(locator, newTracks);
+                this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks);
             } else if (locator.getPath().toLowerCase().contains(".maf")) {
@@ -291,11 +292,11 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator);
         if (featureParser != null) {
-            List<FeatureTrack> tracks = featureParser.loadTracks(locator);
+            List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
             newTracks.addAll(tracks);
         }
 
@@ -307,16 +308,17 @@ public class TrackLoader {
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>(mappings.size());
         features.addAll(mappings);
 
-        FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features));
+        Genome genome = igv.getGenomeManager().getCurrentGenome();
+        FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features, genome));
         track.setName(locator.getTrackName());
         // track.setRendererClass(AlignmentBlockRenderer.class);
         newTracks.add(track);
     }
 
-    private void loadDRangerFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadDRangerFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         DRangerParser parser = new DRangerParser();
-        newTracks.addAll(parser.loadTracks(locator));
+        newTracks.addAll(parser.loadTracks(locator, genome));
     }
 
     /**
@@ -325,10 +327,10 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadPslFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadPslFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         PSLParser featureParser = new PSLParser();
-        List<FeatureTrack> tracks = featureParser.loadTracks(locator);
+        List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
         for (FeatureTrack t : tracks) {
             t.setMinimumHeight(10);
@@ -347,7 +349,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
                 locator.getPath().endsWith(".bed.txt") ||
@@ -360,10 +362,10 @@ public class TrackLoader {
 
         FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator);
         if (featureParser != null) {
-            List<FeatureTrack> tracks = featureParser.loadTracks(locator);
+            List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
             newTracks.addAll(tracks);
         } else if (MutationParser.isMutationAnnotationFile(locator)) {
-            this.loadMutFile(locator, newTracks);
+            this.loadMutFile(locator, newTracks, genome);
         } else if (WiggleParser.isWiggle(locator)) {
             loadWigFile(locator, newTracks);
         } else if (locator.getPath().toLowerCase().contains(".maf")) {
@@ -409,9 +411,9 @@ public class TrackLoader {
     }
 
 
-    private void loadRnaiGctFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadRnaiGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
-        RNAIGCTDatasetParser parser = new RNAIGCTDatasetParser(locator);
+        RNAIGCTDatasetParser parser = new RNAIGCTDatasetParser(locator, genome);
 
         Collection<RNAIDataSource> dataSources = parser.parse();
         if (dataSources != null) {
@@ -444,8 +446,7 @@ public class TrackLoader {
 
         // TODO -- handle remote resource
         try {
-            parser = new GCTDatasetParser(locator, null,
-                    IGV.getInstance().getGenomeManager().getGenomeId());
+            parser = new GCTDatasetParser(locator, null, igv.getGenomeManager().getCurrentGenome());
         } catch (IOException e) {
             log.error("Error creating GCT parser.", e);
             throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());
@@ -467,8 +468,8 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         for (String trackName : ds.getTrackNames()) {
-            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
+            Genome currentGenome = igv.getGenomeManager().getCurrentGenome();
+            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, currentGenome);
             String trackId = path + "_" + trackName;
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
             track.setRendererClass(HeatmapRenderer.class);
@@ -487,9 +488,9 @@ public class TrackLoader {
 
 
         String dsName = locator.getTrackName();
-        String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        Genome currentGenome = igv.getGenomeManager().getCurrentGenome();
 
-        IGVDataset ds = new IGVDataset(currentGenomeId, locator, igv);
+        IGVDataset ds = new IGVDataset(locator, currentGenome, igv);
         ds.setName(dsName);
 
         TrackProperties trackProperties = ds.getTrackProperties();
@@ -497,8 +498,7 @@ public class TrackLoader {
         TrackType type = ds.getType();
         for (String trackName : ds.getTrackNames()) {
 
-            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackName, ds);
+            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, currentGenome);
             String trackId = path + "_" + trackName;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
@@ -574,7 +574,7 @@ public class TrackLoader {
             }
         }
 
-        String genome = IGV.getInstance().getGenomeManager().getGenomeId();
+        Genome genome = igv.getGenomeManager().getCurrentGenome();
 
         WiggleDataset ds = (new WiggleParser(locator, genome)).parse();
         TrackProperties props = ds.getTrackProperties();
@@ -598,7 +598,7 @@ public class TrackLoader {
             String trackName = multiTrack ? heading : name;
 
             Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            DatasetDataSource dataSource = new DatasetDataSource(currentGenome, trackId, ds);
+            DatasetDataSource dataSource = new DatasetDataSource(trackId, ds, genome);
 
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
 
@@ -716,10 +716,10 @@ public class TrackLoader {
      * @param newTracks
      */
     private void loadRNAiGeneScoreFile(ResourceLocator locator,
-                                       List<Track> newTracks, RNAIGeneScoreParser.Type type) {
+                                       List<Track> newTracks, RNAIGeneScoreParser.Type type,
+                                       Genome genome) {
 
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        RNAIGeneScoreParser parser = new RNAIGeneScoreParser(locator.getPath(), genomeId, type);
+        RNAIGeneScoreParser parser = new RNAIGeneScoreParser(locator.getPath(), type, genome);
 
         Collection<RNAIDataSource> dataSources = parser.parse();
         String path = locator.getPath();
@@ -762,7 +762,8 @@ public class TrackLoader {
     }
 
     private void loadOmegaTrack(ResourceLocator locator, List<Track> newTracks) {
-        OmegaDataSource ds = new OmegaDataSource();
+        Genome genome = igv.getGenomeManager().getCurrentGenome();
+        OmegaDataSource ds = new OmegaDataSource(genome);
         OmegaTrack track = new OmegaTrack(locator, ds);
         track.setName("Conservation (Omega)");
         track.setHeight(40);
@@ -868,10 +869,10 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadMutFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadMutFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         MutationParser parser = new MutationParser();
-        List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator);
+        List<FeatureTrack> mutationTracks = parser.loadMutationTracks(locator, genome);
         for (FeatureTrack track : mutationTracks) {
             track.setTrackType(TrackType.MUTATION);
             track.setRendererClass(MutationRenderer.class);

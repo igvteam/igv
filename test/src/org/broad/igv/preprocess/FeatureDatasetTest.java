@@ -25,6 +25,8 @@ package org.broad.igv.preprocess;
 
 import org.broad.igv.data.expression.GCTDataset;
 import org.broad.igv.data.expression.GCTDatasetParser;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
@@ -39,14 +41,14 @@ public class FeatureDatasetTest {
 
     static String file = "/Volumes/xchip_tcga/gbm/visualization/testfiles/expression/WETime.rma.mapped";
     static GCTDataset dataset;
-    static String genome = "mm8";
+    static String genomeId = "mm8";
 
     public FeatureDatasetTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-
+        Genome genome = (new GenomeManager()).getGenome(genomeId);
         GCTDatasetParser parser = new GCTDatasetParser(new File(file), null, genome);
 
         dataset = parser.createDataset();

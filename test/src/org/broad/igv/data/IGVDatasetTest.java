@@ -23,6 +23,8 @@
  */
 package org.broad.igv.data;
 
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
@@ -38,13 +40,14 @@ import java.util.List;
 public class IGVDatasetTest {
 
     String cnFile = "test/data/igv/MIP_44.cn";
+    static Genome genome;
     
     public IGVDatasetTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.loadGenome("hg18");
+        genome = TestUtils.loadGenome("hg18");
     }
 
     @AfterClass
@@ -57,7 +60,9 @@ public class IGVDatasetTest {
     @Test
     public void testDataset() {
 
-        IGVDataset ds = new IGVDataset("hg18", new ResourceLocator(cnFile), null);
+
+
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
 
         // Get the start locations and data from sample yw280-4_44 on chr 1 
         int[] startLocations = ds.getStartLocations("chr1");
@@ -87,7 +92,7 @@ public class IGVDatasetTest {
 
         String[] tokens = headingsLine.split("\t");
 
-        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), "hg18", null);
+        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome, null);
         String[] headings = parser.getHeadings(tokens, 1);
 
         assertEquals(firstHeading, headings[0]);
@@ -102,8 +107,8 @@ public class IGVDatasetTest {
      */
     @Test
     public void testScanDataset() {
-        IGVDataset ds = new IGVDataset("hg18", new ResourceLocator(cnFile), null);
-        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), "hg18", null);
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
+        IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome, null);
         List<ChromosomeSummary> summaries = parser.scan(ds);
 
         assertEquals(24, summaries.size());

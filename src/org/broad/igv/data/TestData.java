@@ -58,7 +58,7 @@ public class TestData {
     static public void generateIGVTestFiles(File cnFileLocation) {
         int numberOfSamples = 100;
         int fileLength = 10000;
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        Genome genome =  (new GenomeManager()).getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -76,7 +76,7 @@ public class TestData {
      */
     static public void generateCNTestFiles(File cnFileLocation) {
 
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        Genome genome = (new GenomeManager()).getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -132,7 +132,7 @@ public class TestData {
      */
     static public void generateVeryLargeCNTestFile(File cnFileLocation) {
 
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        Genome genome =  (new GenomeManager()).getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }
@@ -376,7 +376,7 @@ public class TestData {
     static public void generateGctTestFiles(File outputLocation) {
 
         //ReferenceFrame context = ReferenceFrame.getInstance();
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        Genome genome =  (new GenomeManager()).getGenome(genomeId);
         if (genome == null) {
             throw new RuntimeException("Unknown genome: " + genomeId);
         }

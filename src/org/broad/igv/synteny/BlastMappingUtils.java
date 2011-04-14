@@ -189,24 +189,4 @@ public class BlastMappingUtils {
     }
 
 
-    /**
-     * Method description
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-
-        String file = "/Users/jrobinso/Alex/Cgla_v_Kwal1.orthologs";
-        String wiggleFile = "/Users/jrobinso/IGVTestData/alex/nucCount_Kwal.wig";
-        File outputFile = new File("/Users/jrobinso/Alex/uncount_Kwal_to_Cgla.igv");
-
-        List<BlastMapping> mappings = (new BlastParser()).parse(file);
-
-        WiggleDataset ds = (new WiggleParser(new ResourceLocator(wiggleFile), "Kwal")).parse();
-
-        MapWigFile(ds, mappings, outputFile);
-
-    }
-
-
 }

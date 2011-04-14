@@ -26,6 +26,7 @@ package org.broad.igv.maf.conservation;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.LRUCache;
@@ -41,6 +42,10 @@ import java.util.List;
 public class OmegaDataSource extends AbstractDataSource implements DataSource {
 
     File rootDir = new File("/Volumes/igv/annotations/hg18/conservation/omega/12mer");
+
+    public OmegaDataSource(Genome genome) {
+        super(genome);
+    }
 
     public double getDataMax() {
         return 1;

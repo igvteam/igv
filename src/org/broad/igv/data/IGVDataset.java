@@ -46,47 +46,24 @@ public class IGVDataset implements Dataset {
     private TrackType type = TrackType.OTHER;
 
     private boolean logNormalized;
-
-    /**
-     * Genome id for the location information in this dataset.  This parameter
-     * is needed when the dataset is preprocessed
-     */
-    private String genomeId;
-
     private String[] dataHeadings;
-
     private Map<String, ChromosomeSummary> chromosomeSummaries = new LinkedHashMap();
-
     private GenomeSummaryData genomeSummary;
-
     private IGVDatasetParser parser;
-
     private ObjectCache<String, ChromosomeData> chromsomeDataCache = new ObjectCache(30);
-
     private float dataMin;
-
     private float dataMax;
-
     TrackProperties trackProperties = new TrackProperties();
-
     private Map<String, Integer> longestFeatureMap;
 
-    public IGVDataset(String genomeId, ResourceLocator locator, IGV igv) {
-        this.genomeId = genomeId;
+    public IGVDataset(ResourceLocator locator, Genome genome, IGV igv) {
 
-        //IGV.getInstance().getGenomeManager().findGenomeAndLoad(genomeId);
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
-        if (genome == null) {
-            throw new RuntimeException("Unknown genome: " + genomeId);
-        }
-
-
-        parser = new IGVDatasetParser(locator, genomeId, igv);
+        parser = new IGVDatasetParser(locator, genome, igv);
 
         List<ChromosomeSummary> summaries = parser.scan(this);
 
         if (summaries == null || summaries.size() == 0)
-            throw new RuntimeException("Could not find any chromosomes in the dataset on the genome(" + genomeId + ")");
+            throw new RuntimeException("Could not find any chromosomes in the dataset on the genome(" + genome.getId() + ")");
 
         for (ChromosomeSummary summary : summaries) {
             chromosomeSummaries.put(summary.getName(), summary);

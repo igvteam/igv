@@ -111,13 +111,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param locator
      * @return
      */
-    public List<FeatureTrack> loadTracks(ResourceLocator locator) {
+    public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         List<org.broad.tribble.Feature> features = loadFeatures(locator, -1);
         if(features.size() == 0) {
                //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
         }
-        FeatureCollectionSource source = new FeatureCollectionSource(features);
+        FeatureCollectionSource source = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, source);
         track.setName(locator.getTrackName());
         track.setRendererClass(IGVFeatureRenderer.class);

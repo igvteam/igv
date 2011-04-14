@@ -27,6 +27,7 @@ import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.GeneManager;
 import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.genome.Genome;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -47,7 +48,6 @@ public class RNAIGeneScoreParser {
 
     private static Logger log = Logger.getLogger(RNAIGeneScoreParser.class);
     private String filename;
-    private String genomeId;
 
     private int maxColumn = -1;
     private int batchColumn = -1;
@@ -56,17 +56,11 @@ public class RNAIGeneScoreParser {
     private int hairpinColumn = -1;
     private int scoreColumn = -1;
     private int confidenceColumn = -1;
+    private Genome genome;
 
-    /**
-     * Constructs ...
-     *
-     * @param filename
-     * @param genomeId
-     * @param type
-     */
-    public RNAIGeneScoreParser(String filename, String genomeId, Type type) {
+    public RNAIGeneScoreParser(String filename, Type type, Genome genome) {
 
-        this.genomeId = genomeId;
+        this.genome = genome;
         this.filename = filename;
         if (type == Type.GENE_SCORE) {
             batchColumn = 0;
@@ -108,7 +102,7 @@ public class RNAIGeneScoreParser {
 
 
             // Get the gene manager for the current genome
-            GeneManager gm = GeneManager.getGeneManager(genomeId);
+            GeneManager gm = GeneManager.getGeneManager(genome.getId());
 
             // Parse data
             String nextLine = reader.readLine();
@@ -176,7 +170,7 @@ public class RNAIGeneScoreParser {
                                 // List<RNAIGeneScore> dataPoints = dataPointsMap.get(batchCond);
 
                                 if (ds == null) {
-                                    ds = new RNAIDataSource(batchId, cond);
+                                    ds = new RNAIDataSource(batchId, cond, genome);
                                     dataSources.put(batchCond, ds);
                                 }
                                 ds.addGeneScore(new RNAIGeneScore(batchCond, gene, geneScore,

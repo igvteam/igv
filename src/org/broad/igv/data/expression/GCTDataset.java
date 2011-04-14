@@ -46,7 +46,6 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
 
     private String name;
     private TrackType type = TrackType.GENE_EXPRESSION;
-    private String genomeId;
     private Genome genome;
     private String[] columnHeadings;
     private boolean normalized = false;
@@ -80,13 +79,8 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
     /**
      * Creates a new instance of ExpressionDataset
      */
-    public GCTDataset(String genomeId) {
-        this.genomeId = genomeId;
-        //IGV.getInstance().getGenomeManager().findGenomeAndLoad(genomeId);
-        this.genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
-        if (this.genome == null) {
-            throw new RuntimeException("Unknown genome: " + genomeId);
-        }
+    public GCTDataset(Genome genome) {
+        this.genome = genome;
     }
 
 

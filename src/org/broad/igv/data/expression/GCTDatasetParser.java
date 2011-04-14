@@ -30,6 +30,7 @@ package org.broad.igv.data.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.IntArrayList;
@@ -70,7 +71,7 @@ public class GCTDatasetParser {
     int dataStartColumn;
     int probeColumn;
     int descriptionColumn;
-    String genome;
+    Genome genome;
 
     /**
      * Map chr -> longest feature
@@ -94,14 +95,13 @@ public class GCTDatasetParser {
      * @param probeFile
      * @param genome
      */
-    public GCTDatasetParser(ResourceLocator resFile, String probeFile, String genome) throws IOException {
+    public GCTDatasetParser(ResourceLocator resFile, String probeFile, Genome genome) throws IOException {
 
         this.dataFileLocator = resFile;
         this.genome = genome;
-        this.geneManager = GeneManager.getGeneManager(genome);
+        this.geneManager = GeneManager.getGeneManager(genome.getId());
         longestProbeMap = new HashMap();
-
-        locusHelper = new GeneToLocusHelper(probeFile, genome);
+        locusHelper = new GeneToLocusHelper(probeFile, genome.getId());
 
     }
 
@@ -113,7 +113,7 @@ public class GCTDatasetParser {
      * @param probeFile
      * @param genome
      */
-    public GCTDatasetParser(File resFile, String probeFile, String genome) throws IOException {
+    public GCTDatasetParser(File resFile, String probeFile, Genome genome) throws IOException {
         this(new ResourceLocator(resFile.getAbsolutePath()), probeFile, genome);
     }
 
@@ -399,8 +399,8 @@ public class GCTDatasetParser {
         dataset.setLongestFeatureMap(longestProbeMap);
 
         if ((dataset == null) || dataset.isEmpty()) {
-            String genome = IGV.getInstance().getGenomeManager().getCurrentGenome().getId();
-            throw new ProbeMappingException(fn, genome);
+            String genomeId = genome == null ? "" : genome.getId();
+            throw new ProbeMappingException(fn, genomeId);
         }
     }
 
