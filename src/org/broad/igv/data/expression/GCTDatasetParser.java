@@ -283,7 +283,7 @@ public class GCTDatasetParser {
                     String heading = tokens[i].replace('\"', ' ').trim();
 
                     //Check for tcga data column headings
-                    if (heading.contains("Beta_Value") || heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("unc_DWD_Batch_adjusted")) {
+                    if (heading.contains("Beta_Value") || heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("signal") || heading.contains("unc_DWD_Batch_adjusted")) {
                         valuesIndices.add(i);
                     }
                     if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
