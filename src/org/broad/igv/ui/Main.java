@@ -48,16 +48,10 @@ import java.io.File;
  * EventQueue.invokeLater(new Runnable() {
  * <p/>
  * public void run() {
- * try {
  * Frame frame = new Frame();
- * <p/>
  * org.broad.igv.ui.Main.open(frame);
  * }
- * catch (Exception e) {
- * e.printStackTrace();
- * }
- * }
- * });
+ * );
  * }
  *
  * @author jrobinso
@@ -87,7 +81,7 @@ public class Main {
                     // Add listener to exit the application on close
 
                     ((JFrame) frame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                   
+
                     open(frame, args);
 
                 } catch (Exception e) {
@@ -266,6 +260,7 @@ public class Main {
         private String port = null;
         private String dataServerURL = null;
         private String genomeServerURL = null;
+        private String indexFile = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -285,13 +280,14 @@ public class Main {
             CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
             CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
             CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
+            CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFileURL");
 
             try {
                 parser.parse(args);
             } catch (CmdLineParser.IllegalOptionValueException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();  // This is not logged because the logger is not initialized yet.
             } catch (CmdLineParser.UnknownOptionException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();  
             }
             propertyFile = (String) parser.getOptionValue(propertyFileOption);
             batchFile = (String) parser.getOptionValue(batchFileOption);
@@ -299,6 +295,7 @@ public class Main {
             genomeId = (String) parser.getOptionValue(genomeOption);
             dataServerURL = (String) parser.getOptionValue(dataServerOption);
             genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
+            indexFile = (String) parser.getOptionValue(indexFileOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
@@ -351,6 +348,10 @@ public class Main {
 
         public String getGenomeServerURL() {
             return genomeServerURL;
+        }
+
+        public String getIndexFile() {
+            return indexFile;
         }
     }
 

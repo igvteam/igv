@@ -1699,9 +1699,12 @@ public class IGV {
                     } else if (igvArgs.getDataFileString() != null) {
                         // Not an xml file, assume its a list of data files
                         String[] tokens = igvArgs.getDataFileString().split(",");
+                        String indexFile = igvArgs.getIndexFile();
                         List<ResourceLocator> locators = new ArrayList();
                         for (String p : tokens) {
-                            locators.add(new ResourceLocator(p));
+                            ResourceLocator rl = new ResourceLocator(p);
+                            rl.setIndexPath(indexFile);
+                            locators.add(rl);
                         }
                         getTrackManager().loadResources(locators);
                         doRefresh();

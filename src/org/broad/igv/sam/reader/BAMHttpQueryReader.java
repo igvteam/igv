@@ -30,6 +30,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.SeekablePicardFtpStream;
 
 import java.io.*;
@@ -55,8 +56,8 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
     File indexFile;
     SAMFileReader reader;
 
-    public BAMHttpQueryReader(URL url, boolean requireIndex) throws IOException {
-        this.url = url;
+    public BAMHttpQueryReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+        this.url = new URL(locator.getPath());
         if (requireIndex) {
             indexFile = getIndexFile(url);
             if(indexFile == null) {
@@ -159,18 +160,18 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
 
     // TODO -- revisit caching scehme,  do something for ftp loads
 
-    File getIndexFile(URL bamURL) throws IOException {
+    File getIndexFile(URL url) throws IOException {
 
-        String bamURLString = bamURL.toString();
+        String urlString = url.toString();
 
         // Create a filename unique for this url;
-        String idxFilename = getTmpIndexFilename(bamURLString);
+        String idxFilename = getTmpIndexFilename(urlString);
 
         indexFile = new File(this.getCacheDirectory(), idxFilename);
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        loadIndexFile(bamURLString, indexFile);
+        loadIndexFile(urlString, indexFile);
         indexFile.deleteOnExit();
 
         return indexFile;
@@ -184,27 +185,28 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         return indexName;
     }
 
-    private void loadIndexFile(String bamURL, File indexFile) throws IOException {
+    private void loadIndexFile(String path, File indexFile) throws IOException {
         InputStream is = null;
         OutputStream os = null;
 
         try {
-            URL indexURL = new URL(bamURL + ".bai");
+            String indexPath = path.endsWith(".bai") ? path : path + ".bai";
+            URL indexURL = new URL(indexPath + ".bai");
             os = new FileOutputStream(indexFile);
             try {
                 is = IGVHttpUtils.openConnectionStream(indexURL);
             }
             catch (FileNotFoundException e) {
                 // Try other index convention
-                String baseName = bamURL.substring(0, bamURL.length() - 4);
+                String baseName = path.substring(0, path.length() - 4);
                 indexURL = new URL(baseName + ".bai");
 
                 try {
                     is = IGVHttpUtils.openConnectionStream(indexURL);
                 }
                 catch (FileNotFoundException e1) {
-                    MessageUtils.showMessage("Index file not found for file: " + bamURL);
-                    throw new DataLoadException("Index file not found for file: " + bamURL, bamURL);
+                    MessageUtils.showMessage("Index file not found for file: " + path);
+                    throw new DataLoadException("Index file not found for file: " + path, path);
                 }
             }
             byte[] buf = new byte[512000];

@@ -30,6 +30,7 @@ public class ResourceLocator {
 
     String serverURL; //URL for the remote data server.  Null for local files
     String path; //The path for the file or resource.
+    String indexPath; // Option path to an associated index file
     String name;  // Display name.  Also used as a key for the sample info file
     String infolink; // A hyperlink to general information about the track.
     String url; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
@@ -210,6 +211,14 @@ public class ResourceLocator {
 
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
+    }
+
+    public String getIndexPath() {
+        return indexPath;
+    }
+
+    public void setIndexPath(String indexPath) {
+        this.indexPath = indexPath;
     }
 
 

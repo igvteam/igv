@@ -78,8 +78,7 @@ public class SamQueryReaderFactory {
                 reader = new BAMQueryReader(new File(samFile));
             } else if (IGVHttpUtils.isURL(locator.getPath().toLowerCase())) {
                 try {
-                    URL url = new URL(locator.getPath());
-                    reader = new BAMHttpQueryReader(url, requireIndex);
+                    reader = new BAMHttpQueryReader(locator, requireIndex);
                 }
                 catch (MalformedURLException e) {
                     log.error("", e);
