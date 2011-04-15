@@ -283,10 +283,10 @@ public class GCTDatasetParser {
                     String heading = tokens[i].replace('\"', ' ').trim();
 
                     //Check for tcga data column headings
-                    if (heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("unc_DWD_Batch_adjusted")) {
+                    if (heading.contains("Beta_Value") || heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("unc_DWD_Batch_adjusted")) {
                         valuesIndices.add(i);
                     }
-                    if (heading.contains("Gene symbol")) {
+                    if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
                         descriptionColumn = i;
                         hasDescription = true;
                     }
@@ -312,7 +312,7 @@ public class GCTDatasetParser {
                 char[] calls = hasCalls ? new char[nColumns] : (char[]) null;
 
                 String description = (hasDescription && (nTokens > descriptionColumn))
-                        ? new String(tokens[descriptionColumn]) : null;
+                        ? new String("|@" + tokens[descriptionColumn] + "|") : null;
 
                 if (type == FileType.MAGE_TAB && probeId.startsWith("cg")) {
                     dataset.setType(TrackType.DNA_METHYLATION);
@@ -323,11 +323,6 @@ public class GCTDatasetParser {
                         int dataIndex = -1;
                         if (type == FileType.MAGE_TAB) {
                             dataIndex = valuesIndices.get(i);
-
-                            //convert to description mapping format
-                            if (hasDescription) {
-                                description = "|@" + description + "|";
-                            }
                         } else {
                             dataIndex = dataStartColumn + i * skip;
                         }
@@ -408,6 +403,8 @@ public class GCTDatasetParser {
     public void addRow(String probeId, String description, float[] values, char[] calls) {
 
         List<Locus> loci = locusHelper.getLoci(probeId, description);
+        System.out.println("description: " + description);
+        System.out.println("loci" + loci);
         if (loci != null) {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
