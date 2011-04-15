@@ -20,6 +20,7 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ftp.FTPClient;
@@ -139,6 +140,10 @@ public class IGVHttpUtils {
 
     public static InputStream openHttpStream(URL url, Map<String, String> requestProperties) throws IOException {
 
+        if(requestProperties == null) {
+            requestProperties = new HashMap();
+        }
+        requestProperties.put("User-Agent", Globals.applicationString());
         HttpURLConnection conn = openHttpConnectionPrivate(url, requestProperties);
         return openHttpStream(url, conn);
 

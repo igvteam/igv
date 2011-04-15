@@ -106,7 +106,9 @@ public class Main {
         initializeLog();
         log.info("Startup  " + Globals.applicationString());
         log.info("Default User Directory: " + Globals.getUserDirectory());
-        System.setProperty("http.agent", Globals.applicationString());
+
+        // Dont' set User-Agent here,  set on each connection
+        //System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
