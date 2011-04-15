@@ -99,12 +99,8 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
-            int lastPixelEnd = -1;
-            int occludedCount = 0;
-            int maxOcclusions = 2;
 
-            IGVFeature featureArray[] = featureList.toArray(new IGVFeature[featureList.size()]);
-            for (IGVFeature feature : featureArray) {
+            for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
                 // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
@@ -130,18 +126,6 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                     //
                     int displayPixelEnd = (int) Math.min(trackRectangleMaxX, virtualPixelEnd);
                     int displayPixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
-
-
-                    if (displayPixelEnd <= lastPixelEnd) {
-                        if (occludedCount >= maxOcclusions) {
-                            continue;
-                        } else {
-                            occludedCount++;
-                        }
-                    } else {
-                        occludedCount = 0;
-                        lastPixelEnd = displayPixelEnd;
-                    }
 
                     float depth = junctionFeature.getJunctionDepth();
 

@@ -55,6 +55,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     protected int minReadFlankingWidth = 0;
     protected int minJunctionCoverage = 1;
 
+    public static final int MAX_READ_DEPTH = 10000;
+
 
     public SpliceJunctionFinderTrack(String id, String name, AlignmentDataManager dataManager) {
         super(id, name);
@@ -82,6 +84,12 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
             AlignmentInterval interval = null;
             if (dataManager != null) {
+                //monkeying with the maximum read depth for this dataManager
+                //todo: this is probably dangerous
+                int previousMaxDepth = dataManager.getMaxLevels();
+                if (previousMaxDepth < MAX_READ_DEPTH)
+                    dataManager.setMaxLevels(MAX_READ_DEPTH);
+
                 //This method is called in a Runnable in its own thread, so we can enter a long while loop here
                 //and make sure the features get loaded, without hanging the interface
                 interval = dataManager.getLoadedInterval(context);
@@ -94,6 +102,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                         catch (InterruptedException e) {}
                     interval = dataManager.getLoadedInterval(context);
                 }
+
+                if (previousMaxDepth < MAX_READ_DEPTH)
+                    dataManager.setMaxLevels(previousMaxDepth);
             }
             //interval really shouldn't be null at this point
 
@@ -155,6 +166,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                                     {
                                         junction = new SpliceJunctionFeature(chr, junctionStart, junctionEnd,
                                                 isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
+//    if ((junctionStart == 198358190) && (junctionEnd == 198358922))
+//        System.err.println("woot!");
                                         endJunctionsMap.put(junctionEnd, junction);
                                         spliceJunctionFeatures.add(junction);
                                     }

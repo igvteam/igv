@@ -166,10 +166,12 @@ public class SpliceJunctionFeature extends BasicFeature {
             }
 
             valueString.append("<br>");
-            valueString.append(getLocusString());
+            valueString.append(chromosome + ":" + junctionStart + "-" + junctionEnd);
 
             valueString.append("<br>Strand: " + (getStrand().equals(Strand.POSITIVE) ? "+" : "-"));
-            valueString.append("<br>Depth = " + junctionDepth);
+            valueString.append("<br>Depth = " + junctionDepth + ", Flanking Widths: (" +
+                    this.getStartFlankingRegionLength() + "," +
+                    this.getEndFlankingRegionLength() + ")");
             if (hasFlankingRegionDepthArrays())
             {
                 if (position >= start && position < junctionStart)
