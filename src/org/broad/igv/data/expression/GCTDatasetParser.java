@@ -403,8 +403,6 @@ public class GCTDatasetParser {
     public void addRow(String probeId, String description, float[] values, char[] calls) {
 
         List<Locus> loci = locusHelper.getLoci(probeId, description);
-        System.out.println("description: " + description);
-        System.out.println("loci" + loci);
         if (loci != null) {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
