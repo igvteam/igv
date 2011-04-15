@@ -595,7 +595,7 @@ public class IgvTools {
 
     public void doSort(String ifile, String ofile, String tmpDirName, int maxRecords) {
 
-        System.out.println("Sorting " + ifile);
+        System.out.println("Sorting " + ifile + "  -> " + ofile);
         File inputFile = new File(ifile);
         File outputFile = new File(ofile);
         Sorter sorter = Sorter.getSorter(inputFile, outputFile);

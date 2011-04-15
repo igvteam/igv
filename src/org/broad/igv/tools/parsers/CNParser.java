@@ -79,8 +79,7 @@ public class CNParser extends AbstractParser {
         String tmp = locator.getPath().toLowerCase();
         tmp = tmp.endsWith(".txt") ? tmp.substring(0, tmp.length() - 4) : tmp;
 
-        boolean hasCalls =
-                tmp.endsWith(".xcn") || tmp.endsWith(".snp");
+        boolean hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
         skipColumns = hasCalls ? 2 : 1;
 
         if (tmp.endsWith(".igv")) {
