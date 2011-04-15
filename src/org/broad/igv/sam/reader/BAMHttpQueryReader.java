@@ -59,7 +59,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
     public BAMHttpQueryReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.url = new URL(locator.getPath());
         if (requireIndex) {
-            indexFile = getIndexFile(url);
+            indexFile = getIndexFile(url, locator.getIndexPath());
             if(indexFile == null) {
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
@@ -160,7 +160,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
 
     // TODO -- revisit caching scehme,  do something for ftp loads
 
-    File getIndexFile(URL url) throws IOException {
+    File getIndexFile(URL url, String indexPath) throws IOException {
 
         String urlString = url.toString();
 
@@ -171,7 +171,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        loadIndexFile(urlString, indexFile);
+        loadIndexFile(urlString, indexPath, indexFile);
         indexFile.deleteOnExit();
 
         return indexFile;
@@ -185,13 +185,13 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         return indexName;
     }
 
-    private void loadIndexFile(String path, File indexFile) throws IOException {
+    private void loadIndexFile(String path, String indexPath, File indexFile) throws IOException {
         InputStream is = null;
         OutputStream os = null;
 
         try {
-            String indexPath = path.endsWith(".bai") ? path : path + ".bai";
-            URL indexURL = new URL(indexPath + ".bai");
+            String idx = (indexPath != null && indexPath.length() > 0) ? indexPath : path + ".bai";
+            URL indexURL = new URL(idx);
             os = new FileOutputStream(indexFile);
             try {
                 is = IGVHttpUtils.openConnectionStream(indexURL);

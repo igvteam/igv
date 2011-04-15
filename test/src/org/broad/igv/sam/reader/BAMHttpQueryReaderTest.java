@@ -29,6 +29,7 @@ import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.CachingQueryReader;
+import org.broad.igv.util.ResourceLocator;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -54,8 +55,7 @@ public class BAMHttpQueryReaderTest {
 
     @Before
     public void setUpClass() throws Exception {
-        URL url = new URL(BAM_URL_STRING);
-        CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(url, true));
+        CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true));
         System.out.println("Index loaded");
     }
 
