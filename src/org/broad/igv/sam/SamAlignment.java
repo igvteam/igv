@@ -350,7 +350,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     if (readBases == null || readBases.length == 0) {
                         Arrays.fill(blockBases, (byte) '=');
                     } else if (nBasesAvailable < op.nBases) {
-                        Arrays.fill(blockBases, (byte) '*');
+                        Arrays.fill(blockBases, (byte) '?');
                     } else {
                         System.arraycopy(readBases, fromIdx, blockBases, 0, op.nBases);
 
