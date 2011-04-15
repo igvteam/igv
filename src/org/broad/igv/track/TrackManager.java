@@ -541,6 +541,18 @@ public class TrackManager {
     }
 
     /**
+     * Refresh the data in all tracks that respond to this message (note: most do not,  it was added early
+     * on for copy number data and is kept for backward compatibility).
+     */
+    public void refreshData() {
+
+        long t0 = System.currentTimeMillis();
+        for (Track track : getAllTracks(false)) {
+            track.refreshData(t0);
+        }
+    }
+
+    /**
      * Sort all groups (data and feature) by attribute value(s).  Tracks are
      * sorted within groups.
      *
