@@ -66,8 +66,8 @@ public class CNSorter extends Sorter {
 
     Parser getIGVParser() throws IOException {
 
-        int chrColumn = 1;
-        int startColumn = 2;
+        int chrColumn = 0;
+        int startColumn = 1;
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(inputFile));
