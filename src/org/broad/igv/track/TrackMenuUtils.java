@@ -25,12 +25,11 @@ import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.stats.KMPlotTest;
+import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.renderer.*;
@@ -145,7 +144,7 @@ public class TrackMenuUtils {
             menu.addSeparator();
             addDataItems(menu, tracks);
         } else if (featureTracksOnly) {
-            menu.add(getChangeFontSizeItem(tracks));           
+            menu.add(getChangeFontSizeItem(tracks));
             menu.addSeparator();
             addFeatureItems(menu, tracks, te);
         }
@@ -302,7 +301,7 @@ public class TrackMenuUtils {
         menu.add(getShowDataRangeItem(tracks));
 
 
-        menu.add(getChangeKMPlotItem(tracks));
+        //menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -977,7 +976,8 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                KMPlotTest.openPlot(selectedTracks);
+                KMPlotFrame frame = new KMPlotFrame(selectedTracks);
+                frame.setVisible(true);
             }
         });
         return item;
