@@ -56,6 +56,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     protected TrackProperties trackProperties = null;
 
     TrackType trackType;
+    boolean gffTags = false;
 
     public AbstractFeatureParser() {
         genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
@@ -114,8 +115,8 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
         List<org.broad.tribble.Feature> features = loadFeatures(locator, -1);
-        if(features.size() == 0) {
-               //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
+        if (features.size() == 0) {
+            //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
         }
         FeatureCollectionSource source = new FeatureCollectionSource(features, genome);
         FeatureTrack track = new FeatureTrack(locator, source);
@@ -186,7 +187,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             int nLines = 0;
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
-                if(nextLine.length() == 0) continue;
+                if (nextLine.length() == 0) continue;
                 nLines++;
                 if ((maxLines > 0) && (nLines > maxLines)) {
                     break;
@@ -207,15 +208,17 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                             TrackProperties tp = new TrackProperties();
                             ParsingUtils.parseTrackLine(nextLine, tp);
                             setTrackProperties(tp);
-                        } else if(nextLine.startsWith("#coords")) {
+                        } else if (nextLine.startsWith("#coords")) {
                             try {
                                 String[] tokens = nextLine.split("=");
                                 startBase = Integer.parseInt(tokens[1]);
                             }
-                            catch(Exception e) {
+                            catch (Exception e) {
                                 log.error("Error parsing coords line: " + nextLine, e);
                             }
-                            
+
+                        } else if (nextLine.startsWith("#gffTags")) {
+                            gffTags = true;
                         }
                     } else {
                         IGVFeature feature = parseLine(nextLine);

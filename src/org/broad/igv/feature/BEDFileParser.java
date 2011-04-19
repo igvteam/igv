@@ -25,10 +25,12 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Class description
+ * Parser for BED files
  *
  * @author Enter your name here...
  * @version Enter version here..., 08/10/10
@@ -36,6 +38,8 @@ import java.util.List;
 public class BEDFileParser extends UCSCParser {
 
     private static Logger log = Logger.getLogger(BEDFileParser.class);
+
+    private GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
 
     @Override
     /**
@@ -94,9 +98,36 @@ public class BEDFileParser extends UCSCParser {
 
         // Name
         if (tokenCount > 3) {
-            String name = tokens[3].replaceAll("\"", "");
-            feature.setName(name);
-            feature.setIdentifier(name);
+            if (gffTags) {
+                Map<String, String> atts = new HashMap();
+                tagHelper.parseAttributes(tokens[3], atts);
+                String name = tagHelper.getName(atts);
+                if (name == null) {
+                    name = tokens[3];
+                }
+                feature.setName(name);
+
+                String id = atts.get("ID");
+                if (id != null) {
+                    FeatureDB.put(id, feature);
+                    feature.setIdentifier(id);
+                } else {
+                    feature.setIdentifier(name);
+                }
+                String alias = atts.get("Alias");
+                if (alias != null) {
+                    FeatureDB.put(alias, feature);
+                }
+
+                String description = GFFParser.getDescription(atts);
+                feature.setDescription(description);
+
+
+            } else {
+                String name = tokens[3].replaceAll("\"", "");
+                feature.setName(name);
+                feature.setIdentifier(name);
+            }
         }
 
         // Score
@@ -148,8 +179,7 @@ public class BEDFileParser extends UCSCParser {
             createExons(start, tokens, feature, chr, feature.getStrand());
 
             //todo: some refactoring that allows this hack to be removed
-            if (isSpliceJunction)
-            {
+            if (isSpliceJunction) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
 
                 List<Exon> exons = feature.getExons();

@@ -65,6 +65,10 @@ public class FeatureDB {
         }
     }
 
+    public static void put(String key, NamedFeature feature) {
+        featureMap.put(key, feature);
+    }
+
     private FeatureDB() {
         // This class can't be instantiated
     }

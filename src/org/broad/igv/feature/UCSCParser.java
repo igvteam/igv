@@ -38,6 +38,7 @@ abstract public class UCSCParser extends AbstractFeatureParser {
      * @return
      */
     String[] tokens = new String[25];
+
     protected IGVFeature parseLine(String nextLine) {
 
         if (nextLine.startsWith("#")) {
@@ -53,6 +54,7 @@ abstract public class UCSCParser extends AbstractFeatureParser {
         int nTokens = ParsingUtils.splitWhitespace(nextLine.replaceAll("\"", ""), tokens);
         return parseLine(tokens, nTokens);
     }
+
 
     abstract protected IGVFeature parseLine(String[] tokens, int nTokens);
 

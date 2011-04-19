@@ -54,7 +54,7 @@ public class GFFParser implements FeatureParser {
     static HashSet<String> geneParts = new HashSet();
     static HashSet<String> ignoredTypes = new HashSet();
 
-    static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus", "alias", "systematic_id", "ID"};
+    //static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus","Alias", "alias", "systematic_id", "ID"};
 
 
     static String[] tokens = new String[200];
@@ -391,6 +391,10 @@ public class GFFParser implements FeatureParser {
         return features;
     }
 
+    static String getDescription(Map<String, String> attributes) {
+        return getDescription(attributes, null);
+    }
+
 
     static String getDescription(Map<String, String> attributes, String type) {
         // 30 attributes is the maximum visible on a typical screen
@@ -399,8 +403,10 @@ public class GFFParser implements FeatureParser {
 
         // Reset buffer.
         buf.setLength(0);
-        buf.append(type);
-        buf.append("<br>");
+        if (type != null) {
+            buf.append(type);
+            buf.append("<br>");
+        }
         for (Map.Entry<String, String> att : attributes.entrySet()) {
 
             //if (!ignoreAttributes.contains(att.getKey())) {
@@ -448,13 +454,7 @@ public class GFFParser implements FeatureParser {
             return null;
         }
 
-        for (String nf : nameFields) {
-            if (attributes.containsKey(nf)) {
-                return attributes.get(nf);
-            }
-        }
-
-        return attributes.values().iterator().next();
+        return helper.getName(attributes);
 
     }
 
@@ -706,11 +706,13 @@ public class GFFParser implements FeatureParser {
 
         void setUrlDecoding(boolean b);
 
+        String getName(Map<String, String> attributes);
     }
 
-    class GFF2Helper implements Helper {
+    public static class GFF2Helper implements Helper {
 
-        String[] idFields = {"systematic_id", "ID", "transcript_id", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
+        static String[] idFields = {"systematic_id", "ID", "transcript_id", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
+        static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus", "Alias", "alias", "systematic_id", "ID"};
 
 
         public void setUrlDecoding(boolean b) {
@@ -772,11 +774,27 @@ public class GFFParser implements FeatureParser {
             }
             return getName(attributes);
         }
+
+        public String getName(Map<String, String> attributes) {
+
+            if (attributes.size() == 0) {
+                return null;
+            }
+
+            for (String nf : nameFields) {
+                if (attributes.containsKey(nf)) {
+                    return attributes.get(nf);
+                }
+            }
+
+            return attributes.values().iterator().next();
+
+        }
     }
 
-    class GFF3Helper implements Helper {
+    public static class GFF3Helper implements Helper {
 
-
+        static String[] nameFields = {"Name", "Alias", "ID", "Gene", "gene", "Locus", "locus"};
         private boolean useUrlDecoding = true;
 
 
@@ -814,6 +832,21 @@ public class GFFParser implements FeatureParser {
 
         public void setUrlDecoding(boolean useUrlDecoding) {
             this.useUrlDecoding = useUrlDecoding;
+        }
+
+        public String getName(Map<String, String> attributes) {
+            if (attributes.size() == 0) {
+                return null;
+            }
+
+            for (String nf : nameFields) {
+                if (attributes.containsKey(nf)) {
+                    return attributes.get(nf);
+                }
+            }
+
+            return attributes.values().iterator().next();
+
         }
 
 

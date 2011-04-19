@@ -1,0 +1,4 @@
+#gffTags
+chr1    100 200 Alias=SP00035;Name=SomeGeneSymbol;product="my%20favorite%20product%20name";ID=700000000;
+chr1    300 400 Alias=SP00035;product="my%20favorite%20product%20name";ID=700000000;
+chr1    500 600 product="my%20favorite%20product%20name";ID=700000000;
