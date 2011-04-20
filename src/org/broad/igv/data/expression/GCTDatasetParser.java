@@ -286,10 +286,10 @@ public class GCTDatasetParser {
                     if (heading.contains("Beta_Value") || heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("signal")) {
                         valuesIndices.add(i);
                     }
-                    if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
+                   /* if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
                         descriptionColumn = i;
                         hasDescription = true;
-                    }
+                    }*/
                 }
 
                 if (nColumns != valuesIndices.size()) {
