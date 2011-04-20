@@ -217,7 +217,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             if (item instanceof GenomeListItem) {
                                 GenomeListItem genomeListItem = (GenomeListItem) item;
                                 String requestedGenomeId = genomeListItem.getId();
-                                String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+                                final IGV igv = IGV.getInstance();
+                                String currentGenomeId = igv.getGenomeManager().getGenomeId();
                                 if ((currentGenomeId != null) && requestedGenomeId.equalsIgnoreCase(currentGenomeId)) {
 
                                     // Nothing to do if genome already loaded
@@ -226,26 +227,24 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
                                 final ProgressMonitor monitor = new ProgressMonitor();
                                 final ProgressBar bar =
-                                        ProgressBar.showProgressDialog(IGV.getMainFrame(),
-                                                "Loading Genome...", monitor,
-                                                false);
+                                        ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
 
 
                                 if (requestedGenomeId != null) {
                                     try {
                                         monitor.fireProgressChange(50);
 
-                                        IGV.getInstance().getGenomeManager().loadGenome(genomeListItem, genomeListItem.isUserDefined());
+                                        igv.getGenomeManager().loadGenome(genomeListItem, genomeListItem.isUserDefined());
 
                                         monitor.fireProgressChange(25);
 
                                         if (!isGenomeCached(genomeListItem.getId())) {
                                             cachedGenomeItemList.add(genomeListItem);
                                         }
+                                        
+                                        igv.createNewSession(null);
+                                        igv.doChooseGenome(igv.getGenomeManager().getGenomeDescriptor(requestedGenomeId));
 
-                                        IGV.getInstance().doChooseGenome(
-                                                IGV.getInstance().getGenomeManager().getGenomeDescriptor(
-                                                        requestedGenomeId));
 
                                         previousSelectedItemId = genomeComboBox.getSelectedIndex();
 
