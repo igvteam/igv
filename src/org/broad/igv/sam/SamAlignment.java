@@ -24,6 +24,7 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMReadGroupRecord;
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -95,7 +96,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         String refName = record.getReferenceName();
 
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = Globals.isHeadless() ? null :  IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
 
