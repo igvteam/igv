@@ -37,7 +37,6 @@ import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.feature.tribble.CodecFactory;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -650,8 +649,8 @@ public class IgvTools {
         if (genomeId == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
-        IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
-        genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        genomeManager.setGenomeId(genomeId);
+        genome = genomeManager.getGenome(genomeId);
         return genome;
     }
 
