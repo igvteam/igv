@@ -884,7 +884,7 @@ public class GenomeManager {
 
         // If the server is unreaachable load cached genomes.
         LinkedHashSet<GenomeListItem> cacheGenomeItemList = null;
-        if (serverSideItemList == null) {
+        if (serverSideItemList == null || serverSideItemList.isEmpty()) {
             cacheGenomeItemList = getCachedGenomeArchiveList();
         }
 

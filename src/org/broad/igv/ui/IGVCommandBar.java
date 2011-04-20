@@ -86,7 +86,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     /**
      * Creates new form IGVCommandBar
-
      */
     public IGVCommandBar() {
         initComponents();
@@ -350,7 +349,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
             LinkedHashSet<GenomeListItem> serverSideItemList = null;
 
             try {
-
                 serverSideItemList =
                         IGV.getInstance().getGenomeManager().getServerGenomeArchiveList(excludedArchivesUrls);
             } catch (Exception e) {
@@ -365,8 +363,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 });
             }
 
-            LinkedHashSet<GenomeListItem> cacheGenomeItemList =
-                    IGV.getInstance().getGenomeManager().getCachedGenomeArchiveList();
+            LinkedHashSet<GenomeListItem> cacheGenomeItemList = null;
+            if (serverSideItemList == null || serverSideItemList.isEmpty()) {
+                cacheGenomeItemList = IGV.getInstance().getGenomeManager().getCachedGenomeArchiveList();
+            }
 
             LinkedHashSet<GenomeListItem> clientSideItemList =
                     IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList();
