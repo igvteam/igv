@@ -94,9 +94,6 @@ public class CoverageCounter {
 
     private String interval = null;
 
-    // TODO Sigma hack
-    List<Feature> genes;
-
 
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
@@ -121,8 +118,6 @@ public class CoverageCounter {
             parseOptions(options);
         }
 
-        // TODO Sigma hack
-        genes = GeneManager.getGeneManager(genome.getId()).getGenesForChromosome("chr1");
     }
 
     private void parseOptions(String options) {
@@ -571,9 +566,10 @@ public class CoverageCounter {
                         wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
                     }
 
+                    /*
                     if (coverageHistogram != null) {
 
-                        List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
+                       List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
                         if (transcripts != null && !transcripts.isEmpty()) {
 
                             boolean isCoding = false;
@@ -591,8 +587,9 @@ public class CoverageCounter {
                                     coverageHistogram.addDataPoint(baseCounts[i]);
                                 }
                             }
-                        }
-                    }
+
+                   }
+                    */
 
                     bucketsToClose.add(entry.getKey());
                 }
