@@ -882,16 +882,19 @@ public class GenomeManager {
             log.error(UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST, e);
         }
 
-        LinkedHashSet<GenomeListItem> cacheGenomeItemList = getCachedGenomeArchiveList();
+        // If the server is unreaachable load cached genomes.
+        LinkedHashSet<GenomeListItem> cacheGenomeItemList = null;
+        if (serverSideItemList == null) {
+            cacheGenomeItemList = getCachedGenomeArchiveList();
+        }
 
         LinkedHashSet<GenomeListItem> userDefinedItemList = getUserDefinedGenomeArchiveList();
 
-
-        if (serverSideItemList != null) {
-            genomeListItems.addAll(serverSideItemList);
-        }
         if (userDefinedItemList != null) {
             genomeListItems.addAll(userDefinedItemList);
+        }
+        if (serverSideItemList != null) {
+            genomeListItems.addAll(serverSideItemList);
         }
         if (cacheGenomeItemList != null) {
             genomeListItems.addAll(cacheGenomeItemList);

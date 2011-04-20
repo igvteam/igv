@@ -82,7 +82,7 @@ public class IgvTools {
     public static final int INTERVAL_SIZE = 1000;
     public static final int LINEAR_INDEX = 1;
     public static final int INTERVAL_INDEX = 2;
-    private static GenomeManager genomeManager;
+    
 
     /**
      * The general usage string
@@ -627,7 +627,8 @@ public class IgvTools {
 
         String rootDir = FileUtils.getInstallDirectory();
 
-        Genome genome = getGenomeManager().getGenome(genomeFileOrID);
+        final GenomeManager genomeManager = new GenomeManager();
+        Genome genome = genomeManager.getGenome(genomeFileOrID);
         if (genome != null) {
             return genome;
         }
@@ -644,7 +645,7 @@ public class IgvTools {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
 
-        GenomeManager.GenomeListItem item = IGV.getInstance().getGenomeManager().loadGenomeFromLocalFile(genomeFile);
+        GenomeManager.GenomeListItem item = genomeManager.loadGenomeFromLocalFile(genomeFile);
         String genomeId = item.getId();
         if (genomeId == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
@@ -652,13 +653,6 @@ public class IgvTools {
         IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
         genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         return genome;
-    }
-
-    private static GenomeManager getGenomeManager() {
-        if(genomeManager == null) {
-            genomeManager = new GenomeManager();
-        }
-        return genomeManager;
     }
 
 
