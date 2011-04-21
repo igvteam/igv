@@ -109,20 +109,20 @@ public class BEDFileParser extends UCSCParser {
 
                 String id = atts.get("ID");
                 if (id != null) {
-                    FeatureDB.put(id, feature);
+                    FeatureDB.put(id.toUpperCase(), feature);
                     feature.setIdentifier(id);
                 } else {
                     feature.setIdentifier(name);
                 }
                 String alias = atts.get("Alias");
                 if (alias != null) {
-                    FeatureDB.put(alias, feature);
+                    FeatureDB.put(alias.toUpperCase(), feature);
                 }
                 String geneSymbols = atts.get("Symbol");
                 if(geneSymbols != null) {
                     String [] symbols = geneSymbols.split(",");
                     for(String sym : symbols) {
-                        FeatureDB.put(sym.trim(), feature);
+                        FeatureDB.put(sym.trim().toUpperCase(), feature);
                     }
                 }
 
