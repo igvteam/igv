@@ -118,7 +118,7 @@ public class BEDFileParser extends UCSCParser {
                 if (alias != null) {
                     FeatureDB.put(alias, feature);
                 }
-                String geneSymbols = atts.get("gene symbols");
+                String geneSymbols = atts.get("Symbol");
                 if(geneSymbols != null) {
                     String [] symbols = geneSymbols.split(",");
                     for(String sym : symbols) {
