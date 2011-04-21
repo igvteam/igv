@@ -141,9 +141,9 @@ public class TrackLoader {
                 loadMutFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
                     typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
-                loadSegFile(locator, newTracks);
+                loadSegFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".seg.zip")) {
-                loadBinarySegFile(locator, newTracks);
+                loadBinarySegFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gistic")) {
                 loadGisticFile(locator, newTracks);
             } else if (typeString.endsWith(".gs")) {
@@ -880,16 +880,16 @@ public class TrackLoader {
         }
     }
 
-    private void loadSegFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         // TODO - -handle remote resource
-        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(locator);
+        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(locator, genome);
         String path = locator.getPath();
         TrackProperties props = ds.getTrackProperties();
 
         // The "freq" track.  TODO - make this optional
         if (ds.getSampleNames().size() > 1) {
-            FreqData fd = new FreqData(ds);
+            FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
             String freqTrackName = (new File(path)).getName();
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
@@ -911,13 +911,13 @@ public class TrackLoader {
         }
     }
 
-    private void loadBinarySegFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadBinarySegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         SegmentedBinaryDataSet ds = new SegmentedBinaryDataSet(locator);
         String path = locator.getPath();
 
         // The "freq" track.  Make this optional?
-        FreqData fd = new FreqData(ds);
+        FreqData fd = new FreqData(ds, genome);
         String freqTrackId = path;
         String freqTrackName = (new File(path)).getName();
         CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);

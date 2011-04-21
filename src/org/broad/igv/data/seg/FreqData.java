@@ -48,18 +48,16 @@ public class FreqData {
 
 
 
-    public FreqData(SegmentedDataSet ds) {
-        compute(ds);
+    public FreqData(SegmentedDataSet ds, Genome genome) {
+        compute(ds, genome);
 
     }
 
 
-    void compute(SegmentedDataSet ds) {
+    void compute(SegmentedDataSet ds, Genome genome) {
 
         this.logNormalized = ds.isLogNormalized();
 
-        // Initialize bins.  We assume the data is not sparse.
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
         // 200 kb bin size
         int binSize = 200000;

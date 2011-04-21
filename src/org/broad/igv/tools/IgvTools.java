@@ -247,8 +247,6 @@ public class IgvTools {
                 int binSize = (Integer) parser.getOptionValue(binSizeOption, defaultBinSize);
                 String outputDir = (String) parser.getOptionValue(outputDirOption, null);
                 doIndex(ifile, outputDir, indexType, binSize);
-            } else if (command.equals("seg")) {
-                doPreprocessSeg(argv);
             } else if (command.equals("wibtowig")) {
                 validateArgsLength(nonOptionArgs, 4);
                 File txtFile = new File(nonOptionArgs[1]);
@@ -497,13 +495,11 @@ public class IgvTools {
      * @param argv
      * @deprecated Convert a .seg file to a .seg.zip file
      */
-    public void doPreprocessSeg(String[] argv) {
+    public void doPreprocessSeg(String[] argv, Genome genome) {
         int nArgs = argv.length - 1;
         String[] args = new String[nArgs];
         System.arraycopy(argv, 1, args, EXT_FACTOR, nArgs);
-        SegmentedDataWriter.main(args);
     }
-
 
     /**
      * Create an index for an alignment or feature file

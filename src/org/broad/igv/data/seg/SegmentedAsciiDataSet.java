@@ -65,19 +65,20 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
     private Map<String, List<LocusScore>> wholeGenomeScoresCache = new HashMap();
     private long lastRefreshTime = 0;
     private TrackProperties trackProperties;
+    Genome genome;
 
     /**
      * Constructs ...
      *
      * @param locator
      */
-    public SegmentedAsciiDataSet(ResourceLocator locator) {
+    public SegmentedAsciiDataSet(ResourceLocator locator, Genome genome) {
         //parser = locator.getPath().toLowerCase().endsWith(".gbench") ?
         //        new GBenchFileParser(locator) :
         //        new SegmentFileParser(locator);
-
+        this.genome = genome;
         parser = new SegmentFileParser(locator);
-        parser.loadSegments(this);
+        parser.loadSegments(this, genome);
         sortLists();
 
 
@@ -106,7 +107,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
             segments = new HashMap();
             headings = new ArrayList();
             wholeGenomeScoresCache.clear();
-            parser.loadSegments(this);
+            parser.loadSegments(this, genome);
             lastRefreshTime = timestamp;
         }
 
@@ -226,7 +227,6 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         List<LocusScore> wholeGenomeScores = wholeGenomeScoresCache.get(heading);
         if ((wholeGenomeScores == null) || wholeGenomeScores.isEmpty()) {
             int locationUnit = 1000;
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             // Compute the smallest concievable feature that could be viewed on the
             // largest screen.  Be conservative.   The smallest feature is one at

@@ -25,6 +25,7 @@ package org.broad.igv.data.seg;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
@@ -177,18 +178,16 @@ public class SegmentedDataWriter {
         }
     }
 
-    public static void main(String[] args) {
+    public static void write(String[] args, Genome genome) {
 
 
         String inputFile = null;
         String outputFile = null;
-        String genomeId = null;
         boolean compress = true;
         TrackType trackType = TrackType.COPY_NUMBER;
         if (args.length > 2) {
             inputFile = args[0].trim();
             outputFile = args[1].trim();
-            genomeId = args[2].trim();
         } else {
             System.out.println("Arguments: inputFile  outputFile  genomeId  [track type (optional)");
             System.exit(-1);
@@ -205,11 +204,8 @@ public class SegmentedDataWriter {
         //inputFile = "/Users/jrobinso/IGVTestData/Demo/TCGA/broad.seg";
         //outputFile = "test.seg.zip";
 
-        // TODO -- remove the need for this hack
-        System.out.println("Setting genome: " + genomeId);
-       IGV.getInstance().getGenomeManager().setGenomeId(genomeId);
 
-        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(new ResourceLocator(inputFile));
+        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(new ResourceLocator(inputFile), genome);
 
         SegmentedDataWriter writer = new SegmentedDataWriter(ds, new File(outputFile), compress, trackType);
 

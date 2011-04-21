@@ -19,10 +19,12 @@
 
 package org.broad.igv.data.seg;
 
+import org.broad.igv.feature.genome.Genome;
+
 /**
  * User: jrobinso
  * Date: Feb 18, 2010
  */
 public interface SegFileParser {
-    void loadSegments(SegmentedAsciiDataSet dataset);
+    void loadSegments(SegmentedAsciiDataSet dataset, Genome genome);
 }

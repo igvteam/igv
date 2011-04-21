@@ -80,7 +80,7 @@ public class SegmentFileParser implements SegFileParser {
      *
      * @return
      */
-    public void loadSegments(SegmentedAsciiDataSet dataset) {
+    public void loadSegments(SegmentedAsciiDataSet dataset, Genome genome) {
 
         if (birdsuite) {
             dataset.setTrackType(TrackType.CNV);
@@ -121,8 +121,6 @@ public class SegmentFileParser implements SegFileParser {
             }
  
             String[] tokens = new String[headings.length];
-
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 
