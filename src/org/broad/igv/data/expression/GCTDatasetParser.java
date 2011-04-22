@@ -33,6 +33,7 @@ package org.broad.igv.data.expression;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MagetabSignalDialog;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
@@ -203,7 +204,7 @@ public class GCTDatasetParser {
                 dataFileLocator.getDescription().equals("MAGE_TAB")) {
             type = FileType.MAGE_TAB;
             descriptionColumn = -1;
-            dataStartColumn = 1;
+            dataStartColumn = -1;
             probeColumn = 0;
         } else {
             type = FileType.TAB;
@@ -253,8 +254,27 @@ public class GCTDatasetParser {
             int skip = hasCalls ? 2 : 1;
             int nTokens = ParsingUtils.split(headerLine, tokens, '\t');
 
+            if (type == FileType.MAGE_TAB)
+            {
+                //find column index of first sample
+                int count=1;
+                while(dataStartColumn == -1 && count < nTokens)
+                {
+                    if(tokens[count] != null && !tokens[count].trim().equals(""))
+                    {
+                        dataStartColumn = count;
+                    }
+                    count++;
+                }
+
+                if(dataStartColumn == -1)
+                {
+                    throw new Exception("Could not find column index of first sample.");
+                }
+            }
+            
             int nColumns = (nTokens - dataStartColumn) / skip;
-            ArrayList columnHeadingsObj = new ArrayList();
+            ArrayList<String> columnHeadingsObj = new ArrayList();
             for (int i = 0; i < nColumns; i++) {
                 String heading = tokens[dataStartColumn + i * skip].replace('\"', ' ').trim();
                 if (type == FileType.MAGE_TAB) {
@@ -268,24 +288,82 @@ public class GCTDatasetParser {
                 }
             }
 
-            columnHeadings = (String[]) columnHeadingsObj.toArray(new String[0]);
+            columnHeadings = columnHeadingsObj.toArray(new String[0]);
             dataset.setColumnHeadings(columnHeadings);
 
             nColumns = columnHeadings.length;
 
             //parse quantitation type column header
-
             IntArrayList valuesIndices = new IntArrayList(nColumns);
             if (type == FileType.MAGE_TAB) {
                 nextLine = reader.readLine();
+
                 nTokens = ParsingUtils.split(nextLine, tokens, '\t');
-                for (int i = dataStartColumn; i < nTokens; i++) {
+                List<String> headingColumns = Arrays.asList(tokens);
+                Set<String> quantitations = new HashSet();
+                
+                for (int i = dataStartColumn; i < nTokens; i++)
+                {
+                    quantitations.add(tokens[i]);
+                }
+
+                String qCol = null;
+
+                if(headingColumns.contains("Beta_Value"))
+                {
+                    qCol = "Beta_Value";
+                }
+                else if(headingColumns.contains("Beta value"))
+                {
+                    qCol = "Beta value";
+
+                }
+                else if(headingColumns.contains("log2 Signal"))
+                {
+                    qCol = "log2 Signal";
+
+                }
+                else if(headingColumns.contains("Signal"))
+                {
+                    qCol = "Signal";
+                }
+                else if(headingColumns.contains("signal"))
+                {
+                    qCol = "signal";
+                }
+                else
+                {
+                    if(quantitations == null || quantitations.size() ==0)
+                    {
+                        throw new Exception("Could not find any signal columns in the MAGE-TAB file");
+                    }
+                    //Need to get the quantiation column from the user
+                    ArrayList qColumns = new ArrayList(quantitations);
+
+                    Collections.sort(qColumns);
+
+                    MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[])qColumns.toArray(new String[0]));
+                    msDialog.setVisible(true);
+
+                    if(!msDialog.isCanceled())
+                    {
+                        qCol = msDialog.getQuantitationColumn();
+                    }
+                    else
+                    {
+                        throw new InterruptedException();
+                    }
+                }
+
+                for (int i = dataStartColumn; i < nTokens; i++)
+                {
                     String heading = tokens[i].replace('\"', ' ').trim();
 
                     //Check for tcga data column headings
-                    if (heading.contains("Beta_Value") || heading.contains("Beta value") || heading.contains("log2 Signal") || heading.contains("Signal") || heading.contains("signal")) {
+                    if (heading.contains(qCol)) {
                         valuesIndices.add(i);
                     }
+
                    /* if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
                         descriptionColumn = i;
                         hasDescription = true;
@@ -365,6 +443,7 @@ public class GCTDatasetParser {
         } catch (InterruptedException e) {
             throw new RuntimeException("Operation cancelled");
         } catch (Exception e) {
+            e.printStackTrace();
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
