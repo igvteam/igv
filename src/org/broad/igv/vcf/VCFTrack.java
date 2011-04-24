@@ -174,11 +174,13 @@ public class VCFTrack extends FeatureTrack {
         List<Feature> features = packedFeatures.getFeatures();
         if (features.size() > 0) {
 
-            double locScale = context.getScale();
+            final double locScale = context.getScale();
+            final double origin = context.getOrigin();
             //byte[] reference;
             //int windowStart;
             int lastPX = -1;
-            double pXEnd = rect.getMaxX();
+            final double pXMin = rect.getMinX();
+            final double pXMax = rect.getMaxX();
 
             for (Feature feature : features) {
 
@@ -188,10 +190,13 @@ public class VCFTrack extends FeatureTrack {
                 // 1 -> 0 based coordinates
                 int start = variant.getStart() - 1;
                 int end = variant.getEnd();
-                int pX = (int) ((start - context.getOrigin()) / locScale);
+                int pX = (int) ((start - origin) / locScale);
                 int dX = (int) Math.max(2, (end - start) / locScale);
 
-                if (pX > pXEnd) {
+                if(pX + dX < pXMin) {
+                    continue;
+                }
+                if (pX > pXMax) {
                     break;
                 }
                 int w = dX;
