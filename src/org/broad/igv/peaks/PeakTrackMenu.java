@@ -37,7 +37,7 @@ import java.util.List;
  * @author jrobinso
  * @date Apr 23, 2011
  */
-public class PeakTrackMenu  extends JPopupMenu {
+public class PeakTrackMenu extends JPopupMenu {
 
     private static Logger log = Logger.getLogger(PeakTrackMenu.class);
     private PeakTrack track;
@@ -56,18 +56,29 @@ public class PeakTrackMenu  extends JPopupMenu {
         addDisplayModeItems();
 
         addSeparator();
+        addShadeByItems();
+
+        addSeparator();
+        JMenuItem item = new JMenuItem("Open control dialog");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                PeakTrack.openControlDialog();
+            }
+        });
+        item.setEnabled(!PeakTrack.controlDialogIsOpen());
+        add(item);
+
+        addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
 
     }
 
     public void addDisplayModeItems() {
-
-
         ButtonGroup group = new ButtonGroup();
 
         Track.DisplayMode displayMode = track.getDisplayMode();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapsed");
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapse");
         m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -76,7 +87,7 @@ public class PeakTrackMenu  extends JPopupMenu {
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expanded");
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expand");
         m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -85,12 +96,40 @@ public class PeakTrackMenu  extends JPopupMenu {
             }
         });
 
-
         add(m1);
         add(m3);
         group.add(m1);
         group.add(m3);
 
+    }
+
+    public void addShadeByItems() {
+        ButtonGroup group = new ButtonGroup();
+
+        Track.DisplayMode displayMode = track.getDisplayMode();
+
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Score");
+        m1.setSelected(PeakTrack.getShadeOption() == PeakTrack.ShadeOption.SCORE);
+        m1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                PeakTrack.setShadeOption(PeakTrack.ShadeOption.SCORE);
+                IGV.getInstance().repaint();
+            }
+        });
+
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Fold change");
+        m3.setSelected(PeakTrack.getShadeOption() == PeakTrack.ShadeOption.FOLD_CHANGE);
+        m3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                PeakTrack.setShadeOption(PeakTrack.ShadeOption.FOLD_CHANGE);
+                IGV.getInstance().repaint();
+            }
+        });
+
+        add(m1);
+        add(m3);
+        group.add(m1);
+        group.add(m3);
 
     }
 }

@@ -61,8 +61,15 @@ public class PeakRenderer implements Renderer<Peak> {
                 break;
             }
 
+
             float score = peak.getCombinedScore();
-            if(score < ((PeakTrack) track).getScoreThreshold()) continue;
+            if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.FOLD_CHANGE) {
+                score = peak.getDynamicScore();
+                if (score > 0 && score < 1) {
+                    score = 1 / score;
+                }
+            }
+            if (score < ((PeakTrack) track).getScoreThreshold()) continue;
 
             int top = rect.y;
             int h = rect.height;
@@ -91,13 +98,26 @@ public class PeakRenderer implements Renderer<Peak> {
         //if (peak.isDynamic()) {
         //    c = Color.red;
         //} else {
-        int shadeStep = (int) (score / 10);
-        float alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
+        float alpha = 1.0f;
+        if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.SCORE) {
+            // scale is 1 -> 100
+            int shadeStep = (int) (score / 10);
+            alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
+        } else if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.FOLD_CHANGE) {
+            // Scale is 3 -> 6
+            if (score < 3) {
+                alpha = 0.1f;
+            } else {
+                int shadeStep = (int) (score / .6);
+                alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
+            }
+        }
+
         c = ColorUtilities.getCompositeColor(bgColorComps, fgColorComps, alpha);
         //}
 
         Graphics2D g = context.getGraphic2DForColor(c);
 
-        g.fillRect(pX, top+1, dX, h-2);
+        g.fillRect(pX, top + 1, dX, h - 2);
     }
 }

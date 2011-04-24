@@ -50,7 +50,7 @@ public class Peak implements LocusScore {
         this.timeScores = timeScores;
 
         float dynThreshold = 3;
-        float dynamicScore = timeScores[0] / timeScores[timeScores.length - 1];
+        dynamicScore = timeScores[0] / timeScores[timeScores.length - 1];
         dynamic = (dynamicScore > dynThreshold || (1 / dynamicScore) > dynThreshold);
     }
 

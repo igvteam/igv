@@ -48,7 +48,6 @@ public class PeakControlDialog extends JDialog {
 
     private void closeButtonActionPerformed(ActionEvent e) {
         setVisible(false);
-        dispose();
     }
 
 

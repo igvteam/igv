@@ -40,8 +40,15 @@ import java.util.List;
  */
 public class PeakTrack extends AbstractTrack {
 
+    enum ShadeOption {
+        SCORE, FOLD_CHANGE
+    }
+
+    ;
+
     static PeakControlDialog controlDialog;
-    private static float scoreThreshold = 20;
+    private static float scoreThreshold = 0;
+    private static ShadeOption shadeOption = ShadeOption.SCORE;
 
     int nTimePoints;
     Map<String, List<Peak>> peakMap = new HashMap();
@@ -52,7 +59,6 @@ public class PeakTrack extends AbstractTrack {
         super(locator);
         height = bandHeight;
         loadPeaks(locator.getPath());
-        openControlDialog();
     }
 
     private void loadPeaks(String path) throws IOException {
@@ -76,28 +82,6 @@ public class PeakTrack extends AbstractTrack {
 
     }
 
-    static synchronized void openControlDialog() {
-        if (controlDialog == null) {
-            controlDialog = new PeakControlDialog(IGV.getMainFrame());
-            controlDialog.setVisible(true);
-
-        }
-    }
-
-    static synchronized void closeControlDialog() {
-        controlDialog.setVisible(false);
-        controlDialog.dispose();
-        controlDialog = null;
-    }
-
-
-    public static float getScoreThreshold() {
-        return scoreThreshold;
-    }
-
-    public static void setScoreThreshold(float t) {
-        scoreThreshold = t;
-    }
 
     @Override
     public JPopupMenu getPopupMenu(TrackClickEvent te) {
@@ -173,5 +157,34 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
+
+    public static boolean controlDialogIsOpen() {
+        return controlDialog != null && controlDialog.isVisible();
+    }
+
+
+    static synchronized void openControlDialog() {
+        if (controlDialog == null) {
+            controlDialog = new PeakControlDialog(IGV.getMainFrame());
+        }
+        controlDialog.setVisible(true);
+    }
+
+
+    public static float getScoreThreshold() {
+        return scoreThreshold;
+    }
+
+    public static void setScoreThreshold(float t) {
+        scoreThreshold = t;
+    }
+
+    public static ShadeOption getShadeOption() {
+        return shadeOption;
+    }
+
+    public static void setShadeOption(ShadeOption shadeOption) {
+        PeakTrack.shadeOption = shadeOption;
+    }
 
 }
