@@ -37,7 +37,7 @@ public abstract class Sorter {
     static int MAX_RECORDS_IN_RAM = 500000;
     File inputFile;
     File outputFile;
-    private int maxRecords;
+    private int maxRecords = MAX_RECORDS_IN_RAM;
     private File tmpDir;
     static final String usageString = "igvtools sort <inputFile> [outputFile]";
 
