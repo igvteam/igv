@@ -63,6 +63,11 @@ public class RenderContext {
         return g;
     }
 
+
+    public Color getBackgroundColor() {
+        return panel.getBackground();
+    }
+
     public String getChr() {
         return referenceFrame.getChrName();
     }
