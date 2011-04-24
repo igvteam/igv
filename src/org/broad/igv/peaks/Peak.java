@@ -39,6 +39,7 @@ public class Peak implements LocusScore {
     private float combinedScore;
     private float [] timeScores;
     boolean dynamic = false;
+    float dynamicScore;
 
     public Peak(String chr,int start, int end, String name, float combinedScore, float[] timeScores) {
         this.chr = chr;
@@ -49,8 +50,8 @@ public class Peak implements LocusScore {
         this.timeScores = timeScores;
 
         float dynThreshold = 3;
-        float foldChange = timeScores[0] / timeScores[timeScores.length - 1];
-        dynamic = (foldChange > dynThreshold || (1 / foldChange) > dynThreshold);
+        float dynamicScore = timeScores[0] / timeScores[timeScores.length - 1];
+        dynamic = (dynamicScore > dynThreshold || (1 / dynamicScore) > dynThreshold);
     }
 
     public String getChr() {
@@ -81,6 +82,9 @@ public class Peak implements LocusScore {
         return dynamic;
     }
 
+    public float getDynamicScore() {
+        return dynamicScore;
+    }
 
     // Locus score interface
     public void setStart(int start) {

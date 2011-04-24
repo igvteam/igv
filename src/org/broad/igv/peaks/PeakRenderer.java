@@ -61,13 +61,15 @@ public class PeakRenderer implements Renderer<Peak> {
                 break;
             }
 
+            float score = peak.getCombinedScore();
+            if(score < ((PeakTrack) track).getScoreThreshold()) continue;
+
             int top = rect.y;
             int h = rect.height;
             final float[] timeScores = peak.getTimeScores();
             if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
                 h = (rect.height) / (timeScores.length + 1);
             }
-            float score = peak.getCombinedScore();
             drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score);
 
             if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {

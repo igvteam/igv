@@ -23,6 +23,8 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -38,6 +40,9 @@ import java.util.List;
  */
 public class PeakTrack extends AbstractTrack {
 
+    static PeakControlDialog controlDialog;
+    private static float scoreThreshold = 20;
+
     int nTimePoints;
     Map<String, List<Peak>> peakMap = new HashMap();
     Renderer renderer = new PeakRenderer();
@@ -47,6 +52,7 @@ public class PeakTrack extends AbstractTrack {
         super(locator);
         height = bandHeight;
         loadPeaks(locator.getPath());
+        openControlDialog();
     }
 
     private void loadPeaks(String path) throws IOException {
@@ -68,6 +74,29 @@ public class PeakTrack extends AbstractTrack {
             peakList.add(peak);
         }
 
+    }
+
+    static synchronized void openControlDialog() {
+        if (controlDialog == null) {
+            controlDialog = new PeakControlDialog(IGV.getMainFrame());
+            controlDialog.setVisible(true);
+
+        }
+    }
+
+    static synchronized void closeControlDialog() {
+        controlDialog.setVisible(false);
+        controlDialog.dispose();
+        controlDialog = null;
+    }
+
+
+    public static float getScoreThreshold() {
+        return scoreThreshold;
+    }
+
+    public static void setScoreThreshold(float t) {
+        scoreThreshold = t;
     }
 
     @Override
@@ -101,9 +130,8 @@ public class PeakTrack extends AbstractTrack {
     @Override
     public void setHeight(int height) {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
-            bandHeight  = height;
-        }
-        else {
+            bandHeight = height;
+        } else {
             bandHeight = (height - 6) / (nTimePoints + 1);
         }
         super.setHeight(height);
