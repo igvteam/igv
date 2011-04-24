@@ -31,8 +31,6 @@ package org.broad.igv.data;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.h5.DataAccessException;
 import org.broad.igv.h5.HDF5Reader;
@@ -1220,18 +1218,18 @@ public class HDFDataManager {
             try {
                 String altColorString = dataReader.readStringAttribute(group, "track.altColor");
                 getTrackProperties().setAltColor(
-                        ColorUtilities.convertRGBStringToColor(altColorString));
+                        ColorUtilities.stringToColor(altColorString));
             } catch (Exception e) {
             }
             try {
                 String midColorString = dataReader.readStringAttribute(group, "track.midColor");
                 getTrackProperties().setMidColor(
-                        ColorUtilities.convertRGBStringToColor(midColorString));
+                        ColorUtilities.stringToColor(midColorString));
             } catch (Exception e) {
             }
             try {
                 String colorString = dataReader.readStringAttribute(group, "track.color");
-                getTrackProperties().setColor(ColorUtilities.convertRGBStringToColor(colorString));
+                getTrackProperties().setColor(ColorUtilities.stringToColor(colorString));
             } catch (Exception e) {
             }
             try {

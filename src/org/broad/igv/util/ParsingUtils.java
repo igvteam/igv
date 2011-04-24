@@ -474,13 +474,13 @@ public class ParsingUtils {
                     } else if (key.equals("usescore")) {
                         trackProperties.setUseScore(value.equals("1"));
                     } else if (key.equals("color")) {
-                        Color color = ColorUtilities.convertRGBStringToColor(value);
+                        Color color = ColorUtilities.stringToColor(value);
                         trackProperties.setColor(color);
                     } else if (key.equals("altcolor")) {
-                        Color color = ColorUtilities.convertRGBStringToColor(value);
+                        Color color = ColorUtilities.stringToColor(value);
                         trackProperties.setAltColor(color);
                     } else if (key.equals("midcolor")) {
-                        Color color = ColorUtilities.convertRGBStringToColor(value);
+                        Color color = ColorUtilities.stringToColor(value);
                         trackProperties.setMidColor(color);
                     } else if (key.equals("autoscale")) {
                         boolean autoscale = value.equals("on");

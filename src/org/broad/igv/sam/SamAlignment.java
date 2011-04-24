@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
@@ -138,7 +137,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         Object colorTag = record.getAttribute("YC");
         if (colorTag != null) {
             try {
-                defaultColor = ColorUtilities.convertRGBStringToColor(colorTag.toString());
+                defaultColor = ColorUtilities.stringToColor(colorTag.toString());
             } catch (Exception e) {
                 log.error("Error interpreting color tag: " + colorTag, e);
                 defaultColor = AlignmentRenderer.grey1;

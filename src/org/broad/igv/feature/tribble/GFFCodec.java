@@ -203,10 +203,10 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         f.setParentIds(parentIds);
 
         if (attributes.containsKey("color")) {
-            f.setColor(ColorUtilities.getColorFromString(attributes.get("color")));
+            f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
         }
         if (attributes.containsKey("Color")) {
-            f.setColor(ColorUtilities.getColorFromString(attributes.get("Color")));
+            f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
         }
         return f;
 

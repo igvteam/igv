@@ -299,7 +299,7 @@ public abstract class AbstractTrack implements Track {
         String rgb = this.getAttributeValue(key);
         if (rgb != null) {
             try {
-                return ColorUtilities.convertRGBStringToColor(rgb.replace("\"", ""));
+                return ColorUtilities.stringToColor(rgb.replace("\"", ""));
 
             } catch (Exception exception) {
                 log.info("Invalid color string " + rgb + " for track: " + getName());

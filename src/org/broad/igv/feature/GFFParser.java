@@ -22,7 +22,6 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.renderer.GeneTrackRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
@@ -329,10 +328,10 @@ public class GFFParser implements FeatureParser {
                     f.setDescription(description);
 
                     if (attributes.containsKey("color")) {
-                        f.setColor(ColorUtilities.getColorFromString(attributes.get("color")));
+                        f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
                     }
                     if (attributes.containsKey("Color")) {
-                        f.setColor(ColorUtilities.getColorFromString(attributes.get("Color")));
+                        f.setColor(ColorUtilities.stringToColor(attributes.get("Color")));
                     }
 
 

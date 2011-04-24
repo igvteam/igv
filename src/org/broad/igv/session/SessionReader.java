@@ -577,7 +577,7 @@ public class SessionReader {
 
         if (colorString != null) {
             try {
-                Color c = ColorUtilities.getColorFromString(colorString);
+                Color c = ColorUtilities.stringToColor(colorString);
                 resourceLocator.setColor(c);
             } catch (Exception e) {
                 log.error("Error setting color: ", e);

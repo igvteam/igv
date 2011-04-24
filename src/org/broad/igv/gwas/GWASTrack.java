@@ -4,7 +4,6 @@ import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -100,8 +99,8 @@ public class GWASTrack extends AbstractTrack {
         this.minPointSize = prefs.getAsInt(PreferenceManager.GWAS_MIN_POINT_SIZE);
         this.maxPointSize = prefs.getAsInt(PreferenceManager.GWAS_MAX_POINT_SIZE);
 
-        this.primaryColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
-        this.secondaryColor = ColorUtilities.convertRGBStringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
+        this.primaryColor = ColorUtilities.stringToColor(prefs.get(PreferenceManager.GWAS_PRIMARY_COLOR));
+        this.secondaryColor = ColorUtilities.stringToColor(prefs.get(PreferenceManager.GWAS_SECONDARY_COLOR));
         this.singleColor = prefs.getAsBoolean(PreferenceManager.GWAS_SINGLE_COLOR);
         this.alternatingColors = prefs.getAsBoolean(PreferenceManager.GWAS_ALTERNATING_COLORS);
         this.useChrColors = prefs.getAsBoolean(PreferenceManager.GWAS_USE_CHR_COLORS);
