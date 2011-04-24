@@ -187,13 +187,13 @@ public abstract class DataTrack extends AbstractTrack {
         int zoom = Math.max(0, frame.getZoom());
         List<LocusScore> scores = getSummaryScores(chr, (int) position - 10, (int) position + 10, zoom);
 
-        // give a 2 pixel window, otherwise very narrow features will be missed.
-        double bpPerPixel = frame.getScale();
-        int buffer = (int) (2 * bpPerPixel);    /* * */
 
         if (scores == null) {
             return null;
         } else {
+            // give a 2 pixel window, otherwise very narrow features will be missed.
+            double bpPerPixel = frame.getScale();
+            int buffer = (int) (2 * bpPerPixel);    /* * */
             return (LocusScore) FeatureUtils.getFeatureAt(position, buffer, scores);
         }
     }

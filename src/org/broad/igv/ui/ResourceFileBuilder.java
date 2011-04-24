@@ -145,7 +145,7 @@ public class ResourceFileBuilder {
 
                     int min = 0;
                     int max = 10;
-                    String colorString = ColorUtilities.convertColorToRGBString(Color.gray);
+                    String colorString = ColorUtilities.colorToString(Color.gray);
                     if (mark.toUpperCase().contains("K4")) {
                         max = 25;
                         colorString = "(0,150,0)";

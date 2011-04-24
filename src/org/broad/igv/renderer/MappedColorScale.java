@@ -60,7 +60,7 @@ public class MappedColorScale extends AbstractColorScale {
             String[] keyValue = tokens[i].split(" ");
             if (keyValue.length == 2) {
                 String key = keyValue[0].trim();
-                Color c = ColorUtilities.convertRGBStringToColor(keyValue[1]);
+                Color c = ColorUtilities.stringToColor(keyValue[1]);
                 colorMap.put(key, c);
             }
         }
@@ -92,7 +92,7 @@ public class MappedColorScale extends AbstractColorScale {
         for (Map.Entry<String, Color> mapEntry : colorMap.entrySet()) {
             buf.append(";");
             buf.append(mapEntry.getKey() + " ");
-            buf.append(ColorUtilities.convertColorToRGBString(mapEntry.getValue()));
+            buf.append(ColorUtilities.colorToString(mapEntry.getValue()));
 
         }
         return buf.toString();

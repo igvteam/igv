@@ -111,8 +111,15 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             int regionY = 0;
 
             groupExtents.clear();
+
+            Rectangle clipRect = g.getClipBounds();
+
             for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
                 TrackGroup group = groupIter.next();
+
+                if(regionY > clipRect.getMaxY()) {
+                    break;
+                }
 
                 if (group.isVisible()) {
                     if (isGrouped) {
@@ -128,7 +135,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
                     }
 
                     int y = regionY;
-                    regionY = printTrackNames(group, visibleRect, graphics2D, 0, regionY);
+                    regionY = printTrackNames(group, visibleRect, clipRect, graphics2D, 0, regionY);
 
                     if (isGrouped) {
                         int h = group.getHeight();
@@ -163,7 +170,9 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
 
     }
 
-    private int printTrackNames(TrackGroup group, Rectangle visibleRect, Graphics2D graphics2D, int regionX, int regionY) {
+    private int printTrackNames(TrackGroup group, Rectangle visibleRect, Rectangle clipRect,
+                                Graphics2D graphics2D, int regionX, int regionY) {
+
 
         List<Track> tmp = new ArrayList(group.getTracks());
         for (Track track : tmp) {
@@ -172,7 +181,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             int trackHeight = track.getHeight();
             if (track.isVisible()) {
 
-                if (regionY + trackHeight >= visibleRect.y && regionY < visibleRect.getMaxY()) {
+                if (regionY + trackHeight >= clipRect.y && regionY < clipRect.getMaxY()) {
                     int width = getWidth();
                     int height = track.getHeight();
 

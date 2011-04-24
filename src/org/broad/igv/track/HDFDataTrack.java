@@ -34,6 +34,7 @@ import org.broad.igv.data.HDFDataManager;
 import org.broad.igv.data.HDFDataSource;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.h5.ObjectNotFoundException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.util.ResourceLocator;
@@ -69,7 +70,8 @@ public class HDFDataTrack extends DataTrack {
     public HDFDataTrack(HDFDataManager dataManager,
                         ResourceLocator locator,
                         String name,
-                        int trackNumber)
+                        int trackNumber,
+                        Genome genome)
             throws FileNotFoundException {
 
         super(locator, name + trackNumber, name);

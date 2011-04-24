@@ -69,17 +69,17 @@ public class ContinuousColorScale extends AbstractColorScale {
         if (tokens.length == 5) {
             this.negEnd = Double.parseDouble(tokens[1]);
             this.posEnd = Double.parseDouble(tokens[2]);
-            this.minColor = ColorUtilities.convertRGBStringToColor(tokens[3]);
-            this.maxColor = ColorUtilities.convertRGBStringToColor(tokens[4]);
+            this.minColor = ColorUtilities.stringToColor(tokens[3]);
+            this.maxColor = ColorUtilities.stringToColor(tokens[4]);
             this.useDoubleGradient = false;
         } else if (tokens.length == 8) {
             this.negStart = Double.parseDouble(tokens[1]);
             this.negEnd = Double.parseDouble(tokens[2]);
             this.posStart = Double.parseDouble(tokens[3]);
             this.posEnd = Double.parseDouble(tokens[4]);
-            this.minColor = ColorUtilities.convertRGBStringToColor(tokens[5]);
-            this.midColor = ColorUtilities.convertRGBStringToColor(tokens[6]);
-            this.maxColor = ColorUtilities.convertRGBStringToColor(tokens[7]);
+            this.minColor = ColorUtilities.stringToColor(tokens[5]);
+            this.midColor = ColorUtilities.stringToColor(tokens[6]);
+            this.maxColor = ColorUtilities.stringToColor(tokens[7]);
             this.useDoubleGradient = true;
         } else {
             throw new RuntimeException("Illegal ColorScale: " + string);
@@ -223,14 +223,14 @@ public class ContinuousColorScale extends AbstractColorScale {
             buf.append(String.valueOf(negEnd) + ";");
             buf.append(String.valueOf(posStart) + ";");
             buf.append(String.valueOf(posEnd) + ";");
-            buf.append(ColorUtilities.convertColorToRGBString(minColor) + ";");
-            buf.append(ColorUtilities.convertColorToRGBString(midColor) + ";");
-            buf.append(ColorUtilities.convertColorToRGBString(maxColor));
+            buf.append(ColorUtilities.colorToString(minColor) + ";");
+            buf.append(ColorUtilities.colorToString(midColor) + ";");
+            buf.append(ColorUtilities.colorToString(maxColor));
         } else {
             buf.append(String.valueOf(negEnd) + ";");
             buf.append(String.valueOf(posEnd) + ";");
-            buf.append(ColorUtilities.convertColorToRGBString(minColor) + ";");
-            buf.append(ColorUtilities.convertColorToRGBString(maxColor));
+            buf.append(ColorUtilities.colorToString(minColor) + ";");
+            buf.append(ColorUtilities.colorToString(maxColor));
         }
         return buf.toString();
     }

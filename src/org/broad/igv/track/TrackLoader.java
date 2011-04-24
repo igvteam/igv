@@ -45,6 +45,7 @@ import org.broad.igv.gwas.GWASTrack;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
+import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.renderer.*;
@@ -129,14 +130,14 @@ public class TrackLoader {
                 // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
                 throw new IndexNotFoundException(locator.getPath());
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
-                loadH5File(locator, newTracks);
+                loadH5File(locator, newTracks, genome);
             } else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
-                loadGctFile(locator, newTracks);
+                loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
-                loadIGVFile(locator, newTracks);
+                loadIGVFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".mut")) {
                 loadMutFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
@@ -165,10 +166,10 @@ public class TrackLoader {
             } else if (typeString.endsWith(".bedz") || (typeString.endsWith(".bed") && hasIndex)) {
                 loadIndexdBedFile(locator, newTracks);
             } else if (typeString.endsWith(".omega")) {
-                loadOmegaTrack(locator, newTracks);
+                loadOmegaTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
-                loadWigFile(locator, newTracks);
+                loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".list")) {
                 loadListFile(locator, newTracks);
             } else if (typeString.contains(".dranger")) {
@@ -176,7 +177,7 @@ public class TrackLoader {
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
-                loadTDFFile(locator, newTracks);
+                loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks, genome);
@@ -186,15 +187,17 @@ public class TrackLoader {
             } else if (MutationParser.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
-                loadWigFile(locator, newTracks);
+                loadWigFile(locator, newTracks, genome);
             } else if (locator.getPath().toLowerCase().contains(".maf")) {
                 loadMAFTrack(locator, newTracks);
+            } else if (locator.getPath().toLowerCase().contains(".peak")) {
+                loadPeakTrack(locator, newTracks, genome);
             } else if (GCTDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
-                loadGctFile(locator, newTracks);
+                loadGctFile(locator, newTracks, genome);
             } else if (IGVDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
-                loadIGVFile(locator, newTracks);
+                loadIGVFile(locator, newTracks, genome);
 
             }
 
@@ -231,7 +234,7 @@ public class TrackLoader {
                     track.setSampleId(locator.getSampleId());
                 }
 
-               igv.getTrackManager().addLoadedType(track.getTrackType());
+                igv.getTrackManager().addLoadedType(track.getTrackType());
             }
 
 
@@ -367,7 +370,7 @@ public class TrackLoader {
         } else if (MutationParser.isMutationAnnotationFile(locator)) {
             this.loadMutFile(locator, newTracks, genome);
         } else if (WiggleParser.isWiggle(locator)) {
-            loadWigFile(locator, newTracks);
+            loadWigFile(locator, newTracks, genome);
         } else if (locator.getPath().toLowerCase().contains(".maf")) {
             loadMAFTrack(locator, newTracks);
         }
@@ -420,7 +423,7 @@ public class TrackLoader {
             String path = locator.getPath();
             for (RNAIDataSource ds : dataSources) {
                 String trackId = path + "_" + ds.getName();
-                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, ds.getName(), ds, genome);
 
                 // Set attributes.
                 track.setAttributeValue("SCREEN", ds.getScreen());
@@ -431,7 +434,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadGctFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadGctFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
             if (!checkSize(locator.getPath())) {
@@ -471,14 +474,14 @@ public class TrackLoader {
             Genome currentGenome = igv.getGenomeManager().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, currentGenome);
             String trackId = path + "_" + trackName;
-            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            Track track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackProperties(trackProperties);
             newTracks.add(track);
         }
     }
 
-    private void loadIGVFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadIGVFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
             if (!checkSize(locator.getPath())) {
@@ -488,9 +491,7 @@ public class TrackLoader {
 
 
         String dsName = locator.getTrackName();
-        Genome currentGenome = igv.getGenomeManager().getCurrentGenome();
-
-        IGVDataset ds = new IGVDataset(locator, currentGenome, igv);
+        IGVDataset ds = new IGVDataset(locator, genome, igv);
         ds.setName(dsName);
 
         TrackProperties trackProperties = ds.getTrackProperties();
@@ -498,9 +499,9 @@ public class TrackLoader {
         TrackType type = ds.getType();
         for (String trackName : ds.getTrackNames()) {
 
-            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, currentGenome);
+            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
 
             // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
@@ -566,15 +567,13 @@ public class TrackLoader {
 
     }
 
-    private void loadWigFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadWigFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         if (locator.isLocal()) {
             if (!checkSize(locator.getPath())) {
                 return;
             }
         }
-
-        Genome genome = igv.getGenomeManager().getCurrentGenome();
 
         WiggleDataset ds = (new WiggleParser(locator, genome)).parse();
         TrackProperties props = ds.getTrackProperties();
@@ -600,7 +599,7 @@ public class TrackLoader {
             Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             DatasetDataSource dataSource = new DatasetDataSource(trackId, ds, genome);
 
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
 
             String displayName = (label == null || multiTrack) ? heading : label;
             track.setName(displayName);
@@ -617,7 +616,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadTDFFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
 
         if (log.isDebugEnabled()) {
@@ -656,7 +655,8 @@ public class TrackLoader {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, new TDFDataSource(reader, trackNumber, heading));
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
+                    new TDFDataSource(reader, trackNumber, heading), genome);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -726,7 +726,7 @@ public class TrackLoader {
         for (RNAIDataSource ds : dataSources) {
             String name = ds.getName();
             String trackId = path + "_" + name;
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, name, ds, genome);
 
             // Set attributes.  This "hack" is neccessary to register these attributes with the
             // attribute manager to get displayed.
@@ -761,10 +761,14 @@ public class TrackLoader {
         newTracks.add(t);
     }
 
-    private void loadOmegaTrack(ResourceLocator locator, List<Track> newTracks) {
-        Genome genome = igv.getGenomeManager().getCurrentGenome();
+    private void loadPeakTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+        PeakTrack t = new PeakTrack(locator, genome);
+        newTracks.add(t);
+    }
+
+    private void loadOmegaTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) {
         OmegaDataSource ds = new OmegaDataSource(genome);
-        OmegaTrack track = new OmegaTrack(locator, ds);
+        OmegaTrack track = new OmegaTrack(locator, ds, genome);
         track.setName("Conservation (Omega)");
         track.setHeight(40);
         track.setPreferredHeight(40);
@@ -899,7 +903,7 @@ public class TrackLoader {
         for (String trackName : ds.getDataHeadings()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
 
@@ -927,7 +931,7 @@ public class TrackLoader {
         for (String trackName : ds.getSampleNames()) {
             String trackId = path + "_" + trackName;
             SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
             track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
             newTracks.add(track);
@@ -941,7 +945,7 @@ public class TrackLoader {
      *
      * @param locator
      */
-    private void loadH5File(ResourceLocator locator, List<Track> newTracks) {
+    private void loadH5File(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         TrackSet trackSet = null;
 
@@ -961,7 +965,7 @@ public class TrackLoader {
 
             Track track = null;
             try {
-                track = new HDFDataTrack(dataManager, locator, name, trackNumber);
+                track = new HDFDataTrack(dataManager, locator, name, trackNumber, genome);
             } catch (FileNotFoundException fe) {
                 throw new RuntimeException(fe);
             }

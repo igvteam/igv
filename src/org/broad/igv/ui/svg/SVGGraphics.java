@@ -421,7 +421,7 @@ public class SVGGraphics extends Graphics2D {
     }
 
     private String getRGBString() {
-        String rgbString = ColorUtilities.convertColorToRGBString(color);
+        String rgbString = ColorUtilities.colorToString(color);
         return "(" + rgbString + ")";
     }
 

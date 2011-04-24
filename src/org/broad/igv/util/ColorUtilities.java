@@ -24,7 +24,8 @@ package org.broad.igv.util;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 
 /**
@@ -37,7 +38,7 @@ public class ColorUtilities {
 
     private static Logger log = Logger.getLogger(ColorUtilities.class);
 
-    public static HashMap<Integer, Color> colorMap = new HashMap<Integer, Color> (1000);
+    public static Map<Object, Color> colorCache = new WeakHashMap<Object, Color>(1000);
 
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
 
@@ -62,7 +63,7 @@ public class ColorUtilities {
         col2 = Math.abs(BASE_COL + (idx * 55) % RAND_COL);
         col3 = Math.abs(BASE_COL + (idx * 77) % RAND_COL);
 
-        return new Color(col1, col2, col3, (int) (255*alpha));
+        return new Color(col1, col2, col3, (int) (255 * alpha));
     }
 
     /**
@@ -107,7 +108,7 @@ public class ColorUtilities {
     }
 
 
-    public static String convertColorToRGBString(Color color) {
+    public static String colorToString(Color color) {
 
         StringBuffer buffer = new StringBuffer();
         buffer.append(color.getRed());
@@ -118,42 +119,39 @@ public class ColorUtilities {
         return buffer.toString();
     }
 
-    public static Color convertRGBStringToColor(String commaSeparatedRGB) {
+    public static Color stringToColor(String string) {
 
-        String rgb[] = commaSeparatedRGB.split(",");
-        Color color = new Color(
-                Integer.parseInt(rgb[0]),
-                Integer.parseInt(rgb[1]),
-                Integer.parseInt(rgb[2])
-        );
-        return color;
-    }
-
-
-    public static Color getColorFromString(String string) {
         try {
-            if (string.contains(",")) {
-                String[] rgb = string.split(",");
-                int red = Integer.parseInt(rgb[0]);
-                int green = Integer.parseInt(rgb[1]);
-                int blue = Integer.parseInt(rgb[2]);
-                return new Color(red, green, blue);
-            } else {
-                if (string.startsWith("#")) {
-                    string = string.substring(1);
+            Color c = colorCache.get(string);
+            if (c == null) {
+                if (string.contains(",")) {
+                    String[] rgb = string.split(",");
+                    int red = Integer.parseInt(rgb[0]);
+                    int green = Integer.parseInt(rgb[1]);
+                    int blue = Integer.parseInt(rgb[2]);
+                    c = new Color(red, green, blue);
+                } else {
+                    if (string.startsWith("#")) {
+                        string = string.substring(1);
+                    }
+                    if (string.length() == 6) {
+                        int red = Integer.parseInt(string.substring(0, 2), 16);
+                        int green = Integer.parseInt(string.substring(2, 4), 16);
+                        int blue = Integer.parseInt(string.substring(4, 6), 16);
+                        c = new Color(red, green, blue);
+                    }
                 }
-                if (string.length() == 6) {
-                    int red = Integer.parseInt(string.substring(0, 2), 16);
-                    int green = Integer.parseInt(string.substring(2, 4), 16);
-                    int blue = Integer.parseInt(string.substring(4, 6), 16);
-                    return new Color(red, green, blue);
+
+                if (c == null) {
+                    c = Color.black;
                 }
+                colorCache.put(string, c);
             }
-            return Color.black;
+            return c;
 
         } catch (NumberFormatException numberFormatException) {
             log.error("Error in color string. ", numberFormatException);
-            return null;
+            return Color.black;
         }
 
     }
@@ -178,10 +176,10 @@ public class ColorUtilities {
                 ((g & 0xFF) << 8) |
                 ((b & 0xFF) << 0);
 
-        Color c = (Color) colorMap.get(value);
+        Color c = colorCache.get(value);
         if (c == null) {
             c = new Color(value);
-            colorMap.put(value, c);
+            colorCache.put(value, c);
         }
         return c;
     }

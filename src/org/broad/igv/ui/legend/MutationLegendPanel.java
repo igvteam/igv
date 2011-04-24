@@ -156,7 +156,7 @@ public class MutationLegendPanel extends LegendPanel {
 
         labelTextToKey.put(labelText,
                 new PreferenceDescriptor(PreferenceManager.MUTATION_NONSENSE_COLOR_KEY,
-                        COLOR, ColorUtilities.convertColorToRGBString(color)));
+                        COLOR, ColorUtilities.colorToString(color)));
     }
 
     protected void addIndelColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -166,7 +166,7 @@ public class MutationLegendPanel extends LegendPanel {
 
         labelTextToKey.put(labelText,
                 new PreferenceDescriptor(PreferenceManager.MUTATION_INDEL_COLOR_KEY,
-                        COLOR, ColorUtilities.convertColorToRGBString(color)));
+                        COLOR, ColorUtilities.colorToString(color)));
     }
 
     protected void addTargetRegionColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -177,7 +177,7 @@ public class MutationLegendPanel extends LegendPanel {
         labelTextToKey.put(labelText,
                 new PreferenceDescriptor(
                         PreferenceManager.MUTATION_TARGETED_REGION_COLOR_KEY, COLOR,
-                        ColorUtilities.convertColorToRGBString(color)));
+                        ColorUtilities.colorToString(color)));
     }
 
     protected void addMissenseColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -187,7 +187,7 @@ public class MutationLegendPanel extends LegendPanel {
 
         labelTextToKey.put(labelText,
                 new PreferenceDescriptor(PreferenceManager.MUTATION_MISSENSE_COLOR_KEY,
-                        COLOR, ColorUtilities.convertColorToRGBString(color)));
+                        COLOR, ColorUtilities.colorToString(color)));
     }
 
     protected void addSpliceSiteColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -199,7 +199,7 @@ public class MutationLegendPanel extends LegendPanel {
                 labelText,
                 new PreferenceDescriptor(
                         PreferenceManager.MUTATION_SPLICE_SITE_COLOR_KEY, COLOR,
-                        ColorUtilities.convertColorToRGBString(color)));
+                        ColorUtilities.colorToString(color)));
     }
 
     protected void addSynonymousColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -211,7 +211,7 @@ public class MutationLegendPanel extends LegendPanel {
                 labelText,
                 new PreferenceDescriptor(
                         PreferenceManager.MUTATION_SYNONYMOUS_COLOR_KEY, COLOR,
-                        ColorUtilities.convertColorToRGBString(color)));
+                        ColorUtilities.colorToString(color)));
     }
 
     protected void addUnknownColorPreference(LinkedHashMap<String, PreferenceDescriptor> labelTextToKey) {
@@ -221,7 +221,7 @@ public class MutationLegendPanel extends LegendPanel {
 
         labelTextToKey.put(labelText,
                 new PreferenceDescriptor(PreferenceManager.MUTATION_UNKNOWN_COLOR_KEY,
-                        COLOR, ColorUtilities.convertColorToRGBString(color)));
+                        COLOR, ColorUtilities.colorToString(color)));
     }
 
     /**

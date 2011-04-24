@@ -24,6 +24,7 @@ package org.broad.igv.track;
 
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.h5.ObjectNotFoundException;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.util.ResourceLocator;
@@ -50,7 +51,7 @@ public class DataSourceTrack extends DataTrack {
      * @param name
      * @param dataSource
      */
-    public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource) {
+    public DataSourceTrack(ResourceLocator locator, String id, String name, DataSource dataSource, Genome genome) {
         super(locator, id, name);
 
         this.dataSource = dataSource;

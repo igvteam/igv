@@ -24,6 +24,7 @@
 package org.broad.igv.maf.conservation;
 
 import org.broad.igv.data.DataSource;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.util.ResourceLocator;
@@ -35,8 +36,8 @@ import java.awt.*;
  */
 public class OmegaTrack extends DataSourceTrack {
 
-    public OmegaTrack(ResourceLocator locator, DataSource ds) {
-        super(locator, locator.getPath(), locator.getFileName(), ds);
+    public OmegaTrack(ResourceLocator locator, DataSource ds, Genome genome) {
+        super(locator, locator.getPath(), locator.getFileName(), ds, genome);
     }
 
     @Override
