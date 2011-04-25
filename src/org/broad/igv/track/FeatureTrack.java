@@ -56,6 +56,10 @@ public class FeatureTrack extends AbstractTrack {
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
 
+    Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
+
+
+
     protected List<Rectangle> levelRects = new ArrayList();
 
     // TODO -- this is a memory leak, this cache needs cleared when the reference frame collection (gene list) changes
@@ -119,10 +123,9 @@ public class FeatureTrack extends AbstractTrack {
 
     @Override
     public void chromosomeChanged(String chrName) {
-        if(chrName.equals(Globals.CHR_ALL)) {
+        if (chrName.equals(Globals.CHR_ALL)) {
             showFeatures = false;
-        }
-        else if(showFeatures == false) {
+        } else if (showFeatures == false) {
             // Currently showing coverage data.
         }
     }
@@ -509,6 +512,13 @@ public class FeatureTrack extends AbstractTrack {
         renderFeatures(context, rect);
     }
 
+    @Override
+    public void setDisplayMode(DisplayMode mode) {
+        // Explicity setting the display mode overrides the automatic switch
+        lastFeatureMode = null;
+        super.setDisplayMode(mode);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     public void render(RenderContext context, Rectangle rect) {
         Rectangle renderRect = new Rectangle(rect);
         renderRect.y = renderRect.y + margin;
@@ -521,9 +531,16 @@ public class FeatureTrack extends AbstractTrack {
         showFeatures = (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
                 windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
         if (showFeatures) {
+            if(lastFeatureMode != null) {
+                super.setDisplayMode(lastFeatureMode);
+                lastFeatureMode = null;
+            }
             renderFeatures(context, renderRect);
         } else {
-            setDisplayMode(DisplayMode.COLLAPSED);
+            if (getDisplayMode() != DisplayMode.COLLAPSED) {
+                lastFeatureMode = getDisplayMode();
+                super.setDisplayMode(DisplayMode.COLLAPSED);
+            }
             renderCoverage(context, renderRect);
         }
 
