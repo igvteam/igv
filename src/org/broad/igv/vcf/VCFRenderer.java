@@ -176,11 +176,6 @@ public class VCFRenderer { //extends FeatureRenderer {
 
     }
 
-    private AlphaComposite makeComposite(float alpha) {
-        int type = AlphaComposite.SRC_OVER;
-        return (AlphaComposite.getInstance(type, alpha));
-    }
-
     public void renderGenotypeBandSNP(VariantContext variant, RenderContext context, Rectangle bandRectangle, int pX0, int dX,
                                       String sampleName, VCFTrack.ColorMode coloring, boolean hideFiltered) {
 

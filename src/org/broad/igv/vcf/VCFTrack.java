@@ -57,6 +57,13 @@ public class VCFTrack extends FeatureTrack {
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
 
+    // Map for organizing samples by family (sample -> family).  This is static (shared) by all vcf tracks
+    private static Map<String, String> sampleGroupMap = new HashMap();
+
+    public static void addSampleGroups(Map<String, String> map) {
+        sampleGroupMap.putAll(map);
+    }
+
     private final int EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int SQUISHED_GENOTYPE_HEIGHT = 4;
     private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
@@ -68,14 +75,15 @@ public class VCFTrack extends FeatureTrack {
     private int top;
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
-    // Samples, organized by pedigree or other grouping
-    private LinkedHashMap<String, List<String>> samples = new LinkedHashMap();
-    int groupCount;
+    LinkedHashMap<String, List<String>> samples = new LinkedHashMap();
+    List<String> allSamples;
+    //int groupCount;
     int sampleCount;
+    private boolean grouped;
+    private boolean hasGroups;
 
     private ColorMode coloring = ColorMode.GENOTYPE;
     private boolean hideAncestral = false;
-
 
     private boolean hideFiltered = true;
     private boolean renderID = true;
@@ -90,13 +98,27 @@ public class VCFTrack extends FeatureTrack {
         super(locator, source);
         VCFHeader header = (VCFHeader) source.getHeader();
 
-        Set<String> allSamples = header.getGenotypeSamples();
-        groupCount = 1;
+        allSamples = new ArrayList(header.getGenotypeSamples());
         sampleCount = allSamples.size();
-        samples.put("All", new ArrayList<String>(allSamples));
 
+        for (String sample : allSamples) {
 
-        this.setDisplayMode(DisplayMode.EXPANDED);
+            String key = sampleGroupMap.get(sample);
+            if (key == null) {
+                key = "Other";
+            }
+            List<String> sampleList = samples.get(key);
+            if (sampleList == null) {
+                sampleList = new ArrayList();
+                samples.put(key, sampleList);
+            }
+            sampleList.add(sample);
+        }
+
+        grouped = sampleGroupMap.size() > 1;
+        hasGroups = sampleGroupMap.size() > 1;
+
+        setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
 
         // Estimate visibility window.   TODO -- set beta based on available memory
@@ -104,17 +126,6 @@ public class VCFTrack extends FeatureTrack {
         int beta = 20000;
         int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
-    }
-
-
-    // TODO -- make this work with grouping
-
-    public List<String> getAllSamples() {
-        return samples.get("All");
-    }
-
-    public void setAllSamples(List<String> allSamples) {
-        samples.put("All", allSamples);
     }
 
 
@@ -134,6 +145,7 @@ public class VCFTrack extends FeatureTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return variantBandHeight;
         } else {
+            int groupCount = grouped ? samples.size() : allSamples.size();
             return variantBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
         }
 
@@ -165,7 +177,7 @@ public class VCFTrack extends FeatureTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         rect.height = getGenotypeBandHeight();
         rect.y = trackRectangle.y + variantBandHeight;
-        colorBackground(g2D, rect, visibleRectangle, false, false);
+        colorBackground(g2D, rect, visibleRectangle, false);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
             drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
@@ -193,7 +205,7 @@ public class VCFTrack extends FeatureTrack {
                 int pX = (int) ((start - origin) / locScale);
                 int dX = (int) Math.max(2, (end - start) / locScale);
 
-                if(pX + dX < pXMin) {
+                if (pX + dX < pXMin) {
                     continue;
                 }
                 if (pX > pXMax) {
@@ -213,7 +225,7 @@ public class VCFTrack extends FeatureTrack {
                     rect.y = top;
                     rect.height = variantBandHeight;
                     if (rect.intersects(visibleRectangle)) {
-                        if (getAllSamples().size() == 0) {
+                        if (allSamples.size() == 0) {
                             renderer.renderVariant(variant, rect, pX, dX, context);
                         } else {
                             AlleleCount alleleCounts = new AlleleCount(zygCounts);
@@ -222,31 +234,39 @@ public class VCFTrack extends FeatureTrack {
                         }
                     }
 
-                    if (this.getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+                    if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
                         rect.y += rect.height;
                         rect.height = getGenotypeBandHeight();
 
                         // Loop through groups
-                        for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
-
-                            for (String sample : entry.getValue()) {
+                        if (grouped) {
+                            for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
+                                for (String sample : entry.getValue()) {
+                                    if (rect.intersects(visibleRectangle)) {
+                                        renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
+                                                hideFiltered);
+                                    }
+                                    rect.y += rect.height;
+                                }
+                                g2D.setColor(OFF_WHITE);
+                                g2D.fillRect(rect.x, rect.y, rect.width, GROUP_BORDER_WIDTH);
+                                rect.y += GROUP_BORDER_WIDTH;
+                            }
+                        } else {
+                            for (String sample : allSamples) {
                                 if (rect.intersects(visibleRectangle)) {
                                     renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
                                             hideFiltered);
                                 }
                                 rect.y += rect.height;
                             }
-                            g2D.setColor(OFF_WHITE);
-                            g2D.fillRect(rect.x, rect.y, rect.width, GROUP_BORDER_WIDTH);
-                            rect.y += GROUP_BORDER_WIDTH;
-
 
                         }
                     }
 
 
                     boolean isSelected = selectedVariant != null && selectedVariant == variant;
-                    if(isSelected) {
+                    if (isSelected) {
                         Graphics2D selectionGraphics = context.getGraphic2DForColor(Color.black);
                         selectionGraphics.drawRect(x, top, w, getHeight());
                     }
@@ -279,8 +299,7 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
-                                 boolean isSelected) {
+    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames) {
         boolean coloredLast = true;
 
         Rectangle textRectangle = new Rectangle(bandRectangle);
@@ -289,46 +308,55 @@ public class VCFTrack extends FeatureTrack {
         Font font = FontManager.getScalableFont((int) bandRectangle.getHeight() - 1);
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
-        for (List<String> sampleList : samples.values()) {
-            for (String sample : sampleList) {
-                if (isSelected) {
-                    g2D.setColor(Color.lightGray);
-                } else {
+
+        if (grouped) {
+            for (List<String> sampleList : samples.values()) {
+                for (String sample : sampleList) {
+
                     if (coloredLast) {
                         g2D.setColor(BAND1_COLOR);
                         coloredLast = false;
                     } else {
                         g2D.setColor(BAND2_COLOR);
                         coloredLast = true;
+
                     }
+
+                    if (bandRectangle.intersects(visibleRectangle)) {
+                        g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
+                        if (renderNames && bandRectangle.height >= 3) {
+                            String printName = sample;
+                            textRectangle.y = bandRectangle.y + 1;
+                            g2D.setColor(Color.black);
+                            GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
+
+                        }
+                    }
+                    bandRectangle.y += bandRectangle.height;
+
+                }
+
+                g2D.setColor(OFF_WHITE);
+                g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
+                bandRectangle.y += GROUP_BORDER_WIDTH;
+
+            }
+        } else {
+            for (String sample : allSamples) {
+
+                if (coloredLast) {
+                    g2D.setColor(BAND1_COLOR);
+                    coloredLast = false;
+                } else {
+                    g2D.setColor(BAND2_COLOR);
+                    coloredLast = true;
+
                 }
 
                 if (bandRectangle.intersects(visibleRectangle)) {
                     g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
                     if (renderNames && bandRectangle.height >= 3) {
                         String printName = sample;
-                        if (UIConstants.isSigmaProject()) {
-                            if (printName.equals("384") || printName.equals("391")) {
-                                printName = "S-" + printName;
-                            } else if (printName.equals("467")) {
-                                printName = "PA-" + printName;
-                            } else if (printName.equals("469")) {
-                                printName = "CC-" + printName;
-                            } else if (printName.equals("259") || printName.equals("265") || printName.equals("266")) {
-                                printName = "AA-" + printName;
-                            } else if (printName.equals("701") || printName.equals("564")) {
-                                printName = "BIP-" + printName;
-                            } else if (printName.equals("352") || printName.equals("414") || printName.equals("375")) {
-                                printName = "L-" + printName;
-                            } else if (printName.equals("4") || printName.equals("8") || printName.equals("13") || printName.equals("15")) {
-                                printName = "LA-" + printName;
-                            } else if (printName.equals("563") || printName.equals("566")) {
-                                printName = "OK-" + printName;
-                            } else if (printName.equals("491") || printName.equals("497")) {
-                                printName = "WC-" + printName;
-                            }
-                        }
-
                         textRectangle.y = bandRectangle.y + 1;
                         g2D.setColor(Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
@@ -338,10 +366,6 @@ public class VCFTrack extends FeatureTrack {
                 bandRectangle.y += bandRectangle.height;
 
             }
-
-            g2D.setColor(OFF_WHITE);
-            g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
-            bandRectangle.y += GROUP_BORDER_WIDTH;
 
         }
         g2D.setFont(oldFont);
@@ -390,11 +414,7 @@ public class VCFTrack extends FeatureTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getScalableFont(10));
-        if (isSelected()) {
-            g2D.setColor(Color.lightGray);
-        } else {
-            g2D.setColor(BAND2_COLOR);
-        }
+        g2D.setColor(BAND2_COLOR);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
             drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
@@ -407,11 +427,15 @@ public class VCFTrack extends FeatureTrack {
             GraphicUtils.drawWrappedText(getName(), rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
         }
 
+        if(grouped) {
+            g2D.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
+        }
+
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
             // Sample names printed in colorBackground !!
-            colorBackground(g2D, rect, visibleRectangle, true, isSelected());
+            colorBackground(g2D, rect, visibleRectangle, true);
         }
 
         // Bottom border
@@ -433,7 +457,7 @@ public class VCFTrack extends FeatureTrack {
                 return getVariantToolTip(variant);
             } else {
                 int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                String sample = getAllSamples().get(sampleNumber);
+                String sample = allSamples.get(sampleNumber);
                 return getSampleToolTip(sample, variant);
             }
         }
@@ -481,6 +505,26 @@ public class VCFTrack extends FeatureTrack {
 
     public void clearSelectedVariant() {
         selectedVariant = null;
+    }
+
+    public List<String> getAllSamples() {
+        return allSamples;
+    }
+
+    public void setAllSamples(List<String> samples) {
+        this.allSamples = samples;
+    }
+
+    public boolean isGrouped() {
+        return grouped;
+    }
+
+    public void setGrouped(boolean grouped) {
+        this.grouped = grouped;
+    }
+
+    public boolean isHasGroups() {
+        return hasGroups;
     }
 
     public static enum ColorMode {
@@ -659,7 +703,7 @@ public class VCFTrack extends FeatureTrack {
 
     public ZygosityCount getZygosityCounts(VariantContext variant) {
         ZygosityCount zc = new ZygosityCount();
-        for (String sample : getAllSamples()) {
+        for (String sample : allSamples) {
             Genotype genotype = variant.getGenotype(sample);
             zc.incrementCount(genotype);
         }
@@ -684,7 +728,7 @@ public class VCFTrack extends FeatureTrack {
 
 
         public AlleleCount(ZygosityCount zygCounts) {
-            totalAlleles = getAllSamples().size() * 2;
+            totalAlleles = allSamples.size() * 2;
             alleleNum = (zygCounts.getHomVar() + zygCounts.getHet() + zygCounts.getHomRef()) * 2;
             alleleCount = zygCounts.getHomVar() * 2 + zygCounts.getHet();
         }

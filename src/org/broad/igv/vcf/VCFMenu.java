@@ -106,12 +106,26 @@ public class VCFMenu extends JPopupMenu {
             add(getHideFilteredItem());
             //add(getRenderIDItem());
 
+            if (track.isHasGroups()) {
+                addSeparator();
+                final JCheckBoxMenuItem groupedItem = new JCheckBoxMenuItem("Group");
+                groupedItem.setSelected(track.isGrouped());
+                groupedItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        track.setGrouped(groupedItem.isSelected());
+                        IGV.getInstance().doRefresh();
+                    }
+                });
+                add(groupedItem);
+                addSeparator();
+            }
+
             //Sorter
-            addSeparator();
             JLabel sortHeading = new JLabel("<html>&nbsp;&nbsp;<b>Sort Variant By", JLabel.LEFT);
             add(sortHeading);
             for (JMenuItem item : getSortMenuItems(variant)) {
                 add(item);
+                item.setEnabled(!track.isGrouped());
             }
 
             //Variant Information
