@@ -188,10 +188,10 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
                 len += lastFeature.getEnd() - firstFeature.getStart() + 1;
                 double featuresPerBase = ((double) n) / len;
 
-                double targetBinMemory = 10000000;  // 10  mega bytes
+                double targetBinMemory = 20000000;  // 20  mega bytes
                 int maxBinSize = isVCF ? 1000000 : Integer.MAX_VALUE;
                 int bs = Math.min(maxBinSize, (int) (targetBinMemory / (bytesPerFeature * featuresPerBase)));
-                featureWindowSize = Math.max(100000, bs);
+                featureWindowSize = Math.max(1000000, bs);
             } else {
                 featureWindowSize = Integer.MAX_VALUE;
             }

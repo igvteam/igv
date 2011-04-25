@@ -211,7 +211,4 @@ public class UIConstants {
      */
     final static public String GENOME_LIST_SEPARATOR = "--SEPARATOR--";
 
-    public static boolean isSigmaProject() {
-        return PreferenceManager.getInstance().getDataServerURL().contains("igvdata/sigma/sigma");
-    }
 }

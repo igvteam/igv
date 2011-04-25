@@ -112,6 +112,10 @@ public class DataPanelPainter {
                 }
             }
         }
+        catch(RuntimeException e) {
+            log.error(e);
+            throw e;
+        }
         finally {
             graphics2D.dispose();
         }

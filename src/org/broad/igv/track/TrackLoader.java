@@ -60,6 +60,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.vcf.PedigreeUtils;
 import org.broad.igv.vcf.VCFTrack;
 
 import java.io.File;
@@ -129,6 +130,8 @@ public class TrackLoader {
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
                 throw new IndexNotFoundException(locator.getPath());
+            } else if (typeString.endsWith(".trio")) {
+                loadTrioData(locator);
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
                 loadH5File(locator, newTracks, genome);
             } else if (typeString.endsWith(".rnai.gct")) {
@@ -1025,6 +1028,11 @@ public class TrackLoader {
             track.setPreferredHeight(45);
         }
         currentTracks.add(track);
+    }
+
+
+    private void loadTrioData(ResourceLocator locator) throws IOException {
+        PedigreeUtils.parseTrioFile(locator.getPath());
     }
 
 
