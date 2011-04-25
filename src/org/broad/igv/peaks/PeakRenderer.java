@@ -19,6 +19,8 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -31,10 +33,12 @@ import java.util.List;
  * @author jrobinso
  * @date Apr 23, 2011
  */
-public class PeakRenderer implements Renderer<Peak> {
+public class PeakRenderer implements Renderer<LocusScore> {
 
+    BarChartRenderer chartRenderer = new BarChartRenderer();
+    public static final int SIGNAL_CHART_HEIGHT = 15;
 
-    public void render(List<Peak> peakList, RenderContext context, Rectangle rect, Track track) {
+    public void render(List<LocusScore> peakList, RenderContext context, Rectangle rect, Track track) {
 
         final double locScale = context.getScale();
         final double origin = context.getOrigin();
@@ -45,8 +49,18 @@ public class PeakRenderer implements Renderer<Peak> {
 
         float[] bgColorComps = context.getBackgroundColor().getColorComponents(null);
         float[] fgColorComps = track.getColor().getColorComponents(null);
+        Graphics2D greyGraphics = context.getGraphic2DForColor(Color.lightGray);
+        Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
 
-        for (Peak peak : peakList) {
+        int h = rect.height;
+        int nTimePoints = ((PeakTrack) track).nTimePoints;
+        if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+            h = (rect.height - 2) / (nTimePoints + 1);
+        }
+
+        for (LocusScore ls : peakList) {
+
+            Peak peak = (Peak) ls;
 
             int start = peak.getStart();
             int end = peak.getEnd();
@@ -61,55 +75,69 @@ public class PeakRenderer implements Renderer<Peak> {
                 break;
             }
 
-
             float score = peak.getCombinedScore();
-            if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.FOLD_CHANGE) {
+            if (PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE) {
                 score = peak.getDynamicScore();
-                if (score > 0 && score < 1) {
-                    score = 1 / score;
-                }
             }
-            if (score < ((PeakTrack) track).getScoreThreshold()) continue;
 
-            int top = rect.y;
-            int h = rect.height;
-            final float[] timeScores = peak.getTimeScores();
-            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-                h = (rect.height) / (timeScores.length + 1);
+            int top = rect.y + 2;
+
+            if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.FEATURE) {
+                drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score, PeakTrack.getColorOption());
             }
-            drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score);
-
             if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-
+                float[] timeScores = peak.getTimeScores();
                 for (int i = 0; i < timeScores.length; i++) {
                     top += h;
                     score = timeScores[i];
-                    drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score);
-
+                    drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score, PeakTrack.ColorOption.SCORE);
                 }
+
             }
+
+        }
+
+        if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.CHART) {
+            Rectangle signalRect = new Rectangle(rect.x, rect.y+1, rect.width, h-1);
+            chartRenderer.render(peakList, context, signalRect, track);
+        }
+
+        if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
+            borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
+            greyGraphics.drawLine(rect.x, rect.y + h + 1, rect.x + rect.width, rect.y + h + 1);
+
 
         }
     }
 
+
+    static float[] blueComps = Color.blue.getColorComponents(null);
+    static float[] redComps = Color.red.getColorComponents(null);
+
     private void drawScore(RenderContext context, float[] bgColorComps, float[] fgColorComps,
-                           int pX, int dX, int top, int h, float score) {
+                           int pX, int dX, int top, int h, float score, PeakTrack.ColorOption option) {
         Color c = null;
         //if (peak.isDynamic()) {
         //    c = Color.red;
         //} else {
         float alpha = 1.0f;
-        if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.SCORE) {
+        if (option == PeakTrack.ColorOption.SCORE) {
             // scale is 1 -> 100
             int shadeStep = (int) (score / 10);
             alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
-        } else if (PeakTrack.getShadeOption() == PeakTrack.ShadeOption.FOLD_CHANGE) {
-            // Scale is 3 -> 6
-            if (score < 3) {
-                alpha = 0.1f;
+
+        } else if (option == PeakTrack.ColorOption.FOLD_CHANGE) {
+
+            // Scale is 1.58 -> 3.3 log2
+            if (Math.abs(score) < 1.58) {
+                alpha = 1f;
+                fgColorComps = Color.gray.getColorComponents(null);
             } else {
-                int shadeStep = (int) (score / .6);
-                alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
+                // vary alpha from .3 -> 1 over range 3.3 -> 1.58 in steps of 10
+                int shadeStep = (int) ((Math.abs(score) - 1.58) / (3.3 - 1.58) * 10);
+                alpha = Math.max(0.3f, (Math.min(1f, 0.3f + shadeStep * 0.1f)));
+                fgColorComps = (score > 0 ? blueComps : redComps);
             }
         }
 

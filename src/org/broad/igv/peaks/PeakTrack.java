@@ -21,16 +21,17 @@ package org.broad.igv.peaks;
 
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.List;
 
@@ -40,25 +41,38 @@ import java.util.List;
  */
 public class PeakTrack extends AbstractTrack {
 
-    enum ShadeOption {
+    enum ColorOption {
         SCORE, FOLD_CHANGE
     }
+    enum RenderOption {
+        FEATURE, CHART
+    }
 
-    ;
+    private static List<SoftReference<PeakTrack>> instances = new ArrayList();
 
-    static PeakControlDialog controlDialog;
-    private static float scoreThreshold = 0;
-    private static ShadeOption shadeOption = ShadeOption.SCORE;
+    private static PeakControlDialog controlDialog;
+    private static float scoreThreshold = 10;
+    private static float foldChangeThreshold = 0;
+    private static ColorOption colorOption = ColorOption.SCORE;
+    private static RenderOption renderOption = RenderOption.FEATURE;
 
     int nTimePoints;
+
     Map<String, List<Peak>> peakMap = new HashMap();
+    Map<String, List<Peak>> filteredPeakMap = new HashMap();
+
     Renderer renderer = new PeakRenderer();
     private int bandHeight = 20;
+
+    // Data range
+    DataRange dataRange = new DataRange(0, 0, 100);
 
     public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         height = bandHeight;
         loadPeaks(locator.getPath());
+
+        instances.add(new SoftReference(this));
     }
 
     private void loadPeaks(String path) throws IOException {
@@ -79,7 +93,6 @@ public class PeakTrack extends AbstractTrack {
             }
             peakList.add(peak);
         }
-
     }
 
 
@@ -88,22 +101,18 @@ public class PeakTrack extends AbstractTrack {
         return new PeakTrackMenu(this);
     }
 
+    @Override
+    public DataRange getDataRange() {
+        return dataRange;
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
-        List<Peak> peakList = peakMap.get(context.getChr());
+        List<Peak> peakList = getFilteredPeaks(context.getChr());
         if (peakList == null) {
             return;
         }
 
-        if (getDisplayMode() == Track.DisplayMode.EXPANDED) {
-            Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
-            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-            borderGraphics.drawLine(rect.x, rect.y + height, rect.x + rect.width, rect.y + height);
-            borderGraphics.drawLine(rect.x, rect.y + height - 1, rect.x + rect.width, rect.y + height - 1);
-            rect.y += 2;
-            rect.height -= 4;
-        }
         renderer.render(peakList, context, rect, this);
     }
 
@@ -116,7 +125,7 @@ public class PeakTrack extends AbstractTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             bandHeight = height;
         } else {
-            bandHeight = (height - 6) / (nTimePoints + 1);
+            bandHeight = (height - 2) / (nTimePoints + 1);
         }
         super.setHeight(height);
     }
@@ -127,15 +136,25 @@ public class PeakTrack extends AbstractTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             super.setHeight(bandHeight);
         } else if (getDisplayMode() == Track.DisplayMode.EXPANDED) {
-            super.setHeight((nTimePoints + 1) * bandHeight + 6);
+            super.setHeight((nTimePoints + 1) * bandHeight + 2);
         }
     }
+
+    public static RenderOption getRenderOption() {
+         return renderOption;
+     }
+
+     public static void setRenderOption(RenderOption renderOption) {
+         PeakTrack.renderOption = renderOption;
+     }
+
 
 
     // TODO -- the code below is an exact copy of code in DataTrack.   Refactor to share this.
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
+        buf.append(getName());
         Peak score = getLocusScoreAt(chr, position, frame);
         buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
         return buf.toString();
@@ -145,7 +164,7 @@ public class PeakTrack extends AbstractTrack {
     // TODO -- the code below is an exact copy of code in DataTrack.   Refactor to share this.
 
     private Peak getLocusScoreAt(String chr, double position, ReferenceFrame frame) {
-        List<Peak> scores = peakMap.get(chr);
+        List<Peak> scores = getFilteredPeaks(chr);
 
         if (scores == null) {
             return null;
@@ -154,6 +173,35 @@ public class PeakTrack extends AbstractTrack {
             double bpPerPixel = frame.getScale();
             int buffer = (int) (2 * bpPerPixel);    /* * */
             return (Peak) FeatureUtils.getFeatureAt(position, buffer, scores);
+        }
+    }
+
+    public synchronized List<Peak> getFilteredPeaks(String chr) {
+        List<Peak> filteredPeaks = filteredPeakMap.get(chr);
+        if (filteredPeaks == null) {
+            List<Peak> allPeaks = peakMap.get(chr);
+            if(allPeaks == null) {
+                return null;
+            }
+            filteredPeaks = new ArrayList(allPeaks.size() / 2);
+            for(Peak peak : allPeaks) {
+                if (peak.getCombinedScore() >= scoreThreshold &&
+                        peak.getFoldChange() >= foldChangeThreshold) {
+                    filteredPeaks.add(peak);
+                }
+            }
+            filteredPeakMap.put(chr, filteredPeaks);
+        }
+        return filteredPeaks;
+    }
+
+
+    private static void clearFilteredLists() {
+        for (SoftReference<PeakTrack> instance : instances) {
+            PeakTrack track = instance.get();
+            if (track != null) {
+                track.filteredPeakMap.clear();
+            }
         }
     }
 
@@ -177,14 +225,26 @@ public class PeakTrack extends AbstractTrack {
 
     public static void setScoreThreshold(float t) {
         scoreThreshold = t;
+        clearFilteredLists();
     }
 
-    public static ShadeOption getShadeOption() {
-        return shadeOption;
+    public static ColorOption getColorOption() {
+        return colorOption;
     }
 
-    public static void setShadeOption(ShadeOption shadeOption) {
-        PeakTrack.shadeOption = shadeOption;
+    public static void setShadeOption(ColorOption colorOption) {
+        PeakTrack.colorOption = colorOption;
     }
+
+    public static float getFoldChangeThreshold() {
+        return foldChangeThreshold;
+    }
+
+    public static void setFoldChangeThreshold(float foldChangeThreshold) {
+        PeakTrack.foldChangeThreshold = foldChangeThreshold;
+        clearFilteredLists();
+    }
+
+
 
 }

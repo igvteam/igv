@@ -40,25 +40,30 @@ public class PeakControlDialog extends JDialog {
     public PeakControlDialog(Frame owner) {
         super(owner);
         initComponents();
-        slider1.setValue((int) PeakTrack.getScoreThreshold());
+        scoreSlider.setValue((int) PeakTrack.getScoreThreshold());
+        foldChangeSlider.setValue((int) PeakTrack.getFoldChangeThreshold());
         setAlwaysOnTop(true);
+        //setUndecorated(true);
         this.setLocation(owner.getBounds().width - 200, 50);
     }
 
 
-    private void closeButtonActionPerformed(ActionEvent e) {
-        setVisible(false);
-    }
-
-
-
-    private void slider1StateChanged(ChangeEvent e) {
-        PeakTrack.setScoreThreshold(slider1.getValue());
+    private void scoreSliderStateChanged(ChangeEvent e) {
+        PeakTrack.setScoreThreshold(scoreSlider.getValue());
         IGV.getInstance().repaintDataPanels();
 
     }
 
+    private void foldChangeSliderStateChanged(ChangeEvent e) {
+        PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
+        IGV.getInstance().repaintDataPanels();
+    }
+
     private void slider1PropertyChange(PropertyChangeEvent e) {
+        // TODO add your code here
+    }
+
+    private void slider1StateChanged(ChangeEvent e) {
         // TODO add your code here
     }
 
@@ -67,9 +72,10 @@ public class PeakControlDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        slider1 = new JSlider();
-        buttonBar = new JPanel();
-        closeButton = new JButton();
+        scoreSlider = new JSlider();
+        label1 = new JLabel();
+        label2 = new JLabel();
+        foldChangeSlider = new JSlider();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -84,24 +90,44 @@ public class PeakControlDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
 
-                //---- slider1 ----
-                slider1.setPaintTicks(true);
-                slider1.setPaintLabels(true);
-                slider1.setToolTipText("Adjust score threshold");
-                slider1.setMajorTickSpacing(20);
-                slider1.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent e) {
-                        slider1PropertyChange(e);
-                        slider1PropertyChange(e);
-                    }
-                });
-                slider1.addChangeListener(new ChangeListener() {
+                //---- scoreSlider ----
+                scoreSlider.setPaintTicks(true);
+                scoreSlider.setPaintLabels(true);
+                scoreSlider.setToolTipText("Adjust score threshold");
+                scoreSlider.setMajorTickSpacing(20);
+                scoreSlider.addChangeListener(new ChangeListener() {
                     public void stateChanged(ChangeEvent e) {
-                        slider1StateChanged(e);
+                        scoreSliderStateChanged(e);
                     }
                 });
-                contentPanel.add(slider1);
-                slider1.setBounds(5, 30, 215, slider1.getPreferredSize().height);
+                contentPanel.add(scoreSlider);
+                scoreSlider.setBounds(5, 15, 215, scoreSlider.getPreferredSize().height);
+
+                //---- label1 ----
+                label1.setText("Score threshold:");
+                contentPanel.add(label1);
+                label1.setBounds(new Rectangle(new Point(5, 0), label1.getPreferredSize()));
+
+                //---- label2 ----
+                label2.setText("Fold change threshold:");
+                contentPanel.add(label2);
+                label2.setBounds(new Rectangle(new Point(5, 85), label2.getPreferredSize()));
+
+                //---- foldChangeSlider ----
+                foldChangeSlider.setPaintTicks(true);
+                foldChangeSlider.setPaintLabels(true);
+                foldChangeSlider.setToolTipText("Adjust score threshold");
+                foldChangeSlider.setMajorTickSpacing(2);
+                foldChangeSlider.setMinorTickSpacing(1);
+                foldChangeSlider.setMaximum(10);
+                foldChangeSlider.setValue(0);
+                foldChangeSlider.addChangeListener(new ChangeListener() {
+                    public void stateChanged(ChangeEvent e) {
+                        foldChangeSliderStateChanged(e);
+                    }
+                });
+                contentPanel.add(foldChangeSlider);
+                foldChangeSlider.setBounds(5, 100, 215, 52);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -118,31 +144,10 @@ public class PeakControlDialog extends JDialog {
                 }
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
-
-            //======== buttonBar ========
-            {
-                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0};
-
-                //---- closeButton ----
-                closeButton.setText("Close");
-                closeButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        closeButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
-            }
-            dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getOwner());
-
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -150,8 +155,9 @@ public class PeakControlDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JSlider slider1;
-    private JPanel buttonBar;
-    private JButton closeButton;
+    private JSlider scoreSlider;
+    private JLabel label1;
+    private JLabel label2;
+    private JSlider foldChangeSlider;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -19,12 +19,12 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
 import org.broad.tribble.Feature;
 
 /**
- *
  * Note:  implementing tribble.Feature will allow us to index these files in the future.
  *
  * @author jrobinso
@@ -37,21 +37,22 @@ public class Peak implements LocusScore {
     int end;
     private String name;
     private float combinedScore;
-    private float [] timeScores;
+    private float[] timeScores;
     boolean dynamic = false;
     float dynamicScore;
+    private float foldChange;
 
-    public Peak(String chr,int start, int end, String name, float combinedScore, float[] timeScores) {
+    public Peak(String chr, int start, int end, String name, float combinedScore, float[] timeScores) {
         this.chr = chr;
         this.combinedScore = combinedScore;
         this.end = end;
         this.name = name;
         this.start = start;
         this.timeScores = timeScores;
-
-        float dynThreshold = 3;
-        dynamicScore = timeScores[0] / timeScores[timeScores.length - 1];
-        dynamic = (dynamicScore > dynThreshold || (1 / dynamicScore) > dynThreshold);
+        float firstScore = Math.max(1, timeScores[0]);
+        float lastScore = Math.max(1, timeScores[timeScores.length - 1]);
+        foldChange = firstScore < lastScore ? lastScore / firstScore : firstScore / lastScore;
+        dynamicScore = (float) (Math.log(lastScore / firstScore) / Globals.log2);
     }
 
     public String getChr() {
@@ -63,7 +64,7 @@ public class Peak implements LocusScore {
     }
 
     public int getEnd() {
-        return end; 
+        return end;
     }
 
     public String getName() {
@@ -87,6 +88,7 @@ public class Peak implements LocusScore {
     }
 
     // Locus score interface
+
     public void setStart(int start) {
         this.start = start;
     }
@@ -103,7 +105,24 @@ public class Peak implements LocusScore {
         return this;
     }
 
+    String valueString;
+
     public String getValueString(double position, WindowFunction windowFunction) {
-        return String.valueOf(getScore());
+        if (valueString == null) {
+            StringBuffer buf = new StringBuffer();
+            buf.append("Combined Score: " + getScore());
+            buf.append("<br>Fold change: " + foldChange);
+            buf.append("<br>--------------------");
+            for (int i = 0; i < timeScores.length; i++) {
+                buf.append("<br>Time point " + (i + 1) + ": " + timeScores[i]);
+            }
+
+            valueString = buf.toString();
+        }
+        return valueString;
+    }
+
+    public float getFoldChange() {
+        return foldChange;
     }
 }
