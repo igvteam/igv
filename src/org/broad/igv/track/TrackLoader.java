@@ -195,7 +195,7 @@ public class TrackLoader {
                 loadMAFTrack(locator, newTracks);
             } else if (locator.getPath().toLowerCase().contains(".peak")) {
                 loadPeakTrack(locator, newTracks, genome);
-            } else if (locator.getType().equals("mage-tab") || GCTDatasetParser.parsableMAGE_TAB(locator)) {
+            } else if ("mage-tab".equals(locator.getType()) || GCTDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
