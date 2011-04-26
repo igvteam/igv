@@ -23,7 +23,6 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
@@ -58,10 +57,19 @@ public class VCFTrack extends FeatureTrack {
     private static final Color BAND2_COLOR = Color.white;
 
     // Map for organizing samples by family (sample -> family).  This is static (shared) by all vcf tracks
-    private static Map<String, String> sampleGroupMap = new HashMap();
+    // We need maps in both directions to (1) look up a group quickly,  and (2) maintain proper order in the group
+    private static Map<String, String> REFERENCE_SAMPLE_GROUP_MAP = new HashMap();
+    private static LinkedHashMap<String, List<String>> REFERENCE_GROUP_SAMPLE_MAP;
 
-    public static void addSampleGroups(Map<String, String> map) {
-        sampleGroupMap.putAll(map);
+    public static void addSampleGroups(LinkedHashMap<String, List<String>> map) {
+        REFERENCE_GROUP_SAMPLE_MAP = map;
+        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+            String family = entry.getKey();
+            for (String sample : entry.getValue()) {
+                REFERENCE_SAMPLE_GROUP_MAP.put(sample, family);
+            }
+        }
+
     }
 
     private final int EXPANDED_GENOTYPE_HEIGHT = 15;
@@ -69,7 +77,7 @@ public class VCFTrack extends FeatureTrack {
     private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final int MAX_FILTER_LINES = 15;
 
-    private VCFRenderer renderer = new VCFRenderer();
+    private VCFRenderer renderer = new VCFRenderer(this);
 
     // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
     private int top;
@@ -77,7 +85,8 @@ public class VCFTrack extends FeatureTrack {
 
     LinkedHashMap<String, List<String>> samples = new LinkedHashMap();
     List<String> allSamples;
-    //int groupCount;
+    List<String> groupNames;
+
     int sampleCount;
     private boolean grouped;
     private boolean hasGroups;
@@ -102,8 +111,7 @@ public class VCFTrack extends FeatureTrack {
         sampleCount = allSamples.size();
 
         for (String sample : allSamples) {
-
-            String key = sampleGroupMap.get(sample);
+            String key = REFERENCE_SAMPLE_GROUP_MAP.get(sample);
             if (key == null) {
                 key = "Other";
             }
@@ -115,8 +123,11 @@ public class VCFTrack extends FeatureTrack {
             sampleList.add(sample);
         }
 
-        grouped = sampleGroupMap.size() > 1;
-        hasGroups = sampleGroupMap.size() > 1;
+        grouped = samples.size() > 1;
+        hasGroups = samples.size() > 1;
+        if (grouped && REFERENCE_GROUP_SAMPLE_MAP != null) {
+            sortGroups();
+        }
 
         setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
@@ -126,6 +137,50 @@ public class VCFTrack extends FeatureTrack {
         int beta = 20000;
         int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
+    }
+
+    private void sortGroups() {
+
+        // First sort the sample groups (keys)
+        final Map<String, Integer> groupRank = new HashMap();
+        int idx = 0;
+        for (String family : REFERENCE_GROUP_SAMPLE_MAP.keySet()) {
+            groupRank.put(family, idx++);
+        }
+
+        groupNames = new ArrayList(samples.keySet());
+        Collections.sort(groupNames, new Comparator<String>() {
+            public int compare(String s1, String s2) {
+                int r1 = groupRank.containsKey(s1) ? groupRank.get(s1) : -1;
+                int r2 = groupRank.containsKey(s2) ? groupRank.get(s2) : -1;
+                return r1 - r2;
+            }
+        });
+
+
+        LinkedHashMap<String, List<String>> newSamples = new LinkedHashMap();
+        for (String family : groupNames) {
+            List<String> sampleList = samples.get(family);
+            if (sampleList != null && sampleList.size() > 0) {
+                final List<String> referenceGroup = REFERENCE_GROUP_SAMPLE_MAP.get(family);
+                if (referenceGroup != null) {
+                    final Map<String, Integer> rank = new HashMap();
+                    for (int i = 0; i < referenceGroup.size(); i++) {
+                        rank.put(referenceGroup.get(i), i);
+                        Collections.sort(sampleList, new Comparator<String>() {
+                            public int compare(String s1, String s2) {
+                                int r1 = rank.containsKey(s1) ? rank.get(s1) : -1;
+                                int r2 = rank.containsKey(s2) ? rank.get(s2) : -1;
+                                return r1 - r2;
+                            }
+                        });
+                    }
+                }
+                newSamples.put(family, sampleList);
+            }
+
+        }
+        this.samples = newSamples;
     }
 
 
@@ -427,7 +482,7 @@ public class VCFTrack extends FeatureTrack {
             GraphicUtils.drawWrappedText(getName(), rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
         }
 
-        if(grouped) {
+        if (grouped) {
             g2D.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
         }
 
@@ -456,8 +511,24 @@ public class VCFTrack extends FeatureTrack {
             if (y < top + variantBandHeight) {
                 return getVariantToolTip(variant);
             } else {
-                int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                String sample = allSamples.get(sampleNumber);
+                String sample = null;
+                if (grouped) {
+                    // TODO This is a hack for the autism site, fix SOON.  Assumes groups are all trios
+                    int groupHeight = 3 * getGenotypeBandHeight() + 3;
+                    int groupNumber = (y - top - variantBandHeight) / groupHeight;
+                    if (groupNumber < groupNames.size()) {
+                        String group = groupNames.get(groupNumber);
+                        List<String> sampleList = samples.get(group);
+                        int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
+                        if (sampleNumber >= 0 || sampleNumber < sampleList.size()) {
+                            sample = sampleList.get(sampleNumber);
+                        }
+                    }
+
+                } else {
+                    int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
+                    sample = allSamples.get(sampleNumber);
+                }
                 return getSampleToolTip(sample, variant);
             }
         }
@@ -529,7 +600,9 @@ public class VCFTrack extends FeatureTrack {
 
     public static enum ColorMode {
         GENOTYPE, ALLELE
-    };
+    }
+
+    ;
 
     public static enum InfoFieldName {
 

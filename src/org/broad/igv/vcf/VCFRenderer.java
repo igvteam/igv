@@ -21,6 +21,7 @@ package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.RenderContext;
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.util.variantcontext.Allele;
@@ -59,6 +60,8 @@ public class VCFRenderer { //extends FeatureRenderer {
     private static final Color DARK_GREEN = new Color(30, 120, 30);
     private static final Color BLUE = Color.blue.darker();
 
+    private VCFTrack track;
+
     static {
         nucleotideColors.put('A', Color.GREEN);
         nucleotideColors.put('a', Color.GREEN);
@@ -74,7 +77,8 @@ public class VCFRenderer { //extends FeatureRenderer {
         nucleotideColors.put(null, Color.BLACK);
     }
 
-    public VCFRenderer() {
+    public VCFRenderer(VCFTrack track) {
+        this.track = track;
     }
 
     public void renderVariantBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
@@ -227,15 +231,22 @@ public class VCFRenderer { //extends FeatureRenderer {
                 int offset = dX / 2;
                 pX0 = pX0 + offset;
             }
+
+            int y0 = track.getDisplayMode() == Track.DisplayMode.EXPANDED ? pY + 1 : pY;
+            int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY-2 : dY);
+
             if (coloring == VCFTrack.ColorMode.GENOTYPE ) {
                 g.setColor(b1Color);
-                g.fillRect(pX0, pY, dX, dY);
+                g.fillRect(pX0, y0, dX, h);
             } else {
+                // Color by allele
                 g.setColor(b1Color);
-                g.fillRect(pX0, pY, (dX / 2), Math.max(1, dY));
+                g.fillRect(pX0, y0, (dX / 2), h);
                 g.setColor(b2Color);
-                g.fillRect(pX0 + (dX / 2), pY, (dX / 2), Math.max(1, dY));
+                g.fillRect(pX0 + (dX / 2), y0, (dX / 2), h);
             }
+
+
             if ((dX >= 10) && (dY >= 18)) {
                 if (b1Color == Color.blue) {
                     g.setColor(Color.white);

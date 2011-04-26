@@ -40,27 +40,21 @@ public class PedigreeUtils {
         BufferedReader reader = null;
 
 
-        try {
-            reader = ParsingUtils.openBufferedReader(path);
+        reader = ParsingUtils.openBufferedReader(path);
 
-            LinkedHashMap<String, String> trios = new LinkedHashMap();
+        LinkedHashMap<String, List<String>> trios = new LinkedHashMap();
 
-            String nextLine;
-            int familyNumber = 1;
-            while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = nextLine.split("\\s+");
+        String nextLine;
+        int familyNumber = 1;
+        while ((nextLine = reader.readLine()) != null) {
+            String[] tokens = nextLine.split("\\s+");
+            if (tokens.length == 3) {
                 String family = "fam" + familyNumber++;
-                for (String sample : tokens) {
-                    trios.put(sample, family);
-                }
-            }
-
-            VCFTrack.addSampleGroups(trios);
-        } finally {
-            if (reader != null) {
-                reader.close();
+                trios.put(family, Arrays.asList(tokens));
             }
         }
+
+        VCFTrack.addSampleGroups(trios);
 
 
     }
