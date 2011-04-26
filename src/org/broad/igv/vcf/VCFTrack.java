@@ -151,8 +151,8 @@ public class VCFTrack extends FeatureTrack {
         groupNames = new ArrayList(samples.keySet());
         Collections.sort(groupNames, new Comparator<String>() {
             public int compare(String s1, String s2) {
-                int r1 = groupRank.containsKey(s1) ? groupRank.get(s1) : -1;
-                int r2 = groupRank.containsKey(s2) ? groupRank.get(s2) : -1;
+                int r1 = groupRank.containsKey(s1) ? groupRank.get(s1) : Integer.MAX_VALUE;
+                int r2 = groupRank.containsKey(s2) ? groupRank.get(s2) : Integer.MAX_VALUE;
                 return r1 - r2;
             }
         });
@@ -169,8 +169,8 @@ public class VCFTrack extends FeatureTrack {
                         rank.put(referenceGroup.get(i), i);
                         Collections.sort(sampleList, new Comparator<String>() {
                             public int compare(String s1, String s2) {
-                                int r1 = rank.containsKey(s1) ? rank.get(s1) : -1;
-                                int r2 = rank.containsKey(s2) ? rank.get(s2) : -1;
+                                int r1 = rank.containsKey(s1) ? rank.get(s1) : Integer.MAX_VALUE;
+                                int r2 = rank.containsKey(s2) ? rank.get(s2) : Integer.MAX_VALUE;
                                 return r1 - r2;
                             }
                         });
@@ -515,14 +515,12 @@ public class VCFTrack extends FeatureTrack {
                 if (grouped) {
                     // TODO This is a hack for the autism site, fix SOON.  Assumes groups are all trios
                     int groupHeight = 3 * getGenotypeBandHeight() + 3;
-                    int groupNumber = (y - top - variantBandHeight) / groupHeight;
-                    if (groupNumber < groupNames.size()) {
-                        String group = groupNames.get(groupNumber);
-                        List<String> sampleList = samples.get(group);
-                        int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
-                        if (sampleNumber >= 0 || sampleNumber < sampleList.size()) {
-                            sample = sampleList.get(sampleNumber);
-                        }
+                    int groupNumber = Math.min(groupNames.size() - 1, (y - top - variantBandHeight) / groupHeight);
+                    String group = groupNames.get(groupNumber);
+                    List<String> sampleList = samples.get(group);
+                    int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
+                    if (sampleNumber >= 0 || sampleNumber < sampleList.size()) {
+                        sample = sampleList.get(sampleNumber);
                     }
 
                 } else {
