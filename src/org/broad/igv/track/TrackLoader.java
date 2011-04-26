@@ -201,13 +201,10 @@ public class TrackLoader {
             } else if (IGVDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadIGVFile(locator, newTracks, genome);
-
             }
-
-            // For PLINK GWAS results files
-            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") || typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
+            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
+                    typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
-
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
             } else {

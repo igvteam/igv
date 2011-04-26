@@ -244,14 +244,15 @@ public class TrackManager {
 
         for (ResourceLocator locator : locators) {
 
+            // If its a local file, check explicitly for existence (rather than rely on exception)
             if (locator.isLocal()) {
                 File trackSetFile = new File(locator.getPath());
-
                 if (!trackSetFile.exists()) {
                     messages.append("File not found: " + locator.getPath() + "\n");
                     continue;
                 }
             }
+
             TrackPanel panel = getPanelFor(locator);
             try {
                 List<Track> tracks = load(locator);

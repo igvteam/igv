@@ -420,46 +420,23 @@ public class SessionReader {
         }
         if (dataFiles.size() > 0) {
 
-            TrackLoader loader = new TrackLoader();
             for (ResourceLocator locator : dataFiles) {
-                //TODO Go through the tracks and reassign them to the resourceLocator
-                try {
-                    List<Track> tracks = loader.load(locator, igv);
-                    if (tracks.size() > 0) {
-                        for (Track track : tracks) {
 
-                            String id = track.getId();
-                            List<Track> trackList = trackDictionary.get(id);
-                            if (trackList == null) {
-                                trackList = new ArrayList();
-                                trackDictionary.put(id, trackList);
+                List<Track> tracks = igv.getTrackManager().load(locator);
 
-                            }
-                            trackList.add(track);
+                for (Track track : tracks) {
 
-                            String fn = locator.getPath();
-                            int lastSlashIdx = fn.lastIndexOf("/");
-                            if(lastSlashIdx < 0) {
-                               lastSlashIdx = fn.lastIndexOf("\\");
-                            }
-                            if(lastSlashIdx > 0) {
-                                fn = fn.substring(lastSlashIdx + 1);
-                            }
-                            track.setAttributeValue("DATA FILE", fn);
-                            track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+                    String id = track.getId();
+                    List<Track> trackList = trackDictionary.get(id);
+                    if (trackList == null) {
+                        trackList = new ArrayList();
+                        trackDictionary.put(id, trackList);
 
-                        }
-                    } else {
-                        AttributeManager.getInstance().loadSampleInfo(locator);
                     }
-                } catch (Exception e) {
-                    log.error("Error loading " + locator.getPath(), e);
-                    MessageUtils.showMessage("<html>Error loading: " + locator.getPath() + "<br>" + e.toString());
+                    trackList.add(track);
                 }
+
             }
-
-            // TODO -- sample info file
-
         }
         dataFiles = null;
     }
@@ -474,6 +451,7 @@ public class SessionReader {
      * Process the data file element.  If relativePaths == true treat the
      * file path as relative to the session file path.  If false
      */
+
     private void processDataFile(Session session, Element element, HashMap additionalInformation) {
 
         ResourceLocator resourceLocator = null;
@@ -730,7 +708,7 @@ public class SessionReader {
         NodeList elements = element.getChildNodes();
         for (int i = 0; i < elements.getLength(); i++) {
             Node childNode = elements.item(i);
-            if (childNode.getNodeName().equalsIgnoreCase(SessionElement.DATA_TRACK.getText()) ||
+            if (childNode.getNodeName().equalsIgnoreCase(SessionElement.DATA_TRACK.getText()) ||  // Is this a track?
                     childNode.getNodeName().equalsIgnoreCase(SessionElement.TRACK.getText())) {
 
                 List<Track> tracks = processTrack(session, (Element) childNode, additionalInformation);

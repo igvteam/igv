@@ -270,14 +270,11 @@ public class LoadFromServerAction extends MenuAction {
 
             List<ResourceLocator> newLoadList = new ArrayList();
 
-            Set<ResourceLocator> loadedResources = IGV.getInstance().getTrackManager().getDataResourceLocators();
-            loadedResources.addAll(AttributeManager.getInstance().getLoadedResources());
-
             if (selectedLocators != null) {
                 for (ResourceLocator locator : selectedLocators) {
 
                     // Don't reload data that is already loaded
-                    if (loadedResources.contains(locator)) {
+                    if (IGV.getInstance().getTrackManager().getDataResourceLocators().contains(locator)) {
                         continue;
                     }
 
