@@ -195,14 +195,10 @@ public class TrackLoader {
                 loadMAFTrack(locator, newTracks);
             } else if (locator.getPath().toLowerCase().contains(".peak")) {
                 loadPeakTrack(locator, newTracks, genome);
-            } else if (GCTDatasetParser.parsableMAGE_TAB(locator)) {
+            } else if (locator.getType().equals("mage-tab") || GCTDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
-            } else if (IGVDatasetParser.parsableMAGE_TAB(locator)) {
-                locator.setDescription("MAGE_TAB");
-                loadIGVFile(locator, newTracks, genome);
-            }
-            else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
+            } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
                     typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {

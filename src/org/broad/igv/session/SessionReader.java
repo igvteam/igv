@@ -19,6 +19,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -296,6 +297,7 @@ public class SessionReader {
             }
         }
     }
+
 
     /**
      * Process a single session element node.

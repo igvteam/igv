@@ -529,9 +529,7 @@ public class VCFTrack extends FeatureTrack {
 
     public static enum ColorMode {
         GENOTYPE, ALLELE
-    }
-
-    ;
+    };
 
     public static enum InfoFieldName {
 

@@ -38,6 +38,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.vcf.VCFTrack;
 
 import java.awt.*;
 import java.io.File;
@@ -253,10 +254,22 @@ public class TrackManager {
                 }
             }
 
-            TrackPanel panel = getPanelFor(locator);
             try {
                 List<Track> tracks = load(locator);
                 if (tracks.size() > 0) {
+                    String path = locator.getPath();
+
+                    // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
+                    // is greater than 10
+                    TrackPanel panel = getPanelFor(locator);
+                    if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+                            path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+                        Track t = tracks.get(0);
+                        if (t instanceof VCFTrack && ((VCFTrack) t).getAllSamples().size() > 10) {
+                            String newPanelName = "Panel" + System.currentTimeMillis();
+                            panel = igv.addDataPanel(newPanelName).getTrackPanel();
+                        }
+                    }
                     panel.addTracks(tracks);
                 }
             } catch (Throwable e) {
@@ -576,6 +589,12 @@ public class TrackManager {
         }
     }
 
+    /**
+     * Return a DataPanel appropriate for the resource type
+     *
+     * @param locator
+     * @return
+     */
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
