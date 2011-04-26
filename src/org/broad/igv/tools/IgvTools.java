@@ -37,6 +37,7 @@ import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -81,7 +82,7 @@ public class IgvTools {
     public static final int INTERVAL_SIZE = 1000;
     public static final int LINEAR_INDEX = 1;
     public static final int INTERVAL_INDEX = 2;
-    
+
 
     /**
      * The general usage string
@@ -619,17 +620,19 @@ public class IgvTools {
 
     public static Genome loadGenome(String genomeFileOrID) {
 
-
         String rootDir = FileUtils.getInstallDirectory();
 
-        final GenomeManager genomeManager = new GenomeManager();
+        final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
+                IGV.getInstance().getGenomeManager();
         Genome genome = genomeManager.getGenome(genomeFileOrID);
         if (genome != null) {
             return genome;
         }
 
-
-        File genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
+        File genomeFile = new File(genomeFileOrID);
+        if (!genomeFile.exists()) {
+            genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
+        }
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID);
         }
