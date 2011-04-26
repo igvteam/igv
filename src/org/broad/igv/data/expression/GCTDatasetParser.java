@@ -300,12 +300,6 @@ public class GCTDatasetParser {
 
                 nTokens = ParsingUtils.split(nextLine, tokens, '\t');
                 List<String> headingColumns = Arrays.asList(tokens);
-                Set<String> quantitations = new HashSet();
-                
-                for (int i = dataStartColumn; i < nTokens; i++)
-                {
-                    quantitations.add(tokens[i]);
-                }
 
                 String qCol = null;
 
@@ -333,6 +327,12 @@ public class GCTDatasetParser {
                 }
                 else
                 {
+                    Set<String> quantitations = new HashSet();               
+                    for (int i = dataStartColumn; i < nTokens; i++)
+                    {
+                        quantitations.add(tokens[i]);
+                    }
+
                     if(quantitations == null || quantitations.size() ==0)
                     {
                         throw new Exception("Could not find any signal columns in the MAGE-TAB file");
