@@ -337,21 +337,29 @@ public class GCTDatasetParser {
                     {
                         throw new Exception("Could not find any signal columns in the MAGE-TAB file");
                     }
-                    //Need to get the quantiation column from the user
-                    ArrayList qColumns = new ArrayList(quantitations);
 
-                    Collections.sort(qColumns);
+                    ArrayList<String> qColumns = new ArrayList(quantitations);
 
-                    MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[])qColumns.toArray(new String[0]));
-                    msDialog.setVisible(true);
-
-                    if(!msDialog.isCanceled())
+                    if(qColumns.size() > 1)
                     {
-                        qCol = msDialog.getQuantitationColumn();
+                        //Need to get the quantiation column from the user
+                        Collections.sort(qColumns);
+
+                        MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[])qColumns.toArray(new String[0]));
+                        msDialog.setVisible(true);
+
+                        if(!msDialog.isCanceled())
+                        {
+                            qCol = msDialog.getQuantitationColumn();
+                        }
+                        else
+                        {
+                            throw new InterruptedException();
+                        }
                     }
                     else
                     {
-                        throw new InterruptedException();
+                        qCol = qColumns.get(0);
                     }
                 }
 
