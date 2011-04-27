@@ -34,8 +34,10 @@ import org.broad.igv.track.Track;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYStepRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -48,6 +50,9 @@ public class KMPlotFrame extends JFrame {
     Collection<Track> tracks;
     private XYPlot plot;
 
+    // TODO -- control to set this
+    int maxTime = 60;
+
     public KMPlotFrame(Collection<Track> tracks) {
 
         //setLocationRelativeTo(owner);
@@ -56,29 +61,38 @@ public class KMPlotFrame extends JFrame {
 
         initComponents();
 
-        censureColumn.addItem("");
-        sampleColumn.addItem("");
-        survivalColumn.addItem("");
-        groupByColumn.addItem("");
+        censurColumnControl.addItem("");
+        sampleColumnControl.addItem("");
+        survivalColumnControl.addItem("");
+        groupByControl.addItem("");
         for (String key : AttributeManager.getInstance().getAttributeKeys()) {
-            censureColumn.addItem(key);
-            sampleColumn.addItem(key);
-            survivalColumn.addItem(key);
-            groupByColumn.addItem(key);
+            censurColumnControl.addItem(key);
+            sampleColumnControl.addItem(key);
+            survivalColumnControl.addItem(key);
+            groupByControl.addItem(key);
         }
 
-        censureColumn.setSelectedItem("CENSURED");
-        sampleColumn.setSelectedItem("LINKING_ID");
-        survivalColumn.setSelectedItem("SURVIVAL (DAYS)");
-        groupByColumn.setSelectedItem("SUBTYPE");
+        censurColumnControl.setSelectedItem("CENSURED");
+        sampleColumnControl.setSelectedItem("LINKING_ID");
+        survivalColumnControl.setSelectedItem("SURVIVAL (DAYS)");
+        groupByControl.setSelectedItem("SUBTYPE");
 
 
         XYDataset dataset = updateDataset();
-        JFreeChart chart = ChartFactory.createXYStepChart("Kaplan-Meier", "Days", "Survival", dataset,
-                PlotOrientation.VERTICAL, true, true, false);
-        plot = chart.getXYPlot();
-        ChartPanel plotPanel = new ChartPanel(chart);
+        JFreeChart chart = ChartFactory.createXYLineChart(
+                "",
+                "Months",
+                "Survival",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false);
 
+        XYStepRenderer renderer = new XYStepRenderer();
+        plot = chart.getXYPlot();
+        plot.setRenderer(renderer);
+        ChartPanel plotPanel = new ChartPanel(chart);
         contentPanel.add(plotPanel, BorderLayout.CENTER);
 
     }
@@ -94,15 +108,23 @@ public class KMPlotFrame extends JFrame {
         HashSet<String> participants = new HashSet();
         for (Track t : tracks) {
             try {
-                String part = t.getAttributeValue(sampleColumn.getSelectedItem().toString());
-                if (!participants.contains(part)) {
-                    participants.add(part);
-                    String survivalString = t.getAttributeValue(survivalColumn.getSelectedItem().toString());
-                    int survival = Integer.parseInt(survivalString);
-                    String censureString = t.getAttributeValue(censureColumn.getSelectedItem().toString());
+                // Get the participant (sample) attribute value for this track
+                String participant = t.getAttributeValue(sampleColumnControl.getSelectedItem().toString());
+
+                if (!participants.contains(participant)) {   // Don't add same participant twice.
+                    participants.add(participant);
+
+                    // Get the survival time.  TODO -- we need to know the units,  just assuming days for now.
+                    String survivalString = t.getAttributeValue(survivalColumnControl.getSelectedItem().toString());
+                    int survivalDays = Integer.parseInt(survivalString);
+                    int survival = survivalDays;
+
+                    // Is the patient censured at the end of the survival period?
+                    String censureString = t.getAttributeValue(censurColumnControl.getSelectedItem().toString());
                     boolean censured = censureString != null && censureString.equals("1");
-                    String group = t.getAttributeValue(groupByColumn.getSelectedItem().toString());
-                    dataPoints.add(new DataPoint(part, survival, censured, group));
+
+                    String group = t.getAttributeValue(groupByControl.getSelectedItem().toString());
+                    dataPoints.add(new DataPoint(participant, survival, censured, group));
                 } else {
                     // TODO -- check consistency of participant data
                 }
@@ -134,7 +156,8 @@ public class KMPlotFrame extends JFrame {
             int[] time = new int[pts.size()];
             boolean[] censured = new boolean[pts.size()];
             for (int i = 0; i < pts.size(); i++) {
-                time[i] = Math.max(1, pts.get(i).time / 30);
+                int months = Math.max(1, pts.get(i).time / 30);
+                time[i] = months;
                 censured[i] = pts.get(i).censured;
             }
 
@@ -143,7 +166,8 @@ public class KMPlotFrame extends JFrame {
 
             XYSeries series1 = new XYSeries(entry.getKey());
             for (KaplanMeierEstimator.Interval interval : controlIntervals) {
-                series1.add(interval.getEnd(), interval.getCumulativeSurvival());
+                if (interval.getEnd() < 60)
+                    series1.add(interval.getEnd(), interval.getCumulativeSurvival());
             }
             dataset.addSeries(series1);
         }
@@ -184,20 +208,19 @@ public class KMPlotFrame extends JFrame {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         panel1 = new JPanel();
-        censureColumn = new JComboBox();
-        sampleColumn = new JComboBox();
-        survivalColumn = new JComboBox();
-        groupByColumn = new JComboBox();
+        censurColumnControl = new JComboBox();
+        sampleColumnControl = new JComboBox();
+        survivalColumnControl = new JComboBox();
+        groupByControl = new JComboBox();
         label1 = new JLabel();
         label2 = new JLabel();
         label3 = new JLabel();
         label4 = new JLabel();
         updateButton = new JButton();
-        buttonBar = new JPanel();
-        closeButton = new JButton();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Kaplan-Meier Plot");
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
@@ -213,14 +236,14 @@ public class KMPlotFrame extends JFrame {
                 //======== panel1 ========
                 {
                     panel1.setLayout(null);
-                    panel1.add(censureColumn);
-                    censureColumn.setBounds(145, 62, 215, censureColumn.getPreferredSize().height);
-                    panel1.add(sampleColumn);
-                    sampleColumn.setBounds(145, 0, 215, sampleColumn.getPreferredSize().height);
-                    panel1.add(survivalColumn);
-                    survivalColumn.setBounds(145, 31, 215, survivalColumn.getPreferredSize().height);
-                    panel1.add(groupByColumn);
-                    groupByColumn.setBounds(145, 93, 215, groupByColumn.getPreferredSize().height);
+                    panel1.add(censurColumnControl);
+                    censurColumnControl.setBounds(145, 62, 215, censurColumnControl.getPreferredSize().height);
+                    panel1.add(sampleColumnControl);
+                    sampleColumnControl.setBounds(145, 0, 215, sampleColumnControl.getPreferredSize().height);
+                    panel1.add(survivalColumnControl);
+                    survivalColumnControl.setBounds(145, 31, 215, survivalColumnControl.getPreferredSize().height);
+                    panel1.add(groupByControl);
+                    groupByControl.setBounds(145, 93, 215, groupByControl.getPreferredSize().height);
 
                     //---- label1 ----
                     label1.setText("Sample column");
@@ -233,7 +256,7 @@ public class KMPlotFrame extends JFrame {
                     label2.setBounds(5, 36, 115, 16);
 
                     //---- label3 ----
-                    label3.setText("Censur column");
+                    label3.setText("Censure column");
                     panel1.add(label3);
                     label3.setBounds(5, 67, 115, 16);
 
@@ -250,7 +273,7 @@ public class KMPlotFrame extends JFrame {
                         }
                     });
                     panel1.add(updateButton);
-                    updateButton.setBounds(410, 92, 145, updateButton.getPreferredSize().height);
+                    updateButton.setBounds(385, 90, 145, updateButton.getPreferredSize().height);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -269,29 +292,9 @@ public class KMPlotFrame extends JFrame {
                 contentPanel.add(panel1, BorderLayout.NORTH);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
-
-            //======== buttonBar ========
-            {
-                buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 80};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0};
-
-                //---- closeButton ----
-                closeButton.setText("Close");
-                closeButton.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        closeButtonActionPerformed(e);
-                    }
-                });
-                buttonBar.add(closeButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
-            }
-            dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
-        setSize(595, 510);
+        setSize(565, 510);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -301,17 +304,15 @@ public class KMPlotFrame extends JFrame {
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JPanel panel1;
-    private JComboBox censureColumn;
-    private JComboBox sampleColumn;
-    private JComboBox survivalColumn;
-    private JComboBox groupByColumn;
+    private JComboBox censurColumnControl;
+    private JComboBox sampleColumnControl;
+    private JComboBox survivalColumnControl;
+    private JComboBox groupByControl;
     private JLabel label1;
     private JLabel label2;
     private JLabel label3;
     private JLabel label4;
     private JButton updateButton;
-    private JPanel buttonBar;
-    private JButton closeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
