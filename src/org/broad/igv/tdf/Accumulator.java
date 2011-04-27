@@ -81,8 +81,9 @@ public class Accumulator {
                         }
                     }
             }
+            nPts++;
         }
-        nPts++;
+
     }
 
 
@@ -143,6 +144,7 @@ public class Accumulator {
 
 
     public float getValue() {
+        if(!isFinished) finish();
         return value;
 
     }

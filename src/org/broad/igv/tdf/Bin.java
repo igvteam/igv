@@ -39,7 +39,6 @@ public class Bin implements LocusScore {
 
     private int start;
     private int end;
-    private float score = Float.MIN_VALUE;
 
     Accumulator accumulator;
     private FloatArrayList values;
@@ -74,7 +73,6 @@ public class Bin implements LocusScore {
         this.end = otherBin.end;
         this.accumulator = otherBin.accumulator;
         this.names = otherBin.names;
-        this.score = otherBin.score;
         this.windowFunction = otherBin.windowFunction;
     }
 
@@ -118,19 +116,7 @@ public class Bin implements LocusScore {
     }
 
     public float getScore() {
-        if (score == Float.MIN_VALUE) {
-            computeScore();
-        }
-        return score;
-    }
-
-    private void computeScore() {
-        if (accumulator == null) {
-            score = Float.NaN;
-        } else {
-            accumulator.finish();
-            score = accumulator.getValue();
-        }
+        return accumulator.getValue();
     }
 
     public LocusScore copy() {

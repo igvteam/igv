@@ -278,6 +278,10 @@ public class ContinuousColorScale extends AbstractColorScale {
             initColors();
         }
 
+        if(Float.isNaN(val)) {
+            return UIConstants.NO_DATA_COLOR;
+        }
+
         // See if we are in the midrange.  TO deal with floating point roundoffissues expand the range
         // by a small amount.
         if ((val >= 1.0001 * negStart) && (val <= 1.0001 * posStart)) {
