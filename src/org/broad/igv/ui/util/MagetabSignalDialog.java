@@ -23,6 +23,9 @@ public class MagetabSignalDialog  extends JDialog
 
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
+        JLabel messageLabel = new JLabel();
+        messageLabel.setText("Please select a column to obtain signal values from");
+        panel.add(messageLabel);
         
         JButton btnCancel = new JButton("Cancel");
         btnCancel.addActionListener(new ActionListener()
@@ -47,8 +50,6 @@ public class MagetabSignalDialog  extends JDialog
             }
         });
 
-        JPanel bp = new JPanel();
-
         for(int i =0; i < elements.length; i++)
         {
             JRadioButton b = new JRadioButton(elements[i]);
@@ -63,7 +64,8 @@ public class MagetabSignalDialog  extends JDialog
             group.add(b);
             panel.add(b);
         }
-
+        panel.setBorder(BorderFactory.createEmptyBorder(3,8,4,8));
+        JPanel bp = new JPanel();
         bp.add(btnOk);
         bp.add(btnCancel);
 
