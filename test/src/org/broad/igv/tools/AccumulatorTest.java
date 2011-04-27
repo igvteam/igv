@@ -162,6 +162,24 @@ public class AccumulatorTest {
         }
     }
 
+    /**
+     * A single NaN
+     */
+    @Test
+    public void testSingleNaN() {
+
+        ListAccumulator accum = new ListAccumulator(wfs);
+        accum.add(Float.NaN);
+        accum.finish();
+
+        for (WindowFunction wf : wfs) {
+            if (wf != WindowFunction.count) {
+                float v = accum.getValue(wf);
+                assertTrue(wf.getDisplayName(), Float.isNaN(v));
+            }
+        }
+    }
+
 
     /**
      * Pathological case,  # of data poinst exactly equals percentile chunk size
