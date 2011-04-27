@@ -189,6 +189,9 @@ public class Session {
     }
 
     public String getLocusString() {
+        if(getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
+            return Globals.CHR_ALL;
+        }
         ReferenceFrame.Range range = getReferenceFrame().getCurrentRange();
         String startStr = String.valueOf(range.getStart());
         String endStr = String.valueOf(range.getEnd());
