@@ -43,8 +43,7 @@ public class StringUtils {
         }
 
         char[] characters = string.toCharArray();
-        char c = characters[0];
-
+        char c;
         boolean isQuoted = false;
         StringBuffer buff = new StringBuffer(100);
         for (int i = 0; i < characters.length; i++) {
@@ -73,12 +72,49 @@ public class StringUtils {
 
     }
 
+    /**
+     * Return a possibly shortened representation of the input string
+     */
+    public static String checkLength(String string, int maxLength) {
 
+        if (string.length() <= maxLength) {
+            return string;
+        }
+
+        int nDots = maxLength > 10 ? 3 : (maxLength > 5 ? 2 : 1);
+        int m = (Math.max(1, (maxLength - nDots) / 2));
+        StringBuffer newString = new StringBuffer(maxLength);
+        newString.append(string.substring(0, m));
+        for(int i=0; i<nDots; i++) {
+            newString.append('.');
+        }
+        newString.append(string.substring(string.length() - m));
+        return newString.toString();
+
+    }
+
+
+    /**
+     * Covert a genotype string to a 8 byte integer representation
+     * <p/>
+     * example
+     * String genotype = "AC";
+     * short genoShort = genoToShort(genotype);
+     * <p/>
+     * char allel1 = (char) ((genoShort >>> 8) & 0xFF);
+     * char allel2 = (char) ((genoShort >>> 0) & 0xFF);
+     * <p/>
+     * System.out.println("Allele1: " + allel1);
+     * System.out.println("Allele2: " + allel2);
+     *
+     * @param genotype
+     * @return
+     */
     public static short genoToShort(String genotype) {
         byte[] bytes = genotype.getBytes();
         return (short) ((bytes[0] & 0xff) << 8 | (bytes[1] & 0xff));
     }
-    
+
     public static String readString(ByteBuffer byteBuffer) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         byte b = -1;
@@ -88,16 +124,4 @@ public class StringUtils {
         return new String(bytes.toByteArray());
     }
 
-    public static void main(String[] args) {
-
-        String genotype = "AC";
-        short genoShort = genoToShort(genotype);
-
-        char allel1 = (char) ((genoShort >>> 8) & 0xFF);
-        char allel2 = (char) ((genoShort >>> 0) & 0xFF);
-
-        System.out.println("Allele1: " + allel1);
-        System.out.println("Allele2: " + allel2);
-
-    }
 }

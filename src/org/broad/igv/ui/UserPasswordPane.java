@@ -19,6 +19,8 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.util.StringUtils;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -42,8 +44,8 @@ public class UserPasswordPane {
         passPanel = new JPanel();
         passPanel.setLayout(new GridLayout(6, 1));
 
-        JLabel message = new JLabel("Please enter your username and password");
-        JLabel location = new JLabel(resourceString);
+        JLabel message = new JLabel("Please enter your username and password for:");
+        JLabel location = new JLabel(StringUtils.checkLength(resourceString, 80));
         JLabel username = new JLabel("User:");
         JLabel password = new JLabel("Pass:");
         userField = new JTextField();

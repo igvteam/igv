@@ -25,6 +25,7 @@ package org.broad.igv.renderer;
 //~--- JDK imports ------------------------------------------------------------
 
 import org.broad.igv.Globals;
+import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -176,11 +177,14 @@ public class GraphicUtils {
         if (textWidth < rect.width) {
             GraphicUtils.drawVerticallyCenteredText(string, 5, rect, g2D, false, clear);
         } else {
-            int charWidth = fontMetrics.charWidth('a');
+            int charWidth = (int) (stringBounds.getWidth() / string.length());
             int charsPerLine = rect.width / charWidth;
             int nStrings = (string.length() / charsPerLine) + 1;
             if (nStrings * textHeight > rect.height) {
-                GraphicUtils.drawVerticallyCenteredText(string, 5, rect, g2D, false, clear);
+                // Shorten string to fit in space
+                int nChars = (rect.width - 10) / charWidth;
+                String shortString = StringUtils.checkLength(string, nChars);
+                GraphicUtils.drawVerticallyCenteredText(shortString, 5, rect, g2D, false, clear);
             } else {
                 int breakPoint = 0;
                 Rectangle tmp = new Rectangle(rect);
