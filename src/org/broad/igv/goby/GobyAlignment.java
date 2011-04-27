@@ -21,6 +21,7 @@ package org.broad.igv.goby;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
+import edu.cornell.med.icb.goby.util.WarningCounter;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
@@ -140,12 +141,8 @@ public class GobyAlignment implements Alignment {
         int position = entry.getPosition();
 
         int readLength = 0;
-        if (entry.hasQueryLength()) {
-            readLength = entry.getQueryLength();
-        } else {
 
-            iterator.getQueryLength(entry.getQueryIndex());
-        }
+        readLength = entry.getQueryLength();
 
         // adjust by one because Goby positions start at 1 while IGV starts at 0
         byte[] result = SequenceManager.readSequence(genomeId, referenceAlias, position, position + entry.getTargetAlignedLength());
@@ -159,17 +156,20 @@ public class GobyAlignment implements Alignment {
                 final int offset = var.getPosition() + j - 1;
                 if (offset >= length) break;
                 if (result[offset] != from.charAt(j)) {
-
-                    System.out.printf("Detected difference between IGV reference sequence and alignment reference on sequence %s at position %d (reporting will stop after 10 such differences are reported.)%n", getChr(),
+                    refMismatch.warn(LOG,
+                            "Detected difference between IGV reference sequence and alignment reference on " +
+                                    "sequence %s at position %d (reporting will stop after 10 " +
+                                    "such differences are reported.)%n",
+                            getChr(),
                             j + entry.getPosition());
-                    System.out.flush();
-
                 }
                 result[offset] = (byte) to.charAt(j);
             }
         }
         return result;
     }
+
+    static WarningCounter refMismatch = new WarningCounter(10);
 
     /**
      * Transform the read index into a readname:

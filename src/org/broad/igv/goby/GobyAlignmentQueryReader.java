@@ -31,6 +31,7 @@ import java.util.Set;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
 import it.unimi.dsi.lang.MutableString;
@@ -63,7 +64,7 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
      */
     public GobyAlignmentQueryReader(String filename) throws IOException {
         basename = filename;
-        reader = new AlignmentReader(filename);
+        reader = new AlignmentReaderImpl(filename);
         reader.readHeader();
         if (!reader.isIndexed()) {
             final String errorMessage = "Goby alignment files must be sorted in order to be loaded in IGV. See the IGV tutorial at http://goby.campagnelab.org/ for details.";
@@ -94,7 +95,11 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
      * @throws IOException
      */
     public void close() throws IOException {
-        reader.close();
+       if (reader!=null) {
+
+           reader.close();
+           reader=null;
+       }
     }
 
     public Set<String> getSequenceNames() {
@@ -157,15 +162,15 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
      * @return True if this implementation can load the alignment corresponding to this filename.
      */
     public static boolean supportsFileType(String filename) {
-        final boolean result = AlignmentReader.canRead(filename);
+        final boolean result = AlignmentReaderImpl.canRead(filename);
         LOG.debug(String.format("supportsFileType %s result=%b", filename, result));
         return result;
     }
 
-    private AlignmentReader getNewLocalReader() {
+    private AlignmentReaderImpl getNewLocalReader() {
         try {
 
-            return new AlignmentReader(basename);
+            return new AlignmentReaderImpl(basename);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

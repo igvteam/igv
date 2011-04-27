@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import net.sf.samtools.util.CloseableIterator;
 import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 
 import java.util.NoSuchElementException;
@@ -52,10 +53,9 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     protected final DoubleIndexedIdentifier indexToReferenceId;
     private int previousPosition = Integer.MIN_VALUE;
     private int previousReferenceIndex = -1;
-
+    private boolean useWindow;
     // We need to record the sequence (chr), its redundant with the index but I'm not sure how to do the reverse lookup (JTR)
     private String reference;
-    private int[] globalQueryLengths;
 
     /**
      * Construct an iterator over the entire alignment file.
@@ -63,16 +63,17 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
      * @param reader            Goby alignment reader.
      * @param targetIdentifiers Bidirectional map from target index to target identifier/chromosome names.
      */
-    public GobyAlignmentIterator(AlignmentReader reader, DoubleIndexedIdentifier targetIdentifiers) {
+    public GobyAlignmentIterator(AlignmentReaderImpl reader, DoubleIndexedIdentifier targetIdentifiers) {
         this.reader = reader;
         this.indexToReferenceId = targetIdentifiers;
         startReferencePosition = Integer.MAX_VALUE;
         previousPosition = Integer.MIN_VALUE;
-        this.globalQueryLengths = reader.getQueryLengths();
+        useWindow = false;
+
     }
 
     /**
-     * Construct an iterator over the entire alignment file.
+     * Construct an iterator over a window of the alignment file.
      *
      * @param reader            Goby alignment reader.
      * @param targetIdentifiers Bidirectional map from target index to target identifier/chromosome names.
@@ -81,10 +82,12 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
      * @param end               Maximum genomic location on the reference sequence that alignment entries must have to be returned.
      * @throws java.io.IOException If an error occurs reading the Goby alignment.
      */
-    public GobyAlignmentIterator(final AlignmentReader reader, final DoubleIndexedIdentifier targetIdentifiers,
+    public GobyAlignmentIterator(final AlignmentReaderImpl reader, final DoubleIndexedIdentifier targetIdentifiers,
                                  int referenceIndex, String chr, int start, int end) throws IOException {
         this(reader, targetIdentifiers);
+        this.useWindow = true;
         if (referenceIndex != -1) {
+
             this.targetIndex = referenceIndex;
             this.reference = chr;
             this.startReferencePosition = start;
@@ -123,14 +126,20 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         if (nextEntry != null) return true;
 
         try {
-            nextEntry = reader.skipTo(targetIndex, startReferencePosition);
+            if (!useWindow) {
+                // all results are returned
+                nextEntry = reader.next();
+            } else {
+                // we return only within a window
+                nextEntry = reader.skipTo(targetIndex, startReferencePosition);
 
-            if (nextEntry == null ||
-                    nextEntry.getTargetIndex() != targetIndex ||
-                    nextEntry.getPosition() < startReferencePosition ||
-                    nextEntry.getPosition() > endReferencePosition) {
-                // No next entry, on a different target sequence, or before the position of interest:
-                nextEntry = null;
+                if (nextEntry == null ||
+                        (nextEntry.getTargetIndex() != targetIndex ||
+                                nextEntry.getPosition() < startReferencePosition ||
+                                nextEntry.getPosition() > endReferencePosition)) {
+                    // No next entry, on a different target sequence, or before the position of interest:
+                    nextEntry = null;
+                }
             }
         } catch (IOException e) {
             nextEntry = null;
@@ -179,15 +188,4 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         return reference;
     }
 
-    /**
-     * If query lengths are stored globally, return the length of this query/read.
-     *
-     * @param queryIndex Index of the read/query.
-     * @return length if globally stored, or zero.
-     */
-    public int getQueryLength(int queryIndex) {
-        if (this.globalQueryLengths != null && queryIndex <= this.globalQueryLengths.length) {
-            return reader.getQueryLength(queryIndex);
-        } else return 0;
-    }
 }
