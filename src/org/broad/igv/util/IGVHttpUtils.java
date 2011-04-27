@@ -175,8 +175,9 @@ public class IGVHttpUtils {
                 }
             }
 
-            if (getUserPass(url.toExternalForm()) == false) {
-                 throw new RuntimeException("A password is required to access " + url.toString());
+            String shortName = StringUtils.checkLength(url.toExternalForm(), 80);
+            if (getUserPass(shortName) == false) {
+                 throw new RuntimeException("A password is required to access " + shortName);
             }
 
             Map<String, String> requestProperties = new HashMap();
@@ -250,7 +251,7 @@ public class IGVHttpUtils {
         JPanel passPanel = new JPanel();
         passPanel.setLayout(new GridLayout(6, 1));
 
-        JLabel message = new JLabel("Please enter your username and password");
+        JLabel message = new JLabel("Please enter your username and password for:");
         JLabel location = new JLabel(locationString);
         JLabel username = new JLabel("User:");
         JLabel password = new JLabel("Pass:");
@@ -263,7 +264,8 @@ public class IGVHttpUtils {
         passPanel.add(password);
         passPanel.add(passwordField);
 
-        int a = JOptionPane.showConfirmDialog(IGV.getMainFrame(), passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int a = JOptionPane.showConfirmDialog(IGV.getMainFrame(), passPanel, "Authentication Required",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (a == JOptionPane.CANCEL_OPTION) {
             return false;
