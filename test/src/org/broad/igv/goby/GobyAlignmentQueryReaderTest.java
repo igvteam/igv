@@ -32,6 +32,7 @@ import java.util.Set;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,17 +43,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class GobyAlignmentQueryReaderTest {
 
-    String thmFile = "test/data/goby/DLTTEJH-Bullard-HBR-SRR037439.tmh";
-    GobyAlignmentQueryReader reader;
-
-    @Before
-    public void setup() throws IOException {
-        reader = new GobyAlignmentQueryReader(thmFile);
-    }
 
     @Test
     public void testGetSequenceNames() throws Exception {
-
         Set<String> expectedSequences = new HashSet(Arrays.asList("NT_113900", "22", "NT_113910", "NT_113911", "MT",
                 "3", "NT_113904", "2", "NT_113903", "1", "NT_113902", "NT_113901", "NT_113908", "7", "NT_113907", "6",
                 "5", "NT_113906", "4", "NT_113905", "9", "NT_113909", "8", "19", "c5_H2", "17", "NT_113920", "M",
@@ -68,6 +61,8 @@ public class GobyAlignmentQueryReaderTest {
                 "NT_113874", "NT_113870", "NT_113958", "c6_COX", "NT_113956", "NT_113957", "NT_113962", "NT_113961",
                 "NT_113960", "NT_113966", "NT_113965", "NT_113964", "NT_113963"));
 
+        String thmFile = "test/data/goby/DLTTEJH-Bullard-HBR-SRR037439.tmh";
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
         Set<String> seqs = reader.getSequenceNames();
         assertEquals(expectedSequences.size(), seqs.size());
         for (String s : seqs) {
@@ -78,15 +73,65 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testIterator() throws Exception {
 
-        CloseableIterator<Alignment> iter =  reader.iterator();
-        while(iter.hasNext()) {
-            Alignment al = iter.next();
-            System.out.println(al.getChr() + ":" + al.getStart() + "-" + al.getEnd());
-        }
+        String entriesFile = "test/data/goby/DLTTEJH-Bullard-HBR-SRR037439.entries";
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.iterator();
+
+        assertTrue(iter.hasNext());
+        iter.close();
+        reader.close();
     }
 
     @Test
-    public void testQuery() throws Exception {
+    public void testIteratorPE() throws Exception {
+
+        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.iterator();
+
+        assertTrue(iter.hasNext());
+
+        iter.close();
+        reader.close();
     }
- 
+
+
+    /**
+     * Test a query interval that has alignments.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testQueryPE() throws Exception {
+
+        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+
+        GobyAlignmentQueryReader.supportsFileType(entriesFile);
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.query("chr1", 1, 240000000, false);
+
+        assertTrue(iter.hasNext());
+
+        iter.close();
+        reader.close();
+    }
+
+    /**
+     * Test a query interval with no alignments
+     */
+    @Test
+    public void testQueryNoAlignments() throws Exception {
+
+        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+
+        GobyAlignmentQueryReader.supportsFileType(entriesFile);
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.query("chr1", 1, 1000, false);
+
+        assertFalse(iter.hasNext());
+
+        iter.close();
+        reader.close();
+    }
+
 }
