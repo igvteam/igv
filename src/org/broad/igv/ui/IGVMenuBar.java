@@ -443,7 +443,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
-        menuAction = new MenuAction("View variant list ...  *EXPERIMENTAL*") {
+        menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 VariantListManager.openNavigator(IGV.getMainFrame());
