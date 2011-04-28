@@ -33,6 +33,7 @@ import org.broad.igv.track.WindowFunction;
 import com.google.protobuf.ByteString;
 
 import java.awt.*;
+import java.util.Arrays;
 
 import it.unimi.dsi.lang.MutableString;
 import org.broad.igv.ui.IGV;
@@ -132,42 +133,29 @@ public class GobyAlignment implements Alignment {
         return result;
     }
 
+    /**
+     * Reconstruct the read sequence, using the convention that '=' denotes a match to the reference.
+     *
+     * TODO - note,  its not obvious how gapped alignments work for a GobyAlignment
+     * 
+     * @return
+     */
     private byte[] buildBases() {
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        String genomeId = genome.getId();
-
-        String reference = iterator.getReference();
-        String referenceAlias = genome.getChromosomeAlias(reference);
-        int position = entry.getPosition();
-
-        int readLength = 0;
-
-        readLength = entry.getQueryLength();
-
-        // adjust by one because Goby positions start at 1 while IGV starts at 0
-        byte[] result = SequenceManager.readSequence(genomeId, referenceAlias, position, position + entry.getTargetAlignedLength());
-        final int length = result.length;
+        final int length = entry.getTargetAlignedLength();
+        byte[] result = new byte[length];
+        Arrays.fill(result, (byte) '=');
 
         for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-            final String from = var.getFrom();
             final String to = var.getTo();
             for (int j = 0; j < to.length(); j++) {
-
                 final int offset = var.getPosition() + j - 1;
                 if (offset >= length) break;
-                if (result[offset] != from.charAt(j)) {
-                    refMismatch.warn(LOG,
-                            "Detected difference between IGV reference sequence and alignment reference on " +
-                                    "sequence %s at position %d (reporting will stop after 10 " +
-                                    "such differences are reported.)%n",
-                            getChr(),
-                            j + entry.getPosition());
-                }
                 result[offset] = (byte) to.charAt(j);
             }
         }
         return result;
     }
+
 
     static WarningCounter refMismatch = new WarningCounter(10);
 
