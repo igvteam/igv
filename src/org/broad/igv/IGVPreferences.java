@@ -47,6 +47,8 @@ public class IGVPreferences {
 
     static Hashtable<String, String> cache = null;
 
+    static Hashtable<String, String> overrides = new Hashtable();
+
     public void put(String key, String value) {
 
         // Remove from session only, explicitly setting this overrides
@@ -64,12 +66,15 @@ public class IGVPreferences {
         storePreferences();
     }
 
-    public void putTemp(String key, String value) {
-        sessionCache.put(key, value);
+    public void putOverride(String key, String value) {
+        overrides.put(key, value);
     }
 
     public String get(String key, String defaultValue) {
-        if(sessionCache.contains(key)) {
+        if(overrides.containsKey(key)) {
+            return overrides.get(key);
+        }
+        if(sessionCache.containsKey(key)) {
             return sessionCache.get(key);
         }
         String val = get(key);

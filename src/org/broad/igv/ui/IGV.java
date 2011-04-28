@@ -921,36 +921,28 @@ public class IGV {
 
     final public void doExitApplication() {
 
-        try {
+        // Store recent sessions
+        if (!getRecentSessionList().isEmpty()) {
 
-            contentPane.getStatusBar().setMessage("Exiting...");
-
-            // Store recent sessions
-            if (!getRecentSessionList().isEmpty()) {
-
-                int size = getRecentSessionList().size();
-                if (size > UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST) {
-                    size = UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST;
-                }
-
-                String recentSessions = "";
-                for (int i = 0; i <
-                        size; i++) {
-                    recentSessions += getRecentSessionList().get(i);
-
-                    if (i < (size - 1)) {
-                        recentSessions += ";";
-                    }
-
-                }
-                PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
-                PreferenceManager.getInstance().setRecentSessions(recentSessions);
+            int size = getRecentSessionList().size();
+            if (size > UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST) {
+                size = UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST;
             }
 
-            mainFrame.setVisible(false);
-        } finally {
-            System.exit(0);
+            String recentSessions = "";
+            for (int i = 0; i <
+                    size; i++) {
+                recentSessions += getRecentSessionList().get(i);
+
+                if (i < (size - 1)) {
+                    recentSessions += ";";
+                }
+
+            }
+            PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
+            PreferenceManager.getInstance().setRecentSessions(recentSessions);
         }
+
 
     }
 
