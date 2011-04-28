@@ -27,6 +27,7 @@
  */
 package org.broad.igv.feature.genome;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -67,6 +68,16 @@ public abstract class GenomeDescriptor {
         this.geneTrackName = geneTrackName;
         this.sequenceLocation = sequenceLocation;
         this.chromosomesAreOrdered = chromosomesAreOrdered;
+
+        // Fix for legacy .genome files
+        if(sequenceLocation.startsWith("/")) {
+            if(!(new File(sequenceLocation)).exists()) {
+                String tryThis = sequenceLocation.replaceFirst("/", "");
+                if((new File(tryThis)).exists()) {
+                    this.sequenceLocation = tryThis;
+                }
+            }
+        }
     }
 
     public String getName() {
@@ -78,6 +89,7 @@ public abstract class GenomeDescriptor {
     }
 
     // Used to determine feature file type, really only extension is needed
+
     public String getGeneFileName() {
         return geneFileName;
     }
@@ -101,6 +113,11 @@ public abstract class GenomeDescriptor {
         return isFileGZipFormat(fileName);
     }
 
+    /**
+     * Setter provided vor unit tests.
+     *
+     * @param sequenceLocation
+     */
     public void setSequenceLocation(String sequenceLocation) {
         this.sequenceLocation = sequenceLocation;
     }
