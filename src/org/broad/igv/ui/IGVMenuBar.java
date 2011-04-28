@@ -23,6 +23,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneListManagerUI;
+import org.broad.igv.lists.VariantListManager;
+import org.broad.igv.lists.VariantListNavigator;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.ui.action.*;
@@ -220,6 +222,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
+        /*
         menuItems.add(new JSeparator());
         menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
@@ -229,7 +232,7 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-       /* menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
+        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 CoverageGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId(), CoverageGui.Mode.TILE);
@@ -436,6 +439,15 @@ public class IGVMenuBar extends JMenuBar {
 
         menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGV.getInstance());
         menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuItems.add(new JSeparator());
+        menuAction = new MenuAction("View variant list ...  *EXPERIMENTAL*") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                VariantListManager.openNavigator(IGV.getMainFrame());
+            }
+        };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 

@@ -42,6 +42,7 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
+import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
@@ -132,6 +133,10 @@ public class TrackLoader {
                 throw new IndexNotFoundException(locator.getPath());
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
+            } else if (typeString.endsWith("varlist")) {
+                VariantListManager.loadVariants(locator);
+            } else if (typeString.endsWith("samplepathmap")) {
+                VariantListManager.loadSamplePathMap(locator);
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
                 loadH5File(locator, newTracks, genome);
             } else if (typeString.endsWith(".rnai.gct")) {
