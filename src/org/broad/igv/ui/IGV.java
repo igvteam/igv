@@ -227,8 +227,8 @@ public class IGV {
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
         if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
                 applicationBounds.getMaxY() > screenBounds.getHeight()) {
-            int width = Math.min(1050, (int) screenBounds.getWidth());
-            int height = Math.min(750, (int) screenBounds.getHeight());
+            int width = Math.min(1150, (int) screenBounds.getWidth());
+            int height = Math.min(800, (int) screenBounds.getHeight());
             applicationBounds = new Rectangle(0, 0, width, height);
         }
         mainFrame.setBounds(applicationBounds);
