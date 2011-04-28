@@ -222,8 +222,9 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // igvtools
-        /*
+
         menuItems.add(new JSeparator());
+        /*
         menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
             public void actionPerformed(ActionEvent e) {

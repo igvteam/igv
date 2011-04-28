@@ -84,7 +84,7 @@ public class IGV {
     private static Logger log = Logger.getLogger(IGV.class);
     private static IGV theInstance;
     static List<IGV> instances = new LinkedList();
-    
+
     // Window components
     private Frame mainFrame;
     private JRootPane rootPane;
@@ -117,7 +117,6 @@ public class IGV {
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
-
 
 
     public static IGV createInstance(Frame frame) {
@@ -172,12 +171,18 @@ public class IGV {
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
-                instances.remove(this);
+                windowCloseEvent();
             }
 
             @Override
             public void windowClosed(WindowEvent windowEvent) {
+                windowCloseEvent();
+            }
+
+            private void windowCloseEvent() {
                 instances.remove(this);
+                PreferenceManager.getInstance().setApplicationFrameBounds(rootPane.getBounds());
+
             }
         });
 
@@ -218,13 +223,16 @@ public class IGV {
         initializeDialogs();
 
         // Set the application's previous location and size
-        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
-        if (applicationBounds != null &&
-                applicationBounds.getMaxX() < screenBounds.getWidth() &&
-                applicationBounds.getMaxY() < screenBounds.getHeight()) {
-            mainFrame.setBounds(applicationBounds);
+        Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
+        if (applicationBounds == null || applicationBounds.getMaxX() > screenBounds.getWidth() ||
+                applicationBounds.getMaxY() > screenBounds.getHeight()) {
+            int width = Math.min(1050, (int) screenBounds.getWidth());
+            int height = Math.min(750, (int) screenBounds.getHeight());
+            applicationBounds = new Rectangle(0, 0, width, height);
         }
+        mainFrame.setBounds(applicationBounds);
+
     }
 
 
@@ -938,8 +946,6 @@ public class IGV {
                 PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
                 PreferenceManager.getInstance().setRecentSessions(recentSessions);
             }
-
-            PreferenceManager.getInstance().setApplicationFrameBounds(rootPane.getBounds());
 
             mainFrame.setVisible(false);
         } finally {

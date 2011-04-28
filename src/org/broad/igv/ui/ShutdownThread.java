@@ -53,6 +53,8 @@ public class ShutdownThread extends Thread {
                 cleanupJnlpFiles(downloads);
             }
         }
+
+        IGV.getInstance().doExitApplication();
     }
 
 
