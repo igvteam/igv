@@ -325,7 +325,7 @@ public class DataPanel extends JComponent implements Paintable {
 
                     addMousableRegion(new MouseableRegion(actualAreaOnDataPanel, track));
 
-                    trackY += track.getHeight();
+                    trackY += trackHeight;
                 }
             }
         }

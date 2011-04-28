@@ -71,7 +71,7 @@ public class CytobandRenderer {
                     String rangeString = RulerPanel.formatNumber((double) range / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
                     FontMetrics fm = g2.getFontMetrics();
                     int rw = (int) fm.getStringBounds(rangeString, g2).getWidth();
-                    int rx = frame.getPixelWidth() - rw - 3;
+                    int rx = frame.getWidthInPixels() - rw - 3;
                     g2.drawString(rangeString, rx, 11);
                     */
 

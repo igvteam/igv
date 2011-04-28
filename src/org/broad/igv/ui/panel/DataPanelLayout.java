@@ -96,17 +96,17 @@ public class DataPanelLayout implements LayoutManager {
                 // TODO -- remove the need to cast
                 Component c = children[i];
                 ReferenceFrame frame = frames.get(i);
-                c.setBounds(frame.pixelX, 0, frame.getPixelWidth(), h);
+                c.setBounds(frame.pixelX, 0, frame.getWidthInPixels(), h);
 
                 if (c instanceof JComponent) {
-                    if (frame.getPixelWidth() > 5) {
+                    if (frame.getWidthInPixels() > 5) {
                         ((JComponent) c).setBorder(javax.swing.BorderFactory.createLineBorder(Color.gray));
                     } else {
                          ((JComponent) c).setBorder(null);
                     }
                 }
 
-                log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getPixelWidth());
+                log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
 
             }
         }

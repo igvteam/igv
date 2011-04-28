@@ -173,7 +173,7 @@ public class TrackMenuUtils {
             menu.add(item);
         }
 
-        JMenuItem zoomInItem = new JMenuItem("Zoom in");
+       /* JMenuItem zoomInItem = new JMenuItem("Zoom in");
         zoomInItem.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
@@ -190,6 +190,7 @@ public class TrackMenuUtils {
             }
         });
         menu.add(zoomOutItem);
+        */
 
 
     }

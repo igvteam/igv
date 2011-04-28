@@ -27,7 +27,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -49,7 +48,7 @@ public class ReferenceFrame {
 
     String name;
     int pixelX;
-    private int pixelWidth;
+    private int widthInPixels;
 
     /**
      * The nominal viewport width in pixels.
@@ -107,14 +106,14 @@ public class ReferenceFrame {
 
     public void setBounds(int x, int w) {
         this.pixelX = x;
-        if (w != pixelWidth) {
-            pixelWidth = w;
+        if (w != widthInPixels) {
+            widthInPixels = w;
             computeLocationScale();
         }
     }
 
     public int getMidpoint() {
-        return pixelX + pixelWidth / 2;
+        return pixelX + widthInPixels / 2;
     }
 
     /**
@@ -176,7 +175,7 @@ public class ReferenceFrame {
     public void zoomAndCenter(int newZoom) {
 
         // Zoom but remain centered about current center
-        double currentCenter = origin + ((pixelWidth / 2) * getScale());
+        double currentCenter = origin + ((widthInPixels / 2) * getScale());
 
         zoomTo(newZoom, currentCenter);
     }
@@ -201,7 +200,7 @@ public class ReferenceFrame {
 
                 double newLocationScale = getScale();
                 // Adjust origin so newCenter is centered
-                double newOrigin = Math.round(newCenter - ((pixelWidth / 2) * newLocationScale));
+                double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * newLocationScale));
                 setOrigin(newOrigin);
 
             }
@@ -253,18 +252,18 @@ public class ReferenceFrame {
                 zoomTo(maxZoom);
             }
         }
-        double windowWidth = (pixelWidth * getScale()) / 2;
+        double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
     }
 
     public void centerOnLocation(double chrLocation) {
-        double windowWidth = (pixelWidth * getScale()) / 2;
+        double windowWidth = (widthInPixels * getScale()) / 2;
         setOrigin(Math.round(chrLocation - windowWidth));
         recordHistory();
     }
 
     public boolean windowAtEnd() {
-        double windowLengthBP = pixelWidth * getScale();
+        double windowLengthBP = widthInPixels * getScale();
         return origin + windowLengthBP + 1 > getChromosomeLength();
 
     }
@@ -280,7 +279,7 @@ public class ReferenceFrame {
     public void setOrigin(double position) {
 
 
-        int windowLengthBP = (int) (pixelWidth * getScale());
+        int windowLengthBP = (int) (widthInPixels * getScale());
         double newOrigin = origin;
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED)) {
             newOrigin = Math.max(-1000, Math.min(position, getChromosomeLength() + 1000 - windowLengthBP));
@@ -289,7 +288,7 @@ public class ReferenceFrame {
         }
         double delta = newOrigin - origin;
         origin = newOrigin;
-
+ 
         // If zoomed in sufficiently track the center position
         //if (locationScale < 10) {
         //    IGV.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));
@@ -319,14 +318,14 @@ public class ReferenceFrame {
 
             imputeZoom(start, end);
 
-            if (pixelWidth > 0) {
-                setLocationScale(((double) (end - start)) / pixelWidth);
+            if (widthInPixels > 0) {
+                setLocationScale(((double) (end - start)) / widthInPixels);
             }
             origin = start;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Data panel width = " + pixelWidth);
+            log.debug("Data panel width = " + widthInPixels);
             log.debug("New start = " + (int) origin);
             log.debug("New end = " + (int) getEnd());
             log.debug("New center = " + (int) getCenter());
@@ -358,11 +357,11 @@ public class ReferenceFrame {
     }
 
     public double getCenter() {
-        return origin + getScale() * pixelWidth / 2;
+        return origin + getScale() * widthInPixels / 2;
     }
 
     public double getEnd() {
-        return origin + getScale() * pixelWidth;
+        return origin + getScale() * widthInPixels;
     }
 
     public int getZoom() {
@@ -432,8 +431,8 @@ public class ReferenceFrame {
      * Width in pixels
      */
 
-    public int getPixelWidth() {
-        return pixelWidth;
+    public int getWidthInPixels() {
+        return widthInPixels;
     }
 
     /**
@@ -460,14 +459,19 @@ public class ReferenceFrame {
 
         if (genome != null) {
 
-            computeMinZoom();
-
+            if (setEnd > 0) {
+                locationScale = (setEnd - origin) / widthInPixels;
+                locationScaleValid = true;
+                imputeZoom(origin, setEnd);
+            } else {
+                computeMinZoom();
                 double virtualPixelSize = getTilesTimesBinsPerTile();
 
-                double nPixel = Math.max(virtualPixelSize, pixelWidth);
+                double nPixel = Math.max(virtualPixelSize, widthInPixels);
 
                 setLocationScale(((double) getChromosomeLength()) / nPixel);
-         }
+            }
+        }
     }
 
     /**
@@ -482,7 +486,7 @@ public class ReferenceFrame {
         if (this.chrName.equals(Globals.CHR_ALL)) {
             minZoom = 0;
         } else {
-            minZoom = Math.max(0, (int) (Math.log((pixelWidth / binsPerTile)) / Globals.log2));
+            minZoom = Math.max(0, (int) (Math.log((widthInPixels / binsPerTile)) / Globals.log2));
 
             if (zoom < minZoom) {
                 zoom = minZoom;
@@ -584,7 +588,7 @@ public class ReferenceFrame {
 
     public Range getCurrentRange() {
         int start = 0;
-        int end = pixelWidth;
+        int end = widthInPixels;
         int startLoc = (int) getChromosomePosition(start) + 1;
         int endLoc = (int) getChromosomePosition(end);
         Range range = new Range(getChrName(), startLoc, endLoc);
@@ -606,15 +610,20 @@ public class ReferenceFrame {
     }
 
 
+    int setEnd = 0;
+
     public void setInterval(String chr, int start, int end) {
 
         this.chrName = chr;
         this.origin = start;
-        if (pixelWidth > 0) {
-            locationScale = (end - origin) / pixelWidth;
+        if (widthInPixels > 0) {
+            locationScale = (end - origin) / widthInPixels;
             locationScaleValid = true;
+            imputeZoom(origin, end);
+        } else {
+            // Set end temporarily until scale can be calculated
+            this.setEnd = end;
         }
-        imputeZoom(origin, end);
     }
 
 

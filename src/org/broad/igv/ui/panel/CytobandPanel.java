@@ -89,7 +89,7 @@ public class CytobandPanel extends JPanel {
             return;
         }
 
-        int dataPanelWidth = frame.getPixelWidth();
+        int dataPanelWidth = frame.getWidthInPixels();
         Rectangle cytoRect = new Rectangle(0, 10, dataPanelWidth, bandHeight);
 
         Chromosome chromosome = getReferenceFrame().getChromosome();
