@@ -133,12 +133,12 @@ public class GobyAlignment implements Alignment {
         return result;
     }
 
-    /**
+     /**
      * Reconstruct the read sequence, using the convention that '=' denotes a match to the reference.
      *
-     * TODO - note,  its not obvious how gapped alignments work for a GobyAlignment
-     * 
-     * @return
+     * Conventions for storing sequence variations in Goby alignments are described <a
+      * href="https://docs.google.com/document/d/1AVjhU23Ijowblb2qTGIqBGL7Nja8G3u7Gl2I7HVrRFY/edit?hl=en&authkey=CJeWuM8O#">here</a>
+     * @return the sequence of the read, with >< inserted around bases where an insertion occured in the read.
      */
     private byte[] buildBases() {
         final int length = entry.getTargetAlignedLength();
@@ -146,16 +146,27 @@ public class GobyAlignment implements Alignment {
         Arrays.fill(result, (byte) '=');
 
         for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-            final String to = var.getTo();
-            for (int j = 0; j < to.length(); j++) {
-                final int offset = var.getPosition() + j - 1;
+            final String from = var.getFrom();
+            if (from.length() > 0 && from.charAt(0) == '-') {
+                // Insertion
+                final int offset = var.getPosition() - 1;
                 if (offset >= length) break;
-                result[offset] = (byte) to.charAt(j);
+                result[offset] = (byte) '>';
+                final int offsetPlusOne = offset + 1;
+                if (offsetPlusOne >= length) break;
+                result[offsetPlusOne] = (byte) '<';
+
+            } else {
+                final String to = var.getTo();
+                for (int j = 0; j < to.length(); j++) {
+                    final int offset = var.getPosition() + j - 1;
+                    if (offset >= length) break;
+                    result[offset] = (byte) to.charAt(j);
+                }
             }
         }
         return result;
     }
-
 
     static WarningCounter refMismatch = new WarningCounter(10);
 
