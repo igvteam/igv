@@ -60,7 +60,7 @@ public class GenomeManager {
      * The refresh frequence in seconds.  Cached genomes will be refreshed
      * from the server if they are older than this value.
      */
-    public static final long GENOME_REFRESH_FREQ = 7 * 24 * 3600;
+    public static final long GENOME_REFRESH_FREQ = 1 * 24 * 3600;
     private static Logger log = Logger.getLogger(GenomeManager.class);
     private Map<String, GenomeDescriptor> genomeDescriptorMap;
     //private Map<String, Genome> genomes;
