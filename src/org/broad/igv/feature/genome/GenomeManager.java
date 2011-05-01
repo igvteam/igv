@@ -62,13 +62,12 @@ public class GenomeManager {
      */
     public static final long GENOME_REFRESH_FREQ = 7 * 24 * 3600;
     private static Logger log = Logger.getLogger(GenomeManager.class);
-    private static GenomeManager theInstance = null;
     private Map<String, GenomeDescriptor> genomeDescriptorMap;
-    private Map<String, Genome> genomes;
+    //private Map<String, Genome> genomes;
 
     final public static String USER_DEFINED_GENOME_LIST_FILE = "user-defined-genomes.txt";
     private static GenomeDescriptor DEFAULT_GENOME;
-    private String genomeId;
+    //private String genomeId;
     public Genome currentGenome;
 
     private LinkedHashSet<GenomeListItem> userDefinedGenomeArchiveList;
@@ -82,13 +81,11 @@ public class GenomeManager {
      */
     public GenomeManager(IGV igv) {
         genomeDescriptorMap = new HashMap();
-        genomes = new Hashtable();
         this.igv = igv;
     }
 
     public GenomeManager() {
         genomeDescriptorMap = new HashMap();
-        genomes = new Hashtable();
         this.igv = null;
     }
 
@@ -100,18 +97,15 @@ public class GenomeManager {
      */
     public Genome getGenome(String id) {
 
-        Genome genome = genomes.get(id);
-        if (genome == null) {
+        if (currentGenome == null || !currentGenome.getId().equals(id)) {
             GenomeDescriptor genomeDescriptor = genomeDescriptorMap.get(id);
             if (genomeDescriptor == null) {
                 return null;
             } else {
-                genome = loadGenome(genomeDescriptor);
-                genomes.put(id, genome);
-
+                currentGenome = loadGenome(genomeDescriptor);
             }
         }
-        return genome;
+        return currentGenome;
     }
 
     private Genome loadGenome(GenomeDescriptor genomeDescriptor) {
@@ -132,7 +126,7 @@ public class GenomeManager {
                 reader = new BufferedReader(new InputStreamReader(is));
             }
 
-            Genome genome = new Genome(genomeDescriptor.getId());
+            Genome genome = new Genome(genomeDescriptor);
             LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
             genome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
             genome.setAnnotationURL(genomeDescriptor.getUrl());
@@ -859,16 +853,20 @@ public class GenomeManager {
 
     /**
      * Gets a list of all the server and client-side genome archive files that
-     * IGV knows about.
+     * IGV knows about as a list of GenomeListItems.
      *
      * @return LinkedHashSet<GenomeListItem>
      * @throws IOException
      * @see GenomeListItem
      */
-    public LinkedHashSet<GenomeListItem> getAllGenomeArchives()
-            throws IOException {
+    public LinkedHashSet<GenomeListItem> getAllGenomeArchives() throws IOException {
 
         LinkedHashSet<GenomeListItem> genomeListItems = new LinkedHashSet();
+
+        LinkedHashSet<GenomeListItem> userDefinedItemList = getUserDefinedGenomeArchiveList();
+        if (userDefinedItemList != null) {
+            genomeListItems.addAll(userDefinedItemList);
+        }
 
         // Build a single available genome list from both client, server
         // and cached information. This allows us to process
@@ -883,32 +881,18 @@ public class GenomeManager {
         }
 
         // If the server is unreaachable load cached genomes.
-        LinkedHashSet<GenomeListItem> cacheGenomeItemList = null;
         if (serverSideItemList == null || serverSideItemList.isEmpty()) {
-            cacheGenomeItemList = getCachedGenomeArchiveList();
-        }
-
-        LinkedHashSet<GenomeListItem> userDefinedItemList = getUserDefinedGenomeArchiveList();
-
-        if (userDefinedItemList != null) {
-            genomeListItems.addAll(userDefinedItemList);
+            serverSideItemList = getCachedGenomeArchiveList();
         }
         if (serverSideItemList != null) {
             genomeListItems.addAll(serverSideItemList);
-        }
-        if (cacheGenomeItemList != null) {
-            genomeListItems.addAll(cacheGenomeItemList);
         }
 
         if (genomeListItems.isEmpty()) {
             GenomeDescriptor defaultDes = getDefaultGenomeDescriptor();
             GenomeListItem defaultItem = new GenomeListItem(defaultDes.getName(), null, defaultDes.getId(), 0, false);
             genomeListItems.add(defaultItem);
-            Genome genome = loadGenome(defaultDes);
-            genomes.put(defaultDes.getId(), genome);
-            if (genome != null) {
-                genomes.put(defaultDes.getId(), genome);
-            }
+            genomeDescriptorMap.put(defaultDes.getId(), defaultDes);
         }
 
         return genomeListItems;
@@ -1261,51 +1245,52 @@ public class GenomeManager {
      */
     public String setGenomeId(String newGenome) {
 
-        if (genomeId != null && !genomeId.equals(newGenome)) {
-            if (igv != null) {
-                igv.getSession().getHistory().clear();
-            }
+        if(currentGenome != null && currentGenome.getId().equals(newGenome)) {
+            return newGenome;
+        }
+
+        // This shouldn't be neccessary as loading a new genome will create a new session.
+        if (igv != null) {
+            igv.getSession().getHistory().clear();
         }
 
         boolean loadFailed = false;
 
-        genomeId = newGenome;
-        if (!isGenomeLoaded(genomeId)) {
+        if (!isGenomeLoaded(newGenome)) {
             try {
                 if (log.isDebugEnabled()) {
-                    log.debug("findGenomeAndLoad: " + genomeId);
+                    log.debug("findGenomeAndLoad: " + newGenome);
                 }
-                findGenomeAndLoad(genomeId);
+                findGenomeAndLoad(newGenome);
             } catch (IOException e) {
-                log.error("Error loading genome: " + genomeId, e);
+                log.error("Error loading genome: " + newGenome, e);
                 loadFailed = true;
-                MessageUtils.showMessage("Load of genome: " + genomeId + " failed.");
+                MessageUtils.showMessage("Load of genome: " + newGenome + " failed.");
             }
         }
-        currentGenome = getGenome(genomeId);
+        currentGenome = getGenome(newGenome);
 
         if (currentGenome == null || loadFailed) {
             GenomeManager.GenomeListItem genomeListItem = getTopGenomeListItem();
-            String msg = "Could not locate genome: " + genomeId + ".  Loading " + genomeListItem.getDisplayableName();
+            String msg = "Could not locate genome: " + newGenome + ".  Loading " + genomeListItem.getDisplayableName();
             MessageUtils.showMessage(msg);
-            log.error("Could not locate genome: " + genomeId + ".  Loading " + genomeListItem.getDisplayableName());
+            log.error("Could not locate genome: " + newGenome + ".  Loading " + genomeListItem.getDisplayableName());
 
             // The previously used genome is unavailable, load the default genome
-            genomeId = genomeListItem.getId();
+            newGenome = genomeListItem.getId();
             try {
-                findGenomeAndLoad(genomeId);
+                findGenomeAndLoad(newGenome);
             } catch (IOException e) {
-                log.error("Error loading genome: " + genomeId, e);
-                MessageUtils.showMessage("<html>Load of genome: " + genomeId + " failed." +
+                log.error("Error loading genome: " + newGenome, e);
+                MessageUtils.showMessage("<html>Load of genome: " + newGenome + " failed." +
                         "<br>IGV is in an ustable state and will be closed." +
                         "<br>Please report this error to igv-help@broadinstitute.org");
                 System.exit(-1);
             }
 
-            currentGenome = getGenome(genomeId);
+            currentGenome = getGenome(newGenome);
 
-            // Make this the default genome (genome loaded on startup)
-            PreferenceManager.getInstance().setDefaultGenome(genomeId);
+            PreferenceManager.getInstance().setDefaultGenome(newGenome);
         }
 
 
@@ -1314,12 +1299,12 @@ public class GenomeManager {
             FrameManager.reset(currentGenome.getHomeChromosome());
             igv.chromosomeChangeEvent(currentGenome.getHomeChromosome());
         }
-        return genomeId;
+        return getGenomeId();
 
     }
 
     public String getGenomeId() {
-        return genomeId;
+        return currentGenome == null ? null : currentGenome.getId();
     }
 
     public Genome getCurrentGenome() {

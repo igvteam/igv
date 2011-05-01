@@ -24,6 +24,7 @@ import net.sf.samtools.util.SortingCollection;
 import org.apache.log4j.Logger;
 import org.broad.igv.data.expression.GeneToLocusHelper;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.sort.SortableRecord;
 import org.broad.igv.tools.sort.SortableRecordCodec;
 
@@ -46,8 +47,8 @@ public class GCTtoIGVConverter {
      *
      * @return
      */
-    public static void convert(File inputFile, File outputFile, String probeResource, String genome,
-                               int maxRecords, File tmpDir) throws IOException {
+    public static void convert(File inputFile, File outputFile, String probeResource, 
+                               int maxRecords, File tmpDir, Genome genome) throws IOException {
 
         GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
 

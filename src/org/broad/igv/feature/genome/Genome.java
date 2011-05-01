@@ -31,8 +31,11 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.*;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,9 +61,12 @@ public class Genome {
     private Map<String, Long> cumulativeOffsets = new HashMap();
     public static final int MAX_WHOLE_GENOME = 10000;
 
+    GeneManager geneManager;
+    GenomeDescriptor descriptor;
 
-    public Genome(String id) {
-        this.id = id;
+    public Genome(GenomeDescriptor descriptor) {
+        this.descriptor = descriptor;
+        this.id = descriptor.getId();
         initAnnotationURL();
         chrAliasTable = new HashMap();
     }
@@ -389,5 +395,48 @@ public class Genome {
         }
 
 
+    }
+
+    public synchronized GeneManager getGeneManager() {
+
+
+        if (geneManager == null) {
+            String genomeId = getId();
+            //GenomeDescriptor genomeDescriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genomeId);
+            AsciiLineReader reader = GeneManager.getGeneReader(descriptor);
+            if (reader != null) {
+                try {
+
+                    geneManager = new GeneManager(this, descriptor.getGeneTrackName());
+                    String geneFilename = descriptor.getGeneFileName();
+                    FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFilename), this);
+                    if (parser == null) {
+                        MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFilename +
+                                "<br>Annotations for genome: " + genomeId + " will not be loaded.");
+                    } else {
+                        List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
+                        for (org.broad.tribble.Feature gene : genes) {
+                            geneManager.addGene((IGVFeature) gene);
+                        }
+
+                        geneManager.sortGeneLists();
+                    }
+
+                    geneManager.setTrackProperties(parser.getTrackProperties());
+
+                } catch (Exception e) {
+                    log.error("Error loading geneManager", e);
+                }
+                finally {
+
+                    if (reader != null) {
+                        reader.close();
+                    }
+
+                }
+            }
+        }
+
+        return geneManager;
     }
 }

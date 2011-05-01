@@ -23,6 +23,7 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
@@ -45,9 +46,8 @@ public class AminoAcidManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        TestUtils.loadGenome("hg18");        
-        geneManager = GeneManager.getGeneManager("hg18");
-        IGV.getInstance().getGenomeManager().setGenomeId("hg18");
+        Genome genome = TestUtils.loadGenome("hg18");
+        geneManager = genome.getGeneManager();
     }
 
     @AfterClass

@@ -101,9 +101,6 @@ public class RNAIGeneScoreParser {
             parseHeaderRow(reader);
 
 
-            // Get the gene manager for the current genome
-            GeneManager gm = GeneManager.getGeneManager(genome.getId());
-
             // Parse data
             String nextLine = reader.readLine();
 

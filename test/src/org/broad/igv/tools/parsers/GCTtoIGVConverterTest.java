@@ -19,8 +19,11 @@
 
 package org.broad.igv.tools.parsers;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
+import org.broad.igv.util.TestUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -32,13 +35,20 @@ import java.io.IOException;
  */
 public class GCTtoIGVConverterTest {
 
+    Genome genome;
+
+    @Before
+    public void setup() {
+        genome = TestUtils.loadGenome("/Users/jrobinso/projects/client/genomes/hg18.genome");
+    }
+
 
     @Test
     public void testDescriptionMapping() throws IOException {
         File gctFile = new File("test/data/gct/small.gct");
         File igvFile = new File("test/data/gct/small.gct.igv");
 
-        GCTtoIGVConverter.convert(gctFile, igvFile, null, null, 50000, null);
+        GCTtoIGVConverter.convert(gctFile, igvFile, null, 50000, null, genome);
 
 
     }
@@ -49,9 +59,7 @@ public class GCTtoIGVConverterTest {
         File gctFile = new File("test/data/gct/affy_human.gct");
         File igvFile = new File("test/data/gct/affy_human.gct.igv");
 
-        final String genomeId = "hg18";
-        IgvTools.loadGenome("/Users/jrobinso/projects/client/genomes/hg18.genome");
-        GCTtoIGVConverter.convert(gctFile, igvFile, null, genomeId, 50000, null);
+        GCTtoIGVConverter.convert(gctFile, igvFile, null, 50000, null, genome);
 
 
     }

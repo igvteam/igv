@@ -100,9 +100,9 @@ public class GCTDatasetParser {
 
         this.dataFileLocator = resFile;
         this.genome = genome;
-        this.geneManager = GeneManager.getGeneManager(genome.getId());
+        this.geneManager = genome.getGeneManager();
         longestProbeMap = new HashMap();
-        locusHelper = new GeneToLocusHelper(probeFile, genome.getId());
+        locusHelper = new GeneToLocusHelper(probeFile, genome);
 
     }
 

@@ -48,7 +48,6 @@ public class RNAIGCTDatasetParser {
     private int dataStartColumn = 2;
     private int descriptionColumn = 1;
     private final String RNAI_MAPPING_FILE = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
-    GeneManager geneManager = null;
     Genome genome;
 
     /**
@@ -60,9 +59,6 @@ public class RNAIGCTDatasetParser {
         this.dataFileLocator = gctFile;
         this.genome = genome;
         dataStartColumn = 2;
-
-        this.geneManager = GeneManager.getGeneManager(genome.getId());
-
     }
 
     public Collection<RNAIDataSource> parse() {

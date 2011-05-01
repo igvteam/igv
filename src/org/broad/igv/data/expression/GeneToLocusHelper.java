@@ -20,6 +20,7 @@
 package org.broad.igv.data.expression;
 
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -38,14 +39,11 @@ public class GeneToLocusHelper {
     static String LOCUS_END_DELIMITER = "|";
 
     Map<String, IGVFeature> probeLocusMap;
-    GeneManager geneManager = null;
 
-    public GeneToLocusHelper(String probeResource, String genome) throws IOException {
-        if (genome != null) {
-            geneManager = GeneManager.getGeneManager(genome);
-        }
+    public GeneToLocusHelper(String probeResource, Genome genome) throws IOException {
+
         if (probeResource != null && probeResource.trim().length() > 0) {
-            BEDFileParser parser = new BEDFileParser();
+            BEDFileParser parser = new BEDFileParser(genome);
             ResourceLocator rl = new ResourceLocator(probeResource);
             AsciiLineReader reader = ParsingUtils.openAsciiReader(rl);
             List<Feature> features = parser.loadFeatures(reader);
@@ -156,12 +154,10 @@ public class GeneToLocusHelper {
                 }
             }
 
-            // Maybe its a gene
-            else if (geneManager != null) {
-                Feature gene = FeatureDB.getFeature(geneOrLocusString);
-                if (gene != null) {
-                    return new Locus(gene.getChr(), gene.getStart(), gene.getEnd());
-                }
+            // Maybe its a gene or feature
+            Feature gene = FeatureDB.getFeature(geneOrLocusString);
+            if (gene != null) {
+                return new Locus(gene.getChr(), gene.getStart(), gene.getEnd());
             }
         }
         return null;

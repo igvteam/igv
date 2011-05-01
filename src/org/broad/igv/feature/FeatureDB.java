@@ -94,18 +94,6 @@ public class FeatureDB {
 
 
         String name = nm.trim().toUpperCase();
-
-
-        // First search genes for current genome.  This obviously needs some refactoring.
-        String currentGenome = IGV.getInstance().getGenomeManager().getGenomeId();
-        GeneManager gm = GeneManager.getGeneManager(currentGenome);
-        IGVFeature gene = null;
-        if (gm != null) {
-            gene = gm.getGene(name);
-            if (gene != null) {
-                return gene;
-            }
-        }
         return featureMap.get(name);
 
     }

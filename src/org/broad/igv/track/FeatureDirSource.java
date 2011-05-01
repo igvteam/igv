@@ -22,6 +22,7 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.LocusScore;
@@ -47,8 +48,10 @@ public class FeatureDirSource implements FeatureSource {
     Properties fileMap;
     String rootDir;
     ResourceLocator rootLocator;
+    Genome genome;
 
-    public FeatureDirSource(ResourceLocator locator) throws IOException {
+    public FeatureDirSource(ResourceLocator locator, Genome genome) throws IOException {
+        this.genome = genome;
         featureCache = new LRUCache(this, 3);
         rootLocator = locator;
         setRootDir(locator.getPath());
@@ -79,7 +82,7 @@ public class FeatureDirSource implements FeatureSource {
                     // Load features here
                     ResourceLocator loc = new ResourceLocator(rootLocator.getServerURL(), path);
 
-                    FeatureParser fp = AbstractFeatureParser.getInstanceFor(loc);
+                    FeatureParser fp = AbstractFeatureParser.getInstanceFor(loc, genome);
                     reader = ParsingUtils.openAsciiReader(loc);
                     features = fp.loadFeatures(reader);
                     featureCache.put(chr, features);
@@ -98,11 +101,11 @@ public class FeatureDirSource implements FeatureSource {
     }
 
     public List<LocusScore> getCoverageScores(String chr, int i, int i1, int zoom) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null; 
     }
 
     public int getFeatureWindowSize() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public void setFeatureWindowSize(int size) {

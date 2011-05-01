@@ -172,7 +172,7 @@ public class TestData {
         float sampleValueIncrement =
                 (highestSampleValue - lowestSampleValue) / chromosomeList.size();
 
-        GeneManager geneManager = GeneManager.getGeneManager(genome.getId());
+        GeneManager geneManager = genome.getGeneManager();
 
         geneManager.sortGeneLists();
         sortChromosomeList(chromosomeList);
@@ -282,7 +282,7 @@ public class TestData {
         float sampleValueIncrement =
                 (highestSampleValue - lowestSampleValue) / chromosomeList.size();
 
-        GeneManager geneManager = GeneManager.getGeneManager(genome.getId());
+        GeneManager geneManager = genome.getGeneManager();
 
         geneManager.sortGeneLists();
         sortChromosomeList(chromosomeList);
@@ -397,7 +397,7 @@ public class TestData {
         float lowestSampleValue = -1.5f;
         float highestSampleValue = lowestSampleValue + 3.0f;
 
-        GeneManager geneManager = GeneManager.getGeneManager(genome.getId());
+        GeneManager geneManager = genome.getGeneManager();
 
         geneManager.sortGeneLists();
         sortChromosomeList(chromosomeList);
@@ -412,7 +412,7 @@ public class TestData {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(file);
-            int lengthOfFile = countTotalGenes(genome.getId(), chromosomeList);
+            int lengthOfFile = countTotalGenes(genome, chromosomeList);
             int numberOfSamples = 1;
             StringBuffer record = new StringBuffer();
 
@@ -485,7 +485,7 @@ public class TestData {
         float sampleValueIncrement =
                 (highestSampleValue - lowestSampleValue) / chromosomeList.size();
 
-        GeneManager geneManager = GeneManager.getGeneManager(genome.getId());
+        GeneManager geneManager = genome.getGeneManager();
 
         geneManager.sortGeneLists();
         sortChromosomeList(chromosomeList);
@@ -577,10 +577,10 @@ public class TestData {
         }
     }
 
-    static public int countTotalGenes(String genome, List<String> chromosomeList) {
+    static public int countTotalGenes(Genome genome, List<String> chromosomeList) {
 
         int totalGenes = 0;
-        GeneManager geneManager = GeneManager.getGeneManager(genome);
+        GeneManager geneManager = genome.getGeneManager();
 
         for (String chromosome : chromosomeList) {
             List<org.broad.tribble.Feature> genes = geneManager.getGenesForChromosome(chromosome);

@@ -172,14 +172,14 @@ public class TrackLoader {
                     typeString.endsWith(".bai")) {
                 loadAlignmentsTrack(locator, newTracks);
             } else if (typeString.endsWith(".bedz") || (typeString.endsWith(".bed") && hasIndex)) {
-                loadIndexdBedFile(locator, newTracks);
+                loadIndexdBedFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".omega")) {
                 loadOmegaTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".list")) {
-                loadListFile(locator, newTracks);
+                loadListFile(locator, newTracks, genome);
             } else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
@@ -190,7 +190,7 @@ public class TrackLoader {
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks, genome);
                 //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
-            } else if (AbstractFeatureParser.getInstanceFor(locator) != null) {
+            } else if (AbstractFeatureParser.getInstanceFor(locator, genome) != null) {
                 loadFeatureFile(locator, newTracks, genome);
             } else if (MutationParser.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome);
@@ -298,7 +298,7 @@ public class TrackLoader {
      */
     private void loadGeneFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
-        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator);
+        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
         if (featureParser != null) {
             List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
             newTracks.addAll(tracks);
@@ -333,7 +333,7 @@ public class TrackLoader {
      */
     private void loadPslFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        PSLParser featureParser = new PSLParser();
+        PSLParser featureParser = new PSLParser(genome);
         List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
         for (FeatureTrack t : tracks) {
@@ -364,7 +364,7 @@ public class TrackLoader {
             }
         }
 
-        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator);
+        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
         if (featureParser != null) {
             List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
             newTracks.addAll(tracks);
@@ -385,11 +385,11 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadIndexdBedFile(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadIndexdBedFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         File featureFile = new File(locator.getPath());
         File indexFile = new File(locator.getPath() + ".sai");
-        FeatureSource src = new IndexedBEDFeatureSource(featureFile, indexFile);
+        FeatureSource src = new IndexedBEDFeatureSource(featureFile, indexFile, genome);
         Track t = new FeatureTrack(locator, src);
         newTracks.add(t);
 
@@ -688,12 +688,12 @@ public class TrackLoader {
         newTracks.add(track);
     }
 
-    private void loadListFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadListFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
         try {
-            FeatureSource source = new FeatureDirSource(locator);
+            FeatureSource source = new FeatureDirSource(locator, genome);
             FeatureTrack track = new FeatureTrack(locator, source);
             track.setName(locator.getTrackName());
-            track.setVisibilityWindow(100000);
+            track.setVisibilityWindow(0);
             newTracks.add(track);
         } catch (IOException ex) {
             throw new RuntimeException(ex);

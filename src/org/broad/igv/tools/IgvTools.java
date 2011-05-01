@@ -274,8 +274,12 @@ public class IgvTools {
                     ofile = ofile + ".igv";
                 }
                 String genomeId = nonOptionArgs[3];
+                Genome genome = loadGenome(genomeId);
+                if (genome == null) {
+                    throw new PreprocessingException("Genome could not be loaded: " + genomeId);
+                }
                 String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                doGCTtoIGV(ifile, new File(ofile), probeFile, genomeId, maxRecords, tmpDirName);
+                doGCTtoIGV(ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
             } else if (command.equals("formatexp")) {
                 validateArgsLength(nonOptionArgs, 3);
                 File inputFile = new File(nonOptionArgs[1]);
@@ -328,11 +332,8 @@ public class IgvTools {
 
     }
 
-    private void doGCTtoIGV(String ifile, File ofile, String probefile, String genomeId, int maxRecords, String tmpDirName) throws IOException {
-        Genome genome = loadGenome(genomeId);
-        if (genome == null) {
-            throw new PreprocessingException("Genome could not be loaded: " + genomeId);
-        }
+    private void doGCTtoIGV(String ifile, File ofile, String probefile, int maxRecords, String tmpDirName, Genome genome) throws IOException {
+
 
         File tmpDir = null;
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
@@ -343,7 +344,7 @@ public class IgvTools {
             }
         }
 
-        GCTtoIGVConverter.convert(new File(ifile), ofile, probefile, genomeId, maxRecords, tmpDir);
+        GCTtoIGVConverter.convert(new File(ifile), ofile, probefile, maxRecords, tmpDir, genome);
 
     }
 
@@ -395,7 +396,7 @@ public class IgvTools {
             String baseName = (new File(ifile)).getName();
             File igvFile = new File(tmpDir, baseName + ".igv");
             igvFile.deleteOnExit();
-            doGCTtoIGV(ifile, igvFile, probeFile, genomeId, maxRecords, tmpDirName);
+            doGCTtoIGV(ifile, igvFile, probeFile, maxRecords, tmpDirName, genome);
 
             tmp = igvFile;
 

@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeBuilderDialog;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
@@ -49,7 +50,6 @@ import org.broad.igv.track.TrackManager;
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 
@@ -1132,14 +1132,17 @@ public class IGV {
             return;
         }
 
-        String gid = IGV.getInstance().getGenomeManager().setGenomeId(id);
+        String gid = getGenomeManager().setGenomeId(id);
 
         FeatureDB.clearFeatures();
 
-        IGV.getInstance().getTrackManager().loadGeneTrack(gid);
+        // TODO -- this is all rather circular
+        Genome genome = getGenomeManager().getCurrentGenome();
+
+        IGV.getInstance().getTrackManager().createGeneTrack(genome);
 
 
-        for (Chromosome chr : IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomes()) {
+        for (Chromosome chr : getGenomeManager().getCurrentGenome().getChromosomes()) {
             for (Cytoband cyto : chr.getCytobands()) {
                 FeatureDB.addFeature(cyto.getLongName(), cyto);
             }
@@ -1244,6 +1247,7 @@ public class IGV {
         menuBar.resetSessionActions();
 
         AttributeManager.getInstance().clearAllAttributes();
+
         session = new Session(sessionName);
 
         contentPane.getMainPanel().resetPanels();

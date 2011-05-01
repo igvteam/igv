@@ -65,20 +65,13 @@ public class GeneManager {
 
     private TrackProperties trackProperties;
 
-    public GeneManager(String genomeId) {
-        this(genomeId, "Gene");
-    }
-
     /**
      * Creates a new instance of GeneManager
      *
-     * @param genomeId
+     * @param genome
      */
-    public GeneManager(String genomeId, String geneTrackName) {
-        genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
-        if (genome == null) {
-            throw new RuntimeException("Unknown genome: " + genomeId);
-        }
+    public GeneManager(Genome genome, String geneTrackName) {
+        this.genome = genome;
         chromosomeGeneMap = new HashMap<String, List<org.broad.tribble.Feature>>();
         geneMap = new HashMap<String, IGVFeature>();
         maxLocationMap = new HashMap<String, Integer>();
@@ -146,7 +139,7 @@ public class GeneManager {
             }
         }
 
-        geneDataList.add((IGVFeature) gene);
+        geneDataList.add(gene);
 
     }
 
@@ -248,58 +241,6 @@ public class GeneManager {
         return maxLocationMap.get(chr);
     }
 
-    static Map<String, GeneManager> geneManagerCache = new HashMap();
-
-    /**
-     * Method description
-     *
-     * @param genomeId
-     * @return
-     */
-    public static synchronized GeneManager getGeneManager(String genomeId) {
-
-        GeneManager geneManager = geneManagerCache.get(genomeId);
-        if (geneManager == null) {
-            GenomeDescriptor genomeDescriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genomeId);
-            if (genomeDescriptor != null) {
-                AsciiLineReader reader = getGeneReader(genomeDescriptor);
-                if (reader != null) {
-                    try {
-                        geneManager = new GeneManager(genomeId, genomeDescriptor.getGeneTrackName());
-                        String geneFilename = genomeDescriptor.getGeneFileName();
-                        FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFilename));
-                        if (parser == null) {
-                            MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFilename +
-                                    "<br>Annotations for genome: " + genomeId + " will not be loaded.");
-                        } else {
-                            List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
-                            for (org.broad.tribble.Feature gene : genes) {
-                                geneManager.addGene((IGVFeature) gene);
-                            }
-
-                            geneManager.sortGeneLists();
-                        }
-
-                        geneManager.trackProperties = parser.getTrackProperties();
-
-
-                        geneManagerCache.put(genomeId, geneManager);
-                    } catch (Exception e) {
-                        log.error("Error loading geneManager", e);
-                    }
-                    finally {
-
-                        if (reader != null) {
-                            reader.close();
-                        }
-
-                    }
-                }
-            }
-        }
-
-        return geneManager;
-    }
 
     /**
      * Method description
@@ -307,7 +248,7 @@ public class GeneManager {
      * @param genomeDescriptor
      * @return
      */
-    private static AsciiLineReader getGeneReader(GenomeDescriptor genomeDescriptor) {
+    public static AsciiLineReader getGeneReader(GenomeDescriptor genomeDescriptor) {
 
         InputStream is = null;
         try {
@@ -334,55 +275,12 @@ public class GeneManager {
 
     }
 
-    /**
-     * Validate gene file
-     *
-     * @param file
-     * @return
-     */
-    public static boolean isValid(File file) {
-
-        try {
-
-            if ((file == null) || !file.exists() || (file.length() < 1)) {
-                return false;
-            } else {
-                AsciiLineReader reader = new AsciiLineReader(new FileInputStream(file));
-                return isValid(reader, file.getName());
-            }
-        } catch (Exception e) {
-            return false;
-        }
-
-    }
-
-    /**
-     * Validate gene file
-     *
-     * @param reader
-     * @param geneFilename
-     * @return
-     */
-    public static boolean isValid(AsciiLineReader reader, String geneFilename) {
-
-        if (reader != null) {
-
-            try {
-                FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFilename));
-                List<org.broad.tribble.Feature> features = parser.loadFeatures(reader);
-
-                if ((features != null) && !features.isEmpty()) {
-                    return true;
-                }
-
-            } catch (Exception e) {
-                log.error("Invalid Gene file data : file=" + geneFilename, e);
-            }
-        }
-        return false;
-    }
 
     public TrackProperties getTrackProperties() {
         return trackProperties;
+    }
+
+    public void setTrackProperties(TrackProperties trackProperties) {
+        this.trackProperties = trackProperties;
     }
 }

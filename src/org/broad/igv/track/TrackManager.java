@@ -702,20 +702,15 @@ public class TrackManager {
     /**
      * Method description
      *
-     * @param genomeId
+     * @param genome
      */
-    public void loadGeneTrack(String genomeId) {
+    public void createGeneTrack(Genome genome) {
 
-        // Load genes
-        GeneManager geneManager = GeneManager.getGeneManager(genomeId);
-
-
-        /*
-         * if (geneData == null)
-         * {
-         *   return;
-         * }
-         */
+        // Create a track for the genome's annotations
+        GeneManager geneManager = genome.getGeneManager();
+        if (geneManager == null) {
+            return;
+        }
 
         Map<String, List<org.broad.tribble.Feature>> featureMap = null;
         if (geneManager != null) {
@@ -724,7 +719,6 @@ public class TrackManager {
             featureMap = new HashMap<String, List<org.broad.tribble.Feature>>();
         }
 
-        Genome genome = igv.getGenomeManager().getCurrentGenome();
         FeatureTrack geneFeatureTrack = new FeatureTrack("Genes", new FeatureCollectionSource(featureMap, genome));
 
         geneFeatureTrack.setMinimumHeight(5);

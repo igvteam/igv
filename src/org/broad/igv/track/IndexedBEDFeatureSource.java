@@ -45,12 +45,12 @@ public class IndexedBEDFeatureSource implements FeatureSource {
     BEDFileParser parser;
     HashMap<String, String> chrMappings = new HashMap();
 
-    public IndexedBEDFeatureSource(File samFile, File indexFile) {
+    public IndexedBEDFeatureSource(File samFile, File indexFile, Genome genome) {
         this.bedFile = samFile;
         if (indexFile.exists()) {
             featureIndex = new FeatureIndex(indexFile);
         }
-        parser = new BEDFileParser();
+        parser = new BEDFileParser(genome);
         initChrMap();
     }
 

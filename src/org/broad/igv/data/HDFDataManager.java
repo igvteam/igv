@@ -673,7 +673,7 @@ public class HDFDataManager {
                 String genomeId = genome.getId();
                 // Put a limit on the "longest feature" to prevent outliers from dictating
                 // huge data loads.  This is neccessary due to a flaw in the indexing scheme.
-                maxLongestFeature = GeneManager.getGeneManager(genomeId).getLongestGeneLength(chr) + 100;
+                maxLongestFeature = genome.getGeneManager().getLongestGeneLength(chr) + 100;
             }
             int longestFeature = 1000;
 

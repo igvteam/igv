@@ -24,14 +24,21 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.tools.IgvTools;
+import org.junit.Test;
+
 /**
  * @author jrobinso
  */
 public class TestLoadGeneManager {
 
+    @Test
     public static void main(String[] args) {
-        GeneManager gm = GeneManager.getGeneManager("hg18");
-        gm.getGene("EGFR");
+        Genome genome = IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome");
+
+        GeneManager gm = genome.getGeneManager();
+        System.out.println(gm.getGene("EGFR"));
     }
 
 }

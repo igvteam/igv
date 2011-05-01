@@ -241,10 +241,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                         if (!isGenomeCached(genomeListItem.getId())) {
                                             cachedGenomeItemList.add(genomeListItem);
                                         }
-                                        
-                                        igv.createNewSession(null);
+
                                         igv.doChooseGenome(igv.getGenomeManager().getGenomeDescriptor(requestedGenomeId));
 
+                                        // Unload all tracks, begin new session.  This should be done after the genome switch
+                                        igv.createNewSession(null);
 
                                         previousSelectedItemId = genomeComboBox.getSelectedIndex();
 
