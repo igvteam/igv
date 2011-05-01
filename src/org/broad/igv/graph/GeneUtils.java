@@ -23,6 +23,7 @@ import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureParser;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -42,9 +43,9 @@ public class GeneUtils {
     static String file = "hg18_refGene.txt";
     static HashMap<String, List<BasicFeature>> transcripts;
 
-    public static Graph getGraphFor(String gene) throws IOException {
+    public static Graph getGraphFor(String gene, Genome genome) throws IOException {
         if (transcripts == null) {
-            loadGenes();
+            loadGenes(genome);
         }
         return createGraph(transcripts.get(gene));
     }
@@ -108,11 +109,11 @@ public class GeneUtils {
         return graph;
     }
 
-    private static void loadGenes() throws IOException {
+    private static void loadGenes(Genome genome) throws IOException {
 
         transcripts = new HashMap();
 
-        FeatureParser fp = AbstractFeatureParser.getInstanceFor(file);
+        FeatureParser fp = AbstractFeatureParser.getInstanceFor(file, genome);
         AsciiLineReader reader = ParsingUtils.openAsciiReader(file);
         List<Feature> features = fp.loadFeatures(reader);
 

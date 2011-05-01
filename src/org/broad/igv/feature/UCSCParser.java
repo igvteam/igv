@@ -22,6 +22,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
 
@@ -31,13 +32,12 @@ import org.broad.igv.util.ParsingUtils;
  */
 abstract public class UCSCParser extends AbstractFeatureParser {
 
-    /**
-     * Method description
-     *
-     * @param nextLine
-     * @return
-     */
+
     String[] tokens = new String[25];
+
+    protected UCSCParser(Genome genome) {
+        super(genome);
+    }
 
     protected IGVFeature parseLine(String nextLine) {
 

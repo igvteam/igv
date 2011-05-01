@@ -19,6 +19,7 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -55,6 +56,10 @@ import org.broad.igv.util.ResourceLocator;
  * @date Aug 5, 2010
  */
 public class PSLParser extends UCSCParser {
+
+    public PSLParser(Genome genome) {
+        super(genome);
+    }
 
     @Override
     public boolean isFeatureFile(ResourceLocator locator) {

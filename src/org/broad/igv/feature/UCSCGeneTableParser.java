@@ -20,6 +20,7 @@ package org.broad.igv.feature;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 
 import java.util.List;
@@ -54,7 +55,9 @@ public class UCSCGeneTableParser extends UCSCParser {
      *
      * @param type
      */
-    public UCSCGeneTableParser(Type type) {
+    public UCSCGeneTableParser(Genome genome, Type type) {
+        super(genome);
+        
         this.type = type;
         switch (type) {
             case REFFLAT:

@@ -58,31 +58,31 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     TrackType trackType;
     boolean gffTags = false;
 
-    public AbstractFeatureParser() {
-        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+    public AbstractFeatureParser(Genome genome) {
+        this.genome = genome;
     }
 
     /**
      * Return an parser instance appropriate the the file type.  Currently the filename
      * is used to determine file type, this is fragile obviously but what is the alternative?
      */
-    public static FeatureParser getInstanceFor(ResourceLocator locator) {
+    public static FeatureParser getInstanceFor(ResourceLocator locator, Genome genome) {
 
         final String path = locator.getPath();
-        return getInstanceFor(path);
+        return getInstanceFor(path, genome);
     }
 
-    public static FeatureParser getInstanceFor(String path) {
+    public static FeatureParser getInstanceFor(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
 
         if (tmp.endsWith("bed") || tmp.endsWith("map")) {
-            return new BEDFileParser();
+            return new BEDFileParser(genome);
         } else if (tmp.contains("refflat")) {
-            return new UCSCGeneTableParser(UCSCGeneTableParser.Type.REFFLAT);
+            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.REFFLAT);
         } else if (tmp.contains("genepred") || tmp.contains("ensgene") || tmp.contains("refgene")) {
-            return new UCSCGeneTableParser(UCSCGeneTableParser.Type.GENEPRED);
+            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.GENEPRED);
         } else if (tmp.contains("ucscgene")) {
-            return new UCSCGeneTableParser(UCSCGeneTableParser.Type.UCSCGENE);
+            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.UCSCGENE);
         } else if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3")) {
             return new GFFParser(path);
         } else if (tmp.endsWith("embl")) {

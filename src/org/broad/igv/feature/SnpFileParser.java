@@ -19,12 +19,18 @@
 
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
+
 /**
  * Parser for the UCSC snp tracks (e.g. snp128.txt).
  *
  * @author jrobinso
  */
 public class SnpFileParser extends AbstractFeatureParser {
+
+    public SnpFileParser(Genome genome) {
+        super(genome);
+    }
 
     protected IGVFeature parseLine(String line) throws NumberFormatException {
 

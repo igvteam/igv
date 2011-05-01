@@ -21,6 +21,7 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -40,6 +41,10 @@ public class BEDFileParser extends UCSCParser {
     private static Logger log = Logger.getLogger(BEDFileParser.class);
 
     private GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+
+    public BEDFileParser(Genome genome) {
+        super(genome);
+    }
 
     @Override
     /**
