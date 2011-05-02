@@ -60,7 +60,7 @@ public class GenomeManager {
      * The refresh frequence in seconds.  Cached genomes will be refreshed
      * from the server if they are older than this value.
      */
-    public static final long GENOME_REFRESH_FREQ = 1 * 24 * 3600;
+
     private static Logger log = Logger.getLogger(GenomeManager.class);
     private Map<String, GenomeDescriptor> genomeDescriptorMap;
     //private Map<String, Genome> genomes;
@@ -390,8 +390,12 @@ public class GenomeManager {
 
         try {
             if (archiveFile.exists()) {
-                // Force an restorePersistentState of cached genomes periodically
-                boolean forceUpdate = ((System.currentTimeMillis() - archiveFile.lastModified()) / 1000) > GENOME_REFRESH_FREQ;
+
+                long fileLength = archiveFile.length();
+                long contentLength = IGVHttpUtils.getContentLength(genomeArchiveURL);
+
+                // Force an update of cached genome if file length does not equal remote content length
+                boolean forceUpdate = (contentLength != fileLength);
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");

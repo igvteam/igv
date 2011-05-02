@@ -90,9 +90,13 @@ public class ParsingUtils {
         AsciiLineReader reader = null;
         try {
             long fileLength = 0;
+            final int defaultLength = 100000;
             if (IGVHttpUtils.isURL(filename)) {
                 URL url = new URL(filename);
-                fileLength = Long.parseLong(IGVHttpUtils.getHeaderField(url, "Content-length"));
+                fileLength = IGVHttpUtils.getContentLength(url);
+                if(fileLength <= 0) {
+                    return defaultLength;
+                }
             } else {
                 fileLength = (new File(filename)).length();
             }
@@ -111,7 +115,7 @@ public class ParsingUtils {
             }
 
             if (lines == 0) {
-                return 1000;
+                return defaultLength;
             }
 
             double bytesPerLine = (double) ((reader.getPosition() - startPos) / lines);

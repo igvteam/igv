@@ -94,7 +94,6 @@ public class IGVHttpUtils {
         }
     }
 
-
     public static class ProxySettings {
         boolean auth = false;
         String user;
@@ -140,7 +139,7 @@ public class IGVHttpUtils {
 
     public static InputStream openHttpStream(URL url, Map<String, String> requestProperties) throws IOException {
 
-        if(requestProperties == null) {
+        if (requestProperties == null) {
             requestProperties = new HashMap();
         }
         requestProperties.put("User-Agent", Globals.applicationString());
@@ -169,15 +168,14 @@ public class IGVHttpUtils {
                         is.close();
                     }
                     disconnect(conn);
-                }
-                else {
+                } else {
                     throw e;
                 }
             }
 
             String shortName = StringUtils.checkLength(url.toExternalForm(), 80);
             if (getUserPass(shortName) == false) {
-                 throw new RuntimeException("A password is required to access " + shortName);
+                throw new RuntimeException("A password is required to access " + shortName);
             }
 
             Map<String, String> requestProperties = new HashMap();
@@ -339,6 +337,17 @@ public class IGVHttpUtils {
 
     public static String getETag(URL url) {
         return getHeaderField(url, "ETag");
+    }
+
+    public static long getContentLength(URL url) {
+        String contentLengthString = getHeaderField(url, "Content-length");
+        try {
+            return Long.parseLong(contentLengthString);
+        } catch (NumberFormatException e) {
+            log.error("Error getting content length from: " + url.toString() + "\n" + "Content-length=" + contentLengthString);
+            return 0;
+        }
+
     }
 
     public static String getHeaderField(URL url, String name) {
