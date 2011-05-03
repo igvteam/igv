@@ -39,7 +39,7 @@ import java.util.*;
 public class SequenceRenderer {
 
     //Maximum scale at which the track is displayed
-    public static final double MAX_SCALE_FOR_RENDER = 2;
+    public static final double MAX_SCALE_FOR_RENDER = 1000;
     static Map<Character, Color> nucleotideColors = new HashMap();
 
     static {
@@ -124,7 +124,9 @@ public class SequenceRenderer {
                 // Draw translated sequence
                 Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                         (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
-                translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
+                if (context.getScale() < 5) {
+                    translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
+                }
             }
 
             //Rectangle containing the sequence and (optionally) colorspace bands
@@ -153,33 +155,40 @@ public class SequenceRenderer {
                 }
 
                 // Loop through base pair coordinates
-                for (int loc = firstVisibleNucleotideStart; loc < lastVisibleNucleotideEnd; loc++) {
-                    int idx = loc - start;
-                    int pX0 = (int) ((loc - origin) / locScale);
-                    char c = (char) seq[idx];
-                    if (Strand.NEGATIVE.equals(strand))
-                        c = complementChar(c);
-                    Color color = nucleotideColors.get(c);
-                    if (fontSize >= 8) {
-                        if (color == null) {
-                            color = Color.black;
+                int lastPx0 = -1;
+                int scale = Math.max(0, (int) context.getScale() - 1);
+                for (int loc = firstVisibleNucleotideStart; loc < lastVisibleNucleotideEnd; loc += scale) {
+                    for (; loc < lastVisibleNucleotideEnd; loc++) {
+                        int idx = loc - start;
+                        int pX0 = (int) ((loc - origin) / locScale);
+                        if (pX0 > lastPx0) {
+                            lastPx0 = pX0;
+                            char c = (char) seq[idx];
+                            if (Strand.NEGATIVE.equals(strand))
+                                c = complementChar(c);
+                            Color color = nucleotideColors.get(c);
+                            if (fontSize >= 8) {
+                                if (color == null) {
+                                    color = Color.black;
+                                }
+                                g.setColor(color);
+                                drawCenteredText(g, new char[]{c}, pX0, yBase + 2, dX, dY - 2);
+                                if (showColorSpace) {
+                                    // draw color space #.  Color space is shifted to be between bases as it represents
+                                    // two bases.
+                                    g.setColor(Color.black);
+                                    String cCS = String.valueOf(seqCS[idx]);
+                                    drawCenteredText(g, cCS.toCharArray(), pX0 - dX / 2, yCS + 2, dX, dY - 2);
+                                }
+                            } else {
+                                int bw = Math.max(1, dX - 1);
+                                if (color != null) {
+                                    g.setColor(color);
+                                    g.fillRect(pX0, yBase, bw, dY);
+                                }
+                            }
                         }
-                        g.setColor(color);
-                        drawCenteredText(g, new char[]{c}, pX0, yBase + 2, dX, dY - 2);
-                        if (showColorSpace) {
-                            // draw color space #.  Color space is shifted to be between bases as it represents
-                            // two bases.
-                            g.setColor(Color.black);
-                            String cCS = String.valueOf(seqCS[idx]);
-                            drawCenteredText(g, cCS.toCharArray(), pX0 - dX / 2, yCS + 2, dX, dY - 2);
-                        }
-                    } else {
-                        int bw = Math.max(1, dX - 1);
-                        if (color != null) {
-                            g.setColor(color);
-                            g.fillRect(pX0, yBase, bw, dY);
-                        }
-
+                        break;
                     }
                 }
             }
