@@ -161,6 +161,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String FLANKING_REGION = "FLAKING_REGIONS";
 
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
+    public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
 
     final public static String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
     final public static String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
@@ -917,6 +918,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(FLANKING_REGION, "2000");
 
         defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "false");
+        defaultValues.put(MAX_SEQUENCE_RESOLUTION, "2");
 
         defaultValues.put(GWAS_TRACK_HEIGHT, "200");
         defaultValues.put(GWAS_DESCRIPTION_CACHE_SIZE, "10000");

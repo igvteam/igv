@@ -108,7 +108,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                 graphics2D.setColor(Color.BLACK);
 
                 final Graphics2D greyGraphics = (Graphics2D) g.create();
-                greyGraphics.setColor(UIConstants.VERY_LIGHT_GRAY);
+                greyGraphics.setColor(UIConstants.ZOOMED_OUT_COLOR);
 
                 int regionX = 3;
                 int regionY = 0;

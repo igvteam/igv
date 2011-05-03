@@ -61,7 +61,7 @@ public class DataPanelPainter {
             graphics2D.clearRect(0, 0, width, height);
             graphics2D.setColor(Color.BLACK);
 
-            final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.VERY_LIGHT_GRAY);
+            final Graphics2D greyGraphics = context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR);
             int trackX = 0;
             int trackY = 0;
 

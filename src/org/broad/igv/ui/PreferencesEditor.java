@@ -56,7 +56,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged;
 
 
-
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -89,6 +88,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label4 = new JLabel();
         geneListFlankingField = new JTextField();
         zoomToFeatureExplanation2 = new JLabel();
+        searchZoomCB3 = new JCheckBox();
+        searchZoomCB2 = new JCheckBox();
+        label5 = new JLabel();
+        label6 = new JLabel();
+        seqResolutionThreshold = new JTextField();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -226,7 +230,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     missingDataExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation.setText("<html>Distinguish  regions with zero values from regions with no data on plots <br>(e.g. bar charts).  Regions with no data are indicated with a gray background.");
                     jPanel10.add(missingDataExplanation);
-                    missingDataExplanation.setBounds(new Rectangle(new Point(41, 35), missingDataExplanation.getPreferredSize()));
+                    missingDataExplanation.setBounds(41, 35, 644, missingDataExplanation.getPreferredSize().height);
 
                     //---- showMissingDataCB ----
                     showMissingDataCB.setText("Distinguish Missing Data");
@@ -246,7 +250,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(combinePanelsCB);
-                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 83), combinePanelsCB.getPreferredSize()));
+                    combinePanelsCB.setBounds(new Rectangle(new Point(10, 75), combinePanelsCB.getPreferredSize()));
 
                     //---- joinSegmentsCB ----
                     joinSegmentsCB.setText("Join Adjacent CopyNumber Segments");
@@ -256,7 +260,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(joinSegmentsCB);
-                    joinSegmentsCB.setBounds(new Rectangle(new Point(10, 132), joinSegmentsCB.getPreferredSize()));
+                    joinSegmentsCB.setBounds(new Rectangle(new Point(10, 115), joinSegmentsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
                     showAttributesDisplayCheckBox.setText("Show Attribute Display");
@@ -266,7 +270,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 209), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 195), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -276,20 +280,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(searchZoomCB);
-                    searchZoomCB.setBounds(new Rectangle(new Point(10, 260), searchZoomCB.getPreferredSize()));
+                    searchZoomCB.setBounds(new Rectangle(new Point(10, 235), searchZoomCB.getPreferredSize()));
 
                     //---- missingDataExplanation6 ----
                     missingDataExplanation6.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation6.setText("<html>This option applies to segmented copy number data only.  When selected, gaps between<br>adjacent segments are filled by extending segment endpoints.");
                     jPanel10.add(missingDataExplanation6);
-                    missingDataExplanation6.setBounds(new Rectangle(new Point(41, 161), missingDataExplanation6.getPreferredSize()));
+                    missingDataExplanation6.setBounds(41, 150, 644, missingDataExplanation6.getPreferredSize().height);
 
                     //---- zoomToFeatureExplanation ----
                     zoomToFeatureExplanation.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     zoomToFeatureExplanation.setText("<html>This option controls the behavior of feature searchs.  If true, the zoom level is changed as required to size the view to the feature size.  If false the zoom level is unchanged.");
                     zoomToFeatureExplanation.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation);
-                    zoomToFeatureExplanation.setBounds(41, 289, 603, 61);
+                    zoomToFeatureExplanation.setBounds(41, 265, 644, 50);
 
                     //---- label4 ----
                     label4.setText("Feature flanking region (bp): ");
@@ -316,7 +320,52 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     zoomToFeatureExplanation2.setText("<html><i>Added before and after feature locus when zooming to a feature.  Also used when defining panel extents in gene/loci list views.");
                     zoomToFeatureExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel10.add(zoomToFeatureExplanation2);
-                    zoomToFeatureExplanation2.setBounds(41, 430, 603, 61);
+                    zoomToFeatureExplanation2.setBounds(41, 430, 637, 61);
+
+                    //---- searchZoomCB3 ----
+                    searchZoomCB3.setText("Zoom to features");
+                    searchZoomCB3.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            searchZoomCBActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(searchZoomCB3);
+                    searchZoomCB3.setBounds(0, 524, 140, 23);
+
+                    //---- searchZoomCB2 ----
+                    searchZoomCB2.setText("Zoom to features");
+                    searchZoomCB2.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            searchZoomCBActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(searchZoomCB2);
+                    searchZoomCB2.setBounds(0, 552, 140, 23);
+
+                    //---- label5 ----
+                    label5.setText("<html><i>Resolution in base-pairs per pixel at which sequence track becomes visible. ");
+                    jPanel10.add(label5);
+                    label5.setBounds(new Rectangle(new Point(41, 350), label5.getPreferredSize()));
+
+                    //---- label6 ----
+                    label6.setText("Sequence Resolution Threshold (bp/pixel):");
+                    jPanel10.add(label6);
+                    label6.setBounds(new Rectangle(new Point(10, 315), label6.getPreferredSize()));
+
+                    //---- seqResolutionThreshold ----
+                    seqResolutionThreshold.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            seqResolutionThresholdFocusLost(e);
+                        }
+                    });
+                    seqResolutionThreshold.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            seqResolutionThresholdActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(seqResolutionThreshold);
+                    seqResolutionThreshold.setBounds(300, 309, 105, seqResolutionThreshold.getPreferredSize().height);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -567,9 +616,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 //======== jPanel5 ========
                 {
+                    jPanel5.setLayout(null);
 
                     //---- jLabel3 ----
-                    jLabel3.setText("Overlay tracks based on attribute:");
+                    jLabel3.setText("Sample attribute column:");
+                    jPanel5.add(jLabel3);
+                    jLabel3.setBounds(new Rectangle(new Point(65, 86), jLabel3.getPreferredSize()));
 
                     //---- overlayAttributeTextField ----
                     overlayAttributeTextField.setText("LINKING_ID");
@@ -590,6 +642,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             overlayAttributeTextFieldKeyTyped(e);
                         }
                     });
+                    jPanel5.add(overlayAttributeTextField);
+                    overlayAttributeTextField.setBounds(229, 80, 228, overlayAttributeTextField.getPreferredSize().height);
 
                     //---- overlayTrackCB ----
                     overlayTrackCB.setSelected(true);
@@ -600,9 +654,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             overlayTrackCBActionPerformed(e);
                         }
                     });
+                    jPanel5.add(overlayTrackCB);
+                    overlayTrackCB.setBounds(new Rectangle(new Point(6, 51), overlayTrackCB.getPreferredSize()));
 
                     //---- jLabel2 ----
                     jLabel2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    jPanel5.add(jLabel2);
+                    jLabel2.setBounds(new Rectangle(new Point(6, 6), jLabel2.getPreferredSize()));
 
                     //---- displayTracksCB ----
                     displayTracksCB.setText("Display mutation data as distinct tracks");
@@ -612,9 +670,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             displayTracksCBActionPerformed(e);
                         }
                     });
+                    jPanel5.add(displayTracksCB);
+                    displayTracksCB.setBounds(new Rectangle(new Point(5, 230), displayTracksCB.getPreferredSize()));
 
                     //---- jLabel4 ----
                     jLabel4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
+                    jPanel5.add(jLabel4);
+                    jLabel4.setBounds(new Rectangle(new Point(6, 12), jLabel4.getPreferredSize()));
 
                     //---- colorOverlyCB ----
                     colorOverlyCB.setText("Color code overlay");
@@ -623,6 +685,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             colorOverlyCBActionPerformed(e);
                         }
                     });
+                    jPanel5.add(colorOverlyCB);
+                    colorOverlyCB.setBounds(new Rectangle(new Point(65, 114), colorOverlyCB.getPreferredSize()));
 
                     //---- chooseOverlayColorsButton ----
                     chooseOverlayColorsButton.setForeground(new Color(0, 0, 247));
@@ -635,52 +699,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             chooseOverlayColorsButtonActionPerformed(e);
                         }
                     });
+                    jPanel5.add(chooseOverlayColorsButton);
+                    chooseOverlayColorsButton.setBounds(new Rectangle(new Point(220, 116), chooseOverlayColorsButton.getPreferredSize()));
 
-                    GroupLayout jPanel5Layout = new GroupLayout(jPanel5);
-                    jPanel5.setLayout(jPanel5Layout);
-                    jPanel5Layout.setHorizontalGroup(
-                        jPanel5Layout.createParallelGroup()
-                            .add(jPanel5Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jPanel5Layout.createParallelGroup()
-                                    .add(displayTracksCB)
-                                    .add(jLabel4)
-                                    .add(overlayTrackCB)
-                                    .add(jLabel2)
-                                    .add(jPanel5Layout.createSequentialGroup()
-                                        .add(59, 59, 59)
-                                        .add(jPanel5Layout.createParallelGroup()
-                                            .add(jPanel5Layout.createSequentialGroup()
-                                                .add(colorOverlyCB)
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(chooseOverlayColorsButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                            .add(jPanel5Layout.createSequentialGroup()
-                                                .add(jLabel3)
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(overlayAttributeTextField, GroupLayout.PREFERRED_SIZE, 228, GroupLayout.PREFERRED_SIZE)))))
-                                .addContainerGap())
-                    );
-                    jPanel5Layout.setVerticalGroup(
-                        jPanel5Layout.createParallelGroup()
-                            .add(jPanel5Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jLabel2)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel4)
-                                .add(39, 39, 39)
-                                .add(overlayTrackCB)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel5Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(jLabel3)
-                                    .add(overlayAttributeTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .add(6, 6, 6)
-                                .add(jPanel5Layout.createParallelGroup(GroupLayout.TRAILING)
-                                    .add(colorOverlyCB)
-                                    .add(chooseOverlayColorsButton, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .add(36, 36, 36)
-                                .add(displayTracksCB)
-                                .addContainerGap(30, Short.MAX_VALUE))
-                    );
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < jPanel5.getComponentCount(); i++) {
+                            Rectangle bounds = jPanel5.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = jPanel5.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        jPanel5.setMinimumSize(preferredSize);
+                        jPanel5.setPreferredSize(preferredSize);
+                    }
                 }
 
                 GroupLayout overlaysPanelLayout = new GroupLayout(overlaysPanel);
@@ -689,15 +723,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     overlaysPanelLayout.createParallelGroup()
                         .add(overlaysPanelLayout.createSequentialGroup()
                             .add(28, 28, 28)
-                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(235, Short.MAX_VALUE))
+                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, 673, GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap(80, Short.MAX_VALUE))
                 );
                 overlaysPanelLayout.setVerticalGroup(
                     overlaysPanelLayout.createParallelGroup()
                         .add(overlaysPanelLayout.createSequentialGroup()
                             .add(55, 55, 55)
-                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(225, Short.MAX_VALUE))
+                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, 394, GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap(57, Short.MAX_VALUE))
                 );
             }
             tabbedPane.addTab("Mutations", overlaysPanel);
@@ -2045,7 +2079,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             inputValidated = false;
             MessageUtils.showMessage("Visibility range must be a number.");
         }
-    }//GEN-LAST:event_samMaxWindowSizeFieldFocusLost
+    }
 
     private void samMaxWindowSizeFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String maxSAMWindowSize = String.valueOf(samMaxWindowSizeField.getText());
@@ -2057,6 +2091,28 @@ public class PreferencesEditor extends javax.swing.JDialog {
             MessageUtils.showMessage("Visibility range must be a number.");
         }
     }
+
+
+    private void seqResolutionThresholdActionPerformed(ActionEvent e) {
+        samMaxWindowSizeFieldFocusLost(null);
+    }
+
+    private void seqResolutionThresholdFocusLost(FocusEvent e) {
+        String seqResolutionSize = String.valueOf(seqResolutionThreshold.getText());
+        try {
+            float value = Float.parseFloat(seqResolutionSize.replace(",", ""));
+            if (value < 1 || value > 10000) {
+                MessageUtils.showMessage("Visibility range must be a number between 1 and 10000.");
+            } else {
+                updatedPreferenceMap.put(PreferenceManager.MAX_SEQUENCE_RESOLUTION, seqResolutionSize);
+            }
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Visibility range must be a number between 1 and 10000.");
+        }
+
+    }
+
 
     private void chartDrawTrackNameCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(PreferenceManager.CHART_DRAW_TRACK_NAME,
@@ -2201,7 +2257,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
 
     }
-
 
 
     private void showAttributesDisplayCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
@@ -2387,7 +2442,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
             PreferenceManager.getInstance().clearProxySettings();
         }
     }
-    
+
 
     private void useProxyCBActionPerformed(java.awt.event.ActionEvent evt) {
         proxySettingsChanged = true;
@@ -2501,6 +2556,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
         colorOverlyCB.setEnabled(overlayTrackCB.isSelected());
         chooseOverlayColorsButton.setEnabled(overlayTrackCB.isSelected());
+
+        seqResolutionThreshold.setText(prefMgr.get(PreferenceManager.MAX_SEQUENCE_RESOLUTION));
+
 
         geneListFlankingField.setText(prefMgr.get(PreferenceManager.FLANKING_REGION));
 
@@ -2650,6 +2708,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label4;
     private JTextField geneListFlankingField;
     private JLabel zoomToFeatureExplanation2;
+    private JCheckBox searchZoomCB3;
+    private JCheckBox searchZoomCB2;
+    private JLabel label5;
+    private JLabel label6;
+    private JTextField seqResolutionThreshold;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;

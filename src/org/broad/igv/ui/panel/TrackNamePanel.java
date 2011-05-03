@@ -106,7 +106,7 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
             graphics2D.setColor(Color.BLACK);
 
             final Graphics2D greyGraphics = (Graphics2D) g.create();
-            greyGraphics.setColor(UIConstants.VERY_LIGHT_GRAY);
+            greyGraphics.setColor(UIConstants.ZOOMED_OUT_COLOR);
 
             int regionY = 0;
 

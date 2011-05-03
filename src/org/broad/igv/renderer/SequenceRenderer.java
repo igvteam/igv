@@ -23,9 +23,10 @@
  */
 package org.broad.igv.renderer;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.SOLIDUtils;
@@ -38,9 +39,13 @@ import java.util.*;
  */
 public class SequenceRenderer {
 
+    private static Logger log = Logger.getLogger(SequenceRenderer.class);
+
     //Maximum scale at which the track is displayed
-    public static final double MAX_SCALE_FOR_RENDER = 1000;
+    //public static final int MAX_SCALE_FOR_RENDER = 1000;
+    public static final int AMINO_ACID_RESOLUTION = 5;
     static Map<Character, Color> nucleotideColors = new HashMap();
+
 
     static {
         //nucleotideColors.put('A', new Color(160, 160, 255));
@@ -54,8 +59,8 @@ public class SequenceRenderer {
         nucleotideColors.put('c', Color.BLUE);
         nucleotideColors.put('T', Color.RED);
         nucleotideColors.put('t', Color.RED);
-        nucleotideColors.put('G', new Color(209, 113, 5));
-        nucleotideColors.put('g', new Color(209, 113, 5));
+        nucleotideColors.put('G', new Color(209, 113, AMINO_ACID_RESOLUTION));
+        nucleotideColors.put('g', new Color(209, 113, AMINO_ACID_RESOLUTION));
         nucleotideColors.put('N', Color.gray);
         nucleotideColors.put('n', Color.gray);
     }
@@ -76,11 +81,14 @@ public class SequenceRenderer {
      * @param showTranslation Should we show the translated amino acids?
      */
     public void draw(RenderContext context, Rectangle trackRectangle,
-                     boolean showColorSpace, boolean showTranslation) {
-        if (context.getScale() >= MAX_SCALE_FOR_RENDER) {
+                     boolean showColorSpace, boolean showTranslation,
+                     int resolutionThreshold) {
+
+
+        if (context.getScale() >= resolutionThreshold) {
             // Zoomed out too far to see sequences.  This can happen when in gene list view and one of the frames
             // is zoomed in but others are not
-            context.getGraphic2DForColor(UIConstants.VERY_LIGHT_GRAY).fill(trackRectangle);
+            context.getGraphic2DForColor(UIConstants.ZOOMED_OUT_COLOR).fill(trackRectangle);
 
         } else {
             double locScale = context.getScale();
@@ -119,12 +127,12 @@ public class SequenceRenderer {
 
 
             if (showTranslation) {
-                untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / 5 * 2 :
+                untranslatedSequenceHeight = showColorSpace ? (int) trackRectangle.getHeight() / AMINO_ACID_RESOLUTION * 2 :
                         (int) (trackRectangle.getHeight() / 4);
                 // Draw translated sequence
                 Rectangle translatedSequenceRect = new Rectangle(trackRectangle.x, trackRectangle.y + untranslatedSequenceHeight,
                         (int) trackRectangle.getWidth(), (int) trackRectangle.getHeight() - untranslatedSequenceHeight);
-                if (context.getScale() < 5) {
+                if (context.getScale() < AMINO_ACID_RESOLUTION) {
                     translatedSequenceDrawer.draw(context, start, translatedSequenceRect, seq, strand);
                 }
             }

@@ -22,6 +22,7 @@ package org.broad.igv.track;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
@@ -43,6 +44,7 @@ import java.awt.event.MouseEvent;
  */
 public class SequenceTrack extends AbstractTrack {
 
+    private static Logger log = Logger.getLogger(SequenceTrack.class);
 
     private static final int SEQUENCE_HEIGHT = 14;
 
@@ -103,24 +105,21 @@ public class SequenceTrack extends AbstractTrack {
         // Are we zoomed in far enough to show the sequence?  Scale is
         // in BP / pixel,  need at least 1 pixel  per bp in order to show sequence.
 
+        int resolutionThreshold =  PreferenceManager.getInstance().getAsInt(PreferenceManager.MAX_SEQUENCE_RESOLUTION);
         // TODO -- this should be calculated from a "rescale" event
-        boolean visible = isSequenceVisible(context);
+        boolean visible = FrameManager.getMinimumScale() < resolutionThreshold &&
+                !context.getChr().equals(Globals.CHR_ALL);
+
         if (visible != sequenceVisible) {
             sequenceVisible = visible;
-            context.getPanel().repaint();
+            IGV.getInstance().doRefresh();
         }
         if (sequenceVisible) {
             sequenceRenderer.setStrand(strand);
-            sequenceRenderer.draw(context, rect, showColorSpace, shouldShowTranslation);
+            sequenceRenderer.draw(context, rect, showColorSpace, shouldShowTranslation, resolutionThreshold);
         }
     }
 
-
-    private boolean isSequenceVisible(RenderContext context) {
-        return FrameManager.getMinimumScale() < SequenceRenderer.MAX_SCALE_FOR_RENDER &&
-                !context.getChr().equals(Globals.CHR_ALL);
-
-    }
 
     @Override
     public int getHeight() {
