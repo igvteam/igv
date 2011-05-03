@@ -391,11 +391,16 @@ public class GenomeManager {
         try {
             if (archiveFile.exists()) {
 
+
                 long fileLength = archiveFile.length();
                 long contentLength = IGVHttpUtils.getContentLength(genomeArchiveURL);
 
+                if (contentLength <= 0) {
+                    log.info("Skipping genome update of " + archiveFile.getName() + " due to unkown content length");
+                }
                 // Force an update of cached genome if file length does not equal remote content length
-                boolean forceUpdate = (contentLength != fileLength);
+                boolean forceUpdate = (contentLength != fileLength) &&
+                        PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES);
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
@@ -404,6 +409,7 @@ public class GenomeManager {
                         tmpFile.deleteOnExit();
                     }
                 }
+
             } else {
                 // Copy file directly from the server to local cache.
                 FileUtils.downloadFile(genomeArchiveURL, archiveFile);
@@ -1249,7 +1255,7 @@ public class GenomeManager {
      */
     public String setGenomeId(String newGenome) {
 
-        if(currentGenome != null && currentGenome.getId().equals(newGenome)) {
+        if (currentGenome != null && currentGenome.getId().equals(newGenome)) {
             return newGenome;
         }
 

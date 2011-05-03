@@ -2841,7 +2841,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq l {space :p:20:p, comp jPanel7:::p::p, space ::58:x, comp jPanel2:::p::p, space :::p}}</string> 
+              <string>par l {seq l {space :p:20:p, comp jPanel7:::p::p, space ::36:x, comp jPanel2:::p::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -2851,15 +2851,7 @@
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>org.jdesktop.layout.GroupLayout</class> 
-               <void method="setProperty"> 
-                <string>$horizontalGroup</string> 
-                <string>par l {seq {space :::p, par l {seq l {space :p:29:p, par l {comp jLabel1::l:p::p, seq l {comp jLabel6:::p::p, space :p:44:p, par l:::p {comp dataServerURLTextField:::::x:1, comp genomeServerURLTextField::l:p:494:p:1}}}}, seq l {comp editServerPropertiesCB:::p::p, space s:::p, comp jButton1:::p::p}, comp clearGenomeCacheButton::l:p::p}, space :::x}}</string> 
-               </void> 
-               <void method="setProperty"> 
-                <string>$verticalGroup</string> 
-                <string>par l {seq {space :::p, par b {comp editServerPropertiesCB::b:p::p, comp jButton1::b:p::p}, space :::p, par c {comp jLabel1::c:p::p, comp genomeServerURLTextField::c:p::p}, space :::p, par b {comp jLabel6::b:p::p, comp dataServerURLTextField::b:p::p}, space s:::p, comp clearGenomeCacheButton:::p::p, space :::x}}</string> 
-               </void> 
+               <class>com.jformdesigner.runtime.NullLayout</class> 
               </object> 
               <void property="name"> 
                <string>jPanel2</string> 
@@ -2873,6 +2865,17 @@
                 </void> 
                 <void property="name"> 
                  <string>jLabel1</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>35</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>47</int> 
                 </void> 
                </object> 
               </void> 
@@ -2907,6 +2910,21 @@
                  </object> 
                 </void> 
                </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>191</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>41</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>494</int> 
+                </void> 
+               </object> 
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
@@ -2917,6 +2935,17 @@
                 </void> 
                 <void property="name"> 
                  <string>jLabel6</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>35</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>81</int> 
                 </void> 
                </object> 
               </void> 
@@ -2947,6 +2976,21 @@
                  </object> 
                 </void> 
                </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>191</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>75</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>494</int> 
+                </void> 
+               </object> 
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
@@ -2965,6 +3009,48 @@
                   <string>editServerPropertiesCBActionPerformed</string> 
                   <boolean>true</boolean> 
                  </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>6</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>7</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JButton</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Reset to Defaults</string> 
+                </void> 
+                <void property="name"> 
+                 <string>jButton1</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>jButton1ActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>190</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>6</int> 
                 </void> 
                </object> 
               </void> 
@@ -2987,24 +3073,46 @@
                  </object> 
                 </void> 
                </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>6</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>155</int> 
+                </void> 
+               </object> 
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JButton</string> 
+                <string>javax.swing.JCheckBox</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Reset to Defaults</string> 
+                 <string>&lt;html&gt;Automatically check for updated genomes.    &amp;nbsp;&amp;nbsp;&amp;nbsp;   &lt;i&gt;Most users should leave this checked.</string> 
                 </void> 
                 <void property="name"> 
-                 <string>jButton1</string> 
+                 <string>genomeUpdateCB</string> 
                 </void> 
                 <void method="addEvent"> 
                  <object class="com.jformdesigner.model.FormEvent"> 
                   <string>java.awt.event.ActionListener</string> 
                   <string>actionPerformed</string> 
-                  <string>jButton1ActionPerformed</string> 
+                  <string>genomeUpdateCBActionPerformed</string> 
                   <boolean>true</boolean> 
                  </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>14</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>121</int> 
                 </void> 
                </object> 
               </void> 
@@ -3121,11 +3229,11 @@
              <class>org.jdesktop.layout.GroupLayout</class> 
              <void method="setProperty"> 
               <string>$horizontalGroup</string> 
-              <string>par l {seq {par l {seq l {space :p:44:p, comp jLabel25:::p:601:p}, seq l {space :::p, comp useByteRangeCB:::p::p}}, space ::65:x}}</string> 
+              <string>par l {seq l {space :::p, par l {seq l {space :p:38:p, comp jLabel25:::p:601:p}, comp useByteRangeCB::l:p::p}, space ::65:x}}</string> 
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq l {space :::p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::64:x, space :p:6:p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 

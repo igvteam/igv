@@ -56,6 +56,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged;
 
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -180,8 +181,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jLabel6 = new JLabel();
         dataServerURLTextField = new JTextField();
         editServerPropertiesCB = new JCheckBox();
-        clearGenomeCacheButton = new JButton();
         jButton1 = new JButton();
+        clearGenomeCacheButton = new JButton();
+        genomeUpdateCB = new JCheckBox();
         jPanel7 = new JPanel();
         enablePortCB = new JCheckBox();
         portField = new JTextField();
@@ -1391,9 +1393,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel2 ========
                     {
+                        jPanel2.setLayout(null);
 
                         //---- jLabel1 ----
                         jLabel1.setText("Genome Server URL");
+                        jPanel2.add(jLabel1);
+                        jLabel1.setBounds(new Rectangle(new Point(35, 47), jLabel1.getPreferredSize()));
 
                         //---- genomeServerURLTextField ----
                         genomeServerURLTextField.setText("jTextField1");
@@ -1409,9 +1414,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 genomeServerURLTextFieldFocusLost(e);
                             }
                         });
+                        jPanel2.add(genomeServerURLTextField);
+                        genomeServerURLTextField.setBounds(191, 41, 494, genomeServerURLTextField.getPreferredSize().height);
 
                         //---- jLabel6 ----
                         jLabel6.setText("Data Registry URL");
+                        jPanel2.add(jLabel6);
+                        jLabel6.setBounds(new Rectangle(new Point(35, 81), jLabel6.getPreferredSize()));
 
                         //---- dataServerURLTextField ----
                         dataServerURLTextField.setEnabled(false);
@@ -1426,6 +1435,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 dataServerURLTextFieldFocusLost(e);
                             }
                         });
+                        jPanel2.add(dataServerURLTextField);
+                        dataServerURLTextField.setBounds(191, 75, 494, dataServerURLTextField.getPreferredSize().height);
 
                         //---- editServerPropertiesCB ----
                         editServerPropertiesCB.setText("Edit server properties");
@@ -1434,14 +1445,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 editServerPropertiesCBActionPerformed(e);
                             }
                         });
-
-                        //---- clearGenomeCacheButton ----
-                        clearGenomeCacheButton.setText("Clear Genome Cache");
-                        clearGenomeCacheButton.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                clearGenomeCacheButtonActionPerformed(e);
-                            }
-                        });
+                        jPanel2.add(editServerPropertiesCB);
+                        editServerPropertiesCB.setBounds(new Rectangle(new Point(6, 7), editServerPropertiesCB.getPreferredSize()));
 
                         //---- jButton1 ----
                         jButton1.setText("Reset to Defaults");
@@ -1450,50 +1455,42 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 jButton1ActionPerformed(e);
                             }
                         });
+                        jPanel2.add(jButton1);
+                        jButton1.setBounds(new Rectangle(new Point(190, 6), jButton1.getPreferredSize()));
 
-                        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
-                        jPanel2.setLayout(jPanel2Layout);
-                        jPanel2Layout.setHorizontalGroup(
-                            jPanel2Layout.createParallelGroup()
-                                .add(jPanel2Layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .add(jPanel2Layout.createParallelGroup()
-                                        .add(jPanel2Layout.createSequentialGroup()
-                                            .add(29, 29, 29)
-                                            .add(jPanel2Layout.createParallelGroup()
-                                                .add(jLabel1)
-                                                .add(jPanel2Layout.createSequentialGroup()
-                                                    .add(jLabel6)
-                                                    .add(44, 44, 44)
-                                                    .add(jPanel2Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                                        .add(dataServerURLTextField)
-                                                        .add(genomeServerURLTextField, GroupLayout.PREFERRED_SIZE, 494, GroupLayout.PREFERRED_SIZE)))))
-                                        .add(jPanel2Layout.createSequentialGroup()
-                                            .add(editServerPropertiesCB)
-                                            .add(18, 18, 18)
-                                            .add(jButton1))
-                                        .add(clearGenomeCacheButton))
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        );
-                        jPanel2Layout.setVerticalGroup(
-                            jPanel2Layout.createParallelGroup()
-                                .add(jPanel2Layout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .add(jPanel2Layout.createParallelGroup(GroupLayout.BASELINE)
-                                        .add(editServerPropertiesCB)
-                                        .add(jButton1))
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(jPanel2Layout.createParallelGroup(GroupLayout.CENTER)
-                                        .add(jLabel1)
-                                        .add(genomeServerURLTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(LayoutStyle.RELATED)
-                                    .add(jPanel2Layout.createParallelGroup(GroupLayout.BASELINE)
-                                        .add(jLabel6)
-                                        .add(dataServerURLTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .add(18, 18, 18)
-                                    .add(clearGenomeCacheButton)
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        );
+                        //---- clearGenomeCacheButton ----
+                        clearGenomeCacheButton.setText("Clear Genome Cache");
+                        clearGenomeCacheButton.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                clearGenomeCacheButtonActionPerformed(e);
+                            }
+                        });
+                        jPanel2.add(clearGenomeCacheButton);
+                        clearGenomeCacheButton.setBounds(new Rectangle(new Point(6, 155), clearGenomeCacheButton.getPreferredSize()));
+
+                        //---- genomeUpdateCB ----
+                        genomeUpdateCB.setText("<html>Automatically check for updated genomes.    &nbsp;&nbsp;&nbsp;   <i>Most users should leave this checked.");
+                        genomeUpdateCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                genomeUpdateCBActionPerformed(e);
+                            }
+                        });
+                        jPanel2.add(genomeUpdateCB);
+                        genomeUpdateCB.setBounds(new Rectangle(new Point(14, 121), genomeUpdateCB.getPreferredSize()));
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < jPanel2.getComponentCount(); i++) {
+                                Rectangle bounds = jPanel2.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = jPanel2.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            jPanel2.setMinimumSize(preferredSize);
+                            jPanel2.setPreferredSize(preferredSize);
+                        }
                     }
 
                     //======== jPanel7 ========
@@ -1570,9 +1567,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             .add(jPanel3Layout.createSequentialGroup()
                                 .add(20, 20, 20)
                                 .add(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.RELATED, 58, Short.MAX_VALUE)
-                                .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())
+                                .addPreferredGap(LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                                .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     );
                 }
                 advancedPanel.add(jPanel3);
@@ -1598,23 +1594,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel9Layout.setHorizontalGroup(
                         jPanel9Layout.createParallelGroup()
                             .add(jPanel9Layout.createSequentialGroup()
+                                .addContainerGap()
                                 .add(jPanel9Layout.createParallelGroup()
                                     .add(jPanel9Layout.createSequentialGroup()
-                                        .add(44, 44, 44)
+                                        .add(38, 38, 38)
                                         .add(jLabel25, GroupLayout.PREFERRED_SIZE, 601, GroupLayout.PREFERRED_SIZE))
-                                    .add(jPanel9Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .add(useByteRangeCB)))
+                                    .add(useByteRangeCB))
                                 .addContainerGap(65, Short.MAX_VALUE))
                     );
                     jPanel9Layout.setVerticalGroup(
                         jPanel9Layout.createParallelGroup()
-                            .add(jPanel9Layout.createSequentialGroup()
-                                .addContainerGap()
+                            .add(GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
+                                .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
-                                .add(6, 6, 6))
+                                .add(jLabel25)
+                                .addContainerGap())
                     );
                 }
                 advancedPanel.add(jPanel9);
@@ -2042,7 +2037,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMinBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
 
-    }//GEN-LAST:event_samShadeMismatchedBaseCBActionPerformed
+    }
+
+    private void genomeUpdateCBActionPerformed(ActionEvent e) {
+         updatedPreferenceMap.put(
+                PreferenceManager.AUTO_UPDATE_GENOMES,
+                String.valueOf(this.genomeUpdateCB.isSelected()));
+     }
 
     private void samFlagUnmappedPairCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
@@ -2610,12 +2611,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
             filterURL.setText(prefMgr.get(PreferenceManager.SAM_FILTER_URL));
         }
 
+        genomeUpdateCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES));
 
         final boolean mapProbesToGenes = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PROBE_MAPPING_KEY);
         expMapToGeneCB.setSelected(mapProbesToGenes);
         expMapToLociCB.setSelected(!mapProbesToGenes);
 
         normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE));
+
+
 
         expandIconCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_EXPAND_ICON));
 
@@ -2800,8 +2804,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel jLabel6;
     private JTextField dataServerURLTextField;
     private JCheckBox editServerPropertiesCB;
-    private JButton clearGenomeCacheButton;
     private JButton jButton1;
+    private JButton clearGenomeCacheButton;
+    private JCheckBox genomeUpdateCB;
     private JPanel jPanel7;
     private JCheckBox enablePortCB;
     private JTextField portField;

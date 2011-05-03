@@ -163,6 +163,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SHOW_SEQUENCE_TRANSLATION = "SHOW_SEQUENCE_TRANSLATION";
     public static final String MAX_SEQUENCE_RESOLUTION = "MAX_SEQUENCE_RESOLUTION";
 
+    public static final String AUTO_UPDATE_GENOMES = "AUTO_UPDATE_GENOMES";
+
     final public static String GWAS_TRACK_HEIGHT = "GWAS_TRACK_HEIGHT";
     final public static String GWAS_DESCRIPTION_CACHE_SIZE = "GWAS_DESCRIPTION_CACHE_SIZE";
     final public static String GWAS_MIN_POINT_SIZE = "GWAS_MIN_POINT_SIZE";
@@ -242,8 +244,8 @@ public class PreferenceManager implements PropertyManager {
     public boolean getAsBoolean(String key) {
         Boolean boolValue = booleanCache.get(key);
         if (boolValue == null) {
-            String defValue = defaultValues.get(key);
-            boolValue = new Boolean(get(key, defValue));
+            String value = get(key);
+            boolValue = new Boolean(get(key, value));
             if (boolValue == null) {
                 log.error("No default value for: " + key);
                 return false;
@@ -262,7 +264,7 @@ public class PreferenceManager implements PropertyManager {
     public int getAsInt(String key) {
         Number value = (Number) objectCache.get(key);
         if (value == null) {
-            String defValue = defaultValues.get(key);
+            String defValue = get(key);
             value = new Integer(get(key, defValue));
             if (value == null) {
                 log.error("No default value for: " + key);
@@ -282,7 +284,7 @@ public class PreferenceManager implements PropertyManager {
     public float getAsFloat(String key) {
         Number value = (Number) objectCache.get(key);
         if (value == null) {
-            String defValue = defaultValues.get(key);
+            String defValue = get(key);
             value = new Float(get(key, defValue));
             if (value == null) {
                 log.error("No default value for: " + key);
@@ -593,7 +595,6 @@ public class PreferenceManager implements PropertyManager {
     public void overrideDataServerURL(String url) {
         preferences.putOverride(DATA_SERVER_URL_KEY, url);
     }
-
 
 
     public void setShowAttributeView(boolean isShowable) {
@@ -919,6 +920,8 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "false");
         defaultValues.put(MAX_SEQUENCE_RESOLUTION, "2");
+
+        defaultValues.put(AUTO_UPDATE_GENOMES, "true");
 
         defaultValues.put(GWAS_TRACK_HEIGHT, "200");
         defaultValues.put(GWAS_DESCRIPTION_CACHE_SIZE, "10000");
