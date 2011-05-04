@@ -47,15 +47,10 @@ public class IGVHttpUtilsTest extends TestCase {
     }
 
 
-    public void testUserAgent() throws IOException {
 
-        System.setProperty("http.agent", Globals.applicationString());
-        URL url = new URL("http://cabot.broadinstitute.org/cf");
+    public void testGetContentLength() throws IOException {
 
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        String nextLine;
-        while ((nextLine = br.readLine()) != null) {
-            System.out.println(nextLine);
-        }
+        String url = "http://igvdata.broadinstitute.org/genomes/hg18.genome";
+        assertEquals(3617657, IGVHttpUtils.getContentLength(new URL(url)));
     }
 }

@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -30,9 +31,7 @@ import org.broad.tribble.util.SeekableHTTPStream;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,6 +90,99 @@ public class IGVHttpUtils {
     public static void disconnect(URLConnection serverConnection) {
         if (serverConnection != null && serverConnection instanceof HttpURLConnection) {
             ((HttpURLConnection) serverConnection).disconnect();
+        }
+    }
+
+    /**
+     * Create a file from an input stream.
+     *
+     * @param url
+     * @param outputFile
+     * @throws java.io.IOException
+     */
+    public static boolean downloadFile(URL url, File outputFile) throws IOException {
+
+        int maxTries = 1000;
+        int nTries = 0;
+
+        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+        int downloaded = 0;
+        byte[] buf = new byte[64 * 1024]; // 64K buffer
+
+        OutputStream out = null;
+        InputStream is = null;
+        try {
+
+            out = new FileOutputStream(outputFile);
+
+            URLConnection connection = openConnection(url);
+            int contentLength = connection.getContentLength();
+
+            if (contentLength <= 0) {
+                // We don't know the content-length, Try downloading until a loop returns zero bytes
+                log.debug("Content-length = " + contentLength);
+
+                is = connection.getInputStream();
+                int bytesRead;
+                while ((bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                }
+
+
+            } else { // Content length is known,  keep trying until we get it all.
+                while (downloaded < contentLength && nTries < maxTries) {
+                    is = connection.getInputStream();
+                    int bytesRead;
+                    while ((bytesRead = is.read(buf)) != -1) {
+                        out.write(buf, 0, bytesRead);
+                        downloaded += bytesRead;
+                    }
+
+                    if (contentLength > downloaded) {
+                        is.close();
+                        connection = openConnection(url);
+                        connection.setRequestProperty("Range", "bytes=" + downloaded + "-");
+                        nTries++;
+                        log.info("Restarting download from position: " + downloaded);
+                    }
+
+
+                }
+            }
+
+            if (downloaded < contentLength) {
+                out.close();
+                out = null;
+                outputFile.delete();
+                MessageUtils.showMessage("Error downloading file: " + outputFile.getAbsoluteFile());
+                return false;
+            } else {
+                log.info("Download complete.  Transferred " + downloaded + " bytes");
+                return true;
+            }
+
+
+        }
+
+
+        catch (Exception e) {
+            out.close();
+            out = null;
+            outputFile.delete();
+            MessageUtils.showMessage("<html>Error downloading file: " + outputFile.getAbsoluteFile() +
+                    "<br/>" + e.toString());
+            return false;
+
+        }
+        finally {
+            if (is != null) {
+                is.close();
+            }
+            if (out != null) {
+                out.flush();
+                out.close();
+            }
         }
     }
 
@@ -340,7 +432,7 @@ public class IGVHttpUtils {
     }
 
     public static long getContentLength(URL url) {
-        String contentLengthString = getHeaderField(url, "Content-length");
+        String contentLengthString = getHeaderField(url, "Content-Length");
         try {
             return Long.parseLong(contentLengthString);
         } catch (NumberFormatException e) {

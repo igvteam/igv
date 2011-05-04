@@ -267,7 +267,7 @@ public class IGVDatasetParser {
                     } catch (NumberFormatException numberFormatException) {
                         log.error("Column " + tokens[startColumn] + " is not a number");
                         throw new ParserException("Column " + (startColumn + 1) +
-                                " must contain a numeric value." + " Found: " + tokens[startColumn],
+                                " must contain an integer value." + " Found: " + tokens[startColumn],
                                 reader.getCurrentLineNumber(), nextLine);
                     }
 
@@ -279,7 +279,7 @@ public class IGVDatasetParser {
                         } catch (NumberFormatException numberFormatException) {
                             log.error("Column " + tokens[endColumn] + " is not a number");
                             throw new ParserException("Column " + (endColumn + 1) +
-                                    " must contain a numeric value." + " Found: " + tokens[endColumn],
+                                    " must contain an integer value." + " Found: " + tokens[endColumn],
                                     reader.getCurrentLineNumber(), nextLine);
                         }
                     }
