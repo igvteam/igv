@@ -56,24 +56,23 @@ public class SamQueryReaderFactory {
 
     public static AlignmentQueryReader getReader(ResourceLocator locator, boolean requireIndex) throws IOException {
 
-        String path = locator.getPath().toLowerCase();
-
+        String pathLowerCase = locator.getPath().toLowerCase();
 
         AlignmentQueryReader reader = null;
 
         String samFile = locator.getPath();
-        if (path.endsWith(".sam")) {
+        if (pathLowerCase.endsWith(".sam")) {
             reader = new SamQueryTextReader(samFile, requireIndex);
 
-        } else if (path.endsWith("sorted.txt")
-                || path.endsWith(".aligned")
-                || path.endsWith(".aligned.txt")
-                || path.endsWith("bedz")
-                || path.endsWith("bed")
-                || path.endsWith("psl")
-                || path.endsWith("pslx")) {
+        } else if (pathLowerCase.endsWith("sorted.txt")
+                || pathLowerCase.endsWith(".aligned")
+                || pathLowerCase.endsWith(".aligned.txt")
+                || pathLowerCase.endsWith("bedz")
+                || pathLowerCase.endsWith("bed")
+                || pathLowerCase.endsWith("psl")
+                || pathLowerCase.endsWith("pslx")) {
             reader = new GeraldQueryReader(samFile, requireIndex);
-        } else if (path.endsWith(".bam")) {
+        } else if (pathLowerCase.endsWith(".bam")) {
             if (locator.isLocal()) {
                 reader = new BAMQueryReader(new File(samFile));
             } else if (IGVHttpUtils.isURL(locator.getPath().toLowerCase())) {
@@ -88,11 +87,11 @@ public class SamQueryReaderFactory {
             } else {
                 reader = new BAMRemoteQueryReader(locator);
             }
-        } else if (path.endsWith(".bam.list")) {
+        } else if (pathLowerCase.endsWith(".bam.list")) {
             if (locator.getServerURL() != null) {
                 reader = new BAMRemoteQueryReader(locator);
             } else {
-                reader = getMergedReader(path, requireIndex);
+                reader = getMergedReader(locator.getPath(), requireIndex);
             }
         } else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
