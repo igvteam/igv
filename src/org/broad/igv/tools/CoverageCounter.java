@@ -60,6 +60,9 @@ import java.util.List;
  *
  */
 public class CoverageCounter {
+
+    private int countThreshold = 0;
+
     private int upperExpectedInsertSize = 600;
     private int lowerExpectedInsertSize = 200;
 
@@ -125,7 +128,10 @@ public class CoverageCounter {
             String[] opts = options.split(",");
             for (String opt : opts) {
 
-                if (opt.startsWith("l:")) {
+                if(opt.startsWith("t=")) {
+                    String [] tmp = opt.split("=");
+                    countThreshold = Integer.parseInt(tmp[1]);
+                } else if (opt.startsWith("l:")) {
                     String[] tmp = opt.split(":");
                     readGroup = tmp[1];
                 } else if (opt.startsWith("q")) {
@@ -534,62 +540,67 @@ public class CoverageCounter {
             for (Map.Entry<Integer, Counter> entry : counts.entrySet()) {
                 if (entry.getKey() < bucket) {
 
-                    // Divide total count by window size.  This is the average count per
-                    // base over the window,  so 30x coverage remains 30x irrespective of window size.
-                    int bucketStartPosition = entry.getKey() * windowSize;
-                    int bucketEndPosition = bucketStartPosition + windowSize;
-                    if (genome != null) {
-                        Chromosome chromosome = genome.getChromosome(chr);
-                        if (chromosome != null) {
-                            bucketEndPosition = Math.min(bucketEndPosition, chromosome.getLength());
-                        }
-                    }
-                    int bucketSize = bucketEndPosition - bucketStartPosition;
-
                     final Counter counter = entry.getValue();
-                    buffer[0] = ((float) counter.getCount()) / bucketSize;
+                    int totalCount = counter.getCount();
 
-                    if (strandOption > 0) {
-                        buffer[1] = ((float) counter.getCount()) / bucketSize;
-                    }
+                    if (totalCount > countThreshold) {
 
-                    consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
-
-                    for (Map.Entry<Event, WigWriter> entries : writers.entrySet()) {
-                        Event evt = entries.getKey();
-                        WigWriter writer = entries.getValue();
-                        float score = counter.getEventScore(evt);
-                        writer.addData(chr, bucketStartPosition, bucketEndPosition, score);
-                    }
-
-                    if (wigWriter != null) {
-                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
-                    }
-
-                    /*
-                    if (coverageHistogram != null) {
-
-                       List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
-                        if (transcripts != null && !transcripts.isEmpty()) {
-
-                            boolean isCoding = false;
-                            for (Feature t : transcripts) {
-                                Exon exon = ((IGVFeature) t).getExonAt(bucketStartPosition);
-                                if (exon != null && !exon.isUTR(bucketStartPosition)) {
-                                    isCoding = true;
-                                    break;
-                                }
+                        // Divide total count by window size.  This is the average count per
+                        // base over the window,  so 30x coverage remains 30x irrespective of window size.
+                        int bucketStartPosition = entry.getKey() * windowSize;
+                        int bucketEndPosition = bucketStartPosition + windowSize;
+                        if (genome != null) {
+                            Chromosome chromosome = genome.getChromosome(chr);
+                            if (chromosome != null) {
+                                bucketEndPosition = Math.min(bucketEndPosition, chromosome.getLength());
                             }
+                        }
+                        int bucketSize = bucketEndPosition - bucketStartPosition;
 
-                            if (isCoding) {
-                                int[] baseCounts = counter.getBaseCount();
-                                for (int i = 0; i < baseCounts.length; i++) {
-                                    coverageHistogram.addDataPoint(baseCounts[i]);
+                        buffer[0] = ((float) totalCount) / bucketSize;
+
+                        if (strandOption > 0) {
+                            buffer[1] = ((float) counter.getCount()) / bucketSize;
+                        }
+
+                        consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
+
+                        for (Map.Entry<Event, WigWriter> entries : writers.entrySet()) {
+                            Event evt = entries.getKey();
+                            WigWriter writer = entries.getValue();
+                            float score = counter.getEventScore(evt);
+                            writer.addData(chr, bucketStartPosition, bucketEndPosition, score);
+                        }
+
+                        if (wigWriter != null) {
+                            wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
+                        }
+
+                        /*
+                        if (coverageHistogram != null) {
+
+                           List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
+                            if (transcripts != null && !transcripts.isEmpty()) {
+
+                                boolean isCoding = false;
+                                for (Feature t : transcripts) {
+                                    Exon exon = ((IGVFeature) t).getExonAt(bucketStartPosition);
+                                    if (exon != null && !exon.isUTR(bucketStartPosition)) {
+                                        isCoding = true;
+                                        break;
+                                    }
                                 }
-                            }
 
-                   }
-                    */
+                                if (isCoding) {
+                                    int[] baseCounts = counter.getBaseCount();
+                                    for (int i = 0; i < baseCounts.length; i++) {
+                                        coverageHistogram.addDataPoint(baseCounts[i]);
+                                    }
+                                }
+
+                       }
+                        */
+                    }
 
                     bucketsToClose.add(entry.getKey());
                 }

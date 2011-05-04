@@ -142,7 +142,6 @@ public class IgvTools {
         CmdLineParser.Option windowFunctions = parser.addStringOption('f', "windowFunctions");
         CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
         CmdLineParser.Option maxZoomOption = parser.addIntegerOption('z', "maxZoom");
-        CmdLineParser.Option compressOption = parser.addBooleanOption('c', "compressed");
 
         // options for sort
         CmdLineParser.Option maxRecordsOption = parser.addIntegerOption('m', "maxRecords");
@@ -164,7 +163,8 @@ public class IgvTools {
         CmdLineParser.Option strandOption = parser.addIntegerOption('s', "strand");
         //CmdLineParser.Option unOrdered = parser.addBooleanOption('u', "unOrdered");
 
-        // options for coverage
+        // extended options for coverage
+        //  q, t, .....
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
 
 
@@ -355,7 +355,8 @@ public class IgvTools {
 
 
     public void doTile(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
-                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords) throws IOException, PreprocessingException {
+                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
+            throws IOException, PreprocessingException {
         validateIsTilable(ifile);
 
         System.out.println("Tile.  File = " + ifile);
