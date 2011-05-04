@@ -62,12 +62,13 @@ public class TDFDataSource implements DataSource {
 
     private boolean aggregateLikeBins = true;
 
+    boolean normalizeCounts = false;
+    int totalCount = 0;
     float normalizationFactor = 1.0f;
 
 
     public TDFDataSource(TDFReader reader, int trackNumber, String trackName) {
 
-        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
 
         // TODO -- a single reader will be shared across data sources
         this.trackNumber = trackNumber;
@@ -89,16 +90,28 @@ public class TDFDataSource implements DataSource {
             log.error("Unknown genome " + rootGroup.getAttribute("genome"));
             throw new RuntimeException("Unknown genome " + rootGroup.getAttribute("genome"));
         }
+
         try {
-            if (normalizeCounts) {
-                String totalCountString = rootGroup.getAttribute("totalCount");
-                if (totalCountString != null) {
-                    int totalCount = Integer.parseInt(totalCountString);
-                    normalizationFactor = 1.0e6f / totalCount;
-                }
+            String totalCountString = rootGroup.getAttribute("totalCount");
+            if (totalCountString != null) {
+                totalCount = Integer.parseInt(totalCountString);
             }
         } catch (Exception e) {
-            log.error("Error reading attribute 'maxZoom'", e);
+            log.error("Error reading attribute 'totalCount'", e);
+        }
+
+
+        boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
+        setNormalizeCounts(normalizeCounts, 1.0e6f);
+
+    }
+
+    public void setNormalizeCounts(boolean normalizeCounts, float factor) {
+        this.normalizeCounts = normalizeCounts;
+        if (normalizeCounts && totalCount > 0) {
+            normalizationFactor = factor / totalCount;
+        } else {
+            normalizationFactor = 1;
         }
 
     }

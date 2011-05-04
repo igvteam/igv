@@ -41,6 +41,8 @@ public class PeakTrackMenu extends JPopupMenu {
 
     private static Logger log = Logger.getLogger(PeakTrackMenu.class);
     private PeakTrack track;
+    private JRadioButtonMenuItem colorByScoreMI;
+    private JRadioButtonMenuItem colorByFoldMI;
 
     public PeakTrackMenu(PeakTrack t) {
         this.track = t;
@@ -73,7 +75,7 @@ public class PeakTrackMenu extends JPopupMenu {
 
     public void addDisplayModeItems() {
         addSeparator();
-         ButtonGroup group = new ButtonGroup();
+        ButtonGroup group = new ButtonGroup();
 
         Track.DisplayMode displayMode = track.getDisplayMode();
 
@@ -110,32 +112,32 @@ public class PeakTrackMenu extends JPopupMenu {
 
         ButtonGroup group = new ButtonGroup();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Score");
-        m1.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.SCORE);
-        m1.addActionListener(new ActionListener() {
+        colorByScoreMI = new JRadioButtonMenuItem("Score");
+        colorByScoreMI.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.SCORE);
+        colorByScoreMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 PeakTrack.setShadeOption(PeakTrack.ColorOption.SCORE);
                 IGV.getInstance().repaint();
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Fold change");
-        m3.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE);
-        m3.addActionListener(new ActionListener() {
+        colorByFoldMI = new JRadioButtonMenuItem("Fold change");
+        colorByFoldMI.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE);
+        colorByFoldMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 PeakTrack.setShadeOption(PeakTrack.ColorOption.FOLD_CHANGE);
                 IGV.getInstance().repaint();
             }
         });
 
-        add(m1);
-        add(m3);
-        group.add(m1);
-        group.add(m3);
+        add(colorByScoreMI);
+        add(colorByFoldMI);
+        group.add(colorByScoreMI);
+        group.add(colorByFoldMI);
 
     }
 
-        public void addRendererItems() {
+    public void addRendererItems() {
 
 
         addSeparator();
@@ -148,6 +150,8 @@ public class PeakTrackMenu extends JPopupMenu {
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 PeakTrack.setRenderOption(PeakTrack.RenderOption.FEATURE);
+                colorByScoreMI.setEnabled(true);
+                colorByScoreMI.setEnabled(true);
                 IGV.getInstance().repaint();
             }
         });
@@ -157,14 +161,29 @@ public class PeakTrackMenu extends JPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 PeakTrack.setRenderOption(PeakTrack.RenderOption.CHART);
+                colorByScoreMI.setEnabled(false);
+                colorByScoreMI.setEnabled(false);
+                IGV.getInstance().repaint();
+            }
+        });
+
+        JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("Signals");
+        m4.setSelected(track.getRenderOption() == PeakTrack.RenderOption.SIGNAL);
+        m4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                PeakTrack.setRenderOption(PeakTrack.RenderOption.SIGNAL);
+                colorByScoreMI.setEnabled(false);
+                colorByScoreMI.setEnabled(false);
                 IGV.getInstance().repaint();
             }
         });
 
         add(m1);
         add(m3);
+        add(m4);
         group.add(m1);
         group.add(m3);
+        group.add(m4);
 
     }
 }

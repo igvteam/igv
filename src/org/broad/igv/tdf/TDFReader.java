@@ -44,10 +44,6 @@ public class TDFReader {
     static final Logger log = Logger.getLogger(TDFReader.class);
     public static final int GZIP_FLAG = 0x1;
 
-    // Cache to insure there is only 1 reader per file
-    static Map<ResourceLocator, TDFReader> readerCache = new HashMap();
-
-
     private SeekableStream seekableStream = null;
     private int version;
     private Map<String, IndexEntry> datasetIndex;
@@ -70,16 +66,11 @@ public class TDFReader {
         return getReader(new ResourceLocator(path));
     }
 
-    public synchronized static TDFReader getReader(ResourceLocator locator) {
-        TDFReader reader = readerCache.get(locator);
-        if (reader == null) {
-            reader = new TDFReader(locator);
-            readerCache.put(locator, reader);
-        }
-        return reader;
+    public static TDFReader getReader(ResourceLocator locator) {
+       return new TDFReader(locator);
     }
 
-    private TDFReader(ResourceLocator locator) {
+    public TDFReader(ResourceLocator locator) {
         //this.path = path;
         this.locator = locator;
         try {

@@ -49,10 +49,27 @@ public class Peak implements LocusScore {
         this.name = name;
         this.start = start;
         this.timeScores = timeScores;
-        float firstScore = Math.max(1, timeScores[0]);
-        float lastScore = Math.max(1, timeScores[timeScores.length - 1]);
-        foldChange = firstScore < lastScore ? lastScore / firstScore : firstScore / lastScore;
-        dynamicScore = (float) (Math.log(lastScore / firstScore) / Globals.log2);
+
+        float minScore = timeScores[0];
+        float maxScore = timeScores[0];
+        int minIdx = 0;
+        int maxIdx = 0;
+        for (int i = 0; i < timeScores.length; i++) {
+            if (timeScores[i] < minScore) {
+                minIdx = i;
+                minScore = timeScores[i];
+            }
+            if (timeScores[i] > maxScore) {
+                maxIdx = i;
+                maxScore = timeScores[i];
+            }
+        }
+
+        foldChange = (maxScore + 1) / (minScore + 1);
+        dynamicScore =  (maxScore < 30) ?  0 : (float) (Math.log(foldChange) / Globals.log2);
+        if(minIdx > maxIdx) {
+            dynamicScore = -dynamicScore;
+        }
     }
 
     public String getChr() {

@@ -656,7 +656,7 @@ public class CoverageCounter {
             this.start = start;
             this.end = end;
             baseCount = new int[end - start];
-            ref = SequenceManager.readSequence(genome.getId(), chr, start, end);
+            //ref = SequenceManager.readSequence(genome.getId(), chr, start, end);
         }
 
 

@@ -38,6 +38,8 @@ public class PeakParser {
     private int nTimePoints;
     private String [] timePointHeadings;
     private TrackProperties trackProperties;
+    private String signalPath
+            ;
 
     public List<Peak> loadPeaks(String path) throws IOException {
 
@@ -52,6 +54,12 @@ public class PeakParser {
             while ((nextLine = reader.readLine()) != null) {
                 if (nextLine.startsWith("#")) {
 
+                    if(nextLine.startsWith("#signals")) {
+                        String [] tokens = nextLine.split("=");
+                        if(tokens.length > 1) {
+                            signalPath = tokens[1];
+                        }
+                    }
                     if(nextLine.startsWith("#track")) {
                         trackProperties = new TrackProperties();
                         ParsingUtils.parseTrackLine(nextLine, trackProperties);
@@ -103,5 +111,9 @@ public class PeakParser {
 
     public TrackProperties getTrackProperties() {
         return trackProperties;
+    }
+
+    public String getSignalPath() {
+        return signalPath;
     }
 }

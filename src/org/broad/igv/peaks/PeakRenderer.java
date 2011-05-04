@@ -97,8 +97,21 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
         }
 
+        if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.SIGNAL) {
+            String chr = context.getChr();
+            int start = (int) context.getOrigin();
+            int end = (int) context.getEndLocation();
+            int zoom = context.getZoom();
+
+            List<LocusScore> signals =
+                    ((PeakTrack) track).signalSource.getSummaryScoresForRange(chr, start, end, zoom);
+            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, h - 1);
+
+            chartRenderer.render(signals, context, signalRect, track);
+        }
+
         if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.CHART) {
-            Rectangle signalRect = new Rectangle(rect.x, rect.y+1, rect.width, h-1);
+            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, h - 1);
             chartRenderer.render(peakList, context, signalRect, track);
         }
 
@@ -137,7 +150,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
                 // vary alpha from .3 -> 1 over range 3.3 -> 1.58 in steps of 10
                 int shadeStep = (int) ((Math.abs(score) - 1.58) / (3.3 - 1.58) * 10);
                 alpha = Math.max(0.3f, (Math.min(1f, 0.3f + shadeStep * 0.1f)));
-                fgColorComps = (score > 0 ? blueComps : redComps);
+                fgColorComps = (score < 0 ? blueComps : redComps);
             }
         }
 
