@@ -404,7 +404,7 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
-                    if (FileUtils.downloadFile(genomeArchiveURL, tmpFile)) {
+                    if (IGVHttpUtils.downloadFile(genomeArchiveURL, tmpFile)) {
                         FileUtils.copyFile(tmpFile, archiveFile);
                         tmpFile.deleteOnExit();
                     }
@@ -412,7 +412,7 @@ public class GenomeManager {
 
             } else {
                 // Copy file directly from the server to local cache.
-                FileUtils.downloadFile(genomeArchiveURL, archiveFile);
+                IGVHttpUtils.downloadFile(genomeArchiveURL, archiveFile);
             }
         }
         catch (Exception e) {
