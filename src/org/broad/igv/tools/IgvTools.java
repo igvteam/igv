@@ -167,6 +167,9 @@ public class IgvTools {
         //  q, t, .....
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
 
+        // Trackline
+        CmdLineParser.Option trackLineOption = parser.addStringOption('l', "trackLine");
+
 
         // Parse optional arguments (switches, etc)
         try {
@@ -227,12 +230,13 @@ public class IgvTools {
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
                 String coverageOpt = (String) parser.getOptionValue(coverageOptions);
+                String trackLine = (String) parser.getOptionValue(trackLineOption);
 
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
                     int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
                     doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
-                            strandOptionValue, coverageOpt);
+                            strandOptionValue, coverageOpt, trackLine);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                     doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
@@ -441,7 +445,7 @@ public class IgvTools {
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
                         Collection<WindowFunction> windowFunctions,
                         int windowSizeValue, int extFactorValue, int strandOption,
-                        String coverageOpt) throws IOException {
+                        String coverageOpt, String trackLine) throws IOException {
 
 
         System.out.println("Computing coverage.  File = " + ifile);
@@ -482,7 +486,7 @@ public class IgvTools {
         }
 
         Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt);
+        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt, trackLine);
         p.finish();
 
         System.out.flush();

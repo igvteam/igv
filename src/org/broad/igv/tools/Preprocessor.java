@@ -700,9 +700,10 @@ public class Preprocessor implements DataConsumer {
     }
 
     public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
-                      File wigFile, int strandOption, String coverageOpt) throws IOException {
+                      File wigFile, int strandOption, String coverageOpt,
+                      String trackLine) throws IOException {
         setNZoom(maxZoomValue);
-        setTrackParameters(TrackType.COVERAGE, null, new String[]{iFile});
+        setTrackParameters(TrackType.COVERAGE, trackLine, new String[]{iFile});
         this.setSkipZeroes(true);
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
