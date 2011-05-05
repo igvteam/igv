@@ -109,6 +109,10 @@ public class Preprocessor implements DataConsumer {
      */
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
 
+        if(trackLine != null) {
+            System.out.println(trackLine);
+        }
+
         if (outputFile != null && writer == null) {
             writer = new TDFWriter(outputFile, genome.getId(), trackType, trackLine, trackNames, windowFunctions, compressed);
             nTracks = trackNames.length;

@@ -168,7 +168,7 @@ public class IgvTools {
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
 
         // Trackline
-        CmdLineParser.Option trackLineOption = parser.addStringOption('l', "trackLine");
+        CmdLineParser.Option colorOption = parser.addStringOption('c', "color");
 
 
         // Parse optional arguments (switches, etc)
@@ -230,7 +230,12 @@ public class IgvTools {
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
                 String coverageOpt = (String) parser.getOptionValue(coverageOptions);
-                String trackLine = (String) parser.getOptionValue(trackLineOption);
+
+                String trackLine = null;
+                String color = (String) parser.getOptionValue(colorOption);
+                if(color != null) {
+                     trackLine = "track color=\"" + color + "\"";
+                }
 
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
