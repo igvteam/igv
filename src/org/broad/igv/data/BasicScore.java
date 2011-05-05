@@ -82,8 +82,20 @@ public class BasicScore implements LocusScore {
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
-        return "Value: " + score;
-        //throw new UnsupportedOperationException("Not supported yet.");
+        StringBuffer buf = new StringBuffer();
+        buf.append("Value: " + score);
+        buf.append("<br>Position: ");
+        if(getChr() != null) {
+            buf.append(getChr() + ":");
+        }
+        buf.append(getStart() + 1);
+        if(end > start + 1) {
+            buf.append("-" + end);
+        }
+        if(windowFunction != null) {
+            buf.append("<br>Window function: " + windowFunction);
+        }
+        return buf.toString();
     }
 
     public int getExtendedStart() {

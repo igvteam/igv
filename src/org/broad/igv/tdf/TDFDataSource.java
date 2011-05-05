@@ -49,7 +49,7 @@ import java.util.List;
 public class TDFDataSource implements DataSource {
 
     private static Logger log = Logger.getLogger(TDFDataSource.class);
-    // TODO -- read from file
+
     int maxPrecomputedZoom = 6;
     TDFReader reader;
     private int trackNumber = 0;
@@ -227,10 +227,13 @@ public class TDFDataSource implements DataSource {
             }
             endLocation = Math.min(endLocation, chrLength);
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+            // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+            //int maxZoom = (int) (Math.log(chrLength / 700) / Globals.log2) + 1;
+            //int z = Math.min(zReq, maxZoom);
             int nTiles = (int) Math.pow(2, zoom);
-            float binSize = (((float) chrLength) / nTiles) / 700;
+            double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
 
-            scores = computeSummaryScores(chr, startLocation, endLocation, zoom, binSize);
+            scores = computeSummaryScores(chr, startLocation, endLocation, binSize);
         }
         return scores;
     }
@@ -246,7 +249,7 @@ public class TDFDataSource implements DataSource {
         }
     }
 
-    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, int zoom, float binSize) {
+    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, double binSize) {
 
         List<LocusScore> scores = new ArrayList(1000);
 

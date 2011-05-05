@@ -131,6 +131,7 @@ public class CoverageCounter {
                 if(opt.startsWith("t=")) {
                     String [] tmp = opt.split("=");
                     countThreshold = Integer.parseInt(tmp[1]);
+                    System.out.println("Count threshold = " + countThreshold);
                 } else if (opt.startsWith("l:")) {
                     String[] tmp = opt.split(":");
                     readGroup = tmp[1];

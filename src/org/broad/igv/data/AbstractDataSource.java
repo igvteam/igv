@@ -146,11 +146,11 @@ public abstract class AbstractDataSource implements DataSource {
 
     }
 
-    private List<SummaryTile> getSummaryTilesForRange(String chr, int startLocation, int endLocation, int z) {
+    private List<SummaryTile> getSummaryTilesForRange(String chr, int startLocation, int endLocation, int zReq) {
         int startTile;
         int endTile;
-        if (z < getNumZoomLevels(chr)) {
-            return getPrecomputedSummaryTiles(chr, startLocation, endLocation, z);
+        if (zReq < getNumZoomLevels(chr)) {
+            return getPrecomputedSummaryTiles(chr, startLocation, endLocation, zReq);
         } else {
             int chrLength = getChrLength(chr);
             if (chrLength == 0) {
@@ -159,8 +159,13 @@ public abstract class AbstractDataSource implements DataSource {
             endLocation = Math.min(endLocation, chrLength);
 
             // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+            //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;
+            //int z = Math.min(zReq, maxZoom);
+            int z = zReq;
             int nTiles = (int) Math.pow(2, z);
-            float binSize = (((float) chrLength) / nTiles) / 700;
+            double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
+
+
 
             int adjustedStart = Math.max(0, startLocation);
             int adjustedEnd = Math.min(chrLength, endLocation);
@@ -214,7 +219,7 @@ public abstract class AbstractDataSource implements DataSource {
      * @return
      */
 
-    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, float binSize) {
+    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, double binSize) {
 
 
         // TODO -- we should use an index here
@@ -300,14 +305,14 @@ public abstract class AbstractDataSource implements DataSource {
                 // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
                 // TODO-- look at computing variable length bins to start with
 
-                Bin currentBin = null;
+                /*Bin currentBin = null;
                 for (int b = 0; b < bins.length; b++) {
                     if (bins[b] != null) {
                         if (b < bins.length) {
                             if (currentBin == null) {
                                 currentBin = bins[b];
                             } else {
-                                if (currentBin.isExtension(bins[b])) {
+                                if (false) { ///currentBin.isExtension(bins[b])) {
                                     currentBin.setEnd(bins[b].getEnd());
                                 } else {
                                     scores.add(currentBin);
@@ -319,8 +324,11 @@ public abstract class AbstractDataSource implements DataSource {
                 }
                 if (currentBin != null) {
                     scores.add(currentBin);
+                }*/
+                for(Bin bin : bins) {
+                    if(bin != null)
+                    scores.add(bin);
                 }
-
 
                 tile.addAllScores(scores);
             }

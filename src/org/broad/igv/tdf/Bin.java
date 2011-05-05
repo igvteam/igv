@@ -150,6 +150,14 @@ public class Bin implements LocusScore {
                 sb.append("<br>...");
             }
         }
+        sb.append("<br>Position: ");
+        if(getChr() != null) {
+            sb.append(getChr() + ":");
+        }
+        sb.append(getStart() + 1);
+        if(end > start + 1) {
+            sb.append("-" + end);
+        }
 
         return sb.toString();
     }
