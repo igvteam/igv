@@ -539,7 +539,7 @@ public class CoverageGui extends JDialog {
                     int strandOption = -1;
 
                     runButton.setEnabled(false);
-                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, strandOption, null);
+                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, strandOption, null, null);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }
