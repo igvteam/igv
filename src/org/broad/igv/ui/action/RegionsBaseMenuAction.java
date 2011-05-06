@@ -28,6 +28,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.RegionNavigatorDialog;
 import org.broad.igv.ui.util.FileChooser;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -60,6 +61,14 @@ public class RegionsBaseMenuAction extends MenuAction {
     }
 
     public final void importExportRegionsOfInterest(Direction direction) {
+        //dhmay adding 20110505: There was an intermittent bug in which the regions list was not getting
+        //synched when the user made changes to the regions table in the region navigator dialog.  I'm addressing
+        //this with a change to RegionNavigatorDialog, but, due to the intermittent nature of the bug, I'm adding
+        //a catchall here, too.  This synchs everything from the nav dialog.
+        RegionNavigatorDialog navDialog = RegionNavigatorDialog.getActiveInstance();
+        if (navDialog != null)
+            navDialog.updateROIsFromRegionTable();
+
         File exportRegionDirectory = PreferenceManager.getInstance().getLastExportedRegionDirectory();
         if (exportRegionDirectory == null) {
             exportRegionDirectory = Globals.getUserDirectory();

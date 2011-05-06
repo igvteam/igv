@@ -262,41 +262,60 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             int firstRow = e.getFirstRow();
             //range checking because this method gets called after a clear event, and we don't want to
             //try to find an updated region then
-            if (e.getFirstRow() > regions.size() - 1)
+            if (firstRow > regions.size() - 1)
                 return;
-
-            //must convert row index from view to model, in case of sorting, filtering
-            int rowIdx = 0;
-
-            try {
-                rowIdx = regionTable.getRowSorter().convertRowIndexToModel(e.getFirstRow());
-            }
-            catch (ArrayIndexOutOfBoundsException x) {
-                return;
-            }
-
-            RegionOfInterest region = regions.get(rowIdx);
-            switch (e.getColumn()) {
-                case TABLE_COLINDEX_DESC:
-                    Object descObject = regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_DESC);
-                    if (descObject != null)
-                        region.setDescription(descObject.toString());
-                    break;
-                case TABLE_COLINDEX_START:
-                    //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
-                    int storeStartValue =
-                            Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_START) - 1);
-                    region.setStart(storeStartValue);
-                    break;
-                case TABLE_COLINDEX_END:
-                    //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
-                    int storeEndValue =
-                            Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_END) - 1);
-                    region.setEnd(storeEndValue);
-                    break;
-            }
-
+            //update all rows affected
+            for (int i=firstRow; i<=Math.max(firstRow, Math.min(regionTable.getRowCount(), e.getLastRow())); i++)
+                updateROIFromRegionTable(i);
         }
+    }
+    
+    /**
+     * Updates all ROIs with the values currently stored in the region table
+     */
+    public void updateROIsFromRegionTable() {
+        for (int i=0; i<regionTable.getRowSorter().getModelRowCount(); i++)
+            updateROIFromRegionTable(i);
+    }
+
+    /**
+     * Updates a single ROI with the values currently stored in the region table
+     * @param tableRow: the viewable index of the table row
+     */
+    public void updateROIFromRegionTable(int tableRow) {
+        List<RegionOfInterest> regions = retrieveRegionsAsList();
+
+        if (tableRow > regionTable.getRowCount() - 1)
+            return;
+
+        //must convert row index from view to model, in case of sorting, filtering
+        int rowIdx = 0;
+
+        try {
+            rowIdx = regionTable.getRowSorter().convertRowIndexToModel(tableRow);
+        }
+        catch (ArrayIndexOutOfBoundsException x) {
+            return;
+        }
+
+        RegionOfInterest region = regions.get(rowIdx);
+
+        //dhmay changing 20110505: just update region values from all columns, instead of checking the event
+        //to see which column is affected. This is in response to an intermittent bug.
+
+        Object descObject = regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_DESC);
+        if (descObject != null)
+            region.setDescription(descObject.toString());
+
+        //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
+        int storeStartValue =
+                Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_START) - 1);
+        region.setStart(storeStartValue);
+
+        //stored values are 0-based, viewed values are 1-based.  Check for negative number just in case
+        int storeEndValue =
+                Math.max(0, (Integer) regionTableModel.getValueAt(rowIdx, TABLE_COLINDEX_END) - 1);
+        region.setEnd(storeEndValue);
     }
 
     /**

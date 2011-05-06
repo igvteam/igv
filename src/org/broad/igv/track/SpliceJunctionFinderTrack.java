@@ -157,8 +157,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                                     {
                                         junction = new SpliceJunctionFeature(chr, junctionStart, junctionEnd,
                                                 isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
-//    if ((junctionStart == 198358190) && (junctionEnd == 198358922))
-//        System.err.println("woot!");
                                         endJunctionsMap.put(junctionEnd, junction);
                                         spliceJunctionFeatures.add(junction);
                                     }
