@@ -76,6 +76,8 @@ public interface Track extends Persistable {
 
     public TrackType getTrackType();
 
+    public TrackProperties getProperties();
+        
     public void setHeight(int preferredHeight);
 
     public void setTop(int top);
@@ -142,7 +144,7 @@ public interface Track extends Persistable {
 
     public Collection<WindowFunction> getAvailableWindowFunctions();
 
-    public void setTrackProperties(TrackProperties trackProperties);
+    public void setProperties(TrackProperties trackProperties);
 
     Feature getFeatureAtMousePosition(TrackClickEvent e);
 

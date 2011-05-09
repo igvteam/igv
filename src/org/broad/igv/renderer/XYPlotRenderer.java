@@ -31,6 +31,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 
@@ -270,6 +271,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
         // Draw boundaries if there is room
         if (adjustedRect.getHeight() >= 10) {
 
+            TrackProperties pros = track.getProperties();
+
+
             // midline
 
             DataRange axisDefinition = track.getDataRange();
@@ -296,8 +300,15 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
             // Draw the baseline -- todo, this is a wig track option?
             double zeroValue = axisDefinition.getBaseline();
-            int zeroX = computeYPixelValue(adjustedRect, axisDefinition, zeroValue);
-            borderGraphics.drawLine(adjustedRect.x, zeroX, adjustedRect.x + adjustedRect.width, zeroX);
+            int zeroY = computeYPixelValue(adjustedRect, axisDefinition, zeroValue);
+            borderGraphics.drawLine(adjustedRect.x, zeroY, adjustedRect.x + adjustedRect.width, zeroY);
+
+            // Optionally draw "Y" line  (UCSC track line option)
+            if(pros != null && pros.isDrawYLine()) {
+                int yLine = computeYPixelValue(adjustedRect, axisDefinition, pros.getyLine());
+                borderGraphics.drawLine(adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
+            }
+
 
             // If the chart has + and - numbers draw both borders or none. This
             // needs documented somewhere.

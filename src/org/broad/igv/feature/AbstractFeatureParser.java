@@ -25,7 +25,6 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
@@ -129,7 +128,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             track.setTrackType(trackType);
         }
         if (trackProperties != null) {
-            track.setTrackProperties(trackProperties);
+            track.setProperties(trackProperties);
         }
 
         List<FeatureTrack> tracks = new ArrayList();

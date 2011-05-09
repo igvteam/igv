@@ -95,7 +95,7 @@ public class TrackProperties {
 
     private float neutralToValue = Float.NaN;
 
-    private boolean drawMidValue = true;
+    private boolean drawYLine = true;
 
     private Class rendererClass;
 
@@ -110,6 +110,8 @@ public class TrackProperties {
     private int featureVisibilityWindow = -1;
 
     private boolean logScale;
+
+    private float yLine;
 
     public TrackProperties() {
 
@@ -304,12 +306,12 @@ public class TrackProperties {
         this.midColor = midColor;
     }
 
-    public boolean isDrawMidValue() {
-        return drawMidValue;
+    public boolean isDrawYLine() {
+        return drawYLine;
     }
 
-    public void setDrawMidValue(boolean drawMidValue) {
-        this.drawMidValue = drawMidValue;
+    public void setDrawYLine(boolean drawYLine) {
+        this.drawYLine = drawYLine;
     }
 
     public int getMinHeight() {
@@ -343,6 +345,16 @@ public class TrackProperties {
     public void setNeutralToValue(float neutralToValue) {
         this.neutralToValue = neutralToValue;
     }
+
+    public float getyLine() {
+        return yLine;
+    }
+
+    public void setyLine(float yLine) {
+        this.yLine = yLine;
+    }
+
+
 
 
 }

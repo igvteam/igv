@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -163,8 +162,8 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void setTrackProperties(TrackProperties trackProperties) {
-        super.setTrackProperties(trackProperties);
+    public void setProperties(TrackProperties trackProperties) {
+        super.setProperties(trackProperties);
         if (trackProperties.getFeatureVisibilityWindow() >= 0) {
             setVisibilityWindow(trackProperties.getFeatureVisibilityWindow());
         }

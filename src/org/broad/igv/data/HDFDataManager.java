@@ -1264,7 +1264,7 @@ public class HDFDataManager {
             }
             try {
                 String drawMidValue = dataReader.readStringAttribute(group, "track.drawMidValue");
-                getTrackProperties().setDrawMidValue(Boolean.valueOf(drawMidValue));
+                getTrackProperties().setDrawYLine(Boolean.valueOf(drawMidValue));
             } catch (Exception e) {
             }
             try {

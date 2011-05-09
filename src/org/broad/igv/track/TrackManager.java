@@ -25,7 +25,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.GeneManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.IGVFeatureRenderer;
@@ -712,14 +711,13 @@ public class TrackManager {
             return;
         }
 
-        Map<String, List<org.broad.tribble.Feature>> featureMap = null;
-        if (geneManager != null) {
-            featureMap = geneManager.getChromsomeGeneMap();
-        } else {
-            featureMap = new HashMap<String, List<org.broad.tribble.Feature>>();
+        Map<String, List<org.broad.tribble.Feature>> featureMap = geneManager.getChromsomeGeneMap();
+       
+        String name = geneManager.getGeneTrackName();
+        if(name == null) {
+            name = "Genes";
         }
-
-        FeatureTrack geneFeatureTrack = new FeatureTrack("Genes", new FeatureCollectionSource(featureMap, genome));
+        FeatureTrack geneFeatureTrack = new FeatureTrack(name, new FeatureCollectionSource(featureMap, genome));
 
         geneFeatureTrack.setMinimumHeight(5);
         geneFeatureTrack.setHeight(35);
@@ -731,7 +729,7 @@ public class TrackManager {
         if (geneManager != null) {
 
             if (geneManager.getTrackProperties() != null) {
-                geneFeatureTrack.setTrackProperties(geneManager.getTrackProperties());
+                geneFeatureTrack.setProperties(geneManager.getTrackProperties());
             }
             String geneTrackName = geneManager.getGeneTrackName();
 

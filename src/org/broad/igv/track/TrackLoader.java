@@ -37,7 +37,6 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
@@ -226,7 +225,7 @@ public class TrackLoader {
                     track.setUrl(locator.getUrl());
                 }
                 if (tp != null) {
-                    track.setTrackProperties(tp);
+                    track.setProperties(tp);
                 }
                 if (locator.getColor() != null) {
                     track.setColor(locator.getColor());
@@ -276,7 +275,7 @@ public class TrackLoader {
                     t.setTrackType(ffh.getTrackType());
                 }
                 if (ffh.getTrackProperties() != null) {
-                    t.setTrackProperties(ffh.getTrackProperties());
+                    t.setProperties(ffh.getTrackProperties());
                 }
 
                 if (ffh.getTrackType() == TrackType.REPMASK) {
@@ -477,7 +476,7 @@ public class TrackLoader {
             String trackId = path + "_" + trackName;
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
             track.setRendererClass(HeatmapRenderer.class);
-            track.setTrackProperties(trackProperties);
+            track.setProperties(trackProperties);
             newTracks.add(track);
         }
     }
@@ -506,7 +505,7 @@ public class TrackLoader {
 
             // track.setRendererClass(HeatmapRenderer.class);
             track.setTrackType(ds.getType());
-            track.setTrackProperties(trackProperties);
+            track.setProperties(trackProperties);
 
             if (type == TrackType.ALLELE_FREQUENCY) {
                 track.setRendererClass(ScatterplotRenderer.class);
@@ -604,7 +603,7 @@ public class TrackLoader {
 
             String displayName = (label == null || multiTrack) ? heading : label;
             track.setName(displayName);
-            track.setTrackProperties(props);
+            track.setProperties(props);
 
             track.setTrackType(ds.getType());
 
@@ -663,7 +662,7 @@ public class TrackLoader {
             track.setName(displayName);
             track.setTrackType(type);
             if (props != null) {
-                track.setTrackProperties(props);
+                track.setProperties(props);
             }
             newTracks.add(track);
             trackNumber++;
@@ -682,7 +681,7 @@ public class TrackLoader {
 
         EWigTrack track = new EWigTrack(locator);
         if (props != null) {
-            track.setTrackProperties(props);
+            track.setProperties(props);
         }
         track.setName(locator.getTrackName());
         newTracks.add(track);
@@ -909,7 +908,7 @@ public class TrackLoader {
             track.setTrackType(ds.getType());
 
             if (props != null) {
-                track.setTrackProperties(props);
+                track.setProperties(props);
             }
 
             newTracks.add(track);
@@ -971,7 +970,7 @@ public class TrackLoader {
                 throw new RuntimeException(fe);
             }
             if (trackProperties != null) {
-                track.setTrackProperties(trackProperties);
+                track.setProperties(trackProperties);
             }
 
             tracks.add(track);

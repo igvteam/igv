@@ -106,6 +106,7 @@ public abstract class AbstractTrack implements Track {
     protected int visibilityWindow = -1;
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
     private int preferredHeight = 25;
+    private TrackProperties properties;
 
 
     public AbstractTrack(
@@ -483,12 +484,12 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void setTrackProperties(TrackProperties trackProperties) {
-
-        this.itemRGB = trackProperties.isItemRGB();
-        this.useScore = trackProperties.isUseScore();
-        this.viewLimitMin = trackProperties.getMinValue();
-        this.viewLimitMax = trackProperties.getMaxValue();
+    public void setProperties(TrackProperties properties) {
+        this.properties = properties;
+        this.itemRGB = properties.isItemRGB();
+        this.useScore = properties.isUseScore();
+        this.viewLimitMin = properties.getMinValue();
+        this.viewLimitMax = properties.getMaxValue();
 
         // If view limits are explicitly set turn off autoscale
         // TODO -- get rid of this ugly instance of and casting business
@@ -497,12 +498,12 @@ public abstract class AbstractTrack implements Track {
         }
 
         // Color scale properties
-        if (!trackProperties.isAutoScale()) {
+        if (!properties.isAutoScale()) {
 
-            float min = trackProperties.getMinValue();
-            float max = trackProperties.getMaxValue();
+            float min = properties.getMinValue();
+            float max = properties.getMaxValue();
 
-            float mid = trackProperties.getMidValue();
+            float mid = properties.getMidValue();
             if (Float.isNaN(mid)) {
                 if (min >= 0) {
                     mid = Math.max(min, 0);
@@ -515,21 +516,21 @@ public abstract class AbstractTrack implements Track {
             DataRange dr = new DataRange(min, mid, max);
             setDataRange(dr);
 
-            if (trackProperties.isLogScale()) {
+            if (properties.isLogScale()) {
                 dr.setType(DataRange.Type.LOG);
             }
 
             // If the user has explicity set a data range and colors apply to heatmap as well
-            Color maxColor = trackProperties.getColor();
-            Color minColor = trackProperties.getAltColor();
+            Color maxColor = properties.getColor();
+            Color minColor = properties.getAltColor();
             if (maxColor != null && minColor != null) {
 
-                float tmp = trackProperties.getNeutralFromValue();
+                float tmp = properties.getNeutralFromValue();
                 float neutralFrom = Float.isNaN(tmp) ? mid : tmp;
-                tmp = trackProperties.getNeutralToValue();
+                tmp = properties.getNeutralToValue();
                 float neutralTo = Float.isNaN(tmp) ? mid : tmp;
 
-                Color midColor = trackProperties.getMidColor();
+                Color midColor = properties.getMidColor();
                 if (midColor == null) {
                     midColor = Color.white;
                 }
@@ -540,32 +541,32 @@ public abstract class AbstractTrack implements Track {
         }
 
 
-        if (trackProperties.getName() != null) {
-            name = trackProperties.getName();
+        if (properties.getName() != null) {
+            name = properties.getName();
         }
-        if (trackProperties.getColor() != null) {
-            setColor(trackProperties.getColor());
+        if (properties.getColor() != null) {
+            setColor(properties.getColor());
         }
-        if (trackProperties.getAltColor() != null) {
-            setAltColor(trackProperties.getAltColor());
+        if (properties.getAltColor() != null) {
+            setAltColor(properties.getAltColor());
         }
-        if (trackProperties.getMidColor() != null) {
+        if (properties.getMidColor() != null) {
             //setMidColor(trackProperties.getMidColor());
         }
-        if (trackProperties.getHeight() > 0) {
-            setHeight(trackProperties.getHeight());
+        if (properties.getHeight() > 0) {
+            setHeight(properties.getHeight());
         }
-        if (trackProperties.getMinHeight() > 0) {
-            setMinimumHeight(trackProperties.getMinHeight());
+        if (properties.getMinHeight() > 0) {
+            setMinimumHeight(properties.getMinHeight());
         }
-        if (trackProperties.getRendererClass() != null) {
-            setRendererClass(trackProperties.getRendererClass());
+        if (properties.getRendererClass() != null) {
+            setRendererClass(properties.getRendererClass());
         }
-        if (trackProperties.getWindowingFunction() != null) {
-            setWindowFunction(trackProperties.getWindowingFunction());
+        if (properties.getWindowingFunction() != null) {
+            setWindowFunction(properties.getWindowingFunction());
         }
-        if (trackProperties.getUrl() != null) {
-            setUrl(trackProperties.getUrl());
+        if (properties.getUrl() != null) {
+            setUrl(properties.getUrl());
         }
 
     }
@@ -960,5 +961,9 @@ public abstract class AbstractTrack implements Track {
 
     public void setPreferredHeight(int preferredHeight) {
         this.preferredHeight = preferredHeight;
+    }
+
+    public TrackProperties getProperties() {
+        return properties;
     }
 }

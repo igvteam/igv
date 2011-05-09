@@ -159,7 +159,7 @@ public class GFFParser implements FeatureParser {
             track.setRendererClass(GeneTrackRenderer.class);
 
             if (trackProperties != null) {
-                track.setTrackProperties(trackProperties);
+                track.setProperties(trackProperties);
             }
 
             List<FeatureTrack> tracks = new ArrayList();
@@ -212,6 +212,18 @@ public class GFFParser implements FeatureParser {
                         if (kv.length > 1) {
                             featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
                         }
+                    } else if (line.startsWith("#displayName")) {
+                        String [] tokens = line.split("=");
+                        if(tokens.length < 2) {
+                            helper.setNameFields(null);
+                        }
+                        else {
+                            String [] fields = tokens[1].split(",");
+                            helper.setNameFields(fields);
+                        }
+
+                    } else if (line.startsWith("#colorBy")) {
+
                     }
                     continue;
                 }
@@ -706,13 +718,27 @@ public class GFFParser implements FeatureParser {
         void setUrlDecoding(boolean b);
 
         String getName(Map<String, String> attributes);
+
+        void setNameFields(String[] fields);
     }
 
     public static class GFF2Helper implements Helper {
 
         static String[] idFields = {"systematic_id", "ID", "transcript_id", "Name", "name", "primary_name", "gene", "Locus", "locus", "alias"};
-        static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus", "Alias", "alias", "systematic_id", "ID"};
+        static String[] DEFAULT_NAME_FIELDS = {"gene", "Name", "name", "primary_name", "Locus", "locus", "Alias", "alias", "systematic_id", "ID"};
 
+        private String[] nameFields;
+
+        GFF2Helper() {
+            this(DEFAULT_NAME_FIELDS);
+        }
+
+        GFF2Helper(String[] nameFields) {
+            if (nameFields != null) {
+                this.nameFields = nameFields;
+            }
+
+        }
 
         public void setUrlDecoding(boolean b) {
             // Ignored,  GFF files are never url DECODED
@@ -776,25 +802,39 @@ public class GFFParser implements FeatureParser {
 
         public String getName(Map<String, String> attributes) {
 
-            if (attributes.size() == 0) {
-                return null;
-            }
-
-            for (String nf : nameFields) {
-                if (attributes.containsKey(nf)) {
-                    return attributes.get(nf);
+            if (attributes.size() > 0 && nameFields != null) {
+                for (String nf : nameFields) {
+                    if (attributes.containsKey(nf)) {
+                        return attributes.get(nf);
+                    }
                 }
             }
 
-            return attributes.values().iterator().next();
+            return null;
+        }
 
+        public void setNameFields(String[] nameFields) {
+            this.nameFields = nameFields;
         }
     }
 
     public static class GFF3Helper implements Helper {
 
-        static String[] nameFields = {"Name", "Alias", "ID", "Gene", "gene", "Locus", "locus"};
+        static String[] DEFAULT_NAME_FIELDS = {"Name", "Alias", "ID", "Gene", "gene", "Locus", "locus"};
         private boolean useUrlDecoding = true;
+
+        private String[] nameFields;
+
+        GFF3Helper() {
+            this(DEFAULT_NAME_FIELDS);
+        }
+
+        GFF3Helper(String[] nameFields) {
+            if (nameFields != null) {
+                this.nameFields = nameFields;
+            }
+
+        }
 
 
         public String[] getParentIds(Map<String, String> attributes, String ignored) {
@@ -834,24 +874,29 @@ public class GFFParser implements FeatureParser {
         }
 
         public String getName(Map<String, String> attributes) {
-            if (attributes.size() == 0) {
-                return null;
-            }
 
-            for (String nf : nameFields) {
-                if (attributes.containsKey(nf)) {
-                    return attributes.get(nf);
+            if (attributes.size() > 0 && nameFields != null) {
+                for (String nf : nameFields) {
+                    if (attributes.containsKey(nf)) {
+                        return attributes.get(nf);
+                    }
                 }
             }
 
-            return attributes.values().iterator().next();
-
+            return null;
         }
-
 
         public String getID(Map<String, String> attributes) {
             String id = attributes.get("ID");
             return id;
+        }
+
+        public String[] getNameFields() {
+            return nameFields;
+        }
+
+        public void setNameFields(String[] nameFields) {
+            this.nameFields = nameFields;
         }
     }
 

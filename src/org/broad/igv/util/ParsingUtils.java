@@ -542,13 +542,13 @@ public class ParsingUtils {
                         }
                     } else if (key.equals("ylinemark")) {
                         try {
-                            float midValue = Float.parseFloat(value);
-                            trackProperties.setMidValue(midValue);
+                            float yLine = Float.parseFloat(value);
+                            trackProperties.setyLine (yLine);
                         } catch (NumberFormatException e) {
                             log.error("Number format exception in track line (ylinemark): " + nextLine);
                         }
                     } else if (key.equals("ylineonoff")) {
-                        trackProperties.setDrawMidValue(value.equals("on"));
+                        trackProperties.setDrawYLine(value.equals("on"));
                     } else if (key.equals("windowingfunction")) {
                         if (value.equals("maximum")) {
                             trackProperties.setWindowingFunction(WindowFunction.max);
@@ -569,24 +569,17 @@ public class ParsingUtils {
                         } else if(value.equals("none")) {
                             trackProperties.setWindowingFunction(WindowFunction.none);
                         }
-                    } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow")) {
-                        // These options are deprecated.  Use visibilityWindow
+                    } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow") ||
+                            key.equals("visibilitywindow")) {
                         try {
                             int windowSize = Integer.parseInt(value);
                             trackProperties.setFeatureVisibilityWindow(windowSize);
                         } catch (NumberFormatException e) {
-                            log.error("featureVisibilityWindow must be numeric: " + nextLine);
+                            log.error(key + " must be numeric: " + nextLine);
+
                         }
 
-                    } else if (key.equals("visibilitywindow")) {
-                        try {
-                            int windowSize = Integer.parseInt(value) * 1000;
-                            trackProperties.setFeatureVisibilityWindow(windowSize);
-                        } catch (NumberFormatException e) {
-                            log.error("featureVisibilityWindow must be an integer: " + nextLine);
-                        }
-
-                    } else if (key.equals("scaletype")) {
+                    }  else if (key.equals("scaletype")) {
                         if (value.equals("log")) {
                             trackProperties.setLogScale(true);
                         }

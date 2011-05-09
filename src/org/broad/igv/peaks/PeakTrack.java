@@ -19,7 +19,7 @@
 
 package org.broad.igv.peaks;
 
-import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.data.LocusScoreUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
@@ -64,7 +64,7 @@ public class PeakTrack extends AbstractTrack {
     Map<String, List<Peak>> peakMap = new HashMap();
     Map<String, List<Peak>> filteredPeakMap = new HashMap();
     Renderer renderer = new PeakRenderer();
-    private int bandHeight = 20;
+    private int bandHeight = 30;
 
     // Path the signal (TDF) file
     String signalPath;
@@ -72,7 +72,9 @@ public class PeakTrack extends AbstractTrack {
 
     // Data range
     DataRange scoreDataRange = new DataRange(0, 0, 100);
-    DataRange signalDataRange = new DataRange(0, 0, 200f);
+    DataRange signalDataRange = new DataRange(0, 0, 10f);
+
+
 
     public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
@@ -90,12 +92,12 @@ public class PeakTrack extends AbstractTrack {
         nTimePoints = parser.getnTimePoints();
         signalPath = parser.getSignalPath();
         signalSource = new TDFDataSource(TDFReader.getReader(signalPath), 0, "");
-        signalSource.setNormalizeCounts(true, 1.0e9f);
+        //signalSource.setNormalizeCounts(true, 1.0e6f);
         // signalSource.setWindowFunction(WindowFunction.max);
 
         TrackProperties props = parser.getTrackProperties();
         if (props != null) {
-            setTrackProperties(props);
+            setProperties(props);
         }
 
         for (Peak peak : peaks) {
@@ -177,7 +179,7 @@ public class PeakTrack extends AbstractTrack {
             }
         } else {
             List<Peak> scores = getFilteredPeaks(chr);
-            Peak score = getLocusScoreAt(scores, position, frame);
+            LocusScore score = getLocusScoreAt(scores, position, frame);
             buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
         }
         return buf.toString();
@@ -186,7 +188,7 @@ public class PeakTrack extends AbstractTrack {
 
     // TODO -- the code below is an exact copy of code in DataTrack.   Refactor to share this.
 
-    private Peak getLocusScoreAt(List<? extends LocusScore> scores, double position, ReferenceFrame frame) {
+    private LocusScore getLocusScoreAt(List<? extends LocusScore> scores, double position, ReferenceFrame frame) {
 
         if (scores == null) {
             return null;
@@ -194,7 +196,7 @@ public class PeakTrack extends AbstractTrack {
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             int buffer = (int) (2 * bpPerPixel);    /* * */
-            return (Peak) FeatureUtils.getFeatureAt(position, buffer, scores);
+            return LocusScoreUtils.getFeatureAt (position, buffer, scores);
         }
     }
 
