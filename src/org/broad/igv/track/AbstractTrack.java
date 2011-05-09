@@ -223,10 +223,11 @@ public abstract class AbstractTrack implements Track {
 
             if (rect.getHeight() > 3) {
 
+                final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
 
                 // Calculate fontsize
                 int gap = Math.min(4, rect.height / 3);
-                int fontSize = Math.min(12, rect.height - gap);
+                int fontSize = Math.min(defaultFontSize, rect.height - gap);
 
                 Font font = FontManager.getScalableFont(fontSize);
                 g2D.setFont(font);

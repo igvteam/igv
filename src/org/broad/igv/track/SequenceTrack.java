@@ -71,7 +71,8 @@ public class SequenceTrack extends AbstractTrack {
         super(name);
 
         shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
-        font = FontManager.getScalableFont(12);
+        final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+        font = FontManager.getScalableFont(defaultFontSize);
     }
 
 

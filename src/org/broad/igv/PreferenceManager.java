@@ -175,6 +175,9 @@ public class PreferenceManager implements PropertyManager {
     final public static String GWAS_PRIMARY_COLOR = "GWAS_PRIMARY_COLOR";
     final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
 
+    public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
+
+
 
     public static String DEFAULT_DATA_SERVER_URL;
 
@@ -933,6 +936,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_PRIMARY_COLOR, "69,101,183");
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
 
+        defaultValues.put(DEFAULT_FONT_SIZE, "10");
 
     }
 }

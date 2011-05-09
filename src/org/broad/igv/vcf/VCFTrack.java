@@ -23,6 +23,7 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
@@ -468,7 +469,8 @@ public class VCFTrack extends FeatureTrack {
 
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-        g2D.setFont(FontManager.getScalableFont(10));
+        final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+        g2D.setFont(FontManager.getScalableFont(defaultFontSize));
         g2D.setColor(BAND2_COLOR);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
