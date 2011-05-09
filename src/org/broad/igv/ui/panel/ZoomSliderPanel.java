@@ -29,6 +29,8 @@ package org.broad.igv.ui.panel;
 
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -232,13 +234,18 @@ public class ZoomSliderPanel extends JPanel {
                 setZoom(e);
                 repaint();
 
-                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                try {
-                    getViewContext().zoomAndCenterAdjusted(toolZoom);
-                    toolZoom = -1;
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
-                }
+                NamedRunnable runnable = new NamedRunnable() {
+                    public void run() {
+                        getViewContext().zoomAndCenterAdjusted(toolZoom);
+                        toolZoom = -1;
+                    }
+
+                    public String getName() {
+                        return "Zoom to: " + toolZoom;
+                    }
+                };
+
+                LongRunningTask.submit(runnable);
             }
 
 

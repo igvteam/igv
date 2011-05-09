@@ -42,6 +42,7 @@ import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
@@ -1153,7 +1154,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
 
-    public void searchByLocus(String searchText) {
+    public void searchByLocus(final String searchText) {
 
 
         if (log.isDebugEnabled()) {
@@ -1161,9 +1162,18 @@ public class IGVCommandBar extends javax.swing.JPanel {
         }
 
         if ((searchText != null) && (searchText.length() > 0)) {
-            searchTextField.setText(searchText);
-            (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
-            chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
+            NamedRunnable runnable = new NamedRunnable() {
+                public void run() {
+                    searchTextField.setText(searchText);
+                    (new SearchCommand(getDefaultReferenceFrame(), searchText)).execute();
+                    chromosomeComboBox.setSelectedItem(getDefaultReferenceFrame().getChrName());
+                }
+
+                public String getName() {
+                    return "Search: " + searchText;
+                }
+            };
+            LongRunningTask.submit(runnable);
         }
 
         if (log.isDebugEnabled()) {
