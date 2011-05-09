@@ -23,8 +23,13 @@
  */
 package org.broad.igv.tdf;
 
+import org.broad.igv.Globals;
 import org.broad.igv.track.WindowFunction;
 
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Map;
 
 /**
@@ -32,15 +37,53 @@ import java.util.Map;
  */
 public class TDFUtils {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         //chr1:170,118,422-170,764,140
         //TDFUtils.dumpDatasets("test.tdf");
         //TDFUtils.dumpAllTiles("/Users/jrobinso/projects/client/compressed.tdf");
-        TDFUtils.dumpSummary("/Users/jrobinso/projects/client/compressed.tdf");
+        TDFUtils.tdfToBedgraph("/Users/jrobinso/IGV/time_course/cebpb_0.merged.bam.tdf",
+                "/Users/jrobinso/IGV/time_course/test.wig");
         //TDFUtils.dumpTile("/Users/jrobinso/IGV/allaml.dataset.gct.tdf", "/chr4/raw", 130);
         //TDFUtils.dumpDatasets("/Users/jrobinso/IGV/affy_1552717.gct.tdf");
         //TDFUtils.dumpDatasets("/Volumes/igv/tools/OV-1116.capture.tumor.20b.cov.tdf");
     }
+
+    public static void tdfToBedgraph(String tdfFile, String bedGraphFile) throws FileNotFoundException {
+
+        TDFReader reader = null;
+        PrintStream ps = null;
+
+        try {
+            reader = TDFReader.getReader(tdfFile);
+            ps = new PrintStream(new BufferedOutputStream(new FileOutputStream(bedGraphFile)));
+
+            String trackLine = reader.getTrackLine();
+            if (trackLine != null && trackLine.length() > 0) {
+                ps.println(trackLine);
+            }
+            for (String dsName : reader.getDatasetNames()) {
+
+                String[] tokens = dsName.split("/");
+                String chrName = tokens[1];
+                if (!chrName.equals(Globals.CHR_ALL) && dsName.contains("raw")) {
+
+                    TDFDataset ds = reader.getDataset(dsName);
+                    for (int i = 0; i < ds.nTiles; i++) {
+                        TDFTile tile = ds.getTile(i);
+                        if (tile != null) {
+                            dumpTileData(reader, chrName, tile, ps);
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (reader != null) reader.close();
+            if (ps != null) ps.close();
+        }
+
+
+    }
+
 
     public static void dumpRootAttributes(String ibfFile) {
         TDFReader reader = TDFReader.getReader(ibfFile);
@@ -86,7 +129,7 @@ public class TDFUtils {
                 TDFTile tile = ds.getTile(i);
                 if (tile != null) {
                     System.out.println("Tile: " + i);
-                    dumpTileData(reader, tile);
+                    dumpTileData(reader, "", tile, System.out);
                 }
             }
         }
@@ -100,22 +143,22 @@ public class TDFUtils {
         if (tile == null) {
             System.out.println("Null tile: " + dsName + " [" + tileNumber + "]");
         } else {
-            dumpTileData(reader, tile);
+            dumpTileData(reader, "", tile, System.out);
         }
     }
 
-    private static void dumpTileData(TDFReader reader, TDFTile tile) {
+    private static void dumpTileData(TDFReader reader, String chrName, TDFTile tile, PrintStream ps) {
         int nTracks = reader.getTrackNames().length;
         int nBins = tile.getSize();
         if (nBins > 0) {
             for (int b = 0; b < nBins; b++) {
-                System.out.print(tile.getStartPosition(b));
-                System.out.print("\t" + tile.getEndPosition(b));
-                System.out.print("\t" + tile.getName(b));
+                ps.print(chrName);
+                ps.print("\t" + tile.getStartPosition(b));
+                ps.print("\t" + tile.getEndPosition(b));
                 for (int t = 0; t < nTracks; t++) {
-                    System.out.print("\t" + tile.getValue(t, b));
+                    ps.print("\t" + tile.getValue(t, b));
                 }
-                System.out.println();
+                ps.println();
             }
         }
     }
@@ -169,6 +212,7 @@ public class TDFUtils {
     # of tracks
     [track names]
      */
+
     public static void dumpSummary(String ibfFile) {
 
         TDFReader reader = TDFReader.getReader(ibfFile);

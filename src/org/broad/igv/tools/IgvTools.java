@@ -32,6 +32,7 @@ import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.reader.AlignmentIndexer;
+import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
@@ -233,8 +234,8 @@ public class IgvTools {
 
                 String trackLine = null;
                 String color = (String) parser.getOptionValue(colorOption);
-                if(color != null) {
-                     trackLine = "track color=\"" + color + "\"";
+                if (color != null) {
+                    trackLine = "track color=\"" + color + "\"";
                 }
 
                 if (command.equals("count")) {
@@ -294,6 +295,10 @@ public class IgvTools {
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
+            } else if (command.toLowerCase().equals("tdftobedgraph")) {
+                validateArgsLength(nonOptionArgs, 3);
+                String ofile = nonOptionArgs[2];
+                TDFUtils.tdfToBedgraph(ifile, ofile);
             } else if (command.equals("wigtobed")) {
                 validateArgsLength(nonOptionArgs, 2);
                 String inputFile = nonOptionArgs[1];
