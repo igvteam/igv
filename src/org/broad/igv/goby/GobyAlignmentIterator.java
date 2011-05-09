@@ -49,7 +49,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     private int targetIndex;
     private int startReferencePosition;
     private int endReferencePosition;
-    private final AlignmentReader reader;
+    private final AlignmentReaderImpl reader;
     protected final DoubleIndexedIdentifier indexToReferenceId;
     private int previousPosition = Integer.MIN_VALUE;
     private int previousReferenceIndex = -1;
@@ -101,10 +101,10 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     }
 
     /**
-     * Release resources used by this iterator. Closes the underlying Goby AlignmentReader.
+     * Release resources used by this iterator. Do not close anything because we reused the Goby AlignmentReader (since Goby 1.9.6).
      */
     public void close() {
-        reader.close();
+
         //  LOG.info("closing " + this);
     }
 

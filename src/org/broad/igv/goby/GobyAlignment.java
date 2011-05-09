@@ -36,6 +36,8 @@ import java.awt.*;
 import java.util.Arrays;
 
 import it.unimi.dsi.lang.MutableString;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import org.broad.igv.ui.IGV;
 
 /**
@@ -72,6 +74,7 @@ public class GobyAlignment implements Alignment {
     public GobyAlignment(final GobyAlignmentIterator iterator, final Alignments.AlignmentEntry entry) {
         this.iterator = iterator;
         this.entry = entry;
+        //  buildBlocks(entry);
 
         block[0] = new AlignmentBlock(entry.getPosition(), buildBases(), buildQualities());
         insertionBlock = buildInsertions();
@@ -133,11 +136,12 @@ public class GobyAlignment implements Alignment {
         return result;
     }
 
-     /**
+    /**
      * Reconstruct the read sequence, using the convention that '=' denotes a match to the reference.
-     *
+     * <p/>
      * Conventions for storing sequence variations in Goby alignments are described <a
-      * href="https://docs.google.com/document/d/1AVjhU23Ijowblb2qTGIqBGL7Nja8G3u7Gl2I7HVrRFY/edit?hl=en&authkey=CJeWuM8O#">here</a>
+     * href="https://docs.google.com/document/d/1AVjhU23Ijowblb2qTGIqBGL7Nja8G3u7Gl2I7HVrRFY/edit?hl=en&authkey=CJeWuM8O#">here</a>
+     *
      * @return the sequence of the read, with >< inserted around bases where an insertion occured in the read.
      */
     private byte[] buildBases() {
@@ -166,6 +170,83 @@ public class GobyAlignment implements Alignment {
             }
         }
         return result;
+    }
+
+    public void buildBlocks(Alignments.AlignmentEntry entry) {
+        ObjectArrayList<AlignmentBlock> blocks = new ObjectArrayList<AlignmentBlock>();
+        ObjectArrayList<AlignmentBlock> insertionBlocks = new ObjectArrayList<AlignmentBlock>();
+
+        int start = entry.getPosition();
+        ByteArrayList bases = new ByteArrayList();
+        ByteArrayList scores = new ByteArrayList();
+
+        int offset = 0;
+        if (entry.getSequenceVariationsCount() > 0) {
+            int firstVarPosition = entry.getSequenceVariations(0).getPosition();
+            for (int i = offset; i < firstVarPosition; ++i) {
+                bases.add((byte) '=');
+                scores.add((byte) 40);
+            }
+        }
+        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
+
+
+            final String to = var.getTo();
+            final ByteString toQuality = var.getToQuality();
+            if (to.length() > 0 && to.charAt(0) == '-') {
+                // insertion
+
+                AlignmentBlock block = makeBlock(start, bases, scores);
+                blocks.add(block);
+
+                start += bases.size();
+                offset = 0;
+                bases.clear();
+                scores.clear();
+
+                for (int i = 0; i < to.length(); ++i) {
+                    bases.add((byte) to.charAt(i));
+                    if (i < toQuality.size()) {
+                        scores.add(toQuality.byteAt(i));
+                    }
+                }
+
+                AlignmentBlock insertionBlock = makeBlock(start, bases, scores);
+
+                insertionBlocks.add(insertionBlock);
+                bases.clear();
+                scores.clear();
+                // start is not changed when to = '--'
+            } else {
+                // other bases get appended (includes mutation and read insertion:
+                for (int i = 0; i < to.length(); ++i) {
+                    bases.add((byte) to.charAt(i));
+                    if (i < toQuality.size()) {
+                        scores.add(toQuality.byteAt(i));
+                    }
+                }
+
+
+            }
+
+        }
+        for (int i = offset; i < entry.getQueryAlignedLength() - entry.getQueryPosition(); ++i) {
+            // append bit that match after last variation until end of alignment:
+            bases.add((byte) '=');
+            scores.add((byte) 40);
+        }
+        AlignmentBlock oneBlock = makeBlock(start, bases, scores);
+        blocks.add(oneBlock);
+        start += bases.size();
+        block = blocks.toArray(new AlignmentBlock[blocks.size()]);
+
+        insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
+    }
+
+    private AlignmentBlock makeBlock(int start, ByteArrayList bases, ByteArrayList scores) {
+        return new AlignmentBlock(start,
+                bases.toByteArray(new byte[bases.size()]),
+                scores.toByteArray(new byte[scores.size()]));
     }
 
     static WarningCounter refMismatch = new WarningCounter(10);
@@ -308,7 +389,7 @@ public class GobyAlignment implements Alignment {
         //LOG.info("getAlignmentEnd");
         return entry.getPosition() + entry.getTargetAlignedLength();
     }
-
+   /*
     public byte getBase(double position) {
         //LOG.info("getBase");
         return 0;
@@ -325,7 +406,7 @@ public class GobyAlignment implements Alignment {
         // Goby only stores quality scores for variations at this point, so if we have not found the
         // position in stored sequence variations, we return zero.
         return 0;
-    }
+    }         */
 
     public String getSample() {
         //LOG.info("getSample");
@@ -439,7 +520,7 @@ public class GobyAlignment implements Alignment {
 
     public float getScore() {
         //LOG.info("getScore");
-        return 1;
+        return entry.getScore();
     }
 
 
@@ -467,5 +548,29 @@ public class GobyAlignment implements Alignment {
             }
         }
         return buffer.toString();
+    }
+
+    public byte getBase(double position) {
+        int basePosition = (int) position;
+        for (AlignmentBlock block : getAlignmentBlocks()) {
+            if (block.contains(basePosition)) {
+                int offset = basePosition - block.getStart();
+                byte base = block.getBases()[offset];
+                return base;
+            }
+        }
+        return 0;
+    }
+
+    public byte getPhred(double position) {
+        int basePosition = (int) position;
+        for (AlignmentBlock block : getAlignmentBlocks()) {
+            if (block.contains(basePosition)) {
+                int offset = basePosition - block.getStart();
+                byte score = block.getQuality(offset);
+                return score;
+            }
+        }
+        return 0;
     }
 }

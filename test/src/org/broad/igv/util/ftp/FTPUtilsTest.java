@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * @author jrobinso

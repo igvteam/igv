@@ -49,11 +49,11 @@ import it.unimi.dsi.lang.MutableString;
 public class GobyAlignmentQueryReader implements AlignmentQueryReader {
     private static final Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
 
-    private AlignmentReader reader;
+    private AlignmentReaderImpl reader = null;
     private final String basename;
     private DoubleIndexedIdentifier targetIdentifiers;
     private boolean isIndexed;
-    Set<String> targetSequenceNames;
+    private Set<String> targetSequenceNames;
 
 
     /**
@@ -76,8 +76,8 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
         identifiers.put(new MutableString("M"), identifiers.getInt(new MutableString("MT")));
         targetIdentifiers = new DoubleIndexedIdentifier(identifiers);
         isIndexed = reader.isIndexed();
-        reader.close();
-        reader = null;
+        // reader.close();
+        // reader = null;
 
         targetSequenceNames = new HashSet();
         for(MutableString ms : identifiers.keySet()) {
@@ -168,6 +168,7 @@ public class GobyAlignmentQueryReader implements AlignmentQueryReader {
     }
 
     private AlignmentReaderImpl getNewLocalReader() {
+        if (reader != null) return reader;
         try {
 
             return new AlignmentReaderImpl(basename);
