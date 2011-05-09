@@ -156,8 +156,6 @@ public class BasicFeature extends AbstractFeature {
             valueString.append("<br>" + identifier);
         }
 
-        valueString.append("<br>");
-        valueString.append(getLocusString());
 
         if (hasScore()) {
             valueString.append("<br>Score = " + score);
@@ -180,6 +178,10 @@ public class BasicFeature extends AbstractFeature {
                 }
             }
         }
+
+        valueString.append("<br>--------------<br>");
+        valueString.append(getLocusString());
+
 
         return valueString.toString();
     }
