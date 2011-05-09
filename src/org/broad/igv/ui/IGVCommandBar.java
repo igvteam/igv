@@ -1134,16 +1134,26 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private void chromosomeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {
         JComboBox combobox = (JComboBox) evt.getSource();
-        String chrName = (String) combobox.getSelectedItem();
+        final String chrName = (String) combobox.getSelectedItem();
         if (chrName != null) {
 
             if (!chrName.equals(getDefaultReferenceFrame().getChrName())) {
-                getDefaultReferenceFrame().setChromosomeName(chrName);
-                getDefaultReferenceFrame().recordHistory();
-                updateCurrentCoordinates();
-                IGV.getInstance().chromosomeChangeEvent(chrName);
-                IGV.getMainFrame().repaint();
-                PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
+                NamedRunnable runnable = new NamedRunnable() {
+                    public void run() {
+                        getDefaultReferenceFrame().setChromosomeName(chrName);
+                        getDefaultReferenceFrame().recordHistory();
+                        updateCurrentCoordinates();
+                        IGV.getInstance().chromosomeChangeEvent(chrName);
+                        IGV.getMainFrame().repaint();
+                        PreferenceManager.getInstance().setLastChromosomeViewed(chrName);
+                    }
+
+                    public String getName() {
+                        return "Changed chromosome to: " + chrName;
+                    }
+                };
+
+                LongRunningTask.submit(runnable);
             }
         }
     }

@@ -37,6 +37,8 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -350,13 +352,23 @@ public class RulerPanel extends JPanel {
                         double newLocation = frame.getChromosomePosition(e.getX());
                         getViewContext().centerOnLocation(newLocation);
                     } else {
-                        for (ClickLink link : chromosomeRects) {
+                        for (final ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
-                                final String chrName = link.value;
-                                getViewContext().setChrName(chrName);
-                                getViewContext().recordHistory();
-                                // TODO -- get rid of this ugly reference to IGV.theInstance
-                                IGV.getInstance().chromosomeChangeEvent(chrName);
+                                NamedRunnable runnable = new NamedRunnable() {
+                                    final String chrName = link.value;
+                                    public void run() {
+
+                                        getViewContext().setChrName(chrName);
+                                        getViewContext().recordHistory();
+                                        // TODO -- get rid of this ugly reference to IGV.theInstance
+                                        IGV.getInstance().chromosomeChangeEvent(chrName);
+                                    }
+                                    public String getName() {
+                                        return "Select chromosome: " + chrName;
+                                    }
+                                };
+
+                                LongRunningTask.submit(runnable);
 
                                 return;
                             }
@@ -433,14 +445,9 @@ public class RulerPanel extends JPanel {
 
     private void zoom() {
 
-        SwingWorker worker = new SwingWorker() {
 
-            WaitCursorManager.CursorToken token;
-
-            @Override
-            protected Object doInBackground() throws Exception {
-
-                token = WaitCursorManager.showWaitCursor();
+        NamedRunnable runnable = new NamedRunnable() {
+            public void run() {
                 final ReferenceFrame vc = getViewContext();
                 double s = vc.getChromosomePosition(dragStart);
                 double e = vc.getChromosomePosition(dragEnd);
@@ -473,17 +480,17 @@ public class RulerPanel extends JPanel {
 
                 vc.jumpTo(chr, (int) Math.min(s, e), (int) Math.max(s, e));
                 vc.recordHistory();
-                return null;
             }
 
-            @Override
-            protected void done() {
-                WaitCursorManager.removeWaitCursor(token);
+            public String getName() {
+                return "Rule panel zoom";
             }
         };
 
-        worker.execute();
+        LongRunningTask.submit(runnable);
+
     }
+
 
     public static class TickSpacing {
 
