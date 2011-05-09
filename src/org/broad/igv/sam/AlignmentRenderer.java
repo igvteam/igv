@@ -42,8 +42,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     // Static because all alignment tracks are in color space, or none are
     public static boolean colorSpace;
 
-    private static Color smallISizeColor = Color.blue;
-    private static Color largeISizeColor = Color.red;
+    private static Color smallISizeColor = new Color(0, 0, 150);
+    private static Color largeISizeColor = new Color(150, 0, 0);
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
@@ -700,10 +700,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                             int minThreshold = renderOptions.getMinInsertSizeThreshold();
                             int maxThreshold = renderOptions.getMaxInsertSizeThreshold();
                             if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
-                                if (peStats != null) {
-                                    minThreshold = peStats.getMinThreshold();
-                                    maxThreshold = peStats.getMaxThreshold();
-                                }
+                               // if (peStats != null) {
+                               //     minThreshold = peStats.getMinThreshold();
+                               //     maxThreshold = peStats.getMaxThreshold();
+                               // }
 
                             }
 
