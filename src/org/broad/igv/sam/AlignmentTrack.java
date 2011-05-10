@@ -737,14 +737,13 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             addShadeBaseMenuItem();
             addShadeCentersMenuItem();
+            addShowAllBasesMenuItem();
 
             addSeparator();
-            if (dataManager.isPairedEnd()) {
-                addViewAsPairsMenuItem();
-                addGoToMate(e);
-            }
+
+            addViewAsPairsMenuItem();
+            addGoToMate(e);
             showMateRegion(e);
-            addShowAllBasesMenuItem();
             addInsertSizeMenuItem();
 
             addSeparator();
@@ -1022,6 +1021,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 }
             });
+            item.setEnabled(dataManager.isPairedEnd());
             add(item);
         }
 
@@ -1139,9 +1139,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
                         renderOptions.setComputeIsizes(dlg.isComputeIsize());
-                        renderOptions.setMinInsertSizePercentile (dlg.getMinPercentile());
+                        renderOptions.setMinInsertSizePercentile(dlg.getMinPercentile());
                         renderOptions.setMaxInsertSizePercentile(dlg.getMaxPercentile());
-                        if(renderOptions.isComputeIsizes()) {
+                        if (renderOptions.isComputeIsizes()) {
                             dataManager.updatePEStats(renderOptions);
                         }
 
@@ -1152,9 +1152,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 }
             });
 
-            if (dataManager.isPairedEnd()) {
-                add(item);
-            }
+
+            item.setEnabled(dataManager.isPairedEnd());
+            add(item);
         }
 
 
