@@ -33,11 +33,12 @@ import org.broad.igv.track.WindowFunction;
 import com.google.protobuf.ByteString;
 
 import java.awt.*;
-import java.util.Arrays;
+import java.util.*;
 
 import it.unimi.dsi.lang.MutableString;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import org.broad.igv.ui.IGV;
 
 /**
@@ -60,8 +61,8 @@ public class GobyAlignment implements Alignment {
 
     private final Alignments.AlignmentEntry entry;
     private final GobyAlignmentIterator iterator;
-    private AlignmentBlock[] block = new AlignmentBlock[1];
-    private AlignmentBlock[] insertionBlock;
+    protected AlignmentBlock[] block = new AlignmentBlock[1];
+    protected AlignmentBlock[] insertionBlock;
     private Color defaultColor = new Color(200, 200, 200);
 
 
@@ -74,182 +75,154 @@ public class GobyAlignment implements Alignment {
     public GobyAlignment(final GobyAlignmentIterator iterator, final Alignments.AlignmentEntry entry) {
         this.iterator = iterator;
         this.entry = entry;
-        //  buildBlocks(entry);
+        buildBlocks(entry);
+    }
 
-        block[0] = new AlignmentBlock(entry.getPosition(), buildBases(), buildQualities());
-        insertionBlock = buildInsertions();
 
+    private boolean hasReadInsertion(String from) {
+        return from.length() > 0 && from.charAt(0) == '-';
     }
 
     /**
-     * Construct the AlignmentBlocks corresponding to insertions found in this goby Entry.
-     *
-     * @return
-     */
-    private AlignmentBlock[] buildInsertions() {
-        int insertionCount = 0;
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-
-
-            if (var.getFrom().length() < var.getTo().length()) {
-                insertionCount++;
-            }
-        }
-        AlignmentBlock[] result = new AlignmentBlock[insertionCount];
-        if (insertionCount == 0) {
-            return result;
-        }
-
-        int index = 0;
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-
-
-            final String to = var.getTo();
-            if (var.getFrom().length() < to.length()) {
-                final char[] insertion = var.getTo().toCharArray();
-                final byte[] insertedBytes = new byte[insertion.length];
-                for (int j = 0; j < insertion.length; j++) {
-                    insertedBytes[j] = (byte) insertion[j];
-                }
-                result[index++] = new AlignmentBlock(entry.getPosition() + var.getPosition(),
-                        insertedBytes, to.getBytes());
-            }
-        }
-        return result;
-    }
-
-    private byte[] buildQualities() {
-        byte[] result = new byte[entry.getTargetAlignedLength()];
-        final int length = result.length;
-        for (int i = 0; i < length; i++) {
-            result[i] = 40;
-        }
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-
-            final ByteString toQuality = var.getToQuality();
-            for (int j = 0; j < toQuality.size(); j++) {
-                final int offset = var.getPosition() + j - 1;
-                if (offset >= length) break;
-                result[offset] = toQuality.byteAt(j);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Reconstruct the read sequence, using the convention that '=' denotes a match to the reference.
+     * Construct alignment blocks from the Goby alignment entry. This method uses the convention that '=' denotes a match to the reference.
      * <p/>
-     * Conventions for storing sequence variations in Goby alignments are described <a
-     * href="https://docs.google.com/document/d/1AVjhU23Ijowblb2qTGIqBGL7Nja8G3u7Gl2I7HVrRFY/edit?hl=en&authkey=CJeWuM8O#">here</a>
+     * Conventions for storing sequence variations in Goby alignments are described
+     * <a href="http://tinyurl.com/goby-sequence-variations">here</a>
      *
-     * @return the sequence of the read, with >< inserted around bases where an insertion occured in the read.
+     * @param alignmentEntry The Goby alignment entry to use
      */
-    private byte[] buildBases() {
-        final int length = entry.getTargetAlignedLength();
-        byte[] result = new byte[length];
-        Arrays.fill(result, (byte) '=');
+    public void buildBlocks(Alignments.AlignmentEntry alignmentEntry) {
 
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-            final String from = var.getFrom();
-            if (from.length() > 0 && from.charAt(0) == '-') {
-                // Insertion
-                final int offset = var.getPosition() - 1;
-                if (offset >= length) break;
-                result[offset] = (byte) '>';
-                final int offsetPlusOne = offset + 1;
-                if (offsetPlusOne >= length) break;
-                result[offsetPlusOne] = (byte) '<';
-
-            } else {
-                final String to = var.getTo();
-                for (int j = 0; j < to.length(); j++) {
-                    final int offset = var.getPosition() + j - 1;
-                    if (offset >= length) break;
-                    result[offset] = (byte) to.charAt(j);
-                }
-            }
-        }
-        return result;
-    }
-
-    public void buildBlocks(Alignments.AlignmentEntry entry) {
         ObjectArrayList<AlignmentBlock> blocks = new ObjectArrayList<AlignmentBlock>();
         ObjectArrayList<AlignmentBlock> insertionBlocks = new ObjectArrayList<AlignmentBlock>();
 
-        int start = entry.getPosition();
+        int start = alignmentEntry.getPosition();
         ByteArrayList bases = new ByteArrayList();
         ByteArrayList scores = new ByteArrayList();
+        int readLength = alignmentEntry.getQueryLength();
 
-        int offset = 0;
-        if (entry.getSequenceVariationsCount() > 0) {
-            int firstVarPosition = entry.getSequenceVariations(0).getPosition();
-            for (int i = offset; i < firstVarPosition; ++i) {
-                bases.add((byte) '=');
-                scores.add((byte) 40);
-            }
-        }
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
+        byte[] readBases = new byte[readLength];
+        byte[] readQual = new byte[readLength];
+        Arrays.fill(readBases, (byte) '=');
+        Arrays.fill(readQual, (byte) 40);
+        int j = 0;
 
-
+        final int leftPadding = alignmentEntry.getQueryPosition();
+        for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+            final String from = var.getFrom();
+            final int fromLength = from.length();
             final String to = var.getTo();
+            final int toLength = from.length();
+            final int sequenceVariationLength = Math.max(fromLength, toLength);
             final ByteString toQuality = var.getToQuality();
-            if (to.length() > 0 && to.charAt(0) == '-') {
-                // insertion
 
-                AlignmentBlock block = makeBlock(start, bases, scores);
-                blocks.add(block);
-
-                start += bases.size();
-                offset = 0;
+            if (hasReadInsertion(from)) {
                 bases.clear();
                 scores.clear();
+                for (int i = 0; i < sequenceVariationLength; i++) {
+                    final char toChar = i >= toLength ? '-' : to.charAt(i);
+                    final byte qual = toQuality.size() > 0 ? toQuality.byteAt(i) : 40;
 
-                for (int i = 0; i < to.length(); ++i) {
-                    bases.add((byte) to.charAt(i));
-                    if (i < toQuality.size()) {
-                        scores.add(toQuality.byteAt(i));
-                    }
+                    bases.add((byte) toChar);
+                    scores.add(qual);
+
                 }
-
-                AlignmentBlock insertionBlock = makeBlock(start, bases, scores);
-
-                insertionBlocks.add(insertionBlock);
+                addBlock(insertionBlocks, alignmentEntry.getPosition() + var.getPosition(), bases, scores);
                 bases.clear();
                 scores.clear();
-                // start is not changed when to = '--'
-            } else {
-                // other bases get appended (includes mutation and read insertion:
-                for (int i = 0; i < to.length(); ++i) {
-                    bases.add((byte) to.charAt(i));
-                    if (i < toQuality.size()) {
-                        scores.add(toQuality.byteAt(i));
-                    }
+            } else if (!to.contains("-")) {
+                for (int i = 0; i < toLength; i++) {
+                    readBases[j + var.getPosition() + i - 1 + leftPadding] = (byte) to.charAt(i);
                 }
-
-
             }
+        }
 
+
+        int pos = start;
+        int endAlignmentRefPosition = readLength - leftPadding + start;
+        bases.clear();
+        scores.clear();
+        while (pos < endAlignmentRefPosition) {
+
+            bases.add(readBases[pos - start + leftPadding]);
+            scores.add(readQual[pos - start + leftPadding]);
+            ++pos;
         }
-        for (int i = offset; i < entry.getQueryAlignedLength() - entry.getQueryPosition(); ++i) {
-            // append bit that match after last variation until end of alignment:
-            bases.add((byte) '=');
-            scores.add((byte) 40);
-        }
-        AlignmentBlock oneBlock = makeBlock(start, bases, scores);
-        blocks.add(oneBlock);
-        start += bases.size();
+
+        addBlock(blocks, start, bases, scores);
+        blocks = introduceDeletions(blocks, entry);
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
 
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
     }
 
-    private AlignmentBlock makeBlock(int start, ByteArrayList bases, ByteArrayList scores) {
-        return new AlignmentBlock(start,
-                bases.toByteArray(new byte[bases.size()]),
-                scores.toByteArray(new byte[scores.size()]));
+    /**
+     * This method splits blocks whose boundaries contain a read deletion.
+     *
+     * @param blocks
+     * @param alignmentEntry
+     * @return
+     */
+    private ObjectArrayList<AlignmentBlock> introduceDeletions(ObjectArrayList<AlignmentBlock> blocks,
+                                                               Alignments.AlignmentEntry alignmentEntry) {
+
+        ObjectArrayList<AlignmentBlock> newBlocks = new ObjectArrayList<AlignmentBlock>();
+
+        for (Alignments.SequenceVariation var : alignmentEntry.getSequenceVariationsList()) {
+
+
+            for (AlignmentBlock block : blocks) {
+                final int vrPos = var.getPosition() + entry.getPosition();
+                if (hasReadDeletion(var) && vrPos >= block.getStart() && vrPos <= block.getEnd()) {
+
+                    ByteList leftBases = new ByteArrayList(block.getBases());
+                    ByteList leftScores = new ByteArrayList(block.getQualities());
+                    ByteList rightBases = new ByteArrayList(block.getBases());
+                    ByteList rightScores = new ByteArrayList(block.getQualities());
+                    int deletionPosition = var.getPosition() - 1;
+                    leftBases = leftBases.subList(0, deletionPosition);
+                    rightBases = rightBases.subList(deletionPosition, rightBases.size());
+
+                    leftScores = leftScores.subList(0, deletionPosition);
+                    rightScores = rightScores.subList(deletionPosition, rightScores.size());
+
+                    AlignmentBlock left = new AlignmentBlock(block.getStart(),
+                            leftBases.toByteArray(new byte[leftBases.size()]),
+                            leftScores.toByteArray(new byte[leftScores.size()]));
+
+                    AlignmentBlock right = new AlignmentBlock(block.getStart() + leftBases.size()
+                            + var.getFrom().length(),
+                            rightBases.toByteArray(new byte[rightBases.size()]),
+                            rightScores.toByteArray(new byte[rightScores.size()]));
+
+                    blocks.remove(block);
+                    newBlocks.add(left);
+                    newBlocks.add(right);
+
+                }
+            }
+        }
+        newBlocks.addAll(blocks);
+        return newBlocks;
     }
 
-    static WarningCounter refMismatch = new WarningCounter(10);
+    private boolean hasReadDeletion(Alignments.SequenceVariation var) {
+        return (var.getTo().contains("-"));
+    }
+
+
+    private int addBlock(ObjectArrayList<AlignmentBlock> blocks, int start, ByteArrayList bases,
+                         ByteArrayList scores) {
+
+        blocks.add(new AlignmentBlock(start,
+                bases.toByteArray(new byte[bases.size()]),
+                scores.toByteArray(new byte[scores.size()])));
+        start += bases.size();
+        bases.clear();
+        scores.clear();
+        return start;
+    }
+
 
     /**
      * Transform the read index into a readname:
@@ -257,12 +230,12 @@ public class GobyAlignment implements Alignment {
      * @return
      */
     public String getReadName() {
-        //LOG.info("getReadName");
+
         return Integer.toString(entry.getQueryIndex());
     }
 
     public String getReadSequence() {
-        //LOG.info("getReadSequence");
+
         return "read-sequence";
     }
 
@@ -270,7 +243,7 @@ public class GobyAlignment implements Alignment {
      * Get the reference id from the iterator, prepend "chr".
      */
     public String getChromosome() {
-        //LOG.info("getChromosome");
+
         return "chr" + iterator.indexToReferenceId.getId(entry.getTargetIndex()).toString();
 
 
@@ -278,9 +251,11 @@ public class GobyAlignment implements Alignment {
 
     /**
      * Get the reference id from the iterator, prepend "chr".
+     *
+     * @param targetIndex Returns the chromosome id
      */
     public String getChromosome(int targetIndex) {
-        //LOG.info("getChromosome");
+
         return "chr" + iterator.indexToReferenceId.getId(targetIndex).toString();
 
 
@@ -389,24 +364,24 @@ public class GobyAlignment implements Alignment {
         //LOG.info("getAlignmentEnd");
         return entry.getPosition() + entry.getTargetAlignedLength();
     }
-   /*
-    public byte getBase(double position) {
-        //LOG.info("getBase");
-        return 0;
-    }
+    /*
+public byte getBase(double position) {
+//LOG.info("getBase");
+return 0;
+}
 
-    public byte getPhred(double position) {
-        for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-            for (int i = 0; i < var.getTo().length(); i++) {
-                if (var.getPosition() + i == position) {
-                    return var.getToQuality().byteAt(i);
-                }
-            }
-        }
-        // Goby only stores quality scores for variations at this point, so if we have not found the
-        // position in stored sequence variations, we return zero.
-        return 0;
-    }         */
+public byte getPhred(double position) {
+for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
+for (int i = 0; i < var.getTo().length(); i++) {
+ if (var.getPosition() + i == position) {
+     return var.getToQuality().byteAt(i);
+ }
+}
+}
+// Goby only stores quality scores for variations at this point, so if we have not found the
+// position in stored sequence variations, we return zero.
+return 0;
+}         */
 
     public String getSample() {
         //LOG.info("getSample");
@@ -507,13 +482,15 @@ public class GobyAlignment implements Alignment {
         return entry.getPosition() + entry.getTargetAlignedLength();
     }
 
-    public void setStart(int start) {
+    public void setStart(
+            int start) {
         //    //LOG.info("setStart");
         throw new UnsupportedOperationException("setStart is not supported");
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setEnd(int end) {
+    public void setEnd(
+            int end) {
         throw new UnsupportedOperationException("setEnd is not supported");
         //To change body of implemented methods use File | Settings | File Templates.
     }
