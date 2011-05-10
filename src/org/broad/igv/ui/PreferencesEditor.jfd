@@ -1804,6 +1804,10 @@
               <object class="com.jformdesigner.model.FormLayoutManager"> 
                <class>com.jformdesigner.runtime.NullLayout</class> 
               </object> 
+              <void method="setProperty"> 
+               <string>border</string> 
+               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+              </void> 
               <void property="name"> 
                <string>jPanel11</string> 
               </void> 
@@ -1842,50 +1846,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>41</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JTextField</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>0</string> 
-                </void> 
-                <void property="name"> 
-                 <string>snpThresholdField</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>snpThresholdFieldActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.FocusListener</string> 
-                  <string>focusLost</string> 
-                  <string>snpThresholdFieldFocusLost</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>206</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>144</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>84</int> 
+                 <int>40</int> 
                 </void> 
                </object> 
               </void> 
@@ -1917,60 +1878,6 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>Coverage allele-freq threshold</string> 
-                </void> 
-                <void property="name"> 
-                 <string>jLabel26</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>6</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>150</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>200</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JLabel</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Default insert size thresholds:</string> 
-                </void> 
-                <void property="name"> 
-                 <string>jLabel17</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>5</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>115</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>200</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JLabel</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
                  <string>&lt;html&gt;&lt;i&gt;Reads with qualities  below the threshold are not shown.</string> 
                 </void> 
                 <void property="name"> 
@@ -1985,7 +1892,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>82</int> 
+                 <int>80</int> 
                 </void> 
                </object> 
               </void> 
@@ -2024,7 +1931,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>76</int> 
+                 <int>74</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2051,7 +1958,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>40</int> 
+                 <int>39</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2060,57 +1967,6 @@
                 <void method="setProperty"> 
                  <string>height</string> 
                  <int>30</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JTextField</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>0</string> 
-                </void> 
-                <void property="name"> 
-                 <string>insertSizeThresholdField</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>insertSizeThresholdFieldActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.FocusListener</string> 
-                  <string>focusLost</string> 
-                  <string>insertSizeThresholdFieldFocusLost</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>insertSizeThresholdFieldActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>345</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>109</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>84</int> 
                 </void> 
                </object> 
               </void> 
@@ -2133,7 +1989,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>47</int> 
+                 <int>46</int> 
                 </void> 
                </object> 
               </void> 
@@ -2156,7 +2012,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>82</int> 
+                 <int>80</int> 
                 </void> 
                </object> 
               </void> 
@@ -2227,29 +2083,25 @@
                 <string>javax.swing.JLabel</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
-                 <string>to </string> 
+                 <string>Coverage allele-freq threshold</string> 
                 </void> 
                 <void property="name"> 
-                 <string>jLabel20</string> 
+                 <string>jLabel26</string> 
                 </void> 
                </object> 
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>50</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>16</int> 
-                </void> 
-                <void method="setProperty"> 
                  <string>x</string> 
-                 <int>295</int> 
+                 <int>6</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>115</int> 
+                 <int>114</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>200</int> 
                 </void> 
                </object> 
               </void> 
@@ -2261,13 +2113,13 @@
                  <string>0</string> 
                 </void> 
                 <void property="name"> 
-                 <string>insertSizeMinThresholdField</string> 
+                 <string>snpThresholdField</string> 
                 </void> 
                 <void method="addEvent"> 
                  <object class="com.jformdesigner.model.FormEvent"> 
                   <string>java.awt.event.ActionListener</string> 
                   <string>actionPerformed</string> 
-                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <string>snpThresholdFieldActionPerformed</string> 
                   <boolean>true</boolean> 
                  </object> 
                 </void> 
@@ -2275,91 +2127,24 @@
                  <object class="com.jformdesigner.model.FormEvent"> 
                   <string>java.awt.event.FocusListener</string> 
                   <string>focusLost</string> 
-                  <string>insertSizeThresholdFieldFocusLost</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.FocusListener</string> 
-                  <string>focusLost</string> 
-                  <string>insertSizeMinThresholdFieldFocusLost</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <string>snpThresholdFieldFocusLost</string> 
                   <boolean>true</boolean> 
                  </object> 
                 </void> 
                </object> 
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>84</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>28</int> 
-                </void> 
                 <void method="setProperty"> 
                  <string>x</string> 
                  <int>206</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>109</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JCheckBox</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>compute dynamically</string> 
-                </void> 
-                <void property="name"> 
-                 <string>isizeComputeCB</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>isizeComputeCBActionPerformed</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>455</int> 
+                 <int>108</int> 
                 </void> 
                 <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>112</int> 
+                 <string>width</string> 
+                 <int>84</int> 
                 </void> 
                </object> 
               </void> 
@@ -2372,7 +2157,15 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>15</int> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>150</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>755</int> 
               </void> 
              </object> 
             </void> 
@@ -2382,6 +2175,10 @@
               <object class="com.jformdesigner.model.FormLayoutManager"> 
                <class>com.jformdesigner.runtime.NullLayout</class> 
               </object> 
+              <void method="setProperty"> 
+               <string>border</string> 
+               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+              </void> 
               <void property="name"> 
                <string>jPanel12</string> 
               </void> 
@@ -2416,11 +2213,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>325</int> 
+                 <int>380</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>140</int> 
+                 <int>105</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2455,11 +2252,11 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>146</int> 
+                 <int>109</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
-                 <int>290</int> 
+                 <int>264</int> 
                 </void> 
                </object> 
               </void> 
@@ -2494,11 +2291,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>455</int> 
+                 <int>505</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>140</int> 
+                 <int>105</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2591,11 +2388,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>285</int> 
+                 <int>340</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>145</int> 
+                 <int>110</int> 
                 </void> 
                </object> 
               </void> 
@@ -2626,7 +2423,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>181</int> 
+                 <int>142</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2673,7 +2470,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>178</int> 
+                 <int>140</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>width</string> 
@@ -2718,73 +2515,6 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JLabel</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>&lt;html&gt;Chromosome color legend &amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;i&gt;Used to flag paired end reads with mates on other chromosomes</string> 
-                </void> 
-                <void property="name"> 
-                 <string>jLabel10</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>5</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>230</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>width</string> 
-                 <int>640</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>height</string> 
-                 <int>30</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormContainer"> 
-                <string>javax.swing.JPanel</string> 
-                <object class="com.jformdesigner.model.FormLayoutManager"> 
-                 <class>org.jdesktop.layout.GroupLayout</class> 
-                 <void method="setProperty"> 
-                  <string>$horizontalGroup</string> 
-                  <string>par l {space :0:602:x}</string> 
-                 </void> 
-                 <void method="setProperty"> 
-                  <string>$verticalGroup</string> 
-                  <string>par l {space :0:25:x}</string> 
-                 </void> 
-                </object> 
-                <void method="auxiliary"> 
-                 <void method="setProperty"> 
-                  <string>JavaCodeGenerator.customCreateCode</string> 
-                  <string>new ChromosomeColorLegend();</string> 
-                 </void> 
-                </void> 
-                <void property="name"> 
-                 <string>legendPanel</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>com.jformdesigner.runtime.NullConstraints</class> 
-                <void method="setProperty"> 
-                 <string>x</string> 
-                 <int>5</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>y</string> 
-                 <int>270</int> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
                 <string>javax.swing.JCheckBox</string> 
                 <void method="setProperty"> 
                  <string>text</string> 
@@ -2810,7 +2540,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>41</int> 
+                 <int>43</int> 
                 </void> 
                </object> 
               </void> 
@@ -2829,11 +2559,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>400</int> 
+                 <int>455</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>145</int> 
+                 <int>110</int> 
                 </void> 
                </object> 
               </void> 
@@ -2860,11 +2590,11 @@
                 <class>com.jformdesigner.runtime.NullConstraints</class> 
                 <void method="setProperty"> 
                  <string>x</string> 
-                 <int>6</int> 
+                 <int>375</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>111</int> 
+                 <int>76</int> 
                 </void> 
                </object> 
               </void> 
@@ -2895,7 +2625,7 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>y</string> 
-                 <int>41</int> 
+                 <int>43</int> 
                 </void> 
                </object> 
               </void> 
@@ -2904,19 +2634,506 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>5</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>198</int> 
+               <int>165</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>740</int> 
+               <int>755</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>297</int> 
+               <int>175</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>com.jformdesigner.runtime.NullLayout</class> 
+              </object> 
+              <void method="setProperty"> 
+               <string>border</string> 
+               <object class="javax.swing.border.TitledBorder"> 
+                <null/> 
+                <string>Insert Size Options</string> 
+                <int>4</int> 
+                <int>0</int> 
+                <null/> 
+                <null/> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>panel2</string> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JCheckBox</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>compute</string> 
+                </void> 
+                <void property="name"> 
+                 <string>isizeComputeCB</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>isizeComputeCBActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>360</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>77</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Maximum (bp):</string> 
+                </void> 
+                <void property="name"> 
+                 <string>jLabel17</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>15</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>105</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>110</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JTextField</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>0</string> 
+                </void> 
+                <void property="name"> 
+                 <string>insertSizeMinThresholdField</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeMinThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>84</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>28</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>135</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>74</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Minimum (bp):</string> 
+                </void> 
+                <void property="name"> 
+                 <string>jLabel20</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>110</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>16</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>15</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>80</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JTextField</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>0</string> 
+                </void> 
+                <void property="name"> 
+                 <string>insertSizeThresholdField</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>135</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>100</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>84</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Minimum (percentile):</string> 
+                </void> 
+                <void property="name"> 
+                 <string>jLabel30</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>155</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>16</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>460</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>80</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Maximum (percentile):</string> 
+                </void> 
+                <void property="name"> 
+                 <string>jLabel18</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>155</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>16</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>460</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>105</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JTextField</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>0</string> 
+                </void> 
+                <void property="name"> 
+                 <string>insertSizeMinPercentileField</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeMinThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeMinThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>84</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>28</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>625</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>74</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JTextField</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>0</string> 
+                </void> 
+                <void property="name"> 
+                 <string>insertSizeMaxPercentileField</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.FocusListener</string> 
+                  <string>focusLost</string> 
+                  <string>insertSizeThresholdFieldFocusLost</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>insertSizeThresholdFieldActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>84</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>28</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>625</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>100</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>&lt;html&gt;&lt;i&gt;These options control the color coding of alignments by insert size.   Base pair values set default values.  If &quot;compute&quot; is selected defaults are overriden by values compute from the actual insert size distirbution.</string> 
+                </void> 
+                <void property="name"> 
+                 <string>label8</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>5</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>15</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>height</string> 
+                 <int>55</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>735</int> 
+                </void> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>5</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>350</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>755</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>145</int> 
               </void> 
              </object> 
             </void> 
@@ -3485,7 +3702,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::16:x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 

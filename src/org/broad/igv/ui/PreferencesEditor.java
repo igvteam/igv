@@ -137,21 +137,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
         jPanel1 = new JPanel();
         jPanel11 = new JPanel();
         samMaxDepthField = new JTextField();
-        snpThresholdField = new JTextField();
         jLabel11 = new JLabel();
-        jLabel26 = new JLabel();
-        jLabel17 = new JLabel();
         jLabel16 = new JLabel();
         mappingQualityThresholdField = new JTextField();
         jLabel14 = new JLabel();
-        insertSizeThresholdField = new JTextField();
         jLabel13 = new JLabel();
         jLabel15 = new JLabel();
         samMaxWindowSizeField = new JTextField();
         jLabel12 = new JLabel();
-        jLabel20 = new JLabel();
-        insertSizeMinThresholdField = new JTextField();
-        isizeComputeCB = new JCheckBox();
+        jLabel26 = new JLabel();
+        snpThresholdField = new JTextField();
         jPanel12 = new JPanel();
         samMinBaseQualityField = new JTextField();
         samShadeMismatchedBaseCB = new JCheckBox();
@@ -162,12 +157,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
         filterCB = new JCheckBox();
         filterURL = new JTextField();
         samFlagUnmappedPairCB = new JCheckBox();
-        jLabel10 = new JLabel();
-        legendPanel = new ChromosomeColorLegend();
         filterFailedReadsCB = new JCheckBox();
         label2 = new JLabel();
         showSoftClippedCB = new JCheckBox();
         showJunctionTrackCB = new JCheckBox();
+        panel2 = new JPanel();
+        isizeComputeCB = new JCheckBox();
+        jLabel17 = new JLabel();
+        insertSizeMinThresholdField = new JTextField();
+        jLabel20 = new JLabel();
+        insertSizeThresholdField = new JTextField();
+        jLabel30 = new JLabel();
+        jLabel18 = new JLabel();
+        insertSizeMinPercentileField = new JTextField();
+        insertSizeMaxPercentileField = new JTextField();
+        label8 = new JLabel();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         expMapToGeneCB = new JRadioButton();
@@ -893,6 +897,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     //======== jPanel11 ========
                     {
+                        jPanel11.setBorder(null);
                         jPanel11.setLayout(null);
 
                         //---- samMaxDepthField ----
@@ -909,43 +914,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(samMaxDepthField);
-                        samMaxDepthField.setBounds(new Rectangle(new Point(206, 41), samMaxDepthField.getPreferredSize()));
-
-                        //---- snpThresholdField ----
-                        snpThresholdField.setText("0");
-                        snpThresholdField.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                snpThresholdFieldActionPerformed(e);
-                            }
-                        });
-                        snpThresholdField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                snpThresholdFieldFocusLost(e);
-                            }
-                        });
-                        jPanel11.add(snpThresholdField);
-                        snpThresholdField.setBounds(206, 144, 84, snpThresholdField.getPreferredSize().height);
+                        samMaxDepthField.setBounds(new Rectangle(new Point(206, 40), samMaxDepthField.getPreferredSize()));
 
                         //---- jLabel11 ----
                         jLabel11.setText("Visibility range threshold (kb)");
                         jPanel11.add(jLabel11);
                         jLabel11.setBounds(new Rectangle(new Point(6, 12), jLabel11.getPreferredSize()));
 
-                        //---- jLabel26 ----
-                        jLabel26.setText("Coverage allele-freq threshold");
-                        jPanel11.add(jLabel26);
-                        jLabel26.setBounds(6, 150, 200, jLabel26.getPreferredSize().height);
-
-                        //---- jLabel17 ----
-                        jLabel17.setText("Default insert size thresholds:");
-                        jPanel11.add(jLabel17);
-                        jLabel17.setBounds(5, 115, 200, jLabel17.getPreferredSize().height);
-
                         //---- jLabel16 ----
                         jLabel16.setText("<html><i>Reads with qualities  below the threshold are not shown.");
                         jPanel11.add(jLabel16);
-                        jLabel16.setBounds(new Rectangle(new Point(296, 82), jLabel16.getPreferredSize()));
+                        jLabel16.setBounds(new Rectangle(new Point(296, 80), jLabel16.getPreferredSize()));
 
                         //---- mappingQualityThresholdField ----
                         mappingQualityThresholdField.setText("0");
@@ -961,39 +940,22 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel11.add(mappingQualityThresholdField);
-                        mappingQualityThresholdField.setBounds(206, 76, 84, mappingQualityThresholdField.getPreferredSize().height);
+                        mappingQualityThresholdField.setBounds(206, 74, 84, mappingQualityThresholdField.getPreferredSize().height);
 
                         //---- jLabel14 ----
                         jLabel14.setText("<html><i>Maximum read depth to load (approximate).");
                         jPanel11.add(jLabel14);
-                        jLabel14.setBounds(296, 40, 390, 30);
-
-                        //---- insertSizeThresholdField ----
-                        insertSizeThresholdField.setText("0");
-                        insertSizeThresholdField.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                insertSizeThresholdFieldActionPerformed(e);
-                                insertSizeThresholdFieldActionPerformed(e);
-                            }
-                        });
-                        insertSizeThresholdField.addFocusListener(new FocusAdapter() {
-                            @Override
-                            public void focusLost(FocusEvent e) {
-                                insertSizeThresholdFieldFocusLost(e);
-                            }
-                        });
-                        jPanel11.add(insertSizeThresholdField);
-                        insertSizeThresholdField.setBounds(345, 109, 84, insertSizeThresholdField.getPreferredSize().height);
+                        jLabel14.setBounds(296, 39, 390, 30);
 
                         //---- jLabel13 ----
                         jLabel13.setText("Maximum read depth:");
                         jPanel11.add(jLabel13);
-                        jLabel13.setBounds(new Rectangle(new Point(6, 47), jLabel13.getPreferredSize()));
+                        jLabel13.setBounds(new Rectangle(new Point(6, 46), jLabel13.getPreferredSize()));
 
                         //---- jLabel15 ----
                         jLabel15.setText("Mapping quality threshold:");
                         jPanel11.add(jLabel15);
-                        jLabel15.setBounds(new Rectangle(new Point(6, 82), jLabel15.getPreferredSize()));
+                        jLabel15.setBounds(new Rectangle(new Point(6, 80), jLabel15.getPreferredSize()));
 
                         //---- samMaxWindowSizeField ----
                         samMaxWindowSizeField.setText("jTextField1");
@@ -1016,40 +978,26 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jPanel11.add(jLabel12);
                         jLabel12.setBounds(new Rectangle(new Point(296, 12), jLabel12.getPreferredSize()));
 
-                        //---- jLabel20 ----
-                        jLabel20.setText("to ");
-                        jPanel11.add(jLabel20);
-                        jLabel20.setBounds(295, 115, 50, 16);
+                        //---- jLabel26 ----
+                        jLabel26.setText("Coverage allele-freq threshold");
+                        jPanel11.add(jLabel26);
+                        jLabel26.setBounds(6, 114, 200, jLabel26.getPreferredSize().height);
 
-                        //---- insertSizeMinThresholdField ----
-                        insertSizeMinThresholdField.setText("0");
-                        insertSizeMinThresholdField.addActionListener(new ActionListener() {
+                        //---- snpThresholdField ----
+                        snpThresholdField.setText("0");
+                        snpThresholdField.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
-                                insertSizeThresholdFieldActionPerformed(e);
-                                insertSizeMinThresholdFieldActionPerformed(e);
-                                insertSizeMinThresholdFieldActionPerformed(e);
-                                insertSizeMinThresholdFieldActionPerformed(e);
+                                snpThresholdFieldActionPerformed(e);
                             }
                         });
-                        insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
+                        snpThresholdField.addFocusListener(new FocusAdapter() {
                             @Override
                             public void focusLost(FocusEvent e) {
-                                insertSizeThresholdFieldFocusLost(e);
-                                insertSizeMinThresholdFieldFocusLost(e);
+                                snpThresholdFieldFocusLost(e);
                             }
                         });
-                        jPanel11.add(insertSizeMinThresholdField);
-                        insertSizeMinThresholdField.setBounds(206, 109, 84, 28);
-
-                        //---- isizeComputeCB ----
-                        isizeComputeCB.setText("compute dynamically");
-                        isizeComputeCB.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                isizeComputeCBActionPerformed(e);
-                            }
-                        });
-                        jPanel11.add(isizeComputeCB);
-                        isizeComputeCB.setBounds(new Rectangle(new Point(455, 112), isizeComputeCB.getPreferredSize()));
+                        jPanel11.add(snpThresholdField);
+                        snpThresholdField.setBounds(206, 108, 84, snpThresholdField.getPreferredSize().height);
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -1066,10 +1014,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(jPanel11);
-                    jPanel11.setBounds(new Rectangle(new Point(5, 15), jPanel11.getPreferredSize()));
+                    jPanel11.setBounds(5, 10, 755, 150);
 
                     //======== jPanel12 ========
                     {
+                        jPanel12.setBorder(null);
                         jPanel12.setLayout(null);
 
                         //---- samMinBaseQualityField ----
@@ -1086,7 +1035,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMinBaseQualityField);
-                        samMinBaseQualityField.setBounds(325, 140, 50, samMinBaseQualityField.getPreferredSize().height);
+                        samMinBaseQualityField.setBounds(380, 105, 50, samMinBaseQualityField.getPreferredSize().height);
 
                         //---- samShadeMismatchedBaseCB ----
                         samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality. ");
@@ -1096,7 +1045,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samShadeMismatchedBaseCB);
-                        samShadeMismatchedBaseCB.setBounds(6, 146, 290, samShadeMismatchedBaseCB.getPreferredSize().height);
+                        samShadeMismatchedBaseCB.setBounds(6, 109, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
 
                         //---- samMaxBaseQualityField ----
                         samMaxBaseQualityField.setText("0");
@@ -1112,7 +1061,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMaxBaseQualityField);
-                        samMaxBaseQualityField.setBounds(455, 140, 50, samMaxBaseQualityField.getPreferredSize().height);
+                        samMaxBaseQualityField.setBounds(505, 105, 50, samMaxBaseQualityField.getPreferredSize().height);
 
                         //---- showCovTrackCB ----
                         showCovTrackCB.setText("Show coverage track");
@@ -1137,7 +1086,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- jLabel19 ----
                         jLabel19.setText("Min: ");
                         jPanel12.add(jLabel19);
-                        jLabel19.setBounds(new Rectangle(new Point(285, 145), jLabel19.getPreferredSize()));
+                        jLabel19.setBounds(new Rectangle(new Point(340, 110), jLabel19.getPreferredSize()));
 
                         //---- filterCB ----
                         filterCB.setText("Filter alignments by read group");
@@ -1147,7 +1096,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterCB);
-                        filterCB.setBounds(6, 181, 244, filterCB.getPreferredSize().height);
+                        filterCB.setBounds(6, 142, 244, filterCB.getPreferredSize().height);
 
                         //---- filterURL ----
                         filterURL.setText("URL or path to filter file");
@@ -1164,7 +1113,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterURL);
-                        filterURL.setBounds(275, 178, 440, filterURL.getPreferredSize().height);
+                        filterURL.setBounds(275, 140, 440, filterURL.getPreferredSize().height);
 
                         //---- samFlagUnmappedPairCB ----
                         samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1176,28 +1125,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jPanel12.add(samFlagUnmappedPairCB);
                         samFlagUnmappedPairCB.setBounds(6, 76, 310, samFlagUnmappedPairCB.getPreferredSize().height);
 
-                        //---- jLabel10 ----
-                        jLabel10.setText("<html>Chromosome color legend &nbsp;&nbsp;&nbsp;<i>Used to flag paired end reads with mates on other chromosomes");
-                        jPanel12.add(jLabel10);
-                        jLabel10.setBounds(5, 230, 640, 30);
-
-                        //======== legendPanel ========
-                        {
-
-                            GroupLayout legendPanelLayout = new GroupLayout(legendPanel);
-                            legendPanel.setLayout(legendPanelLayout);
-                            legendPanelLayout.setHorizontalGroup(
-                                legendPanelLayout.createParallelGroup()
-                                    .add(0, 602, Short.MAX_VALUE)
-                            );
-                            legendPanelLayout.setVerticalGroup(
-                                legendPanelLayout.createParallelGroup()
-                                    .add(0, 25, Short.MAX_VALUE)
-                            );
-                        }
-                        jPanel12.add(legendPanel);
-                        legendPanel.setBounds(new Rectangle(new Point(5, 270), legendPanel.getPreferredSize()));
-
                         //---- filterFailedReadsCB ----
                         filterFailedReadsCB.setText("Filter vendor failed reads");
                         filterFailedReadsCB.addActionListener(new ActionListener() {
@@ -1206,12 +1133,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterFailedReadsCB);
-                        filterFailedReadsCB.setBounds(new Rectangle(new Point(6, 41), filterFailedReadsCB.getPreferredSize()));
+                        filterFailedReadsCB.setBounds(new Rectangle(new Point(6, 43), filterFailedReadsCB.getPreferredSize()));
 
                         //---- label2 ----
                         label2.setText("Max:");
                         jPanel12.add(label2);
-                        label2.setBounds(new Rectangle(new Point(400, 145), label2.getPreferredSize()));
+                        label2.setBounds(new Rectangle(new Point(455, 110), label2.getPreferredSize()));
 
                         //---- showSoftClippedCB ----
                         showSoftClippedCB.setText("Show soft-clipped bases");
@@ -1221,7 +1148,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showSoftClippedCB);
-                        showSoftClippedCB.setBounds(new Rectangle(new Point(6, 111), showSoftClippedCB.getPreferredSize()));
+                        showSoftClippedCB.setBounds(new Rectangle(new Point(375, 76), showSoftClippedCB.getPreferredSize()));
 
                         //---- showJunctionTrackCB ----
                         showJunctionTrackCB.setText("Show splice junction track");
@@ -1231,7 +1158,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showJunctionTrackCB);
-                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 41), showJunctionTrackCB.getPreferredSize()));
+                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 43), showJunctionTrackCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -1248,7 +1175,138 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(jPanel12);
-                    jPanel12.setBounds(6, 198, 740, 297);
+                    jPanel12.setBounds(5, 165, 755, 175);
+
+                    //======== panel2 ========
+                    {
+                        panel2.setBorder(new TitledBorder("Insert Size Options"));
+                        panel2.setLayout(null);
+
+                        //---- isizeComputeCB ----
+                        isizeComputeCB.setText("compute");
+                        isizeComputeCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                isizeComputeCBActionPerformed(e);
+                            }
+                        });
+                        panel2.add(isizeComputeCB);
+                        isizeComputeCB.setBounds(new Rectangle(new Point(360, 77), isizeComputeCB.getPreferredSize()));
+
+                        //---- jLabel17 ----
+                        jLabel17.setText("Maximum (bp):");
+                        panel2.add(jLabel17);
+                        jLabel17.setBounds(15, 105, 110, jLabel17.getPreferredSize().height);
+
+                        //---- insertSizeMinThresholdField ----
+                        insertSizeMinThresholdField.setText("0");
+                        insertSizeMinThresholdField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMinThresholdField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMinThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel2.add(insertSizeMinThresholdField);
+                        insertSizeMinThresholdField.setBounds(135, 74, 84, 28);
+
+                        //---- jLabel20 ----
+                        jLabel20.setText("Minimum (bp):");
+                        panel2.add(jLabel20);
+                        jLabel20.setBounds(15, 80, 110, 16);
+
+                        //---- insertSizeThresholdField ----
+                        insertSizeThresholdField.setText("0");
+                        insertSizeThresholdField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeThresholdField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel2.add(insertSizeThresholdField);
+                        insertSizeThresholdField.setBounds(135, 100, 84, insertSizeThresholdField.getPreferredSize().height);
+
+                        //---- jLabel30 ----
+                        jLabel30.setText("Minimum (percentile):");
+                        panel2.add(jLabel30);
+                        jLabel30.setBounds(460, 80, 155, 16);
+
+                        //---- jLabel18 ----
+                        jLabel18.setText("Maximum (percentile):");
+                        panel2.add(jLabel18);
+                        jLabel18.setBounds(460, 105, 155, 16);
+
+                        //---- insertSizeMinPercentileField ----
+                        insertSizeMinPercentileField.setText("0");
+                        insertSizeMinPercentileField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMinThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel2.add(insertSizeMinPercentileField);
+                        insertSizeMinPercentileField.setBounds(625, 74, 84, 28);
+
+                        //---- insertSizeMaxPercentileField ----
+                        insertSizeMaxPercentileField.setText("0");
+                        insertSizeMaxPercentileField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeThresholdFieldActionPerformed(e);
+                            }
+                        });
+                        insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                insertSizeThresholdFieldFocusLost(e);
+                            }
+                        });
+                        panel2.add(insertSizeMaxPercentileField);
+                        insertSizeMaxPercentileField.setBounds(625, 100, 84, 28);
+
+                        //---- label8 ----
+                        label8.setText("<html><i>These options control the color coding of alignments by insert size.   Base pair values set default values.  If \"compute\" is selected defaults are overriden by values compute from the actual insert size distirbution.");
+                        panel2.add(label8);
+                        label8.setBounds(5, 15, 735, 55);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < panel2.getComponentCount(); i++) {
+                                Rectangle bounds = panel2.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel2.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel2.setMinimumSize(preferredSize);
+                            panel2.setPreferredSize(preferredSize);
+                        }
+                    }
+                    jPanel1.add(panel2);
+                    panel2.setBounds(5, 350, 755, 145);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1592,7 +1650,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25)
+                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                                 .addContainerGap())
                     );
                 }
@@ -2761,21 +2819,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel jPanel1;
     private JPanel jPanel11;
     private JTextField samMaxDepthField;
-    private JTextField snpThresholdField;
     private JLabel jLabel11;
-    private JLabel jLabel26;
-    private JLabel jLabel17;
     private JLabel jLabel16;
     private JTextField mappingQualityThresholdField;
     private JLabel jLabel14;
-    private JTextField insertSizeThresholdField;
     private JLabel jLabel13;
     private JLabel jLabel15;
     private JTextField samMaxWindowSizeField;
     private JLabel jLabel12;
-    private JLabel jLabel20;
-    private JTextField insertSizeMinThresholdField;
-    private JCheckBox isizeComputeCB;
+    private JLabel jLabel26;
+    private JTextField snpThresholdField;
     private JPanel jPanel12;
     private JTextField samMinBaseQualityField;
     private JCheckBox samShadeMismatchedBaseCB;
@@ -2786,12 +2839,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox filterCB;
     private JTextField filterURL;
     private JCheckBox samFlagUnmappedPairCB;
-    private JLabel jLabel10;
-    private JPanel legendPanel;
     private JCheckBox filterFailedReadsCB;
     private JLabel label2;
     private JCheckBox showSoftClippedCB;
     private JCheckBox showJunctionTrackCB;
+    private JPanel panel2;
+    private JCheckBox isizeComputeCB;
+    private JLabel jLabel17;
+    private JTextField insertSizeMinThresholdField;
+    private JLabel jLabel20;
+    private JTextField insertSizeThresholdField;
+    private JLabel jLabel30;
+    private JLabel jLabel18;
+    private JTextField insertSizeMinPercentileField;
+    private JTextField insertSizeMaxPercentileField;
+    private JLabel label8;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JRadioButton expMapToGeneCB;
