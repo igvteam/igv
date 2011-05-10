@@ -30,7 +30,6 @@ import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -200,8 +199,12 @@ public class TDFDataSource implements DataSource {
     private List<LocusScore> getSummaryScores(String chr, int zoom, int startLocation, int endLocation) {
         List<LocusScore> scores;
         if (zoom <= this.maxPrecomputedZoom) {
+
+            // Window function == none => no windowing, so its not clear what to do.  For now use mean
+            WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
+            
             scores = new ArrayList(1000);
-            TDFDataset ds = reader.getDataset(chr, zoom, windowFunction);
+            TDFDataset ds = reader.getDataset(chr, zoom, wf);
             if (ds != null) {
                 List<TDFTile> tiles = ds.getTiles(startLocation, endLocation);
                 if (tiles.size() > 0) {
