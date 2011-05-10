@@ -44,7 +44,6 @@ public class CosmicFeatureRenderer extends FeatureRenderer {
         return "Mutation";
     }
 
-    static Font font = FontManager.getScalableFont(12);
 
     /**
      * Note:  assumption is that featureList is sorted by start position.
@@ -88,6 +87,7 @@ public class CosmicFeatureRenderer extends FeatureRenderer {
 
 
                     Graphics2D g = context.getGraphic2DForColor(color);
+                    Font font = FontManager.getDefaultFont();
                     g.setFont(font);
 
                     g.fill(mutRect);

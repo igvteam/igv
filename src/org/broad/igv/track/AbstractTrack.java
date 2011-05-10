@@ -75,7 +75,7 @@ public abstract class AbstractTrack implements Track {
     private boolean useScore;
     private float viewLimitMin;
     private float viewLimitMax;
-    private int fontSize = 9;
+    private int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
     private ResourceLocator resourceLocator;

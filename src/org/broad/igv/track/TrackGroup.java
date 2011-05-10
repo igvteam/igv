@@ -25,6 +25,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -181,9 +182,7 @@ public class TrackGroup {
     public void renderName(Graphics2D g2D, Rectangle rect, boolean isSelected) {
 
         // Calculate fontsize
-        int gap = Math.min(4, rect.height / 3);
-        int prefHeight = rect.height - gap;
-        int fontSize = Math.max(6, Math.min(14, prefHeight));
+        int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
 
         Font font = FontManager.getScalableFont(Font.BOLD, fontSize);
         g2D.setFont(font);

@@ -24,6 +24,8 @@
 
 package org.broad.igv.ui;
 
+import org.broad.igv.PreferenceManager;
+
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -70,5 +72,9 @@ public class FontManager {
 
         graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
+    }
+
+    public static Font getDefaultFont() {
+        return getScalableFont(PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE));
     }
 }

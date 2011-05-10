@@ -36,8 +36,6 @@ import java.util.Map;
  */
 public class MAFRenderer  {
 
-    static Font font = FontManager.getScalableFont(10);
-
     static Map<Character, Color> nucleotideColors = new HashMap();
 
 
