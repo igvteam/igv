@@ -1,0 +1,37 @@
+#Statistics for merged alignment. 
+#Tue May 10 17:58:55 EDT 2011
+overall.matched.percent=69.8
+basename=GDFQPGI-pickrellNA18486_yale
+number.alignment.entries=4138236
+min.query.index=0
+part2.number.of.queries=1500000
+part4.basename=GDFQPGI-pickrellNA18486_yale
+part2.basename.full=GDFQPGI-pickrellNA18486_yale
+part3.basename.full=GDFQPGI-pickrellNA18486_yale
+part3.number.of.queries=1510000
+basename.full=GDFQPGI-pickrellNA18486_yale
+part4.basename.full=GDFQPGI-pickrellNA18486_yale
+number.of.queries=5930518
+part1.basename=GDFQPGI-pickrellNA18486_yale
+part1.number.of.queries=1500000
+part1.number-of-entries-written=1039062
+part1.number.alignment.entries=1039062
+part3.number-of-entries-written=1057808
+part2.min.query.index=1500000
+part4.max.query.index=5930517
+part2.number.alignment.entries=1048369
+part1.basename.full=GDFQPGI-pickrellNA18486_yale
+part3.min.query.index=3000000
+part1.max.query.index=1499999
+part3.number.alignment.entries=1057808
+part3.basename=GDFQPGI-pickrellNA18486_yale
+part2.basename=GDFQPGI-pickrellNA18486_yale
+part4.min.query.index=4510000
+part2.max.query.index=2999999
+part2.number-of-entries-written=1048369
+part4.number.alignment.entries=992997
+part4.number-of-entries-written=992997
+max.query.index=5930517
+part4.number.of.queries=1420518
+part1.min.query.index=0
+part3.max.query.index=4509999

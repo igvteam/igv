@@ -132,7 +132,10 @@ public class GobyAlignment implements Alignment {
                 scores.clear();
             } else if (!to.contains("-")) {
                 for (int i = 0; i < toLength; i++) {
-                    readBases[j + var.getPosition() + i - 1 + leftPadding] = (byte) to.charAt(i);
+                    final int offset = j + var.getPosition() + i - 1 + leftPadding;
+                    if (offset < readBases.length) {
+                        readBases[offset] = (byte) to.charAt(i);
+                    }
                 }
             }
         }

@@ -33,38 +33,38 @@ import java.util.*;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 
 
 /**
- * Created by IntelliJ IDEA.
+ * Test Goby IGV classes.
  * User: jrobinso
  * Date: Jul 12, 2010
  * Time: 11:25:52 AM
- * To change this template use File | Settings | File Templates.
  */
 public class GobyAlignmentQueryReaderTest {
 
 
     @Test
     public void testGetSequenceNames() throws Exception {
-        Set<String> expectedSequences = new HashSet(Arrays.asList("NT_113900", "22", "NT_113910", "NT_113911", "MT",
-                "3", "NT_113904", "2", "NT_113903", "1", "NT_113902", "NT_113901", "NT_113908", "7", "NT_113907", "6",
-                "5", "NT_113906", "4", "NT_113905", "9", "NT_113909", "8", "19", "c5_H2", "17", "NT_113920", "M",
-                "18", "NT_113921", "15", "16", "13", "14", "11", "12", "NT_113917", "21", "NT_113916", "20",
-                "NT_113919", "NT_113918", "NT_113913", "NT_113912", "NT_113915", "NT_113914", "Y", "X", "NT_113932",
-                "NT_113933", "NT_113930", "NT_113931", "NT_113929", "NT_113928", "10", "NT_113927", "NT_113926",
-                "NT_113925", "NT_113924", "NT_113923", "NT_113898", "NT_113899", "NT_113949", "NT_113945", "NT_113890",
-                "NT_113946", "NT_113947", "NT_113948", "NT_113953", "NT_113952", "NT_113955", "c6_QBL", "NT_113954",
-                "NT_113951", "NT_113950", "NT_113884", "NT_113885", "NT_113882", "NT_113883", "NT_113888", "NT_113889",
-                "NT_113886", "NT_113887", "NT_113938", "NT_113939", "NT_113936", "NT_113880", "NT_113937", "NT_113881",
-                "NT_113934", "NT_113935", "NT_113944", "NT_113943", "NT_113942", "NT_113941", "NT_113940", "c22_H2",
-                "NT_113879", "NT_113875", "NT_113876", "NT_113877", "NT_113878", "NT_113871", "NT_113872", "NT_113873",
-                "NT_113874", "NT_113870", "NT_113958", "c6_COX", "NT_113956", "NT_113957", "NT_113962", "NT_113961",
-                "NT_113960", "NT_113966", "NT_113965", "NT_113964", "NT_113963"));
+        Set<String> expectedSequences = new HashSet(Arrays.asList("GL000229.1", "GL000200.1", "GL000228.1", "GL000201.1", "GL000241.1", "GL000219.1",
+                "GL000191.1", "GL000242.1", "GL000243.1", "22", "GL000245.1", "MT", "3", "GL000217.1", "2", "1", "7", "6", "5",
+                "GL000215.1", "4", "9", "8", "GL000244.1", "GL000216.1", "GL000218.1", "GL000210.1", "GL000248.1", "GL000224.1",
+                "GL000203.1", "19", "17", "GL000194.1", "M", "18", "15", "16", "13", "14", "GL000195.1", "11", "12", "GL000225.1",
+                "21", "20", "GL000193.1", "GL000204.1", "GL000237.1", "GL000246.1", "Y", "GL000205.1", "GL000247.1", "X", "GL000192.1",
+                "GL000227.1", "GL000235.1", "GL000197.1", "GL000211.1", "GL000236.1", "GL000240.1", "GL000207.1", "GL000239.1", "GL000232.1",
+                "GL000212.1", "GL000238.1", "GL000231.1", "GL000233.1", "GL000226.1", "GL000249.1", "GL000223.1", "GL000199.1", "10", "GL000196.1",
+                "GL000209.1", "GL000202.1", "GL000214.1", "GL000220.1", "GL000198.1", "GL000208.1", "GL000221.1", "GL000213.1", "GL000234.1", "GL000222.1",
+                "GL000206.1", "GL000230.1"));
 
-        String thmFile = "test/data/goby/DLTTEJH-Bullard-HBR-SRR037439-1.9.5.tmh";
+        String thmFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.tmh";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
         Set<String> seqs = reader.getSequenceNames();
+        for (String name : seqs) {
+            System.out.printf("\"" + name + "\", ");
+        }
         assertEquals(expectedSequences.size(), seqs.size());
         for (String s : seqs) {
             assertTrue(expectedSequences.contains(s));
@@ -74,7 +74,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testIterator() throws Exception {
 
-        String entriesFile = "test/data/goby/DLTTEJH-Bullard-HBR-SRR037439-1.9.5.entries";
+        String entriesFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.entries";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
         CloseableIterator<Alignment> iter = reader.iterator();
 
@@ -82,8 +82,6 @@ public class GobyAlignmentQueryReaderTest {
         iter.close();
         reader.close();
     }
-
-
 
 
     /**
@@ -108,6 +106,8 @@ public class GobyAlignmentQueryReaderTest {
 
     /**
      * Test a query interval with no alignments
+     *
+     * @throws Exception
      */
     @Test
     public void testQueryNoAlignments() throws Exception {
@@ -122,6 +122,142 @@ public class GobyAlignmentQueryReaderTest {
 
         iter.close();
         reader.close();
+    }
+
+    /**
+     * Test a query interval with no alignments
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testOrdering() throws Exception {
+
+        String entriesFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.entries";
+        //   String entriesFile =  "test/data/goby/paired-end/paired-alignment.entries";
+
+        GobyAlignmentQueryReader.supportsFileType(entriesFile);
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.iterator();
+        String previousChr = "";
+        int previousAlignmentStart = -1;
+        ObjectSet<String> chromosomeSeen = new ObjectArraySet<String>();
+        // maximum number of entries to inspect (keep low for faster test).
+        int maxEntries = 100000;
+        int countVisit = 0;
+        while (iter.hasNext()) {
+            Alignment a = iter.next();
+            final String entryChr = a.getChr();
+            //   System.out.println("chr:" + entryChr);
+
+            if (entryChr.equals(previousChr)) {
+                assertTrue(a.getAlignmentStart() >= previousAlignmentStart);
+            } else {
+                assertFalse("Chromosomes should occur in blocks." +
+                        " A chromosome that was used in a previous block of entry cannot occur again.",
+                        chromosomeSeen.contains(a.getChr()));
+                previousChr = a.getChr();
+                chromosomeSeen.add(a.getChr());
+            }
+            countVisit++;
+            if (countVisit > maxEntries) break;
+        }
+
+        iter.close();
+        reader.close();
+    }
+
+    @Test
+    public void testAlignmentTwoMutations() {
+
+
+        Alignments.SequenceVariation mutation = Alignments.SequenceVariation.newBuilder().setFrom("AA").setTo("TC").
+                setPosition(10).setReadIndex(10).build();
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
+                setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
+                setQueryIndex(0).setTargetIndex(1).
+                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(1, gAlignment.block.length);
+    }
+
+    @Test
+    public void testAlignmentOneReadInsertion() {
+
+
+        Alignments.SequenceVariation mutation = Alignments.SequenceVariation.newBuilder().setFrom("--").setTo("TC").
+                setPosition(10).setReadIndex(10).build();
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
+                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(1, gAlignment.block.length);
+        assertEquals(1, gAlignment.insertionBlock.length);
+        assertEquals(1010, gAlignment.insertionBlock[0].getStart());
+    }
+
+    @Test
+    public void testAlignmentOneReadDeletion() {
+
+
+        Alignments.SequenceVariation mutation = Alignments.SequenceVariation.newBuilder().setFrom("TC").setTo("--").
+                setPosition(10).setReadIndex(10).build();
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
+                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(2, gAlignment.block.length);
+    }
+
+    @Test
+    public void testAlignmentActualEntry1() {
+
+        /**
+         *  query_index: 26
+         target_index: 0
+         position: 31
+         score: 43.0
+         query_position: 1
+         matching_reverse_strand: true
+         multiplicity: 1
+         number_of_mismatches: 2
+         number_of_indels: 3
+         query_length: 50
+         query_aligned_length: 48
+         target_aligned_length: 45
+         sequence_variations {
+         to: "AA"
+         from: "CC"
+         position: 10
+         read_index: 40
+         }
+         sequence_variations {
+         to: "ATC"
+         from: "---"
+         position: 25
+         read_index: 24
+         }
+
+         Alignment start position = chrsynth1:32
+         read-sequence
+         */
+        Alignments.SequenceVariation mutation1 = Alignments.SequenceVariation.newBuilder().setFrom("ATC").setTo("---").
+                setPosition(25).setReadIndex(24).build();
+        Alignments.SequenceVariation mutation2 = Alignments.SequenceVariation.newBuilder().setFrom("AA").setTo("CC").
+                setPosition(10).setReadIndex(40).build();
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(31).setMatchingReverseStrand(true).
+                setQueryLength(50).setQueryIndex(26).setTargetIndex(1).
+                setQueryAlignedLength(48).setNumberOfMismatches(2).setNumberOfIndels(3).addSequenceVariations(mutation1).
+                addSequenceVariations(mutation2).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(2, gAlignment.block.length);
     }
 
 }
