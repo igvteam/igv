@@ -56,7 +56,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean proxySettingsChanged;
 
 
-
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -110,6 +109,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
         normalizeCoverageCB = new JCheckBox();
         missingDataExplanation8 = new JLabel();
         expandIconCB = new JCheckBox();
+        label7 = new JLabel();
+        defaultFontSizeField = new JTextField();
         overlaysPanel = new JPanel();
         jPanel5 = new JPanel();
         jLabel3 = new JLabel();
@@ -409,9 +410,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 //======== jPanel6 ========
                 {
+                    jPanel6.setLayout(null);
 
                     //---- jLabel5 ----
                     jLabel5.setText("Default Track Height, Charts (Pixels)");
+                    jPanel6.add(jLabel5);
+                    jLabel5.setBounds(new Rectangle(new Point(6, 12), jLabel5.getPreferredSize()));
 
                     //---- defaultChartTrackHeightField ----
                     defaultChartTrackHeightField.setText("40");
@@ -426,9 +430,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             defaultChartTrackHeightFieldFocusLost(e);
                         }
                     });
+                    jPanel6.add(defaultChartTrackHeightField);
+                    defaultChartTrackHeightField.setBounds(271, 6, 57, defaultChartTrackHeightField.getPreferredSize().height);
 
                     //---- trackNameAttributeLabel ----
                     trackNameAttributeLabel.setText("Track Name Attribute");
+                    jPanel6.add(trackNameAttributeLabel);
+                    trackNameAttributeLabel.setBounds(new Rectangle(new Point(6, 162), trackNameAttributeLabel.getPreferredSize()));
 
                     //---- trackNameAttributeField ----
                     trackNameAttributeField.addActionListener(new ActionListener() {
@@ -442,14 +450,20 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             trackNameAttributeFieldFocusLost(e);
                         }
                     });
+                    jPanel6.add(trackNameAttributeField);
+                    trackNameAttributeField.setBounds(147, 156, 216, trackNameAttributeField.getPreferredSize().height);
 
                     //---- missingDataExplanation2 ----
                     missingDataExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation2.setText("<html>Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
                     missingDataExplanation2.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel6.add(missingDataExplanation2);
+                    missingDataExplanation2.setBounds(63, 190, 578, 54);
 
                     //---- jLabel8 ----
                     jLabel8.setText("Default Track Height, Other (Pixels)");
+                    jPanel6.add(jLabel8);
+                    jLabel8.setBounds(new Rectangle(new Point(5, 45), jLabel8.getPreferredSize()));
 
                     //---- defaultTrackHeightField ----
                     defaultTrackHeightField.setText("15");
@@ -464,18 +478,26 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             defaultTrackHeightFieldFocusLost(e);
                         }
                     });
+                    jPanel6.add(defaultTrackHeightField);
+                    defaultTrackHeightField.setBounds(271, 39, 57, defaultTrackHeightField.getPreferredSize().height);
 
                     //---- missingDataExplanation4 ----
                     missingDataExplanation4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation4.setText("<html>Default height of chart tracks (barcharts, scatterplots, etc)");
+                    jPanel6.add(missingDataExplanation4);
+                    missingDataExplanation4.setBounds(350, 5, 354, 25);
 
                     //---- missingDataExplanation5 ----
                     missingDataExplanation5.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation5.setText("<html>Default height of all other tracks");
+                    jPanel6.add(missingDataExplanation5);
+                    missingDataExplanation5.setBounds(350, 41, 1141, 25);
 
                     //---- missingDataExplanation3 ----
                     missingDataExplanation3.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation3.setText("<html><i> If selected feature tracks are expanded by default.");
+                    jPanel6.add(missingDataExplanation3);
+                    missingDataExplanation3.setBounds(new Rectangle(new Point(876, 318), missingDataExplanation3.getPreferredSize()));
 
                     //---- expandCB ----
                     expandCB.setText("Expand Feature Tracks");
@@ -484,6 +506,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             expandCBActionPerformed(e);
                         }
                     });
+                    jPanel6.add(expandCB);
+                    expandCB.setBounds(new Rectangle(new Point(6, 272), expandCB.getPreferredSize()));
 
                     //---- normalizeCoverageCB ----
                     normalizeCoverageCB.setText("Normalize Coverage Data");
@@ -498,11 +522,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             normalizeCoverageCBFocusLost(e);
                         }
                     });
+                    jPanel6.add(normalizeCoverageCB);
+                    normalizeCoverageCB.setBounds(new Rectangle(new Point(6, 372), normalizeCoverageCB.getPreferredSize()));
 
                     //---- missingDataExplanation8 ----
                     missingDataExplanation8.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation8.setText("<html><i> Applies to coverage tracks computed with igvtools (.tdf files).  If selected coverage values are scaled by (1,000,000 / totalCount),  where totalCount is the total number of features or alignments.");
                     missingDataExplanation8.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel6.add(missingDataExplanation8);
+                    missingDataExplanation8.setBounds(50, 413, 608, 52);
 
                     //---- expandIconCB ----
                     expandIconCB.setText("Show Expand Icon");
@@ -512,89 +540,45 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             expandIconCBActionPerformed(e);
                         }
                     });
+                    jPanel6.add(expandIconCB);
+                    expandIconCB.setBounds(new Rectangle(new Point(6, 318), expandIconCB.getPreferredSize()));
 
-                    GroupLayout jPanel6Layout = new GroupLayout(jPanel6);
-                    jPanel6.setLayout(jPanel6Layout);
-                    jPanel6Layout.setHorizontalGroup(
-                        jPanel6Layout.createParallelGroup()
-                            .add(jPanel6Layout.createSequentialGroup()
-                                .add(jPanel6Layout.createParallelGroup()
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .add(jPanel6Layout.createParallelGroup()
-                                            .add(jPanel6Layout.createSequentialGroup()
-                                                .add(24, 24, 24)
-                                                .add(missingDataExplanation4, GroupLayout.PREFERRED_SIZE, 354, GroupLayout.PREFERRED_SIZE))
-                                            .add(jPanel6Layout.createSequentialGroup()
-                                                .add(trackNameAttributeLabel)
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(trackNameAttributeField, GroupLayout.PREFERRED_SIZE, 216, GroupLayout.PREFERRED_SIZE))
-                                            .add(jPanel6Layout.createSequentialGroup()
-                                                .add(jLabel8)
-                                                .add(39, 39, 39)
-                                                .add(defaultTrackHeightField, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))
-                                            .add(jPanel6Layout.createSequentialGroup()
-                                                .add(24, 24, 24)
-                                                .add(missingDataExplanation5, GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE))
-                                            .add(jPanel6Layout.createSequentialGroup()
-                                                .add(jLabel5)
-                                                .add(36, 36, 36)
-                                                .add(defaultChartTrackHeightField, GroupLayout.PREFERRED_SIZE, 57, GroupLayout.PREFERRED_SIZE))))
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .add(expandIconCB)
-                                        .add(724, 724, 724)
-                                        .add(missingDataExplanation3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .add(63, 63, 63)
-                                        .add(missingDataExplanation2, GroupLayout.PREFERRED_SIZE, 578, GroupLayout.PREFERRED_SIZE))
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .add(expandCB))
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .addContainerGap()
-                                        .add(normalizeCoverageCB))
-                                    .add(jPanel6Layout.createSequentialGroup()
-                                        .add(50, 50, 50)
-                                        .add(missingDataExplanation8, GroupLayout.PREFERRED_SIZE, 608, GroupLayout.PREFERRED_SIZE)))
-                                .addContainerGap())
-                    );
-                    jPanel6Layout.setVerticalGroup(
-                        jPanel6Layout.createParallelGroup()
-                            .add(jPanel6Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jPanel6Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(jLabel5)
-                                    .add(defaultChartTrackHeightField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation4, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jPanel6Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(jLabel8)
-                                    .add(defaultTrackHeightField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation5, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
-                                .add(26, 26, 26)
-                                .add(jPanel6Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(trackNameAttributeLabel)
-                                    .add(trackNameAttributeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(missingDataExplanation2, GroupLayout.PREFERRED_SIZE, 54, GroupLayout.PREFERRED_SIZE)
-                                .add(28, 28, 28)
-                                .add(expandCB)
-                                .add(23, 23, 23)
-                                .add(jPanel6Layout.createParallelGroup()
-                                    .add(missingDataExplanation3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .add(expandIconCB))
-                                .addPreferredGap(LayoutStyle.RELATED, 31, Short.MAX_VALUE)
-                                .add(normalizeCoverageCB)
-                                .add(18, 18, 18)
-                                .add(missingDataExplanation8, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE)
-                                .add(15, 15, 15))
-                    );
+                    //---- label7 ----
+                    label7.setText("Default Font Size");
+                    jPanel6.add(label7);
+                    label7.setBounds(new Rectangle(new Point(5, 75), label7.getPreferredSize()));
+
+                    //---- defaultFontSizeField ----
+                    defaultFontSizeField.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            defaultFontHeightFieldActionPerformed(e);
+                        }
+                    });
+                    defaultFontSizeField.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            defaultFontHeightFieldFocusLost(e);
+                        }
+                    });
+                    jPanel6.add(defaultFontSizeField);
+                    defaultFontSizeField.setBounds(271, 70, 57, defaultFontSizeField.getPreferredSize().height);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < jPanel6.getComponentCount(); i++) {
+                            Rectangle bounds = jPanel6.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = jPanel6.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        jPanel6.setMinimumSize(preferredSize);
+                        jPanel6.setPreferredSize(preferredSize);
+                    }
                 }
                 tracksPanel.add(jPanel6);
-                jPanel6.setBounds(40, 20, 690, 480);
+                jPanel6.setBounds(40, 20, 725, 480);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2210,6 +2194,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
         }
     }
 
+
+
+    private void defaultFontHeightFieldFocusLost(FocusEvent e) {
+        defaultFontHeightFieldActionPerformed(null);
+    }
+
+    private void defaultFontHeightFieldActionPerformed(ActionEvent e) {
+        String defaultFontSize = String.valueOf(defaultFontSizeField.getText());
+        try {
+            Integer.parseInt(defaultFontSize);
+            updatedPreferenceMap.put(PreferenceManager.DEFAULT_FONT_SIZE, defaultFontSize);
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Font size must be an integer number.");
+        }
+    }
+
+
     private void trackNameAttributeFieldFocusLost(java.awt.event.FocusEvent evt) {
         String attributeName = String.valueOf(trackNameAttributeField.getText());
         if (attributeName != null) {
@@ -2548,6 +2550,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         defaultChartTrackHeightField.setText(prefMgr.get(PreferenceManager.CHART_TRACK_HEIGHT_KEY));
         defaultTrackHeightField.setText(prefMgr.get(PreferenceManager.TRACK_HEIGHT_KEY));
+        defaultFontSizeField.setText(prefMgr.get(PreferenceManager.DEFAULT_FONT_SIZE));
         displayTracksCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY));
@@ -2650,9 +2653,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             if (reloadSAM) {
                 IGV.getInstance().getTrackManager().reloadSAMTracks();
-                IGV.getInstance().repaint();
-
-
             }
         } catch (NumberFormatException numberFormatException) {
         } finally {
@@ -2733,6 +2733,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox normalizeCoverageCB;
     private JLabel missingDataExplanation8;
     private JCheckBox expandIconCB;
+    private JLabel label7;
+    private JTextField defaultFontSizeField;
     private JPanel overlaysPanel;
     private JPanel jPanel5;
     private JLabel jLabel3;
