@@ -557,10 +557,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         boolean flagUnmappedPairs;
         boolean showAllBases;
         private boolean computeIsizes;
-        private int minInsertSizeThreshold;
-        private int maxInsertSizeThreshold;
-        private double minPercentile = 0.1;
-        private double maxPercentile = 99.9;
+        private int minInsertSize;
+        private int maxInsertSize;
+        private double minInsertSizePercentile;
+        private double maxInsertSizePercentile;
         ColorOption colorOption;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
@@ -572,8 +572,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
-            minInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
-            maxInsertSizeThreshold = prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD);
+            minInsertSize = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
+            maxInsertSize = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD);
+            minInsertSizePercentile = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
+            maxInsertSizePercentile = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = colorByOption;
             //updateColorScale();
@@ -608,11 +610,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
                 attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
             }
-            if (maxInsertSizeThreshold != prefs.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("insertSizeThreshold", String.valueOf(maxInsertSizeThreshold));
+            if (maxInsertSize != prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD)) {
+                attributes.put("insertSizeThreshold", String.valueOf(maxInsertSize));
             }
-            if (getMinInsertSizeThreshold() != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
-                attributes.put("minInsertSizeThreshold", String.valueOf(maxInsertSizeThreshold));
+            if (getMinInsertSize() != prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD)) {
+                attributes.put("minInsertSizeThreshold", String.valueOf(maxInsertSize));
             }
             if (showAllBases != DEFAULT_SHOWALLBASES) {
                 attributes.put("showAllBases", String.valueOf(showAllBases));
@@ -634,11 +636,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             String value;
             value = attributes.get("insertSizeThreshold");
             if (value != null) {
-                maxInsertSizeThreshold = Integer.parseInt(value);
+                maxInsertSize = Integer.parseInt(value);
             }
             value = attributes.get("minInsertSizeThreshold");
             if (value != null) {
-                setMinInsertSizeThreshold(Integer.parseInt(value));
+                setMinInsertSize(Integer.parseInt(value));
             }
             value = attributes.get("shadeBases");
             if (value != null) {
@@ -663,17 +665,17 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         }
 
-        public int getMinInsertSizeThreshold() {
-            return minInsertSizeThreshold;
+        public int getMinInsertSize() {
+            return minInsertSize;
         }
 
-        public void setMinInsertSizeThreshold(int minInsertSizeThreshold) {
-            this.minInsertSizeThreshold = minInsertSizeThreshold;
+        public void setMinInsertSize(int minInsertSize) {
+            this.minInsertSize = minInsertSize;
             //updateColorScale();
         }
 
-        public int getMaxInsertSizeThreshold() {
-            return maxInsertSizeThreshold;
+        public int getMaxInsertSize() {
+            return maxInsertSize;
 
         }
 
@@ -694,24 +696,24 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             this.computeIsizes = computeIsizes;
         }
 
-        public double getMinPercentile() {
-            return minPercentile;
+        public double getMinInsertSizePercentile() {
+            return minInsertSizePercentile;
         }
 
-        public void setMinPercentile(double minPercentile) {
-            this.minPercentile = minPercentile;
+        public void setMinInsertSizePercentile(double minInsertSizePercentile) {
+            this.minInsertSizePercentile = minInsertSizePercentile;
         }
 
-        public double getMaxPercentile() {
-            return maxPercentile;
+        public double getMaxInsertSizePercentile() {
+            return maxInsertSizePercentile;
         }
 
-        public void setMaxPercentile(double maxPercentile) {
-            this.maxPercentile = maxPercentile;
+        public void setMaxInsertSizePercentile(double maxInsertSizePercentile) {
+            this.maxInsertSizePercentile = maxInsertSizePercentile;
         }
 
-        public void setMaxInsertSizeThreshold(int maxInsertSizeThreshold) {
-            this.maxInsertSizeThreshold = maxInsertSizeThreshold;
+        public void setMaxInsertSize(int maxInsertSize) {
+            this.maxInsertSize = maxInsertSize;
         }
     }
 
@@ -1137,10 +1139,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {
                         renderOptions.setComputeIsizes(dlg.isComputeIsize());
-                        //renderOptions.setMinPercentile(dlg.getMinPercentile());
-                        // renderOptions.setMaxPercentile(dlg.getMaxPercentile());
-                        renderOptions.setMinInsertSizeThreshold(dlg.getMinThreshold());
-                        renderOptions.setMaxInsertSizeThreshold(dlg.getMaxThreshold());
+                        renderOptions.setMinInsertSizePercentile (dlg.getMinPercentile());
+                        renderOptions.setMaxInsertSizePercentile(dlg.getMaxPercentile());
+                        if(renderOptions.isComputeIsizes()) {
+                            dataManager.updatePEStats(renderOptions);
+                        }
+
+                        renderOptions.setMinInsertSize(dlg.getMinThreshold());
+                        renderOptions.setMaxInsertSize(dlg.getMaxThreshold());
                         refresh();
                     }
                 }

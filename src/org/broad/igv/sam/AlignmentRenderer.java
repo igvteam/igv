@@ -697,13 +697,13 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (sameChr) {
                         int readDistance = Math.abs(alignment.getInferredInsertSize());
                         if (readDistance > 0) {
-                            int minThreshold = renderOptions.getMinInsertSizeThreshold();
-                            int maxThreshold = renderOptions.getMaxInsertSizeThreshold();
+                            int minThreshold = renderOptions.getMinInsertSize();
+                            int maxThreshold = renderOptions.getMaxInsertSize();
                             if (renderOptions.isComputeIsizes() && renderOptions.peStats != null) {
-                               // if (peStats != null) {
-                               //     minThreshold = peStats.getMinThreshold();
-                               //     maxThreshold = peStats.getMaxThreshold();
-                               // }
+                                if (peStats != null) {
+                                    minThreshold = peStats.getMinThreshold();
+                                    maxThreshold = peStats.getMaxThreshold();
+                                }
 
                             }
 

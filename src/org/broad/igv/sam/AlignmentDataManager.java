@@ -414,6 +414,14 @@ public class AlignmentDataManager {
         return isLoading;
     }
 
+    public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
+        if(this.peStats != null) {
+            for(PEStats stats : peStats.values()) {
+                stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
+            }
+        }
+    }
+
     /**
      * An alignment iterator that iterates over packed rows.  Used for
      * "repacking".   Using the iterator avoids the need to copy alignments

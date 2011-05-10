@@ -25,10 +25,8 @@ import javax.swing.border.*;
 import com.jidesoft.dialog.*;
 import com.jidesoft.swing.*;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.ui.legend.ChromosomeColorLegend;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
@@ -172,6 +170,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         insertSizeMinPercentileField = new JTextField();
         insertSizeMaxPercentileField = new JTextField();
         label8 = new JLabel();
+        label9 = new JLabel();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         expMapToGeneCB = new JRadioButton();
@@ -1175,7 +1174,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(jPanel12);
-                    jPanel12.setBounds(5, 165, 755, 175);
+                    jPanel12.setBounds(5, 145, 755, 175);
 
                     //======== panel2 ========
                     {
@@ -1183,19 +1182,21 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         panel2.setLayout(null);
 
                         //---- isizeComputeCB ----
-                        isizeComputeCB.setText("compute");
+                        isizeComputeCB.setText("Compute");
                         isizeComputeCB.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
+                                isizeComputeCBActionPerformed(e);
+                                isizeComputeCBActionPerformed(e);
                                 isizeComputeCBActionPerformed(e);
                             }
                         });
                         panel2.add(isizeComputeCB);
-                        isizeComputeCB.setBounds(new Rectangle(new Point(360, 77), isizeComputeCB.getPreferredSize()));
+                        isizeComputeCB.setBounds(new Rectangle(new Point(360, 76), isizeComputeCB.getPreferredSize()));
 
                         //---- jLabel17 ----
                         jLabel17.setText("Maximum (bp):");
                         panel2.add(jLabel17);
-                        jLabel17.setBounds(15, 105, 110, jLabel17.getPreferredSize().height);
+                        jLabel17.setBounds(100, 110, 110, jLabel17.getPreferredSize().height);
 
                         //---- insertSizeMinThresholdField ----
                         insertSizeMinThresholdField.setText("0");
@@ -1215,12 +1216,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel2.add(insertSizeMinThresholdField);
-                        insertSizeMinThresholdField.setBounds(135, 74, 84, 28);
+                        insertSizeMinThresholdField.setBounds(220, 75, 84, 28);
 
                         //---- jLabel20 ----
                         jLabel20.setText("Minimum (bp):");
                         panel2.add(jLabel20);
-                        jLabel20.setBounds(15, 80, 110, 16);
+                        jLabel20.setBounds(100, 80, 110, 16);
 
                         //---- insertSizeThresholdField ----
                         insertSizeThresholdField.setText("0");
@@ -1237,7 +1238,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         panel2.add(insertSizeThresholdField);
-                        insertSizeThresholdField.setBounds(135, 100, 84, insertSizeThresholdField.getPreferredSize().height);
+                        insertSizeThresholdField.setBounds(220, 105, 84, insertSizeThresholdField.getPreferredSize().height);
 
                         //---- jLabel30 ----
                         jLabel30.setText("Minimum (percentile):");
@@ -1247,7 +1248,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- jLabel18 ----
                         jLabel18.setText("Maximum (percentile):");
                         panel2.add(jLabel18);
-                        jLabel18.setBounds(460, 105, 155, 16);
+                        jLabel18.setBounds(460, 110, 155, 16);
 
                         //---- insertSizeMinPercentileField ----
                         insertSizeMinPercentileField.setText("0");
@@ -1257,6 +1258,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 insertSizeMinThresholdFieldActionPerformed(e);
                                 insertSizeMinThresholdFieldActionPerformed(e);
                                 insertSizeMinThresholdFieldActionPerformed(e);
+                                insertSizeMinPercentileFieldActionPerformed(e);
                             }
                         });
                         insertSizeMinPercentileField.addFocusListener(new FocusAdapter() {
@@ -1264,10 +1266,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             public void focusLost(FocusEvent e) {
                                 insertSizeThresholdFieldFocusLost(e);
                                 insertSizeMinThresholdFieldFocusLost(e);
+                                insertSizeMinPercentileFieldFocusLost(e);
                             }
                         });
                         panel2.add(insertSizeMinPercentileField);
-                        insertSizeMinPercentileField.setBounds(625, 74, 84, 28);
+                        insertSizeMinPercentileField.setBounds(625, 75, 84, 28);
 
                         //---- insertSizeMaxPercentileField ----
                         insertSizeMaxPercentileField.setText("0");
@@ -1275,21 +1278,28 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             public void actionPerformed(ActionEvent e) {
                                 insertSizeThresholdFieldActionPerformed(e);
                                 insertSizeThresholdFieldActionPerformed(e);
+                                insertSizeMaxPercentileFieldActionPerformed(e);
                             }
                         });
                         insertSizeMaxPercentileField.addFocusListener(new FocusAdapter() {
                             @Override
                             public void focusLost(FocusEvent e) {
                                 insertSizeThresholdFieldFocusLost(e);
+                                insertSizeMaxPercentileFieldFocusLost(e);
                             }
                         });
                         panel2.add(insertSizeMaxPercentileField);
-                        insertSizeMaxPercentileField.setBounds(625, 100, 84, 28);
+                        insertSizeMaxPercentileField.setBounds(625, 105, 84, 28);
 
                         //---- label8 ----
-                        label8.setText("<html><i>These options control the color coding of alignments by insert size.   Base pair values set default values.  If \"compute\" is selected defaults are overriden by values compute from the actual insert size distirbution.");
+                        label8.setText("<html><i>These options control the color coding of paired alignments by inferred insert size.   Base pair values set default values.  If \"compute\" is selected  values are computed from the actual size distribution of each library.");
                         panel2.add(label8);
                         label8.setBounds(5, 15, 735, 55);
+
+                        //---- label9 ----
+                        label9.setText("Defaults ");
+                        panel2.add(label9);
+                        label9.setBounds(new Rectangle(new Point(15, 80), label9.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -2017,7 +2027,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String insertThreshold = insertSizeThresholdField.getText().trim();
         try {
             Integer.parseInt(insertThreshold);
-            updatedPreferenceMap.put(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD, insertThreshold);
+            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD, insertThreshold);
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("BlastMapping quality threshold must be an integer.");
@@ -2082,10 +2092,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
     private void genomeUpdateCBActionPerformed(ActionEvent e) {
-         updatedPreferenceMap.put(
+        updatedPreferenceMap.put(
                 PreferenceManager.AUTO_UPDATE_GENOMES,
                 String.valueOf(this.genomeUpdateCB.isSelected()));
-     }
+    }
 
     private void samFlagUnmappedPairCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
@@ -2110,6 +2120,38 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(
                 PreferenceManager.SAM_COMPUTE_ISIZES,
                 String.valueOf(isizeComputeCB.isSelected()));
+    }
+
+
+    private void insertSizeMinPercentileFieldFocusLost(FocusEvent e) {
+        insertSizeMinPercentileFieldActionPerformed(null);
+    }
+
+    private void insertSizeMinPercentileFieldActionPerformed(ActionEvent e) {
+        String valueString = insertSizeMinPercentileField.getText().trim();
+        try {
+            Double.parseDouble(valueString);
+            updatedPreferenceMap.put(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE, valueString);
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Minimum insert size percentile must be a number.");
+        }
+    }
+
+
+    private void insertSizeMaxPercentileFieldFocusLost(FocusEvent e) {
+        insertSizeMaxPercentileFieldActionPerformed(null);
+    }
+
+    private void insertSizeMaxPercentileFieldActionPerformed(ActionEvent e) {
+        String valueString = insertSizeMaxPercentileField.getText().trim();
+        try {
+            Double.parseDouble(valueString);
+            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE, valueString);
+        } catch (NumberFormatException numberFormatException) {
+            inputValidated = false;
+            MessageUtils.showMessage("Maximum insert size percentile must be a number.");
+        }
     }
 
 
@@ -2251,7 +2293,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             MessageUtils.showMessage("Track height must be an integer number.");
         }
     }
-
 
 
     private void defaultFontHeightFieldFocusLost(FocusEvent e) {
@@ -2649,9 +2690,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         samMaxWindowSizeField.setText(prefMgr.get(PreferenceManager.SAM_MAX_VISIBLE_RANGE));
         samMaxDepthField.setText(prefMgr.get(PreferenceManager.SAM_MAX_LEVELS));
-        mappingQualityThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD))));
-        insertSizeThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_INSERT_SIZE_THRESHOLD))));
-        insertSizeMinThresholdField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD))));
+        mappingQualityThresholdField.setText(prefMgr.get(PreferenceManager.SAM_QUALITY_THRESHOLD));
+        insertSizeThresholdField.setText(prefMgr.get(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD));
+        insertSizeMinThresholdField.setText(prefMgr.get(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD));
+        insertSizeMinPercentileField.setText(prefMgr.get(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE));
+        insertSizeMaxPercentileField.setText(prefMgr.get(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE));
         snpThresholdField.setText((String.valueOf(prefMgr.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD))));
         //samShowZeroQualityCB.setSelected(samPrefs.isShowZeroQuality());
         samFilterDuplicatesCB.setSelected(!prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES));
@@ -2679,7 +2722,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         expMapToLociCB.setSelected(!mapProbesToGenes);
 
         normalizeCoverageCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE));
-
 
 
         expandIconCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_EXPAND_ICON));
@@ -2854,6 +2896,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField insertSizeMinPercentileField;
     private JTextField insertSizeMaxPercentileField;
     private JLabel label8;
+    private JLabel label9;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JRadioButton expMapToGeneCB;

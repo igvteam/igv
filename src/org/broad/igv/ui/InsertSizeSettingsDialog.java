@@ -55,16 +55,19 @@ public class InsertSizeSettingsDialog extends JDialog {
     private void initValues(AlignmentTrack.RenderOptions options) {
 
         computeIsize = options.isComputeIsizes();
-        minPercentile = options.getMinPercentile();
-        maxPercentile = options.getMaxPercentile();
-        minThreshold = options.getMinInsertSizeThreshold();
-        maxThreshold = options.getMaxInsertSizeThreshold();
+        minPercentile = options.getMinInsertSizePercentile();
+        maxPercentile = options.getMaxInsertSizePercentile();
+        minThreshold = options.getMinInsertSize();
+        maxThreshold = options.getMaxInsertSize();
 
         computeIsizeCB.setSelected(computeIsize);
         minPercentileField.setText(String.valueOf(minPercentile));
         maxPercentileField.setText(String.valueOf(maxPercentile));
         minThresholdField.setText(String.valueOf(minThreshold));
         maxThresholdField.setText(String.valueOf(maxThreshold));
+
+        minPercentileField.setEnabled(computeIsize);
+        maxPercentileField.setEnabled(computeIsize);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -83,25 +86,19 @@ public class InsertSizeSettingsDialog extends JDialog {
         minThresholdFieldActionPerformed(null);
     }
 
+
+    private void minPercentileFieldFocusLost(FocusEvent e) {
+        minPercentileFieldActionPerformed(null);
+    }
+
     private void minThresholdFieldActionPerformed(ActionEvent e) {
         try {
-            minThreshold = Integer.parseInt(minThresholdField.getText());
+            int tmp = Integer.parseInt(minThresholdField.getText());
+            minThreshold = tmp;
         }
-        catch(NumberFormatException ex) {
+        catch (NumberFormatException ex) {
             MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
-        }
-    }
-
-    private void maxPercentileFieldFocusLost(FocusEvent e) {
-        maxThresholdFieldActionPerformed(null);
-    }
-
-    private void maxPercentileFieldActionPerformed(ActionEvent e) {
-        try {
-            maxPercentile = Integer.parseInt( maxPercentileField.getText());
-        }
-        catch(NumberFormatException ex) {
-            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+            minThresholdField.setText(String.valueOf(minThresholdField));
         }
     }
 
@@ -112,33 +109,53 @@ public class InsertSizeSettingsDialog extends JDialog {
 
     private void maxThresholdFieldActionPerformed(ActionEvent e) {
         try {
-            maxThreshold = Integer.parseInt(maxThresholdField.getText());
+            int tmp = Integer.parseInt(maxThresholdField.getText());
+            maxThreshold = tmp;
         }
-        catch(NumberFormatException ex) {
-            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        catch (NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default maximum threshold must be an integer.");
+            maxThresholdField.setText(String.valueOf(maxThreshold));
         }
-     }
-
-    private void minPercentileFieldFocusLost(FocusEvent e) {
-        minPercentileFieldActionPerformed(null);
     }
+
+
+    private void maxPercentileFieldFocusLost(FocusEvent e) {
+        maxPercentileFieldActionPerformed(null);
+    }
+
+    private void maxPercentileFieldActionPerformed(ActionEvent e) {
+        try {
+            double tmp = Double.parseDouble(maxPercentileField.getText());
+            if (tmp <= 0 || tmp >= 100) throw new NumberFormatException();
+            maxPercentile = tmp;
+        }
+        catch (NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default maximum threshold must be a number between 0 and 100.");
+            maxPercentileField.setText(String.valueOf(maxPercentile));
+        }
+    }
+
 
     private void minPercentileFieldActionPerformed(ActionEvent e) {
         try {
-            minPercentile = Integer.parseInt(minPercentileField.getText());
+            double tmp = Double.parseDouble(minPercentileField.getText());
+            if (tmp <= 0 || tmp >= 100) throw new NumberFormatException();
+            minPercentile = tmp;
         }
-        catch(NumberFormatException ex) {
-            MessageUtils.showMessage("Error: Default minimum threshold must be an integer.");
+        catch (NumberFormatException ex) {
+            MessageUtils.showMessage("Error: Default minimum threshold must be a number between 0 and 100.");
+            minPercentileField.setText(String.valueOf(minPercentile));
         }
     }
 
     private void computeIsizeCBActionPerformed(ActionEvent e) {
         computeIsize = computeIsizeCB.isSelected();
+        minPercentileField.setEnabled(computeIsize);
+        maxPercentileField.setEnabled(computeIsize);
     }
 
 
-
-   private void initComponents() {
+    private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
@@ -224,6 +241,8 @@ public class InsertSizeSettingsDialog extends JDialog {
                     maxPercentileField.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             maxPercentileFieldActionPerformed(e);
+                            maxPercentileFieldActionPerformed(e);
+                            maxPercentileFieldActionPerformed(e);
                         }
                     });
                     maxPercentileField.addFocusListener(new FocusAdapter() {
@@ -237,7 +256,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel1.getComponentCount(); i++) {
+                        for (int i = 0; i < panel1.getComponentCount(); i++) {
                             Rectangle bounds = panel1.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -299,7 +318,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel2.getComponentCount(); i++) {
+                        for (int i = 0; i < panel2.getComponentCount(); i++) {
                             Rectangle bounds = panel2.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -316,7 +335,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);

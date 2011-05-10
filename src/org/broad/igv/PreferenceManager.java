@@ -72,8 +72,11 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String SAM_ALLELE_THRESHOLD = "SAM.ALLELE_THRESHOLD";
     public static final String SAM_QUALITY_THRESHOLD = "SAM.QUALITY_THRESHOLD";
-    public static final String SAM_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
+    public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
+    public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
+    public static final String SAM_MIN_INSERT_SIZE_PERCENTILE= "SAM.MIN_ISIZE_MIN_PERCENTILE";
+    public static final String SAM_COMPUTE_INSERT_SIZE_THRESHOLD = "SAM.COMPUTE_ISZIE";
     public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
     public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
     public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";
@@ -893,7 +896,10 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");
         defaultValues.put(SAM_MIN_INSERT_SIZE_THRESHOLD, "50");
-        defaultValues.put(SAM_INSERT_SIZE_THRESHOLD, "1000");
+        defaultValues.put(SAM_MAX_INSERT_SIZE_THRESHOLD, "1000");
+        defaultValues.put(SAM_MIN_INSERT_SIZE_PERCENTILE, "0.5");
+        defaultValues.put(SAM_MAX_INSERT_SIZE_PERCENTILE, "99.5");
+        defaultValues.put(SAM_COMPUTE_INSERT_SIZE_THRESHOLD, "true");
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_COMPUTE_ISIZES, "true");
