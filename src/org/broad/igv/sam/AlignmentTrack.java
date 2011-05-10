@@ -574,8 +574,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
             minInsertSize = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
             maxInsertSize = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_THRESHOLD);
-            minInsertSizePercentile = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
-            maxInsertSizePercentile = prefs.getAsInt(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
+            minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
+            maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = colorByOption;
             //updateColorScale();

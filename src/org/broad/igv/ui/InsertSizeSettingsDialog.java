@@ -201,7 +201,7 @@ public class InsertSizeSettingsDialog extends JDialog {
                     panel1.setLayout(null);
 
                     //---- computeIsizeCB ----
-                    computeIsizeCB.setText("Compute thresholds dynamically");
+                    computeIsizeCB.setText("Compute thresholds");
                     computeIsizeCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             computeIsizeCBActionPerformed(e);
@@ -256,7 +256,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel1.getComponentCount(); i++) {
+                        for(int i = 0; i < panel1.getComponentCount(); i++) {
                             Rectangle bounds = panel1.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -318,7 +318,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel2.getComponentCount(); i++) {
+                        for(int i = 0; i < panel2.getComponentCount(); i++) {
                             Rectangle bounds = panel2.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -335,7 +335,7 @@ public class InsertSizeSettingsDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);

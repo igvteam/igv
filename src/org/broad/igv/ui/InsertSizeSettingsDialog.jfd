@@ -101,7 +101,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Compute thresholds dynamically</string> 
+               <string>Compute thresholds</string> 
               </void> 
               <void property="name"> 
                <string>computeIsizeCB</string> 
