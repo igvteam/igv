@@ -121,6 +121,8 @@ public class FeatureUtils {
                                        List<? extends Feature> features,
                                        boolean oneBased) {
 
+        position--;
+
         int startIdx = 0;
         int endIdx = features.size();
 
