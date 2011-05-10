@@ -133,8 +133,9 @@ public class Bin implements LocusScore {
                 sb.append(names.get(0));
                 sb.append(")");
             }
-        } else {
+        } else if (windowFunction != null) {
             sb.append("<br> ");
+
             sb.append(windowFunction.getDisplayName() + " of " +
                     (values.size() == maxValues ? "> " : "") + values.size() + " values:");
             float[] v = values.toArray();
@@ -149,13 +150,14 @@ public class Bin implements LocusScore {
             if (v.length == maxValues) {
                 sb.append("<br>...");
             }
+
         }
         sb.append("<br>Position: ");
-        if(getChr() != null) {
+        if (getChr() != null) {
             sb.append(getChr() + ":");
         }
         sb.append(getStart() + 1);
-        if(end > start + 1) {
+        if (end > start + 1) {
             sb.append("-" + end);
         }
 
@@ -170,14 +172,5 @@ public class Bin implements LocusScore {
         return names;
     }
 
-    public void mergeValues(Bin b) {
-        FloatArrayList vList = b.getValues();
-        List<String> probes = b.getNames();
-        if(vList.size() != probes.size()) {
-            // TODO -- error?
-        }
-        for(int i=0; i<probes.size(); i++) {
-            this.addValue(probes.get(i), vList.get(i));
-        }
-    }
+
 }
