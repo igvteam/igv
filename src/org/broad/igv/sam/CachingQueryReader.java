@@ -311,8 +311,11 @@ public class CachingQueryReader {
 
             // Compute peStats
             if (peStats != null) {
+                // TODO -- something smareter re the percentiles.  For small samples these will revert to min and max
+                double minPercentile = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
+                double maxPercentile = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
                 for (PEStats stats : peStats.values()) {
-                    stats.compute(.1, 99.9);
+                    stats.compute(minPercentile, maxPercentile);
                 }
             }
 
