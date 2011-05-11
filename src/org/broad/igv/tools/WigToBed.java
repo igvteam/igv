@@ -46,14 +46,14 @@ public class WigToBed implements DataConsumer {
     static String lowerName = "lower";
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String input =  args[0]; //"/Users/jrobinso/Sigma/566.wgs.bam.large_isize.wig";
         WigToBed wigToBed = new WigToBed(input, .17f, .55f);
         WiggleParser parser = new WiggleParser(input, wigToBed, null);
         parser.parse();
     }
 
-    public static void run(String inputFile, float hetThreshold, float homThreshold) {
+    public static void run(String inputFile, float hetThreshold, float homThreshold) throws IOException {
 
         lowerName = String.valueOf((int) (hetThreshold * 10));
         upperName =  String.valueOf((int) (homThreshold * 10));
