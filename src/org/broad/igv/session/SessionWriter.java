@@ -21,7 +21,6 @@ package org.broad.igv.session;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.DataRange;
@@ -384,18 +383,18 @@ public class SessionWriter {
 
     private void writePanelLayout(Element globalElement, Document document) {
 
-        int[] dividerLocations = IGV.getInstance().getMainPanel().getDividerLocations();
-        if (dividerLocations.length > 0) {
+        double[] dividerFractions = IGV.getInstance().getMainPanel().getDividerFractions();
+        if (dividerFractions.length > 0) {
 
             Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT.getText());
             globalElement.appendChild(panelLayout);
 
             StringBuffer locString = new StringBuffer();
-            locString.append(String.valueOf(dividerLocations[0]));
-            for(int i=1; i<dividerLocations.length; i++) {
-                locString.append("," + dividerLocations[i]);
+            locString.append(String.valueOf(dividerFractions[0]));
+            for(int i=1; i< dividerFractions.length; i++) {
+                locString.append("," + dividerFractions[i]);
             }
-            panelLayout.setAttribute("dividerLocations", locString.toString());
+            panelLayout.setAttribute("dividerFractions", locString.toString());
 
 
         }

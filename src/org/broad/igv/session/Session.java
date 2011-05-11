@@ -66,7 +66,7 @@ public class Session {
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
 
-    int [] dividerLocations = null;
+    double [] dividerFractions = null;
 
     private History history;
 
@@ -105,17 +105,17 @@ public class Session {
     }
 
     public void clearDividerLocations() {
-        dividerLocations = null;
+        dividerFractions = null;
     }
 
 
-    public void setDividerLocations(int[] divs) {
-        this.dividerLocations = divs;
+    public void setDividerFractions(double[] divs) {
+        this.dividerFractions = divs;
 
     }
 
-    public int[] getDividerLocations() {
-        return dividerLocations;
+    public double[] getDividerFractions() {
+        return dividerFractions;
     }
 
     public void recordHistory() {

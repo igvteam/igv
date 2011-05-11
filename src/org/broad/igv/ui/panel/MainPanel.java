@@ -91,12 +91,23 @@ public class MainPanel extends JPanel implements Paintable {
         });
     }
 
-    public void setDividerLocations(int[] locations) {
-        centerSplitPane.setDividerLocations(locations);
+    public void setDividerFractions(double[] fractions) {
+        int [] dividerLocations = new int[fractions.length];
+        double h = centerSplitPane.getHeight();
+        for(int i=0; i<fractions.length; i++) {
+            dividerLocations[i] = (int) Math.round(h * fractions[i]);
+        }
+        centerSplitPane.setDividerLocations(dividerLocations);
     }
 
-    public int[] getDividerLocations() {
-        return centerSplitPane.getDividerLocations();
+    public double[] getDividerFractions() {
+        int [] dividerLocations = centerSplitPane.getDividerLocations();
+        double h = centerSplitPane.getHeight();
+        double [] dividerFractions = new double[dividerLocations.length];
+        for(int i=0; i<dividerLocations.length; i++) {
+           dividerFractions[i] = dividerLocations[i] / h;
+        }
+        return dividerFractions;
     }
 
 

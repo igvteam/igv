@@ -735,15 +735,15 @@ public class SessionReader {
         for (int i = 0; i < tNodeMap.getLength(); i++) {
             Node node = tNodeMap.item(i);
             String name = node.getNodeName();
-            if (name.equals("dividerLocations")) {
+            if (name.equals("dividerFractions")) {
                 String value = node.getNodeValue();
                 String [] tokens = value.split(",");
-                int [] divs = new int[tokens.length];
+                double [] divs = new double[tokens.length];
                 try {
                     for(int j=0; j<tokens.length; j++) {
-                        divs[j] = Integer.parseInt(tokens[j]);
+                        divs[j] = Double.parseDouble(tokens[j]);
                     }
-                    session.setDividerLocations(divs);
+                    session.setDividerFractions(divs);
                 }
                 catch(NumberFormatException e) {
                     log.error("Error parsing divider locations", e);

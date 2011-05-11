@@ -1474,9 +1474,9 @@ public class IGV {
             doRefresh();
 
 
-            int[] dividerLocations = session.getDividerLocations();
-            if (dividerLocations != null) {
-                contentPane.getMainPanel().setDividerLocations(dividerLocations);
+            double[] dividerFractions = session.getDividerFractions();
+            if (dividerFractions != null) {
+                contentPane.getMainPanel().setDividerFractions(dividerFractions);
             }
             session.clearDividerLocations();
 
