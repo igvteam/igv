@@ -1,9 +1,0 @@
-#Statistics for merged alignment. 
-#Wed Apr 27 12:20:28 EDT 2011
-number.of.queries=11410066
-min.query.index=193
-overall.matched.percent=61.1
-max.query.index=11410065
-basename=DLTTEJH-Bullard-HBR-SRR037439-1.9
-number.alignment.entries=6967082
-basename.full=DLTTEJH-Bullard-HBR-SRR037439-1.9.5
