@@ -144,6 +144,9 @@ public class SessionWriter {
             // Panels
             writePanels(globalElement, document);
 
+            // Panel layout
+            writePanelLayout(globalElement, document);
+
 
             // Regions of Interest
             writeRegionsOfInterest(globalElement, document);
@@ -377,6 +380,26 @@ public class SessionWriter {
                 globalElement.appendChild(panelElement);
             }
         }
+    }
+
+    private void writePanelLayout(Element globalElement, Document document) {
+
+        int[] dividerLocations = IGV.getInstance().getMainPanel().getDividerLocations();
+        if (dividerLocations.length > 0) {
+
+            Element panelLayout = document.createElement(SessionElement.PANEL_LAYOUT.getText());
+            globalElement.appendChild(panelLayout);
+
+            StringBuffer locString = new StringBuffer();
+            locString.append(String.valueOf(dividerLocations[0]));
+            for(int i=1; i<dividerLocations.length; i++) {
+                locString.append("," + dividerLocations[i]);
+            }
+            panelLayout.setAttribute("dividerLocations", locString.toString());
+
+
+        }
+
     }
 
     /**

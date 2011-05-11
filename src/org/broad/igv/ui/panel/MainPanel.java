@@ -88,7 +88,15 @@ public class MainPanel extends JPanel implements Paintable {
             public void componentHidden(ComponentEvent componentEvent) {
                 //To change body of implemented methods use File | Settings | File Templates.
             }
-        })  ;
+        });
+    }
+
+    public void setDividerLocations(int[] locations) {
+        centerSplitPane.setDividerLocations(locations);
+    }
+
+    public int[] getDividerLocations() {
+        return centerSplitPane.getDividerLocations();
     }
 
 
@@ -198,15 +206,6 @@ public class MainPanel extends JPanel implements Paintable {
 
     }
 
-    public void adjustPanelDivider() {
-        // Adjust divider for data panel.  The data panel divider can be
-        // zero if there are no data tracks loaded.
-        TrackPanelScrollPane dsp = trackManager.getScrollPane(TrackManager.DATA_PANEL_NAME);
-        if (dsp.getDataPanel().getAllTracks().size() > 0 &&
-                centerSplitPane.getDividerLocation(0) < 10) {
-            centerSplitPane.setDividerLocation(0, 40);
-        }
-    }
 
     public void resetPanels() {
         // Remove user added panels
@@ -260,27 +259,20 @@ public class MainPanel extends JPanel implements Paintable {
 
         trackManager.putScrollPane(name, sp);
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
+        // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
+        int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
+        if (featurePaneIdx > 0) {
+            centerSplitPane.insertPane(sp, featurePaneIdx);
+        } else {
+            centerSplitPane.add(sp);
+        }
 
-            public void run() {
-                // TODO Resize the data panel to make as much space as possible
-
-                // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
-                int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
-                if (featurePaneIdx > 0) {
-                    centerSplitPane.insertPane(sp, featurePaneIdx);
-                } else {
-                    centerSplitPane.add(sp);
-                }
-
-                if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-                    if (sp.getTrackPanel().getTracks().size() == 0) {
-                        centerSplitPane.setDividerLocation(0, 3);
-                    }
-                }
-
+        if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+            if (sp.getTrackPanel().getTracks().size() == 0) {
+                centerSplitPane.setDividerLocation(0, 3);
             }
-        });
+        }
+
 
         return sp;
     }

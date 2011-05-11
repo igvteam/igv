@@ -86,8 +86,6 @@ public class IGVContentPane extends JPanel {
         return UIConstants.preferredSize;
     }
 
-
-
     /**
      * Repaint panels containing data, specifically the dataTrackPanel,
      * featureTrackPanel, and headerPanel.
@@ -229,29 +227,6 @@ public class IGVContentPane extends JPanel {
         ((ApplicationStatusBar) statusBar).setMessage("" +
                 IGV.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
 
-    }
-
-
-    public void rebuildGenomeDropdownList(Set excludedArchivesUrls) {
-        igvCommandBar.rebuildGenomeItemList(excludedArchivesUrls);
-    }
-
-    public void showLoadedTrackCount() {
-        ((ApplicationStatusBar) statusBar).setMessage("" +
-                IGV.getInstance().getTrackManager().getVisibleTrackCount() +
-                " track(s) currently loaded");
-    }
-
-    public void tweakPanelDivider() {
-        mainPanel.tweakPanelDivider();
-    }
-
-    public void removeDataPanel(String name) {
-        mainPanel.removeDataPanel(name);
-    }
-
-    public void layoutMainPanel() {
-        mainPanel.doLayout();
     }
 
     public MainPanel getMainPanel() {

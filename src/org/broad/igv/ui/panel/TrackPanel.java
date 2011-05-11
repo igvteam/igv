@@ -425,34 +425,6 @@ public class TrackPanel extends IGVPanel {
         return dim;
     }
 
-    public void setHeight(int height) {
-
-        if (height < 0) {
-            height = 0;
-        }
-
-        // First resize itself
-        final Dimension dimension = new Dimension(getWidth(), height);
-        setSize(dimension);
-        //setPreferredSize(dimension);
-
-        // Then resize its children
-        Component[] children = getComponents();
-        for (final Component child : children) {
-
-            final Dimension childDimension = new Dimension(child.getWidth(), height);
-
-            UIUtilities.invokeOnEventThread(new Runnable() {
-
-                public void run() {
-                    child.setSize(childDimension);
-                    child.setPreferredSize(childDimension);
-                }
-            });
-        }
-    }
-
-
     @Override
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 

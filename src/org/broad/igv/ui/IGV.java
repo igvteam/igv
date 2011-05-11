@@ -1466,13 +1466,20 @@ public class IGV {
             // NOTE: Nothing to do if chr == all
             if (!FrameManager.isGeneListMode() && searchText != null && !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
                 contentPane.getCommandBar().searchByLocus(searchText);
-
-
             }
+
 
             mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
             LRUCache.clearCaches();
             doRefresh();
+
+
+            int[] dividerLocations = session.getDividerLocations();
+            if (dividerLocations != null) {
+                contentPane.getMainPanel().setDividerLocations(dividerLocations);
+            }
+            session.clearDividerLocations();
+
 
             //If there's a RegionNavigatorDialog, kill it.
             //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner

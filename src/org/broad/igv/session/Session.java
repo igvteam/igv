@@ -27,7 +27,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.TrackManager;
@@ -56,7 +55,7 @@ public class Session {
 
     };
 
-    private static int versionNumber = 3;
+    private static int version = 4;
 
     private TrackManager trackManager;
 
@@ -66,6 +65,8 @@ public class Session {
     private TrackFilter filter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
+
+    int [] dividerLocations = null;
 
     private History history;
 
@@ -103,6 +104,19 @@ public class Session {
 
     }
 
+    public void clearDividerLocations() {
+        dividerLocations = null;
+    }
+
+
+    public void setDividerLocations(int[] divs) {
+        this.dividerLocations = divs;
+
+    }
+
+    public int[] getDividerLocations() {
+        return dividerLocations;
+    }
 
     public void recordHistory() {
         final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
@@ -110,7 +124,7 @@ public class Session {
     }
 
     public String getSessionVersion() {
-        return String.valueOf(versionNumber);
+        return String.valueOf(version);
     }
 
     /**
@@ -340,6 +354,14 @@ public class Session {
             getCurrentGeneList().add(gene);
             setCurrentGeneList(getCurrentGeneList());
         }
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
     }
 
 

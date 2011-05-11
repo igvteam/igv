@@ -19,7 +19,6 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -89,7 +88,9 @@ public class SessionReader {
      */
     public static enum SessionElement {
 
+
         PANEL("Panel"),
+        PANEL_LAYOUT("PanelLayout"),
         TRACK("Track"),
         COLOR_SCALE("ColorScale"),
         COLOR_SCALES("ColorScales"),
@@ -282,6 +283,39 @@ public class SessionReader {
         return session;
     }
 
+
+    private void processRootNode(Session session, Node node, HashMap additionalInformation) {
+
+        if ((node == null) || (session == null)) {
+            MessageUtils.showMessage("Invalid session file: root node not found");
+            return;
+        }
+
+        String nodeName = node.getNodeName();
+        if (!(nodeName.equalsIgnoreCase(SessionElement.GLOBAL.getText()) || nodeName.equalsIgnoreCase(SessionElement.SESSION.getText()))) {
+            MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element.  Found: " + nodeName);
+        }
+        process(session, node, additionalInformation);
+
+        Element element = (Element) node;
+        IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
+        session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
+        session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
+        String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
+        try {
+            version = Integer.parseInt(versionString);
+        }
+        catch (NumberFormatException e) {
+            log.error("Non integer version number in session file: " + versionString);
+        }
+        session.setVersion(version);
+
+        NodeList elements = element.getChildNodes();
+        process(session, elements, additionalInformation);
+
+        // ReferenceFrame.getInstance().invalidateLocationScale();
+    }
+
     //TODO Check to make sure tracks are not being created twice
     //TODO -- DONT DO THIS FOR NEW SESSIONS
 
@@ -312,73 +346,41 @@ public class SessionReader {
         }
 
         String nodeName = element.getNodeName();
-        if (true) {
 
-            if (nodeName.equalsIgnoreCase(SessionElement.GLOBAL.getText()) ||
-                    nodeName.equalsIgnoreCase(SessionElement.SESSION.getText())) {
-                processGlobal(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.FILES.getText())) {
-                processFiles(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_FILE.getText())) {
-                processDataFile(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES.getText())) {
-                processResources(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE.getText())) {
-                processResource(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.REGIONS.getText())) {
-                processRegions(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.REGION.getText())) {
-                processRegion(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.GENE_LIST.getText())) {
-                processGeneList(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER.getText())) {
-                processFilter(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER_ELEMENT.getText())) {
-                processFilterElement(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALES.getText())) {
-                processColorScales(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALE.getText())) {
-                processColorScale(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.PREFERENCES.getText())) {
-                processPreferences(session, (Element) element, additionalInformation);
-            } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS.getText()) ||
-                    nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS.getText()) ||
-                    nodeName.equalsIgnoreCase(SessionElement.PANEL.getText())) {
-                processPanel(session, (Element) element, additionalInformation);
-            }
+        if (nodeName.equalsIgnoreCase(SessionElement.FILES.getText())) {
+            processFiles(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_FILE.getText())) {
+            processDataFile(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES.getText())) {
+            processResources(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE.getText())) {
+            processResource(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.REGIONS.getText())) {
+            processRegions(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.REGION.getText())) {
+            processRegion(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.GENE_LIST.getText())) {
+            processGeneList(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER.getText())) {
+            processFilter(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.FILTER_ELEMENT.getText())) {
+            processFilterElement(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALES.getText())) {
+            processColorScales(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.COLOR_SCALE.getText())) {
+            processColorScale(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.PREFERENCES.getText())) {
+            processPreferences(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_TRACKS.getText()) ||
+                nodeName.equalsIgnoreCase(SessionElement.FEATURE_TRACKS.getText()) ||
+                nodeName.equalsIgnoreCase(SessionElement.PANEL.getText())) {
+            processPanel(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT.getText())) {
+            processPanelLayout(session, (Element) element, additionalInformation);
         }
+
     }
 
-    private void processRootNode(Session session, Node element, HashMap additionalInformation) {
-
-        if ((element == null) || (session == null)) {
-            return;
-        }
-
-        String nodeName = element.getNodeName();
-        if (!(nodeName.equalsIgnoreCase(SessionElement.GLOBAL.getText()) || nodeName.equalsIgnoreCase(SessionElement.SESSION.getText()))) {
-            MessageUtils.showMessage("Session files must begin with a \"Global\" or \"Session\" element.  Found: " + nodeName);
-        }
-        process(session, element, additionalInformation);
-    }
-
-    private void processGlobal(Session session, Element element, HashMap additionalInformation) {
-
-        IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
-        session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
-        session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
-        String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
-        try {
-            version = Integer.parseInt(versionString);
-        }
-        catch (NumberFormatException e) {
-            log.error("Non integer version number in session file: " + versionString);
-        }
-        NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation);
-
-        // ReferenceFrame.getInstance().invalidateLocationScale();
-    }
 
     /**
      * Process the Files element.
@@ -693,17 +695,15 @@ public class SessionReader {
         process(session, elements, additionalInformation);
     }
 
+    /**
+     * A counter to generate unique panel names.  Needed for backward-compatibility of old session files.
+     */
+    private int panelCounter = 1;
     private void processPanel(Session session, Element element, HashMap additionalInformation) {
         panelElementPresent = true;
-        String nodeName = element.getNodeName();
-        String panelName = nodeName;
-        int height = 0;
-        if (nodeName.equalsIgnoreCase(SessionElement.PANEL.getText())) {
-            panelName = element.getAttribute("name");
-            try {
-                height = Integer.valueOf(element.getAttribute("height"));
-            } catch (NumberFormatException nfe) {
-            }
+        String panelName = element.getAttribute("name");
+        if(panelName == null) {
+            panelName = "Panel" + panelCounter++;
         }
 
         List<Track> panelTracks = new ArrayList();
@@ -723,12 +723,33 @@ public class SessionReader {
         }
 
         TrackPanel panel = IGV.getInstance().getDataPanel(panelName);
-        if (height == 0) {
-            height = panel.getPreferredPanelHeight();
-        }
-
-        panel.setHeight(height);
         panel.addTracks(panelTracks);
+    }
+
+    private void processPanelLayout(Session session, Element element, HashMap additionalInformation) {
+
+        String nodeName = element.getNodeName();
+        String panelName = nodeName;
+
+        NamedNodeMap tNodeMap = element.getAttributes();
+        for (int i = 0; i < tNodeMap.getLength(); i++) {
+            Node node = tNodeMap.item(i);
+            String name = node.getNodeName();
+            if (name.equals("dividerLocations")) {
+                String value = node.getNodeValue();
+                String [] tokens = value.split(",");
+                int [] divs = new int[tokens.length];
+                try {
+                    for(int j=0; j<tokens.length; j++) {
+                        divs[j] = Integer.parseInt(tokens[j]);
+                    }
+                    session.setDividerLocations(divs);
+                }
+                catch(NumberFormatException e) {
+                    log.error("Error parsing divider locations", e);
+                }
+            }
+        }
     }
 
 
