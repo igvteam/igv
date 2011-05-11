@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 /**
  * @author jrobinso
@@ -37,12 +39,30 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     private static Logger log = Logger.getLogger(TrackPanelScrollPane.class);
 
     TrackPanel trackPanel;
+    boolean isScrolling = false;
 
     public TrackPanelScrollPane() {
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        // A fix for name panel painting problems.   Not sure why this is neccessary, but it is.
+        // The adustment listener forces a repaint after a scroll action is complete.
+        final JScrollBar sb = this.getVerticalScrollBar();
+        sb.addAdjustmentListener(new AdjustmentListener() {
+            public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
+                if (isScrolling) {
+                    if (!adjustmentEvent.getValueIsAdjusting()) {
+                        isScrolling = false;
+                        trackPanel.getNamePanel().repaint();
+                    }
+                } else {
+                    isScrolling = adjustmentEvent.getValueIsAdjusting();
+                }
+
+            }
+        });
     }
 
     @Override
