@@ -1,11 +1,33 @@
-April 27 2011:
-Goby 1.9.5 no longer supports queryLengths stored in the aligment header.
-This usage was deprecated in Goby 1.7. Versions of Goby 1.7-1.9.4 had a concat mode that transfered
-information from the header to the alignment entries transparently.
-Use  concatenate-alignments of Goby 1.7-1.94 when you need to migrate a 1.6- alignment to work with Goby 1.9.5+.
+These assist with TestIteratedSortedAlignment2.
 
-The alignment files in this directory were converted to work with Goby 1.9.5 with the concatenate-alignment
-mode of Goby 1.9.1, as follows:
+The index is "small-synth.fa". The reads are "seq-var-reads.fa".
 
-goby_1.9.1/goby 1g concatenate-alignments test/data/goby/DLTTEJH-Bullard-HBR-SRR037439 \
-               -o test/data/goby/DLTTEJH-Bullard-HBR-SRR037439-1.9.5
+To create the gsnap index, first create compact-reads from the files
+
+   java -jar goby.jar -m fasta-to-compact -d -o small-synth.compact-reads small-synth.fa
+   java -jar goby.jar -m fasta-to-compact -d -o seq-var-reads.compact-reads seq-var-reads.fa
+
+Create the GSNAP index
+
+   mkdir SMALL_SYNTH_DB-gsnap
+   cd SMALL_SYNTH_DB-gsnap
+   ../../gmap-icb/util/gmap_setup -d index -B ../../gmap-icb/util ../small-synth.fa
+   make -f Makefile.index coords
+   make -f Makefile.index gmapdb
+   # The following augments the index for Bisulfite, not necessary
+   ../../gmap-icb/src/cmetindex -d index -D . -F .
+   cd ..
+
+Align the output. To make the output useful for debugging, make sure to
+compile goby-ccp with debugging enabled by editing the top of C_Alignments.cc
+and set
+    #define C_WRITE_API_WRITE_ALIGNMENT_DEBUG
+
+Align command:
+
+   # unthreaded with 6 mismatches allowed
+   ../gmap-icb/src/gsnap -t 0 -m 6 -A goby --goby-output seq-var-reads-gsnap -D SMALL_SYNTH_DB-gsnap -d index seq-var-reads.compact-reads > seq-var-reads-gsnap.exec-output.txt
+
+Finally, since the iterator we are testing requires a SORTED alignment run
+
+   java -jar goby.jar -m sort -d -o sorted-seq-var-reads-gsnap seq-var-reads-gsnap.entries

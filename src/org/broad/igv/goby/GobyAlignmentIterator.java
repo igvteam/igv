@@ -19,17 +19,18 @@
 
 package org.broad.igv.goby;
 
-import org.broad.igv.sam.Alignment;
-import org.broad.igv.goby.GobyAlignment;
-import org.apache.log4j.Logger;
-import net.sf.samtools.util.CloseableIterator;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
-import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
+import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
+import org.broad.igv.sam.Alignment;
 
-import java.util.NoSuchElementException;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 /**
  * An iterator over <a href="http://goby.campagnelab.org">Goby</a> alignment entries.
@@ -56,6 +57,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
     private boolean useWindow;
     // We need to record the sequence (chr), its redundant with the index but I'm not sure how to do the reverse lookup (JTR)
     private String reference;
+    private int currentPosition;
 
     /**
      * Construct an iterator over the entire alignment file.
@@ -69,6 +71,32 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         startReferencePosition = Integer.MAX_VALUE;
         previousPosition = Integer.MIN_VALUE;
         useWindow = false;
+
+    }
+
+    Int2ObjectMap<ObjectArrayList<GobyAlignment>> spliceCache = new Int2ObjectOpenHashMap<ObjectArrayList<GobyAlignment>>();
+
+    /**
+     * Cache alignments that we will need to refer to later. This is useful to keep alignments that are linked
+     * across genomic positions by splice sites. The iterator only keeps alignments when configured with a window.
+     * This means that alignments are not cached when calling the iterator() method to get all entries.
+     *
+     * @param alignment The alignment to be cached.
+     * @return The list of gobyAlignments associated that have the same queryIndex as the cached alignment.
+     */
+    public ObjectArrayList<GobyAlignment> cacheSpliceComponent(GobyAlignment alignment) {
+        if (useWindow) {
+            final int queryIndex = alignment.entry.getQueryIndex();
+            ObjectArrayList<GobyAlignment> list = spliceCache.get(queryIndex);
+            if (list == null) {
+                list = new ObjectArrayList<GobyAlignment>();
+                spliceCache.put(queryIndex, list);
+            }
+
+            list.add(alignment);
+            return list;
+        }
+        return null;
 
     }
 
@@ -98,6 +126,22 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
             reader.reposition(referenceIndex, start);
         }
 
+    }
+
+    /**
+     * A constructor useful only for testing. Do not use for production.
+     * @param targetIndex Index of the reference sequence over which the window is defined.
+     * @param start  Start position
+     * @param end    End position
+     * @throws IOException
+     */
+    protected GobyAlignmentIterator(int targetIndex, int start, int end) throws IOException {
+        this.useWindow = true;
+        this.targetIndex = targetIndex;
+        this.startReferencePosition = start;
+        this.endReferencePosition = end;
+        this.reader=null;
+        this.indexToReferenceId=null;
     }
 
     /**
@@ -168,7 +212,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
 
         nextEntry = null;
         //    LOG.debug(String.format("next targetIndex: %d position: %d", targetIndex, entry.getPosition()));
-
+        currentPosition = entry.getPosition();
         return new GobyAlignment(this, entry);
     }
 

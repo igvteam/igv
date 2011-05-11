@@ -19,27 +19,23 @@
 
 package org.broad.igv.goby;
 
+import com.google.protobuf.ByteString;
 import edu.cornell.med.icb.goby.alignments.Alignments;
 import edu.cornell.med.icb.goby.alignments.EntryFlagHelper;
-import edu.cornell.med.icb.goby.util.WarningCounter;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
+import it.unimi.dsi.fastutil.bytes.ByteList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.track.WindowFunction;
-import com.google.protobuf.ByteString;
 
 import java.awt.*;
-import java.util.*;
-
-import it.unimi.dsi.lang.MutableString;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.bytes.ByteArrayList;
-import it.unimi.dsi.fastutil.bytes.ByteList;
-import org.broad.igv.ui.IGV;
+import java.util.Arrays;
 
 /**
  * A Facade to a <a href="http://goby.campagnelab.org">Goby</a> alignment entry. The facade exposes
@@ -59,7 +55,7 @@ public class GobyAlignment implements Alignment {
      */
     private static final Logger LOG = Logger.getLogger(GobyAlignment.class);
 
-    private final Alignments.AlignmentEntry entry;
+    protected final Alignments.AlignmentEntry entry;
     private final GobyAlignmentIterator iterator;
     protected AlignmentBlock[] block = new AlignmentBlock[1];
     protected AlignmentBlock[] insertionBlock;
@@ -142,7 +138,8 @@ public class GobyAlignment implements Alignment {
 
 
         int pos = start;
-        int endAlignmentRefPosition = readLength - leftPadding + start;
+        int readInsertions = 0;
+        int endAlignmentRefPosition = alignmentEntry.getQueryAlignedLength() + start;
         bases.clear();
         scores.clear();
         while (pos < endAlignmentRefPosition) {
@@ -157,6 +154,39 @@ public class GobyAlignment implements Alignment {
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
 
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
+        if (alignmentEntry.hasSplicedAlignmentLink()) {
+            // if first in link, store a reference to this alignment in the reader (which represents the window scope)
+            ObjectArrayList<GobyAlignment> list = iterator.cacheSpliceComponent(this);
+            if (list.size() > 1) {
+                Alignments.RelatedAlignmentEntry link = entry.getSplicedAlignmentLink();
+
+
+                for (GobyAlignment alignment : list) {
+                    final Alignments.AlignmentEntry entry = alignment.entry;
+                    if (entry.getPosition() == link.getPosition() &&
+                            entry.getTargetIndex() == link.getTargetIndex() &&
+                            entry.getFragmentIndex() == link.getFragmentIndex() &&
+                            entry.getQueryIndex() == alignmentEntry.getQueryIndex()) {
+                        // the current alignmentEntry is the continuation of a read that matched through a splice site.
+                        // We append the block and insertion block to the previous alignment entry
+                        ObjectArrayList<AlignmentBlock> splicedBlocks = new ObjectArrayList<AlignmentBlock>();
+                        splicedBlocks.addAll(ObjectArrayList.wrap(alignment.block));
+                        splicedBlocks.addAll(blocks);
+                        alignment.block = splicedBlocks.toArray(new AlignmentBlock[splicedBlocks.size()]);
+
+                        ObjectArrayList<AlignmentBlock> splicedInsertionBlocks = new ObjectArrayList<AlignmentBlock>();
+                        splicedInsertionBlocks.addAll(ObjectArrayList.wrap(alignment.insertionBlock));
+                        splicedInsertionBlocks.addAll(insertionBlocks);
+                        alignment.insertionBlock = splicedInsertionBlocks.toArray(new AlignmentBlock[splicedInsertionBlocks.size()]);
+
+                        // Since the previous alignment carries this information, we clear up block and insertionBlock
+                        // in this alignment:
+                        block = new AlignmentBlock[0];
+                        insertionBlock = new AlignmentBlock[0];
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -275,9 +305,10 @@ public class GobyAlignment implements Alignment {
     }
 
     public boolean contains(double location) {
-        //LOG.info("contains");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return location >= getStart() && location < getEnd();
     }
+
+
 
     public AlignmentBlock[] getAlignmentBlocks() {
         //    //LOG.info("getAlignmentBlocks");
@@ -482,7 +513,12 @@ return 0;
 
     public int getEnd() {
         //    //LOG.info("getEnd");
-        return entry.getPosition() + entry.getTargetAlignedLength();
+        if (block.length == 0) return getStart();
+        else {
+
+            int last = block.length - 1;
+            return block[last].getEnd();
+        }
     }
 
     public void setStart(

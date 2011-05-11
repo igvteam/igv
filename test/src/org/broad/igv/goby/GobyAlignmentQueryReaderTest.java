@@ -20,7 +20,9 @@
 package org.broad.igv.goby;
 
 import edu.cornell.med.icb.goby.alignments.Alignments;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -30,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -192,13 +195,43 @@ public class GobyAlignmentQueryReaderTest {
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
                 setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
                 setQueryIndex(0).setTargetIndex(1).
-                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+                setQueryAlignedLength(50).addSequenceVariations(mutation).build();
         GobyAlignment
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
+        assertEquals(50, gAlignment.block[0].getBases().length);
     }
 
+      @Test
+    public void testAlignmentLeftPadding() {
+
+
+
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
+                setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
+                setQueryIndex(0).setTargetIndex(1).
+                setQueryAlignedLength(30).setQueryPosition(20).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(1, gAlignment.block.length);
+        assertEquals(30, gAlignment.block[0].getBases().length);
+    }
+
+        @Test
+    public void testAlignmentRightPadding() {
+
+        Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
+                setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
+                setQueryIndex(0).setTargetIndex(1).
+                setQueryAlignedLength(30).setQueryPosition(0).build();
+        GobyAlignment
+                gAlignment = new GobyAlignment(null, entry);
+        gAlignment.buildBlocks(entry);
+        assertEquals(1, gAlignment.block.length);
+        assertEquals(30, gAlignment.block[0].getBases().length);
+    }
     @Test
     public void testAlignmentOneReadInsertion() {
 
@@ -207,13 +240,14 @@ public class GobyAlignmentQueryReaderTest {
                 setPosition(10).setReadIndex(10).build();
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
                 setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
-                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+                setQueryAlignedLength(50).addSequenceVariations(mutation).build();
         GobyAlignment
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(1, gAlignment.insertionBlock.length);
         assertEquals(1010, gAlignment.insertionBlock[0].getStart());
+        assertEquals(50, gAlignment.block[0].getBases().length);
     }
 
     @Test
@@ -224,11 +258,13 @@ public class GobyAlignmentQueryReaderTest {
                 setPosition(10).setReadIndex(10).build();
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
                 setQueryLength(50).setQueryIndex(0).setTargetIndex(1).
-                setQueryAlignedLength(100).addSequenceVariations(mutation).build();
+                setQueryAlignedLength(50).addSequenceVariations(mutation).build();
         GobyAlignment
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
+         assertEquals(9, gAlignment.block[0].getBases().length);
+         assertEquals(41, gAlignment.block[1].getBases().length);
     }
 
     @Test
@@ -269,12 +305,73 @@ public class GobyAlignmentQueryReaderTest {
                 setPosition(10).setReadIndex(40).build();
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().setPosition(31).setMatchingReverseStrand(true).
                 setQueryLength(50).setQueryIndex(26).setTargetIndex(1).
-                setQueryAlignedLength(48).setNumberOfMismatches(2).setNumberOfIndels(3).addSequenceVariations(mutation1).
+                setQueryAlignedLength(40).setNumberOfMismatches(2).setNumberOfIndels(3).addSequenceVariations(mutation1).
                 addSequenceVariations(mutation2).build();
         GobyAlignment
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
+         assertEquals(24, gAlignment.block[0].getBases().length);
+         assertEquals(16, gAlignment.block[1].getBases().length);
+    }
+
+
+    @Test
+    public void testAlignmentWithSplicing() throws IOException {
+
+
+        Alignments.SequenceVariation mutation = Alignments.SequenceVariation.newBuilder().setFrom("T").setTo("A").
+                setPosition(10).setReadIndex(10).build();
+        Alignments.RelatedAlignmentEntry linkForward = Alignments.RelatedAlignmentEntry.newBuilder().
+                setFragmentIndex(1).setPosition(1200).setTargetIndex(1).build();
+
+        Alignments.RelatedAlignmentEntry linkBackward = Alignments.RelatedAlignmentEntry.newBuilder().
+                setFragmentIndex(0).setPosition(1000).setTargetIndex(1).build();
+        Alignments.AlignmentEntry entry1 = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(0).setSplicedAlignmentLink(linkForward).
+                setQueryAlignedLength(20).addSequenceVariations(mutation).build();
+        Alignments.AlignmentEntry entry2 = Alignments.AlignmentEntry.newBuilder().setPosition(1200).setMatchingReverseStrand(false).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(1).setSplicedAlignmentLink(linkBackward).
+                setQueryAlignedLength(30).build();
+        ObjectArrayList<Alignments.AlignmentEntry> alignments = new ObjectArrayList<Alignments.AlignmentEntry>();
+        alignments.add(entry1);
+        alignments.add(entry2);
+        final ObjectListIterator<Alignments.AlignmentEntry> iterator = alignments.iterator();
+        GobyAlignmentIterator alignIterator = new GobyAlignmentIterator(1, 0, 10000) {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public Alignment next() {
+                return new GobyAlignment(this, iterator.next());
+            }
+        };
+
+        ObjectArrayList<GobyAlignment> visitedEntries = new ObjectArrayList<GobyAlignment>();
+
+        while (alignIterator.hasNext()) {
+            GobyAlignment align = (GobyAlignment) alignIterator.next();
+            visitedEntries.add(align);
+
+        }
+        int index = 0;
+        for (GobyAlignment align : visitedEntries) {
+            if (index == 0) {
+                assertEquals(2, align.block.length);
+                assertEquals(20, align.block[0].getBases().length);
+                assertEquals(30, align.block[1].getBases().length);
+
+            }
+            if (index == 1) {
+                assertEquals(0, align.block.length);
+
+            }
+            index++;
+        }
+
+
     }
 
 }
