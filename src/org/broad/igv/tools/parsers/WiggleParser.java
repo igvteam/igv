@@ -194,7 +194,7 @@ public class WiggleParser {
     /**
      * @return
      */
-    public void parse() {
+    public void parse() throws IOException {
 
 
         String[] tokens = new String[10];
@@ -268,7 +268,7 @@ public class WiggleParser {
 
                                 chr = tokens[1].trim();
                                 if (!chr.equals(lastChr)) {
-                                     newChromosome();
+                                    newChromosome();
                                 }
                                 lastChr = chr;
 
@@ -288,12 +288,11 @@ public class WiggleParser {
                                 lastPosition = startPosition;
 
 
-
                                 float value = Float.parseFloat(tokens[4].trim());
                                 if (tokens[3].trim().equals("R")) {
                                     value = -value;
                                 }
-                                dataArray[0] = value;    
+                                dataArray[0] = value;
                                 getDataConsumer().addData(chr, startPosition, endPosition, dataArray, null);
                             }
                         } else if (type.equals(Type.bed)) {
@@ -380,8 +379,7 @@ public class WiggleParser {
 
             parsingComplete();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+
         } finally {
             if (reader != null) {
                 reader.close();

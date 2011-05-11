@@ -24,6 +24,7 @@ import org.broad.igv.track.TrackType;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ import java.util.Map;
 public class CoverageCounterTest {
 
     @Test
-    public void testGetTotalCount() {
+    public void testGetTotalCount() throws IOException {
         String bamURL = "test/data/index_test.bam";
 
         TestDataConsumer dc = new TestDataConsumer();

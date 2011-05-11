@@ -124,7 +124,7 @@ public class CNParser extends AbstractParser {
     /**
      * @return
      */
-    public void parse() {
+    public void parse() throws IOException {
 
         AsciiLineReader reader = null;
         try {
@@ -207,8 +207,6 @@ public class CNParser extends AbstractParser {
 
             parsingComplete();
 
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             if (reader != null) {
                 reader.close();

@@ -132,7 +132,7 @@ public abstract class Sorter {
         }
     }
 
-    public void run() {
+    public void run() throws IOException {
 
         FileInputStream fis = null;
         PrintWriter writer = null;
@@ -202,8 +202,6 @@ public abstract class Sorter {
 
             }
             iter.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
         } finally {
             try {
                 fis.close();

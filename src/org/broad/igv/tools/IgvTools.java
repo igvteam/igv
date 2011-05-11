@@ -222,6 +222,8 @@ public class IgvTools {
             int maxRecords = (Integer) parser.getOptionValue(maxRecordsOption, MAX_RECORDS_IN_RAM);
 
             if (command.equals("count") || command.equals("pre") || command.equals("tile")) {
+
+                // Parse out options common to both count and tile
                 validateArgsLength(nonOptionArgs, 4);
                 int windowSizeValue = (Integer) parser.getOptionValue(windowSizeOption, WINDOW_SIZE);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
@@ -230,6 +232,7 @@ public class IgvTools {
                 boolean isGCT = Preprocessor.getExtension(ifile).endsWith("gct");
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
+
                 String coverageOpt = (String) parser.getOptionValue(coverageOptions);
 
                 String trackLine = null;
@@ -394,6 +397,7 @@ public class IgvTools {
         int nLines = tmp.isDirectory() ? ParsingUtils.estimateLineCount(tmp) : ParsingUtils.estimateLineCount(ifile);
 
         // Convert  gct files to igv format first
+        File deleteme = null;
         if (isGCT(ifile)) {
             File tmpDir = null;
             if (tmpDirName != null && tmpDirName.length() > 0) {
@@ -414,19 +418,34 @@ public class IgvTools {
             doGCTtoIGV(ifile, igvFile, probeFile, maxRecords, tmpDirName, genome);
 
             tmp = igvFile;
+            deleteme = igvFile;
 
         }
 
 
-        Preprocessor p = new Preprocessor(new File(ofile), genome, windowFunctions, nLines, null);
-        if (tmp.isDirectory()) {
-            for (File f : tmp.listFiles()) {
-                p.preprocess(f, probeFile, maxZoomValue);
+        File outputFile = new File(ofile);
+        try {
+            Preprocessor p = new Preprocessor(outputFile, genome, windowFunctions, nLines, null);
+            if (tmp.isDirectory()) {
+                for (File f : tmp.listFiles()) {
+                    p.preprocess(f, maxZoomValue);
+                }
+            } else {
+                p.preprocess(tmp, maxZoomValue);
             }
-        } else {
-            p.preprocess(tmp, probeFile, maxZoomValue);
+            p.finish();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Delete output file as its probably corrupt
+            if(outputFile.exists()) {
+                outputFile.delete();
+            }
         }
-        p.finish();
+        finally {
+            if(deleteme != null && deleteme.exists()) {
+                deleteme.delete();
+            }
+        }
 
         System.out.flush();
 
@@ -560,7 +579,16 @@ public class IgvTools {
                 outputFileName = outputFileName + ".sai";
             }
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(new File(ifile), null, null);
-            indexer.createSamIndex(new File(outputFileName));
+            File outputFile = new File(outputFileName);
+            try {
+                indexer.createSamIndex(outputFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // Delete output file as it is probably corrupt
+                if(outputFile.exists()) {
+                   outputFile.delete();
+                }
+            }
         }
         System.out.flush();
 
@@ -596,6 +624,14 @@ public class IgvTools {
                 stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
                 idx.write(stream);
             }
+            catch(Exception e) {
+                e.printStackTrace();
+                // Delete output file as its probably corrupt
+                File tmp = new File(idxFile);
+                if(tmp.exists()) {
+                    tmp.delete();
+                }
+            }
             finally {
                 if (stream != null) {
                     stream.close();
@@ -621,7 +657,15 @@ public class IgvTools {
         }
 
         sorter.setMaxRecords(maxRecords);
-        sorter.run();
+        try {
+            sorter.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Delete output file as its probably corrupt
+            if(outputFile.exists()) {
+                outputFile.delete();
+            }
+        }
         System.out.println("Done");
         System.out.flush();
     }
@@ -700,7 +744,8 @@ public class IgvTools {
 
 
     /**
-     * Parse the window functions line.
+     * Parse the window functions line.   The default for most files is a single "mean",  however gct files include
+     * min and max as well.
      *
      * @param string comma delimited string of window functions, e.g. min, p10, max
      * @return colleciton of WindowFunctions objects

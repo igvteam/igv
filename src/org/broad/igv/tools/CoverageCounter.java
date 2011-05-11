@@ -214,7 +214,7 @@ public class CoverageCounter {
                 !alignment.isVendorFailedRead();
     }
 
-    public void parse() {
+    public void parse() throws IOException {
 
         int tolerance = (int) (windowSize * (Math.floor(extFactor / windowSize) + 2));
         consumer.setSortTolerance(tolerance);
@@ -373,9 +373,6 @@ public class CoverageCounter {
             }
         }
 
-        catch (Exception e) {
-            e.printStackTrace();
-        }
 
         finally {
 

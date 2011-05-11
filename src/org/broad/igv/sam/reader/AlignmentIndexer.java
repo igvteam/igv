@@ -76,8 +76,7 @@ public abstract class AlignmentIndexer {
 
     public FeatureIndex createSamIndex(
             File idxFile, int tileWidth) throws
-            IOException,
-            FileNotFoundException {
+            IOException {
 
         FileInputStream is = new FileInputStream(samFile);
         InputStream bis = new BufferedInputStream(is);

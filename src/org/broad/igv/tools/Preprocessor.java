@@ -40,7 +40,6 @@ import java.io.PrintStream;
 import java.util.*;
 
 /**
- *
  * @author jrobinso
  */
 public class Preprocessor implements DataConsumer {
@@ -109,7 +108,7 @@ public class Preprocessor implements DataConsumer {
      */
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
 
-        if(trackLine != null) {
+        if (trackLine != null) {
             System.out.println(trackLine);
         }
 
@@ -181,7 +180,7 @@ public class Preprocessor implements DataConsumer {
         // Is this data in range for the chromosome?
         int chrLength = genome.getChromosome(chr).getLength();
         if (start > chrLength) {
-            log.info("Ignoring data from non-existent locus.  Probe = " + name + "  Locus = " + chr + ":" + start + "-" + end + ". " + chr + " length = " + chrLength);
+            log.debug("Ignoring data from non-existent locus.  Probe = " + name + "  Locus = " + chr + ":" + start + "-" + end + ". " + chr + " length = " + chrLength);
             return;
         }
 
@@ -712,44 +711,52 @@ public class Preprocessor implements DataConsumer {
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
                 wigFile, genome, strandOption, coverageOpt);
-        
+
         /*if(isize != null) {
-            String [] tokens = isize.split(",");
-            if(tokens.length < 2) {
-                System.out.println("Invalid insert size string.  Expected mean & stdev separated by comma, e.g.  400,60");
-            }
-            else {
-                try {
-                    float mean = Float.parseFloat(tokens[0]);
-                    float stdev = Float.parseFloat(tokens[1]);
-                    aParser.computeISize(mean, stdev);
-                } catch (NumberFormatException e) {
-                    System.out.println("Error parsing iSize parameter " + e.toString());
-                }
-            }
-        } */
-
-
-
+           String [] tokens = isize.split(",");
+           if(tokens.length < 2) {
+               System.out.println("Invalid insert size string.  Expected mean & stdev separated by comma, e.g.  400,60");
+           }
+           else {
+               try {
+                   float mean = Float.parseFloat(tokens[0]);
+                   float stdev = Float.parseFloat(tokens[1]);
+                   aParser.computeISize(mean, stdev);
+               } catch (NumberFormatException e) {
+                   System.out.println("Error parsing iSize parameter " + e.toString());
+               }
+           }
+       } */
 
         this.sizeEstimate = ((int) (genome.getLength() / windowSizeValue));
-        aParser.parse();
+
+        try {
+            aParser.parse();
+        }
+        catch (Exception e) {
+            // Delete the output file as its probably corrupt
+            e.printStackTrace();
+            if(outputFile.exists()) {
+                outputFile.delete();
+            }
+
+        }
     }
 
-    public void preprocess(File iFile, String probeFile, int maxZoomValue) throws IOException {
+    public void preprocess(File iFile, int maxZoomValue) throws IOException {
 
         setNZoom(maxZoomValue);
 
         String tmp = iFile.getAbsolutePath().toLowerCase();
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
-        if (tmp.endsWith("wig") ||  tmp.endsWith("bedgraph") || tmp.endsWith("cpg")) {
+        if (tmp.endsWith("wig") || tmp.endsWith("bedgraph") || tmp.endsWith("cpg")) {
             WiggleParser wg = new WiggleParser(iFile.getAbsolutePath(), this, genome);
             wg.parse();
         } else if (tmp.endsWith(".cn") || tmp.endsWith(".igv") || tmp.endsWith(".snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
-        }  else {
+        } else {
             String extension = getExtension(iFile.getAbsolutePath());
             out.println("Error: cannot 'tile' files of type " + extension);
             out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");
