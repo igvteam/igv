@@ -19,23 +19,20 @@
 
 package org.broad.igv.goby;
 
+import edu.cornell.med.icb.goby.alignments.Alignments;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
-import org.broad.igv.sam.reader.MergedAlignmentReader;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.*;
-
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import edu.cornell.med.icb.goby.alignments.Alignments;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -122,6 +119,26 @@ public class GobyAlignmentQueryReaderTest {
 
         iter.close();
         reader.close();
+    }
+
+    /**
+     * Test a query interval with no alignments
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testHasNextBug() throws Exception {
+
+        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+
+        GobyAlignmentQueryReader.supportsFileType(entriesFile);
+        GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
+        CloseableIterator<Alignment> iter = reader.iterator();
+
+        while (iter.hasNext()) {
+            Alignment alignment = iter.next();
+            assertNotNull(alignment);
+        }
     }
 
     /**

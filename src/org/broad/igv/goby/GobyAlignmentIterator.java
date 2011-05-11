@@ -128,6 +128,7 @@ public class GobyAlignmentIterator implements CloseableIterator<Alignment> {
         try {
             if (!useWindow) {
                 // all results are returned
+                if (!reader.hasNext()) return false;
                 nextEntry = reader.next();
             } else {
                 // we return only within a window
