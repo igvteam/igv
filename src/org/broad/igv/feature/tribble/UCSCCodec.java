@@ -35,7 +35,8 @@ import java.io.IOException;
  * @date Aug 5, 2010
  */
 public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec  {
-    static String[] tokens = new String[50];
+
+    String[] tokens = new String[50];
     int startBase = 0;
     FeatureFileHeader header;
 
