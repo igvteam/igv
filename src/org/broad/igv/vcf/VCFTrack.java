@@ -507,7 +507,7 @@ public class VCFTrack extends FeatureTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        VariantContext variant = (VariantContext) getFeatureAt(chr, position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
+        VariantContext variant = (VariantContext) getFeatureAt(chr, position+1, y, frame); //getVariantAtPosition(chr, (int) position, frame);
         if (variant != null) {
 
             if (y < top + variantBandHeight) {
@@ -527,7 +527,10 @@ public class VCFTrack extends FeatureTrack {
 
                 } else {
                     int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                    sample = allSamples.get(sampleNumber);
+                    if (sampleNumber>=0 && sampleNumber < allSamples.size()) {
+                        sample = allSamples.get(sampleNumber) ;
+                    }
+
                 }
                 return getSampleToolTip(sample, variant);
             }
@@ -599,10 +602,9 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public static enum ColorMode {
-        GENOTYPE, ALLELE
+        GENOTYPE, METHYLATION_RATE, ALLELE
     }
 
-    ;
 
     public static enum InfoFieldName {
 
