@@ -29,6 +29,7 @@ import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
+import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 
@@ -393,6 +394,29 @@ public class IGVMenuBar extends JMenuBar {
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
         menuItems.add(menuItem);
+        
+        JMenuItem panelWidthmenuItem = new JMenuItem();
+        menuAction = new MenuAction("Set Name Panel Width...", null, KeyEvent.VK_A) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MainPanel mainPanel = IGV.getInstance().getMainPanel();
+                String currentValue = String.valueOf(mainPanel.getNamePanelWidth());
+                String newValue = MessageUtils.showInputDialog("Enter track name panel width: ", currentValue);
+                if (newValue != null) {
+                    try {
+                        Integer w = Integer.parseInt(newValue);
+                        if (w <= 0 || w == 1000) throw new NumberFormatException();
+                        PreferenceManager.getInstance().put(PreferenceManager.NAME_PANEL_WIDTH, newValue);
+                        mainPanel.setNamePanelWidth(w);
+                    }
+                    catch (NumberFormatException ex) {
+                        MessageUtils.showMessage("Error: value must be a positive integer < 1000.");
+                    }
+                }
+            }
+        };
+        panelWidthmenuItem.setAction(menuAction);
+        menuItems.add(panelWidthmenuItem);
 
         // Hide or Show the attribute panels
         boolean isShow = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY);

@@ -72,8 +72,6 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         }
         super.setViewportView(trackSetView);
         this.trackPanel = (TrackPanel) trackSetView;
-        //this.verticalScrollBar.addAdjustmentListener(getNamePanel());
-        //init();
     }
 
     public TrackPanel getTrackPanel() {

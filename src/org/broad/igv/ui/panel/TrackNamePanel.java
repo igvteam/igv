@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class TrackNamePanel extends TrackPanelComponent implements AdjustmentListener, Paintable {
+public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private static Logger log = Logger.getLogger(TrackNamePanel.class);
 
@@ -274,19 +274,6 @@ public class TrackNamePanel extends TrackPanelComponent implements AdjustmentLis
         return "";
     }
 
-    /**
-     * Listener for scroll pane events
-     *
-     * @param evt
-     */
-    public void adjustmentValueChanged(AdjustmentEvent evt) {
-        if (evt.getValueIsAdjusting()) {
-            // The user is dragging the knob
-            return;
-        }
-        repaint();
-
-    }
 
     private synchronized void createDnDImage() {
         dndImage = new BufferedImage(getWidth(), 2, BufferedImage.TYPE_INT_ARGB);

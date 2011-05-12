@@ -180,6 +180,10 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
 
+    public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
+
+
+
 
 
     public static String DEFAULT_DATA_SERVER_URL;
@@ -943,6 +947,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
 
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
+
+        defaultValues.put(NAME_PANEL_WIDTH, "160");
 
     }
 }

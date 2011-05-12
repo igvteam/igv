@@ -47,10 +47,10 @@ public class MainPanel extends JPanel implements Paintable {
 
     TrackManager trackManager;
 
-    private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
+   // private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
 
     private int namePanelX;
-    private int namePanelWidth = DEFAULT_NAME_PANEL_WIDTH;
+    private int namePanelWidth = PreferenceManager.getInstance().getAsInt(PreferenceManager.NAME_PANEL_WIDTH);
     private int attributePanelX;
     private int attributePanelWidth;
     private int dataPanelX;
@@ -92,20 +92,20 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void setDividerFractions(double[] fractions) {
-        int [] dividerLocations = new int[fractions.length];
+        int[] dividerLocations = new int[fractions.length];
         double h = centerSplitPane.getHeight();
-        for(int i=0; i<fractions.length; i++) {
+        for (int i = 0; i < fractions.length; i++) {
             dividerLocations[i] = (int) Math.round(h * fractions[i]);
         }
         centerSplitPane.setDividerLocations(dividerLocations);
     }
 
     public double[] getDividerFractions() {
-        int [] dividerLocations = centerSplitPane.getDividerLocations();
+        int[] dividerLocations = centerSplitPane.getDividerLocations();
         double h = centerSplitPane.getHeight();
-        double [] dividerFractions = new double[dividerLocations.length];
-        for(int i=0; i<dividerLocations.length; i++) {
-           dividerFractions[i] = dividerLocations[i] / h;
+        double[] dividerFractions = new double[dividerLocations.length];
+        for (int i = 0; i < dividerLocations.length; i++) {
+            dividerFractions[i] = dividerLocations[i] / h;
         }
         return dividerFractions;
     }
@@ -117,9 +117,16 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void expandNamePanel() {
-        namePanelWidth = DEFAULT_NAME_PANEL_WIDTH;
+        namePanelWidth = PreferenceManager.getInstance().getAsInt(PreferenceManager.NAME_PANEL_WIDTH);
         revalidate();
     }
+
+    public void setNamePanelWidth(int width) {
+        this.namePanelWidth = width;
+        revalidate();
+    }
+
+
 
 
     @Override
@@ -202,15 +209,6 @@ public class MainPanel extends JPanel implements Paintable {
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             centerSplitPane.add(featureTrackScrollPane, JSplitPane.BOTTOM);
         }
-
-
-        /*JPanel testPanel = new JPanel() {
-            @Override
-        public void paintComponent(Graphics g) {
-               g.setColor(Color.blue);
-               ((Graphics2D) g).fill(getBounds());
-            }
-        };*/
 
         add(centerSplitPane, BorderLayout.CENTER);
 
@@ -404,7 +402,6 @@ public class MainPanel extends JPanel implements Paintable {
     public int getNamePanelX() {
         return namePanelX;
     }
-
 
     public int getNamePanelWidth() {
         return namePanelWidth;
