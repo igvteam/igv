@@ -121,15 +121,19 @@ public class VCFTrack extends FeatureTrack {
         VCFHeader header = (VCFHeader) source.getHeader();
 
         // Test if the input VCF file contains methylation rate data:
-        final VCFFormatHeaderLine mrFormatLine = header.getFormatHeaderLine("MR");
-        if (mrFormatLine!=null) {
-            // just to be sure, we check the description to confirm that MR contains Methylation data:
-            if (mrFormatLine.getDescription().contains("Methylation")) {
-                enableMethylationRateSupport=true;
-                // also set the default color mode to Methylation rate:
-                coloring= ColorMode.METHYLATION_RATE;
-            }
+
+        // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
+        // rendering of methylation rate.
+        // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
+        // filter for the position. GB is needed to avoid displaying positions for which limited coverage
+        // prevents reliable estimation of methylation rate.
+        if (header.getFormatHeaderLine("MR") != null &&
+                header.getFormatHeaderLine("GB") != null) {
+            enableMethylationRateSupport = true;
+            // also set the default color mode to Methylation rate:
+            coloring = ColorMode.METHYLATION_RATE;
         }
+
         allSamples = new ArrayList(header.getGenotypeSamples());
         sampleCount = allSamples.size();
 
