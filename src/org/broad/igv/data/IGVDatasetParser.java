@@ -73,7 +73,7 @@ public class IGVDatasetParser {
         this.dataResourceLocator = copyNoFile;
         this.genome = genome;
         this.igv = igv;
-     }
+    }
 
     private void setColumnDefaults() {
         String tmp = (dataResourceLocator.getPath().endsWith(".txt")
@@ -230,8 +230,7 @@ public class IGVDatasetParser {
             int updateCount = 5000;
             int count = 0;
             long lastPosition = 0;
-            String[] tokens = new String[headings.length + 10];
-
+            String[] tokens = new String[headings.length + 100];
             while ((nextLine = reader.readLine()) != null) {
 
                 if (igv != null && ++count % updateCount == 0) {
@@ -415,13 +414,13 @@ public class IGVDatasetParser {
             String chromosome = chrSummary.getName();
             boolean chromosomeStarted = false;
             String nextLine = reader.readLine();
-            String[] tokens = new String[dataHeaders.length + 10];
+            String[] tokens = new String[dataHeaders.length + 100];
 
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
+                if(!nextLine.startsWith("#")) {
                 try {
                     int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
-
                     String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
                     if (thisChromosome.equals(chromosome)) {
                         chromosomeStarted = true;
@@ -455,6 +454,7 @@ public class IGVDatasetParser {
 
                     // Skip line
                     log.info("Skipping line (NumberFormatException) " + nextLine);
+                }
                 }
 
                 nextLine = reader.readLine();
