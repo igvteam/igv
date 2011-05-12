@@ -37,6 +37,7 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
 import org.broad.tribble.vcf.VCFHeader;
+import org.broad.tribble.vcf.VCFFormatHeaderLine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,6 +62,17 @@ public class VCFTrack extends FeatureTrack {
     // We need maps in both directions to (1) look up a group quickly,  and (2) maintain proper order in the group
     private static Map<String, String> REFERENCE_SAMPLE_GROUP_MAP = new HashMap();
     private static LinkedHashMap<String, List<String>> REFERENCE_GROUP_SAMPLE_MAP;
+
+    /**
+     * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
+     * methylation data. This will enable the "Color By/Methylation Rate" menu item.
+     */
+    private boolean enableMethylationRateSupport;
+
+    public boolean isEnableMethylationRateSupport() {
+
+        return enableMethylationRateSupport;
+    }
 
     public static void addSampleGroups(LinkedHashMap<String, List<String>> map) {
         REFERENCE_GROUP_SAMPLE_MAP = map;
@@ -108,6 +120,16 @@ public class VCFTrack extends FeatureTrack {
         super(locator, source);
         VCFHeader header = (VCFHeader) source.getHeader();
 
+        // Test if the input VCF file contains methylation rate data:
+        final VCFFormatHeaderLine mrFormatLine = header.getFormatHeaderLine("MR");
+        if (mrFormatLine!=null) {
+            // just to be sure, we check the description to confirm that MR contains Methylation data:
+            if (mrFormatLine.getDescription().contains("Methylation")) {
+                enableMethylationRateSupport=true;
+                // also set the default color mode to Methylation rate:
+                coloring= ColorMode.METHYLATION_RATE;
+            }
+        }
         allSamples = new ArrayList(header.getGenotypeSamples());
         sampleCount = allSamples.size();
 
@@ -507,7 +529,7 @@ public class VCFTrack extends FeatureTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        VariantContext variant = (VariantContext) getFeatureAt(chr, position+1, y, frame); //getVariantAtPosition(chr, (int) position, frame);
+        VariantContext variant = (VariantContext) getFeatureAt(chr, position + 1, y, frame); //getVariantAtPosition(chr, (int) position, frame);
         if (variant != null) {
 
             if (y < top + variantBandHeight) {
@@ -527,8 +549,8 @@ public class VCFTrack extends FeatureTrack {
 
                 } else {
                     int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                    if (sampleNumber>=0 && sampleNumber < allSamples.size()) {
-                        sample = allSamples.get(sampleNumber) ;
+                    if (sampleNumber >= 0 && sampleNumber < allSamples.size()) {
+                        sample = allSamples.get(sampleNumber);
                     }
 
                 }

@@ -52,8 +52,8 @@ public class VCFMenu extends JPopupMenu {
     static boolean sampleSortingDirection;
     static boolean qualitySortingDirection;
 
-    public VCFMenu(VCFTrack t, VariantContext variant) {
-        this.track = t;
+    public VCFMenu(final VCFTrack vcfTrack, VariantContext variant) {
+        this.track = vcfTrack;
 
         this.addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
@@ -75,7 +75,7 @@ public class VCFMenu extends JPopupMenu {
 
         });
 
-        samples = track.getAllSamples();
+        samples = this.track.getAllSamples();
         if (samples != null && variant != null) {
             sampleGenotypes = new HashMap<String, Genotype>();
             for (String sample : samples) {
@@ -88,7 +88,7 @@ public class VCFMenu extends JPopupMenu {
 
 
         //Title
-        JLabel popupTitle = new JLabel("<html><b>" + track.getName(), JLabel.CENTER);
+        JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.CENTER);
         Font newFont = getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
         add(popupTitle);
@@ -106,13 +106,13 @@ public class VCFMenu extends JPopupMenu {
             add(getHideFilteredItem());
             //add(getRenderIDItem());
 
-            if (track.isHasGroups()) {
+            if (this.track.isHasGroups()) {
                 addSeparator();
                 final JCheckBoxMenuItem groupedItem = new JCheckBoxMenuItem("Group");
-                groupedItem.setSelected(track.isGrouped());
+                groupedItem.setSelected(this.track.isGrouped());
                 groupedItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
-                        track.setGrouped(groupedItem.isSelected());
+                        VCFMenu.this.track.setGrouped(groupedItem.isSelected());
                         IGV.getInstance().doRefresh();
                     }
                 });
@@ -125,7 +125,7 @@ public class VCFMenu extends JPopupMenu {
             add(sortHeading);
             for (JMenuItem item : getSortMenuItems(variant)) {
                 add(item);
-                item.setEnabled(!track.isGrouped());
+                item.setEnabled(!this.track.isGrouped());
             }
 
             //Variant Information
@@ -138,7 +138,7 @@ public class VCFMenu extends JPopupMenu {
         }
 
         addSeparator();
-        add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
+        add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
     }
 
@@ -158,7 +158,9 @@ public class VCFMenu extends JPopupMenu {
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
         items.add(getColorByGenotype());
         items.add(getColorByAllele());
-        items.add(getColorByMethylationRate());
+        if (track.isEnableMethylationRateSupport()) {
+            items.add(getColorByMethylationRate());
+        }
         for (JMenuItem item : items) {
             colorMenu.add(item);
         }
@@ -189,15 +191,15 @@ public class VCFMenu extends JPopupMenu {
     }
 
     private JMenuItem getColorByMethylationRate() {
-            final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getColorMode() == VCFTrack.ColorMode.METHYLATION_RATE);
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    track.setColorMode(VCFTrack.ColorMode.METHYLATION_RATE);
-                    IGV.getInstance().getContentPane().repaint();
-                }
-            });
-            return item;
-        }
+        final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getColorMode() == VCFTrack.ColorMode.METHYLATION_RATE);
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                track.setColorMode(VCFTrack.ColorMode.METHYLATION_RATE);
+                IGV.getInstance().getContentPane().repaint();
+            }
+        });
+        return item;
+    }
 
     private JMenuItem getRenderIDItem() {
         JMenuItem item = new JCheckBoxMenuItem("Display Variant Names", track.getRenderID());
