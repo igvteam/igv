@@ -236,9 +236,9 @@ public class VCFRenderer { //extends FeatureRenderer {
 
                     } else {
                         float mr = (float) value.doubleValue();
-                     //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
+                        //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
                         mr /= 100f;
-                        b1Color = mr > .50 ? new Color(1f-mr, 0, 0) : mr > .25 ? new Color(0, 1f-mr, 0) : new Color(1f-mr, 1f-mr, 1f-mr);
+                        b1Color = convertMethylationRateToColor(mr);
                         b2Color = b1Color;
                     }
                     break;
@@ -281,6 +281,20 @@ public class VCFRenderer { //extends FeatureRenderer {
             }
         }
 //        g.dispose();
+    }
+
+    private Color convertMethylationRateToColor(float mr) {
+        Color color;
+
+        if (mr >= .25) {
+            return Color.getHSBColor((mr-.25f)*(1f/0.75f), 1, 1);
+        }
+        else {
+            // use a light grey between 0 and 0.25 brightness to indicate moderate methylation at the site.
+           return new Color(1f - mr, 1f - mr, 1f - mr);
+        }
+
+
     }
 
     public char getFirstBase(Allele allele) {
