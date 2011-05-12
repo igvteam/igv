@@ -214,15 +214,38 @@ public class VCFRenderer { //extends FeatureRenderer {
             Color b2Color;
 
             //Assign proper coloring
-            if (coloring == VCFTrack.ColorMode.GENOTYPE) {
-                b1Color = getGenotypeColor(genotype, isFiltered);
-                b2Color = b1Color;
-            } else if (coloring == VCFTrack.ColorMode.ALLELE) {
-                b1Color = nucleotideColors.get(b1);
-                b2Color = nucleotideColors.get(b2);
-            } else {
-                b1Color = colorNoCall;
-                b2Color = b1Color;
+            switch (coloring) {
+                case GENOTYPE:
+
+                    b1Color = getGenotypeColor(genotype, isFiltered);
+                    b2Color = b1Color;
+                    break;
+
+                case ALLELE:
+                    b1Color = nucleotideColors.get(b1);
+                    b2Color = nucleotideColors.get(b2);
+                    break;
+                case METHYLATION_RATE:
+
+                    final Double goodBaseCount = genotype.getAttributeAsDoubleNoException("GB");
+
+                    final Double value = genotype.getAttributeAsDoubleNoException("MR");
+                    if (goodBaseCount < 10 || value == null) {
+                        b1Color = colorNoCall;
+                        b2Color = b1Color;
+
+                    } else {
+                        float mr = (float) value.doubleValue();
+                     //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
+                        mr /= 100f;
+                        b1Color = mr > .50 ? new Color(1f-mr, 0, 0) : mr > .25 ? new Color(0, 1f-mr, 0) : new Color(1f-mr, 1f-mr, 1f-mr);
+                        b2Color = b1Color;
+                    }
+                    break;
+
+                default:
+                    b1Color = colorNoCall;
+                    b2Color = b1Color;
             }
 
             //Temp remove to see if no-calls are clearer
@@ -233,9 +256,9 @@ public class VCFRenderer { //extends FeatureRenderer {
             }
 
             int y0 = track.getDisplayMode() == Track.DisplayMode.EXPANDED ? pY + 1 : pY;
-            int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY-2 : dY);
+            int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY - 2 : dY);
 
-            if (coloring == VCFTrack.ColorMode.GENOTYPE ) {
+            if (coloring == VCFTrack.ColorMode.GENOTYPE) {
                 g.setColor(b1Color);
                 g.fillRect(pX0, y0, dX, h);
             } else {

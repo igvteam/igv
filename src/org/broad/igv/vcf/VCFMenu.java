@@ -158,6 +158,7 @@ public class VCFMenu extends JPopupMenu {
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
         items.add(getColorByGenotype());
         items.add(getColorByAllele());
+        items.add(getColorByMethylationRate());
         for (JMenuItem item : items) {
             colorMenu.add(item);
         }
@@ -186,6 +187,17 @@ public class VCFMenu extends JPopupMenu {
         });
         return item;
     }
+
+    private JMenuItem getColorByMethylationRate() {
+            final JMenuItem item = new JCheckBoxMenuItem("Methylation Rate", track.getColorMode() == VCFTrack.ColorMode.METHYLATION_RATE);
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    track.setColorMode(VCFTrack.ColorMode.METHYLATION_RATE);
+                    IGV.getInstance().getContentPane().repaint();
+                }
+            });
+            return item;
+        }
 
     private JMenuItem getRenderIDItem() {
         JMenuItem item = new JCheckBoxMenuItem("Display Variant Names", track.getRenderID());
