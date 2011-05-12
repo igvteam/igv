@@ -56,7 +56,6 @@ public class GFFParser implements FeatureParser {
     //static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus","Alias", "alias", "systematic_id", "ID"};
 
 
-    static String[] tokens = new String[200];
 
     static {
         utrTerms.add("five_prime_UTR");
@@ -188,12 +187,13 @@ public class GFFParser implements FeatureParser {
 
     public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {
         List<org.broad.tribble.Feature> features = new ArrayList();
-        URLDecoder d = new URLDecoder();
         String line = null;
         try {
 
             Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
             Set<String> featuresToHide = new HashSet();
+            String[] tokens = new String[200];
+
             while ((line = reader.readLine()) != null) {
 
                 if (line.startsWith("##gff-version") && line.endsWith("3")) {
@@ -213,12 +213,12 @@ public class GFFParser implements FeatureParser {
                             featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
                         }
                     } else if (line.startsWith("#displayName")) {
-                        String [] tokens = line.split("=");
-                        if(tokens.length < 2) {
+                        String [] nameTokens = line.split("=");
+                        if(nameTokens.length < 2) {
                             helper.setNameFields(null);
                         }
                         else {
-                            String [] fields = tokens[1].split(",");
+                            String [] fields = nameTokens[1].split(",");
                             helper.setNameFields(fields);
                         }
 
@@ -477,6 +477,8 @@ public class GFFParser implements FeatureParser {
         String ext = gffFile.substring(gffFile.length() - 4);
 
         Map<String, PrintWriter> writers = new HashMap();
+        String [] tokens = new String[20];
+        
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {

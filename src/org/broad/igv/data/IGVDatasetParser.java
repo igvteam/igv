@@ -65,7 +65,6 @@ public class IGVDatasetParser {
     private boolean hasCalls = false;
     private Genome genome;
     private IGV igv;
-    String[] tokens;
 
 
     private int startBase = 0;
@@ -74,8 +73,7 @@ public class IGVDatasetParser {
         this.dataResourceLocator = copyNoFile;
         this.genome = genome;
         this.igv = igv;
-        tokens = new String[10000];
-    }
+     }
 
     private void setColumnDefaults() {
         String tmp = (dataResourceLocator.getPath().endsWith(".txt")
@@ -232,6 +230,8 @@ public class IGVDatasetParser {
             int updateCount = 5000;
             int count = 0;
             long lastPosition = 0;
+            String[] tokens = new String[headings.length + 10];
+
             while ((nextLine = reader.readLine()) != null) {
 
                 if (igv != null && ++count % updateCount == 0) {
@@ -415,6 +415,8 @@ public class IGVDatasetParser {
             String chromosome = chrSummary.getName();
             boolean chromosomeStarted = false;
             String nextLine = reader.readLine();
+            String[] tokens = new String[dataHeaders.length + 10];
+
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
                 try {

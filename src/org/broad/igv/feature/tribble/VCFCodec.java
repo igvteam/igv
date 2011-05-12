@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class VCFCodec implements FeatureCodec {
 
-    static String[] buffer = new String[8];
+    String[] buffer = new String[8];
     List<String> headerStrings = new ArrayList();
 
 
