@@ -167,7 +167,7 @@ public class Main {
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
         // Set look and feel.  Use Nimbus for all platforms except Mac
-        if (!Globals.IS_MAC) {
+        /*if (!Globals.IS_MAC) {
             try {
                 for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     if ("Nimbus".equals(info.getName())) {
@@ -180,7 +180,7 @@ public class Main {
                 log.error("Error installing look and feel", e);
             }
         }
-
+        */
 
         if (Globals.IS_LINUX) {
             try {
