@@ -483,24 +483,22 @@ public class IGVHttpUtils {
     }
 
     public static boolean resourceAvailable(URL url) {
-        URLConnection conn = null;
 
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
         }
 
+        HttpURLConnection conn = null;
         try {
-            // Create a URLConnection object for a URL
-            conn = openConnection(url);
-            ((HttpURLConnection) conn).setRequestMethod("HEAD");
-            conn.setReadTimeout(5000);
-            return conn.getHeaderField("ETag") != null;
+            conn =  (HttpURLConnection) url.openConnection();
+            int rc = conn.getResponseCode();
+            return rc < 400;
         } catch (Exception e) {
             return false;
         }
         finally {
-            if (conn != null && conn instanceof HttpURLConnection) {
-                ((HttpURLConnection) conn).disconnect();
+            if (conn != null) {
+                conn.disconnect();
             }
         }
     }

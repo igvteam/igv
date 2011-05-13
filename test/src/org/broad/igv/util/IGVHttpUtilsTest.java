@@ -47,10 +47,20 @@ public class IGVHttpUtilsTest extends TestCase {
     }
 
 
-
     public void testGetContentLength() throws IOException {
 
         String url = "http://igvdata.broadinstitute.org/genomes/hg18.genome";
         assertEquals(3617657, IGVHttpUtils.getContentLength(new URL(url)));
+    }
+
+    public void testExists() throws IOException {
+        URL url = new URL("http://igvdata.broadinstitute.org/genomes/hg18.genome");
+        assertTrue(IGVHttpUtils.resourceAvailable(url));
+
+        url = new URL("http://nosuchserver/genomes/hg18.genome");
+        assertFalse(IGVHttpUtils.resourceAvailable(url));
+
+        url = new URL("http://igvdata.broadinstitute.org/nosuchfile.txt");
+        assertFalse(IGVHttpUtils.resourceAvailable(url));
     }
 }
