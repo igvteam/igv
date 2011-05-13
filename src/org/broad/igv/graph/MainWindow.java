@@ -19,17 +19,11 @@
 
 package org.broad.igv.graph;
 
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.GeneManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tools.IgvTools;
-import org.broad.igv.track.TestUtils;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * @author jrobinso

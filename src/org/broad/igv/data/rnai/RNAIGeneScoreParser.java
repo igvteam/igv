@@ -25,7 +25,6 @@ package org.broad.igv.data.rnai;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.GeneManager;
 import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 
