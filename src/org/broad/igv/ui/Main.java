@@ -107,9 +107,10 @@ public class Main {
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
         // TODO -- get these from user preferences
-        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
-        //ToolTipManager.sharedInstance().setReshowDelay(your time in ms);
-        //ToolTipManager.sharedInstance().setInitialDelay(your time in ms);
+        ToolTipManager.sharedInstance().setEnabled(true);
+        ToolTipManager.sharedInstance().setInitialDelay(50);
+        ToolTipManager.sharedInstance().setReshowDelay(50);
+        ToolTipManager.sharedInstance().setDismissDelay(60000);
 
 
         // Anti alias settings.   TODO = Are these neccessary anymore ?
