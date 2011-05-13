@@ -50,24 +50,56 @@ public class FeatureDB {
             return;
         }
 
-        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
-
-            if (feature.getName() != null && feature.getName().length() > 0) {
-                featureMap.put(feature.getName().trim().toUpperCase(), feature);
-            }
-            if (feature instanceof IGVFeature) {
-                String id = ((IGVFeature) feature).getIdentifier();
-                if (id != null && id.length() > 0) {
-                    featureMap.put(id.trim().toUpperCase(), feature);
-                }
+        final String name = feature.getName();
+        if (name != null && name.length() > 0) {
+            put(name, feature);
+        }
+        if (feature instanceof IGVFeature) {
+            final String id = ((IGVFeature) feature).getIdentifier();
+            if (id != null && id.length() > 0) {
+                put(id, feature);
             }
         }
     }
 
-    public static void put(String key, NamedFeature feature) {
-        featureMap.put(key, feature);
+    public static void put(String name, NamedFeature feature) {
+
+        String key = name.toUpperCase();
+        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
+            NamedFeature currentFeature = featureMap.get(key);
+            if (currentFeature == null) {
+                featureMap.put(key, feature);
+            } else {
+                // If there are multiple features, prefer the one that is NOT on a "random" chromosome.
+                // This is a hack, but an important one for the human assemblies
+                String featureChr = feature.getChr().toLowerCase();
+                if(featureChr.contains("random") || featureChr.contains("chrun")) {
+                    return;
+                }
+
+                // If there are multiple features, use or keep the longest one
+                int w1 = currentFeature.getEnd() - currentFeature.getStart();
+                int w2 = feature.getEnd() - feature.getStart();
+                if (w2 > w1) {
+                    featureMap.put(key, feature);
+                }
+
+            }
+
+        }
     }
+
+
+
+    public static void addFeature(String name, NamedFeature feature) {
+        if (Globals.isHeadless()) {
+            return;
+        }
+        featureMap.put(name.toUpperCase(), feature);
+
+    }
+
 
     private FeatureDB() {
         // This class can't be instantiated
@@ -98,8 +130,4 @@ public class FeatureDB {
 
     }
 
-    public static void addFeature(String name, NamedFeature feature) {
-        featureMap.put(name.toUpperCase(), feature);
-
-    }
 }

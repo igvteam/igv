@@ -37,8 +37,7 @@ public class TestLoadGeneManager {
     public static void main(String[] args) {
         Genome genome = IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome");
 
-        GeneManager gm = genome.getGeneManager();
-        System.out.println(gm.getGene("EGFR"));
+        System.out.println(FeatureDB.getFeature("EGFR"));
     }
 
 }

@@ -85,7 +85,6 @@ public class GCTDatasetParser {
     private Map<String, Integer> headingIndexMap = new HashMap();
     Map<String, List<Row>> rowMap = new HashMap();
     StatusMonitor statusMonitor;
-    GeneManager geneManager = null;
     GeneToLocusHelper locusHelper;
 
 
@@ -100,7 +99,6 @@ public class GCTDatasetParser {
 
         this.dataFileLocator = resFile;
         this.genome = genome;
-        this.geneManager = genome.getGeneManager();
         longestProbeMap = new HashMap();
         locusHelper = new GeneToLocusHelper(probeFile, genome);
 

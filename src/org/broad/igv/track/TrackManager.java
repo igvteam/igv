@@ -23,14 +23,14 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.feature.GeneManager;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.ui.MessageCollection;
-import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
@@ -38,11 +38,16 @@ import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.vcf.VCFTrack;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -705,42 +710,52 @@ public class TrackManager {
      */
     public void createGeneTrack(Genome genome) {
 
-        // Create a track for the genome's annotations
-        GeneManager geneManager = genome.getGeneManager();
-        if (geneManager == null) {
-            return;
+        FeatureTrack geneFeatureTrack = null;
+        String genomeId = genome.getId();
+        GenomeDescriptor genomeDescriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genomeId);
+        AsciiLineReader reader = getGeneReader(genomeDescriptor);
+        if (reader != null) {
+            try {
+
+                String geneFilename = genomeDescriptor.getGeneFileName();
+                FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFilename), genome);
+                if (parser == null) {
+                    MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFilename +
+                            "<br>Annotations for genome: " + genomeId + " will not be loaded.");
+                } else {
+                    List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
+                    String name = genomeDescriptor.getGeneTrackName();
+                    if (name == null) name = "Genes";
+                    geneFeatureTrack = new FeatureTrack(name, new FeatureCollectionSource(genes, genome));
+
+                    geneFeatureTrack.setMinimumHeight(5);
+                    geneFeatureTrack.setHeight(35);
+                    geneFeatureTrack.setPreferredHeight(35);
+                    geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
+                    geneFeatureTrack.setColor(Color.BLUE.darker());
+                    TrackProperties props = parser.getTrackProperties();
+                    if (props != null) {
+                        geneFeatureTrack.setProperties(parser.getTrackProperties());
+                    }
+                    geneFeatureTrack.setUrl(genome.getAnnotationURL());
+                }
+
+            } catch (Exception e) {
+                log.error("Error loading geneManager", e);
+            }
+            finally {
+
+                if (reader != null) {
+                    reader.close();
+                }
+
+            }
         }
 
-        Map<String, List<org.broad.tribble.Feature>> featureMap = geneManager.getChromsomeGeneMap();
-       
-        String name = geneManager.getGeneTrackName();
-        if(name == null) {
-            name = "Genes";
-        }
-        FeatureTrack geneFeatureTrack = new FeatureTrack(name, new FeatureCollectionSource(featureMap, genome));
-
-        geneFeatureTrack.setMinimumHeight(5);
-        geneFeatureTrack.setHeight(35);
-        geneFeatureTrack.setPreferredHeight(35);
-        geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
-        geneFeatureTrack.setColor(Color.BLUE.darker());
 
         SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
-        if (geneManager != null) {
-
-            if (geneManager.getTrackProperties() != null) {
-                geneFeatureTrack.setProperties(geneManager.getTrackProperties());
-            }
-            String geneTrackName = geneManager.getGeneTrackName();
-
-            FeatureTrack gt = geneFeatureTrack;
-            gt.setName(geneTrackName);
-
-            if (genome != null && gt.getUrl() == null) {
-                gt.setUrl(genome.getAnnotationURL());
-            }
-
-            setGenomeTracks(gt, seqTrack);
+        if (geneFeatureTrack != null) {
+            setGenomeTracks(geneFeatureTrack, seqTrack);
         } else {
             setGenomeTracks(null, seqTrack);
         }
@@ -786,6 +801,34 @@ public class TrackManager {
         // Keep a reference to this track so it can be removed
         geneTrack = newGeneTrack;
         sequenceTrack = newSeqTrack;
+
+    }
+
+
+    public static AsciiLineReader getGeneReader(GenomeDescriptor genomeDescriptor) {
+
+        InputStream is = null;
+        try {
+
+            InputStream inputStream = genomeDescriptor.getGeneStream();
+            if (inputStream == null) {
+                return null;
+            }
+
+            AsciiLineReader reader = null;
+            if (genomeDescriptor.isGeneFileGZipFormat()) {
+                is = new GZIPInputStream(inputStream);
+                reader = new AsciiLineReader(is);
+            } else {
+                is = new BufferedInputStream(inputStream);
+                reader = new AsciiLineReader(is);
+            }
+
+            return reader;
+        } catch (IOException ex) {
+            log.warn("Error loading the genome!", ex);
+            return null;
+        }
 
     }
 

@@ -39,7 +39,7 @@ import java.util.List;
  */
 public class AminoAcidManagerTest {
 
-    static GeneManager geneManager;
+
 
     public AminoAcidManagerTest() {
     }
@@ -47,8 +47,7 @@ public class AminoAcidManagerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Genome genome = TestUtils.loadGenome("hg18");
-        geneManager = genome.getGeneManager();
-    }
+     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {

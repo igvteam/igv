@@ -46,7 +46,6 @@ import java.util.Map;
  */
 public class GeneTest {
 
-    static GeneManager geneManager;
 
     static BasicFeature egfr;
 
@@ -59,9 +58,8 @@ public class GeneTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Genome genome = TestUtils.loadGenome("hg18");
-        geneManager = genome.getGeneManager();
-        egfr = (BasicFeature) geneManager.getGene("egfr");
-        GTPBP6 = (BasicFeature) geneManager.getGene("GTPBP6");
+        egfr = (BasicFeature) FeatureDB.getFeature("egfr");
+        GTPBP6 = (BasicFeature) FeatureDB.getFeature("GTPBP6");
 
     }
 
@@ -162,43 +160,6 @@ public class GeneTest {
             int expectedLength = exonEnds[i] - exonStarts[i];
             assertEquals(expectedLength, egfr.getExons().get(i).getCodingLength());
         }
-    }
-
-    /**
-     * Loop through all genes testing the total transcript length.  This should
-     * theoretically be a multiple of 3,  but is not always.  Test that this is
-     * the case "most of the time" (98%).
-     */
-    @Test
-    public void totalTransciptLength() {
-
-        int totalGeneCount = 0;
-        List<IGVFeature> failedGenes = new ArrayList();
-
-        Map<String, List<org.broad.tribble.Feature>> geneMap = geneManager.getChromsomeGeneMap();
-        for (Collection<org.broad.tribble.Feature> features : geneMap.values()) {
-            totalGeneCount += features.size();
-
-            for (org.broad.tribble.Feature f : features) {
-                BasicFeature gene = (BasicFeature) f;
-                int length = 0;
-                for (Exon exon : gene.getExons()) {
-                    length += exon.getCodingLength();
-                }
-                if (length % 3 != 0) {
-                    failedGenes.add(gene);
-                }
-
-            }
-        }
-
-        double failedFraction = ((double) failedGenes.size()) / totalGeneCount;
-        assertTrue(failedFraction < 0.02);
-
-        //for (IGVFeature g : failedGenes) {
-        //    System.out.println("\t" + g.getChr() + ":" + g.getStart() + "-" + g.getEnd() +
-        //            "\t" + g.getCdStart() + " " + g.getCdEnd() + "\t" + g.getName() + " (" + g.getStrand() + ")");
-        //}
     }
 
 

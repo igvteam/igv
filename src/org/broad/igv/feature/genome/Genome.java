@@ -61,7 +61,6 @@ public class Genome {
     private Map<String, Long> cumulativeOffsets = new HashMap();
     public static final int MAX_WHOLE_GENOME = 10000;
 
-    GeneManager geneManager;
     GenomeDescriptor descriptor;
 
     public Genome(GenomeDescriptor descriptor) {
@@ -397,46 +396,4 @@ public class Genome {
 
     }
 
-    public synchronized GeneManager getGeneManager() {
-
-
-        if (geneManager == null) {
-            String genomeId = getId();
-            //GenomeDescriptor genomeDescriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genomeId);
-            AsciiLineReader reader = GeneManager.getGeneReader(descriptor);
-            if (reader != null) {
-                try {
-
-                    geneManager = new GeneManager(this, descriptor.getGeneTrackName());
-                    String geneFilename = descriptor.getGeneFileName();
-                    FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFilename), this);
-                    if (parser == null) {
-                        MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFilename +
-                                "<br>Annotations for genome: " + genomeId + " will not be loaded.");
-                    } else {
-                        List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
-                        for (org.broad.tribble.Feature gene : genes) {
-                            geneManager.addGene((IGVFeature) gene);
-                        }
-
-                        geneManager.sortGeneLists();
-                    }
-
-                    geneManager.setTrackProperties(parser.getTrackProperties());
-
-                } catch (Exception e) {
-                    log.error("Error loading geneManager", e);
-                }
-                finally {
-
-                    if (reader != null) {
-                        reader.close();
-                    }
-
-                }
-            }
-        }
-
-        return geneManager;
-    }
 }
