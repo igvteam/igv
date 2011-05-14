@@ -79,8 +79,16 @@ public class Main {
 
                     Frame frame = new JFrame();
                     // Add listener to exit the application on close
+                    frame.addWindowListener(new WindowAdapter() {
+                        public void windowClosed(WindowEvent arg0) {
+                            System.exit(1);
+                        }
 
-                    ((JFrame) frame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                        public void windowClosing(WindowEvent arg0) {
+                            System.exit(1);
+                        }
+
+                     });
 
                     open(frame, args);
 
@@ -102,11 +110,6 @@ public class Main {
         log.info("Default User Directory: " + Globals.getUserDirectory());
 
         System.setProperty("http.agent", Globals.applicationString());
-
-        if(Globals.IS_LINUX) {
-            System.setProperty("sun.java2d.pmoffscreen", "false");
-        }
-
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
@@ -277,7 +280,7 @@ public class Main {
             } catch (CmdLineParser.IllegalOptionValueException e) {
                 e.printStackTrace();  // This is not logged because the logger is not initialized yet.
             } catch (CmdLineParser.UnknownOptionException e) {
-                e.printStackTrace();  
+                e.printStackTrace();
             }
             propertyFile = (String) parser.getOptionValue(propertyFileOption);
             batchFile = (String) parser.getOptionValue(batchFileOption);
