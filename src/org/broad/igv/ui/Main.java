@@ -79,16 +79,8 @@ public class Main {
 
                     Frame frame = new JFrame();
                     // Add listener to exit the application on close
-                    frame.addWindowListener(new WindowAdapter() {
-                        public void windowClosed(WindowEvent arg0) {
-                            System.exit(1);
-                        }
 
-                        public void windowClosing(WindowEvent arg0) {
-                            System.exit(1);
-                        }
-
-                     });
+                    ((JFrame) frame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
                     open(frame, args);
 
@@ -174,6 +166,21 @@ public class Main {
         com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
+        // Set look and feel.  Use Nimbus for all platforms except Mac
+        /*if (!Globals.IS_MAC) {
+            try {
+                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    if ("Nimbus".equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        break;
+                    }
+                }
+            }
+            catch (Exception e) {
+                log.error("Error installing look and feel", e);
+            }
+        }
+        */
 
         if (Globals.IS_LINUX) {
             try {
