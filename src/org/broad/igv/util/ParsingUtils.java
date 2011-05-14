@@ -583,6 +583,10 @@ public class ParsingUtils {
                         if (value.equals("log")) {
                             trackProperties.setLogScale(true);
                         }
+                    } else if(key.equals("gfftags")) {
+                        // Any value other than 0 or off => on
+                        boolean gffTags = !(value.equals("0") || (value.toLowerCase().equals("off")));
+                        trackProperties.setGffTags(gffTags);
                     }
 
                 }

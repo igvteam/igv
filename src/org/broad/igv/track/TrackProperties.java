@@ -65,6 +65,8 @@ public class TrackProperties {
 
     private int minHeight;
 
+    private boolean gffTags = false;
+
     /**
      * The default color for the track.  This can be overridden by individual feature lines in
      * certain formats, notably BED.
@@ -116,7 +118,7 @@ public class TrackProperties {
     public TrackProperties() {
 
     }
- 
+
     public boolean isLogScale() {
         return logScale;
     }
@@ -354,7 +356,13 @@ public class TrackProperties {
         this.yLine = yLine;
     }
 
+    public void setGffTags(boolean gffTags) {
+        this.gffTags = gffTags;
+    }
 
+    public boolean isGffTags() {
+        return gffTags;
+    }
 
 
 }

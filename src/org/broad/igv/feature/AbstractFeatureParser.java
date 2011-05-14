@@ -207,6 +207,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                             TrackProperties tp = new TrackProperties();
                             ParsingUtils.parseTrackLine(nextLine, tp);
                             setTrackProperties(tp);
+                            if(tp.isGffTags()) {
+                                gffTags = true;
+                            }
                         } else if (nextLine.startsWith("#coords")) {
                             try {
                                 String[] tokens = nextLine.split("=");

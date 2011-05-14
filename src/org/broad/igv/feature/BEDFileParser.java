@@ -27,6 +27,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +105,7 @@ public class BEDFileParser extends UCSCParser {
         // Name
         if (tokenCount > 3) {
             if (gffTags) {
-                Map<String, String> atts = new HashMap();
+                Map<String, String> atts = new LinkedHashMap();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
                 if (name == null) {
