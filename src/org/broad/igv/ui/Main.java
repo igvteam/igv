@@ -103,6 +103,11 @@ public class Main {
 
         System.setProperty("http.agent", Globals.applicationString());
 
+        if(Globals.IS_LINUX) {
+            System.setProperty("sun.java2d.pmoffscreen", "false");
+        }
+
+
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());
 
         // TODO -- get these from user preferences
@@ -166,21 +171,6 @@ public class Main {
         com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
-        // Set look and feel.  Use Nimbus for all platforms except Mac
-        /*if (!Globals.IS_MAC) {
-            try {
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
-                        UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
-            }
-            catch (Exception e) {
-                log.error("Error installing look and feel", e);
-            }
-        }
-        */
 
         if (Globals.IS_LINUX) {
             try {
