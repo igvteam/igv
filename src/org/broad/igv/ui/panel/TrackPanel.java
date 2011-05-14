@@ -355,7 +355,9 @@ public class TrackPanel extends IGVPanel {
                 int idx = g.indexOf(oldTrack);
                 g.remove(oldTrack);
                 idx = Math.min(g.size(), idx);
-                g.add(idx, newTrack);
+                if (newTrack != null) {
+                    g.add(idx, newTrack);
+                }
                 foundTrack = true;
             }
         }
@@ -434,7 +436,7 @@ public class TrackPanel extends IGVPanel {
         // name panel starts at offset=0
 
         g.translate(mainPanel.getNamePanelX(), 0);
-        
+
         Rectangle nameRect = new Rectangle(children[0].getBounds());
         nameRect.height = h;
         g.setClip(nameRect);

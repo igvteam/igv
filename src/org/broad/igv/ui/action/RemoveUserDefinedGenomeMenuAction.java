@@ -64,15 +64,6 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                removeGenome();
-            }
-        });
-    }
-
-    private void removeGenome() {
-
         try {
 
             LinkedHashSet<GenomeListItem> genomeItemList =
@@ -83,8 +74,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                         "There are no imported genomes to remove.");
             } else {
 
-                GenomeListItem currentlySelectedDropdownGenome =
-                        IGV.getInstance().getGenomeSelectedInDropdown();
+                GenomeListItem currentlySelectedDropdownGenome = IGV.getInstance().getGenomeSelectedInDropdown();
                 List<String> genomeNames = new ArrayList();
                 UserDefinedGenomeCheckList checkList = new UserDefinedGenomeCheckList(false);
                 for (GenomeListItem genomeListItem : genomeItemList) {
@@ -131,11 +121,10 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                 }
             }
         }
-        catch (Exception e) {
+        catch (Exception ex) {
             JOptionPane.showMessageDialog(IGV.getMainFrame(),
-                    "Error encontered while removing genomes: "
-                            + e.getMessage());
-            logger.error("Error removing genomes from the imported genome list.", e);
+                    "Error encontered while removing genomes: " + ex.getMessage());
+            logger.error("Error removing genomes from the imported genome list.", ex);
         }
     }
 
