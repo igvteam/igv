@@ -27,15 +27,19 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.Utilities;
+import org.broad.tribble.util.HttpUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -133,6 +137,7 @@ public class AttributeManager {
     }
 
     // TODO -- don't compute this on the fly every time its called
+
     public List<String> getVisibleAttributes() {
         final List<String> keys = getAttributeKeys();
         Set<String> hiddenKeys = getHiddenAttributes();
@@ -194,6 +199,39 @@ public class AttributeManager {
 
 
     /**
+     * Test to see if this file could be a sample information file.  Some characteristics are (1) is tab delimited
+     * with at least 2 columns,  (2) is ascii,  (3) is not too large
+     *
+     * @param locator
+     * @return
+     */
+    public static boolean isSampleInfoFile(ResourceLocator locator) throws IOException {
+
+
+        if (!(FileUtils.isAscii(locator) && FileUtils.isTabDelimited(locator, 2))) {
+            return false;
+        }
+
+        // If the file is "too large" better ask user
+        // TODO -- ftp test
+        final int oneMB = 1000000;
+        long fileLength = 0;
+        if (locator.isLocal()) {
+            File f = new File(locator.getPath());
+            fileLength = f.length();
+        } else if(locator.getPath().startsWith("http")) {
+            fileLength = IGVHttpUtils.getContentLength(new URL(locator.getPath()));
+        }
+        if (fileLength > oneMB) {
+            return MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath() +
+                    "<br>Is this a sample information file?");
+        }
+
+
+        return true;
+    }
+
+    /**
      * Load attributes from an ascii file in "Sample Info" format.
      */
     public void loadSampleInfo(ResourceLocator locator) {
@@ -205,7 +243,7 @@ public class AttributeManager {
             if (nextLine.toLowerCase().startsWith("#sampletable")) {
                 loadSampleTable(reader, nextLine, locator.getPath());
             } else {
-                loadOldSamapleInfo(reader, nextLine, locator.getPath());
+                loadOldSampleInfo(reader, nextLine, locator.getPath());
             }
             loadedResources.add(locator);
 
@@ -226,7 +264,7 @@ public class AttributeManager {
         }
     }
 
-    private String loadOldSamapleInfo(AsciiLineReader reader, String nextLine, String path) throws IOException {
+    private String loadOldSampleInfo(AsciiLineReader reader, String nextLine, String path) throws IOException {
         // Parse column neadings for attribute names.
         // Columns 1 and 2 are array and sample name (not attributes)
         boolean foundAttributes = false;

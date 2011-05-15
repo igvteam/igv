@@ -46,6 +46,7 @@ public class FileUtils {
     public static boolean resourceExists(String path) {
         try {
             boolean remoteFile = isRemote(path);
+            // TODO -- what if its ftp?
             return (!remoteFile && (new File(path).exists())) ||
                     (remoteFile && HttpUtils.resourceAvailable(new URL(path)));
         } catch (MalformedURLException e) {
@@ -235,10 +236,6 @@ public class FileUtils {
     }
 
 
-    public static void main(String[] args) {
-        fixEOL("/Volumes/igv/data/public/ismb/ismb_snp_answers.bed", "/Volumes/igv/data/public/ismb/snp_answers.bed");
-    }
-
     public static void fixEOL(String ifile, String ofile) {
         BufferedReader br = null;
         PrintWriter pw = null;
@@ -261,6 +258,70 @@ public class FileUtils {
 
         }
     }
+
+    /**
+     * Test to see if a file is ascii by sampling the first few bytes.  Not perfect (obviously) but usually works
+     *
+
+     */
+    public static boolean isAscii(ResourceLocator loc) throws IOException {
+
+        InputStream in = null;
+
+        try {
+            in = ParsingUtils.openInputStream(loc);
+
+            byte[] bytes = new byte[1024]; //do a peek
+            int nBytes = in.read(bytes);
+
+            while (nBytes > 0) {
+                for (int i = 0; i < nBytes; i++) {
+                    int j = (int) bytes[i];
+                    if (j < 1 || j > 127) {
+                        return false;
+                    }
+                }
+                nBytes = in.read(bytes);
+            }
+            return true;
+        } finally {
+            if(in != null) {
+                in.close();
+            }
+        }
+    }
+
+
+    /**
+     * Test to see if the ascii file is tab delimited.  Samples first 5 non-comment (lines starting with #) lines
+     * 
+     */
+    public static boolean isTabDelimited(ResourceLocator loc, int minColumnCount) throws IOException {
+
+        BufferedReader reader = null;
+
+        try {
+            reader = ParsingUtils.openBufferedReader(loc.getPath());
+            int nLinesTested = 0;
+            String nextLine;
+            while((nextLine = reader.readLine()) != null && nLinesTested < 5) {
+                if(nextLine.startsWith("#")) {
+                    continue;
+                }
+                nLinesTested++;
+                String [] tokens = nextLine.split("\t");
+                if(tokens.length >= minColumnCount) {
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            if(reader != null) {
+                reader.close();
+            }
+        }
+    }
+
 
 
     /**
@@ -359,7 +420,6 @@ public class FileUtils {
         }
         return string;
     }
-
-
 }
+
 

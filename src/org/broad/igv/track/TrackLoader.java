@@ -207,8 +207,11 @@ public class TrackLoader {
                 loadGWASFile(locator, newTracks);
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
-            } else {
+            } else if(AttributeManager.isSampleInfoFile(locator)){
+                // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
+            } else {
+                MessageUtils.showMessage("<html>Unknown file type: " + locator.getPath() + "<br>Check file extenstion");
             }
 
             // Track line
