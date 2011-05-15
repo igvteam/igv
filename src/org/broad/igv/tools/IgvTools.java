@@ -558,7 +558,8 @@ public class IgvTools {
             outputFileName = ifile;
         }
         if (ifile.endsWith(".bed") || ifile.endsWith(".vcf") || ifile.endsWith(".vcf4") || ifile.endsWith(".gff") ||
-                ifile.endsWith(".gff3") || ifile.endsWith(".psl") || ifile.endsWith(".pslx")) {
+                ifile.endsWith(".gff3") || ifile.endsWith(".psl") || ifile.endsWith(".pslx") ||
+                ifile.endsWith(".repmask")) {
 
             if (!outputFileName.endsWith(".idx")) {
                 outputFileName = outputFileName + ".idx";
