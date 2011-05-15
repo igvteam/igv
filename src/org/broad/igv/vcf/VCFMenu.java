@@ -385,7 +385,7 @@ public class VCFMenu extends JPopupMenu {
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.COLLAPSED);
-                IGV.getInstance().repaint();
+                IGV.getInstance().doRefresh();
             }
         });
 
@@ -394,7 +394,7 @@ public class VCFMenu extends JPopupMenu {
         m2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.SQUISHED);
-                IGV.getInstance().repaint();
+                IGV.getInstance().doRefresh();
             }
         });
 
@@ -403,7 +403,7 @@ public class VCFMenu extends JPopupMenu {
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 track.setDisplayMode(Track.DisplayMode.EXPANDED);
-                IGV.getInstance().repaint();
+                IGV.getInstance().doRefresh();
             }
         });
 

@@ -43,7 +43,6 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
     private int cumulativeDeltaY;
     private Point lastMousePoint;
     //private JViewport viewport;
-    private Container panel;
     private JScrollBar verticalScrollBar;
     private boolean isDragging = false;
     private Cursor dragCursor;
@@ -69,7 +68,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
             return;
         }
         
-        panel = (Container) e.getSource();
+        Component panel = (Component) e.getSource();
   
         lastMousePoint = e.getPoint();
         //lastMousePressedY = (int) e.getPoint().getY();
@@ -100,6 +99,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
             DragEventManager.getInstance().dragStopped();
             getReferenceFame().recordHistory();
         }
+        Component panel = (Component) e.getSource();
         panel.setCursor(getCursor());
     }
 
@@ -108,6 +108,7 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
     final public void mouseDragged(final MouseEvent e) {
 
         try {
+            Component panel = (Component) e.getSource();            
             panel.setCursor(dragCursor);
             if (lastMousePoint == null) {
                 lastMousePoint = e.getPoint();

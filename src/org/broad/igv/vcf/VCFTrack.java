@@ -227,7 +227,7 @@ public class VCFTrack extends FeatureTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return variantBandHeight;
         } else {
-            int groupCount = grouped ? samples.size() : allSamples.size();
+            int groupCount = samples.size();
             return variantBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
         }
 
