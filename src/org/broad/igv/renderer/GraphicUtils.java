@@ -127,7 +127,7 @@ public class GraphicUtils {
             //Globals.isHeadless();
             //g2D.setColor(Globals.VERY_LIGHT_GREY);
             int y = Math.max(rect.y, yPos - h);
-            int h2 = Math.min(rect.height, 2*h);
+            int h2 = Math.min(rect.height, 2 * h);
             g2D.clearRect(rect.x, y, rect.width, h2);
             //g2D.setColor(c);
         }
@@ -172,26 +172,36 @@ public class GraphicUtils {
     public static void drawWrappedText(String string, Rectangle rect, Graphics2D g2D, boolean clear) {
         FontMetrics fontMetrics = g2D.getFontMetrics();
         Rectangle2D stringBounds = fontMetrics.getStringBounds(string, g2D);
-        int textHeight = (int) stringBounds.getHeight() + 5;
+        final int margin = 5;
+        int textHeight = (int) stringBounds.getHeight() + margin;
         double textWidth = stringBounds.getWidth() + 10;
         if (textWidth < rect.width) {
-            GraphicUtils.drawVerticallyCenteredText(string, 5, rect, g2D, false, clear);
+            GraphicUtils.drawVerticallyCenteredText(string, margin, rect, g2D, false, clear);
         } else {
             int charWidth = (int) (stringBounds.getWidth() / string.length());
             int charsPerLine = rect.width / charWidth;
             int nStrings = (string.length() / charsPerLine) + 1;
             if (nStrings * textHeight > rect.height) {
-                // Shorten string to fit in space
-                int nChars = (rect.width - 10) / charWidth;
-                String shortString = StringUtils.checkLength(string, nChars);
-                GraphicUtils.drawVerticallyCenteredText(shortString, 5, rect, g2D, false, clear);
+                // Shorten string to fit in space.  Try a max of 5 times,  progressivley shortening string
+                int nChars = (rect.width - 2*margin) / charWidth + 1;
+                int nTries = 0;
+                String shortString;
+                double w;
+                do {
+                    shortString = StringUtils.checkLength(string, nChars);
+                    w = fontMetrics.getStringBounds(shortString, g2D).getWidth() + 2*margin;
+                    nTries++;
+                    nChars--;
+                } while (w > rect.width && nTries <= 5 && nChars > 1);
+
+                GraphicUtils.drawVerticallyCenteredText(shortString, margin, rect, g2D, false, clear);
             } else {
                 int breakPoint = 0;
                 Rectangle tmp = new Rectangle(rect);
                 tmp.y -= ((nStrings - 1) * textHeight) / 2;
                 while (breakPoint < string.length()) {
                     int end = Math.min(string.length(), breakPoint + charsPerLine);
-                    GraphicUtils.drawVerticallyCenteredText(string.substring(breakPoint, end), 5, tmp, g2D, false);
+                    GraphicUtils.drawVerticallyCenteredText(string.substring(breakPoint, end), margin, tmp, g2D, false);
                     breakPoint += charsPerLine;
                     tmp.y += textHeight;
                 }
@@ -222,10 +232,9 @@ public class GraphicUtils {
     }
 
 
-    public static void drawHorizontalArrow(Graphics g, Rectangle r, boolean direction)
-    {
-        int [] x;
-        int [] y;
+    public static void drawHorizontalArrow(Graphics g, Rectangle r, boolean direction) {
+        int[] x;
+        int[] y;
 
         int dy = r.height / 3;
         int y0 = r.y;
@@ -234,19 +243,18 @@ public class GraphicUtils {
         int y2 = y3 - dy;
         int yc = (y1 + y2) / 2;
         int dx = yc - y0;
-        if(direction) {
+        if (direction) {
             int x1 = r.x;
             int x3 = x1 + r.width;
             int x2 = x3 - dx;
-            x = new int [] {x1, x2, x2, x3, x2, x2, x1};
-            y = new int [] {y1, y1, y0, yc, y3, y2, y2};
-        }
-        else {
+            x = new int[]{x1, x2, x2, x3, x2, x2, x1};
+            y = new int[]{y1, y1, y0, yc, y3, y2, y2};
+        } else {
             int x1 = r.x;
             int x3 = x1 + r.width;
             int x2 = x1 + dx;
-            x = new int [] {x1, x2, x2, x3, x3, x2, x2};
-            y = new int [] {yc, y0, y1, y1, y2, y2, y3};
+            x = new int[]{x1, x2, x2, x3, x3, x2, x2};
+            y = new int[]{yc, y0, y1, y1, y2, y2, y3};
 
         }
 
