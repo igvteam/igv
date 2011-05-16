@@ -75,8 +75,6 @@ public interface Track extends Persistable {
     public void setOverlayVisible(boolean overlayVisible);
 
     public TrackType getTrackType();
-
-    public TrackProperties getProperties();
         
     public void setHeight(int preferredHeight);
 
@@ -95,6 +93,8 @@ public interface Track extends Persistable {
     public int getMinimumHeight();
 
     public void setDataRange(DataRange axisDefinition);
+
+    boolean hasDataRange();
 
     public DataRange getDataRange();
 
@@ -171,5 +171,10 @@ public interface Track extends Persistable {
     void setDisplayMode(DisplayMode mode);
  
     JPopupMenu getPopupMenu(final TrackClickEvent te);
+
+    boolean isDrawYLine();
+
+    float getYLine();
+
     
 }

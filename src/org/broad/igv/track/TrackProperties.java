@@ -97,7 +97,7 @@ public class TrackProperties {
 
     private float neutralToValue = Float.NaN;
 
-    private boolean drawYLine = true;
+    private boolean drawYLine = false;
 
     private Class rendererClass;
 

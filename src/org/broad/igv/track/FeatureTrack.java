@@ -20,6 +20,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
@@ -44,19 +45,17 @@ public class FeatureTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(FeatureTrack.class);
 
-    final String FEATURE_VISIBILITY_WINDOW = "featureVisibilityWindow";
     public static final int MINIMUM_FEATURE_SPACING = 5;
     public static final int DEFAULT_MARGIN = 5;
     public static final int NO_FEATURE_ROW_SELECTED = -1;
     protected static final Color SELECTED_FEATURE_ROW_COLOR = new Color(100, 100, 100, 30);
-    private static final int DEFAULT_EXPANDED_HEIGHT = 35;
+    private static final int DEFAULT_EXPANDED_HEIGHT = 40;
     private static final int DEFAULT_SQUISHED_HEIGHT = 12;
 
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
 
     Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
-
 
 
     protected List<Rectangle> levelRects = new ArrayList();
@@ -83,6 +82,8 @@ public class FeatureTrack extends AbstractTrack {
     int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
     int margin = DEFAULT_MARGIN;
+    
+    private static boolean drawBorder = true;
 
     /**
      * Does not initialize with the featuresource
@@ -530,7 +531,7 @@ public class FeatureTrack extends AbstractTrack {
         showFeatures = (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
                 windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
         if (showFeatures) {
-            if(lastFeatureMode != null) {
+            if (lastFeatureMode != null) {
                 super.setDisplayMode(lastFeatureMode);
                 lastFeatureMode = null;
             }
@@ -543,8 +544,10 @@ public class FeatureTrack extends AbstractTrack {
             renderCoverage(context, renderRect);
         }
 
-        Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
-        borderGraphics.draw(rect);
+        if (FeatureTrack.drawBorder) {
+            Graphics2D borderGraphics = context.getGraphic2DForColor(UIConstants.TRACK_BORDER_GRAY);
+            borderGraphics.draw(rect);
+        }
 
     }
 
@@ -829,25 +832,22 @@ public class FeatureTrack extends AbstractTrack {
     public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
 
-        String fvw = attributes.get(FEATURE_VISIBILITY_WINDOW);
-        if (fvw != null) {
-            try {
-                visibilityWindow = Integer.parseInt(fvw);
-            } catch (NumberFormatException e) {
-                log.error("Error restoring featureVisibilityWindow: " + fvw);
-            }
-        }
-
 
     }
 
     @Override
     public Map<String, String> getPersistentState() {
         Map<String, String> stateMap = super.getPersistentState();
-        stateMap.put(FEATURE_VISIBILITY_WINDOW, String.valueOf(visibilityWindow));
-
         return stateMap;
 
+    }
+
+    public static boolean isDrawBorder() {
+        return drawBorder;
+    }
+
+    public static void setDrawBorder(boolean drawBorder) {
+        FeatureTrack.drawBorder = drawBorder;
     }
 }
 

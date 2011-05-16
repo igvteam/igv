@@ -44,6 +44,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -145,6 +146,9 @@ public class TrackMenuUtils {
             addDataItems(menu, tracks);
         } else if (featureTracksOnly) {
             menu.add(getChangeFontSizeItem(tracks));
+            if (hasFeatureTracks) {
+                menu.add(getDrawBorderItem());
+            }
             menu.addSeparator();
             addFeatureItems(menu, tracks, te);
         }
@@ -173,14 +177,6 @@ public class TrackMenuUtils {
             menu.add(item);
         }
 
-       /* JMenuItem zoomInItem = new JMenuItem("Zoom in");
-        zoomInItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                frame.incrementZoom(1);
-            }
-        });
-        menu.add(zoomInItem);
 
         JMenuItem zoomOutItem = new JMenuItem("Zoom out");
         zoomOutItem.addActionListener(new ActionListener() {
@@ -190,7 +186,15 @@ public class TrackMenuUtils {
             }
         });
         menu.add(zoomOutItem);
-        */
+
+        JMenuItem zoomInItem = new JMenuItem("Zoom in");
+        zoomInItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                frame.incrementZoom(1);
+            }
+        });
+        menu.add(zoomInItem);
 
 
     }
@@ -496,6 +500,24 @@ public class TrackMenuUtils {
         });
         return item;
     }
+
+    private static JMenuItem getDrawBorderItem() {
+        // Change track height by attribute
+
+
+        final JCheckBoxMenuItem drawBorderItem = new JCheckBoxMenuItem("Draw borders");
+        drawBorderItem.setSelected(FeatureTrack.isDrawBorder());
+        drawBorderItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                FeatureTrack.setDrawBorder(drawBorderItem.isSelected());
+                IGV.getInstance().repaintDataPanels();
+            }
+        });
+
+        return drawBorderItem;
+    }
+
 
     private static JMenuItem getLogScaleItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute

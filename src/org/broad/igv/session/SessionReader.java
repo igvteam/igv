@@ -145,6 +145,7 @@ public class SessionReader {
 
         BOOLEAN_OPERATOR("booleanOperator"),
         COLOR("color"),
+        ALT_COLOR("altColor"),
         COLOR_MODE("colorMode"),
         CHROMOSOME("chromosome"),
         END_INDEX("end"),
@@ -699,10 +700,11 @@ public class SessionReader {
      * A counter to generate unique panel names.  Needed for backward-compatibility of old session files.
      */
     private int panelCounter = 1;
+
     private void processPanel(Session session, Element element, HashMap additionalInformation) {
         panelElementPresent = true;
         String panelName = element.getAttribute("name");
-        if(panelName == null) {
+        if (panelName == null) {
             panelName = "Panel" + panelCounter++;
         }
 
@@ -737,15 +739,15 @@ public class SessionReader {
             String name = node.getNodeName();
             if (name.equals("dividerFractions")) {
                 String value = node.getNodeValue();
-                String [] tokens = value.split(",");
-                double [] divs = new double[tokens.length];
+                String[] tokens = value.split(",");
+                double[] divs = new double[tokens.length];
                 try {
-                    for(int j=0; j<tokens.length; j++) {
+                    for (int j = 0; j < tokens.length; j++) {
                         divs[j] = Double.parseDouble(tokens[j]);
                     }
                     session.setDividerFractions(divs);
                 }
-                catch(NumberFormatException e) {
+                catch (NumberFormatException e) {
                     log.error("Error parsing divider locations", e);
                 }
             }
@@ -769,7 +771,7 @@ public class SessionReader {
 
         // TODo -- put in utility method, extacts attributes from element **Definitely need to do this
         HashMap<String, String> tAttributes = new HashMap();
-        HashMap<String, String> drAttributes = new HashMap();
+        HashMap<String, String> drAttributes = null;
 
         NamedNodeMap tNodeMap = element.getAttributes();
         for (int i = 0; i < tNodeMap.getLength(); i++) {
@@ -782,6 +784,8 @@ public class SessionReader {
 
 
         if (element.hasChildNodes()) {
+            // TODO -- assumption here is that this is a DataRange and nothing else!
+            drAttributes = new HashMap();
             Node childNode = element.getFirstChild();
             Node sibNode = childNode.getNextSibling();
             NamedNodeMap drNodeMap = sibNode.getAttributes();
@@ -803,9 +807,11 @@ public class SessionReader {
         } else {
             for (final Track track : matchedTracks) {
                 track.restorePersistentState(tAttributes);
-                DataRange dr = track.getDataRange();
-                dr.restorePersistentState(drAttributes);
-                track.setDataRange(dr);
+                if (drAttributes != null) {
+                    DataRange dr = track.getDataRange();
+                    dr.restorePersistentState(drAttributes);
+                    track.setDataRange(dr);
+                }
             }
             trackDictionary.remove(id);
         }

@@ -796,7 +796,7 @@ public class GWASTrack extends AbstractTrack {
         attributes.put("maxY", String.valueOf(maxY));
         attributes.put("scale", String.valueOf(scale));
         attributes.put("displayName", String.valueOf(displayName));
-        attributes.put("drawYAxis", String.valueOf(drawYAxis));,
+        attributes.put("drawYAxis", String.valueOf(drawYAxis));
 
         return attributes;
     }
@@ -849,7 +849,7 @@ public class GWASTrack extends AbstractTrack {
         if(tmp != null) {
            displayName = tmp;
         }
-        tmp = attributes.get("drawYAxis");,
+        tmp = attributes.get("drawYAxis");
         if(tmp != null) {
            drawYAxis = Boolean.parseBoolean(tmp);
         }

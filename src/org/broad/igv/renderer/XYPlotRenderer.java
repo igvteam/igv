@@ -271,7 +271,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
         // Draw boundaries if there is room
         if (adjustedRect.getHeight() >= 10) {
 
-            TrackProperties pros = track.getProperties();
+            ///TrackProperties pros = track.getProperties();
 
 
             // midline
@@ -304,8 +304,8 @@ public abstract class XYPlotRenderer extends DataRenderer {
             borderGraphics.drawLine(adjustedRect.x, zeroY, adjustedRect.x + adjustedRect.width, zeroY);
 
             // Optionally draw "Y" line  (UCSC track line option)
-            if(pros != null && pros.isDrawYLine()) {
-                int yLine = computeYPixelValue(adjustedRect, axisDefinition, pros.getyLine());
+            if(track.isDrawYLine()) {
+                int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
                 borderGraphics.drawLine(adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
             }
 

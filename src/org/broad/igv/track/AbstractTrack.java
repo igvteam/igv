@@ -22,19 +22,19 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.renderer.Renderer;
-import org.broad.igv.session.RendererFactory;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.tribble.Feature;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.Renderer;
+import org.broad.igv.session.RendererFactory;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -90,14 +90,13 @@ public abstract class AbstractTrack implements Track {
     private boolean sortable = true;
     boolean overlayVisible;
 
-    /**
-     * Map to store attributes specific to this track.  Attributes shared by multiple
-     * tracks are stored in AttributeManager.
-     */
+    boolean drawYLine = false;
+    float yLine = 0;
+
+    // Map to store attributes specific to this track.  Attributes shared by multiple
     private Map<String, String> attributes = new HashMap();
-    /**
-     * Scale for heatmaps
-     */
+
+    // Scale for heatmaps
     private ContinuousColorScale colorScale;
 
     private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
@@ -106,8 +105,7 @@ public abstract class AbstractTrack implements Track {
     protected int visibilityWindow = -1;
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
     private int preferredHeight = 25;
-    private TrackProperties properties;
-
+    protected int height = -1;
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
@@ -167,23 +165,11 @@ public abstract class AbstractTrack implements Track {
         return id;
     }
 
-    /**
-     * Method description
-     *
-     * @param name
-     */
+
     public void setName(String name) {
         this.name = name;
     }
 
-    // TODO Provided for session saving.  Rename/refactor later
-
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getName() {
 
         return name;
@@ -412,8 +398,6 @@ public abstract class AbstractTrack implements Track {
         return selected;
     }
 
-    protected int height = -1;
-
 
     public void setHeight(int height) {
         this.height = Math.max(minimumHeight, height);
@@ -428,6 +412,9 @@ public abstract class AbstractTrack implements Track {
         return preferredHeight;
     }
 
+    public boolean hasDataRange() {
+        return dataRange != null;
+    }
 
     public DataRange getDataRange() {
         if (dataRange == null) {
@@ -485,11 +472,13 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setProperties(TrackProperties properties) {
-        this.properties = properties;
         this.itemRGB = properties.isItemRGB();
         this.useScore = properties.isUseScore();
         this.viewLimitMin = properties.getMinValue();
         this.viewLimitMax = properties.getMaxValue();
+        this.yLine = properties.getyLine();
+        this.drawYLine = properties.isDrawYLine();
+
 
         // If view limits are explicitly set turn off autoscale
         // TODO -- get rid of this ugly instance of and casting business
@@ -639,10 +628,9 @@ public abstract class AbstractTrack implements Track {
 
         attributes.put("showDataRange", String.valueOf(showDataRange));
 
-        attributes.put(SessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(isVisible()));
+        attributes.put(SessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(visible));
 
         // height
-        int height = getHeight();
         String value = Integer.toString(height);
         attributes.put(SessionReader.SessionAttribute.HEIGHT.getText(), value);
 
@@ -651,16 +639,25 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
         }
 
+
         // color
-        Color color = getColor();
-        if (color != null) {
+        if (posColor != null) {
             StringBuffer stringBuffer = new StringBuffer();
-            stringBuffer.append(color.getRed());
+            stringBuffer.append(posColor.getRed());
             stringBuffer.append(",");
-            stringBuffer.append(color.getGreen());
+            stringBuffer.append(posColor.getGreen());
             stringBuffer.append(",");
-            stringBuffer.append(color.getBlue());
+            stringBuffer.append(posColor.getBlue());
             attributes.put(SessionReader.SessionAttribute.COLOR.getText(), stringBuffer.toString());
+        }
+        if (altColor != null) {
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append(altColor.getRed());
+            stringBuffer.append(",");
+            stringBuffer.append(altColor.getGreen());
+            stringBuffer.append(",");
+            stringBuffer.append(altColor.getBlue());
+            attributes.put(SessionReader.SessionAttribute.ALT_COLOR.getText(), stringBuffer.toString());
         }
 
         // renderer
@@ -678,9 +675,13 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText(), wf.name());
         }
 
-        attributes.put("fontSize", String.valueOf(getFontSize()));
+        attributes.put("fontSize", String.valueOf(fontSize));
 
         attributes.put(SessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
+
+        attributes.put(SessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
+
+
 
 
         return attributes;
@@ -695,9 +696,11 @@ public abstract class AbstractTrack implements Track {
         String isVisible = attributes.get(SessionReader.SessionAttribute.VISIBLE.getText());
         String height = attributes.get(SessionReader.SessionAttribute.HEIGHT.getText());
         String color = attributes.get(SessionReader.SessionAttribute.COLOR.getText());
+        String altColor = attributes.get(SessionReader.SessionAttribute.ALT_COLOR.getText());
         String rendererType = attributes.get(SessionReader.SessionAttribute.RENDERER.getText());
         String windowFunction = attributes.get(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
         String scale = attributes.get(SessionReader.SessionAttribute.SCALE.getText());
+
 
         String colorScale = attributes.get(SessionReader.SessionAttribute.COLOR_SCALE.getText());
         String fontSizeString = attributes.get("fontSize");
@@ -777,7 +780,7 @@ public abstract class AbstractTrack implements Track {
             setWindowFunction(WindowFunction.getWindowFunction(windowFunction));
         }
 
-        // Set DataRange
+        // Set DataRange -- legacy (pre V3 sessions)
         if (scale != null) {
             String[] axis = scale.split(",");
             float minimum = Float.parseFloat(axis[0]);
@@ -806,6 +809,17 @@ public abstract class AbstractTrack implements Track {
                 }
             }
         }
+
+        String fvw = attributes.get(SessionReader.SessionAttribute.FEATURE_WINDOW.getText());
+        if (fvw != null) {
+            try {
+                visibilityWindow = Integer.parseInt(fvw);
+            } catch (NumberFormatException e) {
+                log.error("Error restoring featureVisibilityWindow: " + fvw);
+            }
+        }
+
+
     }
 
 
@@ -963,7 +977,11 @@ public abstract class AbstractTrack implements Track {
         this.preferredHeight = preferredHeight;
     }
 
-    public TrackProperties getProperties() {
-        return properties;
+    public boolean isDrawYLine() {
+        return drawYLine;
+    }
+
+    public float getYLine() {
+        return yLine;
     }
 }

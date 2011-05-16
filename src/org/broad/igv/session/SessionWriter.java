@@ -365,13 +365,15 @@ public class SessionWriter {
                     }
 
                     // TODO -- DataRange element,  create element, append as child to track
-                    DataRange dr = track.getDataRange();
-                    if (dr != null) {
-                        Element drElement = document.createElement(SessionElement.DATA_RANGE.getText());
-                        for (Map.Entry<String, String> attrValue : dr.getPersistentState().entrySet()) {
-                            drElement.setAttribute(attrValue.getKey(), attrValue.getValue());
+                    if (track.hasDataRange()) {
+                        DataRange dr = track.getDataRange();
+                        if (dr != null) {
+                            Element drElement = document.createElement(SessionElement.DATA_RANGE.getText());
+                            for (Map.Entry<String, String> attrValue : dr.getPersistentState().entrySet()) {
+                                drElement.setAttribute(attrValue.getKey(), attrValue.getValue());
+                            }
+                            trackElement.appendChild(drElement);
                         }
-                        trackElement.appendChild(drElement);
                     }
 
                     panelElement.appendChild(trackElement);
@@ -391,7 +393,7 @@ public class SessionWriter {
 
             StringBuffer locString = new StringBuffer();
             locString.append(String.valueOf(dividerFractions[0]));
-            for(int i=1; i< dividerFractions.length; i++) {
+            for (int i = 1; i < dividerFractions.length; i++) {
                 locString.append("," + dividerFractions[i]);
             }
             panelLayout.setAttribute("dividerFractions", locString.toString());
