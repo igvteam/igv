@@ -108,9 +108,9 @@ public class BEDFileParser extends UCSCParser {
                 Map<String, String> atts = new LinkedHashMap();
                 tagHelper.parseAttributes(tokens[3], atts);
                 String name = tagHelper.getName(atts);
-                if (name == null) {
-                    name = tokens[3];
-                }
+                //if (name == null) {
+                //    name = tokens[3];
+                //}
                 feature.setName(name);
 
                 String id = atts.get("ID");

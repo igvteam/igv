@@ -863,6 +863,10 @@ public class GFFParser implements FeatureParser {
                     if (useUrlDecoding) {
                         key = URLDecoder.decode(key);
                         value = URLDecoder.decode(value);
+                        // Limit values to 50 characters
+                        if(value.length() > 50) {
+                            value = value.substring(0, 50) + " ...";
+                        }
                     }
                     kvalues.put(key, value);
                 } else {
