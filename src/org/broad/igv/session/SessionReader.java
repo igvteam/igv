@@ -306,16 +306,6 @@ public class SessionReader {
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
-
-        geneTrack = IGV.getInstance().getTrackManager().getGeneTrack();
-        if(geneTrack != null) {
-            trackDictionary.put(geneTrack.getId(), Arrays.asList(geneTrack));
-        }
-        seqTrack = IGV.getInstance().getTrackManager().getSequenceTrack();
-        if(seqTrack != null) {
-            trackDictionary.put(seqTrack.getId(), Arrays.asList(seqTrack));
-        }
-
         try {
             version = Integer.parseInt(versionString);
         }
@@ -323,6 +313,16 @@ public class SessionReader {
             log.error("Non integer version number in session file: " + versionString);
         }
         session.setVersion(version);
+
+        geneTrack = IGV.getInstance().getTrackManager().getGeneTrack();
+        if (geneTrack != null) {
+            trackDictionary.put(geneTrack.getId(), Arrays.asList(geneTrack));
+        }
+        seqTrack = IGV.getInstance().getTrackManager().getSequenceTrack();
+        if (seqTrack != null) {
+            trackDictionary.put(seqTrack.getId(), Arrays.asList(seqTrack));
+        }
+
 
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation);
@@ -337,13 +337,14 @@ public class SessionReader {
         if (version < 3 || !panelElementPresent) {
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
-                    if(track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
+                    if (track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
                         TrackPanel group = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
                         group.addTrack(track);
                     }
                 }
             }
         }
+
     }
 
 
@@ -819,6 +820,12 @@ public class SessionReader {
             log.info("Warning.  No tracks were found with id: " + id + " in session file");
         } else {
             for (final Track track : matchedTracks) {
+
+                // Special case for sequence & gene tracks,  they need to be removed before being placed.
+                if(version >= 4 && track == geneTrack || track == seqTrack) {
+                    IGV.getInstance().getTrackManager().removeTracks(Arrays.asList(track));                    
+                }
+
                 track.restorePersistentState(tAttributes);
                 if (drAttributes != null) {
                     DataRange dr = track.getDataRange();
@@ -827,6 +834,8 @@ public class SessionReader {
                 }
             }
             trackDictionary.remove(id);
+
+
         }
 
         NodeList elements = element.getChildNodes();
