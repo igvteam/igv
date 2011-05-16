@@ -1064,7 +1064,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         fitToWindowButton.setMaximumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setMinimumSize(new java.awt.Dimension(32, 32));
         fitToWindowButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        fitToWindowButton.setToolTipText("Squish tracks to fit in window.");
+        fitToWindowButton.setToolTipText("Resize tracks to fit in window.");
         fitToWindowButton.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {

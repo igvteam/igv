@@ -92,22 +92,26 @@ public class DataPanelLayout implements LayoutManager {
             java.util.List<ReferenceFrame> frames = FrameManager.getFrames();
             int h = container.getHeight();
 
-            for (int i = 0; i < children.length; i++) {
-                // TODO -- remove the need to cast
-                Component c = children[i];
-                ReferenceFrame frame = frames.get(i);
-                c.setBounds(frame.pixelX, 0, frame.getWidthInPixels(), h);
+            try {
+                for (int i = 0; i < children.length; i++) {
 
-                if (c instanceof JComponent) {
-                    if (frame.getWidthInPixels() > 5) {
-                        ((JComponent) c).setBorder(javax.swing.BorderFactory.createLineBorder(Color.gray));
-                    } else {
-                         ((JComponent) c).setBorder(null);
+                    Component c = children[i];
+                    ReferenceFrame frame = frames.get(i);
+                    c.setBounds(frame.pixelX, 0, frame.getWidthInPixels(), h);
+
+                    if (c instanceof JComponent) {
+                        if (frame.getWidthInPixels() > 5) {
+                            ((JComponent) c).setBorder(BorderFactory.createLineBorder(Color.gray));
+                        } else {
+                             ((JComponent) c).setBorder(null);
+                        }
                     }
+
+                    log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
+
                 }
-
-                log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
-
+            } catch (Exception e) {
+                log.error("Error laying out data panel", e);
             }
         }
     }

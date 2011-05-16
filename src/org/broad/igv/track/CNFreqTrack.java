@@ -42,7 +42,7 @@ public class CNFreqTrack extends AbstractTrack {
     BarChartRenderer renderer;
 
     public CNFreqTrack(ResourceLocator rl, String id, String name, FreqData fd) {
-        super(rl, id, "CNV %");
+        super(rl, id, "CNV Summary");
         data = fd;
 
         float nSamples = data.getNumberOfSamples();
@@ -52,7 +52,7 @@ public class CNFreqTrack extends AbstractTrack {
 
         renderer = new BarChartRenderer();
 
-        this.setMinimumHeight(50);
+        this.setMinimumHeight(25);
         this.setHeight(50);
         this.setSortable(false);
 
