@@ -26,8 +26,6 @@ package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.UIConstants;
@@ -44,8 +42,14 @@ import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -264,7 +268,7 @@ public class LoadFromServerAction extends MenuAction {
             /**
              * Resource Tree
              */
-            HashSet<ResourceLocator> selectedLocators =
+            LinkedHashSet<ResourceLocator> selectedLocators =
                     ResourceTree.getInstance().showResourceTreeDialog(mainFrame.getMainFrame(),
                             masterDocument, "Available Datasets");
 

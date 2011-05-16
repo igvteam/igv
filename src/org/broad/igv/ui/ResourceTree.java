@@ -57,7 +57,7 @@ public class ResourceTree {
     private HashMap<String, TreeNode> leafNodeMap = new HashMap();
     private JTree tree;
     private static ResourceTree theInstance;
-    private Set<String> selectedLeafNodePaths = new HashSet();
+    private Set<String> selectedLeafNodePaths = new LinkedHashSet();
 
     private static enum TreeExpansionFlag {
         EXPAND_ALL,
@@ -99,11 +99,11 @@ public class ResourceTree {
      * @param dialogTitle
      * @return the resources selected by user.
      */
-    public HashSet<ResourceLocator> showResourceTreeDialog(Component parent, Document document, String dialogTitle) {
+    public LinkedHashSet<ResourceLocator> showResourceTreeDialog(Component parent, Document document, String dialogTitle) {
 
         JDialog dialog = null;
 
-        final HashSet<ResourceLocator> locators = new HashSet();
+        final LinkedHashSet<ResourceLocator> locators = new LinkedHashSet();
         try {
 
             final ResourceTree resourceTree = getInstance();
@@ -132,11 +132,11 @@ public class ResourceTree {
 
                                     TreeModel model = dialogTree.getModel();
 
-                                    HashSet<DefaultMutableTreeNode> allCheckedLeafNodes =
+                                    LinkedHashSet<DefaultMutableTreeNode> allCheckedLeafNodes =
                                             resourceTree.findSelectedLeafNodes(model,
                                                     (TreeNode) model.getRoot(), null);
 
-                                    HashSet<ResourceLocator> selectedLocators =
+                                    LinkedHashSet<ResourceLocator> selectedLocators =
                                             resourceTree.getSelectedResourceLocators();
                                     for (ResourceLocator locator : selectedLocators) {
                                         locators.add(locator);
@@ -371,9 +371,9 @@ public class ResourceTree {
         return leafResources;
     }
 
-    public HashSet<ResourceLocator> getSelectedResourceLocators() {
+    public LinkedHashSet<ResourceLocator> getSelectedResourceLocators() {
 
-        HashSet<ResourceLocator> resourceLocators = new HashSet();
+        LinkedHashSet<ResourceLocator> resourceLocators = new LinkedHashSet();
 
         for (CheckableResource resource : leafResources) {
 
@@ -396,11 +396,11 @@ public class ResourceTree {
     }
 
 
-    private HashSet<DefaultMutableTreeNode> findSelectedLeafNodes(
-            TreeModel model, TreeNode parentNode, HashSet<DefaultMutableTreeNode> allCheckedLeafNodes) {
+    private LinkedHashSet<DefaultMutableTreeNode> findSelectedLeafNodes(
+            TreeModel model, TreeNode parentNode, LinkedHashSet<DefaultMutableTreeNode> allCheckedLeafNodes) {
 
         if (allCheckedLeafNodes == null) {
-            allCheckedLeafNodes = new HashSet();
+            allCheckedLeafNodes = new LinkedHashSet();
         }
 
         int count = model.getChildCount(parentNode);
