@@ -32,10 +32,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -47,7 +44,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     TrackManager trackManager;
 
-   // private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
+    // private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
 
     private int namePanelX;
     private int namePanelWidth = PreferenceManager.getInstance().getAsInt(PreferenceManager.NAME_PANEL_WIDTH);
@@ -127,12 +124,10 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
 
-
-
     @Override
     public void doLayout() {
         layoutFrames();
-        super.doLayout();    //To change body of overridden methods use File | Settings | File Templates.
+        super.doLayout();
         applicationHeaderPanel.doLayout();
         for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
             tsp.doLayout();
@@ -282,7 +277,6 @@ public class MainPanel extends JPanel implements Paintable {
             }
         }
 
-
         return sp;
     }
 
@@ -302,6 +296,43 @@ public class MainPanel extends JPanel implements Paintable {
 
         return panels;
     }
+
+    public void reorderPanels(java.util.List<String> names) {
+
+        // First get visibile "heights" (distance between split pane dividers)
+        int h = centerSplitPane.getHeight();
+        int[] dividerLocations = centerSplitPane.getDividerLocations();
+        Map<String, Integer> panelHeights = new HashMap();
+        int idx = 0;
+
+        Map<String, TrackPanelScrollPane> panes = new HashMap();
+        for (Component c : centerSplitPane.getComponents()) {
+            if (c instanceof TrackPanelScrollPane) {
+                TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
+                panes.put(tsp.getTrackPanelName(), tsp);
+                int top = idx == 0 ? 0 : dividerLocations[idx - 1];
+                int bottom = idx < dividerLocations.length ? dividerLocations[idx] : h;
+                panelHeights.put(tsp.getTrackPanelName(), (bottom - top));
+                idx++;
+            }
+        }
+
+        //
+        centerSplitPane.removeAll();
+        idx = 0;
+        int divLoc = 0;
+        for(String name : names) {
+            centerSplitPane.add(panes.get(name));
+            if(idx < dividerLocations.length) {
+                divLoc += panelHeights.get(name);
+                dividerLocations[idx] = divLoc;
+                idx++;
+            }
+        }
+        centerSplitPane.setDividerLocations(dividerLocations);
+        centerSplitPane.invalidate();
+    }
+
 
     public void tweakPanelDivider() {
         UIUtilities.invokeOnEventThread(new Runnable() {

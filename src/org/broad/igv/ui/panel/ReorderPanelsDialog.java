@@ -25,9 +25,11 @@ package org.broad.igv.ui.panel;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.*;
 
@@ -41,15 +43,27 @@ public class ReorderPanelsDialog extends JDialog {
     public ReorderPanelsDialog(Frame owner) {
         super(owner);
         initComponents();
+        init();
     }
 
-    public ReorderPanelsDialog(Dialog owner) {
-        super(owner);
-        initComponents();
+
+    public void init() {
+        java.util.List<TrackPanel> panes = IGV.getInstance().getMainPanel().getTrackPanels();
+        java.util.List<Wrapper> wrappers = new ArrayList(panes.size());
+        for(TrackPanel pane : panes) {
+           wrappers.add(new Wrapper(pane));
+        }
+        list.setElements(wrappers);
     }
 
     private void okButtonActionPerformed(ActionEvent e) {
         setVisible(false);
+        java.util.List<String> orderedNames = new ArrayList();
+        for(Object obj : list.getElements()) {
+            Wrapper w = (Wrapper) obj;
+            orderedNames.add(w.panelName);
+        }
+        IGV.getInstance().getMainPanel().reorderPanels(orderedNames);
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -68,6 +82,7 @@ public class ReorderPanelsDialog extends JDialog {
         contentPanel = new JPanel();
         scrollPane1 = new JScrollPane();
         list = new ReorderableJList();
+        label1 = new JLabel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -85,13 +100,17 @@ public class ReorderPanelsDialog extends JDialog {
 
             //======== contentPanel ========
             {
-                contentPanel.setLayout(new GridLayout());
+                contentPanel.setLayout(new BorderLayout());
 
                 //======== scrollPane1 ========
                 {
                     scrollPane1.setViewportView(list);
                 }
-                contentPanel.add(scrollPane1);
+                contentPanel.add(scrollPane1, BorderLayout.CENTER);
+
+                //---- label1 ----
+                label1.setText("To reorder panels drag and drop entries in the list below.");
+                contentPanel.add(label1, BorderLayout.NORTH);
             }
             dialogPane.add(contentPanel, BorderLayout.CENTER);
 
@@ -132,12 +151,37 @@ public class ReorderPanelsDialog extends JDialog {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
+    static class Wrapper {
+        String panelName;
+        String printName;
+        Wrapper(TrackPanel panel) {
+            this.panelName = panel.getName();
+
+            StringBuffer buffer = new StringBuffer(50);
+            int nChars = 0;
+            for(Track track : panel.getTracks()) {
+                if(nChars > 0) {
+                    buffer.append(", ");
+                }
+                nChars += track.getName().length();
+                buffer.append(track.getName());
+            }
+            this.printName = buffer.toString();
+
+        }
+
+        public String toString() {
+            return printName;
+        }
+    }
+
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JScrollPane scrollPane1;
     private ReorderableJList list;
+    private JLabel label1;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

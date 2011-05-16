@@ -47,13 +47,13 @@ public class ReorderableJList<T> extends JList {
         new MyDragListener(this);
     }
 
-    private void setElements(List<T> elements) {
+    public void setElements(List<T> elements) {
         model = new DefaultListModel();
         setModel(model);
         setDragEnabled(true);
         setDropMode(DropMode.INSERT);
 
-        for(T obj : elements) {
+        for (T obj : elements) {
             model.addElement(obj);
         }
     }
@@ -61,8 +61,10 @@ public class ReorderableJList<T> extends JList {
     public List<T> getElements() {
         List<T> elementList = new ArrayList<T>();
         Enumeration en = model.elements();
-        while(en.hasMoreElements()) {
-            elementList.add((T) en.nextElement());
+        if (en != null) {
+            while (en.hasMoreElements()) {
+                elementList.add((T) en.nextElement());
+            }
         }
         return elementList;
     }
@@ -137,7 +139,7 @@ public class ReorderableJList<T> extends JList {
             JList.DropLocation dl = (JList.DropLocation) support.getDropLocation();
             int toIndex = dl.getIndex();
 
-            if(fromIndex < toIndex) {
+            if (fromIndex < toIndex) {
                 toIndex--;
             }
 
@@ -163,12 +165,11 @@ public class ReorderableJList<T> extends JList {
         f.setSize(300, 300);
         f.setVisible(true);
 
-        for(String s : roList.getElements()) {
+        for (String s : roList.getElements()) {
             System.out.println(s);
         }
 
     }
-
 
 
 }

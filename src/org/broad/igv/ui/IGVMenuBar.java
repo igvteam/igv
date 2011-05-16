@@ -30,6 +30,7 @@ import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.MainPanel;
+import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
 
@@ -449,6 +450,20 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
+        menuAction =
+                new MenuAction("Reorder Panels...", null, KeyEvent.VK_S) {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ReorderPanelsDialog dlg = new ReorderPanelsDialog(IGV.getMainFrame());
+                        dlg.setVisible(true);
+                    }
+                };
+        //menuAction.setToolTipText("");
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
+        menuItems.add(new JSeparator());
 
         //
         menuAction =
@@ -466,14 +481,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuItems.add(new JSeparator());
-        menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                VariantListManager.openNavigator(IGV.getMainFrame());
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
         /*
@@ -488,10 +495,7 @@ menuAction =
                 repaintDataPanels();
             }
         };
-        */
-        //menuAction.setToolTipText(SHOW_ATTRIBUTE_DISPLAY_TOOLTIP);
-        // menuItem = MenuAndToolbarUtils.createMenuItem(menuAction, PreferenceManager.getInstance().isShowRegionBars());
-        // menuItems.add(menuItem);
+
 
         menuItems.add(new JSeparator());
         menuAction =
@@ -504,7 +508,9 @@ menuAction =
                 };
         menuAction.setToolTipText(REFRESH_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        */
 
+        menuItems.add(new JSeparator());
         menuItems.add(new HistoryMenu("Go to"));
 
 
@@ -601,22 +607,15 @@ menuAction =
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        // Linked sorting
-        menuAction =
-                new MenuAction("Use Linked Sorting", null, KeyEvent.VK_C) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        JCheckBoxMenuItem menuItem =
-                                (JCheckBoxMenuItem) e.getSource();
-                        boolean isSelected = menuItem.getState();
-                        PreferenceManager.getInstance().put(PreferenceManager.ENABLE_LINKED_SORTING, String.valueOf(isSelected));
-                    }
-                };
-        boolean linkedSorting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_LINKED_SORTING);
-        menuAction.setToolTipText("Enable linked sorting");
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, linkedSorting));
-
+        menuItems.add(new JSeparator());
+        menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                VariantListManager.openNavigator(IGV.getMainFrame());
+            }
+        };
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+ 
 
         menuItems.add(new JSeparator());
 
