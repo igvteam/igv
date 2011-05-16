@@ -82,8 +82,8 @@ public class MutationParser {
         List<FeatureTrack> tracks = new ArrayList();
         Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator, genome);
         for (String sampleId : features.keySet()) {
-
-            FeatureTrack track = new FeatureTrack(locator, new FeatureCollectionSource(features.get(sampleId), genome));
+            String id = locator.getPath() + "_" + sampleId;
+            FeatureTrack track = new FeatureTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
             track.setHeight(15);
             track.setName(sampleId);
 

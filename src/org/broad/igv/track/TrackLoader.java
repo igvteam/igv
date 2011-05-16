@@ -207,7 +207,7 @@ public class TrackLoader {
                 loadGWASFile(locator, newTracks);
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
-            } else if(AttributeManager.isSampleInfoFile(locator)){
+            } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
