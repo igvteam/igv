@@ -111,7 +111,7 @@ public class RegionMenu extends JidePopupMenu {
         }
 
         if (loadedTypes.contains(TrackType.MUTATION)) {
-            JMenuItem item = new JMenuItem("Sort by muation count");
+            JMenuItem item = new JMenuItem("Sort by mutation count");
             item.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {

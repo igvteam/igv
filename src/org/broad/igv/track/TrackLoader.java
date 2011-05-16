@@ -236,8 +236,6 @@ public class TrackLoader {
                 if (locator.getSampleId() != null) {
                     track.setSampleId(locator.getSampleId());
                 }
-
-                igv.getTrackManager().addLoadedType(track.getTrackType());
             }
 
 
@@ -328,7 +326,7 @@ public class TrackLoader {
     }
 
     /**
-     * Load the input file as a feature, muation, or maf (multiple alignment) file.
+     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
      *
      * @param locator
      * @param newTracks

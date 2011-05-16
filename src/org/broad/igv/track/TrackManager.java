@@ -84,7 +84,6 @@ public class TrackManager {
 
     private Map<String, List<Track>> overlayTracksMap = new HashMap();
 
-    private Set<TrackType> loadedTypes = new HashSet();
     public static final String DATA_PANEL_NAME = "DataPanel";
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
 
@@ -105,7 +104,14 @@ public class TrackManager {
     }
 
     public Set<TrackType> getLoadedTypes() {
-        return loadedTypes;
+        Set<TrackType> types = new HashSet();
+        for(Track t : this.getAllTracks(false)) {
+            TrackType type = t.getTrackType();
+            if(t != null) {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
 
@@ -141,7 +147,6 @@ public class TrackManager {
         if (tsp != null) {
             tsp.getTrackPanel().reset();
         }
-        loadedTypes.clear();
     }
 
 
@@ -331,12 +336,7 @@ public class TrackManager {
 
     }
 
-    /**
-     * @param type
-     */
-    public void addLoadedType(TrackType type) {
-        loadedTypes.add(type);
-    }
+
 
     /**
      * Load the data file into the specified panel.   Triggered via drag and drop.
