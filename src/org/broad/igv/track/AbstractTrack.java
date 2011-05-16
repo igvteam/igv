@@ -132,6 +132,7 @@ public abstract class AbstractTrack implements Track {
         this.name = drName != null ? drName : dataResourceLocator.getFileName();
         init();
     }
+
     public AbstractTrack(String id) {
         this.name = id;
         this.id = id;
@@ -637,8 +638,10 @@ public abstract class AbstractTrack implements Track {
         attributes.put(SessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(visible));
 
         // height
-        String value = Integer.toString(height);
-        attributes.put(SessionReader.SessionAttribute.HEIGHT.getText(), value);
+        if (height >= 0) {
+            String value = Integer.toString(height);
+            attributes.put(SessionReader.SessionAttribute.HEIGHT.getText(), value);
+        }
 
 
         if (name != null) {
@@ -686,8 +689,6 @@ public abstract class AbstractTrack implements Track {
         attributes.put(SessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
 
         attributes.put(SessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
-
-
 
 
         return attributes;

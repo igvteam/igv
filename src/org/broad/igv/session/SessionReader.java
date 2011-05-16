@@ -20,6 +20,7 @@ package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
@@ -76,6 +77,8 @@ public class SessionReader {
      * the use of LinkedHashMap.
      */
     Map<String, List<Track>> trackDictionary = new LinkedHashMap();
+    private Track geneTrack = null;
+    private Track seqTrack = null;
 
 
     static {
@@ -303,6 +306,16 @@ public class SessionReader {
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
+
+        geneTrack = IGV.getInstance().getTrackManager().getGeneTrack();
+        if(geneTrack != null) {
+            trackDictionary.put(geneTrack.getId(), Arrays.asList(geneTrack));
+        }
+        seqTrack = IGV.getInstance().getTrackManager().getSequenceTrack();
+        if(seqTrack != null) {
+            trackDictionary.put(seqTrack.getId(), Arrays.asList(seqTrack));
+        }
+
         try {
             version = Integer.parseInt(versionString);
         }
@@ -324,7 +337,7 @@ public class SessionReader {
         if (version < 3 || !panelElementPresent) {
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
-                    if (track.getResourceLocator() != null) {
+                    if(track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
                         TrackPanel group = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
                         group.addTrack(track);
                     }

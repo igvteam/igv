@@ -96,7 +96,7 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
-    public FeatureTrack(String id, FeatureSource source) {
+    public FeatureTrack(String id, String name, FeatureSource source) {
         super(id);
         init(source);
         setSortable(false);

@@ -726,8 +726,9 @@ public class TrackManager {
                     List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
                     String name = genomeDescriptor.getGeneTrackName();
                     if (name == null) name = "Genes";
-                    geneFeatureTrack = new FeatureTrack(name, new FeatureCollectionSource(genes, genome));
 
+                    String id = genome.getId() + "_genes";
+                    geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes,genome));
                     geneFeatureTrack.setMinimumHeight(5);
                     geneFeatureTrack.setHeight(35);
                     geneFeatureTrack.setPreferredHeight(35);
