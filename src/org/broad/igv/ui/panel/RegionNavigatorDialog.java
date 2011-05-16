@@ -410,25 +410,23 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                            new Object[][]{
-                                    {null, null, null, null},
-                            },
-                            new String[]{
-                                    "Chr", "Start", "End", "Description"
-                            }
+                        new Object[][] {
+                            {null, null, null, null},
+                        },
+                        new String[] {
+                            "Chr", "Start", "End", "Description"
+                        }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[]{
-                                String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[] {
+                            String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[]{
-                                false, true, true, true
+                        boolean[] columnEditable = new boolean[] {
+                            false, true, true, true
                         };
-
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
-
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -451,7 +449,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                     panel1.setLayout(new BorderLayout());
 
                     //---- textFieldSearch ----
-                    textFieldSearch.setToolTipText("When navigating to a region, zoom to the region?");
+                    textFieldSearch.setToolTipText("Search for regions containing the specified description text.");
                     panel1.add(textFieldSearch, BorderLayout.CENTER);
 
                     //---- label1 ----

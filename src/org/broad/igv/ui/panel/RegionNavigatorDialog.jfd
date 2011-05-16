@@ -185,7 +185,7 @@
               <string>javax.swing.JTextField</string> 
               <void method="setProperty"> 
                <string>toolTipText</string> 
-               <string>When navigating to a region, zoom to the region?</string> 
+               <string>Search for regions containing the specified description text.</string> 
               </void> 
               <void property="name"> 
                <string>textFieldSearch</string> 
