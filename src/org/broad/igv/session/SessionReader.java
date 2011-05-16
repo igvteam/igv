@@ -798,17 +798,18 @@ public class SessionReader {
 
 
         if (element.hasChildNodes()) {
-            // TODO -- assumption here is that this is a DataRange and nothing else!
             drAttributes = new HashMap();
             Node childNode = element.getFirstChild();
             Node sibNode = childNode.getNextSibling();
-            NamedNodeMap drNodeMap = sibNode.getAttributes();
-
-            for (int i = 0; i < drNodeMap.getLength(); i++) {
-                Node node = drNodeMap.item(i);
-                String value = node.getNodeValue();
-                if (value != null && value.length() > 0) {
-                    drAttributes.put(node.getNodeName(), value);
+            String sibName = sibNode.getNodeName();
+            if (sibName.equals( SessionElement.DATA_RANGE.getText())) {
+                NamedNodeMap drNodeMap = sibNode.getAttributes();
+                for (int i = 0; i < drNodeMap.getLength(); i++) {
+                    Node node = drNodeMap.item(i);
+                    String value = node.getNodeValue();
+                    if (value != null && value.length() > 0) {
+                        drAttributes.put(node.getNodeName(), value);
+                    }
                 }
             }
         }
@@ -822,8 +823,8 @@ public class SessionReader {
             for (final Track track : matchedTracks) {
 
                 // Special case for sequence & gene tracks,  they need to be removed before being placed.
-                if(version >= 4 && track == geneTrack || track == seqTrack) {
-                    IGV.getInstance().getTrackManager().removeTracks(Arrays.asList(track));                    
+                if (version >= 4 && track == geneTrack || track == seqTrack) {
+                    IGV.getInstance().getTrackManager().removeTracks(Arrays.asList(track));
                 }
 
                 track.restorePersistentState(tAttributes);
