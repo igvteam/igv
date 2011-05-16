@@ -275,10 +275,9 @@ public class FeatureCollectionSource implements FeatureSource {
                 ends[i] = starts[i] + windowSize;
             }
             float[] values = new float[nBins];
-            Iterator<Feature> features = featureMap.get(chr).iterator();
+            List<Feature> features = featureMap.get(chr);
             if (features != null) {
-                while (features.hasNext()) {
-                    Feature f = features.next();
+                for (Feature f : features) {
                     int startBin = f.getStart() / windowSize;
                     int endBin = f.getEnd() / windowSize;
                     for (int i = startBin; i < endBin; i++) {
