@@ -157,10 +157,9 @@ public class RegionOfInterestPanel extends JPanel {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-
-
                 String desc = JOptionPane.showInputDialog(parent, "Add or edit region description:", roi.getDescription());
                 roi.setDescription(desc);
+                IGV.getInstance().getSession().getRegionsOfInterestObservable().setChangedAndNotify();
 
             }
         });
