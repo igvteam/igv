@@ -396,7 +396,7 @@ public class GenomeManager {
                 long contentLength = IGVHttpUtils.getContentLength(genomeArchiveURL);
 
                 if (contentLength <= 0) {
-                    log.info("Skipping genome update of " + archiveFile.getName() + " due to unkown content length");
+                    log.info("Skipping genome update of " + archiveFile.getName() + " due to unknown content length");
                 }
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = (contentLength != fileLength) &&
