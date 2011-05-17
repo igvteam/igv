@@ -59,7 +59,7 @@ public class Session {
 
     private TrackManager trackManager;
 
-    private String filePath;
+    private String path;
     private String groupTracksBy;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
     private TrackFilter filter;
@@ -81,12 +81,10 @@ public class Session {
     private GeneList currentGeneList;
 
 
-    public Session(String filePath) {
+    public Session(String path) {
         log.debug("New session");
 
-        this.filePath = filePath;
-
-
+        this.path = path;
 
         regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
         regionsOfInterestObservable =
@@ -131,7 +129,7 @@ public class Session {
      * @return the absolute path to the file associated with this session
      */
     public String getPath() {
-        return filePath;
+        return path;
     }
 
     public void setPreference(String key, String value) {
@@ -323,8 +321,8 @@ public class Session {
         regionsOfInterestObservable.setChangedAndNotify();
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public History getHistory() {
