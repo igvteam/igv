@@ -49,7 +49,7 @@ public class IGVContentPane extends JPanel {
 
     private static Logger log = Logger.getLogger(IGVContentPane.class);
 
-
+    private JPanel commandBarPanel;
     private IGVCommandBar igvCommandBar;
     private MainPanel mainPanel;
     private ApplicationStatusBar statusBar;
@@ -67,18 +67,39 @@ public class IGVContentPane extends JPanel {
 
         setLayout(new BorderLayout());
 
+        commandBarPanel = new JPanel();
+        BoxLayout layout = new BoxLayout(commandBarPanel, BoxLayout.PAGE_AXIS);
+         
+        commandBarPanel.setLayout(layout);
+        add(commandBarPanel, BorderLayout.NORTH);
+
         igvCommandBar = new IGVCommandBar();
         igvCommandBar.setMinimumSize(new Dimension(250, 33));
-        add(igvCommandBar, BorderLayout.NORTH);
+        igvCommandBar.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
+        igvCommandBar.setAlignmentX(Component.BOTTOM_ALIGNMENT);
+        commandBarPanel.add(igvCommandBar);
+
 
         mainPanel = new MainPanel(trackManager);
         add(mainPanel, BorderLayout.CENTER);
-        createToolBar();
 
         statusBar = new ApplicationStatusBar();
         statusBar.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
         add(statusBar, BorderLayout.SOUTH);
 
+
+    }
+
+    public void addCommandBar(JComponent component) {
+        component.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
+        component.setAlignmentX(Component.BOTTOM_ALIGNMENT);
+        commandBarPanel.add(component);
+        commandBarPanel.invalidate();
+    }
+
+    public void removeCommandBar(JComponent component)  {
+        commandBarPanel.remove(component);
+        commandBarPanel.invalidate();
     }
 
     @Override
@@ -117,25 +138,6 @@ public class IGVContentPane extends JPanel {
 
     public void repaintStatusAndZoomSlider() {
         igvCommandBar.repaint();
-    }
-
-
-    private void createToolBar() {
-
-
-        // Setup the toolbar panel.
-        JPanel toolbarPanel = new JPanel();
-        toolbarPanel.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
-
-        add(toolbarPanel, BorderLayout.NORTH);
-        toolbarPanel.setLayout(new JideBoxLayout(toolbarPanel));
-
-        // Nothing for this toolbar yet, basically used as a space
-        //JPanel namePanelToolBar = new JPanel();
-        //namePanelToolBar.setLayout(new JideBoxLayout(namePanelToolBar));
-        //namePanelToolBar.setPreferredSize(new Dimension(180, 10));
-        //toolbarPanel.add(namePanelToolBar, JideBoxLayout.FLEXIBLE);
-        toolbarPanel.add(igvCommandBar, JideBoxLayout.VARY);
     }
 
 

@@ -20,6 +20,7 @@
 package org.broad.igv.peaks;
 
 import org.broad.igv.data.LocusScoreUtils;
+import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
@@ -28,6 +29,7 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -74,6 +76,7 @@ public class PeakTrack extends AbstractTrack {
     DataRange scoreDataRange = new DataRange(0, 0, 100);
     DataRange signalDataRange = new DataRange(0, 0, 10f);
 
+    static boolean commandBarAdded = false;
 
 
     public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
@@ -82,6 +85,11 @@ public class PeakTrack extends AbstractTrack {
         loadPeaks(locator.getPath());
 
         instances.add(new SoftReference(this));
+
+        if(!commandBarAdded) {
+            IGV.getInstance().getContentPane().addCommandBar(new PeakCommandBar());
+            commandBarAdded = true;
+        }
     }
 
     private void loadPeaks(String path) throws IOException {
@@ -268,6 +276,32 @@ public class PeakTrack extends AbstractTrack {
         PeakTrack.foldChangeThreshold = foldChangeThreshold;
         clearFilteredLists();
     }
+
+
+    public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
+        double regionScore = 0;
+        int interval  = end - start;
+        if(interval == 0) {
+            return Float.MIN_VALUE;
+        }
+
+        List<Peak> scores = getFilteredPeaks(chr);
+        int startIdx = FeatureUtils.getIndexBefore(start, scores);
+
+
+        for (int i=startIdx; i<scores.size(); i++) {
+            Peak score = scores.get(i);
+            if(score.getEnd() < start) continue;
+            if(score.getStart() > end) break;
+            if ((score.getEnd() >= start) && (score.getStart() <= end)) {
+                int w = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
+                float value = score.getScore();
+                regionScore += value * w; 
+            }
+        }
+        return (float) (regionScore / interval);
+    }
+
 
 
 }

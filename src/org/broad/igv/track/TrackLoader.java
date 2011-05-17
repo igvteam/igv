@@ -55,6 +55,7 @@ import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
@@ -747,8 +748,6 @@ public class TrackLoader {
      * Load a RNAi haripin score file.  The results of this action are hairpin scores
      * added to the RNAIDataManager.  Currently no tracks are created for hairpin
      * scores, although this could change.
-     * <p/>
-     * // TODO -- change parser to use resource locator rather than path.
      *
      * @param locator
      */
@@ -778,8 +777,6 @@ public class TrackLoader {
 
     /**
      * Load a rnai gene score file and create a datasource and track.
-     * <p/>
-     * // TODO -- change parser to use resource locator rather than path.
      *
      * @param locator
      * @param newTracks

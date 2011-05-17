@@ -1582,7 +1582,7 @@ public class IGV {
         this.recentSessionList = recentSessionList;
     }
 
-    public Component getContentPane() {
+    public IGVContentPane getContentPane() {
         return contentPane;
     }
 
