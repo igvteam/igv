@@ -522,9 +522,12 @@ public class SessionReader {
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
 
         String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
-        boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
+        //boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
         String path = getAttribute(element, SessionAttribute.PATH.getText());
+
+         boolean relativePaths = !(path.startsWith("/") || path.startsWith("\\") || path.startsWith("http:") ||
+                 path.startsWith("https:") || path.startsWith("ftp:"));
 
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, path);
         if (relativePaths) {
@@ -534,7 +537,7 @@ public class SessionReader {
                 String resPath = basePath + "/" + path;
                 resourceLocator = new ResourceLocator(serverURL, resPath);
             } else {
-                File parent = (relativePaths ? new File(session.getPath()).getParentFile() : null);
+                File parent = new File(session.getPath()).getParentFile();
                 File file = new File(parent, path);
                 resourceLocator = new ResourceLocator(serverURL, file.getAbsolutePath());
             }
