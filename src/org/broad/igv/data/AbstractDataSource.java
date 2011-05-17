@@ -239,7 +239,7 @@ public abstract class AbstractDataSource implements DataSource {
 
             tile = new SummaryTile(tileNumber, startLocation);
 
-            if (windowFunction == WindowFunction.none) {
+            if (windowFunction == WindowFunction.none || FrameManager.isGeneListMode()) {
 
                 for (int i = 0; i < starts.length; i++) {
                     int s = starts[i];
