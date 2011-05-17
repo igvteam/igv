@@ -117,7 +117,7 @@ public class SaveSessionMenuAction extends MenuAction {
         try {
 
             Session currentSession = mainFrame.getSession();
-            currentSession.setFilePath(sf.getAbsolutePath());
+            currentSession.setPath(sf.getAbsolutePath());
             (new SessionWriter()).saveSession(currentSession, sf);
 
             // No errors so save last location

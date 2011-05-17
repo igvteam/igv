@@ -1414,7 +1414,7 @@ public class IGV {
             InputStream inputStream = null;
             try {
                 inputStream = new BufferedInputStream(sessionURL.openStream());
-                doRestoreSession(inputStream, URLDecoder.decode(sessionURL.getFile(), "UTF-8"), locus, false);
+                doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
             } catch (Exception e) {
                 String message = "Failed to load session! : " + sessionURL;
                 MessageUtils.showAndLogErrorMessage(mainFrame, message, log, e);

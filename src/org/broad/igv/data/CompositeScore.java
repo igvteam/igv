@@ -30,50 +30,22 @@ import java.util.List;
  */
 public class CompositeScore implements LocusScore {
 
-    List<LocusScore> scores;
+    float[] data;
     float score;
     private int start;
     private int end;
+    private WindowFunction windowFunction;
 
-    /**
-     * Constructs ...
-     * mean("Mean"),
-     * median("Median"),
-     * min("Minimum"),
-     * max("Maximum"),
-     * percentile10("10th Percentile"),
-     * percentile90("90th Percentile"),
-     * percentile98("98th Percentile"),
-     * stddev("Standard Deviation"),
-     * count("Count"),
-     * density("Density");
-     *
-     * @param scores
-     * @param windowFunction
-     */
-    public CompositeScore(List<LocusScore> scores, WindowFunction windowFunction) {
-        this.scores = scores;
-        start = Integer.MAX_VALUE;
-        end = -Integer.MAX_VALUE;
-        for (LocusScore score : scores) {
-            start = Math.min(start, score.getStart());
-            end = Math.max(end, score.getEnd());
-        }
 
-        float[] data = new float[scores.size()];
-        for (int i = 0; i < scores.size(); i++) {
-            data[i] = scores.get(i).getScore();
-        }
+    public CompositeScore(int start, int end, float[] scores, WindowFunction windowFunction) {
+        this.data = scores;
+        this.start = start;
+        this.end = end;
         score = ProcessingUtils.computeStat(data, windowFunction);
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param sc
-     */
     public CompositeScore(CompositeScore sc) {
-        this.scores = sc.scores;
+        this.data = sc.data;
         this.start = sc.start;
         this.end = sc.end;
         this.score = sc.score;
@@ -86,21 +58,18 @@ public class CompositeScore implements LocusScore {
 
 
     public float getScore() {
-
-        // Todo - implementation
         return score;
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
-        if (scores == null) {
+        if (data == null) {
             return "";
         }
         StringBuffer buf = new StringBuffer();
         buf.append("Composite value = " + score + " (" + windowFunction + ")<br>");
         buf.append("-------------------------------<br>");
-        buf.append("Components: <br>");
-        for (LocusScore s : scores) {
-            buf.append(s.getValueString(position, windowFunction));
+        for (int j = 0; j < data.length; j++) {
+            buf.append(String.valueOf(data[j]));
             buf.append("<br>");
 
         }
