@@ -58,9 +58,7 @@ import java.util.*;
 public class GCTDatasetParser {
 
     private static Logger log = Logger.getLogger(GCTDatasetParser.class);
-    static String LOCUS_START_DELIMITER = "|@";
-    static String LOCUS_END_DELIMITER = "|";
-
+ 
     enum FileType {
 
         RES, GCT, MAPPED, TAB, MET, DCHIP, MAGE_TAB
@@ -396,7 +394,7 @@ public class GCTDatasetParser {
                 char[] calls = hasCalls ? new char[nColumns] : (char[]) null;
 
                 String description = (hasDescription && (nTokens > descriptionColumn))
-                        ? new String("|@" + tokens[descriptionColumn] + "|") : null;
+                        ? tokens[descriptionColumn] : null;
 
                 if (type == FileType.MAGE_TAB && probeId.startsWith("cg")) {
                     dataset.setType(TrackType.DNA_METHYLATION);
