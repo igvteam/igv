@@ -39,16 +39,16 @@ public class PeakCommandBar extends JPanel {
         foldChangeSlider.setValue((int) PeakTrack.getFoldChangeThreshold());
     }
 
-    private void foldChangeSliderStateChanged(ChangeEvent e) {
-        PeakTrack.setScoreThreshold(foldChangeSlider.getValue());
-        IGV.getInstance().repaintDataPanels();
-
-    }
-
     private void scoreSliderStateChanged(ChangeEvent e) {
-        PeakTrack.setFoldChangeThreshold(scoreSlider.getValue());
+        PeakTrack.setScoreThreshold(scoreSlider.getValue());
         IGV.getInstance().repaintDataPanels();
     }
+
+    private void foldChangeSliderStateChanged(ChangeEvent e) {
+         PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
+         IGV.getInstance().repaintDataPanels();
+
+     }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents

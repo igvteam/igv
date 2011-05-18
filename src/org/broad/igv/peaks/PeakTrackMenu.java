@@ -141,49 +141,29 @@ public class PeakTrackMenu extends JPopupMenu {
 
 
         addSeparator();
-        add(new JLabel("Display as"));
 
-        ButtonGroup group = new ButtonGroup();
-
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Features");
-        m1.setSelected(track.getRenderOption() == PeakTrack.RenderOption.FEATURE);
+        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Show peaks");
+        m1.setSelected(PeakTrack.isShowScores());
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setRenderOption(PeakTrack.RenderOption.FEATURE);
-                colorByScoreMI.setEnabled(true);
-                colorByScoreMI.setEnabled(true);
+                PeakTrack.setShowScores(m1.isSelected());
+                colorByScoreMI.setEnabled(m1.isSelected());
+                colorByScoreMI.setEnabled(m1.isSelected());
                 IGV.getInstance().repaint();
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Barchart");
-        m3.setSelected(track.getRenderOption() == PeakTrack.RenderOption.CHART);
-        m3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setRenderOption(PeakTrack.RenderOption.CHART);
-                colorByScoreMI.setEnabled(false);
-                colorByScoreMI.setEnabled(false);
-                IGV.getInstance().repaint();
-            }
-        });
-
-        JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("Signals");
-        m4.setSelected(track.getRenderOption() == PeakTrack.RenderOption.SIGNAL);
+        final JCheckBoxMenuItem m4 = new JCheckBoxMenuItem("Show signals");
+        m4.setSelected(PeakTrack.isShowSignals());
         m4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setRenderOption(PeakTrack.RenderOption.SIGNAL);
-                colorByScoreMI.setEnabled(false);
-                colorByScoreMI.setEnabled(false);
+                PeakTrack.setShowSignals(m4.isSelected());
                 IGV.getInstance().repaint();
             }
         });
 
         add(m1);
-        add(m3);
         add(m4);
-        group.add(m1);
-        group.add(m3);
-        group.add(m4);
 
     }
 }

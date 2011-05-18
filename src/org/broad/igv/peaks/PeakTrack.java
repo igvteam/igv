@@ -46,47 +46,49 @@ import java.util.List;
  */
 public class PeakTrack extends AbstractTrack {
 
-    enum ColorOption {
-        SCORE, FOLD_CHANGE
-    }
-
-    enum RenderOption {
-        FEATURE, CHART, SIGNAL
-    }
 
     private static List<SoftReference<PeakTrack>> instances = new ArrayList();
 
     private static PeakControlDialog controlDialog;
-    private static float scoreThreshold = 10;
+    private static float scoreThreshold = 30;
     private static float foldChangeThreshold = 0;
+
     private static ColorOption colorOption = ColorOption.SCORE;
-    private static RenderOption renderOption = RenderOption.FEATURE;
+    private static boolean showScores = true;
+    private static boolean showSignals = false;
 
     int nTimePoints;
     Map<String, List<Peak>> peakMap = new HashMap();
     Map<String, List<Peak>> filteredPeakMap = new HashMap();
     Renderer renderer = new PeakRenderer();
-    private int bandHeight = 30;
 
     // Path the signal (TDF) file
     String signalPath;
     TDFDataSource signalSource;
 
+    String[] timeSignalPaths;
+    TDFDataSource[] timeSignalSources;
+
     // Data range
     DataRange scoreDataRange = new DataRange(0, 0, 100);
-    DataRange signalDataRange = new DataRange(0, 0, 10f);
+    DataRange signalDataRange = new DataRange(0, 0, 1000f);
 
     static boolean commandBarAdded = false;
+
+    int bandHeight;
+    int signalHeight;
+    int peakHeight;
+    int gapHeight;
 
 
     public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
-        height = bandHeight;
+        setHeight(30);
         loadPeaks(locator.getPath());
 
         instances.add(new SoftReference(this));
 
-        if(!commandBarAdded) {
+        if (!commandBarAdded) {
             IGV.getInstance().getContentPane().addCommandBar(new PeakCommandBar());
             commandBarAdded = true;
         }
@@ -100,8 +102,21 @@ public class PeakTrack extends AbstractTrack {
         nTimePoints = parser.getnTimePoints();
         signalPath = parser.getSignalPath();
         signalSource = new TDFDataSource(TDFReader.getReader(signalPath), 0, "");
-        //signalSource.setNormalizeCounts(true, 1.0e6f);
-        // signalSource.setWindowFunction(WindowFunction.max);
+        signalSource.setNormalizeCounts(true, 1.0e9f);
+
+        timeSignalPaths = parser.timeSignalPaths;
+        if (timeSignalPaths != null && timeSignalPaths.length > 0) {
+            timeSignalSources = new TDFDataSource[timeSignalPaths.length];
+            for (int i = 0; i < timeSignalPaths.length; i++) {
+                try {
+                    timeSignalSources[i] = new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, "");
+                    timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
+                } catch (Exception e) {
+                    timeSignalSources[i] = null;
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        }
 
         TrackProperties props = parser.getTrackProperties();
         if (props != null) {
@@ -127,7 +142,7 @@ public class PeakTrack extends AbstractTrack {
 
     @Override
     public DataRange getDataRange() {
-        return renderOption == RenderOption.SIGNAL ? signalDataRange : scoreDataRange;
+        return showSignals ? signalDataRange : scoreDataRange;
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -144,32 +159,42 @@ public class PeakTrack extends AbstractTrack {
         return renderer;
     }
 
+
     @Override
-    public void setHeight(int height) {
+    public int getMinimumHeight() {
+        int h = 0;
+        if (showScores) h += 5;
+        if (showSignals) h += 10;
+        if (showScores && showSignals) h += 2;
+
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
-            bandHeight = height;
+            return h;
         } else {
-            bandHeight = (height - 2) / (nTimePoints + 1);
+            return (nTimePoints + 1) * h + 2;
         }
-        super.setHeight(height);
+    }
+
+
+    @Override
+    public void setHeight(int h) {
+        super.setHeight(h);
+
+        int nBands = getDisplayMode() == DisplayMode.COLLAPSED ? 1 : nTimePoints + 1;
+
+        bandHeight = h / nBands;
+        peakHeight = Math.max(5, Math.min(bandHeight/3, 10));
+        signalHeight = bandHeight - peakHeight - gapHeight;
+
     }
 
     @Override
     public void setDisplayMode(DisplayMode mode) {
         super.setDisplayMode(mode);
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
-            super.setHeight(bandHeight);
-        } else if (getDisplayMode() == Track.DisplayMode.EXPANDED) {
-            super.setHeight((nTimePoints + 1) * bandHeight + 2);
+        if (mode == Track.DisplayMode.COLLAPSED) {
+            setHeight(bandHeight);
+        } else  {
+            setHeight((nTimePoints + 1) * bandHeight + gapHeight);
         }
-    }
-
-    public static RenderOption getRenderOption() {
-        return renderOption;
-    }
-
-    public static void setRenderOption(RenderOption renderOption) {
-        PeakTrack.renderOption = renderOption;
     }
 
 
@@ -178,18 +203,27 @@ public class PeakTrack extends AbstractTrack {
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
         buf.append(getName());
-        if (renderOption == RenderOption.SIGNAL) {
-            if(signalSource != null) {
-                List<LocusScore> scores =
-                        signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(),  (int) frame.getEnd(), frame.getZoom());
-                LocusScore score =  getLocusScoreAt(scores, position, frame);
-                buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
-            }
-        } else {
+        if(showScores) {
             List<Peak> scores = getFilteredPeaks(chr);
             LocusScore score = getLocusScoreAt(scores, position, frame);
             buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
+
         }
+        if (showSignals) {
+            if (signalSource != null) {
+                List<LocusScore> scores =
+                        signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
+                LocusScore score = getLocusScoreAt(scores, position, frame);
+                buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
+            }
+        }
+
+        buf.append("<br>height       =" + getHeight());
+        buf.append("<br>bandHeight   =" + bandHeight);
+        buf.append("<br>peakHeight   =" + peakHeight);
+        buf.append("<br>signalHeight =" + signalHeight);
+
+
         return buf.toString();
     }
 
@@ -204,7 +238,7 @@ public class PeakTrack extends AbstractTrack {
             // give a 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             int buffer = (int) (2 * bpPerPixel);    /* * */
-            return LocusScoreUtils.getFeatureAt (position, buffer, scores);
+            return LocusScoreUtils.getFeatureAt(position, buffer, scores);
         }
     }
 
@@ -280,8 +314,8 @@ public class PeakTrack extends AbstractTrack {
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
         double regionScore = 0;
-        int interval  = end - start;
-        if(interval == 0) {
+        int interval = end - start;
+        if (interval == 0) {
             return Float.MIN_VALUE;
         }
 
@@ -289,19 +323,37 @@ public class PeakTrack extends AbstractTrack {
         int startIdx = FeatureUtils.getIndexBefore(start, scores);
 
 
-        for (int i=startIdx; i<scores.size(); i++) {
+        for (int i = startIdx; i < scores.size(); i++) {
             Peak score = scores.get(i);
-            if(score.getEnd() < start) continue;
-            if(score.getStart() > end) break;
-            if ((score.getEnd() >= start) && (score.getStart() <= end)) {
-                int w = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
-                float value = score.getScore();
-                regionScore += value * w; 
-            }
+            if (score.getEnd() < start) continue;
+            if (score.getStart() > end) break;
+            int w = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
+            float value = score.getScore();
+            regionScore += value * w;
         }
         return (float) (regionScore / interval);
     }
 
+
+    public static boolean isShowScores() {
+        return showScores;
+    }
+
+    public static void setShowScores(boolean b) {
+        showScores = b;
+    }
+
+    public static boolean isShowSignals() {
+        return showSignals;
+    }
+
+    public static void setShowSignals(boolean b) {
+        showSignals = b;
+    }
+
+    enum ColorOption {
+        SCORE, FOLD_CHANGE
+    }
 
 
 }

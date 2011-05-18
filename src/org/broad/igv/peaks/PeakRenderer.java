@@ -22,6 +22,7 @@ package org.broad.igv.peaks;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.Renderer;
+import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.ColorUtilities;
@@ -38,7 +39,10 @@ public class PeakRenderer implements Renderer<LocusScore> {
     BarChartRenderer chartRenderer = new BarChartRenderer();
     public static final int SIGNAL_CHART_HEIGHT = 15;
 
-    public void render(List<LocusScore> peakList, RenderContext context, Rectangle rect, Track track) {
+    public void render(List<LocusScore> peakList, RenderContext context, Rectangle rect, Track t) {
+
+
+        PeakTrack track = (PeakTrack) t;
 
         final double locScale = context.getScale();
         final double origin = context.getOrigin();
@@ -52,73 +56,87 @@ public class PeakRenderer implements Renderer<LocusScore> {
         Graphics2D greyGraphics = context.getGraphic2DForColor(Color.lightGray);
         Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
 
-        int h = rect.height;
-        int nTimePoints = ((PeakTrack) track).nTimePoints;
-        if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-            h = (rect.height - 2) / (nTimePoints + 1);
-        }
+        int nTimePoints = track.nTimePoints;
 
-        for (LocusScore ls : peakList) {
 
-            Peak peak = (Peak) ls;
+        String chr = context.getChr();
+        int contextStart = (int) context.getOrigin();
+        int contextEnd = (int) context.getEndLocation();
+        int zoom = context.getZoom();
 
-            int start = peak.getStart();
-            int end = peak.getEnd();
+        if (PeakTrack.isShowScores()) {
+            int h = track.bandHeight;
+            int peakHeight = PeakTrack.isShowSignals() ? track.peakHeight : h;
 
-            int pX = (int) ((start - origin) / locScale);
-            int dX = (int) Math.max(2, (end - start) / locScale);
+            for (LocusScore ls : peakList) {
+                Peak peak = (Peak) ls;
 
-            if (pX + dX < pXMin) {
-                continue;
-            }
-            if (pX > pXMax) {
-                break;
-            }
+                int start = peak.getStart();
+                int end = peak.getEnd();
+                int pX = (int) ((start - origin) / locScale);
+                int dX = (int) Math.max(2, (end - start) / locScale);
 
-            float score = peak.getCombinedScore();
-            if (PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE) {
-                score = peak.getDynamicScore();
-            }
+                if (pX + dX < pXMin) continue;
+                if (pX > pXMax) break;
 
-            int top = rect.y + 2;
-
-            if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.FEATURE) {
-                drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score, PeakTrack.getColorOption());
-            }
-            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-                float[] timeScores = peak.getTimeScores();
-                for (int i = 0; i < timeScores.length; i++) {
-                    top += h;
-                    score = timeScores[i];
-                    drawScore(context, bgColorComps, fgColorComps, pX, dX, top, h, score, PeakTrack.ColorOption.SCORE);
+                float score = peak.getCombinedScore();
+                if (PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE) {
+                    score = peak.getDynamicScore();
                 }
 
+                int top = rect.y + 2;
+                if (PeakTrack.isShowSignals()) {
+                    top += track.signalHeight;
+                }
+
+                drawScore(context, bgColorComps, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+
+                if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+                    float[] timeScores = peak.getTimeScores();
+                    for (int i = 0; i < timeScores.length; i++) {
+                        top += h;
+                        score = timeScores[i];
+                        drawScore(context, bgColorComps, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.ColorOption.SCORE);
+
+                    }
+
+                }
             }
-
         }
 
-        if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.SIGNAL) {
-            String chr = context.getChr();
-            int start = (int) context.getOrigin();
-            int end = (int) context.getEndLocation();
-            int zoom = context.getZoom();
+        if (PeakTrack.isShowSignals()) {
+            int h = track.bandHeight;
+            int signalHeight = PeakTrack.isShowScores() ? track.signalHeight : h;
 
-            List<LocusScore> signals =
-                    ((PeakTrack) track).signalSource.getSummaryScoresForRange(chr, start, end, zoom);
-            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, h - 1);
-
+            List<LocusScore> signals = track.signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
             chartRenderer.render(signals, context, signalRect, track);
+
+            if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+                TDFDataSource[] timeSignalSources = track.timeSignalSources;
+                if (timeSignalSources != null) {
+
+                    int top = rect.y + 2;
+                    for (int i = 0; i < timeSignalSources.length; i++) {
+                        top += h;
+                        TDFDataSource src = timeSignalSources[i];
+                        if (src != null) {
+                            List<LocusScore> timeSignals = src.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                            Rectangle timeSignalRect = new Rectangle(rect.x, top, rect.width, signalHeight - 1);
+                            chartRenderer.render(timeSignals, context, timeSignalRect, track);
+                        }
+
+                    }
+
+                }
+            }
         }
 
-        if (PeakTrack.getRenderOption() == PeakTrack.RenderOption.CHART) {
-            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, h - 1);
-            chartRenderer.render(peakList, context, signalRect, track);
-        }
 
+        borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
+        borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
         if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-            borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
-            greyGraphics.drawLine(rect.x, rect.y + h + 1, rect.x + rect.width, rect.y + h + 1);
+            greyGraphics.drawLine(rect.x, rect.y + track.bandHeight + 1, rect.x + rect.width, rect.y + track.bandHeight + 1);
 
 
         }
