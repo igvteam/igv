@@ -349,6 +349,7 @@ public class TrackManager {
         ResourceLocator locator = new ResourceLocator(file.getAbsolutePath());
         List<Track> tracks = load(locator);
         panel.addTracks(tracks);
+        IGV.getInstance().doRefresh();
     }
 
     /**

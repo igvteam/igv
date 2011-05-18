@@ -1926,6 +1926,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
         contentPane.add(okCancelButtonPanel, BorderLayout.SOUTH);
         pack();
         setLocationRelativeTo(getOwner());
+
+        //---- buttonGroup1 ----
+        ButtonGroup buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(expMapToGeneCB);
+        buttonGroup1.add(expMapToLociCB);
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed

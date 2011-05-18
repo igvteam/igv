@@ -3263,6 +3263,12 @@
                <string>text</string> 
                <string>Map probes to genes</string> 
               </void> 
+              <void method="setProperty"> 
+               <string>$buttonGroup</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>buttonGroup1</string> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>expMapToGeneCB</string> 
               </void> 
@@ -3294,6 +3300,12 @@
               <void method="setProperty"> 
                <string>text</string> 
                <string>&lt;html&gt;Map probes to target loci</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>$buttonGroup</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>buttonGroup1</string> 
+               </object> 
               </void> 
               <void property="name"> 
                <string>expMapToLociCB</string> 
@@ -4235,6 +4247,24 @@
        <object class="java.awt.Point"> 
         <int>0</int> 
         <int>0</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.ButtonGroup</string> 
+      <void property="name"> 
+       <string>buttonGroup1</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>615</int> 
        </object> 
       </void> 
      </object> 
