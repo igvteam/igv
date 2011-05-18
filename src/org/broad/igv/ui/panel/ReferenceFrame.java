@@ -165,19 +165,32 @@ public class ReferenceFrame {
     }
 
     public void incrementZoom(int increment) {
-        zoomAndCenter(zoom + increment);
+        zoomByAndCenter(increment);
     }
 
     public void zoomAndCenterAdjusted(int newZoom) {
-        zoomAndCenter(minZoom + newZoom);
+        double currentCenter = origin + ((widthInPixels / 2) * getScale());
+        zoomTo(newZoom, currentCenter);
     }
 
-    public void zoomAndCenter(int newZoom) {
-
+    public void zoomByAndCenter(int zoomIncrement) {
         // Zoom but remain centered about current center
         double currentCenter = origin + ((widthInPixels / 2) * getScale());
+        zoomBy(zoomIncrement, currentCenter);
+    }
 
-        zoomTo(newZoom, currentCenter);
+    public void zoomBy(final int zoomFactor, final double newCenter) {
+
+        if (FrameManager.isGeneListMode()) {
+            double f = Math.pow(2.0, zoomFactor);
+            locationScale /= f;
+            double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * locationScale));
+            setOrigin(newOrigin);
+            imputeZoom(origin, setEnd);
+        } else {
+            int newZoom = Math.max(0, zoom + zoomFactor);
+            zoomTo(newZoom, newCenter);
+        }
     }
 
     public void zoomTo(final int newZoom, final double newCenter) {
@@ -187,17 +200,13 @@ public class ReferenceFrame {
         }
 
         if (chrName.equals(Globals.CHR_ALL)) {
-
-            // DISABLE ZOOMING FOR GENOME VIEW
             // Translate the location to chromosome number
             jumpToChromosomeForGenomeLocation(newCenter);
             IGV.getInstance().chromosomeChangeEvent(chrName);
         } else {
             if (zoom != newZoom) {
-
                 zoomTo(newZoom);
                 computeLocationScale();
-
                 double newLocationScale = getScale();
                 // Adjust origin so newCenter is centered
                 double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * newLocationScale));
@@ -288,7 +297,7 @@ public class ReferenceFrame {
         }
         double delta = newOrigin - origin;
         origin = newOrigin;
- 
+
         // If zoomed in sufficiently track the center position
         //if (locationScale < 10) {
         //    IGV.getInstance().setStatusBarMessage(chrName + ":" + ((int) getCenter() + 1));

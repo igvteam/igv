@@ -25,7 +25,6 @@ package org.broad.igv.ui.event;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -361,9 +360,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     String chr = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
                     if (!chr.equals(vc.getChrName())) {
-                        int zoom = vc.getZoom();
                         vc.setChrName(chr);
-                        vc.zoomAndCenter(zoom);
+                        vc.zoomByAndCenter(0);
                     }
 
                     vc.centerOnLocation(newCenter);

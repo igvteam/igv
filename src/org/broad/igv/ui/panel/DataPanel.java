@@ -678,15 +678,12 @@ public class DataPanel extends JComponent implements Paintable {
             if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
                 clickScheduler.cancelClickTask();
 
-                int currentZoom = frame.getZoom();
-                final int newZoom = e.isAltDown()
-                        ? Math.max(currentZoom - 1, 0)
-                        : (e.isShiftDown() ? currentZoom + 3 : currentZoom + 1);
+                final int zoomFactor = e.isAltDown() ? -1 : (e.isShiftDown() ?  3 :  1);
                 final double locationClicked = frame.getChromosomePosition(e.getX());
 
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
-                    frame.zoomTo(newZoom, locationClicked);
+                    frame.zoomBy(zoomFactor, locationClicked);
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }

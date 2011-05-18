@@ -175,35 +175,4 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
         }
     }
 
-
-    /**
-     * Handler for left mouse clicks.  Delegates single clicks to track,  handles double clicks (a zoom).
-     *
-     * @param e
-     */
-    @Override
-    public void mouseClicked(final MouseEvent e) {
-
-        final ReferenceFrame referenceFrame = getReferenceFame();
-
-        // If this is the second click of a double click, cancel the scheduled single click task.
-        // The shift and alt keys are alternative undocumented zoom options
-        // Shift zooms by 8x,  alt zooms out by 2x
-        if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown()) {
-
-            int currentZoom = referenceFrame.getZoom();
-            final int newZoom = e.isAltDown()
-                    ? Math.max(currentZoom - 1, 0)
-                    : (e.isShiftDown() ? currentZoom + 3 : currentZoom + 1);
-            final double locationClicked = referenceFrame.getChromosomePosition(e.getX());
-
-            WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-            try {
-                referenceFrame.zoomTo(newZoom, locationClicked);
-            } finally {
-                WaitCursorManager.removeWaitCursor(token);
-            }
-        }
-
-    }
 }
