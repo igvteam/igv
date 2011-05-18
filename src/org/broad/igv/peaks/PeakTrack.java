@@ -88,7 +88,7 @@ public class PeakTrack extends AbstractTrack {
         instances.add(new SoftReference(this));
 
         if (!commandBarAdded) {
-            IGV.getInstance().getContentPane().add(new PeakCommandBar());
+            IGV.getInstance().getContentPane().addCommandBar(new PeakCommandBar());
             commandBarAdded = true;
         }
     }
@@ -331,12 +331,13 @@ public class PeakTrack extends AbstractTrack {
         List<Peak> scores = getFilteredPeaks(chr);
         int startIdx = FeatureUtils.getIndexBefore(position, scores);
 
-
-        for (int i = startIdx; i < scores.size(); i++) {
-            Peak score = scores.get(i);
-            if (score.getEnd() < position) continue;
-            if (score.getStart() > position) break;
-            return score;
+        if (startIdx >= 0) {
+            for (int i = startIdx; i < scores.size(); i++) {
+                Peak score = scores.get(i);
+                if (score.getEnd() < position) continue;
+                if (score.getStart() > position) break;
+                return score;
+            }
         }
         return null;
 

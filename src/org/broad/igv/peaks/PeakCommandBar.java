@@ -62,13 +62,15 @@ public class PeakCommandBar extends JPanel {
     }
 
     private void radioButtonActionPerformed(ActionEvent e) {
-        if (peaksButton.isSelected() && bothButton.isSelected()) {
+        if (bothButton.isSelected()) {
             PeakTrack.setShowPeaks(true);
             PeakTrack.setShowSignals(true);
         } else if (peaksButton.isSelected()) {
             PeakTrack.setShowPeaks(true);
+            PeakTrack.setShowSignals(false);
 
         } else {
+            PeakTrack.setShowPeaks(false);
             PeakTrack.setShowSignals(true);
         }
         IGV.getInstance().repaint();
