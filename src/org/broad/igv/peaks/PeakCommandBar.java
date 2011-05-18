@@ -24,6 +24,7 @@
 package org.broad.igv.peaks;
 
 import java.awt.event.*;
+import javax.swing.border.*;
 
 import org.broad.igv.ui.IGV;
 
@@ -39,9 +40,14 @@ public class PeakCommandBar extends JPanel {
         initComponents();
         scoreSlider.setValue((int) PeakTrack.getScoreThreshold());
         foldChangeSlider.setValue((int) PeakTrack.getFoldChangeThreshold());
-        colorByFoldChangeCB.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE);
-        peaksCB.setSelected(PeakTrack.isShowPeaks());
-        signalsCB.setSelected(PeakTrack.isShowSignals());
+        this.colorByScoresButton.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.SCORE);
+        this.colorByChangeButton.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE);
+        this.peaksButton.setSelected(PeakTrack.isShowPeaks() && !PeakTrack.isShowSignals());
+        this.signalsButton.setSelected(!PeakTrack.isShowPeaks() && PeakTrack.isShowSignals());
+        this.bothButton.setSelected(PeakTrack.isShowPeaks() && PeakTrack.isShowSignals());
+
+        //peaksCB.setSelected(PeakTrack.isShowPeaks());
+        //signalsCB.setSelected(PeakTrack.isShowSignals());
     }
 
     private void scoreSliderStateChanged(ChangeEvent e) {
@@ -55,7 +61,20 @@ public class PeakCommandBar extends JPanel {
 
     }
 
-    private void peaksCBActionPerformed(ActionEvent e) {
+    private void radioButtonActionPerformed(ActionEvent e) {
+        if (peaksButton.isSelected() && bothButton.isSelected()) {
+            PeakTrack.setShowPeaks(true);
+            PeakTrack.setShowSignals(true);
+        } else if (peaksButton.isSelected()) {
+            PeakTrack.setShowPeaks(true);
+
+        } else {
+            PeakTrack.setShowSignals(true);
+        }
+        IGV.getInstance().repaint();
+    }
+
+    /* private void peaksCBActionPerformed(ActionEvent e) {
         PeakTrack.setShowPeaks(peaksCB.isSelected());
         IGV.getInstance().repaint();
     }
@@ -64,15 +83,21 @@ public class PeakCommandBar extends JPanel {
         PeakTrack.setShowSignals(signalsCB.isSelected());
         IGV.getInstance().repaint();
     }
+    */
 
     private void colorByFoldChangeCBActionPerformed(ActionEvent e) {
-        if (colorByFoldChangeCB.isSelected()) {
+    }
+
+    private void colorByActionPeformed(ActionEvent e) {
+        if (colorByChangeButton.isSelected()) {
             PeakTrack.setShadeOption(PeakTrack.ColorOption.FOLD_CHANGE);
         } else {
             PeakTrack.setShadeOption(PeakTrack.ColorOption.SCORE);
         }
         IGV.getInstance().repaint();
+
     }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -83,9 +108,17 @@ public class PeakCommandBar extends JPanel {
         panel2 = new JPanel();
         label2 = new JLabel();
         scoreSlider = new JSlider();
-        peaksCB = new JCheckBox();
-        signalsCB = new JCheckBox();
-        colorByFoldChangeCB = new JCheckBox();
+        hSpacer1 = new JPanel(null);
+        panel1 = new JPanel();
+        label3 = new JLabel();
+        peaksButton = new JRadioButton();
+        signalsButton = new JRadioButton();
+        bothButton = new JRadioButton();
+        hSpacer2 = new JPanel(null);
+        panel4 = new JPanel();
+        label4 = new JLabel();
+        colorByScoresButton = new JRadioButton();
+        colorByChangeButton = new JRadioButton();
 
         //======== this ========
         setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
@@ -95,17 +128,17 @@ public class PeakCommandBar extends JPanel {
             panel3.setLayout(new FlowLayout());
 
             //---- label1 ----
-            label1.setText("Fold change");
+            label1.setText("<html>Fold change<br>threshold");
             panel3.add(label1);
 
             //---- foldChangeSlider ----
             foldChangeSlider.setPaintTicks(true);
-            foldChangeSlider.setPaintLabels(true);
             foldChangeSlider.setToolTipText("Adjust score threshold");
             foldChangeSlider.setMajorTickSpacing(2);
             foldChangeSlider.setMinorTickSpacing(1);
             foldChangeSlider.setMaximum(10);
             foldChangeSlider.setValue(0);
+            foldChangeSlider.setPaintLabels(true);
             foldChangeSlider.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     foldChangeSliderStateChanged(e);
@@ -120,49 +153,102 @@ public class PeakCommandBar extends JPanel {
             panel2.setLayout(new FlowLayout());
 
             //---- label2 ----
-            label2.setText("Score");
+            label2.setText("<html>Score<br>threshold");
             panel2.add(label2);
 
             //---- scoreSlider ----
             scoreSlider.setPaintTicks(true);
-            scoreSlider.setPaintLabels(true);
             scoreSlider.setToolTipText("Adjust score threshold");
             scoreSlider.setMajorTickSpacing(20);
+            scoreSlider.setPaintLabels(true);
             scoreSlider.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     scoreSliderStateChanged(e);
                 }
             });
             panel2.add(scoreSlider);
+            panel2.add(hSpacer1);
         }
         add(panel2);
 
-        //---- peaksCB ----
-        peaksCB.setText("Show peaks");
-        peaksCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                peaksCBActionPerformed(e);
-            }
-        });
-        add(peaksCB);
+        //======== panel1 ========
+        {
+            panel1.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+            panel1.setLayout(new FlowLayout());
 
-        //---- signalsCB ----
-        signalsCB.setText("Show signals");
-        signalsCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                signalsCBActionPerformed(e);
-            }
-        });
-        add(signalsCB);
+            //---- label3 ----
+            label3.setText("Show:");
+            panel1.add(label3);
 
-        //---- colorByFoldChangeCB ----
-        colorByFoldChangeCB.setText("Color by fold change");
-        colorByFoldChangeCB.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                colorByFoldChangeCBActionPerformed(e);
-            }
-        });
-        add(colorByFoldChangeCB);
+            //---- peaksButton ----
+            peaksButton.setText("Peaks");
+            peaksButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    radioButtonActionPerformed(e);
+                }
+            });
+            panel1.add(peaksButton);
+
+            //---- signalsButton ----
+            signalsButton.setText("Signals");
+            signalsButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    radioButtonActionPerformed(e);
+                }
+            });
+            panel1.add(signalsButton);
+
+            //---- bothButton ----
+            bothButton.setText("Both");
+            bothButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    radioButtonActionPerformed(e);
+                }
+            });
+            panel1.add(bothButton);
+        }
+        add(panel1);
+        add(hSpacer2);
+
+        //======== panel4 ========
+        {
+            panel4.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+            panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+            //---- label4 ----
+            label4.setText("Color by:");
+            panel4.add(label4);
+
+            //---- colorByScoresButton ----
+            colorByScoresButton.setText("Scores");
+            colorByScoresButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    colorByActionPeformed(e);
+                }
+            });
+            panel4.add(colorByScoresButton);
+
+            //---- colorByChangeButton ----
+            colorByChangeButton.setText("Change");
+            colorByChangeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    colorByActionPeformed(e);
+                }
+            });
+            panel4.add(colorByChangeButton);
+        }
+        add(panel4);
+
+        //---- buttonGroup1 ----
+        ButtonGroup buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(peaksButton);
+        buttonGroup1.add(signalsButton);
+        buttonGroup1.add(bothButton);
+
+        //---- buttonGroup2 ----
+        ButtonGroup buttonGroup2 = new ButtonGroup();
+        buttonGroup2.add(colorByScoresButton);
+        buttonGroup2.add(colorByChangeButton);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
@@ -174,8 +260,16 @@ public class PeakCommandBar extends JPanel {
     private JPanel panel2;
     private JLabel label2;
     private JSlider scoreSlider;
-    private JCheckBox peaksCB;
-    private JCheckBox signalsCB;
-    private JCheckBox colorByFoldChangeCB;
+    private JPanel hSpacer1;
+    private JPanel panel1;
+    private JLabel label3;
+    private JRadioButton peaksButton;
+    private JRadioButton signalsButton;
+    private JRadioButton bothButton;
+    private JPanel hSpacer2;
+    private JPanel panel4;
+    private JLabel label4;
+    private JRadioButton colorByScoresButton;
+    private JRadioButton colorByChangeButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

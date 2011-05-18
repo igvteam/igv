@@ -37,7 +37,7 @@
           <string>javax.swing.JLabel</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Fold change</string> 
+           <string>&lt;html&gt;Fold change&lt;br&gt;threshold</string> 
           </void> 
           <void property="name"> 
            <string>label1</string> 
@@ -49,10 +49,6 @@
           <string>javax.swing.JSlider</string> 
           <void method="setProperty"> 
            <string>paintTicks</string> 
-           <boolean>true</boolean> 
-          </void> 
-          <void method="setProperty"> 
-           <string>paintLabels</string> 
            <boolean>true</boolean> 
           </void> 
           <void method="setProperty"> 
@@ -74,6 +70,10 @@
           <void method="setProperty"> 
            <string>value</string> 
            <int>0</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>paintLabels</string> 
+           <boolean>true</boolean> 
           </void> 
           <void property="name"> 
            <string>foldChangeSlider</string> 
@@ -104,7 +104,7 @@
           <string>javax.swing.JLabel</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Score</string> 
+           <string>&lt;html&gt;Score&lt;br&gt;threshold</string> 
           </void> 
           <void property="name"> 
            <string>label2</string> 
@@ -119,16 +119,16 @@
            <boolean>true</boolean> 
           </void> 
           <void method="setProperty"> 
-           <string>paintLabels</string> 
-           <boolean>true</boolean> 
-          </void> 
-          <void method="setProperty"> 
            <string>toolTipText</string> 
            <string>Adjust score threshold</string> 
           </void> 
           <void method="setProperty"> 
            <string>majorTickSpacing</string> 
            <int>20</int> 
+          </void> 
+          <void method="setProperty"> 
+           <string>paintLabels</string> 
+           <boolean>true</boolean> 
           </void> 
           <void property="name"> 
            <string>scoreSlider</string> 
@@ -143,64 +143,212 @@
           </void> 
          </object> 
         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+          <void property="name"> 
+           <string>hSpacer1</string> 
+          </void> 
+         </object> 
+        </void> 
        </object> 
       </void> 
       <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JCheckBox</string> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>java.awt.FlowLayout</class> 
+        </object> 
         <void method="setProperty"> 
-         <string>text</string> 
-         <string>Show peaks</string> 
+         <string>border</string> 
+         <object id="EtchedBorder0" class="javax.swing.border.EtchedBorder"> 
+          <int>0</int> 
+          <null/> 
+          <null/> 
+         </object> 
         </void> 
         <void property="name"> 
-         <string>peaksCB</string> 
+         <string>panel1</string> 
         </void> 
-        <void method="addEvent"> 
-         <object class="com.jformdesigner.model.FormEvent"> 
-          <string>java.awt.event.ActionListener</string> 
-          <string>actionPerformed</string> 
-          <string>peaksCBActionPerformed</string> 
-          <boolean>true</boolean> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Show:</string> 
+          </void> 
+          <void property="name"> 
+           <string>label3</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JRadioButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Peaks</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>$buttonGroup</string> 
+           <object class="com.jformdesigner.model.FormReference"> 
+            <string>buttonGroup1</string> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>peaksButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>radioButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JRadioButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Signals</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>$buttonGroup</string> 
+           <object class="com.jformdesigner.model.FormReference"> 
+            <string>buttonGroup1</string> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>signalsButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>radioButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JRadioButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Both</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>$buttonGroup</string> 
+           <object class="com.jformdesigner.model.FormReference"> 
+            <string>buttonGroup1</string> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>bothButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>radioButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
          </object> 
         </void> 
        </object> 
       </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JCheckBox</string> 
-        <void method="setProperty"> 
-         <string>text</string> 
-         <string>Show signals</string> 
-        </void> 
+        <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
         <void property="name"> 
-         <string>signalsCB</string> 
-        </void> 
-        <void method="addEvent"> 
-         <object class="com.jformdesigner.model.FormEvent"> 
-          <string>java.awt.event.ActionListener</string> 
-          <string>actionPerformed</string> 
-          <string>signalsCBActionPerformed</string> 
-          <boolean>true</boolean> 
-         </object> 
+         <string>hSpacer2</string> 
         </void> 
        </object> 
       </void> 
       <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JCheckBox</string> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>java.awt.FlowLayout</class> 
+         <void method="setProperty"> 
+          <string>alignment</string> 
+          <int>0</int> 
+         </void> 
+        </object> 
         <void method="setProperty"> 
-         <string>text</string> 
-         <string>Color by fold change</string> 
+         <string>border</string> 
+         <object idref="EtchedBorder0"/> 
         </void> 
         <void property="name"> 
-         <string>colorByFoldChangeCB</string> 
+         <string>panel4</string> 
         </void> 
-        <void method="addEvent"> 
-         <object class="com.jformdesigner.model.FormEvent"> 
-          <string>java.awt.event.ActionListener</string> 
-          <string>actionPerformed</string> 
-          <string>colorByFoldChangeCBActionPerformed</string> 
-          <boolean>true</boolean> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Color by:</string> 
+          </void> 
+          <void property="name"> 
+           <string>label4</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JRadioButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Scores</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>$buttonGroup</string> 
+           <object class="com.jformdesigner.model.FormReference"> 
+            <string>buttonGroup2</string> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>colorByScoresButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>colorByActionPeformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JRadioButton</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Change</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>$buttonGroup</string> 
+           <object class="com.jformdesigner.model.FormReference"> 
+            <string>buttonGroup2</string> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>colorByChangeButton</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>colorByActionPeformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
          </object> 
         </void> 
        </object> 
@@ -218,8 +366,44 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>930</int> 
+        <int>1115</int> 
         <int>55</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.ButtonGroup</string> 
+      <void property="name"> 
+       <string>buttonGroup1</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>65</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.ButtonGroup</string> 
+      <void property="name"> 
+       <string>buttonGroup2</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>119</int> 
        </object> 
       </void> 
      </object> 

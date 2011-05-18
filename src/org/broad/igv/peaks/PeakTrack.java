@@ -88,7 +88,7 @@ public class PeakTrack extends AbstractTrack {
         instances.add(new SoftReference(this));
 
         if (!commandBarAdded) {
-            IGV.getInstance().getContentPane().addCommandBar(new PeakCommandBar());
+            IGV.getInstance().getContentPane().add(new PeakCommandBar());
             commandBarAdded = true;
         }
     }
@@ -100,8 +100,10 @@ public class PeakTrack extends AbstractTrack {
 
         nTimePoints = parser.getnTimePoints();
         signalPath = parser.getSignalPath();
-        signalSource = new TDFDataSource(TDFReader.getReader(signalPath), 0, "");
-        signalSource.setNormalizeCounts(true, 1.0e9f);
+        if (signalPath != null) {
+            signalSource = new TDFDataSource(TDFReader.getReader(signalPath), 0, "");
+            signalSource.setNormalizeCounts(true, 1.0e9f);
+        }
 
         timeSignalPaths = parser.timeSignalPaths;
         if (timeSignalPaths != null && timeSignalPaths.length > 0) {

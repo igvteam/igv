@@ -60,6 +60,7 @@ public class IGVMenuBar extends JMenuBar {
     private JMenu extrasMenu;
     private RemoveUserDefinedGenomeMenuAction removeImportedGenomeAction;
     private FilterTracksMenuAction filterTracksAction;
+    private JMenu viewMenu;
 
 
     public IGVMenuBar() {
@@ -516,7 +517,8 @@ menuAction =
 
         // Add to IGVPanel menu
         MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
-        return MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+        viewMenu =  MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+        return viewMenu;
     }
 
 
@@ -761,5 +763,9 @@ menuAction =
         }
 
         return false;
+    }
+
+    public JMenu getViewMenu() {
+        return viewMenu;
     }
 }

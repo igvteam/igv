@@ -42,6 +42,7 @@ import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.AttributeManager;
@@ -1588,6 +1589,30 @@ public class IGV {
 
     public GenomeManager getGenomeManager() {
         return genomeManager;
+    }
+
+    JCheckBoxMenuItem showPeakMenuItem;
+    PeakCommandBar peakCommandBar;
+
+    public void addCommandBar(PeakCommandBar cb) {
+        this.peakCommandBar = cb;
+        contentPane.add(peakCommandBar);
+        contentPane.invalidate();
+
+        showPeakMenuItem = new JCheckBoxMenuItem("Show peaks toolbar");
+        showPeakMenuItem.setSelected(true);
+        showPeakMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (showPeakMenuItem.isSelected()) {
+                   contentPane.add(peakCommandBar);
+                } else {
+                   contentPane.remove(peakCommandBar);
+                }
+            }
+        });
+
+        menuBar.getViewMenu().addSeparator();
+        menuBar.getViewMenu().add(showPeakMenuItem);
     }
 
     /**
