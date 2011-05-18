@@ -56,15 +56,12 @@ public class PeakRenderer implements Renderer<LocusScore> {
         Graphics2D greyGraphics = context.getGraphic2DForColor(Color.lightGray);
         Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
 
-        int nTimePoints = track.nTimePoints;
-
-
         String chr = context.getChr();
         int contextStart = (int) context.getOrigin();
         int contextEnd = (int) context.getEndLocation();
         int zoom = context.getZoom();
 
-        if (PeakTrack.isShowScores()) {
+        if (PeakTrack.isShowPeaks()) {
             int h = track.bandHeight;
             int peakHeight = PeakTrack.isShowSignals() ? track.peakHeight : h;
 
@@ -84,7 +81,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     score = peak.getDynamicScore();
                 }
 
-                int top = rect.y + 2;
+                int top = rect.y + 1;
                 if (PeakTrack.isShowSignals()) {
                     top += track.signalHeight;
                 }
@@ -106,7 +103,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
         if (PeakTrack.isShowSignals()) {
             int h = track.bandHeight;
-            int signalHeight = PeakTrack.isShowScores() ? track.signalHeight : h;
+            int signalHeight = PeakTrack.isShowPeaks() ? track.signalHeight : h;
 
             List<LocusScore> signals = track.signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
             Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
@@ -133,9 +130,9 @@ public class PeakRenderer implements Renderer<LocusScore> {
         }
 
 
-        borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
-        borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
         if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
+            borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
+            borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
             greyGraphics.drawLine(rect.x, rect.y + track.bandHeight + 1, rect.x + rect.width, rect.y + track.bandHeight + 1);
 
 

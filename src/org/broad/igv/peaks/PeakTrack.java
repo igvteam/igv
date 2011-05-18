@@ -29,7 +29,6 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -47,14 +46,14 @@ import java.util.List;
 public class PeakTrack extends AbstractTrack {
 
 
-    private static List<SoftReference<PeakTrack>> instances = new ArrayList();
+    static List<SoftReference<PeakTrack>> instances = new ArrayList();
 
     private static PeakControlDialog controlDialog;
     private static float scoreThreshold = 30;
     private static float foldChangeThreshold = 0;
 
     private static ColorOption colorOption = ColorOption.SCORE;
-    private static boolean showScores = true;
+    private static boolean showPeaks = true;
     private static boolean showSignals = false;
 
     int nTimePoints;
@@ -163,9 +162,9 @@ public class PeakTrack extends AbstractTrack {
     @Override
     public int getMinimumHeight() {
         int h = 0;
-        if (showScores) h += 5;
+        if (showPeaks) h += 5;
         if (showSignals) h += 10;
-        if (showScores && showSignals) h += 2;
+        if (showPeaks && showSignals) h += 2;
 
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return h;
@@ -182,7 +181,7 @@ public class PeakTrack extends AbstractTrack {
         int nBands = getDisplayMode() == DisplayMode.COLLAPSED ? 1 : nTimePoints + 1;
 
         bandHeight = h / nBands;
-        peakHeight = Math.max(5, Math.min(bandHeight/3, 10));
+        peakHeight = Math.max(5, Math.min(bandHeight / 3, 10));
         signalHeight = bandHeight - peakHeight - gapHeight;
 
     }
@@ -192,36 +191,28 @@ public class PeakTrack extends AbstractTrack {
         super.setDisplayMode(mode);
         if (mode == Track.DisplayMode.COLLAPSED) {
             setHeight(bandHeight);
-        } else  {
+        } else {
             setHeight((nTimePoints + 1) * bandHeight + gapHeight);
         }
     }
 
 
-    // TODO -- the code below is an exact copy of code in DataTrack.   Refactor to share this.
-
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
         buf.append(getName());
-        if(showScores) {
+        if (showPeaks) {
             List<Peak> scores = getFilteredPeaks(chr);
             LocusScore score = getLocusScoreAt(scores, position, frame);
             buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
-
-        }
-        if (showSignals) {
-            if (signalSource != null) {
-                List<LocusScore> scores =
-                        signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
-                LocusScore score = getLocusScoreAt(scores, position, frame);
-                buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
+            if (showSignals) {
+                buf.append("<br>");
             }
         }
-
-        buf.append("<br>height       =" + getHeight());
-        buf.append("<br>bandHeight   =" + bandHeight);
-        buf.append("<br>peakHeight   =" + peakHeight);
-        buf.append("<br>signalHeight =" + signalHeight);
+        if (showSignals && signalSource != null) {
+            List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
+            LocusScore score = getLocusScoreAt(scores, position, frame);
+            buf.append((score == null) ? "" : "Score = " + score.getScore());
+        }
 
 
         return buf.toString();
@@ -334,13 +325,28 @@ public class PeakTrack extends AbstractTrack {
         return (float) (regionScore / interval);
     }
 
+    public Peak getPeakInstersecting(String chr, double position) {
+        List<Peak> scores = getFilteredPeaks(chr);
+        int startIdx = FeatureUtils.getIndexBefore(position, scores);
 
-    public static boolean isShowScores() {
-        return showScores;
+
+        for (int i = startIdx; i < scores.size(); i++) {
+            Peak score = scores.get(i);
+            if (score.getEnd() < position) continue;
+            if (score.getStart() > position) break;
+            return score;
+        }
+        return null;
+
     }
 
-    public static void setShowScores(boolean b) {
-        showScores = b;
+
+    public static boolean isShowPeaks() {
+        return showPeaks;
+    }
+
+    public static void setShowPeaks(boolean b) {
+        showPeaks = b;
     }
 
     public static boolean isShowSignals() {

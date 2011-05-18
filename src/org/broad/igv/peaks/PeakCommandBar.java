@@ -23,6 +23,8 @@
 
 package org.broad.igv.peaks;
 
+import java.awt.event.*;
+
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
@@ -37,6 +39,9 @@ public class PeakCommandBar extends JPanel {
         initComponents();
         scoreSlider.setValue((int) PeakTrack.getScoreThreshold());
         foldChangeSlider.setValue((int) PeakTrack.getFoldChangeThreshold());
+        colorByFoldChangeCB.setSelected(PeakTrack.getColorOption() == PeakTrack.ColorOption.FOLD_CHANGE);
+        peaksCB.setSelected(PeakTrack.isShowPeaks());
+        signalsCB.setSelected(PeakTrack.isShowSignals());
     }
 
     private void scoreSliderStateChanged(ChangeEvent e) {
@@ -45,64 +50,132 @@ public class PeakCommandBar extends JPanel {
     }
 
     private void foldChangeSliderStateChanged(ChangeEvent e) {
-         PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
-         IGV.getInstance().repaintDataPanels();
+        PeakTrack.setFoldChangeThreshold(foldChangeSlider.getValue());
+        IGV.getInstance().repaintDataPanels();
 
-     }
+    }
+
+    private void peaksCBActionPerformed(ActionEvent e) {
+        PeakTrack.setShowPeaks(peaksCB.isSelected());
+        IGV.getInstance().repaint();
+    }
+
+    private void signalsCBActionPerformed(ActionEvent e) {
+        PeakTrack.setShowSignals(signalsCB.isSelected());
+        IGV.getInstance().repaint();
+    }
+
+    private void colorByFoldChangeCBActionPerformed(ActionEvent e) {
+        if (colorByFoldChangeCB.isSelected()) {
+            PeakTrack.setShadeOption(PeakTrack.ColorOption.FOLD_CHANGE);
+        } else {
+            PeakTrack.setShadeOption(PeakTrack.ColorOption.SCORE);
+        }
+        IGV.getInstance().repaint();
+    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
+        panel3 = new JPanel();
         label1 = new JLabel();
         foldChangeSlider = new JSlider();
+        panel2 = new JPanel();
         label2 = new JLabel();
         scoreSlider = new JSlider();
+        peaksCB = new JCheckBox();
+        signalsCB = new JCheckBox();
+        colorByFoldChangeCB = new JCheckBox();
 
         //======== this ========
-        setLayout(new FlowLayout(FlowLayout.LEFT));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
-        //---- label1 ----
-        label1.setText("Fold change");
-        add(label1);
+        //======== panel3 ========
+        {
+            panel3.setLayout(new FlowLayout());
 
-        //---- foldChangeSlider ----
-        foldChangeSlider.setPaintTicks(true);
-        foldChangeSlider.setPaintLabels(true);
-        foldChangeSlider.setToolTipText("Adjust score threshold");
-        foldChangeSlider.setMajorTickSpacing(2);
-        foldChangeSlider.setMinorTickSpacing(1);
-        foldChangeSlider.setMaximum(10);
-        foldChangeSlider.setValue(0);
-        foldChangeSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                foldChangeSliderStateChanged(e);
+            //---- label1 ----
+            label1.setText("Fold change");
+            panel3.add(label1);
+
+            //---- foldChangeSlider ----
+            foldChangeSlider.setPaintTicks(true);
+            foldChangeSlider.setPaintLabels(true);
+            foldChangeSlider.setToolTipText("Adjust score threshold");
+            foldChangeSlider.setMajorTickSpacing(2);
+            foldChangeSlider.setMinorTickSpacing(1);
+            foldChangeSlider.setMaximum(10);
+            foldChangeSlider.setValue(0);
+            foldChangeSlider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    foldChangeSliderStateChanged(e);
+                }
+            });
+            panel3.add(foldChangeSlider);
+        }
+        add(panel3);
+
+        //======== panel2 ========
+        {
+            panel2.setLayout(new FlowLayout());
+
+            //---- label2 ----
+            label2.setText("Score");
+            panel2.add(label2);
+
+            //---- scoreSlider ----
+            scoreSlider.setPaintTicks(true);
+            scoreSlider.setPaintLabels(true);
+            scoreSlider.setToolTipText("Adjust score threshold");
+            scoreSlider.setMajorTickSpacing(20);
+            scoreSlider.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    scoreSliderStateChanged(e);
+                }
+            });
+            panel2.add(scoreSlider);
+        }
+        add(panel2);
+
+        //---- peaksCB ----
+        peaksCB.setText("Show peaks");
+        peaksCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                peaksCBActionPerformed(e);
             }
         });
-        add(foldChangeSlider);
+        add(peaksCB);
 
-        //---- label2 ----
-        label2.setText("Score");
-        add(label2);
-
-        //---- scoreSlider ----
-        scoreSlider.setPaintTicks(true);
-        scoreSlider.setPaintLabels(true);
-        scoreSlider.setToolTipText("Adjust score threshold");
-        scoreSlider.setMajorTickSpacing(20);
-        scoreSlider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                scoreSliderStateChanged(e);
+        //---- signalsCB ----
+        signalsCB.setText("Show signals");
+        signalsCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                signalsCBActionPerformed(e);
             }
         });
-        add(scoreSlider);
+        add(signalsCB);
+
+        //---- colorByFoldChangeCB ----
+        colorByFoldChangeCB.setText("Color by fold change");
+        colorByFoldChangeCB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                colorByFoldChangeCBActionPerformed(e);
+            }
+        });
+        add(colorByFoldChangeCB);
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
+    private JPanel panel3;
     private JLabel label1;
     private JSlider foldChangeSlider;
+    private JPanel panel2;
     private JLabel label2;
     private JSlider scoreSlider;
+    private JCheckBox peaksCB;
+    private JCheckBox signalsCB;
+    private JCheckBox colorByFoldChangeCB;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

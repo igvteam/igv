@@ -20,10 +20,12 @@
 package org.broad.igv.peaks;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 
 import javax.swing.*;
@@ -31,7 +33,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -67,6 +71,15 @@ public class PeakTrackMenu extends JPopupMenu {
         });
         item.setEnabled(!PeakTrack.controlDialogIsOpen());
         add(item);
+
+        addSeparator();
+        JMenuItem plotItem = new JMenuItem("Open time series plot");
+        plotItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                openTimeSeriesPlot();
+            }
+        });
+        add(plotItem);
 
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
@@ -143,10 +156,10 @@ public class PeakTrackMenu extends JPopupMenu {
         addSeparator();
 
         final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Show peaks");
-        m1.setSelected(PeakTrack.isShowScores());
+        m1.setSelected(PeakTrack.isShowPeaks());
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setShowScores(m1.isSelected());
+                PeakTrack.setShowPeaks(m1.isSelected());
                 colorByScoreMI.setEnabled(m1.isSelected());
                 colorByScoreMI.setEnabled(m1.isSelected());
                 IGV.getInstance().repaint();
@@ -164,6 +177,39 @@ public class PeakTrackMenu extends JPopupMenu {
 
         add(m1);
         add(m4);
+
+    }
+
+    void openTimeSeriesPlot() {
+
+        String chr = FrameManager.getDefaultFrame().getChrName();
+        double center = FrameManager.getDefaultFrame().getCenter();
+
+        XYSeriesCollection data = new XYSeriesCollection();
+        List<Color> colors = new ArrayList();
+        for (SoftReference<PeakTrack> ref : PeakTrack.instances) {
+            PeakTrack track = ref.get();
+            if (track != null) {
+                Peak peak = track.getPeakInstersecting(chr, center);
+                if(peak != null) {
+                    XYSeries series = new XYSeries(track.getName());
+                    float [] scores = peak.getTimeScores();
+                    if(scores.length == 4) {
+                        series.add(0, scores[0]);
+                        series.add(30, scores[1]);
+                        series.add(60, scores[2]);
+                        series.add(120, scores[3]);
+                    }
+                    data.addSeries(series);
+                    colors.add(track.getColor());
+                }
+            }
+        }
+
+        PeakTimePlotFrame frame = new PeakTimePlotFrame(data, "gene or locus name here", colors);
+        frame.setVisible(true);
+
+
 
     }
 }
