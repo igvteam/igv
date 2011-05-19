@@ -34,10 +34,10 @@ import java.nio.ByteBuffer;
 public class TDFBedTile implements TDFTile {
 
     int tileStart;
-    int[] start;
-    int[] end;
-    float[][] data;
-    String[] name;
+    private int[] start;
+    private int[] end;
+    private float[][] data;
+    private String[] names;
 
     public TDFBedTile(ByteBuffer byteBuffer, int nSamples, TDFTile.Type type) throws IOException {
         this.fill(byteBuffer, nSamples, type);
@@ -52,7 +52,7 @@ public class TDFBedTile implements TDFTile {
 
     public TDFBedTile(int tileStart, int[] start, int[] end, float[][] data, String[] name) {
         this(tileStart, start, end, data);
-        this.name = name;
+        this.names = name;
     }
 
     public int getSize() {
@@ -76,7 +76,7 @@ public class TDFBedTile implements TDFTile {
     }
 
     public String getName(int idx) {
-        return name == null ? null : name[idx];
+        return names == null ? null : names[idx];
     }
 
     public float getValue(int row, int idx) {
@@ -86,7 +86,7 @@ public class TDFBedTile implements TDFTile {
     public void writeTo(BufferedByteWriter fos) throws IOException {
 
         // File type
-        TDFTile.Type type = name == null ? TDFTile.Type.bed : TDFTile.Type.bedWithName;
+        TDFTile.Type type = names == null ? TDFTile.Type.bed : TDFTile.Type.bedWithName;
         fos.putNullTerminatedString(type.toString());
 
         int nPositions = start.length;
@@ -112,7 +112,7 @@ public class TDFBedTile implements TDFTile {
         // Optionally record feature names
         if (type == TDFTile.Type.bedWithName) {
             for (int i = 0; i < nPositions; i++) {
-                fos.putNullTerminatedString(name[i]);
+                fos.putNullTerminatedString(names[i]);
             }
         }
 
@@ -146,12 +146,28 @@ public class TDFBedTile implements TDFTile {
 
         // Optionally read feature names
         if (type == TDFTile.Type.bedWithName) {
-            name = new String[nPositions];
+            names = new String[nPositions];
             for (int i = 0; i < nPositions; i++) {
-                name[i] = StringUtils.readString(byteBuffer);
+                names[i] = StringUtils.readString(byteBuffer);
             }
 
         }
 
+    }
+
+    public int[] getStart() {
+        return start;
+    }
+
+    public int[] getEnd() {
+        return end;
+    }
+
+    public float[] getData(int trackNumber) {
+        return data[trackNumber];
+    }
+
+    public String[] getNames() {
+        return names;
     }
 }

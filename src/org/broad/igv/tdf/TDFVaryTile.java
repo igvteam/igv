@@ -121,4 +121,26 @@ public class TDFVaryTile implements TDFTile {
 
     }
 
+
+    public int[] getStart() {
+        return start;
+    }
+
+    public int[] getEnd() {
+        int [] end = new int[start.length];
+        for(int i=0; i<end.length; i++) {
+            end[i] = (int) (start[i] + span);
+        }
+        return end;
+    }
+
+    public float[] getData(int trackNumber) {
+        return data[trackNumber];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String[] getNames() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
 }

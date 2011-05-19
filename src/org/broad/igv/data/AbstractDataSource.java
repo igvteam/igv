@@ -335,6 +335,7 @@ public abstract class AbstractDataSource implements DataSource {
                 }
 
                 */
+                double scale = (double) (endLocation - startLocation) / nBins;
                 FloatArrayList accumulatedValues = new FloatArrayList();
                 List<String> probes = new ArrayList();
                 int accumulatedStart = -1;
@@ -347,65 +348,39 @@ public abstract class AbstractDataSource implements DataSource {
                     String probeName = features == null ? null : features[i];
                     float v = values[i];
 
-                    if (e < startLocation) {
+                    if (e < startLocation || Float.isNaN(v)) {
                         continue;
                     } else if (s > endLocation) {
                         break;
                     }
 
 
-                    double scale = (double) (endLocation - startLocation) / nBins;
-
-
-                    // if (score.getEnd() < startLocation) continue;
-                    // if (score.getStart() > endLocation) break;
-
-                    int startBin = Math.max(0, (int) ((s - startLocation) / scale));
                     int endBin = Math.max(0, (int) ((e - startLocation) / scale));
-                    if ((endBin - startBin) > 1) {
-                        // This feature covers more than one pixel.  Record previous bin, if any and this one as well.
+
+                    if (endBin == lastEndBin) {
+                        // Add to previous bin
+                        accumulatedValues.add(v);
+                        probes.add(probeName);
+                        if (accumulatedStart < 0) accumulatedStart = s;
+                        accumulatedEnd = e;
+                    } else {
+                        // Previous bin is complete, start a new one.
                         if (!accumulatedValues.isEmpty()) {
                             LocusScore ls = accumulatedValues.size() == 1 ?
                                     new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
                                     new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
                                             probes.toArray(new String[0]), windowFunction);
                             tile.addScore(ls);
-                            accumulatedValues.clear();
-                            probes.clear();
-                            accumulatedStart = -1;
-                            accumulatedEnd = -1;
                         }
+                        accumulatedValues.clear();
+                        probes.clear();
 
-                        tile.addScore(new NamedScore(s, e, v, probeName));
-
-
-                    } else { //endBin == startBin
-
-                        if (endBin == lastEndBin) {
-                            // Add to previous bin
-                            accumulatedValues.add(v);
-                            probes.add(probeName);
-                            if (accumulatedStart < 0) accumulatedStart = s;
-                            accumulatedEnd = e;
-                        } else {
-                            // Halt previous "bin" and start a new one
-                            if (!accumulatedValues.isEmpty()) {
-                                LocusScore ls = accumulatedValues.size() == 1 ?
-                                        new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
-                                        new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
-                                                probes.toArray(new String[0]), windowFunction);
-                                tile.addScore(ls);
-                            }
-                            accumulatedValues.clear();
-                            probes.clear();
-
-                            accumulatedValues.add(v);
-                            probes.add(probeName);
-                            accumulatedStart = s;
-                            accumulatedEnd = e;
-                        }
-
+                        accumulatedValues.add(v);
+                        probes.add(probeName);
+                        accumulatedStart = s;
+                        accumulatedEnd = e;
                     }
+
                     lastEndBin = endBin;
                 }
                 if (!accumulatedValues.isEmpty()) {

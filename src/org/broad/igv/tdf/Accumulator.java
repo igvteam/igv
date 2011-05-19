@@ -43,7 +43,6 @@ public class Accumulator {
     private static Logger log = Logger.getLogger(Accumulator.class);
 
     boolean isFinished = false;
-
     WindowFunction windowFunction;
     List<PercentileValue> percentiles;
     float sum = 0.0f;
@@ -52,12 +51,33 @@ public class Accumulator {
     DoubleArrayList values;
 
 
+    // Optional -- keep some representative data and probe names for popup text
+    int nRepValues;
+    float[] data;
+    String[] probes;
+    private int npts;
+    private String[] names;
+
+    public Accumulator(WindowFunction windowFunction, int nRepValues) {
+        this(windowFunction);
+        if (nRepValues > 0) {
+            this.nRepValues = nRepValues;
+            data = new float[nRepValues];
+            probes = new String[nRepValues];
+        }
+    }
+
+
     public Accumulator(WindowFunction windowFunction) {
         this.windowFunction = windowFunction;
         if (PERCENTILE_WINDOW_FUNCTIONS.contains(windowFunction)) {
             values = new DoubleArrayList();
             percentiles = new ArrayList();
         }
+    }
+
+    public boolean hasData() {
+        return nPts > 0;
     }
 
     public void add(float v) {
@@ -83,7 +103,14 @@ public class Accumulator {
             }
             nPts++;
         }
+    }
 
+    public void add(float v, String probe) {
+        if (data != null && nPts < data.length) {
+            data[nPts] = v;
+            probes[nPts] = probe;
+        }
+        add(v);
     }
 
 
@@ -144,7 +171,7 @@ public class Accumulator {
 
 
     public float getValue() {
-        if(!isFinished) finish();
+        if (!isFinished) finish();
         return value;
 
     }
@@ -165,6 +192,18 @@ public class Accumulator {
             default:
                 return -1.0;
         }
+    }
+
+    public int getNpts() {
+        return npts;
+    }
+
+    public String[] getNames() {
+        return names;
+    }
+
+    public float[] getData() {
+        return data;
     }
 
 

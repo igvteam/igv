@@ -30,6 +30,13 @@ import java.io.IOException;
  * @author jrobinso
  */
 public interface TDFTile {
+    int[] getStart();
+
+    int[] getEnd();
+
+    float[] getData(int trackNumber);
+
+    String[] getNames();
 
     enum Type {
         fixedStep, variableStep, bed, bedWithName

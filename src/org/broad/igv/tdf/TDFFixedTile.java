@@ -107,4 +107,37 @@ public class TDFFixedTile implements TDFTile {
         }
 
     }
+
+
+    /**
+     * This should never be called, but is provided to satisfy the interface
+     *
+     * @return
+     */
+    public int[] getStart() {
+        int nPts = data[0].length;
+        int[] startArray = new int[nPts];
+        for (int i = 0; i < nPts; i++) {
+            startArray[i] = start + (int) (i * span);
+        }
+        return startArray;
+    }
+
+    public int[] getEnd() {
+        int nPts = data[0].length;
+        int[] endArray = new int[nPts];
+        for (int i = 0; i < nPts; i++) {
+            endArray[i] = start + (int) ((i + 1) * span);
+        }
+        return endArray;
+    }
+
+    public float[] getData(int trackNumber) {
+        return data[trackNumber];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String[] getNames() {
+        return null;
+    }
+
 }

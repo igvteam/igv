@@ -27,7 +27,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.BasicScore;
+import org.broad.igv.data.CompositeScore;
 import org.broad.igv.data.DataSource;
+import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.LocusScore;
@@ -202,7 +204,7 @@ public class TDFDataSource implements DataSource {
 
             // Window function == none => no windowing, so its not clear what to do.  For now use mean
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
-            
+
             scores = new ArrayList(1000);
             TDFDataset ds = reader.getDataset(chr, zoom, wf);
             if (ds != null) {
@@ -252,7 +254,7 @@ public class TDFDataSource implements DataSource {
         }
     }
 
-    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, double binSize) {
+    private List<LocusScore> computeSummaryScores(String chr, int startLocation, int endLocation, double scale) {
 
         List<LocusScore> scores = new ArrayList(1000);
 
@@ -289,69 +291,74 @@ public class TDFDataSource implements DataSource {
 
                 } else {
 
-                    // The minimum bins size is 1 bp
-                    int nBins = (int) ((endLocation - startLocation) / binSize + 1);
-
-                    Bin[] bins = new Bin[nBins];
-
+                    Accumulator accumulator = new Accumulator(windowFunction, 5);
+                    int accumulatedStart = -1;
+                    int accumulatedEnd = -1;
+                    int lastEndBin = 0;
                     for (TDFTile rawTile : rawTiles) {
                         // Tile of raw data
-                        if (rawTile != null && rawTile.getSize() > 0) {
+                        int size = rawTile.getSize();
+                        if (rawTile != null && size > 0) {
 
-                            for (int i = 0; i < rawTile.getSize(); i++) {
-                                int s = rawTile.getStartPosition(i);
-                                int e = Math.max(s, rawTile.getEndPosition(i) - 1);
+                            int[] startPositions = rawTile.getStart();
+                            int[] endPositions = rawTile.getEnd();
+                            String[] names = rawTile.getNames();
+                            float[] data = rawTile.getData(trackNumber);
 
-                                if (e < startLocation) {
+                            for (int i = 0; i < size; i++) {
+                                int s = startPositions[i]; // rawTile.getStartPosition(i);
+                                int e = endPositions[i]; //Math.max(s, rawTile.getEndPosition(i) - 1);
+
+                                String probeName = names == null ? null : names[i]; //rawTile.getName(i);
+                                float v = data[i]; //rawTile.getValue(trackNumber, i);
+
+                                if (e < startLocation || Float.isNaN(v)) {
                                     continue;
                                 } else if (s > endLocation) {
                                     break;
                                 }
 
 
-                                String probeName = rawTile.getName(i);
-                                float v = rawTile.getValue(trackNumber, i);
-                                if (!Float.isNaN(v)) {
-                                    v *= normalizationFactor;
-                                    int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
-                                    int endBin = (int) Math.min(bins.length - 1, ((e - startLocation) / binSize));
-                                    for (int b = startBin; b <= endBin; b++) {
-                                        Bin bin = bins[b];
-                                        if (bin == null) {
-                                            int start = (int) (startLocation + b * binSize);
-                                            int end = (int) (startLocation + (b + 1) * binSize);
-                                            bins[b] = new Bin(start, end, probeName, v, windowFunction);
-                                        } else {
-                                            bin.addValue(probeName, v);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                                int endBin = Math.max(0, (int) ((e - startLocation) / scale));
 
-                    }
-
-
-                    // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
-                    // TODO-- look at computing variable length bins to start with
-
-                    Bin currentBin = null;
-                    for (int b = 0; b < bins.length; b++) {
-                        if (bins[b] != null) {
-                            if (currentBin == null) {
-                                currentBin = bins[b];
-                            } else {
-                                if (aggregateLikeBins && currentBin.isExtension(bins[b])) {
-                                    currentBin.setEnd(bins[b].getEnd());
+                                if (endBin == lastEndBin) {
+                                    // Add to previous bin
+                                    accumulator.add(v, probeName);
+                                    if (accumulatedStart < 0) accumulatedStart = s;
+                                    accumulatedEnd = e;
                                 } else {
-                                    scores.add(currentBin);
-                                    currentBin = bins[b];
+                                    // Previous bin is complete, start a new one.
+                                    if (accumulator.hasData()) {
+                                        LocusScore ls;
+                                        if (accumulator.getNpts() == 1) {
+                                            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+                                        } else {
+                                            float value = accumulator.getValue();
+                                            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                                                    accumulator.getNames(), windowFunction);
+                                        }
+                                        scores.add(ls);
+                                    }
+                                    accumulator = new Accumulator(windowFunction, 5);
+                                    accumulator.add(v, probeName);
+                                    accumulatedStart = s;
+                                    accumulatedEnd = e;
                                 }
+
+                                lastEndBin = endBin;
                             }
+                            if (accumulator.hasData()) {
+                                LocusScore ls;
+                                 if (accumulator.getNpts() == 1) {
+                                     ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+                                 } else {
+                                     float value = accumulator.getValue();
+                                     ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                                             accumulator.getNames(), windowFunction);
+                                 }
+                                 scores.add(ls);
+                             }
                         }
-                    }
-                    if (currentBin != null) {
-                        scores.add(currentBin);
                     }
                 }
             }
