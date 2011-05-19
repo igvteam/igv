@@ -79,13 +79,13 @@ public class UIConstants {
     final static public String CLEAR_REGION_TOOLTIP = "Clear all regions of interest";// Edit Menu Item Tooltips
     final static public String CHANGE_GENOME_TOOLTIP = "Switch the current genome";
     final static public String IMPORT_GENOME_TOOLTIP =
-            "Create a user-defined genome and makes it available for use in the application";
+            "Define a user-defined genome";
     final static public String LOAD_GENOME_TOOLTIP =
-            "Make an externally defined genome available for use in the application";
+            "Load a previously created genome as a \".genome\" file";
     final static public String REMOVE_USER_DEFINE_GENOME_TOOLTIP =
             "Removes user-defined genomes from the drop-down list";
     final static public String CLEAR_GENOME_CACHE_TOOLTIP =
-            "Clears locally cached versions of IGV hosted genomes.";// IGVPanel Menu Item Tooltips
+            "Clears locally cached versions of IGV hosted genomes";// IGVPanel Menu Item Tooltips
     final static public String PREFERENCE_TOOLTIP =
             "Set user specific preferences";
     final static public String SHOW_ATTRIBUTE_DISPLAY_TOOLTIP =

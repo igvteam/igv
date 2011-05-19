@@ -125,9 +125,7 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.endsWith(".genome")) {
-                loadGenome(locator);
-            } else if (typeString.equals("das")) {
+            if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
                 loadIndexed(locator, newTracks);

@@ -241,7 +241,6 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
         jLabel1 = new JLabel();
 
         //======== this ========
-        setToolTipText("Used to completely define all the items associated with a genome");
         setFont(new Font("Tahoma", Font.ITALIC, 12));
         setMaximumSize(new Dimension(900, 500));
         setMinimumSize(new Dimension(400, 300));
@@ -271,7 +270,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             cytobandFileButton.setBounds(725, 130, 50, cytobandFileButton.getPreferredSize().height);
 
             //---- refFlatFileLabel ----
-            refFlatFileLabel.setText("Gene File");
+            refFlatFileLabel.setText("Gene file");
             jPanel1.add(refFlatFileLabel);
             refFlatFileLabel.setBounds(15, 170, 87, 29);
 
@@ -308,7 +307,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             fastaFileButton.setBounds(725, 95, 50, fastaFileButton.getPreferredSize().height);
 
             //---- cytobandFileLabel ----
-            cytobandFileLabel.setText("Cytoband File");
+            cytobandFileLabel.setText("Cytoband file");
             jPanel1.add(cytobandFileLabel);
             cytobandFileLabel.setBounds(15, 135, 87, 29);
 
@@ -320,7 +319,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             fastaFileTextField.setBounds(105, 100, 608, 29);
 
             //---- refFlatFileTextField ----
-            refFlatFileTextField.setToolTipText("A refFlat gene file");
+            refFlatFileTextField.setToolTipText("An annotation file");
             refFlatFileTextField.setPreferredSize(new Dimension(400, 28));
             refFlatFileTextField.setMinimumSize(new Dimension(25, 28));
             jPanel1.add(refFlatFileTextField);
@@ -337,7 +336,6 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             refFlatFileLabel2.setBounds(15, 220, 87, 29);
 
             //---- chrAliasField ----
-            chrAliasField.setToolTipText("A refFlat gene file");
             chrAliasField.setPreferredSize(new Dimension(400, 28));
             chrAliasField.setMinimumSize(new Dimension(25, 28));
             jPanel1.add(chrAliasField);
@@ -354,7 +352,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             chrAliasButton.setBounds(725, 220, 50, chrAliasButton.getPreferredSize().height);
 
             //---- idField ----
-            idField.setToolTipText("The user-readable name of the genome");
+            idField.setToolTipText("A uniqe identifier for the genome");
             jPanel1.add(idField);
             idField.setBounds(105, 5, 148, idField.getPreferredSize().height);
 
@@ -369,7 +367,7 @@ public class GenomeBuilderPane extends javax.swing.JPanel {
             label1.setBounds(270, 5, 166, 28);
 
             //---- sequenceDirectoryCB ----
-            sequenceDirectoryCB.setText("Check if fasta file is a directory");
+            sequenceDirectoryCB.setText("Fasta file is a directory");
             sequenceDirectoryCB.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
             jPanel1.add(sequenceDirectoryCB);
             sequenceDirectoryCB.setBounds(105, 75, 546, sequenceDirectoryCB.getPreferredSize().height);

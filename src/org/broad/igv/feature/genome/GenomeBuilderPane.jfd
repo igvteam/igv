@@ -13,10 +13,6 @@
        <class>com.jformdesigner.runtime.NullLayout</class> 
       </object> 
       <void method="setProperty"> 
-       <string>toolTipText</string> 
-       <string>Used to completely define all the items associated with a genome</string> 
-      </void> 
-      <void method="setProperty"> 
        <string>font</string> 
        <object class="java.awt.Font"> 
         <string>Tahoma</string> 
@@ -146,7 +142,7 @@
           <string>javax.swing.JLabel</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Gene File</string> 
+           <string>Gene file</string> 
           </void> 
           <void property="name"> 
            <string>refFlatFileLabel</string> 
@@ -319,7 +315,7 @@
           <string>javax.swing.JLabel</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Cytoband File</string> 
+           <string>Cytoband file</string> 
           </void> 
           <void property="name"> 
            <string>cytobandFileLabel</string> 
@@ -395,7 +391,7 @@
           <string>javax.swing.JTextField</string> 
           <void method="setProperty"> 
            <string>toolTipText</string> 
-           <string>A refFlat gene file</string> 
+           <string>An annotation file</string> 
           </void> 
           <void method="setProperty"> 
            <string>preferredSize</string> 
@@ -501,10 +497,6 @@
          <object class="com.jformdesigner.model.FormComponent"> 
           <string>javax.swing.JTextField</string> 
           <void method="setProperty"> 
-           <string>toolTipText</string> 
-           <string>A refFlat gene file</string> 
-          </void> 
-          <void method="setProperty"> 
            <string>preferredSize</string> 
            <object class="java.awt.Dimension"> 
             <int>400</int> 
@@ -582,7 +574,7 @@
           <string>javax.swing.JTextField</string> 
           <void method="setProperty"> 
            <string>toolTipText</string> 
-           <string>The user-readable name of the genome</string> 
+           <string>A uniqe identifier for the genome</string> 
           </void> 
           <void property="name"> 
            <string>idField</string> 
@@ -671,7 +663,7 @@
           <string>javax.swing.JCheckBox</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Check if fasta file is a directory</string> 
+           <string>Fasta file is a directory</string> 
           </void> 
           <void method="setProperty"> 
            <string>font</string> 

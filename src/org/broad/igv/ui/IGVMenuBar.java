@@ -130,6 +130,29 @@ public class IGVMenuBar extends JMenuBar {
 
         menuItems.add(new JSeparator());
 
+        // Load genome
+        menuAction =
+                new MenuAction(LOAD_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_I) {
+
+                    @Override
+                    public void actionPerformed(ActionEvent event) {
+
+                        SwingWorker worker = new SwingWorker() {
+
+                            public Object doInBackground() {
+                                org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
+                                IGV.getInstance().doLoadGenome(monitor);
+                                return null;
+                            }
+                        };
+                        worker.execute();
+                    }
+                };
+
+        menuAction.setToolTipText(LOAD_GENOME_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
         menuAction =
                 new MenuAction(UIConstants.IMPORT_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_D) {
 
@@ -621,27 +644,6 @@ menuAction =
 
         menuItems.add(new JSeparator());
 
-        // Load genome
-        menuAction =
-                new MenuAction(LOAD_GENOME_LIST_MENU_ITEM, null, KeyEvent.VK_I) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent event) {
-
-                        SwingWorker worker = new SwingWorker() {
-
-                            public Object doInBackground() {
-                                org.broad.igv.ui.util.ProgressMonitor monitor = new org.broad.igv.ui.util.ProgressMonitor();
-                                IGV.getInstance().doLoadGenome(monitor);
-                                return null;
-                            }
-                        };
-                        worker.execute();
-                    }
-                };
-
-        menuAction.setToolTipText(LOAD_GENOME_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         // Set frame dimensions
         menuAction =
