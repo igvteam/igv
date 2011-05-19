@@ -17,76 +17,33 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.broad.igv.data;
 
-import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
 
 /**
  * @author jrobinso
+ * @date May 19, 2011
  */
-public class BasicScore implements LocusScore {
+public class NamedScore extends BasicScore {
 
-    int start;
-    int end;
-    float score;
+    private String probe;
 
-    public BasicScore(int start, int end, float score) {
-
-        this.start = start;
-        this.end = end;
-        this.score = score;
-    }
-
-    public BasicScore(BasicScore bs) {
-
-        this.start = bs.start;
-        this.end = bs.end;
-        this.score = bs.score;
-    }
-
-    public BasicScore copy() {
-        return new BasicScore(this);
-    }
-
-    /**
-     * This method is required by the Tribble interface but not used.  To save space the chromosome is not stored, return null
-     * @return
-     */
-    public String getChr() {
-        return null;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public float getScore() {
-        return score;
-    }
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public int getEnd() {
-        return end;
-    }
-
-    public void setEnd(int end) {
-        this.end = end;
+    public NamedScore(int start, int end, float score, String probe) {
+        super(start, end, score);
+        this.probe = probe;
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
         buf.append("Value: " + score);
-        if(windowFunction != null) {
-            buf.append("<br>Window function: " + windowFunction);
+        if(probe != null && probe.length() > 0) {
+            buf.append("&nbsp;(");
+            buf.append(probe);
+            buf.append(")");
         }
+        buf.append("<br>");
+
         return buf.toString();
     }
 

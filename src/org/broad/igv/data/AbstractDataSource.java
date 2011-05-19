@@ -30,6 +30,8 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.collections.DoubleArrayList;
+import org.broad.igv.util.collections.FloatArrayList;
 
 import java.util.*;
 
@@ -163,8 +165,7 @@ public abstract class AbstractDataSource implements DataSource {
             //int z = Math.min(zReq, maxZoom);
             int z = zReq;
             int nTiles = (int) Math.pow(2, z);
-            double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
-
+            //double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
 
 
             int adjustedStart = Math.max(0, startLocation);
@@ -185,7 +186,7 @@ public abstract class AbstractDataSource implements DataSource {
                     SummaryTile summaryTile = summaryTileCache.get(key);
                     if (summaryTile == null) {
 
-                        summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, binSize);
+                        summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, 700);
 
                         if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
                             synchronized (summaryTileCache) {
@@ -201,7 +202,7 @@ public abstract class AbstractDataSource implements DataSource {
                 }
                 return tiles;
             } else {
-                SummaryTile summaryTile = computeSummaryTile(chr, 0, startLocation, endLocation, binSize);
+                SummaryTile summaryTile = computeSummaryTile(chr, 0, startLocation, endLocation, 700);
                 return Arrays.asList(summaryTile);
             }
 
@@ -219,7 +220,7 @@ public abstract class AbstractDataSource implements DataSource {
      * @return
      */
 
-    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, double binSize) {
+    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, int nBins) {
 
 
         // TODO -- we should use an index here
@@ -229,8 +230,6 @@ public abstract class AbstractDataSource implements DataSource {
         DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
         SummaryTile tile = null;
 
-        int nBins = (int) ((endLocation - startLocation) / binSize + 1);
-
         if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
             int[] starts = rawTile.getStartLocations();
             int[] ends = rawTile.getEndLocations();
@@ -239,7 +238,7 @@ public abstract class AbstractDataSource implements DataSource {
 
             tile = new SummaryTile(tileNumber, startLocation);
 
-            if (windowFunction == WindowFunction.none || FrameManager.isGeneListMode()) {
+            if (windowFunction == WindowFunction.none) {
 
                 for (int i = 0; i < starts.length; i++) {
                     int s = starts[i];
@@ -261,13 +260,92 @@ public abstract class AbstractDataSource implements DataSource {
 
 
             } else {
-                Bin[] bins = new Bin[nBins];
-                
-                List<LocusScore> scores = new ArrayList(nBins);
+
+
+                /*
+                // Physical overlap
+                // TODO -- most datasets do not have data features that physically overlap.  Determine during parsing (not here)
+                List<LocusScore> scores = new ArrayList();
+                List<PendingScore> pending = new LinkedList();
+                for (int i = 0; i < starts.length; i++) {
+                    int s = starts[i];
+                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                    String probeName = features == null ? null : features[i];
+                    float v = values[i];
+
+                    if (e < startLocation) {
+                        continue;
+                    } else if (s > endLocation) {
+                        break;
+                    }
+                    
+                    if (pending.isEmpty()) {
+                        pending.add(new PendingScore(s, e, v));
+
+                    } else {
+
+                        Iterator<PendingScore> iter = pending.iterator();
+                        PendingScore new1 = null;
+                        PendingScore new2 = null;
+                        while (iter.hasNext()) {
+                            PendingScore ps = iter.next();
+                            if (ps.end <= s) {
+                                scores.add(createScore(ps));
+                                iter.remove();
+
+                            }
+                            // Must at least overlap, overlap or contained?
+                            else if (e >= ps.end) {
+                                // overlap.  Cut pending score into 3
+                                scores.add(createScore(ps));
+                                iter.remove();
+
+                                new1 = (new PendingScore(s, ps.end, ps.scores, v));
+                                new2 = (new PendingScore(ps.end, e, v));
+
+
+                            } else {
+                                // contained
+                                scores.add(createScore(ps));
+                                iter.remove();
+
+                                new1 = (new PendingScore(s, e, ps.scores, v));
+                                new2 = (new PendingScore(e, ps.end, ps.scores));
+
+                            }
+                        }
+                        if (new1 != null) {
+                            pending.add(new1);
+                        }
+                        if (new2 != null) {
+                            pending.add(new2);
+                        }
+                    }
+
+                }
+
+                // Empty "pending" collection
+                for (PendingScore ps : pending) {
+                    if (ps.scores.size() == 1) {
+                        scores.add(new BasicScore(ps.start, ps.end, ps.scores.get(0)));
+                    } else {
+                        scores.add(new CompositeScore(ps.start, ps.end, ps.scores.toArray(), windowFunction));
+                    }
+
+                }
+
+                */
+                FloatArrayList accumulatedValues = new FloatArrayList();
+                List<String> probes = new ArrayList();
+                int accumulatedStart = -1;
+                int accumulatedEnd = -1;
+                int lastEndBin = 0;
 
                 for (int i = 0; i < starts.length; i++) {
                     int s = starts[i];
                     int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                    String probeName = features == null ? null : features[i];
+                    float v = values[i];
 
                     if (e < startLocation) {
                         continue;
@@ -276,65 +354,98 @@ public abstract class AbstractDataSource implements DataSource {
                     }
 
 
-
-                    String probeName = features == null ? null : features[i];
-                    float v = values[i];
+                    double scale = (double) (endLocation - startLocation) / nBins;
 
 
-                    int startBin = (int) Math.max(0, ((s - startLocation) / binSize));
-                    int endBin = (int) Math.min(bins.length, ((e - startLocation) / binSize));
-                    if (startBin == endBin) {
-                        endBin++;
-                    }
-                    for (int b = startBin; b < endBin; b++) {
-                        if (b < bins.length) {
-                            Bin bin = bins[b];
-                            if (bin == null) {
-                                int start = (int) (startLocation + b * binSize);
-                                int end = (int) (startLocation + (b + 1) * binSize);
-                                bins[b] = new Bin(start, end, probeName, v, windowFunction);
-                            } else {
-                                bin.addValue(probeName, v);
-                            }
+                    // if (score.getEnd() < startLocation) continue;
+                    // if (score.getStart() > endLocation) break;
+
+                    int startBin = Math.max(0, (int) ((s - startLocation) / scale));
+                    int endBin = Math.max(0, (int) ((e - startLocation) / scale));
+                    if ((endBin - startBin) > 1) {
+                        // This feature covers more than one pixel.  Record previous bin, if any and this one as well.
+                        if (!accumulatedValues.isEmpty()) {
+                            LocusScore ls = accumulatedValues.size() == 1 ?
+                                    new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
+                                    new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
+                                            probes.toArray(new String[0]), windowFunction);
+                            tile.addScore(ls);
+                            accumulatedValues.clear();
+                            probes.clear();
+                            accumulatedStart = -1;
+                            accumulatedEnd = -1;
                         }
-                    }
 
-                }
+                        tile.addScore(new NamedScore(s, e, v, probeName));
 
 
-                // Aggregate adjacent bins.  This stiches back together features that span multiple bins.
-                // TODO-- look at computing variable length bins to start with
+                    } else { //endBin == startBin
 
-                /*Bin currentBin = null;
-                for (int b = 0; b < bins.length; b++) {
-                    if (bins[b] != null) {
-                        if (b < bins.length) {
-                            if (currentBin == null) {
-                                currentBin = bins[b];
-                            } else {
-                                if (false) { ///currentBin.isExtension(bins[b])) {
-                                    currentBin.setEnd(bins[b].getEnd());
-                                } else {
-                                    scores.add(currentBin);
-                                    currentBin = bins[b];
-                                }
+                        if (endBin == lastEndBin) {
+                            // Add to previous bin
+                            accumulatedValues.add(v);
+                            probes.add(probeName);
+                            if (accumulatedStart < 0) accumulatedStart = s;
+                            accumulatedEnd = e;
+                        } else {
+                            // Halt previous "bin" and start a new one
+                            if (!accumulatedValues.isEmpty()) {
+                                LocusScore ls = accumulatedValues.size() == 1 ?
+                                        new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
+                                        new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
+                                                probes.toArray(new String[0]), windowFunction);
+                                tile.addScore(ls);
                             }
+                            accumulatedValues.clear();
+                            probes.clear();
+
+                            accumulatedValues.add(v);
+                            probes.add(probeName);
+                            accumulatedStart = s;
+                            accumulatedEnd = e;
                         }
+
                     }
+                    lastEndBin = endBin;
                 }
-                if (currentBin != null) {
-                    scores.add(currentBin);
-                }*/
-                for(Bin bin : bins) {
-                    if(bin != null)
-                    scores.add(bin);
+                if (!accumulatedValues.isEmpty()) {
+                    LocusScore ls = accumulatedValues.size() == 1 ?
+                            new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
+                            new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
+                                    probes.toArray(new String[0]), windowFunction);
+                    tile.addScore(ls);
                 }
 
-                tile.addAllScores(scores);
             }
         }
 
         return tile;
+    }
+
+
+    static class PendingScore {
+        int start;
+        int end;
+        FloatArrayList scores = new FloatArrayList();
+
+        PendingScore(int start, int end, FloatArrayList scores, float newVal) {
+            this.end = end;
+            this.scores.addAll(scores);
+            this.scores.add(newVal);
+            this.start = start;
+        }
+
+        PendingScore(int start, int end, FloatArrayList scores) {
+            this.end = end;
+            this.scores.addAll(scores);
+            this.start = start;
+        }
+
+        PendingScore(int start, int end, float newVal) {
+            this.end = end;
+            this.scores.add(newVal);
+            this.start = start;
+        }
     }
 
 
@@ -378,142 +489,141 @@ public abstract class AbstractDataSource implements DataSource {
     }
 
 
-
     /*
-    SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, float binSize) {
+  SummaryTile computeSummaryTile(String chr, int tileNumber, int startLocation, int endLocation, float binSize) {
 
 
-        // TODO -- we should use an index here
-        int longestGene = getLongestFeature(chr);
+      // TODO -- we should use an index here
+      int longestGene = getLongestFeature(chr);
 
-        int adjustedStart = Math.max(startLocation - longestGene, 0);
-        DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
-        SummaryTile tile = null;
+      int adjustedStart = Math.max(startLocation - longestGene, 0);
+      DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
+      SummaryTile tile = null;
 
-        int nBins = (int) ((endLocation - startLocation) / binSize + 1);
+      int nBins = (int) ((endLocation - startLocation) / binSize + 1);
 
-        if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
-            int[] starts = rawTile.getStartLocations();
-            int[] ends = rawTile.getEndLocations();
-            float[] values = rawTile.getValues();
-            String[] features = rawTile.getFeatureNames();
+      if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
+          int[] starts = rawTile.getStartLocations();
+          int[] ends = rawTile.getEndLocations();
+          float[] values = rawTile.getValues();
+          String[] features = rawTile.getFeatureNames();
 
-            tile = new SummaryTile(tileNumber, startLocation);
+          tile = new SummaryTile(tileNumber, startLocation);
 
-            if (windowFunction == WindowFunction.none) {
+          if (windowFunction == WindowFunction.none) {
 
-                for (int i = 0; i < starts.length; i++) {
-                    int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+              for (int i = 0; i < starts.length; i++) {
+                  int s = starts[i];
+                  int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
 
-                    if (e < startLocation) {
-                        continue;
-                    } else if (s > endLocation) {
-                        break;
-                    }
+                  if (e < startLocation) {
+                      continue;
+                  } else if (s > endLocation) {
+                      break;
+                  }
 
-                    String probeName = features == null ? null : features[i];
-                    float v = values[i];
+                  String probeName = features == null ? null : features[i];
+                  float v = values[i];
 
-                    BasicScore score = new BasicScore(s, e, v);
-                    tile.addScore(score);
+                  BasicScore score = new BasicScore(s, e, v);
+                  tile.addScore(score);
 
-                }
-
-
-            } else {
-                List<Bin> bins = new ArrayList();
-
-                int startIdx = 0;
-                int endIdx = starts.length;
-                for (int i = 0; i < starts.length; i++) {
-                    int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
-                    if (e < startLocation) {
-                        startIdx = i;
-                        continue;
-                    } else if (s > endLocation) {
-                        endIdx = i;
-                        break;
-                    }
-                }
+              }
 
 
-                for (int i = startIdx; i < endIdx; i++) {
-                    int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
-                    float v = values[i];
-                    String probeName = features == null ? null : features[i];
+          } else {
+              List<Bin> bins = new ArrayList();
 
-                    int start = binPosition(binSize, s);
-                    int end = binPosition(binSize, e);
+              int startIdx = 0;
+              int endIdx = starts.length;
+              for (int i = 0; i < starts.length; i++) {
+                  int s = starts[i];
+                  int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                  if (e < startLocation) {
+                      startIdx = i;
+                      continue;
+                  } else if (s > endLocation) {
+                      endIdx = i;
+                      break;
+                  }
+              }
 
-                    // Previous bins are already sliced into non-overlapping section.  The current bin can (1) contribute
-                    // to previous bins, (2) slice a previous bin if end intersects it, or (3) start a new bin
-                    // if start is >= the end of the last previous bin
 
-                    int lastEnd = 0;
-                    int binIdx = 0;
-                    for (Bin b : bins) {
-                        int bEnd = b.getEnd();
-                        lastEnd = bEnd;
-                        if (b.getStart() >= end) {
-                            // This should never happen?
-                            break;
-                        }
-                        if (b.getEnd() <= start) {
-                            continue;
-                        }
+              for (int i = startIdx; i < endIdx; i++) {
+                  int s = starts[i];
+                  int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                  float v = values[i];
+                  String probeName = features == null ? null : features[i];
 
-                        if (b.getStart() < start) {
-                            //    [     ]            <= b
-                            //        [     ]
-                            // Shift end of bin
-                            b.setEnd(start);
+                  int start = binPosition(binSize, s);
+                  int end = binPosition(binSize, e);
 
-                            // Create the merged bin, representing the overlapped region
-                            Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
-                            mergedBin.mergeValues(b);
-                            bins.add(mergedBin);
+                  // Previous bins are already sliced into non-overlapping section.  The current bin can (1) contribute
+                  // to previous bins, (2) slice a previous bin if end intersects it, or (3) start a new bin
+                  // if start is >= the end of the last previous bin
 
-                            // Create a new bin for the non-overlapped part
-                            Bin newBin = new Bin(bEnd, end, probeName, v, windowFunction);
-                            bins.add(newBin);
+                  int lastEnd = 0;
+                  int binIdx = 0;
+                  for (Bin b : bins) {
+                      int bEnd = b.getEnd();
+                      lastEnd = bEnd;
+                      if (b.getStart() >= end) {
+                          // This should never happen?
+                          break;
+                      }
+                      if (b.getEnd() <= start) {
+                          continue;
+                      }
 
-                        } else {
-                            //     [     ]          <= b
-                            //       [ ]
-                            // Shift end of bin
-                            b.setEnd(start);
+                      if (b.getStart() < start) {
+                          //    [     ]            <= b
+                          //        [     ]
+                          // Shift end of bin
+                          b.setEnd(start);
 
-                            // Create the merged bin, representing the overlapped region
-                            Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
-                            mergedBin.mergeValues(b);
-                            bins.add(mergedBin);
+                          // Create the merged bin, representing the overlapped region
+                          Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
+                          mergedBin.mergeValues(b);
+                          bins.add(mergedBin);
 
-                            // Create a new bin for the non-overlapped part
-                            Bin newBin = new Bin(bEnd, end, windowFunction);
-                            newBin.mergeValues(b);
-                            bins.add(newBin);
-                        }
-                        binIdx++;
-                    }
+                          // Create a new bin for the non-overlapped part
+                          Bin newBin = new Bin(bEnd, end, probeName, v, windowFunction);
+                          bins.add(newBin);
 
-                    if (start >= lastEnd) {
-                        bins.add(new Bin(start, end, probeName, v, windowFunction));
-                    }
+                      } else {
+                          //     [     ]          <= b
+                          //       [ ]
+                          // Shift end of bin
+                          b.setEnd(start);
 
-                }
+                          // Create the merged bin, representing the overlapped region
+                          Bin mergedBin = new Bin(start, bEnd, probeName, v, windowFunction);
+                          mergedBin.mergeValues(b);
+                          bins.add(mergedBin);
 
-                tile.addAllScores(bins);
-            }
-        }
+                          // Create a new bin for the non-overlapped part
+                          Bin newBin = new Bin(bEnd, end, windowFunction);
+                          newBin.mergeValues(b);
+                          bins.add(newBin);
+                      }
+                      binIdx++;
+                  }
 
-        return tile;
-    }
+                  if (start >= lastEnd) {
+                      bins.add(new Bin(start, end, probeName, v, windowFunction));
+                  }
 
-    private int binPosition(float binSize, int s) {
-        return (int) (Math.round(s / binSize) * binSize);
-    }  */
-    
+              }
+
+              tile.addAllScores(bins);
+          }
+      }
+
+      return tile;
+  }
+
+  private int binPosition(float binSize, int s) {
+      return (int) (Math.round(s / binSize) * binSize);
+  }  */
+
 }

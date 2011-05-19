@@ -31,22 +31,25 @@ import java.util.List;
 public class CompositeScore implements LocusScore {
 
     float[] data;
+    String[] probes;
     float score;
     private int start;
     private int end;
     private WindowFunction windowFunction;
 
 
-    public CompositeScore(int start, int end, float[] scores, WindowFunction windowFunction) {
+    public CompositeScore(int start, int end, float[] scores, String[] probes, WindowFunction windowFunction) {
         this.data = scores;
         this.start = start;
         this.end = end;
+        this.probes = probes;
         score = ProcessingUtils.computeStat(data, windowFunction);
     }
 
     public CompositeScore(CompositeScore sc) {
         this.data = sc.data;
         this.start = sc.start;
+        this.probes = sc.probes;
         this.end = sc.end;
         this.score = sc.score;
     }
@@ -70,6 +73,12 @@ public class CompositeScore implements LocusScore {
         buf.append("-------------------------------<br>");
         for (int j = 0; j < data.length; j++) {
             buf.append(String.valueOf(data[j]));
+            String probe = (probes != null && j < probes.length) ? probes[j] : null;
+            if (probe != null && probe.length() > 0) {
+                buf.append("&nbsp;(");
+                buf.append(probes[j]);
+                buf.append(")");
+            }
             buf.append("<br>");
 
         }
