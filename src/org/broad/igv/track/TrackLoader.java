@@ -37,6 +37,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
@@ -124,7 +125,9 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.equals("das")) {
+            if (typeString.endsWith(".genome")) {
+                loadGenome(locator);
+            } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
                 loadIndexed(locator, newTracks);
@@ -248,6 +251,12 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage(), locator.getPath());
         }
 
+    }
+
+    private void loadGenome(ResourceLocator locator) throws FileNotFoundException {
+        GenomeManager.GenomeListItem genomeListItem = IGV.getInstance().getGenomeManager().loadGenome(locator.getPath(), true, null);
+        igv.getContentPane().getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+        igv.getContentPane().getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
     }
 
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks) throws IOException {

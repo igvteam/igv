@@ -567,8 +567,7 @@ public class IGV {
 
                                             File file = null;
                                             if (currentDirectory != null) {
-                                                file = new File(currentDirectory,
-                                                        previousFile.getName());
+                                                file = new File(currentDirectory, previousFile.getName());
                                             } else {
                                                 file = previousFile;
                                             }
@@ -579,8 +578,7 @@ public class IGV {
                                             UIUtilities.invokeOnEventThread(new Runnable() {
 
                                                 public void run() {
-                                                    genomeImportFileChooser.setSelectedFile(
-                                                            selectedFile);
+                                                    genomeImportFileChooser.setSelectedFile(selectedFile);
                                                     genomeImportFileChooser.validate();
                                                 }
                                             });
