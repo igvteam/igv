@@ -183,7 +183,11 @@ public class ParsingUtils {
                 URL url = new URL(locator.getPath());
                 inputStream = IGVHttpUtils.openConnectionStream(url);
             } else {
-                File file = new File(locator.getPath());
+                String path = locator.getPath();
+                if(path.startsWith("file://")) {
+                    path = path.substring(7);
+                }
+                File file = new File(path);
                 inputStream = new FileInputStream(file);
             }
 

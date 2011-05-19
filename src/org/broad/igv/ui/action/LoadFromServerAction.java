@@ -31,6 +31,7 @@ import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;
 import org.w3c.dom.Document;
@@ -79,45 +80,20 @@ public class LoadFromServerAction extends MenuAction {
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         try {
-
-            // Add genome parameter for users with hardcoded reference to registry servlet
-            if (IGVHttpUtils.isURL(genomeURL)) {
-                genomeURL += "?genome=" + genomeId;
-            }
-
             InputStream is = null;
-            HttpURLConnection conn = null;
-            LinkedHashSet<URL> urls = null;
+            LinkedHashSet<String> urls = null;
             try {
-                URL masterResourceFileURL = new URL(genomeURL);
-                if (genomeURL.startsWith("ftp:")) {
-                    is = IGVHttpUtils.openConnectionStream(masterResourceFileURL);
-                } else if (IGVHttpUtils.isURL(genomeURL)) {
-                    conn = (HttpURLConnection) IGVHttpUtils.openConnection(masterResourceFileURL);
-                    conn.setReadTimeout(20000);
-                    conn.setConnectTimeout(20000);
-                    is = IGVHttpUtils.openHttpStream(masterResourceFileURL, conn);
-                } else {
-                    File file = new File(genomeURL.startsWith("file:") ? masterResourceFileURL.getFile() : genomeURL);
-                    if (!file.exists()) {
-                        MessageUtils.showMessage("ERROR: File does not exist: " + file.getAbsolutePath());
-                        return;
-                    }
-                    is = new FileInputStream(file);
-                }
-
+                is = ParsingUtils.openInputStream(new ResourceLocator(genomeURL));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
                 urls = getResourceUrls(bufferedReader);
             } catch (IOException e) {
-                if (conn.getResponseCode() == 401) {
-                    String msg = "Authorization failure accessing resource: " + genomeURL;
-                    MessageUtils.showMessage(msg);
-                    log.error("Error accessing URL: " + genomeURL, e);
-                }
+                MessageUtils.showMessage("Error loading the genome registry file: "  + e.getMessage());
+                log.error("Error loading genome registry file", e);
+                return;
+
             }
             finally {
                 if (is != null) is.close();
-                IGVHttpUtils.disconnect(conn);
             }
 
             if (urls == null || urls.isEmpty()) {
@@ -154,7 +130,7 @@ public class LoadFromServerAction extends MenuAction {
 
     }
 
-    public List<ResourceLocator> selectResources(final LinkedHashSet<URL> xmlUrls) {
+    public List<ResourceLocator> selectResources(final LinkedHashSet<String> xmlUrls) {
 
         if ((xmlUrls == null) || xmlUrls.isEmpty()) {
             log.error("No datasets are available from this server for the current genome (");
@@ -176,22 +152,18 @@ public class LoadFromServerAction extends MenuAction {
             masterDocument.appendChild(rootNode);
 
             // Merge all documents into one xml document for processing
-            for (URL url : xmlUrls) {
+            for (String url : xmlUrls) {
 
                 // Skip urls that have previously failed due to authorization
-                if (failedURLs.contains(url.toString())) {
+                if (failedURLs.contains(url)) {
                     continue;
                 }
 
                 try {
-                    HttpURLConnection connection = null;
                     InputStream is = null;
                     Document xmlDocument = null;
                     try {
-                        connection = (HttpURLConnection) IGVHttpUtils.openConnection(url);
-                        connection.setConnectTimeout(20000);
-                        connection.setReadTimeout(20000);
-                        is = IGVHttpUtils.openHttpStream(url, connection);
+                        is = ParsingUtils.openInputStream(new ResourceLocator(url));
                         xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
                     }
                     catch (java.net.SocketTimeoutException e) {
@@ -225,19 +197,13 @@ public class LoadFromServerAction extends MenuAction {
                         continue;
                     }
                     catch (IOException e) {
-                        String msg = "";
-                        if (connection instanceof HttpURLConnection && ((HttpURLConnection) connection).getResponseCode() == 401) {
-                            failedURLs.add(url.toString());
-                            msg = "Authorization failure accessing resource: " + url;
-                        } else {
-                            msg = "Error accessing dataset list: " + e.toString();
-                        }
+                        String msg = "Error accessing dataset list: " + e.toString();
+
                         MessageUtils.showMessage(msg);
                         log.error("Error accessing URL: " + url, e);
                     }
                     finally {
                         if (is != null) is.close();
-                        IGVHttpUtils.disconnect(connection);
                     }
 
                     if (xmlDocument != null) {
@@ -306,19 +272,17 @@ public class LoadFromServerAction extends MenuAction {
      * @throws java.net.MalformedURLException
      * @throws java.io.IOException
      */
-    private LinkedHashSet<URL> getResourceUrls
-            (BufferedReader
-                    bufferedReader)
+    private LinkedHashSet<String> getResourceUrls(BufferedReader bufferedReader)
             throws IOException {
 
-        LinkedHashSet<URL> xmlFileUrls = new LinkedHashSet();
+        LinkedHashSet<String> xmlFileUrls = new LinkedHashSet();
         while (true) {
             String xmlFileUrl = bufferedReader.readLine();
             if ((xmlFileUrl == null) || (xmlFileUrl.trim().length() == 0)) {
                 break;
             }
             xmlFileUrl = xmlFileUrl.trim();
-            xmlFileUrls.add(new URL(xmlFileUrl));
+            xmlFileUrls.add(xmlFileUrl);
         }
 
         return xmlFileUrls;
