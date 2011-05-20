@@ -25,6 +25,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.tdf.Accumulator;
 import org.broad.igv.tdf.Bin;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
@@ -230,6 +231,7 @@ public abstract class AbstractDataSource implements DataSource {
         DataTile rawTile = getRawData(chr, adjustedStart, endLocation);
         SummaryTile tile = null;
 
+
         if ((rawTile != null) && !rawTile.isEmpty() && nBins > 0) {
             int[] starts = rawTile.getStartLocations();
             int[] ends = rawTile.getEndLocations();
@@ -253,100 +255,28 @@ public abstract class AbstractDataSource implements DataSource {
                     String probeName = features == null ? null : features[i];
                     float v = values[i];
 
-                    BasicScore score = new BasicScore(s, e, v);
+                    BasicScore score = new NamedScore(s, e, v, probeName);
                     tile.addScore(score);
 
                 }
 
 
             } else {
-
-
-                /*
-                // Physical overlap
-                // TODO -- most datasets do not have data features that physically overlap.  Determine during parsing (not here)
-                List<LocusScore> scores = new ArrayList();
-                List<PendingScore> pending = new LinkedList();
-                for (int i = 0; i < starts.length; i++) {
-                    int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
-                    String probeName = features == null ? null : features[i];
-                    float v = values[i];
-
-                    if (e < startLocation) {
-                        continue;
-                    } else if (s > endLocation) {
-                        break;
-                    }
-                    
-                    if (pending.isEmpty()) {
-                        pending.add(new PendingScore(s, e, v));
-
-                    } else {
-
-                        Iterator<PendingScore> iter = pending.iterator();
-                        PendingScore new1 = null;
-                        PendingScore new2 = null;
-                        while (iter.hasNext()) {
-                            PendingScore ps = iter.next();
-                            if (ps.end <= s) {
-                                scores.add(createScore(ps));
-                                iter.remove();
-
-                            }
-                            // Must at least overlap, overlap or contained?
-                            else if (e >= ps.end) {
-                                // overlap.  Cut pending score into 3
-                                scores.add(createScore(ps));
-                                iter.remove();
-
-                                new1 = (new PendingScore(s, ps.end, ps.scores, v));
-                                new2 = (new PendingScore(ps.end, e, v));
-
-
-                            } else {
-                                // contained
-                                scores.add(createScore(ps));
-                                iter.remove();
-
-                                new1 = (new PendingScore(s, e, ps.scores, v));
-                                new2 = (new PendingScore(e, ps.end, ps.scores));
-
-                            }
-                        }
-                        if (new1 != null) {
-                            pending.add(new1);
-                        }
-                        if (new2 != null) {
-                            pending.add(new2);
-                        }
-                    }
-
-                }
-
-                // Empty "pending" collection
-                for (PendingScore ps : pending) {
-                    if (ps.scores.size() == 1) {
-                        scores.add(new BasicScore(ps.start, ps.end, ps.scores.get(0)));
-                    } else {
-                        scores.add(new CompositeScore(ps.start, ps.end, ps.scores.toArray(), windowFunction));
-                    }
-
-                }
-
-                */
+                float normalizationFactor = 1.0f;
+                List<LocusScore> scores = new ArrayList(nBins);
                 double scale = (double) (endLocation - startLocation) / nBins;
-                FloatArrayList accumulatedValues = new FloatArrayList();
-                List<String> probes = new ArrayList();
+
+                Accumulator accumulator = new Accumulator(windowFunction, 5);
                 int accumulatedStart = -1;
                 int accumulatedEnd = -1;
                 int lastEndBin = 0;
 
-                for (int i = 0; i < starts.length; i++) {
-                    int s = starts[i];
-                    int e = ends == null ? s + 1 : Math.max(s + 1, ends[i]);
+                int size = starts.length;
+                for (int i = 0; i < size; i++) {
+                    int s = Math.max(startLocation, starts[i]);
+                    int e = ends == null ? s + 1 : Math.min(endLocation, ends[i]);
                     String probeName = features == null ? null : features[i];
-                    float v = values[i];
+                    float v = values[i] * normalizationFactor;
 
                     if (e < startLocation || Float.isNaN(v)) {
                         continue;
@@ -354,45 +284,60 @@ public abstract class AbstractDataSource implements DataSource {
                         break;
                     }
 
+                    int endBin = (int) ((e - startLocation) / scale);
 
-                    int endBin = Math.max(0, (int) ((e - startLocation) / scale));
 
                     if (endBin == lastEndBin) {
                         // Add to previous bin
-                        accumulatedValues.add(v);
-                        probes.add(probeName);
+                        accumulator.add(v, probeName);
                         if (accumulatedStart < 0) accumulatedStart = s;
                         accumulatedEnd = e;
                     } else {
                         // Previous bin is complete, start a new one.
-                        if (!accumulatedValues.isEmpty()) {
-                            LocusScore ls = accumulatedValues.size() == 1 ?
-                                    new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
-                                    new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
-                                            probes.toArray(new String[0]), windowFunction);
-                            tile.addScore(ls);
+                        if (accumulator.hasData()) {
+                            LocusScore ls;
+                            if (accumulator.getNpts() == 1) {
+                                ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+                            } else {
+                                float value = accumulator.getValue();
+                                ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                                        accumulator.getNames(), windowFunction);
+                            }
+                            scores.add(ls);
+                            accumulator = new Accumulator(windowFunction, 5);
                         }
-                        accumulatedValues.clear();
-                        probes.clear();
 
-                        accumulatedValues.add(v);
-                        probes.add(probeName);
-                        accumulatedStart = s;
-                        accumulatedEnd = e;
+
+                        // If the current score spans multiple bins add it now
+                        int startBin = Math.max(0, (int) ((s - startLocation) / scale));
+                        if ((endBin - startBin) > 1) {
+                            scores.add(new NamedScore(s, e, v, probeName));
+                        } else {
+                            accumulator.add(v, probeName);
+                            accumulatedStart = s;
+                            accumulatedEnd = e;
+                        }
                     }
 
                     lastEndBin = endBin;
                 }
-                if (!accumulatedValues.isEmpty()) {
-                    LocusScore ls = accumulatedValues.size() == 1 ?
-                            new NamedScore(accumulatedStart, accumulatedEnd, accumulatedValues.get(0), probes.get(0)) :
-                            new CompositeScore(accumulatedStart, accumulatedEnd, accumulatedValues.toArray(),
-                                    probes.toArray(new String[0]), windowFunction);
-                    tile.addScore(ls);
+                if (accumulator.hasData()) {
+                    LocusScore ls;
+                    if (accumulator.getNpts() == 1) {
+                        ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+                    } else {
+                        float value = accumulator.getValue();
+                        ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                                accumulator.getNames(), windowFunction);
+                    }
+                    scores.add(ls);
                 }
 
+                tile.addAllScores(scores);
             }
+
         }
+
 
         return tile;
     }

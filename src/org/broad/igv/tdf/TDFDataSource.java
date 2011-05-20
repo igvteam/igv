@@ -291,6 +291,7 @@ public class TDFDataSource implements DataSource {
 
                 } else {
 
+
                     Accumulator accumulator = new Accumulator(windowFunction, 5);
                     int accumulatedStart = -1;
                     int accumulatedEnd = -1;
@@ -300,17 +301,16 @@ public class TDFDataSource implements DataSource {
                         int size = rawTile.getSize();
                         if (rawTile != null && size > 0) {
 
-                            int[] startPositions = rawTile.getStart();
-                            int[] endPositions = rawTile.getEnd();
-                            String[] names = rawTile.getNames();
-                            float[] data = rawTile.getData(trackNumber);
+                            int[] starts = rawTile.getStart();
+                            int[] ends = rawTile.getEnd();
+                            String[] features = rawTile.getNames();
+                            float[] values = rawTile.getData(trackNumber);
 
                             for (int i = 0; i < size; i++) {
-                                int s = startPositions[i]; // rawTile.getStartPosition(i);
-                                int e = endPositions[i]; //Math.max(s, rawTile.getEndPosition(i) - 1);
-
-                                String probeName = names == null ? null : names[i]; //rawTile.getName(i);
-                                float v = data[i]; //rawTile.getValue(trackNumber, i);
+                                int s = Math.max(startLocation, starts[i]);
+                                int e = ends == null ? s + 1 : Math.min(endLocation, ends[i]);
+                                String probeName = features == null ? null : features[i];
+                                float v = values[i] * normalizationFactor;
 
                                 if (e < startLocation || Float.isNaN(v)) {
                                     continue;
@@ -318,8 +318,8 @@ public class TDFDataSource implements DataSource {
                                     break;
                                 }
 
+                                int endBin = (int) ((e - startLocation) / scale);
 
-                                int endBin = Math.max(0, (int) ((e - startLocation) / scale));
 
                                 if (endBin == lastEndBin) {
                                     // Add to previous bin
@@ -338,26 +338,34 @@ public class TDFDataSource implements DataSource {
                                                     accumulator.getNames(), windowFunction);
                                         }
                                         scores.add(ls);
+                                        accumulator = new Accumulator(windowFunction, 5);
                                     }
-                                    accumulator = new Accumulator(windowFunction, 5);
-                                    accumulator.add(v, probeName);
-                                    accumulatedStart = s;
-                                    accumulatedEnd = e;
+
+
+                                    // If the current score spans multiple bins add it now
+                                    int startBin = Math.max(0, (int) ((s - startLocation) / scale));
+                                    if ((endBin - startBin) > 1) {
+                                        scores.add(new NamedScore(s, e, v, probeName));
+                                    } else {
+                                        accumulator.add(v, probeName);
+                                        accumulatedStart = s;
+                                        accumulatedEnd = e;
+                                    }
                                 }
 
                                 lastEndBin = endBin;
                             }
                             if (accumulator.hasData()) {
                                 LocusScore ls;
-                                 if (accumulator.getNpts() == 1) {
-                                     ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
-                                 } else {
-                                     float value = accumulator.getValue();
-                                     ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
-                                             accumulator.getNames(), windowFunction);
-                                 }
-                                 scores.add(ls);
-                             }
+                                if (accumulator.getNpts() == 1) {
+                                    ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+                                } else {
+                                    float value = accumulator.getValue();
+                                    ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                                            accumulator.getNames(), windowFunction);
+                                }
+                                scores.add(ls);
+                            }
                         }
                     }
                 }
