@@ -223,9 +223,8 @@ public abstract class AbstractTrack implements Track {
                 int gap = Math.min(4, rect.height / 3);
                 int fontSize = Math.min(defaultFontSize, rect.height - gap);
 
-                Font font = FontManager.getScalableFont(fontSize);
+                Font font = FontManager.getFont(fontSize);
                 g2D.setFont(font);
-                FontManager.applyScalableTextHints(g2D);
 
                 GraphicUtils.drawWrappedText(trackName, rect, g2D, false);
 

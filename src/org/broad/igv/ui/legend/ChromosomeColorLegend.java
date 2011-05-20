@@ -64,7 +64,7 @@ public class ChromosomeColorLegend extends JPanel {
 
         Graphics textGraphics = g.create();
         textGraphics.setColor(Color.black);
-        textGraphics.setFont(FontManager.getScalableFont(10));
+        textGraphics.setFont(FontManager.getFont(10));
 
         int w = (int) (getWidth() / 24);
         int h = getHeight() / 2;

@@ -37,7 +37,6 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
 import org.broad.tribble.vcf.VCFHeader;
-import org.broad.tribble.vcf.VCFFormatHeaderLine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -387,7 +386,7 @@ public class VCFTrack extends FeatureTrack {
         Rectangle textRectangle = new Rectangle(bandRectangle);
         textRectangle.height--;
 
-        Font font = FontManager.getScalableFont((int) bandRectangle.getHeight() - 1);
+        Font font = FontManager.getFont((int) bandRectangle.getHeight() - 1);
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
 
@@ -496,7 +495,7 @@ public class VCFTrack extends FeatureTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-        g2D.setFont(FontManager.getScalableFont(defaultFontSize));
+        g2D.setFont(FontManager.getFont(defaultFontSize));
         g2D.setColor(BAND2_COLOR);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {

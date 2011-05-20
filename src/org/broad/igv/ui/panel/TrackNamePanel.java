@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.dnd.AbstractGhostDropManager;
@@ -117,7 +118,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
             for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
                 TrackGroup group = groupIter.next();
 
-                if(regionY > clipRect.getMaxY()) {
+                if (regionY > clipRect.getMaxY()) {
                     break;
                 }
 
@@ -197,6 +198,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                             graphics2D.setBackground(Color.WHITE);
                         }
                         graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+                        graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                         track.renderName(graphics2D, rect, visibleRect);
                     }
 

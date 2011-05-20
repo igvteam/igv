@@ -62,7 +62,7 @@ public class CytobandRenderer {
 
                     //Color c = ChromosomeColors.getColor(locus);
                     //g2.setColor(c);
-                    g2.setFont(FontManager.getScalableFont(Font.BOLD, 11));
+                    g2.setFont(FontManager.getFont(Font.BOLD, 11));
                     g2.drawString(locus, 3, 11);
 
 

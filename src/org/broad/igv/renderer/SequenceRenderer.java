@@ -24,7 +24,6 @@
 package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
@@ -158,7 +157,7 @@ public class SequenceRenderer {
                 //dhmay adding check for adequate track height
                 int fontSize = Math.min(untranslatedSequenceRect.height, Math.min(dX, 12));
                 if (fontSize >= 8) {
-                    Font f = FontManager.getScalableFont(Font.BOLD, fontSize);
+                    Font f = FontManager.getFont(Font.BOLD, fontSize);
                     g.setFont(f);
                 }
 
@@ -417,7 +416,7 @@ public class SequenceRenderer {
                     boolean odd = (firstFullAcidIndex % 2) == 1;
 
                     if (shouldDrawLetters) {
-                        Font f = FontManager.getScalableFont(Font.BOLD, fontSize);
+                        Font f = FontManager.getFont(Font.BOLD, fontSize);
                         g.setFont(f);
                     }
 

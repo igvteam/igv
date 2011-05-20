@@ -179,6 +179,8 @@ public class PreferenceManager implements PropertyManager {
     final public static String GWAS_SECONDARY_COLOR = "GWAS_SECONDARY_COLOR";
 
     public static final String DEFAULT_FONT_SIZE = "DEFAULT_FONT_SIZE";
+    public static final String DEFAULT_FONT_FAMILY = "DEFAULT_FONT_FAMILY";
+    public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
 
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
 
@@ -947,6 +949,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GWAS_SECONDARY_COLOR, "250,169,10");
 
         defaultValues.put(DEFAULT_FONT_SIZE, "10");
+        defaultValues.put(DEFAULT_FONT_FAMILY, "Lucida Sans");
+        defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
 

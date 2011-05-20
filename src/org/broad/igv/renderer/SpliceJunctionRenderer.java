@@ -22,14 +22,11 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
-import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.GeneralPath;
 import java.util.List;
 
@@ -87,7 +84,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // Create a graphics object to draw font names.  Graphics are not cached
             // by font, only by color, so its neccessary to create a new one to prevent
             // affecting other tracks.
-            font = FontManager.getScalableFont(track.getFontSize());
+            Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
             fontGraphics.setFont(font);
 

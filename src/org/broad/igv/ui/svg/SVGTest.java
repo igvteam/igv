@@ -20,7 +20,6 @@
 package org.broad.igv.ui.svg;
 
 import org.apache.batik.dom.GenericDOMImplementation;
-import org.apache.batik.svggen.*;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -67,7 +66,7 @@ public class SVGTest {
     private static void draw(Graphics2D g2d) {
         g2d.clipRect(5, 5, 350, 350);
 
-        g2d.setFont(FontManager.getScalableFont(Font.BOLD, 24));
+        g2d.setFont(FontManager.getFont(Font.BOLD, 24));
         g2d.drawString("Hello World", 0, 20);
 
 

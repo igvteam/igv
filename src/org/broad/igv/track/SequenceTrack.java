@@ -65,19 +65,18 @@ public class SequenceTrack extends AbstractTrack {
      */
     private boolean showColorSpace = false;
     private Rectangle arrowRect;
-    private Font font;
 
     public SequenceTrack(String name) {
         super(name);
 
         shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
-        final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-        font = FontManager.getScalableFont(defaultFontSize);
+
     }
 
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
+        Font font= FontManager.getDefaultFont();
         if (sequenceVisible) {
             graphics.setFont(font);
             graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);

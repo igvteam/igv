@@ -26,7 +26,6 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.TrackType;
 
 import java.awt.*;
@@ -128,7 +127,7 @@ public class UIConstants {
             "Restores all user preferences to their default settings.";
     public static final String NAVIGATE_REGION_TOOLTIP = "Navigate regions";
 
-    public static Font boldFont = FontManager.getScalableFont(Font.BOLD, 12);
+    public static Font boldFont = FontManager.getFont(Font.BOLD, 12);
 
     public static int getDoubleClickInterval() {
 

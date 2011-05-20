@@ -135,7 +135,7 @@ public class HeatmapLegendPanel extends LegendPanel {
         try {
             g2D = (Graphics2D) g.create();
 
-            g2D.setFont(FontManager.getScalableFont(10));
+            g2D.setFont(FontManager.getFont(10));
 
             int npts = 5;
             double max = colorScale.getMaximum();

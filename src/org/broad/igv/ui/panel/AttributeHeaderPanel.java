@@ -95,7 +95,7 @@ public class AttributeHeaderPanel extends JPanel {
             if (fontSize > MAXIMUM_FONT_SIZE) {
                 fontSize = MAXIMUM_FONT_SIZE;
             }
-            Font font = FontManager.getScalableFont(fontSize);
+            Font font = FontManager.getFont(fontSize);
 
             // Change the origin for the text
             AffineTransform transform = AffineTransform.getTranslateInstance(0, getHeight() - COLUMN_BORDER_WIDTH);

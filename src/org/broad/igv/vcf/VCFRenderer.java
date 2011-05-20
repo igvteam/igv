@@ -112,7 +112,7 @@ public class VCFRenderer { //extends FeatureRenderer {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
         if (!id.equals(".") && (idBandHeight > 0)) {
             Graphics2D g = (Graphics2D) context.getGraphics().create();
-            Font f = FontManager.getScalableFont(Font.BOLD, 10);
+            Font f = FontManager.getFont(Font.BOLD, 10);
             f = f.deriveFont(AffineTransform.getRotateInstance(-Math.PI / 6.0));
             g.setFont(f);
             g.setColor(Color.black);
@@ -192,10 +192,10 @@ public class VCFRenderer { //extends FeatureRenderer {
 
         if (dX >= 10) {
             if (dY > 24) {
-                Font f = FontManager.getScalableFont(Font.BOLD, Math.min(dX, 12));
+                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
                 g.setFont(f);
             } else if (dY > 18) {
-                Font f = FontManager.getScalableFont(Font.BOLD, Math.min(dX, 8));
+                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 8));
                 tOffset = 4;
                 bOffset = 5;
                 g.setFont(f);

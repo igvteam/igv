@@ -289,14 +289,14 @@ public class GWASTrack extends AbstractTrack {
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
         //Graphics2D labelGraphics = context.getGraphic2DForColor(Color.black);
 
-        labelGraphics.setFont(FontManager.getScalableFont(8));
+        labelGraphics.setFont(FontManager.getFont(8));
 
         String tmpDisplayName = this.getDisplayName();
         if (tmpDisplayName != null && tmpDisplayName.length() > 0 && PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
-                labelGraphics.setFont(FontManager.getScalableFont(10));
+                labelGraphics.setFont(FontManager.getFont(10));
                 GraphicUtils.drawCenteredText(tmpDisplayName, labelRect, labelGraphics);
             }
         }
@@ -304,7 +304,7 @@ public class GWASTrack extends AbstractTrack {
         //if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS)) {
         if (this.drawYAxis) {
             labelGraphics = context.getGraphic2DForColor(Color.black);
-            labelGraphics.setFont(FontManager.getScalableFont(11));
+            labelGraphics.setFont(FontManager.getFont(11));
 
 
             Rectangle axisRect = new Rectangle(arect.x, arect.y + 1, AXIS_AREA_WIDTH, arect.height);

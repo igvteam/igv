@@ -83,7 +83,7 @@ public class DataRangeDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Range");
 
-        jLabel1.setFont(FontManager.getScalableFont(Font.BOLD, 12));
+        jLabel1.setFont(FontManager.getFont(Font.BOLD, 12));
         jLabel1.setText("Data Range");
 
         jLabel2.setText("Min");

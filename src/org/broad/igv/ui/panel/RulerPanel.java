@@ -32,7 +32,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -67,9 +66,8 @@ public class RulerPanel extends JPanel {
     // TODO -- get from preferences
     boolean drawSpan = true;
     boolean drawEllipsis = false;
-    private Font tickFont = FontManager.getScalableFont(Font.BOLD, 9);
-    private Font spanFont = FontManager.getScalableFont(Font.BOLD, 12);
-    private Font chrFont = FontManager.getScalableFont(10);
+    private Font tickFont = FontManager.getFont(Font.BOLD, 9);
+    private Font spanFont = FontManager.getFont(Font.BOLD, 12);
     private List<ClickLink> chromosomeRects = new ArrayList();
 
     private static Color dragColor = new Color(.5f, .5f, 1f, .3f);
@@ -218,6 +216,7 @@ public class RulerPanel extends JPanel {
 
     private void drawChromosomeTicks(Graphics g) {
 
+        Font chrFont = FontManager.getFont(10);
         //this.removeAll();
         this.setLayout(null);
 
@@ -356,6 +355,7 @@ public class RulerPanel extends JPanel {
                             if (link.region.contains(e.getPoint())) {
                                 NamedRunnable runnable = new NamedRunnable() {
                                     final String chrName = link.value;
+
                                     public void run() {
 
                                         getViewContext().setChrName(chrName);
@@ -363,6 +363,7 @@ public class RulerPanel extends JPanel {
                                         // TODO -- get rid of this ugly reference to IGV.theInstance
                                         IGV.getInstance().chromosomeChangeEvent(chrName);
                                     }
+
                                     public String getName() {
                                         return "Select chromosome: " + chrName;
                                     }

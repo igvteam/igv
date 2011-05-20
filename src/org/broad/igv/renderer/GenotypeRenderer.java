@@ -28,27 +28,11 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
-import java.awt.font.LineMetrics;
-import java.util.*;
 
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
-import org.broad.igv.track.FeatureTrack;
-import org.broad.igv.track.RenderContext;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.FontManager;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.vcf.VCFRenderer;
-import org.broad.igv.vcf.VCFTrack;
-import org.broad.tribble.Feature;
-
-import java.awt.*;
-import java.awt.font.LineMetrics;
-import java.util.List;
 
 /**
  * Renderer for the full "IGV" feature interface (classes implementing
@@ -67,7 +51,6 @@ public class GenotypeRenderer extends FeatureRenderer {
      */
     public static final int NON_CODING_HEIGHT = 8;
     private static Logger log = Logger.getLogger(IGVFeatureRenderer.class);
-    protected Font font;
     protected boolean drawBoundary = false;
 
 
@@ -116,7 +99,7 @@ public class GenotypeRenderer extends FeatureRenderer {
             // Create a graphics object to draw font names.  Graphics are not cached
             // by font, only by color, so its neccessary to create a new one to prevent
             // affecting other tracks.
-            font = FontManager.getScalableFont(track.getFontSize());
+            Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
             fontGraphics.setFont(font);
 
@@ -264,7 +247,7 @@ public class GenotypeRenderer extends FeatureRenderer {
 
         Graphics exonNumberGraphics = g2D.create();
         exonNumberGraphics.setColor(Color.BLACK);
-        exonNumberGraphics.setFont(FontManager.getScalableFont(Font.BOLD, 8));
+        exonNumberGraphics.setFont(FontManager.getFont(Font.BOLD, 8));
 
         // Now get the individual regions of the
         // feature are drawn here

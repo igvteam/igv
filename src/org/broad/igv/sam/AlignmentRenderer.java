@@ -54,7 +54,6 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color grey2 = new Color(165, 165, 165);
     public static Color grey1 = new Color(200, 200, 200);
 
-    private static Font font = FontManager.getScalableFont(10);
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
     private static final Color negStrandColor = new Color(110, 145, 225);
@@ -165,6 +164,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         double origin = context.getOrigin();
         double locScale = context.getScale();
         Rectangle screenRect = context.getVisibleRect();
+        Font font = FontManager.getFont(10);
 
         if ((alignments != null) && (alignments.size() > 0)) {
 
@@ -198,7 +198,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     g.fillRect((int) pixelStart, y, w, h);
                 } else {
                     if (alignment instanceof PairedAlignment) {
-                        drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames);
+                        drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames, font);
                     } else {
                         Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
                         Graphics2D g = context.getGraphic2DForColor(alignmentColor);
@@ -290,7 +290,8 @@ public class AlignmentRenderer implements FeatureRenderer {
             RenderContext context,
             AlignmentTrack.RenderOptions renderOptions,
             boolean leaveMargin,
-            Map<String, Color> selectedReadNames) {
+            Map<String, Color> selectedReadNames,
+            Font font) {
 
         double locScale = context.getScale();
         Color alignmentColor = getAlignmentColor(pair.firstAlignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
@@ -530,7 +531,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             int dX = (int) Math.max(1, (1.0 / locScale));
             Graphics2D g = (Graphics2D) context.getGraphics().create();
             if (dX >= 8) {
-                Font f = FontManager.getScalableFont(Font.BOLD, Math.min(dX, 12));
+                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
                 g.setFont(f);
             }
 

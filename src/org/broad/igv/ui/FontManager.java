@@ -27,54 +27,58 @@ package org.broad.igv.ui;
 import org.broad.igv.PreferenceManager;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * @author eflakes
  */
 public class FontManager {
 
-    // Constants
-    final public static String SCALABLE_FONT_NAME = "Lucida Sans";
 
-    static Hashtable<Integer, Font> fontCache = new Hashtable();
+    private static Font defaultFont;
 
-    static public void applyScalableTextFont(Graphics2D graphics2) {
+    static Hashtable<String, Font> fontCache = new Hashtable();
 
-        Font font = getScalableFont(graphics2.getFont().getSize());
-        //applyScalableTextHints(graphics2);
-        graphics2.setFont(font);
+
+    public static Font getDefaultFont() {
+        if (defaultFont == null) {
+            updateDefaultFont();
+        }
+        return defaultFont;
     }
 
-    static public void applyScalableTextFont(Graphics2D graphics2, int size) {
-
-        Font font = getScalableFont(size);
-        //applyScalableTextHints(graphics2);
-        graphics2.setFont(font);
-    }
-
-    static public Font getScalableFont(Integer size) {
-        Font font = fontCache.get(size);
+    static public Font getFont(int size) {
+        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        String fontFamily = prefManager.get(PreferenceManager.DEFAULT_FONT_FAMILY);
+        int attribute = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
+        String key = fontFamily + "_" + attribute + "_" + size;
+        Font font = fontCache.get(key);
         if (font == null) {
-            font = new Font(SCALABLE_FONT_NAME, Font.PLAIN, size);
-            fontCache.put(size, font);
+            font = new Font(fontFamily, attribute, size);
+            fontCache.put(key, font);
         }
         return font;
     }
 
-    static public Font getScalableFont(int attribute, int size) {
-        return new Font(SCALABLE_FONT_NAME, attribute, size);
+    static public Font getFont(int attribute, int size) {
+        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        String fontFamily = prefManager.get(PreferenceManager.DEFAULT_FONT_FAMILY);
+        String key = fontFamily + "_" + attribute + "_" + size;
+        Font font = fontCache.get(key);
+        if (font == null) {
+            font = new Font(fontFamily, attribute, size);
+            fontCache.put(key, font);
+        }
+        return font;
     }
 
-    static public void applyScalableTextHints(Graphics2D graphics2) {
 
-        graphics2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
-    }
+    public static void updateDefaultFont() {
+        final PreferenceManager prefManager = PreferenceManager.getInstance();
+        String fontFamily = prefManager.get(PreferenceManager.DEFAULT_FONT_FAMILY);
+        int fontSize = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+        int attribute = prefManager.getAsInt(PreferenceManager.DEFAULT_FONT_ATTRIBUTE);
+        defaultFont = new Font(fontFamily, attribute, fontSize);
 
-    public static Font getDefaultFont() {
-        return getScalableFont(PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE));
     }
 }

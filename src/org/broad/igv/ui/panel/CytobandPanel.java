@@ -66,7 +66,7 @@ public class CytobandPanel extends JPanel {
 
         this.frame = frame;
         viewOrigin = frame.getOrigin();
-        FontManager.getScalableFont(fontHeight);
+        FontManager.getFont(fontHeight);
         setFont(new Font(fontFamilyName, Font.BOLD, fontHeight));
         if (mouseable) {
             initMouseAdapter();

@@ -31,7 +31,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;
 
@@ -190,14 +189,14 @@ public abstract class XYPlotRenderer extends DataRenderer {
         Color labelColor = prefs.getAsBoolean(PreferenceManager.CHART_COLOR_TRACK_NAME) ? track.getColor() : Color.black;
         Graphics2D labelGraphics = context.getGraphic2DForColor(labelColor);
 
-        labelGraphics.setFont(FontManager.getScalableFont(8));
+        labelGraphics.setFont(FontManager.getFont(8));
 
         if (prefs.getAsBoolean(PreferenceManager.CHART_DRAW_TRACK_NAME)) {
 
             // Only attempt if track height is > 25 pixels
             if (arect.getHeight() > 25) {
                 Rectangle labelRect = new Rectangle(arect.x, arect.y + 10, arect.width, 10);
-                labelGraphics.setFont(FontManager.getScalableFont(10));
+                labelGraphics.setFont(FontManager.getFont(10));
                 GraphicUtils.drawCenteredText(track.getName(), labelRect, labelGraphics);
             }
         }
@@ -246,7 +245,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             if (range != null) {
                 Graphics2D g = context.getGraphic2DForColor(Color.black);
                 Font font = g.getFont();
-                Font smallFont = FontManager.getScalableFont(8);
+                Font smallFont = FontManager.getFont(8);
                 try {
                     g.setFont(smallFont);
                     String minString = range.getMinimum() == 0f ? "0" : String.format("%.3f", range.getMinimum());

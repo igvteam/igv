@@ -21,7 +21,6 @@ package org.broad.igv.maf;
 import org.broad.igv.maf.MAFTile.Gap;
 import org.broad.igv.maf.MAFTile.MASequence;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -151,7 +150,7 @@ public class MAFRenderer  {
             // Create a graphics to use
             Graphics2D g = (Graphics2D) context.getGraphics().create();
             if (dX >= 8) {
-                Font f = FontManager.getScalableFont(Font.BOLD, Math.min(dX, 12));
+                Font f = FontManager.getFont(Font.BOLD, Math.min(dX, 12));
                 g.setFont(f);
             }
 

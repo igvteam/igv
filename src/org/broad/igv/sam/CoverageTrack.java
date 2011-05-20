@@ -195,7 +195,7 @@ public class CoverageTrack extends AbstractTrack {
         if (range != null) {
             Graphics2D g = context.getGraphic2DForColor(Color.black);
             Font font = g.getFont();
-            Font smallFont = FontManager.getScalableFont(8);
+            Font smallFont = FontManager.getFont(8);
             try {
                 g.setFont(smallFont);
                 String scale = "[" + (int) range.getMinimum() + " - " +

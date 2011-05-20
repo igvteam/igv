@@ -242,7 +242,7 @@ public class MutationLegendPanel extends LegendPanel {
         try {
             g2D = (Graphics2D) g.create();
 
-            g2D.setFont(FontManager.getScalableFont(10));
+            g2D.setFont(FontManager.getFont(10));
 
             FontMetrics fm = g2D.getFontMetrics();
             int dh = fm.getHeight() / 2 + 3;

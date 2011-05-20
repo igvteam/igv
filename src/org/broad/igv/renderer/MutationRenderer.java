@@ -37,8 +37,6 @@ public class MutationRenderer extends FeatureRenderer {
         return "Mutation";
     }
 
-    static Font font = FontManager.getScalableFont(12);
-
     /**
      * Note:  assumption is that featureList is sorted by start position.
      */
@@ -67,7 +65,7 @@ public class MutationRenderer extends FeatureRenderer {
 
                     Color color = feature.getColor();
                     Graphics2D g = context.getGraphic2DForColor(color);
-                    g.setFont(font);
+                    g.setFont(FontManager.getDefaultFont());
 
 
                     int w = (int) (pixelEnd - pixelStart);

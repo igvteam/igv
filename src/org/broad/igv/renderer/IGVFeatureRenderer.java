@@ -49,7 +49,6 @@ public class IGVFeatureRenderer extends FeatureRenderer {
      */
     public static final int NON_CODING_HEIGHT = 8;
     private static Logger log = Logger.getLogger(IGVFeatureRenderer.class);
-    protected Font font;
     protected boolean drawBoundary = false;
 
 
@@ -105,7 +104,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             // Create a graphics object to draw font names.  Graphics are not cached
             // by font, only by color, so its neccessary to create a new one to prevent
             // affecting other tracks.
-            font = FontManager.getScalableFont(track.getFontSize());
+            Font font = FontManager.getFont(track.getFontSize());
             Graphics2D fontGraphics = (Graphics2D) context.getGraphic2DForColor(Color.BLACK).create();
             fontGraphics.setFont(font);
 
@@ -317,7 +316,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         Graphics exonNumberGraphics = g2D.create();
         exonNumberGraphics.setColor(Color.BLACK);
-        exonNumberGraphics.setFont(FontManager.getScalableFont(Font.BOLD, 8));
+        exonNumberGraphics.setFont(FontManager.getFont(Font.BOLD, 8));
 
         // Now get the individual regions of the
         // feature are drawn here

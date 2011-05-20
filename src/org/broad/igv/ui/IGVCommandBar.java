@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
@@ -83,7 +82,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
-    private static final Font GENE_LIST_FONT = FontManager.getScalableFont(Font.BOLD, 14);
+    private static final Font GENE_LIST_FONT = FontManager.getFont(Font.BOLD, 14);
 
     /**
      * Creates new form IGVCommandBar

@@ -184,9 +184,8 @@ public class TrackGroup {
         // Calculate fontsize
         int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
 
-        Font font = FontManager.getScalableFont(Font.BOLD, fontSize);
+        Font font = FontManager.getFont(Font.BOLD, fontSize);
         g2D.setFont(font);
-        FontManager.applyScalableTextHints(g2D);
 
         GraphicUtils.drawWrappedText(getName(), rect, g2D, true);
 

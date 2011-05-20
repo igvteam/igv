@@ -502,7 +502,7 @@ public class HeatmapScaleDialog extends javax.swing.JDialog {
             try {
                 g2D = (Graphics2D) g.create();
 
-                g2D.setFont(FontManager.getScalableFont(10));
+                g2D.setFont(FontManager.getFont(10));
 
 
                 double max = colorScale.getMaximum();
