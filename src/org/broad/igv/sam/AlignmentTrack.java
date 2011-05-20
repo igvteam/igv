@@ -520,10 +520,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                                 ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
                         selectedReadNames.put(alignment.getReadName(), c);
                     }
-                    Object source = e.getSource();
-                    if (source instanceof JComponent) {
-                        ((JComponent) source).repaint();
-                    }
+                    IGV.getInstance().repaintDataPanels();
                 }
                 return true;
             }
