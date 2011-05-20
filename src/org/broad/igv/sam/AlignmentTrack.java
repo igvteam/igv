@@ -721,6 +721,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
         PopupMenu(final TrackClickEvent e) {
 
+            Collection<Track> tracks = new ArrayList();
+            tracks.add(AlignmentTrack.this);
+
             JLabel popupTitle = new JLabel("  " + AlignmentTrack.this.getName(), JLabel.CENTER);
 
             Font newFont = getFont().deriveFont(Font.BOLD, 12);
@@ -728,19 +731,21 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             if (popupTitle != null) {
                 add(popupTitle);
             }
+            addSeparator();
+            add(TrackMenuUtils.getTrackRenameItem(tracks));
+            addCopyToClipboardItem(e);
 
+            addSeparator();
             addSortMenuItem();
             addPackMenuItem();
             addCoverageDepthMenuItem();
+
             addSeparator();
             addColorByMenuItem();
-
             addShadeBaseMenuItem();
-            addShadeCentersMenuItem();
             addShowAllBasesMenuItem();
 
             addSeparator();
-
             addViewAsPairsMenuItem();
             addGoToMate(e);
             showMateRegion(e);
@@ -750,28 +755,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             addShowCoverageItem();
             addLoadCoverageDataItem();
 
-            addCopyToClipboardItem(e);
             addSeparator();
+            TrackMenuUtils.addDisplayModeItems(tracks, this);
 
+            addSeparator();
             addSelecteByNameItem();
-            addSeparator();
-
-            JLabel trackSettingsHeading = new JLabel("  Track Settings", JLabel.LEFT);
-            trackSettingsHeading.setFont(newFont);
-
-            add(trackSettingsHeading);
-
-
-            Collection<Track> tmp = new ArrayList();
-            tmp.add(AlignmentTrack.this);
-            add(TrackMenuUtils.getTrackRenameItem(tmp));
-
-            TrackMenuUtils.addDisplayModeItems(tmp, this);
-
-            add(TrackMenuUtils.getRemoveMenuItem(tmp));
-
-            addSeparator();
             addClearSelectionsMenuItem();
+
+            addSeparator();          
+            add(TrackMenuUtils.getRemoveMenuItem(tracks));
 
             return;
         }
@@ -1169,27 +1161,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                         public void run() {
                             renderOptions.shadeBases = item.isSelected();
-                            refresh();
-                        }
-                    });
-                }
-            });
-
-            add(item);
-        }
-
-        public void addShadeCentersMenuItem() {
-            // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Shade alignments intersecting center");
-            item.setSelected(renderOptions.shadeCenters);
-            item.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent aEvt) {
-                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                        public void run() {
-
-                            renderOptions.shadeCenters = item.isSelected();
                             refresh();
                         }
                     });
