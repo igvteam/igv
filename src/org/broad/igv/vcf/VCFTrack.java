@@ -494,8 +494,7 @@ public class VCFTrack extends FeatureTrack {
 
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-        final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-        g2D.setFont(FontManager.getFont(defaultFontSize));
+        g2D.setFont(FontManager.getFont(fontSize));
         g2D.setColor(BAND2_COLOR);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {

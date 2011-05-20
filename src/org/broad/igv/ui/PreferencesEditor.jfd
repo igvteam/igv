@@ -33,7 +33,7 @@
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>com.jformdesigner.runtime.NullLayout</class> 
+           <class>java.awt.BorderLayout</class> 
           </object> 
           <void property="name"> 
            <string>generalPanel</string> 
@@ -202,7 +202,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>195</int> 
+               <int>194</int> 
               </void> 
              </object> 
             </void> 
@@ -399,14 +399,6 @@
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
-               <string>width</string> 
-               <int>637</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>61</int> 
-              </void> 
-              <void method="setProperty"> 
                <string>x</string> 
                <int>41</int> 
               </void> 
@@ -414,83 +406,13 @@
                <string>y</string> 
                <int>430</int> 
               </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JCheckBox</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Zoom to features</string> 
-              </void> 
-              <void property="name"> 
-               <string>searchZoomCB3</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>searchZoomCBActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>width</string> 
-               <int>140</int> 
+               <int>637</int> 
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>23</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>0</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>524</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JCheckBox</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Zoom to features</string> 
-              </void> 
-              <void property="name"> 
-               <string>searchZoomCB2</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>searchZoomCBActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>140</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>height</string> 
-               <int>23</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>0</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>552</int> 
+               <int>61</int> 
               </void> 
              </object> 
             </void> 
@@ -579,16 +501,103 @@
               </void> 
              </object> 
             </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Default font: </string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>labelFor</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>defaultFontField</string> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>label10</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>503</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JTextField</string> 
+              <void method="setProperty"> 
+               <string>editable</string> 
+               <boolean>false</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>defaultFontField</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>100</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>497</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>238</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JButton</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Change...</string> 
+              </void> 
+              <void property="name"> 
+               <string>fontChangeButton</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>fontChangeButtonActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>356</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>497</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>97</int> 
+              </void> 
+             </object> 
+            </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <class>java.lang.String</class> 
             <void method="setProperty"> 
-             <string>width</string> 
-             <int>745</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>height</string> 
-             <int>490</int> 
+             <string>value</string> 
+             <string>Center</string> 
             </void> 
            </object> 
           </void> 
@@ -634,7 +643,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -700,11 +709,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>6</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>162</int> 
+               <int>120</int> 
               </void> 
              </object> 
             </void> 
@@ -735,11 +744,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>147</int> 
+               <int>150</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>156</int> 
+               <int>115</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -774,11 +783,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>63</int> 
+               <int>40</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>190</int> 
+               <int>170</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -805,7 +814,7 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>5</int> 
+               <int>10</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -1113,68 +1122,6 @@
               </void> 
              </object> 
             </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Default Font Size</string> 
-              </void> 
-              <void property="name"> 
-               <string>label7</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>5</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>75</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JTextField</string> 
-              <void property="name"> 
-               <string>defaultFontSizeField</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>defaultFontHeightFieldActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.FocusListener</string> 
-                <string>focusLost</string> 
-                <string>defaultFontHeightFieldFocusLost</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>271</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>70</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>width</string> 
-               <int>57</int> 
-              </void> 
-             </object> 
-            </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
             <class>com.jformdesigner.runtime.NullConstraints</class> 
@@ -1216,7 +1163,7 @@
            </void> 
            <void method="setProperty"> 
             <string>$verticalGroup</string> 
-            <string>par l {seq l {space :p:55:p, comp jPanel5:::p:394:p, space ::57:x}}</string> 
+            <string>par l {seq l {space :p:55:p, comp jPanel5:::p:394:p, space ::177:x}}</string> 
            </void> 
           </object> 
           <void property="name"> 
@@ -3785,7 +3732,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::16:x, space :::p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3881,7 +3828,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::50:x}}</string> 
+              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::170:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -4239,7 +4186,7 @@
        <string>size</string> 
        <object class="java.awt.Dimension"> 
         <int>804</int> 
-        <int>605</int> 
+        <int>665</int> 
        </object> 
       </void> 
       <void method="setProperty"> 

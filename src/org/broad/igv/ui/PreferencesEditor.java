@@ -28,6 +28,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.ui.legend.LegendDialog;
+import org.broad.igv.ui.util.FontChooser;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.Utilities;
@@ -52,7 +53,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     boolean inputValidated = true;
     private static int lastSelectedIndex = 0;
     boolean proxySettingsChanged;
-
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -86,11 +86,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label4 = new JLabel();
         geneListFlankingField = new JTextField();
         zoomToFeatureExplanation2 = new JLabel();
-        searchZoomCB3 = new JCheckBox();
-        searchZoomCB2 = new JCheckBox();
         label5 = new JLabel();
         label6 = new JLabel();
         seqResolutionThreshold = new JTextField();
+        label10 = new JLabel();
+        defaultFontField = new JTextField();
+        fontChangeButton = new JButton();
         tracksPanel = new JPanel();
         jPanel6 = new JPanel();
         jLabel5 = new JLabel();
@@ -107,8 +108,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         normalizeCoverageCB = new JCheckBox();
         missingDataExplanation8 = new JLabel();
         expandIconCB = new JCheckBox();
-        label7 = new JLabel();
-        defaultFontSizeField = new JTextField();
         overlaysPanel = new JPanel();
         jPanel5 = new JPanel();
         jLabel3 = new JLabel();
@@ -226,7 +225,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             //======== generalPanel ========
             {
-                generalPanel.setLayout(null);
+                generalPanel.setLayout(new BorderLayout());
 
                 //======== jPanel10 ========
                 {
@@ -276,7 +275,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel10.add(showAttributesDisplayCheckBox);
-                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 195), showAttributesDisplayCheckBox.getPreferredSize()));
+                    showAttributesDisplayCheckBox.setBounds(new Rectangle(new Point(10, 194), showAttributesDisplayCheckBox.getPreferredSize()));
 
                     //---- searchZoomCB ----
                     searchZoomCB.setText("Zoom to features");
@@ -328,26 +327,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel10.add(zoomToFeatureExplanation2);
                     zoomToFeatureExplanation2.setBounds(41, 430, 637, 61);
 
-                    //---- searchZoomCB3 ----
-                    searchZoomCB3.setText("Zoom to features");
-                    searchZoomCB3.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            searchZoomCBActionPerformed(e);
-                        }
-                    });
-                    jPanel10.add(searchZoomCB3);
-                    searchZoomCB3.setBounds(0, 524, 140, 23);
-
-                    //---- searchZoomCB2 ----
-                    searchZoomCB2.setText("Zoom to features");
-                    searchZoomCB2.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            searchZoomCBActionPerformed(e);
-                        }
-                    });
-                    jPanel10.add(searchZoomCB2);
-                    searchZoomCB2.setBounds(0, 552, 140, 23);
-
                     //---- label5 ----
                     label5.setText("<html><i>Resolution in base-pairs per pixel at which sequence track becomes visible. ");
                     jPanel10.add(label5);
@@ -373,6 +352,27 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel10.add(seqResolutionThreshold);
                     seqResolutionThreshold.setBounds(300, 309, 105, seqResolutionThreshold.getPreferredSize().height);
 
+                    //---- label10 ----
+                    label10.setText("Default font: ");
+                    label10.setLabelFor(defaultFontField);
+                    jPanel10.add(label10);
+                    label10.setBounds(new Rectangle(new Point(10, 503), label10.getPreferredSize()));
+
+                    //---- defaultFontField ----
+                    defaultFontField.setEditable(false);
+                    jPanel10.add(defaultFontField);
+                    defaultFontField.setBounds(100, 497, 238, defaultFontField.getPreferredSize().height);
+
+                    //---- fontChangeButton ----
+                    fontChangeButton.setText("Change...");
+                    fontChangeButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            fontChangeButtonActionPerformed(e);
+                        }
+                    });
+                    jPanel10.add(fontChangeButton);
+                    fontChangeButton.setBounds(356, 497, 97, fontChangeButton.getPreferredSize().height);
+
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
                         for(int i = 0; i < jPanel10.getComponentCount(); i++) {
@@ -387,22 +387,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jPanel10.setPreferredSize(preferredSize);
                     }
                 }
-                generalPanel.add(jPanel10);
-                jPanel10.setBounds(0, 0, 745, 490);
-
-                { // compute preferred size
-                    Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < generalPanel.getComponentCount(); i++) {
-                        Rectangle bounds = generalPanel.getComponent(i).getBounds();
-                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                    }
-                    Insets insets = generalPanel.getInsets();
-                    preferredSize.width += insets.right;
-                    preferredSize.height += insets.bottom;
-                    generalPanel.setMinimumSize(preferredSize);
-                    generalPanel.setPreferredSize(preferredSize);
-                }
+                generalPanel.add(jPanel10, BorderLayout.CENTER);
             }
             tabbedPane.addTab("General", generalPanel);
 
@@ -418,7 +403,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     //---- jLabel5 ----
                     jLabel5.setText("Default Track Height, Charts (Pixels)");
                     jPanel6.add(jLabel5);
-                    jLabel5.setBounds(new Rectangle(new Point(6, 12), jLabel5.getPreferredSize()));
+                    jLabel5.setBounds(new Rectangle(new Point(10, 12), jLabel5.getPreferredSize()));
 
                     //---- defaultChartTrackHeightField ----
                     defaultChartTrackHeightField.setText("40");
@@ -439,7 +424,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     //---- trackNameAttributeLabel ----
                     trackNameAttributeLabel.setText("Track Name Attribute");
                     jPanel6.add(trackNameAttributeLabel);
-                    trackNameAttributeLabel.setBounds(new Rectangle(new Point(6, 162), trackNameAttributeLabel.getPreferredSize()));
+                    trackNameAttributeLabel.setBounds(new Rectangle(new Point(10, 120), trackNameAttributeLabel.getPreferredSize()));
 
                     //---- trackNameAttributeField ----
                     trackNameAttributeField.addActionListener(new ActionListener() {
@@ -454,19 +439,19 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     });
                     jPanel6.add(trackNameAttributeField);
-                    trackNameAttributeField.setBounds(147, 156, 216, trackNameAttributeField.getPreferredSize().height);
+                    trackNameAttributeField.setBounds(150, 115, 216, trackNameAttributeField.getPreferredSize().height);
 
                     //---- missingDataExplanation2 ----
                     missingDataExplanation2.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     missingDataExplanation2.setText("<html>Name of an attribute to be used to label  tracks.  If provided tracks will be labeled with the corresponding attribute values from the sample information file");
                     missingDataExplanation2.setVerticalAlignment(SwingConstants.TOP);
                     jPanel6.add(missingDataExplanation2);
-                    missingDataExplanation2.setBounds(63, 190, 578, 54);
+                    missingDataExplanation2.setBounds(40, 170, 578, 54);
 
                     //---- jLabel8 ----
                     jLabel8.setText("Default Track Height, Other (Pixels)");
                     jPanel6.add(jLabel8);
-                    jLabel8.setBounds(new Rectangle(new Point(5, 45), jLabel8.getPreferredSize()));
+                    jLabel8.setBounds(new Rectangle(new Point(10, 45), jLabel8.getPreferredSize()));
 
                     //---- defaultTrackHeightField ----
                     defaultTrackHeightField.setText("15");
@@ -545,26 +530,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     });
                     jPanel6.add(expandIconCB);
                     expandIconCB.setBounds(new Rectangle(new Point(6, 318), expandIconCB.getPreferredSize()));
-
-                    //---- label7 ----
-                    label7.setText("Default Font Size");
-                    jPanel6.add(label7);
-                    label7.setBounds(new Rectangle(new Point(5, 75), label7.getPreferredSize()));
-
-                    //---- defaultFontSizeField ----
-                    defaultFontSizeField.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            defaultFontHeightFieldActionPerformed(e);
-                        }
-                    });
-                    defaultFontSizeField.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            defaultFontHeightFieldFocusLost(e);
-                        }
-                    });
-                    jPanel6.add(defaultFontSizeField);
-                    defaultFontSizeField.setBounds(271, 70, 57, defaultFontSizeField.getPreferredSize().height);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -720,7 +685,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         .add(overlaysPanelLayout.createSequentialGroup()
                             .add(55, 55, 55)
                             .add(jPanel5, GroupLayout.PREFERRED_SIZE, 394, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(57, Short.MAX_VALUE))
+                            .addContainerGap(177, Short.MAX_VALUE))
                 );
             }
             tabbedPane.addTab("Mutations", overlaysPanel);
@@ -1660,7 +1625,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                                .add(jLabel25)
                                 .addContainerGap())
                     );
                 }
@@ -1892,7 +1857,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(jPanel16, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .add(18, 18, 18)
                                 .add(clearProxySettingsButton)
-                                .addContainerGap(50, Short.MAX_VALUE))
+                                .addContainerGap(170, Short.MAX_VALUE))
                     );
                 }
                 proxyPanel.add(jPanel15);
@@ -1977,6 +1942,29 @@ public class PreferencesEditor extends javax.swing.JDialog {
             resetValidation();
         }
     }
+
+
+    private void fontChangeButtonActionPerformed(ActionEvent e) {
+        Font defaultFont = FontManager.getDefaultFont();
+        FontChooser chooser = new FontChooser(this, defaultFont);
+        chooser.setModal(true);
+        chooser.setVisible(true);
+        if (!chooser.isCanceled()) {
+            Font font = chooser.getSelectedFont();
+            if (font != null) {
+                prefMgr.put(PreferenceManager.DEFAULT_FONT_FAMILY, font.getFamily());
+                prefMgr.put(PreferenceManager.DEFAULT_FONT_SIZE, String.valueOf(font.getSize()));
+                int attrs = Font.PLAIN;
+                if (font.isBold()) attrs = Font.BOLD;
+                if (font.isItalic()) attrs |= Font.ITALIC;
+                prefMgr.put(PreferenceManager.DEFAULT_FONT_ATTRIBUTE, String.valueOf(attrs));
+                FontManager.updateDefaultFont();
+                updateFontField();
+                IGV.getInstance().repaint();
+            }
+        }
+    }
+
 
     private void expMapToLociCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expMapToLociCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.PROBE_MAPPING_KEY, String.valueOf(expMapToGeneCB.isSelected()));
@@ -2296,22 +2284,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
             MessageUtils.showMessage("Track height must be an integer number.");
-        }
-    }
-
-
-    private void defaultFontHeightFieldFocusLost(FocusEvent e) {
-        defaultFontHeightFieldActionPerformed(null);
-    }
-
-    private void defaultFontHeightFieldActionPerformed(ActionEvent e) {
-        String defaultFontSize = String.valueOf(defaultFontSizeField.getText());
-        try {
-            Integer.parseInt(defaultFontSize);
-            updatedPreferenceMap.put(PreferenceManager.DEFAULT_FONT_SIZE, defaultFontSize);
-        } catch (NumberFormatException numberFormatException) {
-            inputValidated = false;
-            MessageUtils.showMessage("Font size must be an integer number.");
         }
     }
 
@@ -2654,7 +2626,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         defaultChartTrackHeightField.setText(prefMgr.get(PreferenceManager.CHART_TRACK_HEIGHT_KEY));
         defaultTrackHeightField.setText(prefMgr.get(PreferenceManager.TRACK_HEIGHT_KEY));
-        defaultFontSizeField.setText(prefMgr.get(PreferenceManager.DEFAULT_FONT_SIZE));
         displayTracksCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
         overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY));
@@ -2743,7 +2714,25 @@ public class PreferencesEditor extends javax.swing.JDialog {
         String pwCoded = prefMgr.get(PreferenceManager.PROXY_PW, "");
         proxyPasswordField.setText(Utilities.base64Decode(pwCoded));
 
+        updateFontField();
+
         updateProxyState(useProxy, authenticateProxy);
+    }
+
+    private void updateFontField() {
+        Font font = FontManager.getDefaultFont();
+        StringBuffer buf = new StringBuffer();
+        buf.append(font.getFamily());
+        if(font.isBold()) {
+            buf.append(" bold");
+        }
+        if(font.isItalic())  {
+            buf.append(" italic");
+        }
+        buf.append(" " + font.getSize());
+        defaultFontField.setFont(font);
+        defaultFontField.setText(buf.toString());
+
     }
 
     private void checkForSAMChanges() {
@@ -2817,11 +2806,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label4;
     private JTextField geneListFlankingField;
     private JLabel zoomToFeatureExplanation2;
-    private JCheckBox searchZoomCB3;
-    private JCheckBox searchZoomCB2;
     private JLabel label5;
     private JLabel label6;
     private JTextField seqResolutionThreshold;
+    private JLabel label10;
+    private JTextField defaultFontField;
+    private JButton fontChangeButton;
     private JPanel tracksPanel;
     private JPanel jPanel6;
     private JLabel jLabel5;
@@ -2838,8 +2828,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox normalizeCoverageCB;
     private JLabel missingDataExplanation8;
     private JCheckBox expandIconCB;
-    private JLabel label7;
-    private JTextField defaultFontSizeField;
     private JPanel overlaysPanel;
     private JPanel jPanel5;
     private JLabel jLabel3;

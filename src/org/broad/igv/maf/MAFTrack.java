@@ -73,8 +73,7 @@ public class MAFTrack extends AbstractTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
 
-         final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-        Font font = FontManager.getFont(defaultFontSize);
+        Font font = FontManager.getFont(fontSize);
         g2D.setFont(font);
 
         int y = trackRectangle.y;

@@ -44,6 +44,7 @@ public class FontChooser extends JDialog {
     public FontChooser(Dialog owner, Font font) {
         super(owner);
         initComponents();
+        setTitle("Font Chooser");
         init(font);
     }
 

@@ -80,7 +80,7 @@ public class UIConstants {
     final static public String IMPORT_GENOME_TOOLTIP =
             "Define a user-defined genome";
     final static public String LOAD_GENOME_TOOLTIP =
-            "Load a previously created genome as a \".genome\" file";
+            "Load a previously created \".genome\" file";
     final static public String REMOVE_USER_DEFINE_GENOME_TOOLTIP =
             "Removes user-defined genomes from the drop-down list";
     final static public String CLEAR_GENOME_CACHE_TOOLTIP =

@@ -75,7 +75,7 @@ public abstract class AbstractTrack implements Track {
     private boolean useScore;
     private float viewLimitMin;
     private float viewLimitMax;
-    private int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
+    protected int fontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
     private boolean showDataRange = true;
     private String sampleId;
     private ResourceLocator resourceLocator;
@@ -217,13 +217,11 @@ public abstract class AbstractTrack implements Track {
 
             if (rect.getHeight() > 3) {
 
-                final int defaultFontSize = PreferenceManager.getInstance().getAsInt(PreferenceManager.DEFAULT_FONT_SIZE);
-
                 // Calculate fontsize
                 int gap = Math.min(4, rect.height / 3);
-                int fontSize = Math.min(defaultFontSize, rect.height - gap);
+                int fs = Math.min(fontSize, rect.height - gap);
 
-                Font font = FontManager.getFont(fontSize);
+                Font font = FontManager.getFont(fs);
                 g2D.setFont(font);
 
                 GraphicUtils.drawWrappedText(trackName, rect, g2D, false);

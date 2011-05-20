@@ -76,7 +76,7 @@ public class SequenceTrack extends AbstractTrack {
 
     @Override
     public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle) {
-        Font font= FontManager.getDefaultFont();
+        Font font= FontManager.getFont(fontSize);
         if (sequenceVisible) {
             graphics.setFont(font);
             graphics.drawString(NAME, trackRectangle.x + 5, trackRectangle.y + 12);
