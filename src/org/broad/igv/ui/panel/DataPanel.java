@@ -689,35 +689,32 @@ public class DataPanel extends JComponent implements Paintable {
             }
 
             Object source = e.getSource();
-            if (source instanceof DataPanel) {
+            if (source instanceof DataPanel && e.getButton() == MouseEvent.BUTTON1) {
                 final Track track = ((DataPanel) e.getSource()).getTrack(e.getX(), e.getY());
 
-                if (e.isAltDown() || e.isMetaDown() || e.isShiftDown() || e.isControlDown()) {
-                    if (e.isShiftDown()) {
-                        final double locationClicked = frame.getChromosomePosition(e.getX());
-                        frame.zoomBy(3, locationClicked);
-                        return;
-                    } else if (e.isAltDown()) {
-                        final double locationClicked = frame.getChromosomePosition(e.getX());
-                        frame.zoomBy(-1, locationClicked);
-                        return;
-                    } else {
-                        if (track != null) {
-                            TrackClickEvent te = new TrackClickEvent(e, frame);
-                            track.handleDataClick(te);
-                        }
-                    }
+                if (e.isShiftDown()) {
+                    final double locationClicked = frame.getChromosomePosition(e.getX());
+                    frame.zoomBy(3, locationClicked);
+                } else if (e.isAltDown()) {
+                    final double locationClicked = frame.getChromosomePosition(e.getX());
+                    frame.zoomBy(-1, locationClicked);
+                } else if ((e.isAltDown() || e.isControlDown()) && track != null) {
+                    TrackClickEvent te = new TrackClickEvent(e, frame);
+                    track.handleDataClick(te);
                 } else {
-                    // No modifiers
+
+                    // No modifier, left-click.  Defer processing with a timer until we are sure this is not the
+                    // first of a "double-click".
+
                     if (e.getClickCount() > 1) {
                         clickScheduler.cancelClickTask();
                         final double locationClicked = frame.getChromosomePosition(e.getX());
                         frame.zoomBy(1, locationClicked);
 
-                    } else if (e.getButton() == MouseEvent.BUTTON1) {
+                    } else {
 
                         // Unhandled single click.  Delegate to track or tool unless second click arrives within
-                        // double-click interval. 
+                        // double-click interval.
                         TimerTask clickTask = new TimerTask() {
                             @Override
                             public void run() {

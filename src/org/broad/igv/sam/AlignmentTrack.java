@@ -343,8 +343,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 int start = mate.start - 1;
                 te.getFrame().centerOnLocation(chr, start);
                 te.getFrame().recordHistory();
-            }
-            else {
+            } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
@@ -401,8 +400,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 currentSession.setCurrentGeneList(geneList);
                 IGV.getInstance().resetFrames();
 
-            }
-            else {
+            } else {
                 MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
@@ -517,20 +515,13 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
-        System.out.println("Handle data click");
         MouseEvent e = te.getMouseEvent();
-
-        if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
-            return super.handleDataClick(te);
-        } else if (e.getButton() == MouseEvent.BUTTON1 &&
-                (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
+        if (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown())) {
             // Selection
             final ReferenceFrame frame = te.getFrame();
-
             if (frame != null) {
                 selectAlignment(e, frame);
-                //Rectangle damageRect = new Rectangle(this.getTop(), 0, owner.getWidth(), this.getHeight());
-                if(parent != null) parent.repaint();
+                if (parent != null) parent.repaint();
                 return true;
             }
 
