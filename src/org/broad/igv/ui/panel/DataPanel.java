@@ -687,7 +687,7 @@ public class DataPanel extends JComponent implements Paintable {
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }
-            } else if (e.getButton() == MouseEvent.BUTTON1 && !e.isPopupTrigger() && !e.isControlDown()) {
+            } else if (e.getButton() == MouseEvent.BUTTON1 && !e.isPopupTrigger()) {
 
                 // Unhandled single click.  Delegate to track unless second click arrives within double-click interval.
                 // If the track does not handle the event delegate to the current tool
