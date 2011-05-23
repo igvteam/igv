@@ -386,7 +386,8 @@ public class VCFTrack extends FeatureTrack {
         Rectangle textRectangle = new Rectangle(bandRectangle);
         textRectangle.height--;
 
-        Font font = FontManager.getFont((int) bandRectangle.getHeight() - 1);
+        int bandFontSize = Math.min(fontSize, (int) bandRectangle.getHeight() - 1);
+        Font font = FontManager.getFont(bandFontSize);
         Font oldFont = g2D.getFont();
         g2D.setFont(font);
 
@@ -440,6 +441,7 @@ public class VCFTrack extends FeatureTrack {
                         String printName = sample;
                         textRectangle.y = bandRectangle.y + 1;
                         g2D.setColor(Color.black);
+                        g2D.setFont(font);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
 
                     }
@@ -505,7 +507,7 @@ public class VCFTrack extends FeatureTrack {
         g2D.setColor(Color.black);
         rect.height = variantBandHeight;
         if (rect.intersects(visibleRectangle)) {
-            GraphicUtils.drawWrappedText(getName(), rect, g2D, false); //getName() + " (" + samples.size() + ")", rect, g2D, false);
+            GraphicUtils.drawWrappedText(getName(), rect, g2D, false);
         }
 
         if (grouped) {
@@ -515,7 +517,6 @@ public class VCFTrack extends FeatureTrack {
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
-            // Sample names printed in colorBackground !!
             colorBackground(g2D, rect, visibleRectangle, true);
         }
 
@@ -882,13 +883,6 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    // public List<String> getSamples() {
-    //     return samples;
-    // }
-
-    // protected void setSamples(List<String> samples) {
-    //     this.samples = samples;
-    // }
 
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
         VariantContext f = null;

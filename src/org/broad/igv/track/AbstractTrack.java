@@ -81,7 +81,7 @@ public abstract class AbstractTrack implements Track {
     private ResourceLocator resourceLocator;
 
     private int top;
-    protected int minimumHeight = 1;
+    protected int minimumHeight = -1;
 
     private TrackType trackType = TrackType.OTHER;
 
@@ -350,13 +350,33 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    /**
+     * Returns the default minimum height based on the actual renderer for this track.  Heatmaps default
+     * to 1,  all other renderers to 5.
+     *
+     * @return
+     */
+    public int getDefaultMinimumHeight() {
+        Renderer r = getRenderer();
+        if(r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
+            return 1;
+        }
+        else {
+            return 10;
+        }
+    }
+
+
     public void setMinimumHeight(int minimumHeight) {
         this.minimumHeight = minimumHeight;
     }
 
-
+    /**
+     * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
+     * @return
+     */
     public int getMinimumHeight() {
-        return minimumHeight;
+        return minimumHeight < 0 ? getDefaultMinimumHeight() : minimumHeight;
     }
 
 
@@ -404,7 +424,7 @@ public abstract class AbstractTrack implements Track {
 
 
     public void setHeight(int height) {
-        this.height = Math.max(minimumHeight, height);
+        this.height = Math.max(getMinimumHeight(), height);
     }
 
 

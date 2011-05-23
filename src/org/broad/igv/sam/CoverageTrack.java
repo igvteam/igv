@@ -155,10 +155,8 @@ public class CoverageTrack extends AbstractTrack {
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 interval = dataManager.getLoadedInterval(context);
-                
+
             }
-
-
 
 
             if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
@@ -411,19 +409,29 @@ public class CoverageTrack extends AbstractTrack {
 
             // Temporary until proper windowing is implemented
             int lastpX = -1;
+            final double rectX = rect.getX();
+            final double rectMaxX = rect.getMaxX();
+            final double rectY = rect.getY();            
+            final double rectMaxY = rect.getMaxY();
+            final double rectHeight = rect.getHeight();
+            final double origin = context.getOrigin();
+            final double colorScaleMax = getColorScale().getMaximum();
+            final double scale = context.getScale();
 
             for (AlignmentCounts alignmentCounts : countList) {
 
-                for (int pos = alignmentCounts.getStart(); pos < alignmentCounts.getEnd(); pos++) {
+                final int intervalEnd = alignmentCounts.getEnd();
+                final int intervalStart = alignmentCounts.getStart();
+                for (int pos = intervalStart; pos < intervalEnd; pos++) {
 
-                    int pX = (int) (rect.getX() + (pos - context.getOrigin()) / context.getScale());
+                    int pX = (int) (rectX + (pos - origin) / scale);
                     int dX = Math.max(1,
-                            (int) (rect.getX() + (pos + 1 - context.getOrigin()) / context.getScale()) - pX);
+                            (int) (rectX + (pos + 1 - origin) / scale) - pX);
                     if (dX > 3) {
                         dX--;
                     }
 
-                    if (pX > rect.getMaxX()) {
+                    if (pX > rectMaxX) {
                         break;
                     }
 
@@ -454,10 +462,10 @@ public class CoverageTrack extends AbstractTrack {
 
                             if (strandOption) {
 
-                                int pY = (int) (rect.getY() + rect.getMaxY()) / 2;
+                                int pY = (int) (rectY + rectMaxY) / 2;
 
                                 int totalNegCount = alignmentCounts.getNegTotal(pos);
-                                int height = (int) (totalNegCount * rect.getHeight() / getColorScale().getMaximum());
+                                int height = (int) (totalNegCount * rectHeight / colorScaleMax);
                                 height = Math.min(height, rect.height / 2 - 1);
                                 if (height > 0) {
 
@@ -466,7 +474,7 @@ public class CoverageTrack extends AbstractTrack {
                                     if (mismatch || showAllSnps) {
                                         for (char c : nucleotides) {
                                             if (c != ref) {
-                                                pY = drawStrandBar(context, pos, rect, getColorScale().getMaximum(), pY, pX, dX, c,
+                                                pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
                                                         false, alignmentCounts);
                                             }
                                         }
@@ -474,10 +482,10 @@ public class CoverageTrack extends AbstractTrack {
 
                                 }
 
-                                pY = (int) (rect.getY() + rect.getMaxY()) / 2;
+                                pY = (int) (rectY + rectMaxY) / 2;
                                 int totalPosCount = alignmentCounts.getPosTotal(pos);
 
-                                height = (int) (totalPosCount * rect.getHeight() / getColorScale().getMaximum());
+                                height = (int) (totalPosCount * rectHeight / colorScaleMax);
                                 height = Math.min(height, rect.height / 2 - 1);
                                 int topY = (pY - height);
 
@@ -488,24 +496,24 @@ public class CoverageTrack extends AbstractTrack {
                                     if (mismatch || showAllSnps) {
                                         for (char c : nucleotides) {
                                             if (c != ref) {
-                                                pY = drawStrandBar(context, pos, rect, getColorScale().getMaximum(), pY, pX, dX, c,
+                                                pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
                                                         true, alignmentCounts);
                                             }
                                         }
                                     }
                                 }
 
-                                pY = (int) (rect.getY() + rect.getMaxY()) / 2;
+                                pY = (int) (rectY + rectMaxY) / 2;
                                 Graphics2D blackGraphics = context.getGraphic2DForColor(lightBlue);
                                 blackGraphics.drawLine(0, pY, rect.width, pY);
                             } else {
 
-                                int pY = (int) rect.getMaxY() - 1;
+                                int pY = (int) rectMaxY - 1;
 
                                 int totalCount = alignmentCounts.getTotalCount(pos);
 
                                 double tmp = range.isLog() ? Math.log10(totalCount) / max : totalCount / max;
-                                int height = (int) (tmp * rect.getHeight());
+                                int height = (int) (tmp * rectHeight);
 
                                 height = Math.min(height, rect.height - 1);
                                 int topY = (pY - height);
@@ -781,7 +789,7 @@ public class CoverageTrack extends AbstractTrack {
                 if (selectedTracks.size() > 0) {
 
                     DataRange prevAxisDefinition = selectedTracks.iterator().next().getDataRange();
-                    DataRangeDialog dlg = new DataRangeDialog( IGV.getMainFrame(), prevAxisDefinition);
+                    DataRangeDialog dlg = new DataRangeDialog(IGV.getMainFrame(), prevAxisDefinition);
                     dlg.setHideMid(true);
                     dlg.setVisible(true);
                     if (!dlg.isCanceled()) {

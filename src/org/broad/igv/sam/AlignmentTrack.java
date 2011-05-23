@@ -331,10 +331,16 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
+
+                setSelected(alignment);
+
                 String chr = mate.getChr();
                 int start = mate.start - 1;
                 te.getFrame().centerOnLocation(chr, start);
                 te.getFrame().recordHistory();
+            }
+            else {
+                MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
     }
@@ -348,6 +354,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         if (alignment != null) {
             ReadMate mate = alignment.getMate();
             if (mate != null && mate.isMapped()) {
+
+                setSelected(alignment);
+
                 String mateChr = mate.getChr();
                 int mateStart = mate.start - 1;
 
@@ -387,6 +396,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 currentSession.setCurrentGeneList(geneList);
                 IGV.getInstance().resetFrames();
 
+            }
+            else {
+                MessageUtils.showMessage("Alignment does not have mate, or it is not mapped.");
             }
         }
     }
@@ -506,26 +518,39 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             return super.handleDataClick(te);
         } else if (e.getButton() == MouseEvent.BUTTON1 &&
                 (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
+
+            // Selection
             final ReferenceFrame frame = te.getFrame();
 
             if (frame != null) {
-                double location = frame.getChromosomePosition(e.getX());
-                double displayLocation = location + 1;
-                Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), frame);
-                if (alignment != null) {
-                    if (selectedReadNames.containsKey(alignment.getReadName())) {
-                        selectedReadNames.remove(alignment.getReadName());
-                    } else {
-                        Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
-                                ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
-                        selectedReadNames.put(alignment.getReadName(), c);
-                    }
-                    IGV.getInstance().repaintDataPanels();
-                }
+                selectAlignment(e, frame);
+                //Rectangle damageRect = new Rectangle(this.getTop(), 0, owner.getWidth(), this.getHeight());
+                IGV.getInstance().repaintDataPanels();
                 return true;
             }
         }
         return false;
+    }
+
+    private void selectAlignment(MouseEvent e, ReferenceFrame frame) {
+        double location = frame.getChromosomePosition(e.getX());
+        double displayLocation = location + 1;
+        Alignment alignment = this.getAlignmentAt(displayLocation, e.getY(), frame);
+        if (alignment != null) {
+            if (selectedReadNames.containsKey(alignment.getReadName())) {
+                selectedReadNames.remove(alignment.getReadName());
+            } else {
+                setSelected(alignment);
+            }
+
+        }
+
+    }
+
+    private void setSelected(Alignment alignment) {
+        Color c = alignment.isPaired() && alignment.getMate() != null && alignment.getMate().isMapped() ?
+                ColorUtilities.randomColor(selectionColorIndex++) : Color.black;
+        selectedReadNames.put(alignment.getReadName(), c);
     }
 
 
@@ -759,7 +784,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             addSelecteByNameItem();
             addClearSelectionsMenuItem();
 
-            addSeparator();          
+            addSeparator();
             add(TrackMenuUtils.getRemoveMenuItem(tracks));
 
             return;

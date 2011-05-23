@@ -74,9 +74,10 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         String actionKey = (String) keyStrokes.get(ks);
 
 
-        // Disable tooltip if control key is pressed
-        if (event.getKeyCode() == KeyEvent.VK_CONTROL) {
-            boolean flag = !event.isControlDown();
+        // Disable tooltip if any modifier control key is pressed
+        if (event.getKeyCode() == KeyEvent.VK_CONTROL || event.getKeyCode() == KeyEvent.VK_ALT ||
+                event.getKeyCode() == KeyEvent.VK_META) {
+            boolean flag = !(event.isControlDown() || event.isAltDown() || event.isMetaDown());
             ToolTipManager.sharedInstance().setEnabled(flag);
         }
 

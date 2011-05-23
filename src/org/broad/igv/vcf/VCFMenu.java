@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.tribble.Feature;
 import org.broad.tribble.util.variantcontext.Genotype;
 import org.broad.tribble.util.variantcontext.VariantContext;
@@ -88,14 +89,18 @@ public class VCFMenu extends JPopupMenu {
 
 
         //Title
-        JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.CENTER);
+        JLabel popupTitle = new JLabel("<html><b>" + this.track.getName(), JLabel.LEFT);
         Font newFont = getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
         add(popupTitle);
 
         //Change Track Settings
         addSeparator();
-        add(getFeatureVisibilityItem());
+
+        List<Track> selectedTracks = Arrays.asList((Track) vcfTrack);
+        add(TrackMenuUtils.getTrackRenameItem(selectedTracks));
+        add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
+
 
         if (variant != null) {
             //Hides
@@ -137,6 +142,9 @@ public class VCFMenu extends JPopupMenu {
             }
         }
 
+        addSeparator();
+        add(getFeatureVisibilityItem());
+        
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 

@@ -82,7 +82,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
-    private static final Font GENE_LIST_FONT = FontManager.getFont(Font.BOLD, 14);
 
     /**
      * Creates new form IGVCommandBar

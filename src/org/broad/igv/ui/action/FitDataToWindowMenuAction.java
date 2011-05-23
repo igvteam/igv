@@ -119,7 +119,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
                 List<Track> tracks = group.getTracks();
                 for (Track track : tracks) {
                     target += delta;
-                    int newHeight = Math.min(track.getPreferredHeight(), Math.round(target - iTotal));
+                    int newHeight = Math.round(target - iTotal);
                     iTotal += newHeight;
                     if (track.isVisible()) {
                         track.setHeight(newHeight);
