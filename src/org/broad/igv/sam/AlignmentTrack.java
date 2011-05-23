@@ -92,6 +92,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     private int minHeight = 100;
     private AlignmentDataManager dataManager;
 
+    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
+    // directory,  so this field might be null at any given time.  It is updated each repaint.
+    DataPanel parent;
+
     public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager) {
         super(locator);
 
@@ -190,6 +194,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public void render(RenderContext context, Rectangle rect) {
 
+        parent = context.getPanel();
 
         // Split rects
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
@@ -512,22 +517,23 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
+        System.out.println("Handle data click");
         MouseEvent e = te.getMouseEvent();
 
         if (e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
             return super.handleDataClick(te);
         } else if (e.getButton() == MouseEvent.BUTTON1 &&
                 (Globals.IS_MAC && e.isMetaDown() || (!Globals.IS_MAC && e.isControlDown()))) {
-
             // Selection
             final ReferenceFrame frame = te.getFrame();
 
             if (frame != null) {
                 selectAlignment(e, frame);
                 //Rectangle damageRect = new Rectangle(this.getTop(), 0, owner.getWidth(), this.getHeight());
-                IGV.getInstance().repaintDataPanels();
+                if(parent != null) parent.repaint();
                 return true;
             }
+
         }
         return false;
     }

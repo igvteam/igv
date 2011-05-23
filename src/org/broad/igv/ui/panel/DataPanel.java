@@ -29,7 +29,6 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
@@ -70,7 +69,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
         init();
-        this.defaultTool = new PanAndZoomTool(this);
+        this.defaultTool = new PanTool(this);
         this.currentTool = defaultTool;
         this.frame = frame;
         this.parent = parent;
@@ -631,10 +630,7 @@ public class DataPanel extends JComponent implements Paintable {
             }
 
             if (e.isPopupTrigger()) {
-                IGV.getInstance().getTrackManager().clearSelections();
-                parent.selectTracks(e);
-                TrackClickEvent te = new TrackClickEvent(e, frame);
-                parent.openPopupMenu(te);
+                doPopupMenu(e);
             } else {
                 if (currentTool != null)
                     currentTool.mousePressed(e);
@@ -650,71 +646,102 @@ public class DataPanel extends JComponent implements Paintable {
         public void mouseReleased(MouseEvent e) {
 
             if (e.isPopupTrigger()) {
-                IGV.getInstance().getTrackManager().clearSelections();
-                parent.selectTracks(e);
-                TrackClickEvent te = new TrackClickEvent(e, frame);
-                parent.openPopupMenu(te);
+                doPopupMenu(e);
             } else {
                 if (currentTool != null)
                     currentTool.mouseReleased(e);
             }
         }
 
+        private void doPopupMenu(MouseEvent e) {
+            IGV.getInstance().getTrackManager().clearSelections();
+            parent.selectTracks(e);
+            TrackClickEvent te = new TrackClickEvent(e, frame);
+            parent.openPopupMenu(te);
+        }
+
+
+        /**
+         * The mouse has been dragged.  Delegate to current tool.
+         *
+         * @param e
+         */
         @Override
         public void mouseDragged(MouseEvent e) {
             if (currentTool != null)
                 currentTool.mouseDragged(e);
         }
 
+
+        /**
+         * The mouse was clicked. If this is the second click of a double click, cancel the scheduled single click task.
+         * The shift and alt keys are alternative  zoom options
+         * shift zooms in by 8x,  alt zooms out by 2x
+         *
+         * @param e
+         */
         @Override
         public void mouseClicked(final MouseEvent e) {
-            if (e.getButton() != MouseEvent.BUTTON1 || e.isPopupTrigger()) {
+
+            if (e.isPopupTrigger()) {
+                doPopupMenu(e);
                 return;
             }
 
-            // If this is the second click of a double click, cancel the scheduled single click task.
-            // The shift and alt keys are alternative  zoom options
-            //      shift zooms in by 8x,  alt zooms out by 2x
-            if (e.getClickCount() > 1 || e.isShiftDown() || e.isAltDown() || (e.getClickCount() > 1)) {
-                clickScheduler.cancelClickTask();
+            Object source = e.getSource();
+            if (source instanceof DataPanel) {
+                final Track track = ((DataPanel) e.getSource()).getTrack(e.getX(), e.getY());
 
-                final int zoomFactor = e.isAltDown() ? -1 : (e.isShiftDown() ?  3 :  1);
-                final double locationClicked = frame.getChromosomePosition(e.getX());
-
-                WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-                try {
-                    frame.zoomBy(zoomFactor, locationClicked);
-                } finally {
-                    WaitCursorManager.removeWaitCursor(token);
-                }
-            } else if (e.getButton() == MouseEvent.BUTTON1 && !e.isPopupTrigger()) {
-
-                // Unhandled single click.  Delegate to track unless second click arrives within double-click interval.
-                // If the track does not handle the event delegate to the current tool
-                TimerTask clickTask = new TimerTask() {
-
-                    @Override
-                    public void run() {
-                        Object source = e.getSource();
-                        if (source instanceof DataPanel) {
-                            Track track = ((DataPanel) source).getTrack(e.getX(), e.getY());
-                            if (track != null) {
-                                TrackClickEvent te = new TrackClickEvent(e, frame);
-                                if (track.handleDataClick(te)) {
-                                    return;
-                                } else {
-                                    if (currentTool != null)
-                                        currentTool.mouseClicked(e);
-                                }
-                            }
+                if (e.isAltDown() || e.isMetaDown() || e.isShiftDown() || e.isControlDown()) {
+                    if (e.isShiftDown()) {
+                        final double locationClicked = frame.getChromosomePosition(e.getX());
+                        frame.zoomBy(3, locationClicked);
+                        return;
+                    } else if (e.isAltDown()) {
+                        final double locationClicked = frame.getChromosomePosition(e.getX());
+                        frame.zoomBy(-1, locationClicked);
+                        return;
+                    } else {
+                        if (track != null) {
+                            TrackClickEvent te = new TrackClickEvent(e, frame);
+                            track.handleDataClick(te);
                         }
                     }
+                } else {
+                    // No modifiers
+                    if (e.getClickCount() > 1) {
+                        clickScheduler.cancelClickTask();
+                        final double locationClicked = frame.getChromosomePosition(e.getX());
+                        frame.zoomBy(1, locationClicked);
 
-                };
-                clickScheduler.scheduleClickTask(clickTask);
+                    } else if (e.getButton() == MouseEvent.BUTTON1) {
+
+                        // Unhandled single click.  Delegate to track or tool unless second click arrives within
+                        // double-click interval. 
+                        TimerTask clickTask = new TimerTask() {
+                            @Override
+                            public void run() {
+                                Object source = e.getSource();
+                                if (source instanceof DataPanel) {
+
+                                    if (track != null) {
+                                        TrackClickEvent te = new TrackClickEvent(e, frame);
+                                        if (track.handleDataClick(te)) {
+                                            return;
+                                        } else {
+                                            if (currentTool != null)
+                                                currentTool.mouseClicked(e);
+                                        }
+                                    }
+                                }
+                            }
+
+                        };
+                        clickScheduler.scheduleClickTask(clickTask);
+                    }
+
+                }
             }
-
         }
     }
-
 }

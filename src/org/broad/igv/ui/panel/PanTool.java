@@ -35,7 +35,7 @@ import java.awt.event.MouseEvent;
 /**
  *
  */
-public class PanAndZoomTool extends AbstractDataPanelTool {
+public class PanTool extends AbstractDataPanelTool {
 
     private int previousYDirection = 0;    // Drag Directions: 1=up, 0=none 0r -1=down
     //private int lastMousePressedY;
@@ -48,10 +48,10 @@ public class PanAndZoomTool extends AbstractDataPanelTool {
     private Cursor dragCursor;
 
 
-    public PanAndZoomTool(DataPanel owner) {
+    public PanTool(DataPanel owner) {
         super(owner, Cursor.getDefaultCursor());
         this.dragCursor = IGV.fistCursor;
-        setName("Zoom");
+        setName("Pan");
     }
 
 
