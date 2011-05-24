@@ -93,6 +93,11 @@ public class ReferenceFrame {
      */
     private double locationScale;
 
+    /**
+     * Minimum allowed scale in base pairs / pixel
+     */
+    private double minScale = 1.0 / 14;
+
     private boolean locationScaleValid = false;
     private Locus locus;
 
@@ -129,6 +134,7 @@ public class ReferenceFrame {
                 int chrLength = genome.getChromosome(chrName).getLength();
 
                 maxZoom = (int) (Math.log(chrLength / 50.0) / Globals.log2) + 1;
+
             }
 
             if (zoom > maxZoom) {
@@ -183,7 +189,7 @@ public class ReferenceFrame {
 
         if (FrameManager.isGeneListMode()) {
             double f = Math.pow(2.0, zoomFactor);
-            locationScale /= f;
+            locationScale = Math.max(minScale, locationScale/f);
             double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * locationScale));
             setOrigin(newOrigin);
             imputeZoom(origin, setEnd);

@@ -186,7 +186,7 @@ public class AlignmentCounts {
                 case 'N':
                     return posN[offset] + negN[offset];
             }
-            log.error("Unknown nucleotide: " + b);
+            log.debug("Unknown nucleotide: " + b);
             return 0;
         }
     }
