@@ -304,8 +304,9 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
             // Optionally draw "Y" line  (UCSC track line option)
             if(track.isDrawYLine()) {
+                Graphics2D yLineGraphics = context.getGraphic2DForColor(Color.gray);
                 int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
-                borderGraphics.drawLine(adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
+                GraphicUtils.drawDashedLine(yLineGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
             }
 
 
