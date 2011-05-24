@@ -2730,7 +2730,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
             buf.append(" italic");
         }
         buf.append(" " + font.getSize());
-        defaultFontField.setFont(font);
         defaultFontField.setText(buf.toString());
 
     }

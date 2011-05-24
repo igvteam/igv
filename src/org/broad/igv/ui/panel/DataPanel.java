@@ -698,7 +698,7 @@ public class DataPanel extends JComponent implements Paintable {
                 } else if (e.isAltDown()) {
                     final double locationClicked = frame.getChromosomePosition(e.getX());
                     frame.zoomBy(-1, locationClicked);
-                } else if ((e.isAltDown() || e.isControlDown()) && track != null) {
+                } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
                     TrackClickEvent te = new TrackClickEvent(e, frame);
                     track.handleDataClick(te);
                 } else {
