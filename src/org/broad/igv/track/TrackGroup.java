@@ -400,6 +400,10 @@ public class TrackGroup {
             Comparator<Track> c = new Comparator<Track>() {
 
                 public int compare(Track t1, Track t2) {
+                    if(t1==null && t2 == null) return 0;
+                    if(t1 == null) return 1;
+                    if(t2 == null) return -1;
+
                     float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
                     float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
 
