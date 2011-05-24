@@ -175,9 +175,9 @@ public class WiggleParser {
 
             int position = -1;
 
-            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+            while ((nextLine = reader.readLine()) != null) {
 
-                if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith("browser")) {
+                if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith("browser") || nextLine.trim().length() == 0) {
                     continue;
                     // Skip
                 }

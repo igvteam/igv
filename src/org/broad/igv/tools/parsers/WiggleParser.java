@@ -171,7 +171,7 @@ public class WiggleParser {
 
                 // Skip comment lines
                 if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith(
-                        "browser")) {
+                        "browser")  || nextLine.trim().length() == 0) {
                     continue;
                 }
 
@@ -214,11 +214,10 @@ public class WiggleParser {
             reader = ParsingUtils.openAsciiReader(resourceLocator);
 
             int position = -1;
-            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+            while ((nextLine = reader.readLine()) != null) {
 
                 // Skip comment lines
-                if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith(
-                        "browser")) {
+                if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith("browser") || nextLine.trim().length() == 0) {
                     continue;
                 }
 
