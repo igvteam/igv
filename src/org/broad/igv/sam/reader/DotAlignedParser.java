@@ -82,7 +82,7 @@ public class DotAlignedParser implements AlignmentParser {
                 return null;
             }
 
-            String chr = fields[0];
+            String chr = fields[CHROMOSOME_COLUMN];
             int start = Integer.parseInt(fields[START_COLUMN]);
             int end = Integer.parseInt(fields[END_COLUMN]);
 

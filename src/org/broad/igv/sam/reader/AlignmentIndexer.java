@@ -47,7 +47,8 @@ public abstract class AlignmentIndexer {
         String fn = samFile.getName().toLowerCase();
         if (fn.endsWith("sorted.txt")) {
             return new GeraldIndexer(samFile, progressBar, worker);
-        } else if (fn.endsWith(".aligned") || fn.endsWith(".bedz") || fn.endsWith(".bed")) {
+        } else if (fn.endsWith(".aligned") || fn.endsWith(".bedz") || fn.endsWith(".bed") ||
+                fn.endsWith(".aligned.txt") || fn.endsWith(".bedz.txt") || fn.endsWith(".bed.txt")) {
 
             return new DotAlignedIndexer(samFile, progressBar, worker);
         }
