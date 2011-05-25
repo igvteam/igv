@@ -445,6 +445,10 @@ public class DataPanel extends JComponent implements Paintable {
     @Override
     final public String getToolTipText() {
 
+        if(IGV.getInstance().isSuppressTooltip()) {
+            return "";
+        }
+
         if (!isWaitingForToolTipText) {
             isWaitingForToolTipText = true;
             if (tooltipTextPosition != null) {

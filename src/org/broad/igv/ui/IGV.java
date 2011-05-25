@@ -1613,6 +1613,11 @@ public class IGV {
         menuBar.getViewMenu().add(showPeakMenuItem);
     }
 
+    public boolean isSuppressTooltip() {
+
+       return contentPane != null && contentPane.getCommandBar().isSupressTooltip();   
+    }
+
     /**
      * Swing worker class to startup IGV
      */

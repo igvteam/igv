@@ -487,6 +487,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
         roiToggleButton.setEnabled(!geneListMode);
     }
 
+    public boolean isSupressTooltip() {
+        return supressTooltipButton.isSelected();
+    }
+
     static class ComboBoxRenderer implements ListCellRenderer {
 
         JSeparator separator;
@@ -1075,17 +1079,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
         supressTooltipButton = new JideToggleButton(suppressTooltipIcon);
         supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         supressTooltipButton.setAlignmentX(RIGHT_ALIGNMENT);
-        supressTooltipButton.setToolTipText("Suppress popup tooltip text.");
+        supressTooltipButton.setToolTipText("Suppress popup tooltip text in data panels.");
         supressTooltipButton.setMaximumSize(new java.awt.Dimension(32, 32));
         supressTooltipButton.setMinimumSize(new java.awt.Dimension(32, 32));
         supressTooltipButton.setPreferredSize(new java.awt.Dimension(32, 32));
-        supressTooltipButton.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ToolTipManager.sharedInstance().setEnabled(!supressTooltipButton.isSelected());
-            }
-
-        });
         toolPanel.add(supressTooltipButton, JideBoxLayout.FIX);
 
         this.add(toolPanel);
