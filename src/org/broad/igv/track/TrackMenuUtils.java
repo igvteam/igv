@@ -141,22 +141,11 @@ public class TrackMenuUtils {
         boolean dataTracksOnly = !hasFeatureTracks && hasDataTracks && !hasOtherTracks;
 
         addSharedItems(menu, tracks, hasFeatureTracks);
+        menu.addSeparator();
         if (dataTracksOnly) {
-            menu.addSeparator();
             addDataItems(menu, tracks);
         } else if (featureTracksOnly) {
-            menu.add(getChangeFontSizeItem(tracks));
-            if (hasFeatureTracks) {
-                menu.add(getDrawBorderItem());
-            }
-            menu.addSeparator();
             addFeatureItems(menu, tracks, te);
-        }
-
-        ReferenceFrame frame = te.getFrame();
-        if (frame != null) {
-            menu.addSeparator();
-            addZoomItems(menu, frame);
         }
 
         menu.addSeparator();
@@ -289,9 +278,6 @@ public class TrackMenuUtils {
             menu.addSeparator();
         }
 
-        JLabel scaleHeading = new JLabel(LEADING_HEADING_SPACER + "Data Range", JLabel.LEFT);
-        scaleHeading.setFont(UIConstants.boldFont);
-        menu.add(scaleHeading);
 
         menu.add(getDataRangeItem(tracks));
         menu.add(getHeatmapScaleItem(tracks));
@@ -365,7 +351,7 @@ public class TrackMenuUtils {
         menu.add(getTrackRenameItem(tracks));
 
         String colorLabel = hasFeatureTracks
-                ? "Change Track Color" : "Change Track Color (Positive Values)";
+                ? "Change Track Color..." : "Change Track Color (Positive Values)...";
         JMenuItem item = new JMenuItem(colorLabel);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -377,7 +363,7 @@ public class TrackMenuUtils {
         if (!hasFeatureTracks) {
 
             // Change track color by attribute
-            item = new JMenuItem("Change Track Color (Negative Values)");
+            item = new JMenuItem("Change Track Color (Negative Values)...");
             item.setToolTipText(
                     "Change the alternate track color.  This color is used when graphing negative values");
             item.addActionListener(new ActionListener() {
@@ -389,6 +375,7 @@ public class TrackMenuUtils {
         }
 
         menu.add(getChangeTrackHeightItem(tracks));
+        menu.add(getChangeFontSizeItem(tracks));
     }
 
 
@@ -402,7 +389,7 @@ public class TrackMenuUtils {
 
     public static JMenuItem getTrackRenameItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
-        JMenuItem item = new JMenuItem("Rename Track");
+        JMenuItem item = new JMenuItem("Rename Track...");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
@@ -1020,7 +1007,7 @@ public class TrackMenuUtils {
 
     public static JMenuItem getChangeFontSizeItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
-        JMenuItem item = new JMenuItem("Change Font Size");
+        JMenuItem item = new JMenuItem("Change Font Size...");
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {

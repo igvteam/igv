@@ -538,10 +538,6 @@ public class GWASTrack extends AbstractTrack {
 
         popupMenu.addSeparator();
 
-
-        TrackMenuUtils.addZoomItems(popupMenu, FrameManager.getDefaultFrame());
-
-
         return popupMenu;
     }
 

@@ -105,11 +105,15 @@ public class VCFMenu extends JPopupMenu {
         if (variant != null) {
             //Hides
             addSeparator();
-            JLabel hideHeading = new JLabel("<html>&nbsp;&nbsp;<b>Display Options", JLabel.LEFT);
-            add(hideHeading);
-            add(getColorMenuItem());
-            add(getHideFilteredItem());
-            //add(getRenderIDItem());
+            JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
+            add(colorByItem);
+            add(getColorByGenotype());
+            add(getColorByAllele());
+            if (track.isEnableMethylationRateSupport()) {
+                add(getColorByMethylationRate());
+            }
+
+             //add(getRenderIDItem());
 
             if (this.track.isHasGroups()) {
                 addSeparator();
@@ -126,8 +130,7 @@ public class VCFMenu extends JPopupMenu {
             }
 
             //Sorter
-            JLabel sortHeading = new JLabel("<html>&nbsp;&nbsp;<b>Sort Variant By", JLabel.LEFT);
-            add(sortHeading);
+            addSeparator();
             for (JMenuItem item : getSortMenuItems(variant)) {
                 add(item);
                 item.setEnabled(!this.track.isGrouped());
@@ -143,8 +146,9 @@ public class VCFMenu extends JPopupMenu {
         }
 
         addSeparator();
+        add(getHideFilteredItem());        
         add(getFeatureVisibilityItem());
-        
+
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
 
@@ -159,20 +163,6 @@ public class VCFMenu extends JPopupMenu {
             }
         });
         return item;
-    }
-
-    public JMenu getColorMenuItem() {
-        JMenu colorMenu = new JMenu("Color By");
-        java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
-        items.add(getColorByGenotype());
-        items.add(getColorByAllele());
-        if (track.isEnableMethylationRateSupport()) {
-            items.add(getColorByMethylationRate());
-        }
-        for (JMenuItem item : items) {
-            colorMenu.add(item);
-        }
-        return colorMenu;
     }
 
     private JMenuItem getColorByGenotype() {
@@ -245,7 +235,7 @@ public class VCFMenu extends JPopupMenu {
 
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
 
-        JMenuItem item = new JMenuItem("Genotype");
+        JMenuItem item = new JMenuItem("Sort By Genotype");
         try {
             variant.getAlleles();
             item.addActionListener(new ActionListener() {
@@ -263,7 +253,7 @@ public class VCFMenu extends JPopupMenu {
     }
 
     public JMenuItem getSampleNameSortItem(final VariantContext variant) {
-        JMenuItem item = new JMenuItem("Sample Name");
+        JMenuItem item = new JMenuItem("Sort By Sample Name");
         try {
             variant.getAlleles();
             item.addActionListener(new ActionListener() {
@@ -289,7 +279,7 @@ public class VCFMenu extends JPopupMenu {
     }
 
     public JMenuItem getDepthSortItem(final VariantContext variant) {
-        JMenuItem item = new JMenuItem("Depth");
+        JMenuItem item = new JMenuItem("Sort By Depth");
         try {
             String variantDepth = variant.getAttributeAsString("DP");
             int depth = Integer.valueOf(variantDepth);
@@ -311,7 +301,7 @@ public class VCFMenu extends JPopupMenu {
     }
 
     public JMenuItem getQualitySortItem(final VariantContext variant) {
-        JMenuItem item = new JMenuItem("Quality");
+        JMenuItem item = new JMenuItem("Sort By Quality");
         try {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
