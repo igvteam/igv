@@ -455,22 +455,6 @@ public class DataPanel extends JComponent implements Paintable {
         return super.getToolTipText();
     }
 
-
-    public String getPopupMenuTitle(int x, int y) {
-
-        Collection<Track> tracks = parent.getSelectedTracks();
-        String popupTitle = "";
-
-        // Title for the popup
-        if (!tracks.isEmpty()) {
-            for (Track track : tracks) {
-                popupTitle = track.getName();
-                break;
-            }
-        }
-        return popupTitle;
-    }
-
     /**
      * @param track
      * @param location in genomic coordinates

@@ -83,18 +83,14 @@ public class FitDataToWindowMenuAction extends MenuAction {
         Collection<TrackGroup> groups = dataPanel.getTrackGroups();
 
         // Do tracks need expanded or contracted?
-        boolean reduce = (dataPanel.getHeight() > availableHeight);
+        boolean expand = (dataPanel.getHeight() > availableHeight);
 
         // Count visible tracks.
         for (TrackGroup group : groups) {
             List<Track> tracks = group.getTracks();
             for (Track track : tracks) {
                 if (track.isVisible()) {
-                    if (track.getMinimumHeight() > 1 && reduce) {
-                        availableHeight -= track.getMinimumHeight();
-                    } else {
-                        ++visibleTrackCount;
-                    }
+                    ++visibleTrackCount;
                 }
             }
         }
@@ -105,7 +101,7 @@ public class FitDataToWindowMenuAction extends MenuAction {
             int groupGapHeight = (groups.size() + 1) * UIConstants.groupGap;
             int adjustedAvailableHeight = Math.max(1, availableHeight - groupGapHeight);
 
-            float delta = (float) adjustedAvailableHeight / visibleTrackCount;
+            int delta = (int) adjustedAvailableHeight / visibleTrackCount;
 
             // If the new track height is less than 1 theres nothing we
             // can do to force all tracks to fit so we do nothing
@@ -118,12 +114,8 @@ public class FitDataToWindowMenuAction extends MenuAction {
             for (TrackGroup group : groups) {
                 List<Track> tracks = group.getTracks();
                 for (Track track : tracks) {
-                    target += delta;
-                    int newHeight = Math.round(target - iTotal);
-                    iTotal += newHeight;
-                    if (track.isVisible()) {
-                        track.setHeight(newHeight);
-                    }
+                    track.setHeight(delta);
+
                 }
             }
 
