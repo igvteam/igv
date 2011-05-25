@@ -26,7 +26,12 @@ package org.broad.igv.peaks;
 import java.awt.event.*;
 import javax.swing.border.*;
 
+import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
 import javax.swing.*;
@@ -100,6 +105,19 @@ public class PeakCommandBar extends JPanel {
 
     }
 
+    private void sortButtonActionPerformed(ActionEvent e) {
+        // Create a region based on current view
+
+        // TODO -- do right thing if in geneListView
+        if (FrameManager.isGeneListMode()) {
+            MessageUtils.showMessage("To sort in gene list mode right-click the header of a gene panel.");
+        } else {
+            ReferenceFrame frame = FrameManager.getDefaultFrame();
+            RegionOfInterest roi = new RegionOfInterest(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), "");
+            IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.SCORE, frame);
+        }
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -121,6 +139,7 @@ public class PeakCommandBar extends JPanel {
         label4 = new JLabel();
         colorByScoresButton = new JRadioButton();
         colorByChangeButton = new JRadioButton();
+        sortButton = new JButton();
 
         //======== this ========
         setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
@@ -222,7 +241,7 @@ public class PeakCommandBar extends JPanel {
             panel4.add(label4);
 
             //---- colorByScoresButton ----
-            colorByScoresButton.setText("Scores");
+            colorByScoresButton.setText("Factor");
             colorByScoresButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     colorByActionPeformed(e);
@@ -240,6 +259,15 @@ public class PeakCommandBar extends JPanel {
             panel4.add(colorByChangeButton);
         }
         add(panel4);
+
+        //---- sortButton ----
+        sortButton.setText("Sort");
+        sortButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                sortButtonActionPerformed(e);
+            }
+        });
+        add(sortButton);
 
         //---- buttonGroup1 ----
         ButtonGroup buttonGroup1 = new ButtonGroup();
@@ -273,5 +301,6 @@ public class PeakCommandBar extends JPanel {
     private JLabel label4;
     private JRadioButton colorByScoresButton;
     private JRadioButton colorByChangeButton;
+    private JButton sortButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

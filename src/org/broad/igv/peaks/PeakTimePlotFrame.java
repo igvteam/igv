@@ -40,28 +40,9 @@ import javax.swing.border.*;
  * @author Stan Diamond
  */
 public class PeakTimePlotFrame extends JFrame {
-    public PeakTimePlotFrame(XYSeriesCollection data, String title, java.util.List<Color> colors) {
+    public PeakTimePlotFrame(ChartPanel chartPanel) {
         initComponents();
 
-        final JFreeChart chart = ChartFactory.createXYLineChart(
-                title,
-                "Time",
-                "Score",
-                data,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false
-        );
-
-        final ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new java.awt.Dimension(400, 400));
-        chartPanel.setSize(new java.awt.Dimension(400, 400));
-
-        XYItemRenderer renderer = chart.getXYPlot().getRenderer();
-        for (int i = 0; i < colors.size(); i++) {
-            renderer.setSeriesPaint(i, colors.get(i));
-        }
 
         setContentPane(chartPanel);
     }

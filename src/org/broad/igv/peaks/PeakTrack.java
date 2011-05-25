@@ -19,6 +19,7 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.data.DataSource;
 import org.broad.igv.data.LocusScoreUtils;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
@@ -63,10 +64,10 @@ public class PeakTrack extends AbstractTrack {
 
     // Path the signal (TDF) file
     String signalPath;
-    TDFDataSource signalSource;
+    WrappedDataSource signalSource;
 
     String[] timeSignalPaths;
-    TDFDataSource[] timeSignalSources;
+    WrappedDataSource[] timeSignalSources;
 
     // Data range
     DataRange scoreDataRange = new DataRange(0, 0, 100);
@@ -101,16 +102,16 @@ public class PeakTrack extends AbstractTrack {
         nTimePoints = parser.getnTimePoints();
         signalPath = parser.getSignalPath();
         if (signalPath != null) {
-            signalSource = new TDFDataSource(TDFReader.getReader(signalPath), 0, "");
+            signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, ""));
             signalSource.setNormalizeCounts(true, 1.0e9f);
         }
 
         timeSignalPaths = parser.timeSignalPaths;
         if (timeSignalPaths != null && timeSignalPaths.length > 0) {
-            timeSignalSources = new TDFDataSource[timeSignalPaths.length];
+            timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
             for (int i = 0; i < timeSignalPaths.length; i++) {
                 try {
-                    timeSignalSources[i] = new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, "");
+                    timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, ""));
                     timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
                 } catch (Exception e) {
                     timeSignalSources[i] = null;
@@ -160,7 +161,6 @@ public class PeakTrack extends AbstractTrack {
         return renderer;
     }
 
-
     @Override
     public int getMinimumHeight() {
         int h = 0;
@@ -171,7 +171,7 @@ public class PeakTrack extends AbstractTrack {
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return h;
         } else {
-            return (nTimePoints + 1) * h + 2;
+            return nTimePoints * h + gapHeight;
         }
     }
 
@@ -180,7 +180,7 @@ public class PeakTrack extends AbstractTrack {
     public void setHeight(int h) {
         super.setHeight(h);
 
-        int nBands = getDisplayMode() == DisplayMode.COLLAPSED ? 1 : nTimePoints + 1;
+        int nBands = getDisplayMode() == DisplayMode.COLLAPSED ? 1 : nTimePoints;
 
         bandHeight = h / nBands;
         peakHeight = Math.max(5, Math.min(bandHeight / 3, 10));
@@ -194,7 +194,7 @@ public class PeakTrack extends AbstractTrack {
         if (mode == Track.DisplayMode.COLLAPSED) {
             setHeight(bandHeight);
         } else {
-            setHeight((nTimePoints + 1) * bandHeight + gapHeight);
+            setHeight(nTimePoints * bandHeight + gapHeight);
         }
     }
 
@@ -306,28 +306,27 @@ public class PeakTrack extends AbstractTrack {
 
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
-        double regionScore = 0;
+
         int interval = end - start;
-        if (interval == 0) {
+        if (interval <= 0) {
             return Float.MIN_VALUE;
         }
 
         List<Peak> scores = getFilteredPeaks(chr);
         int startIdx = FeatureUtils.getIndexBefore(start, scores);
 
-
+        float regionScore = Float.MIN_VALUE;
         for (int i = startIdx; i < scores.size(); i++) {
             Peak score = scores.get(i);
             if (score.getEnd() < start) continue;
             if (score.getStart() > end) break;
-            int w = Math.min(end, score.getEnd()) - Math.max(start, score.getStart());
-            float value = score.getScore();
-            regionScore += value * w;
+            final float v = score.getScore();
+            if (v > regionScore) regionScore = v;
         }
-        return (float) (regionScore / interval);
+        return regionScore;
     }
 
-    public Peak getPeakInstersecting(String chr, double position) {
+    public Peak getFilteredPeakInstersecting(String chr, double position) {
         List<Peak> scores = getFilteredPeaks(chr);
         int startIdx = FeatureUtils.getIndexBefore(position, scores);
 
@@ -360,8 +359,89 @@ public class PeakTrack extends AbstractTrack {
         showSignals = b;
     }
 
+
     enum ColorOption {
         SCORE, FOLD_CHANGE
+    }
+
+
+    class WrappedDataSource implements DataSource {
+
+        TDFDataSource source;
+
+        WrappedDataSource(TDFDataSource source) {
+            this.source = source;
+        }
+
+        public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
+
+            List<LocusScore> scores = new ArrayList(1000);
+
+
+            if (scoreThreshold <= 0 && foldChangeThreshold <= 0) {
+               return  source.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+            } else {
+                List<Peak> peaks = getFilteredPeaks(chr);
+                int startIdx = FeatureUtils.getIndexBefore(startLocation, peaks);
+                if (startIdx >= 0) {
+                    for (int i = startIdx; i < peaks.size(); i++) {
+                        Peak peak = peaks.get(i);
+
+                        final int peakEnd = peak.getEnd();
+                        if (peakEnd < startLocation) continue;
+
+                        final int peakStart = peak.getStart();
+                        if (peakStart > endLocation) break;
+
+                        List<LocusScore> peakScores = source.getSummaryScoresForRange(chr, peakStart, peakEnd, zoom);
+                        for (LocusScore ps : peakScores) {
+                            if (ps.getEnd() < peakStart) continue;
+                            if (ps.getStart() > peakEnd) break;
+                            scores.add(ps);
+                        }
+
+                    }
+                }
+                return scores;
+            }
+        }
+
+
+        public double getDataMax() {
+            return source.getDataMax();
+        }
+
+        public double getDataMin() {
+            return source.getDataMin();
+        }
+
+        public TrackType getTrackType() {
+            return source.getTrackType();
+        }
+
+        public void setWindowFunction(WindowFunction statType) {
+            source.setWindowFunction(statType);
+        }
+
+        public boolean isLogNormalized() {
+            return source.isLogNormalized();
+        }
+
+        public void refreshData(long timestamp) {
+            source.refreshData(timestamp);
+        }
+
+        public WindowFunction getWindowFunction() {
+            return source.getWindowFunction();
+        }
+
+        public Collection<WindowFunction> getAvailableWindowFunctions() {
+            return source.getAvailableWindowFunctions();
+        }
+
+        public void setNormalizeCounts(boolean b, float v) {
+            source.setNormalizeCounts(b, v);
+        }
     }
 
 

@@ -24,6 +24,14 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -190,11 +198,11 @@ public class PeakTrackMenu extends JPopupMenu {
         for (SoftReference<PeakTrack> ref : PeakTrack.instances) {
             PeakTrack track = ref.get();
             if (track != null) {
-                Peak peak = track.getPeakInstersecting(chr, center);
-                if(peak != null) {
+                Peak peak = track.getFilteredPeakInstersecting(chr, center);
+                if (peak != null) {
                     XYSeries series = new XYSeries(track.getName());
-                    float [] scores = peak.getTimeScores();
-                    if(scores.length == 4) {
+                    float[] scores = peak.getTimeScores();
+                    if (scores.length == 4) {
                         series.add(0, scores[0]);
                         series.add(30, scores[1]);
                         series.add(60, scores[2]);
@@ -206,9 +214,32 @@ public class PeakTrackMenu extends JPopupMenu {
             }
         }
 
-        PeakTimePlotFrame frame = new PeakTimePlotFrame(data, "gene or locus name here", colors);
-        frame.setVisible(true);
+        final JFreeChart chart = ChartFactory.createXYLineChart(
+                "",
+                "Time",
+                "Score",
+                data,
+                PlotOrientation.VERTICAL,
+                true,
+                true,
+                false
+        );
 
+        NumberAxis axis = (NumberAxis) chart.getXYPlot().getDomainAxis(0);
+        axis.setTickUnit(new NumberTickUnit(30));
+
+        final ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(400, 400));
+        chartPanel.setSize(new java.awt.Dimension(400, 400));
+
+        XYItemRenderer renderer = chart.getXYPlot().getRenderer();
+        for (int i = 0; i < colors.size(); i++) {
+            renderer.setSeriesPaint(i, colors.get(i));
+        }
+
+
+        PeakTimePlotFrame frame = new PeakTimePlotFrame(chartPanel);
+        frame.setVisible(true);
 
 
     }

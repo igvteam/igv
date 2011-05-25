@@ -19,6 +19,7 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.Renderer;
@@ -86,16 +87,17 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     top += track.signalHeight;
                 }
 
-                drawScore(context, bgColorComps, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
                 if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
                     float[] timeScores = peak.getTimeScores();
                     for (int i = 0; i < timeScores.length; i++) {
-                        top += h;
                         score = timeScores[i];
                         drawScore(context, bgColorComps, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.ColorOption.SCORE);
+                        top += h;
 
                     }
+                } else {
+                    drawScore(context, bgColorComps, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
                 }
             }
@@ -105,27 +107,27 @@ public class PeakRenderer implements Renderer<LocusScore> {
             int h = track.bandHeight;
             int signalHeight = PeakTrack.isShowPeaks() ? track.signalHeight : h;
 
-            List<LocusScore> signals = track.signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
-            Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
-            chartRenderer.render(signals, context, signalRect, track);
 
             if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-                TDFDataSource[] timeSignalSources = track.timeSignalSources;
+                DataSource[] timeSignalSources = track.timeSignalSources;
                 if (timeSignalSources != null) {
-
                     int top = rect.y + 2;
                     for (int i = 0; i < timeSignalSources.length; i++) {
-                        top += h;
-                        TDFDataSource src = timeSignalSources[i];
+                        DataSource src = timeSignalSources[i];
                         if (src != null) {
                             List<LocusScore> timeSignals = src.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
                             Rectangle timeSignalRect = new Rectangle(rect.x, top, rect.width, signalHeight - 1);
                             chartRenderer.render(timeSignals, context, timeSignalRect, track);
                         }
+                        top += h;
 
                     }
-
                 }
+            } else {
+                List<LocusScore> signals = track.signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
+                chartRenderer.render(signals, context, signalRect, track);
+
             }
         }
 
@@ -133,9 +135,6 @@ public class PeakRenderer implements Renderer<LocusScore> {
         if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
             borderGraphics.drawLine(rect.x, rect.y, rect.x + rect.width, rect.y);
             borderGraphics.drawLine(rect.x, rect.y + rect.height, rect.x + rect.width, rect.y + rect.height);
-            greyGraphics.drawLine(rect.x, rect.y + track.bandHeight + 1, rect.x + rect.width, rect.y + track.bandHeight + 1);
-
-
         }
     }
 
@@ -145,6 +144,12 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
     private void drawScore(RenderContext context, float[] bgColorComps, float[] fgColorComps,
                            int pX, int dX, int top, int h, float score, PeakTrack.ColorOption option) {
+        Color c = getColor(bgColorComps, fgColorComps, score, option);
+        Graphics2D g = context.getGraphic2DForColor(c);
+        g.fillRect(pX, top + 1, dX, h - 2);
+    }
+
+    private Color getColor(float[] bgColorComps, float[] fgColorComps, float score, PeakTrack.ColorOption option) {
         Color c = null;
         //if (peak.isDynamic()) {
         //    c = Color.red;
@@ -171,9 +176,6 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
         c = ColorUtilities.getCompositeColor(bgColorComps, fgColorComps, alpha);
         //}
-
-        Graphics2D g = context.getGraphic2DForColor(c);
-
-        g.fillRect(pX, top + 1, dX, h - 2);
+        return c;
     }
 }
