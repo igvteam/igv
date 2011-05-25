@@ -74,6 +74,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JPanel locationPanel;
     private JideButton refreshButton;
     private JideToggleButton roiToggleButton;
+    private JideToggleButton supressTooltipButton;
     private JTextField searchTextField;
     private JPanel toolPanel;
     private JPanel zoomControl;
@@ -1052,8 +1053,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(roiToggleButton, JideBoxLayout.FIX);
 
-        Icon fitToWindowIcon =
-                IconFactory.getInstance().getIcon(IconFactory.IconID.REGION_OF_INTEREST);
 
         fitToWindowButton = new JideButton();
         fitToWindowButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
@@ -1071,6 +1070,23 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
+        Icon suppressTooltipIcon =
+                IconFactory.getInstance().getIcon(IconFactory.IconID.SUPPRESS_TOOLTIP);
+        supressTooltipButton = new JideToggleButton(suppressTooltipIcon);
+        supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
+        supressTooltipButton.setAlignmentX(RIGHT_ALIGNMENT);
+        supressTooltipButton.setToolTipText("Suppress popup tooltip text.");
+        supressTooltipButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        supressTooltipButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        supressTooltipButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        supressTooltipButton.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ToolTipManager.sharedInstance().setEnabled(!supressTooltipButton.isSelected());
+            }
+
+        });
+        toolPanel.add(supressTooltipButton, JideBoxLayout.FIX);
 
         this.add(toolPanel);
 

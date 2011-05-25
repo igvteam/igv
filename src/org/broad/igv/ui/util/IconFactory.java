@@ -38,6 +38,7 @@ public class IconFactory {
         ZOOM_IN,
         ZOOM_OUT,
         REGION_OF_INTEREST,
+        SUPPRESS_TOOLTIP,
         SEARCH,
         OPEN_HAND,
         REFRESH,
@@ -88,8 +89,10 @@ public class IconFactory {
         icons.put(IconID.REFRESH,
                 createImageIcon("/toolbarButtonGraphics/general/Refresh24.gif", "refresh"));
         icons.put(IconID.HOME,
-                createImageIcon("/toolbarButtonGraphics/navigation/Home24.gif", "refresh"));
+                createImageIcon("/toolbarButtonGraphics/navigation/Home24.gif", "home"));
 
+        icons.put(IconID.SUPPRESS_TOOLTIP,
+                createImageIcon("/images/no-tooltip.gif", "suppress tooltip"));
     }
 
     public ImageIcon getIcon(IconID id) {
