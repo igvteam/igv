@@ -65,6 +65,7 @@ public class FeatureDB {
     public static void put(String name, NamedFeature feature) {
 
         String key = name.toUpperCase();
+
         Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
             NamedFeature currentFeature = featureMap.get(key);
@@ -74,7 +75,12 @@ public class FeatureDB {
                 // If there are multiple features, prefer the one that is NOT on a "random" chromosome.
                 // This is a hack, but an important one for the human assemblies
                 String featureChr = feature.getChr().toLowerCase();
-                if(featureChr.contains("random") || featureChr.contains("chrun")) {
+                String currentFeatureChr = currentFeature.getChr();
+                if (featureChr.contains("random") || featureChr.contains("chrun") || featureChr.contains("hap")) {
+                    return;
+                } else if (currentFeatureChr.contains("random") || currentFeatureChr.contains("chrun") ||
+                        currentFeatureChr.contains("hap")) {
+                    featureMap.put(key, feature);
                     return;
                 }
 
@@ -89,7 +95,6 @@ public class FeatureDB {
 
         }
     }
-
 
 
     public static void addFeature(String name, NamedFeature feature) {

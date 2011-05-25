@@ -236,7 +236,7 @@ public class FeatureUtils {
      */
     public static int getIndexBefore(double position, List<? extends Feature> features) {
 
-        if (features.size() == 0) {
+        if (features == null || features.size() == 0) {
             return -1;
         }
         if (features.get(features.size() - 1).getStart() <= position) {
