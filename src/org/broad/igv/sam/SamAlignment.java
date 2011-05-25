@@ -95,7 +95,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         String refName = record.getReferenceName();
 
-        Genome genome = Globals.isHeadless() ? null :  IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome genome = Globals.isHeadless() ? null : IGV.getInstance().getGenomeManager().getCurrentGenome();
         this.chr = genome == null ? refName : genome.getChromosomeAlias(refName);
 
 
@@ -555,6 +555,11 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return record.getAttribute(key);
     }
 
+
+    public String getClipboardString(double location) {
+        return getValueStringImpl(location, false);
+    }
+
     /**
      * Return info string for popup text and to copy to clipboard
      *
@@ -563,7 +568,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
      * @return
      */
     public String getValueString(double position, WindowFunction windowFunction) {
-        StringBuffer buf = new StringBuffer(super.getValueString(position, windowFunction));
+        return getValueStringImpl(position, true);
+    }
+
+    String getValueStringImpl(double position, boolean truncate) {
+
+        StringBuffer buf = new StringBuffer(super.getValueString(position, null));
 
         if (isPaired()) {
             if (record.getFirstOfPairFlag()) {
@@ -585,7 +595,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         if (attributes != null && !attributes.isEmpty()) {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
-                buf.append("<br>" + tag.tag + " = " + tag.value);
+                String tagValue = tag.value.toString();
+                if(tagValue.length() > 50 && truncate) {
+                   tagValue = tagValue.substring(0, 50) + "...";
+                }
+
+                buf.append("<br>" + tag.tag + " = " + tagValue);
             }
             buf.append("<br>-------------------");
         }
@@ -595,7 +610,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             buf.append("<br>-------------------");
         }
         return buf.toString();
-
     }
 
     public boolean isFirstInPair() {

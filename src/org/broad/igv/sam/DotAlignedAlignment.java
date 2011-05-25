@@ -155,8 +155,13 @@ public class DotAlignedAlignment implements Alignment {
     public float getScore() {
         return 1.0f;
     }
+
     public LocusScore copy() {
         return this;
+    }
+
+    public String getClipboardString(double location) {
+        return getValueString(location, null);
     }
 
     public String getValueString(double position, WindowFunction windowFunction) {
@@ -214,6 +219,7 @@ public class DotAlignedAlignment implements Alignment {
     public String getLibrary() {
         return null;
     }
+
 
     public Object getAttribute(String key) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.

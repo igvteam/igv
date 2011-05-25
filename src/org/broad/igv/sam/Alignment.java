@@ -97,4 +97,6 @@ public interface Alignment extends LocusScore {
     Color getDefaultColor();
 
     String getLibrary();
+
+    public String getClipboardString(double location);
 }

@@ -246,6 +246,10 @@ public abstract class AbstractAlignment implements Alignment {
         return null;
     }
 
+    public String getClipboardString(double location) {
+        return getValueString(location, null);
+    }
+
     public char[] getGapTypes() {
         return null;
     }

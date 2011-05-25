@@ -544,6 +544,19 @@ return 0;
         return this;
     }
 
+
+    /**
+     * This method is provide to provide as a hook for customizing the text that is copied to the clipboard.
+     * The default behavior is to just copy the tooltip text.
+     *
+     * @param location
+     * @return
+     */
+    public String getClipboardString(double location) {
+        return getValueString(location, null);
+    }
+
+
     public String getValueString(double position, WindowFunction windowFunction) {
         //  //LOG.info("getValueString");
         MutableString buffer = new MutableString();
