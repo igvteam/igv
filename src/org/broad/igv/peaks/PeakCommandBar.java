@@ -118,6 +118,21 @@ public class PeakCommandBar extends JPanel {
         }
     }
 
+    private void signalsButtonActionPerformed(ActionEvent e) {
+        colorByScoresButton.setEnabled(false);
+        colorByChangeButton.setEnabled(false);
+    }
+
+    private void peaksButtonActionPerformed(ActionEvent e) {
+        colorByScoresButton.setEnabled(true);
+        colorByChangeButton.setEnabled(true);
+    }
+
+    private void bothButtonActionPerformed(ActionEvent e) {
+        colorByScoresButton.setEnabled(true);
+        colorByChangeButton.setEnabled(true);
+    }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -135,7 +150,7 @@ public class PeakCommandBar extends JPanel {
         signalsButton = new JRadioButton();
         bothButton = new JRadioButton();
         hSpacer2 = new JPanel(null);
-        panel4 = new JPanel();
+        colorByPanel = new JPanel();
         label4 = new JLabel();
         colorByScoresButton = new JRadioButton();
         colorByChangeButton = new JRadioButton();
@@ -206,6 +221,7 @@ public class PeakCommandBar extends JPanel {
             peaksButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     radioButtonActionPerformed(e);
+                    peaksButtonActionPerformed(e);
                 }
             });
             panel1.add(peaksButton);
@@ -215,6 +231,7 @@ public class PeakCommandBar extends JPanel {
             signalsButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     radioButtonActionPerformed(e);
+                    signalsButtonActionPerformed(e);
                 }
             });
             panel1.add(signalsButton);
@@ -224,6 +241,7 @@ public class PeakCommandBar extends JPanel {
             bothButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     radioButtonActionPerformed(e);
+                    bothButtonActionPerformed(e);
                 }
             });
             panel1.add(bothButton);
@@ -231,23 +249,23 @@ public class PeakCommandBar extends JPanel {
         add(panel1);
         add(hSpacer2);
 
-        //======== panel4 ========
+        //======== colorByPanel ========
         {
-            panel4.setBorder(new EtchedBorder(EtchedBorder.RAISED));
-            panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
+            colorByPanel.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+            colorByPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
             //---- label4 ----
-            label4.setText("Color by:");
-            panel4.add(label4);
+            label4.setText("Color peaks by:");
+            colorByPanel.add(label4);
 
             //---- colorByScoresButton ----
-            colorByScoresButton.setText("Factor");
+            colorByScoresButton.setText("Score");
             colorByScoresButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     colorByActionPeformed(e);
                 }
             });
-            panel4.add(colorByScoresButton);
+            colorByPanel.add(colorByScoresButton);
 
             //---- colorByChangeButton ----
             colorByChangeButton.setText("Change");
@@ -256,9 +274,9 @@ public class PeakCommandBar extends JPanel {
                     colorByActionPeformed(e);
                 }
             });
-            panel4.add(colorByChangeButton);
+            colorByPanel.add(colorByChangeButton);
         }
-        add(panel4);
+        add(colorByPanel);
 
         //---- sortButton ----
         sortButton.setText("Sort");
@@ -297,7 +315,7 @@ public class PeakCommandBar extends JPanel {
     private JRadioButton signalsButton;
     private JRadioButton bothButton;
     private JPanel hSpacer2;
-    private JPanel panel4;
+    private JPanel colorByPanel;
     private JLabel label4;
     private JRadioButton colorByScoresButton;
     private JRadioButton colorByChangeButton;

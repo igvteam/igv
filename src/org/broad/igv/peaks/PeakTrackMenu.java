@@ -21,9 +21,11 @@ package org.broad.igv.peaks;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -56,42 +58,42 @@ public class PeakTrackMenu extends JPopupMenu {
     private JRadioButtonMenuItem colorByScoreMI;
     private JRadioButtonMenuItem colorByFoldMI;
 
-    public PeakTrackMenu(PeakTrack t) {
-        this.track = t;
+    public PeakTrackMenu(PeakTrack track, TrackClickEvent te) {
+
+        // TODO -- what if multiple tracks are selected?
+        this.track = track;
+        init(te);
+    }
+
+    private void init(final TrackClickEvent trackClickEvent) {
+
+        List<Track> tracks = Arrays.asList(new Track[] {track});
 
         //Title
         JLabel popupTitle = new JLabel("<html><b>" + track.getName(), JLabel.LEFT);
         Font newFont = getFont().deriveFont(Font.BOLD, 12);
         popupTitle.setFont(newFont);
         add(popupTitle);
+        addSeparator();
+
+        add(TrackMenuUtils.getTrackRenameItem(tracks));
+        add(TrackMenuUtils.getChangeTrackHeightItem(tracks));
+        add(TrackMenuUtils.getChangeFontSizeItem(tracks));
 
         //Change Track Settings
         addDisplayModeItems();
-        addColorByItems();
-        addRendererItems();
 
         addSeparator();
-        JMenuItem item = new JMenuItem("Open control panel");
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent actionEvent) {
-                PeakTrack.openControlDialog();
-            }
-        });
-        item.setEnabled(!PeakTrack.controlDialogIsOpen());
-        add(item);
-
-        addSeparator();
-        JMenuItem plotItem = new JMenuItem("Open time series plot");
+        JMenuItem plotItem = new JMenuItem("Open Trend Plot...");
         plotItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                openTimeSeriesPlot();
+                openTimeSeriesPlot(trackClickEvent);
             }
         });
         add(plotItem);
 
         addSeparator();
-        add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{track})));
-
+        add(TrackMenuUtils.getRemoveMenuItem(tracks));
     }
 
     public void addDisplayModeItems() {
@@ -100,7 +102,7 @@ public class PeakTrackMenu extends JPopupMenu {
 
         Track.DisplayMode displayMode = track.getDisplayMode();
 
-        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Collapse");
+        JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("Compressed");
         m1.setSelected(displayMode == Track.DisplayMode.COLLAPSED);
         m1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -109,7 +111,7 @@ public class PeakTrackMenu extends JPopupMenu {
             }
         });
 
-        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Expand");
+        JRadioButtonMenuItem m3 = new JRadioButtonMenuItem("Time Series");
         m3.setSelected(displayMode == Track.DisplayMode.EXPANDED);
         m3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -158,47 +160,24 @@ public class PeakTrackMenu extends JPopupMenu {
 
     }
 
-    public void addRendererItems() {
 
 
-        addSeparator();
+    void openTimeSeriesPlot(TrackClickEvent trackClickEvent) {
 
-        final JCheckBoxMenuItem m1 = new JCheckBoxMenuItem("Show peaks");
-        m1.setSelected(PeakTrack.isShowPeaks());
-        m1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setShowPeaks(m1.isSelected());
-                colorByScoreMI.setEnabled(m1.isSelected());
-                colorByScoreMI.setEnabled(m1.isSelected());
-                IGV.getInstance().repaint();
-            }
-        });
+        if(trackClickEvent == null) return;
 
-        final JCheckBoxMenuItem m4 = new JCheckBoxMenuItem("Show signals");
-        m4.setSelected(PeakTrack.isShowSignals());
-        m4.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                PeakTrack.setShowSignals(m4.isSelected());
-                IGV.getInstance().repaint();
-            }
-        });
-
-        add(m1);
-        add(m4);
-
-    }
-
-    void openTimeSeriesPlot() {
-
-        String chr = FrameManager.getDefaultFrame().getChrName();
-        double center = FrameManager.getDefaultFrame().getCenter();
+        ReferenceFrame referenceFrame = trackClickEvent.getFrame();
+        if(referenceFrame == null) return;
+        
+        String chr = referenceFrame.getChrName();
+        double position = trackClickEvent.getChromosomePosition();
 
         XYSeriesCollection data = new XYSeriesCollection();
         List<Color> colors = new ArrayList();
         for (SoftReference<PeakTrack> ref : PeakTrack.instances) {
             PeakTrack track = ref.get();
             if (track != null) {
-                Peak peak = track.getFilteredPeakInstersecting(chr, center);
+                Peak peak = track.getFilteredPeakNearest(chr, position);
                 if (peak != null) {
                     XYSeries series = new XYSeries(track.getName());
                     float[] scores = peak.getTimeScores();

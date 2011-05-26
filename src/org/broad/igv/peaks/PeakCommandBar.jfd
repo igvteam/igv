@@ -206,6 +206,14 @@
             <boolean>true</boolean> 
            </object> 
           </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>peaksButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
          </object> 
         </void> 
         <void method="add"> 
@@ -232,6 +240,14 @@
             <boolean>true</boolean> 
            </object> 
           </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>signalsButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
          </object> 
         </void> 
         <void method="add"> 
@@ -255,6 +271,14 @@
             <string>java.awt.event.ActionListener</string> 
             <string>actionPerformed</string> 
             <string>radioButtonActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>bothButtonActionPerformed</string> 
             <boolean>true</boolean> 
            </object> 
           </void> 
@@ -285,14 +309,14 @@
          <object idref="EtchedBorder0"/> 
         </void> 
         <void property="name"> 
-         <string>panel4</string> 
+         <string>colorByPanel</string> 
         </void> 
         <void method="add"> 
          <object class="com.jformdesigner.model.FormComponent"> 
           <string>javax.swing.JLabel</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Color by:</string> 
+           <string>Color peaks by:</string> 
           </void> 
           <void property="name"> 
            <string>label4</string> 
@@ -304,7 +328,7 @@
           <string>javax.swing.JRadioButton</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Factor</string> 
+           <string>Score</string> 
           </void> 
           <void method="setProperty"> 
            <string>$buttonGroup</string> 
@@ -386,7 +410,7 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>1190</int> 
+        <int>1325</int> 
         <int>55</int> 
        </object> 
       </void> 

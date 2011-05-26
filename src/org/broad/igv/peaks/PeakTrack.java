@@ -139,7 +139,7 @@ public class PeakTrack extends AbstractTrack {
 
     @Override
     public JPopupMenu getPopupMenu(TrackClickEvent te) {
-        return new PeakTrackMenu(this);
+        return new PeakTrackMenu(this, te);
     }
 
     @Override
@@ -339,6 +339,40 @@ public class PeakTrack extends AbstractTrack {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the closet filter peak, within 2kb, of the given position.
+     *
+     * @param chr
+     * @param position
+     * @return
+     */
+    public Peak getFilteredPeakNearest(String chr, double position) {
+        List<Peak> scores = getFilteredPeaks(chr);
+        int startIdx = FeatureUtils.getIndexBefore(position, scores);
+
+        Peak closestPeak = null;
+        double closestDistance = Integer.MAX_VALUE;
+        if (startIdx >= 0) {
+            if (startIdx > 0) startIdx--;
+            for (int i = startIdx; i < scores.size(); i++) {
+                Peak peak = scores.get(i);
+                if (position > peak.getStart() && position < peak.getEnd()) {
+                    return peak;
+                }
+                double distance = Math.min(Math.abs(position - peak.getStart()), Math.abs(position - peak.getEnd()));
+                if (distance > closestDistance) {
+                    return closestDistance < 2000 ? closestPeak : null;
+
+                } else {
+                    closestDistance = distance;
+                    closestPeak = peak;
+                }
+
+            }
+        }
+        return null;
 
     }
 
@@ -379,9 +413,12 @@ public class PeakTrack extends AbstractTrack {
 
 
             if (scoreThreshold <= 0 && foldChangeThreshold <= 0) {
-               return  source.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+                return source.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
             } else {
                 List<Peak> peaks = getFilteredPeaks(chr);
+                if (peaks == null) {
+                    return scores;
+                }
                 int startIdx = FeatureUtils.getIndexBefore(startLocation, peaks);
                 if (startIdx >= 0) {
                     for (int i = startIdx; i < peaks.size(); i++) {
