@@ -983,12 +983,12 @@ public class IGV {
     final public void doSelectDisplayableAttribute() {
 
         List<String> allAttributes = AttributeManager.getInstance().getAttributeKeys();
-        Set<String> hiddenAttributes = AttributeManager.getInstance().getHiddenAttributes();
+        Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
         final CheckListDialog dlg = new CheckListDialog(mainFrame, allAttributes, hiddenAttributes, false);
         dlg.setVisible(true);
 
         if (!dlg.isCanceled()) {
-            AttributeManager.getInstance().setHiddenAttributes(dlg.getNonSelections());
+            IGV.getInstance().getSession().setHiddenAttributes(dlg.getNonSelections());
             doRefresh();
         }
     }

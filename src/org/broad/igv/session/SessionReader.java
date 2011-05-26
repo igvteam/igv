@@ -114,6 +114,8 @@ public class SessionReader {
         PREFERENCES("Preferences"),
         PROPERTY("Property"),
         GENE_LIST("GeneList"),
+        HIDDEN_ATTRIBUTES("HiddenAttributes"),
+        ATTRIBUTE("Attribute"),
         FRAME("Frame");
 
         private String name;
@@ -392,6 +394,8 @@ public class SessionReader {
             processPanel(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.PANEL_LAYOUT.getText())) {
             processPanelLayout(session, (Element) element, additionalInformation);
+        } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES.getText())) {
+            processHiddenAttributes(session, (Element) element, additionalInformation);
         }
 
     }
@@ -613,6 +617,23 @@ public class SessionReader {
         process(session, elements, additionalInformation);
     }
 
+
+    private void processHiddenAttributes(Session session, Element element, HashMap additionalInformation) {
+
+//        session.clearRegionsOfInterest();
+        NodeList elements = element.getChildNodes();
+        if (elements.getLength() > 0) {
+            Set<String> attributes = new HashSet();
+            for (int i = 0; i < elements.getLength(); i++) {
+                Node childNode = elements.item(i);
+                if (childNode.getNodeName().equals(SessionReader.SessionElement.ATTRIBUTE.getText())) {
+                    attributes.add(((Element) childNode).getAttribute(SessionReader.SessionAttribute.NAME.getText()));
+                }
+            }
+            session.setHiddenAttributes(attributes);
+        }
+    }
+
     private void processGeneList(Session session, Element element, HashMap additionalInformation) {
 
         String name = getAttribute(element, SessionAttribute.NAME.getText());
@@ -802,7 +823,7 @@ public class SessionReader {
             Node childNode = element.getFirstChild();
             Node sibNode = childNode.getNextSibling();
             String sibName = sibNode.getNodeName();
-            if (sibName.equals( SessionElement.DATA_RANGE.getText())) {
+            if (sibName.equals(SessionElement.DATA_RANGE.getText())) {
                 NamedNodeMap drNodeMap = sibNode.getAttributes();
                 for (int i = 0; i < drNodeMap.getLength(); i++) {
                     Node node = drNodeMap.item(i);

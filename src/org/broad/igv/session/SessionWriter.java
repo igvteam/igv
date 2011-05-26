@@ -157,6 +157,12 @@ public class SessionWriter {
                 writeGeneList(globalElement, document);
             }
 
+            // Hidden attributes
+            if(session.getHiddenAttributes() != null && session.getHiddenAttributes().size() > 0) {
+                writeHiddenAttributes(session, globalElement, document);
+            }
+
+
             document.appendChild(globalElement);
 
             // Transform document into XML
@@ -179,6 +185,7 @@ public class SessionWriter {
 
         return xmlString;
     }
+
 
     private void writeFilters(Session session, Element globalElement, Document document) {
         TrackFilter trackFilter = session.getFilter();
@@ -245,6 +252,16 @@ public class SessionWriter {
         }
     }
 
+    private void writeHiddenAttributes(Session session, Element globalElement, Document document) {
+        Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES.getText());
+        for (String attribute : session.getHiddenAttributes()) {
+             Element regionElement = document.createElement(SessionElement.ATTRIBUTE.getText());
+             regionElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), attribute);
+             hiddenAttributes.appendChild(regionElement);
+         }
+         globalElement.appendChild(hiddenAttributes);
+
+    }
     private void writeGeneList(Element globalElement, Document document) {
 
         GeneList geneList = session.getCurrentGeneList();
@@ -252,7 +269,7 @@ public class SessionWriter {
         if (geneList != null) {
 
             Element geneListElement = document.createElement(SessionElement.GENE_LIST.getText());
-            geneListElement.setAttribute("name", geneList.getName());
+            geneListElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), geneList.getName());
 
             StringBuffer genes = new StringBuffer();
             for (String gene : geneList.getLoci()) {

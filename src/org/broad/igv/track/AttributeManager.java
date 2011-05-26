@@ -76,11 +76,6 @@ public class AttributeManager {
 
 
     /**
-     * Attributes to hide, usually selected by the user
-     */
-    Set<String> hiddenAttributes = new HashSet();
-
-    /**
      * The complete set of unique attribute values per attribute key.  This is useful in
      * assigning unique colors
      */
@@ -132,26 +127,13 @@ public class AttributeManager {
     }
 
 
-    public Set<String> getHiddenAttributes() {
-        return hiddenAttributes;
-    }
-
     // TODO -- don't compute this on the fly every time its called
 
     public List<String> getVisibleAttributes() {
         final List<String> keys = getAttributeKeys();
-        Set<String> hiddenKeys = getHiddenAttributes();
-        keys.removeAll(hiddenKeys);
+        Set<String> hiddenKeys = IGV.getInstance().getSession().getHiddenAttributes();
+        if(hiddenKeys != null) keys.removeAll(hiddenKeys);
         return keys;
-    }
-
-    public void setHiddenAttributes(Set<String> attributes) {
-        // Interpret null to mean the empty set
-        if (attributes == null) {
-            hiddenAttributes.clear();
-        } else {
-            this.hiddenAttributes = attributes;
-        }
     }
 
     public void clearAllAttributes() {

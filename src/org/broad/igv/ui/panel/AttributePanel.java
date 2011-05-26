@@ -87,11 +87,13 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
     public void paintImpl(Graphics2D g, Rectangle visibleRect) {
 
         List<String> keys = AttributeManager.getInstance().getAttributeKeys();
-        keys.removeAll(AttributeManager.getInstance().getHiddenAttributes());
 
         if (keys == null) {
             return;
         }
+
+        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
 
         if (keys.size() > 0) {
 
@@ -132,7 +134,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                         }
 
                         for (Track track : group.getTracks()) {
-                            if(track == null) continue;
+                            if (track == null) continue;
                             int trackHeight = track.getHeight();
                             if (regionY > visibleRect.y + visibleRect.height) {
                                 break;
@@ -295,7 +297,8 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
         }
 
         HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeKeys());
-        attributeKeys.removeAll(AttributeManager.getInstance().getHiddenAttributes());
+        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
 
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +

@@ -79,7 +79,8 @@ public class Session {
     private ObserverForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
     private GeneList currentGeneList;
-
+    private Set<String> hiddenAttributes
+            ;
 
     public Session(String path) {
         log.debug("New session");
@@ -360,6 +361,20 @@ public class Session {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+
+    public Set<String> getHiddenAttributes() {
+        return hiddenAttributes;
+    }
+
+    public void setHiddenAttributes(Set<String> attributes) {
+        // Interpret null to mean the empty set
+        if (attributes == null) {
+            hiddenAttributes.clear();
+        } else {
+            this.hiddenAttributes = attributes;
+        }
     }
 
 

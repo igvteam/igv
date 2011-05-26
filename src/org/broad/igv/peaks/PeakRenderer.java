@@ -151,14 +151,11 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
     private Color getColor(float[] bgColorComps, float[] fgColorComps, float score, PeakTrack.ColorOption option) {
         Color c = null;
-        //if (peak.isDynamic()) {
-        //    c = Color.red;
-        //} else {
         float alpha = 1.0f;
         if (option == PeakTrack.ColorOption.SCORE) {
             // scale is 1 -> 100
             int shadeStep = (int) (score / 10);
-            alpha = Math.max(0.1f, (Math.min(1.0f, shadeStep * 0.1f)));
+            alpha = Math.max(0.2f, (Math.min(1.0f, shadeStep * 0.1f)));
 
         } else if (option == PeakTrack.ColorOption.FOLD_CHANGE) {
 

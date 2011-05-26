@@ -25,6 +25,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -414,7 +415,9 @@ public class MainPanel extends JPanel implements Paintable {
         }
 
         HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeKeys());
-        attributeKeys.removeAll(AttributeManager.getInstance().getHiddenAttributes());
+
+        Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if(hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
 
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
