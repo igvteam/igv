@@ -92,7 +92,7 @@ public class IconFactory {
                 createImageIcon("/toolbarButtonGraphics/navigation/Home24.gif", "home"));
 
         icons.put(IconID.SUPPRESS_TOOLTIP,
-                createImageIcon("/images/no-tooltip.gif", "suppress tooltip"));
+                createImageIcon("/images/no-tooltip.png", "suppress tooltip"));
     }
 
     public ImageIcon getIcon(IconID id) {

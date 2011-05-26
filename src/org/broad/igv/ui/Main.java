@@ -194,7 +194,7 @@ public class Main {
 
         }
         // Todo -- what does this do?
-        LookAndFeelFactory.installJideExtension();
+        //LookAndFeelFactory.installJideExtension();
     }
 
     public static void initializeLog() {
