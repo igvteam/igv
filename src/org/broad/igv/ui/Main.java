@@ -181,6 +181,13 @@ public class Main {
             }
         }
         */
+        try {
+            String lnf = UIManager.getSystemLookAndFeelClassName();
+            System.out.println("Installing look & feel:  " + lnf);
+            UIManager.setLookAndFeel(lnf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (Globals.IS_LINUX) {
             try {
@@ -194,7 +201,7 @@ public class Main {
 
         }
         // Todo -- what does this do?
-        //LookAndFeelFactory.installJideExtension();
+        LookAndFeelFactory.installJideExtension();
     }
 
     public static void initializeLog() {
