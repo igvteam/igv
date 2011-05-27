@@ -77,11 +77,8 @@ public class Main {
             public void run() {
                 try {
 
-                    Frame frame = new JFrame();
-                    // Add listener to exit the application on close
-
-                    ((JFrame) frame).setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+                    JFrame frame = new JFrame();
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     open(frame, args);
 
                 } catch (Exception e) {

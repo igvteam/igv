@@ -216,10 +216,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int centerRightP = (int) ((center + 1) / locScale);
                 //float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
                 Graphics2D gBlack = context.getGraphic2DForColor(Color.black); //new Color(0, 0, 0, transparency));
-                GraphicUtils.drawDashedLine(gBlack, centerLeftP, rect.y, centerLeftP,
+                GraphicUtils.drawDottedDashLine(gBlack, centerLeftP, rect.y, centerLeftP,
                         rect.y + rect.height);
                 if ((centerRightP - centerLeftP > 2)) {
-                    GraphicUtils.drawDashedLine(gBlack, centerRightP, rect.y, centerRightP,
+                    GraphicUtils.drawDottedDashLine(gBlack, centerRightP, rect.y, centerRightP,
                             rect.y + rect.height);
                 }
             }

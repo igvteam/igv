@@ -1383,7 +1383,9 @@ public class IGV {
                 createNewSession(sessionPath);
             }
 
-            (new SessionReader(this)).loadSession(inputStream, session, sessionPath);
+            final SessionReader sessionReader = new SessionReader(this);
+
+            session = sessionReader.loadSession(inputStream, sessionPath);
             String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
@@ -1625,7 +1627,6 @@ public class IGV {
                                 doRestoreSession(sf, igvArgs.getLocusString());
                             }
                         }
-                        doRefresh();
                     } else if (igvArgs.getDataFileString() != null) {
                         // Not an xml file, assume its a list of data files
                         String[] tokens = igvArgs.getDataFileString().split(",");
@@ -1637,7 +1638,6 @@ public class IGV {
                             locators.add(rl);
                         }
                         getTrackManager().loadResources(locators);
-                        doRefresh();
                     }
 
 

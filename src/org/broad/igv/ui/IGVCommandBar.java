@@ -185,9 +185,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             monitor.fireProgressChange(50);
 
                             igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
-
                             updateGenome(genomeListItem.getId());
-
                             monitor.fireProgressChange(25);
 
                             if (!isGenomeCached(genomeListItem.getId())) {
@@ -198,7 +196,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             igv.createNewSession(null);
 
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
-
                             monitor.fireProgressChange(25);
 
                         } catch (GenomeServerException e) {

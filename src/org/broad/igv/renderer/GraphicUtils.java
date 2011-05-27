@@ -158,12 +158,23 @@ public class GraphicUtils {
 
     }
 
-    public static void drawDashedLine(Graphics2D g, int x1, int y1, int x2,
+    public static void drawDottedDashLine(Graphics2D g, int x1, int y1, int x2,
                                       int y2) {
         Stroke thindashed = new BasicStroke(1.0f, // line width
                 BasicStroke.CAP_BUTT, // cap style
                 BasicStroke.JOIN_BEVEL, 1.0f, // join style, miter limit
                 new float[]{8.0f, 3.0f, 2.0f, 3.0f}, // the dash pattern :  on 8, off 3, on 2, off 3
+                0.0f);  // the dash phase
+        drawDashedLine(g, thindashed, x1, y1, x2, y2);
+
+    }
+
+    public static void drawDashedLine(Graphics2D g, int x1, int y1, int x2,
+                                      int y2) {
+        Stroke thindashed = new BasicStroke(1.0f, // line width
+                BasicStroke.CAP_BUTT, // cap style
+                BasicStroke.JOIN_BEVEL, 1.0f, // join style, miter limit
+                new float[]{3.0f, 3.0f}, // the dash pattern :  on 8, off 3, on 2, off 3
                 0.0f);  // the dash phase
         drawDashedLine(g, thindashed, x1, y1, x2, y2);
 
@@ -183,13 +194,13 @@ public class GraphicUtils {
             int nStrings = (string.length() / charsPerLine) + 1;
             if (nStrings * textHeight > rect.height) {
                 // Shorten string to fit in space.  Try a max of 5 times,  progressivley shortening string
-                int nChars = (rect.width - 2*margin) / charWidth + 1;
+                int nChars = (rect.width - 2 * margin) / charWidth + 1;
                 int nTries = 0;
                 String shortString;
                 double w;
                 do {
                     shortString = StringUtils.checkLength(string, nChars);
-                    w = fontMetrics.getStringBounds(shortString, g2D).getWidth() + 2*margin;
+                    w = fontMetrics.getStringBounds(shortString, g2D).getWidth() + 2 * margin;
                     nTries++;
                     nChars--;
                 } while (w > rect.width && nTries <= 5 && nChars > 1);

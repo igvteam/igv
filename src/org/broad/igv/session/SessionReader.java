@@ -252,8 +252,10 @@ public class SessionReader {
      * @throws RuntimeException
      */
 
-    public Session loadSession(InputStream inputStream, Session session, String sessionName)
+    public Session loadSession(InputStream inputStream, String sessionName)
             throws RuntimeException {
+
+        Session session = new Session(sessionName);
 
         log.debug("Load session");
 

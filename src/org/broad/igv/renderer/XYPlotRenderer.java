@@ -306,7 +306,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             if(track.isDrawYLine()) {
                 Graphics2D yLineGraphics = context.getGraphic2DForColor(Color.gray);
                 int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
-                GraphicUtils.drawDashedLine(yLineGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
+                GraphicUtils.drawDashedLine(borderGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
             }
 
 
