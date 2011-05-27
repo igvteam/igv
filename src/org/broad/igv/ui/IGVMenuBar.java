@@ -21,12 +21,9 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
-import org.broad.igv.lists.VariantListNavigator;
 import org.broad.igv.tools.IgvToolsGui;
-import org.broad.igv.tools.ui.CoverageGui;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.panel.MainPanel;
@@ -43,10 +40,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.broad.igv.ui.UIConstants.*;
-import static org.broad.igv.ui.UIConstants.REFRESH_TOOLTIP;
 import static org.broad.igv.ui.UIConstants.SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP;
 
 /**
@@ -293,9 +290,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        IGV.getMainFrame().setVisible(false);
-                        IGV.getMainFrame().dispose();
-                        System.exit(1);
+                        doExitApplication();
                     }
                 };
 
@@ -422,7 +417,7 @@ public class IGVMenuBar extends JMenuBar {
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
         menuItems.add(menuItem);
-        
+
         JMenuItem panelWidthmenuItem = new JMenuItem();
         menuAction = new MenuAction("Set Name Panel Width...", null, KeyEvent.VK_A) {
             @Override
@@ -509,7 +504,6 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
 
-
         /*
 menuAction =
         new MenuAction("Show Region Bars", null, KeyEvent.VK_A) {
@@ -543,7 +537,7 @@ menuAction =
 
         // Add to IGVPanel menu
         MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
-        viewMenu =  MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+        viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
         return viewMenu;
     }
 
@@ -643,7 +637,7 @@ menuAction =
             }
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
- 
+
 
         menuItems.add(new JSeparator());
 
@@ -772,5 +766,46 @@ menuAction =
 
     public JMenu getViewMenu() {
         return viewMenu;
+    }
+
+    final public void doExitApplication() {
+
+        try {
+            IGV igv = IGV.getInstance();
+
+            // Store recent sessions
+            final LinkedList<String> recentSessionList = igv.getRecentSessionList();
+            if (!recentSessionList.isEmpty()) {
+
+                int size = recentSessionList.size();
+                if (size > UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST) {
+                    size = UIConstants.NUMBER_OF_RECENT_SESSIONS_TO_LIST;
+                }
+
+                String recentSessions = "";
+                for (int i = 0; i <
+                        size; i++) {
+                    recentSessions += recentSessionList.get(i);
+
+                    if (i < (size - 1)) {
+                        recentSessions += ";";
+                    }
+
+                }
+                PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
+                PreferenceManager.getInstance().setRecentSessions(recentSessions);
+            }
+
+            // Save application location and size
+            PreferenceManager.getInstance().setApplicationFrameBounds(IGV.getMainFrame().getBounds());
+
+            // Hide and close the application
+            IGV.getMainFrame().setVisible(false);
+            IGV.getMainFrame().dispose(); 
+
+        } finally {
+            System.exit(0);
+        }
+
     }
 }
