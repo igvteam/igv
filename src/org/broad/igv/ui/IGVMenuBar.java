@@ -285,6 +285,8 @@ public class IGVMenuBar extends JMenuBar {
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+
+        // TODO -- change "Exit" to "Close" for BioClipse
         menuItems.add(new JSeparator());      // Exit
         menuAction =
                 new MenuAction("Exit", null, KeyEvent.VK_X) {
@@ -293,6 +295,7 @@ public class IGVMenuBar extends JMenuBar {
                     public void actionPerformed(ActionEvent e) {
                         IGV.getMainFrame().setVisible(false);
                         IGV.getMainFrame().dispose();
+                        System.exit(1);
                     }
                 };
 
