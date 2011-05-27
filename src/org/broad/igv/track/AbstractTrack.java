@@ -665,6 +665,10 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
         }
 
+        if(sortable != true) {
+            attributes.put("sortable", "false");
+        }
+
 
         // color
         if (posColor != null) {
@@ -725,10 +729,7 @@ public abstract class AbstractTrack implements Track {
         String windowFunction = attributes.get(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
         String scale = attributes.get(SessionReader.SessionAttribute.SCALE.getText());
 
-
         String colorScale = attributes.get(SessionReader.SessionAttribute.COLOR_SCALE.getText());
-        String fontSizeString = attributes.get("fontSize");
-        String showDataRangeString = attributes.get("showDataRange");
 
         if (colorScale != null) {
             ColorScale cs = ColorScaleFactory.getScaleFromString(colorScale);
@@ -753,6 +754,12 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
+        String sortableString = attributes.get("sortable");
+        if(sortableString != null) {
+            sortable = Boolean.parseBoolean(sortableString);
+        }
+
+        String showDataRangeString = attributes.get("showDataRange");
         if (showDataRangeString != null) {
             try {
                 showDataRange = Boolean.parseBoolean(showDataRangeString);
@@ -770,6 +777,7 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
+        String fontSizeString = attributes.get("fontSize");
         if (fontSizeString != null) {
             try {
                 setFontSize(Integer.parseInt(fontSizeString));

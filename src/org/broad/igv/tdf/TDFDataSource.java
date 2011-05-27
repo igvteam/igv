@@ -103,14 +103,18 @@ public class TDFDataSource implements DataSource {
 
 
         boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
-        setNormalizeCounts(normalizeCounts, 1.0e6f);
+        setNormalize(normalizeCounts);
 
     }
 
-    public void setNormalizeCounts(boolean normalizeCounts, float factor) {
+    public void setNormalize(boolean normalizeCounts) {
+       setNormalizeCounts(normalizeCounts, 1.0e6f);
+    }
+
+    public void setNormalizeCounts(boolean normalizeCounts, float scalingFactor) {
         this.normalizeCounts = normalizeCounts;
         if (normalizeCounts && totalCount > 0) {
-            normalizationFactor = factor / totalCount;
+            normalizationFactor = scalingFactor / totalCount;
         } else {
             normalizationFactor = 1;
         }
