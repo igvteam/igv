@@ -59,6 +59,7 @@ public class SessionWriter {
     static Logger log = Logger.getLogger(SessionWriter.class);
 
     Session session;
+    private static int CURRENT_VERSION = 4;
 
     /**
      * Method description
@@ -117,7 +118,7 @@ public class SessionWriter {
             // Global root element
             Element globalElement = document.createElement(SessionElement.SESSION.getText());
 
-            globalElement.setAttribute(SessionAttribute.VERSION.getText(), session.getSessionVersion());
+            globalElement.setAttribute(SessionAttribute.VERSION.getText(), String.valueOf(CURRENT_VERSION));
 
             String genome = IGV.getInstance().getGenomeManager().getGenomeId();
             if (genome != null) {

@@ -55,10 +55,9 @@ public class Session {
 
     };
 
-    private static int version = 4;
-
     private TrackManager trackManager;
 
+    private int version;
     private String path;
     private String groupTracksBy;
     private ReferenceFrame referenceFrame = FrameManager.getDefaultFrame();
