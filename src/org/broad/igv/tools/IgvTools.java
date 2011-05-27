@@ -437,12 +437,12 @@ public class IgvTools {
         } catch (IOException e) {
             e.printStackTrace();
             // Delete output file as its probably corrupt
-            if(outputFile.exists()) {
+            if (outputFile.exists()) {
                 outputFile.delete();
             }
         }
         finally {
-            if(deleteme != null && deleteme.exists()) {
+            if (deleteme != null && deleteme.exists()) {
                 deleteme.delete();
             }
         }
@@ -586,8 +586,8 @@ public class IgvTools {
             } catch (IOException e) {
                 e.printStackTrace();
                 // Delete output file as it is probably corrupt
-                if(outputFile.exists()) {
-                   outputFile.delete();
+                if (outputFile.exists()) {
+                    outputFile.delete();
                 }
             }
         }
@@ -625,11 +625,11 @@ public class IgvTools {
                 stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
                 idx.write(stream);
             }
-            catch(Exception e) {
+            catch (Exception e) {
                 e.printStackTrace();
                 // Delete output file as its probably corrupt
                 File tmp = new File(idxFile);
-                if(tmp.exists()) {
+                if (tmp.exists()) {
                     tmp.delete();
                 }
             }
@@ -663,7 +663,7 @@ public class IgvTools {
         } catch (Exception e) {
             e.printStackTrace();
             // Delete output file as its probably corrupt
-            if(outputFile.exists()) {
+            if (outputFile.exists()) {
                 outputFile.delete();
             }
         }
@@ -685,8 +685,8 @@ public class IgvTools {
 
         final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
                 IGV.getInstance().getGenomeManager();
-        Genome genome = genomeManager.getGenome(genomeFileOrID);
-        if (genome != null) {
+        Genome genome = genomeManager.getCurrentGenome();
+        if(genome != null && genome.getId().equals(genomeFileOrID)) {
             return genome;
         }
 
@@ -704,13 +704,11 @@ public class IgvTools {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
 
-        GenomeManager.GenomeListItem item = genomeManager.loadGenomeFromLocalFile(genomeFile);
-        String genomeId = item.getId();
-        if (genomeId == null) {
+        genomeManager.loadGenomeFromLocalFile(genomeFile);
+        genome = genomeManager.getCurrentGenome();
+        if (genome == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
-        genomeManager.setGenomeId(genomeId);
-        genome = genomeManager.getGenome(genomeId);
         return genome;
     }
 

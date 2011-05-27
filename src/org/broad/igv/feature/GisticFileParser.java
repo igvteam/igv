@@ -125,7 +125,7 @@ public class GisticFileParser {
                 throw new RuntimeException("No gistic scores were found.");
             } else {
                 track.setScores(scores);
-                computeWholeGenome(IGV.getInstance().getGenomeManager().getGenomeId(), track);
+                computeWholeGenome(track, genome);
                 return track;
             }
 
@@ -155,17 +155,15 @@ public class GisticFileParser {
      * Compute features for "chr All".  This is probably not the best way to do this,
      * definitely not good for large tracks.  Need it now for mutation data.
      *
-     * @param genomeId
      * @param track
      */
-    public static void computeWholeGenome(String genomeId, GisticTrack track) {
+    public static void computeWholeGenome(GisticTrack track, Genome genome) {
         int unit = 1000;    // KB
 
         String chrAll = "All";
         List<GisticScore> allFeatures = new ArrayList(1000);
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
         if (genome == null) {
-            throw new RuntimeException("Unknown genome: " + genomeId);
+            throw new RuntimeException("Unknown genome: " + genome.getId());
         }
         genome.getChromosomeNames();
         long offset = 0;

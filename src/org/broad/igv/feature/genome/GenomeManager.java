@@ -102,7 +102,7 @@ public class GenomeManager {
             if (genomeDescriptor == null) {
                 return null;
             } else {
-                currentGenome = loadGenome(genomeDescriptor);
+                loadGenome(genomeDescriptor);
             }
         }
         return currentGenome;
@@ -126,16 +126,16 @@ public class GenomeManager {
                 reader = new BufferedReader(new InputStreamReader(is));
             }
 
-            Genome genome = new Genome(genomeDescriptor);
+            currentGenome = new Genome(genomeDescriptor);
             LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
-            genome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
-            genome.setAnnotationURL(genomeDescriptor.getUrl());
+            currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
+            currentGenome.setAnnotationURL(genomeDescriptor.getUrl());
 
             InputStream aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
                 try {
                     reader = new BufferedReader(new InputStreamReader(aliasStream));
-                    genome.loadChrAliases(reader);
+                    currentGenome.loadChrAliases(reader);
                 } catch (Exception e) {
                     // We don't want to bomb if the alias load fails.  Just log it and proceed.
                     log.error("Error loading chromosome alias table");
@@ -143,9 +143,9 @@ public class GenomeManager {
             }
 
             // Do this last so that user defined aliases have preference.  TODO This order dependence is rather fragile.
-            genome.loadUserDefinedAliases();
+            currentGenome.loadUserDefinedAliases();
 
-            return genome;
+            return currentGenome;
 
         } catch (IOException ex) {
             log.warn("Error loading the genome!", ex);
@@ -175,6 +175,7 @@ public class GenomeManager {
 
             // user imported genomes are not versioned
             GenomeDescriptor genomeDescriptor = createGenomeDescriptor(zipFile, isUserDefined);
+            loadGenome(genomeDescriptor);
             genomeDescriptorMap.put(genomeDescriptor.getId(), genomeDescriptor);
             genomeListItem = new GenomeListItem(genomeDescriptor.getName(),
                     genomeDescriptor.getSequenceLocation(), genomeDescriptor.getId(),
@@ -193,59 +194,19 @@ public class GenomeManager {
 
 
     /**
-     * Determine if the specified genome is already loaded and a descriptor
-     * has been created for it.
-     *
-     * @param id Genome id.
-     * @return true if genome is loaded.
-     */
-    public boolean isGenomeLoaded(String id) {
-        return (genomeDescriptorMap.get(id) != null);
-    }
-
-
-    /**
      * Locates a genome in the set of known genome archive locations  then loads it.
      *
      * @param genome The genome to load.
      */
-    public void findGenomeAndLoad(String genome) throws IOException {
+    public void loadGenomeByID(String genome) throws IOException {
 
         LinkedHashSet<GenomeListItem> genomes = getAllGenomeArchives();
         for (GenomeListItem item : genomes) {
             if (item.getId().equalsIgnoreCase(genome)) {
                 String url = item.getLocation();
-                if (!isGenomeLoaded(item.getId())) {
-                    loadGenome(url, item.isUserDefined(), null);
-                }
-                break;
+                loadGenome(url, item.isUserDefined(), null);
             }
         }
-    }
-
-
-    /**
-     * Loads a system IGV genome archive into IGV's local genome cache and
-     * then request it be loaded. If the genome is user-define it is loaded
-     * directly from it's own location.
-     *
-     * @param item          A GenomeListItem.
-     * @param isUserDefined true if a user genome.
-     * @throws FileNotFoundException
-     * @see GenomeListItem
-     */
-    public void loadGenome(GenomeListItem item, boolean isUserDefined)
-            throws FileNotFoundException {
-
-
-        if (log.isDebugEnabled()) {
-            log.debug("Enter loadGenome");
-        }
-
-        if (isGenomeLoaded(item.getId())) {
-            return;
-        }
-        loadGenome(item.getLocation(), isUserDefined, null);
     }
 
 
@@ -275,6 +236,7 @@ public class GenomeManager {
         GenomeListItem genomeListItem = null;
 
         if (genomeArchiveFileLocation == null) {
+            loadGenome(getDefaultGenomeDescriptor());
             return getDefaultGenomeListItem();
         }
 
@@ -309,9 +271,6 @@ public class GenomeManager {
                     archiveFile = new File(genomeArchiveFileLocation);
                 }
 
-                if (monitor != null) {
-                    monitor.fireProgressChange(25);
-                }
 
                 if (!archiveFile.exists()) {
                     throw new FileNotFoundException(genomeArchiveFileLocation);
@@ -1098,46 +1057,6 @@ public class GenomeManager {
     }
 
 
-    /**
-     * This method takes any string and generates a unique key based on
-     * that string. Other class typically call this method to make a genome id
-     * from some string but it can be used to generate a key for anything.
-     * TODO This method probably belongs in a Utilities class.
-     *
-     * @param text
-     * @return A unique key based on the text.
-     */
-    public static String generateGenomeKeyFromText(String text) {
-
-        if (text == null) {
-            return null;
-        }
-
-        text = text.trim();
-        text = text.replace(" ", "_");
-        text = text.replace("(", "");
-        text = text.replace(")", "");
-        text = text.replace("[", "");
-        text = text.replace("]", "");
-        text = text.replace("{", "");
-        text = text.replace("}", "");
-        return text;
-    }
-
-
-    public GenomeListItem getTopGenomeListItem() {
-        try {
-            LinkedHashSet<GenomeListItem> allItems = getAllGenomeArchives();
-            if (allItems.size() > 0) {
-                return allItems.iterator().next();
-            }
-        } catch (IOException e) {
-            log.error("Error loading genome list: ", e);
-        }
-        return getDefaultGenomeListItem();
-    }
-
-
     public GenomeDescriptor getDefaultGenomeDescriptor() {
         if (DEFAULT_GENOME == null) {
             DEFAULT_GENOME = new GenomeResourceDescriptor("Human hg18", 0, "hg18",
@@ -1241,77 +1160,6 @@ public class GenomeManager {
 
     }
 
-
-    //////// PORTED FROM ReferenceFrame
-
-    // /////////////////////////////////////////////////////////////////////////
-    // Genome methods /////////////////////////////////////////////////////////
-
-    /**
-     * Attempt to switch genomes to newGenome.  Return the actual genome, which
-     * might differ if the load of newGenome fails.
-     *
-     * @param newGenome
-     */
-    public String setGenomeId(String newGenome) {
-
-        if (currentGenome != null && currentGenome.getId().equals(newGenome)) {
-            return newGenome;
-        }
-
-        // This shouldn't be neccessary as loading a new genome will create a new session.
-        if (igv != null) {
-            igv.getSession().getHistory().clear();
-        }
-
-        boolean loadFailed = false;
-
-        if (!isGenomeLoaded(newGenome)) {
-            try {
-                if (log.isDebugEnabled()) {
-                    log.debug("findGenomeAndLoad: " + newGenome);
-                }
-                findGenomeAndLoad(newGenome);
-            } catch (IOException e) {
-                log.error("Error loading genome: " + newGenome, e);
-                loadFailed = true;
-                MessageUtils.showMessage("Load of genome: " + newGenome + " failed.");
-            }
-        }
-        currentGenome = getGenome(newGenome);
-
-        if (currentGenome == null || loadFailed) {
-            GenomeManager.GenomeListItem genomeListItem = getTopGenomeListItem();
-            String msg = "Could not locate genome: " + newGenome + ".  Loading " + genomeListItem.getDisplayableName();
-            MessageUtils.showMessage(msg);
-            log.error("Could not locate genome: " + newGenome + ".  Loading " + genomeListItem.getDisplayableName());
-
-            // The previously used genome is unavailable, load the default genome
-            newGenome = genomeListItem.getId();
-            try {
-                findGenomeAndLoad(newGenome);
-            } catch (IOException e) {
-                log.error("Error loading genome: " + newGenome, e);
-                MessageUtils.showMessage("<html>Load of genome: " + newGenome + " failed." +
-                        "<br>IGV is in an ustable state and will be closed." +
-                        "<br>Please report this error to igv-help@broadinstitute.org");
-                System.exit(-1);
-            }
-
-            currentGenome = getGenome(newGenome);
-
-            PreferenceManager.getInstance().setDefaultGenome(newGenome);
-        }
-
-
-        // Reset the frame manager
-        if (igv != null) {
-            FrameManager.reset(currentGenome.getHomeChromosome());
-            igv.chromosomeChangeEvent(currentGenome.getHomeChromosome());
-        }
-        return getGenomeId();
-
-    }
 
     public String getGenomeId() {
         return currentGenome == null ? null : currentGenome.getId();

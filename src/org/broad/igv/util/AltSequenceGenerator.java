@@ -21,7 +21,6 @@ package org.broad.igv.util;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.SequenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 
 import java.io.BufferedWriter;
@@ -42,7 +41,7 @@ public class AltSequenceGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        IGV.getInstance().getGenomeManager().findGenomeAndLoad("hg18");
+        IGV.getInstance().getGenomeManager().loadGenomeByID("hg18");
         Globals.setHeadless(true);
         dumpSequence();
     }

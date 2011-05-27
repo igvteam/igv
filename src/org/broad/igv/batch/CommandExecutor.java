@@ -157,7 +157,7 @@ public class CommandExecutor {
         return result;
     }
 
-    private String hget(String param1, String param2, String param3) {
+    private String hget(String param1, String param2, String param3) throws IOException {
         String result;
         String fileString = param1;
         String locusString = param2;
@@ -167,7 +167,7 @@ public class CommandExecutor {
         return result;
     }
 
-    private String load(String param1) {
+    private String load(String param1) throws IOException {
         if (param1 == null) {
             return "ERROR: missing path parameter";
         }
@@ -260,7 +260,7 @@ public class CommandExecutor {
         IGV.getFirstInstance().repaintDataPanels();
     }
 
-    private String loadFiles(final String fileString, final String locus, final boolean merge) {
+    private String loadFiles(final String fileString, final String locus, final boolean merge) throws IOException {
 
         log.debug("Run load files");
         WaitCursorManager.CursorToken token = null;
@@ -289,11 +289,7 @@ public class CommandExecutor {
                 try {
                     is = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
                     IGV.getFirstInstance().doRestoreSession(is, sessionPath, locus, merge);
-                }
-                catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-                finally {
+                } finally {
                     if (is != null) {
                         try {
                             is.close();

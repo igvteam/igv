@@ -63,8 +63,8 @@ public class LoadFromURLMenuAction extends MenuAction {
                 if (url.endsWith(".xml")) {
                     try {
                         mainFrame.doRestoreSession(new URL(url), null);
-                    } catch (MalformedURLException e1) {
-                        MessageUtils.showMessage("Error loading url: " + url + " (" + e1.toString() + ")");
+                    } catch (Exception ex) {
+                        MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                     }
                 } else {
                     ResourceLocator rl = new ResourceLocator(url.trim());

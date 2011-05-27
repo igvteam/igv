@@ -27,7 +27,6 @@ package org.broad.igv.feature;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +46,7 @@ public class SequenceManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        IGV.getInstance().getGenomeManager().findGenomeAndLoad("hg18");
+        IGV.getInstance().getGenomeManager().loadGenomeByID("hg18");
         Globals.setHeadless(true);
     }
 
@@ -98,7 +97,7 @@ public class SequenceManagerTest {
         int start = 5;
         int end = 10;
         String expSequence = "ATTGC";
-        IGV.getInstance().getGenomeManager().findGenomeAndLoad(genome);
+        IGV.getInstance().getGenomeManager().loadGenomeByID(genome);
 
         byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
         assertEquals(expSequence, new String(seq));

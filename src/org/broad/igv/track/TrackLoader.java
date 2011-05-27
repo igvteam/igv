@@ -251,12 +251,6 @@ public class TrackLoader {
 
     }
 
-    private void loadGenome(ResourceLocator locator) throws FileNotFoundException {
-        GenomeManager.GenomeListItem genomeListItem = IGV.getInstance().getGenomeManager().loadGenome(locator.getPath(), true, null);
-        igv.getContentPane().getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-        igv.getContentPane().getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
-    }
-
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks) throws IOException {
 
         TribbleFeatureSource src = new TribbleFeatureSource(locator.getPath());

@@ -522,6 +522,14 @@ public class IGV {
         return contentPane.getCommandBar().getGenomeIds();
     }
 
+
+    /**
+     * Load a .genome file directly.  This method really belongs in IGVMenuBar. 
+     *
+     * @param monitor
+     * @return
+     */
+
     public GenomeListItem doLoadGenome(ProgressMonitor monitor) {
 
         ProgressBar bar = null;
@@ -606,17 +614,12 @@ public class IGV {
 
                     try {
 
-                        if (monitor != null) {
-                            monitor.fireProgressChange(50);
-                        }
-
                         // Import the genome
 
                         if (log.isDebugEnabled()) {
                             log.debug("Call loadGenome");
                         }
                         genomeListItem = IGV.getInstance().getGenomeManager().loadGenome(file.getAbsolutePath(), true, monitor);
-
                         contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
                         contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
 
@@ -842,36 +845,6 @@ public class IGV {
 
     }
 
-
-    /**
-     * Select a genome
-     */
-    final public void doChooseGenome(GenomeDescriptor genomeType) {
-
-        CursorToken token = null;
-        try {
-
-            token = WaitCursorManager.showWaitCursor();
-
-            if (genomeType != null) {
-
-                final String genomeId = genomeType.getId();
-                String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-                if (currentGenomeId != null && genomeId.equalsIgnoreCase(currentGenomeId)) {
-                    // Nothing to do if genome already loaded
-                    return;
-                }
-
-                setGenomeId(genomeId);
-                PreferenceManager.getInstance().setDefaultGenome(genomeId);
-                IGV.getInstance().getTrackManager().reloadSAMTracks();
-            }
-
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
-        }
-
-    }
 
     /**
      * Open the user preferences dialog
@@ -1119,41 +1092,6 @@ public class IGV {
         return file;
     }
 
-    public void setGenomeId(String id) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("Setting current genome id");
-        }
-
-        String currentGenomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        if (currentGenomeId != null && id.equalsIgnoreCase(currentGenomeId)) {
-            // Nothing to do if genome already loaded
-            return;
-        }
-
-        String gid = getGenomeManager().setGenomeId(id);
-
-        FeatureDB.clearFeatures();
-
-        // TODO -- this is all rather circular
-        Genome genome = getGenomeManager().getCurrentGenome();
-
-        IGV.getInstance().getTrackManager().createGeneTrack(genome);
-
-
-        for (Chromosome chr : getGenomeManager().getCurrentGenome().getChromosomes()) {
-            for (Cytoband cyto : chr.getCytobands()) {
-                FeatureDB.addFeature(cyto.getLongName(), cyto);
-            }
-        }
-
-
-        if (contentPane.getCommandBar() != null) {
-            contentPane.getCommandBar().updateChromosomeDropdown();
-        }
-
-        PreferenceManager.getInstance().setDefaultGenome(gid);
-    }
 
     private void createZoomCursors() throws HeadlessException, IndexOutOfBoundsException {
         if (zoomInCursor == null || zoomOutCursor == null) {
@@ -1403,43 +1341,29 @@ public class IGV {
      * @param sessionURL
      */
     final public void doRestoreSession(final URL sessionURL,
-                                       final String locus) {
+                                       final String locus) throws Exception {
 
         if (log.isDebugEnabled()) {
             log.debug("Enter doRestoreSession: " + sessionURL + " " + locus);
         }
 
-        if (sessionURL != null) {
-            InputStream inputStream = null;
-            try {
-                inputStream = new BufferedInputStream(sessionURL.openStream());
-                doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
-            } catch (Exception e) {
-                String message = "Failed to load session! : " + sessionURL;
-                MessageUtils.showAndLogErrorMessage(mainFrame, message, log, e);
-            } finally {
 
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException iOException) {
-                        log.error("Error closing session stream", iOException);
-                    }
+        InputStream inputStream = null;
+        try {
+            inputStream = new BufferedInputStream(sessionURL.openStream());
+            doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
+        } finally {
 
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException iOException) {
+                    log.error("Error closing session stream", iOException);
                 }
+
             }
-
-
-        } else {
-            String message = "Session file does not exist! : ";
-            try {
-                message += URLDecoder.decode(sessionURL.getFile(), "UTF-8");
-            } catch (UnsupportedEncodingException ex) {
-                message += sessionURL.getFile();
-            }
-
-            MessageUtils.showAndLogErrorMessage(mainFrame, message, log);
         }
+
 
         if (log.isDebugEnabled()) {
             log.debug("Exit doRestoreSession");
@@ -1483,9 +1407,6 @@ public class IGV {
             //If there's a RegionNavigatorDialog, kill it.
             //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
             RegionNavigatorDialog.destroyActiveInstance();
-        } catch (Exception e) {
-            String message = "Failed to load session! : " + sessionPath;
-            MessageUtils.showAndLogErrorMessage(mainFrame, message, log, e);
         } finally {
 
             resetStatusMessage();
@@ -1561,18 +1482,6 @@ public class IGV {
         }
     }
 
-
-    public void startUp(final String[] args) {
-
-        if (log.isDebugEnabled()) {
-            log.debug("startUp");
-        }
-
-        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
-        SwingWorker worker = new StartupWorker(igvArgs);
-        worker.execute();
-    }
-
     public LinkedList<String> getRecentSessionList() {
         return recentSessionList;
     }
@@ -1602,9 +1511,9 @@ public class IGV {
         showPeakMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (showPeakMenuItem.isSelected()) {
-                   contentPane.add(peakCommandBar);
+                    contentPane.add(peakCommandBar);
                 } else {
-                   contentPane.remove(peakCommandBar);
+                    contentPane.remove(peakCommandBar);
                 }
             }
         });
@@ -1615,8 +1524,32 @@ public class IGV {
 
     public boolean isSuppressTooltip() {
 
-       return contentPane != null && contentPane.getCommandBar().isSupressTooltip();   
+        return contentPane != null && contentPane.getCommandBar().isSupressTooltip();
     }
+
+    public void startUp(final String[] args) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("startUp");
+        }
+
+        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+
+        // Optional arguments
+        if (igvArgs.getPropertyFile() != null) {
+        }
+        if (igvArgs.getDataServerURL() != null) {
+            PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
+        }
+        if (igvArgs.getGenomeServerURL() != null) {
+            PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
+        }
+
+
+        SwingWorker worker = new StartupWorker(igvArgs);
+        worker.execute();
+    }
+
 
     /**
      * Swing worker class to startup IGV
@@ -1629,7 +1562,6 @@ public class IGV {
 
         }
 
-
         /**
          * Do the actual work
          *
@@ -1639,40 +1571,13 @@ public class IGV {
         @Override
         protected Object doInBackground() throws Exception {
 
+
             final ProgressMonitor monitor = new ProgressMonitor();
-            final ProgressBar progressBar =
-                    ProgressBar.showProgressDialog(mainFrame, "Initializing Genome...", monitor, false);
-            monitor.fireProgressChange(10);
+            final ProgressBar progressBar = ProgressBar.showProgressDialog(mainFrame, "Initializing...", monitor, false);
+            monitor.fireProgressChange(20);
 
-            // Optional arguments
-            if (igvArgs.getPropertyFile() != null) {
-
-            }
-            if (igvArgs.getDataServerURL() != null) {
-                PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
-            }
-            if (igvArgs.getGenomeServerURL() != null) {
-                PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
-            }
-
-
-            String genomeId = igvArgs.getGenomeId();
-
-            if (genomeId == null) {
-                if (igvArgs.getGenomeServerURL() != null) {
-                    genomeId = IGV.getInstance().getGenomeManager().getTopGenomeListItem().getId();
-                } else {
-                    genomeId = PreferenceManager.getInstance().getDefaultGenome();
-                }
-            }
-
-            setGenomeId(genomeId);
-            monitor.fireProgressChange(50);
-
-            genomeId = IGV.getInstance().getGenomeManager().getGenomeId(); // <= might have changed
             try {
                 contentPane.getCommandBar().initializeGenomeList(monitor);
-                contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeId);
             } catch (FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(mainFrame, "Error initializing genome list: " + ex.getMessage());
                 log.error("Error initializing genome list: ", ex);
@@ -1680,21 +1585,20 @@ public class IGV {
                 JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
                 log.error("Network error initializing genome list: ", ex);
             }
+            finally {
+                monitor.fireProgressChange(50);
+                closeWindow(progressBar);
+            }
+
+            if (igvArgs.getGenomeId() != null) {
+                selectGenomeFromList(igvArgs.getGenomeId());
+            } else if (igvArgs.getSessionFile() == null) {
+                String genomeId = PreferenceManager.getInstance().getDefaultGenome();
+                contentPane.getCommandBar().selectGenomeFromList(genomeId);
+            }
 
             // Done
-            closeWindow(progressBar);
 
-            // Start up a port listener.  Port # can be overriden with "-p" command line switch
-            boolean portEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED);
-            String portString = igvArgs.getPort();
-            if (portEnabled || portString != null) {
-                // Command listner thread
-                int port = PreferenceManager.getInstance().getAsInt(PreferenceManager.PORT_NUMBER);
-                if (portString != null) {
-                    port = Integer.parseInt(portString);
-                }
-                CommandListener.start(port);
-            }
 
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
@@ -1705,20 +1609,12 @@ public class IGV {
 
                 final IndefiniteProgressMonitor indefMonitor = new IndefiniteProgressMonitor(60);
                 final ProgressBar bar2 = ProgressBar.showProgressDialog(mainFrame, "Loading session data", indefMonitor, false);
-
-                int idx = 0;
-
-
                 indefMonitor.start();
+
                 try {
 
                     if (log.isDebugEnabled()) {
                         log.debug("Calling restore session");
-                    }
-
-
-                    if (igvArgs.getGenomeId() != null) {
-                        selectGenomeFromList(igvArgs.getGenomeId());
                     }
 
 
@@ -1752,6 +1648,11 @@ public class IGV {
                     String tmp = igvArgs.getSessionFile() != null ? igvArgs.getSessionFile() : igvArgs.getDataFileString();
                     JOptionPane.showMessageDialog(mainFrame, "<html>Error loading session: " + tmp + "<br>" + ex.toString());
                     log.error("Error loading session: " + tmp, ex);
+
+                    // Session load failed, load default genome
+                    String genomeId = PreferenceManager.getInstance().getDefaultGenome();
+                    contentPane.getCommandBar().selectGenomeFromList(genomeId);
+
                 }
 
 
@@ -1764,6 +1665,18 @@ public class IGV {
             }
 
             session.recordHistory();
+
+            // Start up a port listener.  Port # can be overriden with "-p" command line switch
+            boolean portEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED);
+            String portString = igvArgs.getPort();
+            if (portEnabled || portString != null) {
+                // Command listner thread
+                int port = PreferenceManager.getInstance().getAsInt(PreferenceManager.PORT_NUMBER);
+                if (portString != null) {
+                    port = Integer.parseInt(portString);
+                }
+                CommandListener.start(port);
+            }
 
 
             UIUtilities.invokeOnEventThread(new Runnable() {
