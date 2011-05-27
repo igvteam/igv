@@ -169,66 +169,86 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         public void actionPerformed(ActionEvent actionEvent) {
 
-            GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
-            if (genomeListItem != null) {
-                String requestedGenomeId = genomeListItem.getId();
-                final IGV igv = IGV.getInstance();
-                String currentGenomeId = igv.getGenomeManager().getGenomeId();
-                if ((currentGenomeId != null) && requestedGenomeId.equalsIgnoreCase(currentGenomeId)) {
-                    // Nothing to do if genome already loaded
-                    return;
-                }
+            final Runnable runnable = new Runnable() {
 
-                final ProgressMonitor monitor = new ProgressMonitor();
-                final ProgressBar bar =
-                        ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
-
-                if (requestedGenomeId != null) {
-                    try {
-                        monitor.fireProgressChange(50);
-
-                        igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
-
-                        updateGenome(genomeListItem.getId());
-
-                        monitor.fireProgressChange(25);
-
-                        if (!isGenomeCached(genomeListItem.getId())) {
-                            cachedGenomeItemList.add(genomeListItem);
+                public void run() {
+                    GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
+                    if (genomeListItem != null) {
+                        String requestedGenomeId = genomeListItem.getId();
+                        final IGV igv = IGV.getInstance();
+                        String currentGenomeId = igv.getGenomeManager().getGenomeId();
+                        if ((currentGenomeId != null) && requestedGenomeId.equalsIgnoreCase(currentGenomeId)) {
+                            // Nothing to do if genome already loaded
+                            return;
                         }
 
-                        // Unload all tracks, begin new session.  This should be done after the genome switch
-                        igv.createNewSession(null);
+                        final ProgressMonitor monitor = new ProgressMonitor();
+                        final ProgressBar bar =
+                                ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
 
-                        monitor.fireProgressChange(25);
+                        if (requestedGenomeId != null) {
+                            try {
+                                monitor.fireProgressChange(50);
 
-                    } catch (GenomeServerException e) {
-                        log.error("Error accessing genome list: " + e.getMessage());
-                        JOptionPane.showMessageDialog(
-                                IGV.getMainFrame(),
-                                UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-                    } catch (FileNotFoundException e) {
-                        if (bar != null) {
-                            bar.close();
-                        }
+                                igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
 
-                        int choice =
-                                JOptionPane.showConfirmDialog(
-                                        IGV.getMainFrame(), "The genome file [" + e.getMessage() +
-                                                "] could not be located. Would you like to remove the selected entry?",
-                                        "", JOptionPane.OK_CANCEL_OPTION);
+                                updateGenome(genomeListItem.getId());
 
-                        if (choice == JOptionPane.OK_OPTION) {
-                            Set<String> excludedArchivesUrls = new HashSet();
-                            excludedArchivesUrls.add(genomeListItem.getLocation());
-                            IGVCommandBar.this.rebuildGenomeItemList(excludedArchivesUrls);
-                        }
-                    } finally {
-                        if (bar != null) {
-                            bar.close();
+                                monitor.fireProgressChange(25);
+
+                                if (!isGenomeCached(genomeListItem.getId())) {
+                                    cachedGenomeItemList.add(genomeListItem);
+                                }
+
+                                // Unload all tracks, begin new session.  This should be done after the genome switch
+                                igv.createNewSession(null);
+
+                                monitor.fireProgressChange(25);
+
+                            } catch (GenomeServerException e) {
+                                log.error("Error accessing genome list: " + e.getMessage());
+                                JOptionPane.showMessageDialog(
+                                        IGV.getMainFrame(),
+                                        UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+                            } catch (FileNotFoundException e) {
+                                if (bar != null) {
+                                    bar.close();
+                                }
+
+                                int choice =
+                                        JOptionPane.showConfirmDialog(
+                                                IGV.getMainFrame(), "The genome file [" + e.getMessage() +
+                                                        "] could not be located. Would you like to remove the selected entry?",
+                                                "", JOptionPane.OK_CANCEL_OPTION);
+
+                                if (choice == JOptionPane.OK_OPTION) {
+                                    Set<String> excludedArchivesUrls = new HashSet();
+                                    excludedArchivesUrls.add(genomeListItem.getLocation());
+                                    rebuildGenomeItemList(excludedArchivesUrls);
+                                }
+                            } finally {
+                                if (bar != null) {
+                                    bar.close();
+                                }
+                            }
                         }
                     }
                 }
+            };
+
+            // If we're on the dispatch thread spawn a worker, otherwise just execute.   
+            if (SwingUtilities.isEventDispatchThread()) {
+                SwingWorker worker = new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        runnable.run();
+                        return null;
+                    }
+                };
+
+                worker.execute();
+            } else {
+                runnable.run();
             }
         }
     }
