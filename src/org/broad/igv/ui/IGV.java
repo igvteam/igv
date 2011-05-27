@@ -1597,9 +1597,6 @@ public class IGV {
                 contentPane.getCommandBar().selectGenomeFromList(genomeId);
             }
 
-            // Done
-
-
             //If there is an argument assume it is a session file or url
             if (igvArgs.getSessionFile() != null || igvArgs.getDataFileString() != null) {
 

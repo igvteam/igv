@@ -64,10 +64,12 @@ import java.util.List;
 public class IGVCommandBar extends javax.swing.JPanel {
 
     private static Logger log = Logger.getLogger(IGVCommandBar.class);
-    //private IGVContentPane owner;
-    private LinkedHashSet<GenomeListItem> userDefinedGenomeItemList;
-    private LinkedHashSet<GenomeListItem> serverGenomeItemList;
-    private LinkedHashSet<GenomeListItem> cachedGenomeItemList;
+
+    // TODO -- THESE LISTS ARE ALSO DEFINED IN GENOME MANAGER  ???
+    private List<GenomeListItem> userDefinedGenomeItemList;
+    private List<GenomeListItem> serverGenomeItemList;
+    private List<GenomeListItem> cachedGenomeItemList;
+
     private JComboBox chromosomeComboBox;
     private JComboBox genomeComboBox;
     //private JPanel geneListPanel;
@@ -81,7 +83,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JTextField searchTextField;
     private JPanel toolPanel;
     private JPanel zoomControl;
-    private ItemListener genomeComboBoxItemListener = null;
     final private int DEFAULT_CHROMOSOME_DROPDOWN_WIDTH = 120;
     private JideButton backButton;
     private JideButton forwardButton;
@@ -174,64 +175,59 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 public void run() {
                     GenomeListItem genomeListItem = (GenomeListItem) genomeComboBox.getSelectedItem();
                     if (genomeListItem != null) {
-                        String requestedGenomeId = genomeListItem.getId();
                         final IGV igv = IGV.getInstance();
-                        String currentGenomeId = igv.getGenomeManager().getGenomeId();
-                        if ((currentGenomeId != null) && requestedGenomeId.equalsIgnoreCase(currentGenomeId)) {
-                            // Nothing to do if genome already loaded
-                            return;
-                        }
-
                         final ProgressMonitor monitor = new ProgressMonitor();
                         final ProgressBar bar =
                                 ProgressBar.showProgressDialog(IGV.getMainFrame(), "Loading Genome...", monitor, false);
 
-                        if (requestedGenomeId != null) {
-                            try {
-                                monitor.fireProgressChange(50);
 
-                                igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
+                        try {
+                            monitor.fireProgressChange(50);
 
-                                updateGenome(genomeListItem.getId());
+                            igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
 
-                                monitor.fireProgressChange(25);
+                            updateGenome(genomeListItem.getId());
 
-                                if (!isGenomeCached(genomeListItem.getId())) {
-                                    cachedGenomeItemList.add(genomeListItem);
-                                }
+                            monitor.fireProgressChange(25);
 
-                                // Unload all tracks, begin new session.  This should be done after the genome switch
-                                igv.createNewSession(null);
+                            if (!isGenomeCached(genomeListItem.getId())) {
+                                cachedGenomeItemList.add(genomeListItem);
+                            }
 
-                                monitor.fireProgressChange(25);
+                            // TODO -- warn user.  Unload all tracks, begin new session.  This should be done after the genome switch
+                            igv.createNewSession(null);
 
-                            } catch (GenomeServerException e) {
-                                log.error("Error accessing genome list: " + e.getMessage());
-                                JOptionPane.showMessageDialog(
-                                        IGV.getMainFrame(),
-                                        UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-                            } catch (FileNotFoundException e) {
-                                if (bar != null) {
-                                    bar.close();
-                                }
+                            PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
 
-                                int choice =
-                                        JOptionPane.showConfirmDialog(
-                                                IGV.getMainFrame(), "The genome file [" + e.getMessage() +
-                                                        "] could not be located. Would you like to remove the selected entry?",
-                                                "", JOptionPane.OK_CANCEL_OPTION);
+                            monitor.fireProgressChange(25);
 
-                                if (choice == JOptionPane.OK_OPTION) {
-                                    Set<String> excludedArchivesUrls = new HashSet();
-                                    excludedArchivesUrls.add(genomeListItem.getLocation());
-                                    rebuildGenomeItemList(excludedArchivesUrls);
-                                }
-                            } finally {
-                                if (bar != null) {
-                                    bar.close();
-                                }
+                        } catch (GenomeServerException e) {
+                            log.error("Error accessing genome list: " + e.getMessage());
+                            JOptionPane.showMessageDialog(
+                                    IGV.getMainFrame(),
+                                    UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+                        } catch (FileNotFoundException e) {
+                            if (bar != null) {
+                                bar.close();
+                            }
+
+                            int choice =
+                                    JOptionPane.showConfirmDialog(
+                                            IGV.getMainFrame(), "The genome file [" + e.getMessage() +
+                                                    "] could not be located. Would you like to remove the selected entry?",
+                                            "", JOptionPane.OK_CANCEL_OPTION);
+
+                            if (choice == JOptionPane.OK_OPTION) {
+                                Set<String> excludedArchivesUrls = new HashSet();
+                                excludedArchivesUrls.add(genomeListItem.getLocation());
+                                rebuildGenomeItemList(excludedArchivesUrls);
+                            }
+                        } finally {
+                            if (bar != null) {
+                                bar.close();
                             }
                         }
+
                     }
                 }
             };
@@ -263,11 +259,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
         if (userDefinedGenomeItemList == null) {
-            userDefinedGenomeItemList = new LinkedHashSet<GenomeListItem>();
+            userDefinedGenomeItemList = new LinkedList<GenomeListItem>();
             userDefinedGenomeItemList.add(newItem);
         } else {
 
-            LinkedHashSet tempItemList = new LinkedHashSet<GenomeListItem>();
+            List tempItemList = new LinkedList<GenomeListItem>();
             tempItemList.add(newItem);
             for (GenomeListItem item : userDefinedGenomeItemList) {
                 tempItemList.add(item);
@@ -275,6 +271,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             userDefinedGenomeItemList = tempItemList;
         }
         setGenomeItemListModel();
+
     }
 
     /**
@@ -289,7 +286,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             // Build a single available genome list from both client, server
             // and cached information. This allows us to process
             // everything the same way.
-            LinkedHashSet<GenomeListItem> serverSideItemList = null;
+            List<GenomeListItem> serverSideItemList = null;
 
             try {
                 serverSideItemList =
@@ -306,12 +303,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
                 });
             }
 
-            LinkedHashSet<GenomeListItem> cacheGenomeItemList = null;
+            List<GenomeListItem> cacheGenomeItemList = null;
             if (serverSideItemList == null || serverSideItemList.isEmpty()) {
                 cacheGenomeItemList = IGV.getInstance().getGenomeManager().getCachedGenomeArchiveList();
             }
 
-            LinkedHashSet<GenomeListItem> clientSideItemList =
+            List<GenomeListItem> clientSideItemList =
                     IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList();
 
             setGenomeItemList(clientSideItemList, serverSideItemList, cacheGenomeItemList);
@@ -695,20 +692,20 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
 
-    public void setGenomeItemList(LinkedHashSet<GenomeListItem> clientItemList,
-                                  LinkedHashSet<GenomeListItem> serverItemList,
-                                  LinkedHashSet<GenomeListItem> cachedGenomeItemList) {
+    public void setGenomeItemList(List<GenomeListItem> clientItemList,
+                                  List<GenomeListItem> serverItemList,
+                                  List<GenomeListItem> cachedGenomeItemList) {
 
         if (clientItemList == null) {
-            clientItemList = new LinkedHashSet<GenomeListItem>();
+            clientItemList = new LinkedList<GenomeListItem>();
         }
 
         if (serverItemList == null) {
-            serverItemList = new LinkedHashSet<GenomeListItem>();
+            serverItemList = new LinkedList<GenomeListItem>();
         }
 
         if (cachedGenomeItemList == null) {
-            cachedGenomeItemList = new LinkedHashSet<GenomeListItem>();
+            cachedGenomeItemList = new LinkedList<GenomeListItem>();
         }
 
 

@@ -32,7 +32,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.UIConstants;
 
 import org.broad.igv.ui.util.ConfirmDialog;
@@ -70,9 +69,9 @@ public class GenomeManager {
     //private String genomeId;
     public Genome currentGenome;
 
-    private LinkedHashSet<GenomeListItem> userDefinedGenomeArchiveList;
-    private LinkedHashSet<GenomeListItem> cachedGenomeArchiveList;
-    private LinkedHashSet<GenomeListItem> serverGenomeArchiveList;
+    private List<GenomeListItem> userDefinedGenomeArchiveList;
+    private List<GenomeListItem> cachedGenomeArchiveList;
+    private List<GenomeListItem> serverGenomeArchiveList;
 
     IGV igv;
 
@@ -538,7 +537,7 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public LinkedHashSet<GenomeListItem> getServerGenomeArchiveList(Set excludedArchivesUrls)
+    public List<GenomeListItem> getServerGenomeArchiveList(Set excludedArchivesUrls)
             throws IOException {
 
         if (serverGenomeListUnreachable) {
@@ -546,7 +545,7 @@ public class GenomeManager {
         }
 
         if (serverGenomeArchiveList == null) {
-            serverGenomeArchiveList = new LinkedHashSet();
+            serverGenomeArchiveList = new LinkedList();
             BufferedReader dataReader = null;
             InputStream inputStream = null;
             String genomeListURLString = "";
@@ -650,15 +649,15 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public LinkedHashSet<GenomeListItem> getUserDefinedGenomeArchiveList()
+    public List<GenomeListItem> getUserDefinedGenomeArchiveList()
             throws IOException {
 
 
         if (userDefinedGenomeArchiveList == null) {
 
-            boolean clientGenomeListNeedsRebuilding = false;
+            boolean updateClientGenomeListFile = false;
 
-            userDefinedGenomeArchiveList = new LinkedHashSet();
+            userDefinedGenomeArchiveList = new LinkedList();
 
             File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
@@ -667,7 +666,6 @@ public class GenomeManager {
             if (listProperties != null) {
 
                 Collection records = listProperties.values();
-
                 for (Object value : records) {
 
                     String record = (String) value;
@@ -676,26 +674,21 @@ public class GenomeManager {
                     }
 
                     String[] fields = record.split("\t");
-
                     File file = new File(fields[1]);
-                    if (file.isDirectory()) {
+                    if (file.isDirectory() || !file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
                         continue;
                     }
                     if (!file.exists()) {
-                        clientGenomeListNeedsRebuilding = true;
+                        updateClientGenomeListFile = true;
                         continue;
                     }
 
-                    if (!file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                        continue;
-                    }
-                    GenomeListItem item = new GenomeListItem(fields[0], file.getAbsolutePath(),
-                            fields[2], 0, true);
+                    GenomeListItem item = new GenomeListItem(fields[0], file.getAbsolutePath(), fields[2], 0, true);
                     userDefinedGenomeArchiveList.add(item);
                 }
             }
-            if (clientGenomeListNeedsRebuilding) {
-                rebuildClientGenomeList(userDefinedGenomeArchiveList);
+            if (updateClientGenomeListFile) {
+                updateImportedGenomePropertyFile();
             }
         }
         return userDefinedGenomeArchiveList;
@@ -723,11 +716,11 @@ public class GenomeManager {
      * @throws IOException
      * @see GenomeListItem
      */
-    public LinkedHashSet<GenomeListItem> getCachedGenomeArchiveList()
+    public List<GenomeListItem> getCachedGenomeArchiveList()
             throws IOException {
 
         if (cachedGenomeArchiveList == null) {
-            cachedGenomeArchiveList = new LinkedHashSet();
+            cachedGenomeArchiveList = new LinkedList();
 
             if (!Globals.getGenomeCacheDirectory().exists()) {
                 return cachedGenomeArchiveList;
@@ -832,7 +825,7 @@ public class GenomeManager {
 
         LinkedHashSet<GenomeListItem> genomeListItems = new LinkedHashSet();
 
-        LinkedHashSet<GenomeListItem> userDefinedItemList = getUserDefinedGenomeArchiveList();
+        final List<GenomeListItem> userDefinedItemList = getUserDefinedGenomeArchiveList();
         if (userDefinedItemList != null) {
             genomeListItems.addAll(userDefinedItemList);
         }
@@ -840,7 +833,7 @@ public class GenomeManager {
         // Build a single available genome list from both client, server
         // and cached information. This allows us to process
         // everything the same way.
-        LinkedHashSet<GenomeListItem> serverSideItemList = null;
+        List<GenomeListItem> serverSideItemList = null;
         try {
             serverSideItemList = getServerGenomeArchiveList(null);
         } catch (UnknownHostException e) {
@@ -870,14 +863,12 @@ public class GenomeManager {
     /**
      * Reconstructs the user-define genome property file.
      *
-     * @param genomeItemList The list of user-define genome GenomeListItem
-     *                       objects to store in the property file.
      * @throws IOException
      */
-    public void rebuildClientGenomeList(LinkedHashSet<GenomeListItem> genomeItemList)
+    public void updateImportedGenomePropertyFile()
             throws IOException {
 
-        if ((genomeItemList == null)) {
+        if ((userDefinedGenomeArchiveList == null)) {
             return;
         }
 
@@ -889,7 +880,7 @@ public class GenomeManager {
 
         StringBuffer buffer = new StringBuffer();
         Properties listProperties = new Properties();
-        for (GenomeListItem genomeListItem : genomeItemList) {
+        for (GenomeListItem genomeListItem : userDefinedGenomeArchiveList) {
 
             buffer.append(genomeListItem.getDisplayableName());
             buffer.append("\t");
@@ -1053,7 +1044,10 @@ public class GenomeManager {
             log.debug("Call loadGenome");
         }
 
-        return loadGenome(archiveFile.getAbsolutePath(), true, null);
+        GenomeListItem newItem = loadGenome(archiveFile.getAbsolutePath(), true, null);
+        userDefinedGenomeArchiveList.add(0, newItem);
+        updateImportedGenomePropertyFile();
+        return newItem;
     }
 
 

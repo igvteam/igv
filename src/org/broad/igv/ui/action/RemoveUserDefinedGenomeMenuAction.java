@@ -27,12 +27,10 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.UserDefinedGenomeCheckList;
-import org.broad.igv.ui.util.UIUtilities;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -66,7 +64,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
 
         try {
 
-            LinkedHashSet<GenomeListItem> genomeItemList =
+            List<GenomeListItem> genomeItemList =
                     IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList();
 
             if (genomeItemList.isEmpty()) {
@@ -116,7 +114,7 @@ public class RemoveUserDefinedGenomeMenuAction extends MenuAction {
                 }
 
                 if (removed) {
-                    IGV.getInstance().getGenomeManager().rebuildClientGenomeList(genomeItemList);
+                    IGV.getInstance().getGenomeManager().updateImportedGenomePropertyFile();
                     IGV.getInstance().rebuildGenomeDropdownList(null);
                 }
             }
