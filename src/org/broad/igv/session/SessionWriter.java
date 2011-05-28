@@ -96,14 +96,7 @@ public class SessionWriter {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param session
-     * @param outputFile
-     * @return
-     * @throws RuntimeException
-     */
+
     public String createXmlFromSession(Session session, File outputFile) throws RuntimeException {
 
         String xmlString = null;
