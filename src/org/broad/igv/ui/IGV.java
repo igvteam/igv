@@ -32,9 +32,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeBuilderDialog;
-import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -1389,8 +1387,9 @@ public class IGV {
             String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
-            if (!FrameManager.isGeneListMode() && searchText != null && !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
-                contentPane.getCommandBar().searchByLocus(searchText);
+            if (!FrameManager.isGeneListMode() && searchText != null &&
+                    !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
+                goToLocus(searchText);
             }
 
 
@@ -1451,7 +1450,7 @@ public class IGV {
      */
     public void goToLocus(String locus) {
 
-        contentPane.getCommandBar().searchByLocus(locus);
+        contentPane.getCommandBar().searchByLocus(locus, false);
     }
 
 
@@ -1526,7 +1525,7 @@ public class IGV {
 
     public boolean isSuppressTooltip() {
 
-        return contentPane != null && contentPane.getCommandBar().isSupressTooltip();
+        return contentPane != null && contentPane.getCommandBar().isSuppressTooltip();
     }
 
     public void startUp(final String[] args) {

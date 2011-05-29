@@ -163,24 +163,10 @@ public class Main {
         com.jidesoft.utils.Lm.verifyLicense("The Broad Institute, MIT", "Gene Pattern",
                 "D.DQSR7z9m6fxL1IqWZ6svQFmE6vj3Q");
 
-        // Set look and feel.  Use Nimbus for all platforms except Mac
-        /*if (!Globals.IS_MAC) {
-            try {
-                for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    if ("Nimbus".equals(info.getName())) {
-                        UIManager.setLookAndFeel(info.getClassName());
-                        break;
-                    }
-                }
-            }
-            catch (Exception e) {
-                log.error("Error installing look and feel", e);
-            }
-        }
-        */
+        // Use the platform look & feel
         try {
             String lnf = UIManager.getSystemLookAndFeelClassName();
-            System.out.println("Installing look & feel:  " + lnf);
+            System.out.println("Installing: " + lnf);
             UIManager.setLookAndFeel(lnf);
         } catch (Exception e) {
             e.printStackTrace();

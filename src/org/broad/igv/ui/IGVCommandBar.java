@@ -65,6 +65,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     private static Logger log = Logger.getLogger(IGVCommandBar.class);
 
+    final static String DISABLE_POPUP_TOOLTIP = "Disable popup text in data panels.";
+    final static String ENABLE_POPUP_TOOLTIP = "Enable popup text in data panels.";
+
+
     // TODO -- THESE LISTS ARE ALSO DEFINED IN GENOME MANAGER  ???
     private List<GenomeListItem> userDefinedGenomeItemList;
     private List<GenomeListItem> serverGenomeItemList;
@@ -79,7 +83,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JPanel locationPanel;
     private JideButton refreshButton;
     private JideToggleButton roiToggleButton;
-    private JideToggleButton supressTooltipButton;
+    private JideButton supressTooltipButton;
     private JTextField searchTextField;
     private JPanel toolPanel;
     private JPanel zoomControl;
@@ -87,6 +91,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     private JideButton backButton;
     private JideButton forwardButton;
     private JideButton fitToWindowButton;
+    private boolean suppressTooltip = false;
 
     /**
      * Creates new form IGVCommandBar
@@ -425,8 +430,9 @@ public class IGVCommandBar extends javax.swing.JPanel {
         roiToggleButton.setEnabled(!geneListMode);
     }
 
-    public boolean isSupressTooltip() {
-        return supressTooltipButton.isSelected();
+
+    public boolean isSuppressTooltip() {
+        return suppressTooltip;
     }
 
     static class ComboBoxRenderer implements ListCellRenderer {
@@ -902,15 +908,30 @@ public class IGVCommandBar extends javax.swing.JPanel {
         });
         toolPanel.add(fitToWindowButton, JideBoxLayout.FIX);
 
-        Icon suppressTooltipIcon =
-                IconFactory.getInstance().getIcon(IconFactory.IconID.SUPPRESS_TOOLTIP);
-        supressTooltipButton = new JideToggleButton(suppressTooltipIcon);
+        final Icon noTooltipIcon =
+                IconFactory.getInstance().getIcon(IconFactory.IconID.NO_TOOLTIP);
+        final Icon tooltipIcon =
+                IconFactory.getInstance().getIcon(IconFactory.IconID.TOOLTIP);
+        supressTooltipButton = new JideButton(noTooltipIcon);
         supressTooltipButton.setButtonStyle(JideButton.TOOLBOX_STYLE);
         supressTooltipButton.setAlignmentX(RIGHT_ALIGNMENT);
-        supressTooltipButton.setToolTipText("Suppress popup tooltip text in data panels.");
+        supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
         supressTooltipButton.setMaximumSize(new java.awt.Dimension(32, 32));
         supressTooltipButton.setMinimumSize(new java.awt.Dimension(32, 32));
         supressTooltipButton.setPreferredSize(new java.awt.Dimension(32, 32));
+        supressTooltipButton.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                suppressTooltip = !suppressTooltip;
+                if (suppressTooltip) {
+                    supressTooltipButton.setIcon(tooltipIcon);
+                    supressTooltipButton.setToolTipText(ENABLE_POPUP_TOOLTIP);
+                } else {
+                    supressTooltipButton.setIcon(noTooltipIcon);
+                    supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
+                }
+            }
+        });
         toolPanel.add(supressTooltipButton, JideBoxLayout.FIX);
 
         this.add(toolPanel);
@@ -1004,6 +1025,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
 
     public void searchByLocus(final String searchText) {
+        searchByLocus(searchText, true);
+    }
+
+    public void searchByLocus(final String searchText, boolean inBackground) {
 
 
         if (log.isDebugEnabled()) {
@@ -1022,7 +1047,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
                     return "Search: " + searchText;
                 }
             };
-            LongRunningTask.submit(runnable);
+
+            if (inBackground) {
+                LongRunningTask.submit(runnable);
+            } else {
+                runnable.run();
+            }
         }
 
         if (log.isDebugEnabled()) {
