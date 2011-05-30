@@ -34,14 +34,13 @@ import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
 
 /**
  * @author jrobinso
- *
- * Notes;
- *
- * The painting architecture of Swing requires an opaque JComponent to exist in the containment hieararchy above all
- * other components. This is typically provided by way of the content pane. If you replace the content pane, it is
- * recommended that you make the content pane opaque by way of setOpaque(true). Additionally, if the content pane
- * overrides paintComponent, it will need to completely fill in the background in an opaque color in paintComponent.
- *
+ *         <p/>
+ *         Notes;
+ *         <p/>
+ *         The painting architecture of Swing requires an opaque JComponent to exist in the containment hieararchy above all
+ *         other components. This is typically provided by way of the content pane. If you replace the content pane, it is
+ *         recommended that you make the content pane opaque by way of setOpaque(true). Additionally, if the content pane
+ *         overrides paintComponent, it will need to completely fill in the background in an opaque color in paintComponent.
  * @date Apr 4, 2011
  */
 public class IGVContentPane extends JPanel {
@@ -69,7 +68,7 @@ public class IGVContentPane extends JPanel {
 
         commandBarPanel = new JPanel();
         BoxLayout layout = new BoxLayout(commandBarPanel, BoxLayout.PAGE_AXIS);
-         
+
         commandBarPanel.setLayout(layout);
         add(commandBarPanel, BorderLayout.NORTH);
 
@@ -97,7 +96,7 @@ public class IGVContentPane extends JPanel {
         commandBarPanel.invalidate();
     }
 
-    public void removeCommandBar(JComponent component)  {
+    public void removeCommandBar(JComponent component) {
         commandBarPanel.remove(component);
         commandBarPanel.invalidate();
     }
@@ -107,20 +106,6 @@ public class IGVContentPane extends JPanel {
         return UIConstants.preferredSize;
     }
 
-    /**
-     * Repaint panels containing data, specifically the dataTrackPanel,
-     * featureTrackPanel, and headerPanel.
-     */
-    public void repaintDataAndHeaderPanels() {
-        repaintDataAndHeaderPanels(true);
-    }
-
-    public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        mainPanel.repaint();
-        if (updateCommandBar) {
-            igvCommandBar.updateCurrentCoordinates();
-        }
-    }
 
     public void repaintDataPanels() {
         for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
@@ -128,32 +113,6 @@ public class IGVContentPane extends JPanel {
         }
 
     }
-
-    public void repaintNamePanels() {
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
-            tsv.getNamePanel().repaint();
-        }
-
-    }
-
-    public void repaintStatusAndZoomSlider() {
-        igvCommandBar.repaint();
-    }
-
-
-
-    public void resetFrames() {
-        mainPanel.headerPanelContainer.createHeaderPanels();
-        for (TrackPanelScrollPane tp : trackManager.getTrackPanelScrollPanes()) {
-            tp.getTrackPanel().createDataPanels();
-        }
-
-        igvCommandBar.setGeneListMode(FrameManager.isGeneListMode());
-        mainPanel.revalidate();
-        mainPanel.applicationHeaderPanel.revalidate();
-        mainPanel.repaint();
-    }
-
 
 
     final public void doRefresh() {
@@ -163,70 +122,11 @@ public class IGVContentPane extends JPanel {
         //getContentPane().repaint();
     }
 
-    final public void refreshCommandBar() {
-        igvCommandBar.updateCurrentCoordinates();
-    }
-
-
-    /**
-     * Set the status bar message.  If the message equals "Done." intercept
-     * and reset to the default "quite" message,  currently the number of tracks
-     * loaded.
-     *
-     * @param message
-     */
-    public void setStatusBarMessage(String message) {
-        if (message.equals("Done.")) {
-            resetStatusMessage();
-        }
-
-        ((ApplicationStatusBar) statusBar).setMessage(message);
-    }
-
-
-    /**
-     * Add a new data panel set
-     */
-    public TrackPanelScrollPane addDataPanel(String name) {
-        return mainPanel.addDataPanel(name);
-    }
-
-
-    public TrackPanel getDataPanel(String name) {
-        TrackPanelScrollPane sp = trackManager.getScrollPane(name);
-        if (sp == null) {
-            sp = addDataPanel(name);
-            trackManager.putScrollPane(name, sp);
-        }
-        return sp.getTrackPanel();
-    }
-
-
-    public boolean scrollToTrack(String trackName) {
-        for (TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
-            if (sp.getNamePanel().scrollTo(trackName)) {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
-    /**
-     * Return an ordered list of track panels.  This method is provided primarily for storing sessions, where
-     * the track panels need to be stored in order.
-     */
-    public java.util.List<TrackPanel> getTrackPanels() {
-        return mainPanel.getTrackPanels();
-    }
-
-
-
     /**
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
-        ((ApplicationStatusBar) statusBar).setMessage("" +
+        statusBar.setMessage("" +
                 IGV.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
 
     }

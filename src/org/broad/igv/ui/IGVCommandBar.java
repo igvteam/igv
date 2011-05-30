@@ -924,9 +924,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 suppressTooltip = !suppressTooltip;
                 if (suppressTooltip) {
+                    //IGV.getInstance().getContentPane().getStatusBar().setMessage2("Data panel popup text is disabled");
                     supressTooltipButton.setIcon(tooltipIcon);
                     supressTooltipButton.setToolTipText(ENABLE_POPUP_TOOLTIP);
                 } else {
+                    //IGV.getInstance().getContentPane().getStatusBar().setMessage2("");
                     supressTooltipButton.setIcon(noTooltipIcon);
                     supressTooltipButton.setToolTipText(DISABLE_POPUP_TOOLTIP);
                 }

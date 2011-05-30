@@ -43,11 +43,7 @@ public class ApplicationStatusBar extends StatusBar {
     private LabelStatusBarItem messageBox;
     private LabelStatusBarItem messageBox2;
     private MemoryStatusBarItem memoryBox;
-    DecimalFormat formatter = new DecimalFormat();
 
-    /**
-     * Constructs ...
-     */
     public ApplicationStatusBar() {
         initialize();
     }
@@ -60,24 +56,30 @@ public class ApplicationStatusBar extends StatusBar {
         add(messageBox, JideBoxLayout.FLEXIBLE);
 
         messageBox2 = new LabelStatusBarItem("Line");
+        messageBox2.setHorizontalAlignment(SwingConstants.RIGHT);
         add(messageBox2, JideBoxLayout.VARY);
 
         memoryBox = new MemoryStatusBarItem();
-        
+
         add(memoryBox, JideBoxLayout.FLEXIBLE);
     }
 
-    /**
-     * Method description
-     *
-     * @param message
-     */
     public void setMessage(final String message) {
         UIUtilities.invokeOnEventThread(new Runnable() {
 
             public void run() {
                 messageBox.setText(message);
                 messageBox.paintImmediately(messageBox.getBounds());
+            }
+        });
+    }
+
+    public void setMessage2(final String message) {
+        UIUtilities.invokeOnEventThread(new Runnable() {
+
+            public void run() {
+                messageBox2.setText(message);
+                messageBox2.paintImmediately(messageBox2.getBounds());
             }
         });
     }
