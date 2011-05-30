@@ -30,6 +30,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 
 /**
  * @author jrobinso
@@ -46,6 +48,13 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+
+        addMouseWheelListener(new MouseWheelListener() {
+            public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
+                trackPanel.getNamePanel().repaint();
+            }
+        });
 
         // A fix for name panel painting problems.   Not sure why this is neccessary, but it is.
         // The adustment listener forces a repaint after a scroll action is complete.
