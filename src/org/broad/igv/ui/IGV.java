@@ -116,6 +116,7 @@ public class IGV {
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
+    private boolean startupComplete = false;
 
 
     public static IGV createInstance(Frame frame) {
@@ -522,7 +523,7 @@ public class IGV {
 
 
     /**
-     * Load a .genome file directly.  This method really belongs in IGVMenuBar. 
+     * Load a .genome file directly.  This method really belongs in IGVMenuBar.
      *
      * @param monitor
      * @return
@@ -1383,7 +1384,7 @@ public class IGV {
 
             final SessionReader sessionReader = new SessionReader(this);
 
-            session = sessionReader.loadSession(inputStream, sessionPath);
+            sessionReader.loadSession(inputStream, session, sessionPath);
             String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
@@ -1395,7 +1396,6 @@ public class IGV {
 
             mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
             LRUCache.clearCaches();
-            doRefresh();
 
 
             double[] dividerFractions = session.getDividerFractions();
@@ -1404,10 +1404,11 @@ public class IGV {
             }
             session.clearDividerLocations();
 
-
             //If there's a RegionNavigatorDialog, kill it.
             //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
             RegionNavigatorDialog.destroyActiveInstance();
+
+            doRefresh();
         } finally {
 
             resetStatusMessage();
@@ -1551,6 +1552,10 @@ public class IGV {
         worker.execute();
     }
 
+    public boolean isStartupComplete() {
+        return startupComplete;
+    }
+
 
     /**
      * Swing worker class to startup IGV
@@ -1674,12 +1679,14 @@ public class IGV {
                 CommandListener.start(port);
             }
 
+            startupComplete = true;
 
             UIUtilities.invokeOnEventThread(new Runnable() {
                 public void run() {
                     mainFrame.setVisible(true);
                 }
             });
+
 
             return null;
         }

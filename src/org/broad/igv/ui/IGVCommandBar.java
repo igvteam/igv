@@ -197,8 +197,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 cachedGenomeItemList.add(genomeListItem);
                             }
 
-                            // TODO -- warn user.  Unload all tracks, begin new session.  This should be done after the genome switch
-                            igv.createNewSession(null);
+                            // TODO -- warn user.
+                            // Unload all tracks, begin new session.  This should be done after the genome switch
+                            if (igv.isStartupComplete()) {
+                                igv.createNewSession(null);
+                            }
 
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);
