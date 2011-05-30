@@ -84,7 +84,6 @@ public class Session {
 
     public Session(String path) {
 
-        System.out.println("Creating " + this);
         log.debug("New session");
 
         this.path = path;
