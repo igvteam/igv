@@ -34,6 +34,7 @@ import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -356,6 +357,24 @@ public class MainPanel extends JPanel implements Paintable {
                 }
             }
         });
+
+    }
+
+    public void removeEmptyDataPanels() {
+        List<TrackPanelScrollPane> emptyPanels = new ArrayList();
+        for(TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
+            if(sp.getTrackPanel().getTracks().isEmpty()) {
+                emptyPanels.add(sp);
+            }
+        }
+        for(TrackPanelScrollPane panel : emptyPanels) {
+            if (panel != null) {
+                centerSplitPane.remove(panel);
+                trackManager.removeScrollPane(panel.getTrackPanelName());
+                TrackNamePanel.removeDropListenerFor(panel.getNamePanel());
+            }
+
+        }
 
     }
 

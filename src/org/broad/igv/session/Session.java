@@ -64,6 +64,7 @@ public class Session {
     private TrackFilter filter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
+    private boolean removeEmptyTracks = false;
 
     double [] dividerFractions = null;
 
@@ -82,6 +83,8 @@ public class Session {
             ;
 
     public Session(String path) {
+
+        System.out.println("Creating " + this);
         log.debug("New session");
 
         this.path = path;
@@ -134,11 +137,6 @@ public class Session {
 
     public void setPreference(String key, String value) {
         preferences.put(key, value);
-    }
-
-
-    public String getPreference(String key) {
-        return preferences.get(key);
     }
 
 
@@ -374,6 +372,14 @@ public class Session {
         } else {
             this.hiddenAttributes = attributes;
         }
+    }
+
+    public boolean isRemoveEmptyTracks() {
+        return removeEmptyTracks;
+    }
+
+    public void setRemoveEmptyTracks(boolean removeEmptyTracks) {
+        this.removeEmptyTracks = removeEmptyTracks;
     }
 
 

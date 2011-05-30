@@ -19,6 +19,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
@@ -247,15 +248,14 @@ public class SessionReader {
 
     /**
      * @param inputStream
-     * @param sessionName
-     * @return
+     * @param session
+     *@param sessionName  @return
      * @throws RuntimeException
      */
 
-    public Session loadSession(InputStream inputStream, String sessionName)
+    public void loadSession(InputStream inputStream, Session session, String sessionName)
             throws RuntimeException {
 
-        Session session = new Session(sessionName);
 
         log.debug("Load session");
 
@@ -286,9 +286,12 @@ public class SessionReader {
             IGV.getInstance().getTrackManager().setGroupByAttribute(session.getGroupTracksBy());
         }
 
+        if (session.isRemoveEmptyTracks()) {
+            IGV.getInstance().getMainPanel().removeEmptyDataPanels();
+        }
+
         IGV.getInstance().getTrackManager().resetOverlayTracks();
 
-        return session;
     }
 
 
@@ -309,6 +312,18 @@ public class SessionReader {
         IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
+
+        String removeEmptyTracks = getAttribute(element, "removeEmptyTracks");
+        if (removeEmptyTracks != null) {
+            try {
+                Boolean b = Boolean.parseBoolean(removeEmptyTracks);
+                session.setRemoveEmptyTracks(b);
+            }
+            catch (Exception e) {
+                log.error("Error parsing removeEmptyTracks string: " + removeEmptyTracks, e);
+            }
+        }
+
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
         try {
             version = Integer.parseInt(versionString);

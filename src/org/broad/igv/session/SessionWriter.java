@@ -130,6 +130,10 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
 
+            if(session.isRemoveEmptyTracks()) {
+                globalElement.setAttribute("removeEmptyTracks", "true");
+            }
+
 
             // Resource Files
             writeResources(outputFile, globalElement, document);
