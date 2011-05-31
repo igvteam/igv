@@ -20,6 +20,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.WaitCursorManager.CursorToken;
 
@@ -38,7 +39,7 @@ public class LongRunningTask implements Callable {
     NamedRunnable runnable;
 
     public static Future submit(NamedRunnable runnable) {
-        if (Globals.batch) {
+        if (Globals.batch || !IGV.getInstance().isStartupComplete()) {
             log.debug("Running: " + runnable.getName());
             runnable.run();
             log.debug("Finished : " + runnable.getName());
