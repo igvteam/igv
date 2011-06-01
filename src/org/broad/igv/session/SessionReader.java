@@ -309,7 +309,7 @@ public class SessionReader {
         process(session, node, additionalInformation);
 
         Element element = (Element) node;
-        IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
+        session.setGenome(getAttribute(element, SessionAttribute.GENOME.getText()));
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
 

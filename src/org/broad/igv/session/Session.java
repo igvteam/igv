@@ -79,8 +79,8 @@ public class Session {
     private ObserverForObject<Map<String, Collection<RegionOfInterest>>> regionsOfInterestObservable;
 
     private GeneList currentGeneList;
-    private Set<String> hiddenAttributes
-            ;
+    private Set<String> hiddenAttributes;
+    private String genomeId;
 
     public Session(String path) {
 
@@ -379,6 +379,14 @@ public class Session {
 
     public void setRemoveEmptyTracks(boolean removeEmptyTracks) {
         this.removeEmptyTracks = removeEmptyTracks;
+    }
+
+    public void setGenome(String genomeId) {
+        this.genomeId = genomeId;
+    }
+
+    public String getGenomeId() {
+        return genomeId;
     }
 
 

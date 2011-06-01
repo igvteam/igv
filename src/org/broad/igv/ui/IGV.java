@@ -1333,19 +1333,11 @@ public class IGV {
 
     }
 
-    /**
-     * TODO -- this is nearly an exact copy of the doRestoreSession(File sessionFile)
-     * method.  Refactor to combine these using streams.
-     *
-     * @param sessionURL
-     */
+
     final public void doRestoreSession(final URL sessionURL,
                                        final String locus) throws Exception {
 
-        if (log.isDebugEnabled()) {
-            log.debug("Enter doRestoreSession: " + sessionURL + " " + locus);
-        }
-
+        log.debug("Enter doRestoreSession: " + sessionURL + " " + locus);
 
         InputStream inputStream = null;
         try {
@@ -1359,14 +1351,10 @@ public class IGV {
                 } catch (IOException iOException) {
                     log.error("Error closing session stream", iOException);
                 }
-
             }
         }
 
-
-        if (log.isDebugEnabled()) {
-            log.debug("Exit doRestoreSession");
-        }
+        log.debug("Exit doRestoreSession");
 
     }
 
@@ -1385,6 +1373,13 @@ public class IGV {
             final SessionReader sessionReader = new SessionReader(this);
 
             sessionReader.loadSession(inputStream, session, sessionPath);
+
+            String genomeId = session.getGenomeId();
+            if (genomeId != null) {
+                selectGenomeFromList(genomeId);
+            }
+
+
             String searchText = locus == null ? session.getLocusString() : locus;
 
             // NOTE: Nothing to do if chr == all
