@@ -17,49 +17,53 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.feature.tribble;
+package org.broad.igv.peaks;
 
-import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.peaks.PeakCodec;
-import org.broad.tribble.FeatureCodec;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.Exon;
+import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.tribble.UCSCCodec;
+import org.broad.igv.util.ParsingUtils;
+
+import java.awt.*;
+
 
 /**
  * Created by IntelliJ IDEA.
  * User: jrobinso
- * Date: Jun 28, 2010
- * Time: 11:40:43 AM
+ * Date: Dec 20, 2009
+ * Time: 10:15:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CodecFactory {
-    public static FeatureCodec getCodec(String file) {
+public class PeakCodec extends UCSCCodec {
 
-        String fn = file.toLowerCase();
-        if (fn.endsWith(".gz")) {
-            int l = fn.length() - 3;
-            fn = fn.substring(0, l);
-        }
-        if (fn.endsWith(".vcf") || fn.endsWith(".vcf4") ) {
-            return new org.broad.tribble.vcf.VCFCodec();
-        } else if (fn.endsWith(".bed")) {
-            return new BEDCodec();
-        } else if (fn.endsWith(".repmask")) {
-            return new REPMaskCodec();
-        } else if (fn.endsWith(".gff3")) {
-            return new GFFCodec(GFFCodec.Version.GFF3);
-        } else if (fn.endsWith(".gff")) {
-            return new GFFCodec();
-        } else if (fn.endsWith(".sam")) {
-            return new SAMCodec();
-        } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
-            return new PSLCodec();
+    // Declare a static array once, to be reused.
 
-        } else if (fn.endsWith(".peak")) {
-            return new PeakCodec();
+    public Peak decode(String nextLine) {
 
+        if (nextLine.trim().length() == 0 || nextLine.startsWith("#") || nextLine.startsWith("track") ||
+                nextLine.startsWith("browser")) {
+            return null;
         }
-        else {
-            throw new DataLoadException("Unknown file type", file);
+
+        int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
+
+        String[] tokens = nextLine.split("\t");
+        String chr = tokens[0];
+        int start = Integer.parseInt(tokens[1]);
+        int end = Integer.parseInt(tokens[2]);
+        String name = tokens[3];
+        float combinedScore = Float.parseFloat(tokens[4]);
+
+        int nTimePoints = tokenCount - 5;
+
+        float[] timePointScores = new float[nTimePoints];
+        for (int i = 0; i < nTimePoints; i++) {
+            timePointScores[i] = Float.parseFloat(tokens[5 + i]);
         }
+        return new Peak(chr, start, end, name, combinedScore, timePointScores);
 
     }
+
+
 }

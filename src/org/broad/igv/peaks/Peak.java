@@ -30,7 +30,7 @@ import org.broad.tribble.Feature;
  * @author jrobinso
  * @date Apr 22, 2011
  */
-public class Peak implements LocusScore {
+public class Peak implements LocusScore, org.broad.tribble.Feature {
 
     String chr;
     int start;

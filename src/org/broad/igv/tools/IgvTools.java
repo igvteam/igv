@@ -557,15 +557,15 @@ public class IgvTools {
         if (outputFileName == null) {
             outputFileName = ifile;
         }
-        if (ifile.endsWith(".bed") || ifile.endsWith(".vcf") || ifile.endsWith(".vcf4") || ifile.endsWith(".gff") ||
-                ifile.endsWith(".gff3") || ifile.endsWith(".psl") || ifile.endsWith(".pslx") ||
-                ifile.endsWith(".repmask")) {
+
+        FeatureCodec codec = CodecFactory.getCodec(ifile);
+        if (codec != null) {
 
             if (!outputFileName.endsWith(".idx")) {
                 outputFileName = outputFileName + ".idx";
             }
             try {
-                createTribbleIndex(ifile, new File(outputFileName), indexType, binSize);
+                createTribbleIndex(ifile, new File(outputFileName), indexType, binSize, codec);
             } catch (TribbleException.MalformedFeatureFile e) {
                 StringBuffer buf = new StringBuffer();
                 buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
@@ -604,8 +604,7 @@ public class IgvTools {
      * @param binSize
      * @throws IOException
      */
-    private void createTribbleIndex(String ifile, File outputFile, int indexType, int binSize) throws IOException {
-        FeatureCodec codec = CodecFactory.getCodec(ifile);
+    private void createTribbleIndex(String ifile, File outputFile, int indexType, int binSize, FeatureCodec codec) throws IOException {
         File inputFile = new File(ifile);
         Index idx = null;
         if (indexType == LINEAR_INDEX) {
