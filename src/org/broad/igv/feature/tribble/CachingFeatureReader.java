@@ -37,7 +37,7 @@ import java.util.*;
 public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
 
     private static Logger log = Logger.getLogger(CachingFeatureReader.class);
-    private static int maxBinCount = 4;
+    private static int maxBinCount = 1000;
     private static int defaultBinSize = 16000; // <= 16 kb
 
     private int binSize;
