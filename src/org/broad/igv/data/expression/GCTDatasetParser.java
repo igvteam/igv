@@ -45,6 +45,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -87,12 +88,27 @@ public class GCTDatasetParser {
 
 
     /**
-     * Constructs ...
-     *
-     * @param resFile
-     * @param probeFile
-     * @param genome
+     * Test to determine if the path referes to a GCT file.  The GCT specification requires that the first line
+     * be equal to #1.2
+     * 
+     * @param path
+     * @return
+     * @throws IOException
      */
+    public static boolean isGCT(String path) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            String firstLine = reader.readLine();
+            return firstLine != null && firstLine.trim().equals("#1.2");
+        }
+        finally {
+            if(reader != null) reader.close();
+        }
+    }
+
+
+
     public GCTDatasetParser(ResourceLocator resFile, String probeFile, Genome genome) throws IOException {
 
         this.dataFileLocator = resFile;
@@ -103,13 +119,6 @@ public class GCTDatasetParser {
     }
 
 
-    /**
-     * Constructs ...
-     *
-     * @param resFile
-     * @param probeFile
-     * @param genome
-     */
     public GCTDatasetParser(File resFile, String probeFile, Genome genome) throws IOException {
         this(new ResourceLocator(resFile.getAbsolutePath()), probeFile, genome);
     }

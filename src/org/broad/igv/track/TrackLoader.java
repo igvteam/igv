@@ -207,6 +207,8 @@ public class TrackLoader {
             } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
                     typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
+            } else if (GCTDatasetParser.isGCT(locator.getPath())) {
+                loadGctFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
                 loadAlignmentsTrack(locator, newTracks);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
