@@ -31,6 +31,11 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -267,7 +272,7 @@ public class FileUtils {
     public static boolean isAscii(ResourceLocator loc) throws IOException {
 
         InputStream in = null;
-
+        CharsetDecoder d = Charset.forName("US-ASCII").newDecoder();
         try {
             in = ParsingUtils.openInputStream(loc);
 
@@ -278,8 +283,8 @@ public class FileUtils {
                 for (int i = 0; i < nBytes; i++) {
                     int j = (int) bytes[i];
                     if (j < 1 || j > 127) {
-                        return false;
-                    }
+                    return false;
+                }
                 }
                 nBytes = in.read(bytes);
             }
@@ -314,7 +319,7 @@ public class FileUtils {
                     return true;
                 }
             }
-            return false;
+            return nLinesTested > 1;
         } finally {
             if(reader != null) {
                 reader.close();

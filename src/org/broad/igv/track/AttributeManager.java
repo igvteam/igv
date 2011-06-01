@@ -190,7 +190,7 @@ public class AttributeManager {
     public static boolean isSampleInfoFile(ResourceLocator locator) throws IOException {
 
 
-        if (!(FileUtils.isAscii(locator) && FileUtils.isTabDelimited(locator, 2))) {
+        if (!FileUtils.isTabDelimited(locator, 2)) {
             return false;
         }
 
