@@ -502,6 +502,7 @@ public abstract class AbstractTrack implements Track {
         this.viewLimitMax = properties.getMaxValue();
         this.yLine = properties.getyLine();
         this.drawYLine = properties.isDrawYLine();
+        this.sortable = properties.isSortable();
 
 
         // If view limits are explicitly set turn off autoscale

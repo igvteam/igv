@@ -80,7 +80,7 @@ public class Session {
 
     private GeneList currentGeneList;
     private Set<String> hiddenAttributes;
-    private String genomeId;
+    private String locus;
 
     public Session(String path) {
 
@@ -208,25 +208,13 @@ public class Session {
         return position;
     }
 
-    public void setLocus(String locusString) {
-        try {
-            Locus locus = getLocus(locusString);
-            if (locus == null) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                if (genome != null) {
-                    referenceFrame.setChrName(genome.getHomeChromosome());
-                }
-            } else {
-               referenceFrame.jumpTo(locus.chr, locus.start, locus.end);
-            }
-            getHistory().push(locusString, referenceFrame.getZoom());
-        }
-        catch (Exception e) {
-            MessageUtils.showMessage("Error setting locus string: " + locusString + " (" + e.toString() + ")");
-            log.error("Error setting locus string", e);
-        }
+    public void setLocus(String locus) {
+        this.locus = locus;
     }
 
+    public String getLocus() {
+        return locus;
+    }
 
     public TrackFilter getFilter() {
         return filter;
@@ -379,14 +367,6 @@ public class Session {
 
     public void setRemoveEmptyTracks(boolean removeEmptyTracks) {
         this.removeEmptyTracks = removeEmptyTracks;
-    }
-
-    public void setGenome(String genomeId) {
-        this.genomeId = genomeId;
-    }
-
-    public String getGenomeId() {
-        return genomeId;
     }
 
 

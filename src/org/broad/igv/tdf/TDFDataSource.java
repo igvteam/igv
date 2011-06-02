@@ -68,8 +68,9 @@ public class TDFDataSource implements DataSource {
     float normalizationFactor = 1.0f;
 
 
-    public TDFDataSource(TDFReader reader, int trackNumber, String trackName) {
+    public TDFDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
 
+        this.genome = genome;
 
         // TODO -- a single reader will be shared across data sources
         this.trackNumber = trackNumber;
@@ -85,8 +86,7 @@ public class TDFDataSource implements DataSource {
         }
         try {
             String dataGenome = rootGroup.getAttribute("genome");
-            // TODO -- throw exception if data genome != current genome
-            genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            // TODO -- throw exception if data genome != current genome 
         } catch (Exception e) {
             log.error("Unknown genome " + rootGroup.getAttribute("genome"));
             throw new RuntimeException("Unknown genome " + rootGroup.getAttribute("genome"));

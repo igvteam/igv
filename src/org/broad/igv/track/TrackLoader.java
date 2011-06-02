@@ -128,7 +128,7 @@ public class TrackLoader {
             if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
-                loadIndexed(locator, newTracks);
+                loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
                 throw new IndexNotFoundException(locator.getPath());
@@ -171,7 +171,7 @@ public class TrackLoader {
                     typeString.endsWith("_sorted.txt") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai")) {
-                loadAlignmentsTrack(locator, newTracks);
+                loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".bedz") || (typeString.endsWith(".bed") && hasIndex)) {
                 loadIndexdBedFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".omega")) {
@@ -184,7 +184,7 @@ public class TrackLoader {
             } else if (typeString.contains(".dranger")) {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
-                loadEwigIBFFile(locator, newTracks);
+                loadEwigIBFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
@@ -210,7 +210,7 @@ public class TrackLoader {
             } else if (GCTDatasetParser.isGCT(locator.getPath())) {
                 loadGctFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
-                loadAlignmentsTrack(locator, newTracks);
+                loadAlignmentsTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -253,9 +253,9 @@ public class TrackLoader {
 
     }
 
-    private void loadIndexed(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        TribbleFeatureSource src = new TribbleFeatureSource(locator.getPath());
+        TribbleFeatureSource src = new TribbleFeatureSource(locator.getPath(), genome);
         String typeString = locator.getPath();
         //Track t;
 
@@ -661,7 +661,7 @@ public class TrackLoader {
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                    new TDFDataSource(reader, trackNumber, heading), genome);
+                    new TDFDataSource(reader, trackNumber, heading, genome), genome);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -674,7 +674,7 @@ public class TrackLoader {
         }
     }
 
-    private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks) {
+    private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
         TrackProperties props = null;
@@ -684,7 +684,7 @@ public class TrackLoader {
             ParsingUtils.parseTrackLine(trackLine, props);
         }
 
-        EWigTrack track = new EWigTrack(locator);
+        EWigTrack track = new EWigTrack(locator, genome);
         if (props != null) {
             track.setProperties(props);
         }
@@ -784,7 +784,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadAlignmentsTrack(ResourceLocator locator, List<Track> newTracks) throws IOException {
+    private void loadAlignmentsTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         try {
             String dsName = locator.getTrackName();
@@ -807,7 +807,7 @@ public class TrackLoader {
                 }
             }
 
-            AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager);    // parser.loadTrack(locator, dsName);
+            AlignmentTrack alignmentTrack = new AlignmentTrack(locator, dataManager, genome);    // parser.loadTrack(locator, dsName);
             alignmentTrack.setName(dsName);
             if (isBed) {
                 alignmentTrack.setRenderer(new BedRenderer());
@@ -816,7 +816,7 @@ public class TrackLoader {
             }
 
             // Create coverage track
-            CoverageTrack covTrack = new CoverageTrack(locator.getPath() + "_coverage", alignmentTrack.getName() + " Coverage");
+            CoverageTrack covTrack = new CoverageTrack(locator.getPath() + "_coverage", alignmentTrack.getName() + " Coverage", genome);
             covTrack.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
             newTracks.add(covTrack);
             alignmentTrack.setCoverageTrack(covTrack);
@@ -836,7 +836,7 @@ public class TrackLoader {
                     if ((new File(covPath)).exists() || (IGVHttpUtils.isURL(covPath) &&
                             IGVHttpUtils.resourceAvailable(new URL(covPath)))) {
                         TDFReader reader = TDFReader.getReader(covPath);
-                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage");
+                        TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
                         covTrack.setDataSource(ds);
                     }
                 } catch (MalformedURLException e) {

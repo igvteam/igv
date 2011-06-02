@@ -115,8 +115,18 @@ public class TrackProperties {
 
     private float yLine;
 
+    private boolean sortable = true;
+
     public TrackProperties() {
 
+    }
+
+    public boolean isSortable() {
+        return sortable;
+    }
+
+    public void setSortable(boolean sortable) {
+        this.sortable = sortable;
     }
 
     public boolean isLogScale() {

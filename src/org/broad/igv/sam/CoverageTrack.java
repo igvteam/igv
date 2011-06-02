@@ -26,6 +26,7 @@ package org.broad.igv.sam;
 import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -81,11 +82,13 @@ public class CoverageTrack extends AbstractTrack {
     PreferenceManager prefs;
     JMenuItem dataRangeItem;
     JMenuItem autoscaleItem;
+    Genome genome;
 
 
-    public CoverageTrack(String id, String name) {
+    public CoverageTrack(String id, String name, Genome genome) {
         super(id, name);
         super.setDataRange(new DataRange(0, 0, 60));
+        this.genome = genome;
         intervalRenderer = new IntervalRenderer();
 
         setColor(AlignmentRenderer.grey1);
@@ -702,7 +705,7 @@ public class CoverageTrack extends AbstractTrack {
         value = attributes.get("path");
         if (value != null) {
             TDFReader reader = TDFReader.getReader(value);
-            TDFDataSource ds = new TDFDataSource(reader, 0, "");
+            TDFDataSource ds = new TDFDataSource(reader, 0, "", genome);
             setDataSource(ds);
         }
         value = attributes.get("snpThreshold");
@@ -860,7 +863,7 @@ public class CoverageTrack extends AbstractTrack {
                     if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
 
                         TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                        TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage");
+                        TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                         setDataSource(ds);
                         IGV.getInstance().repaintDataPanels();
                     } else {

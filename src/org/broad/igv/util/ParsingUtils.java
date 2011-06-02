@@ -587,12 +587,17 @@ public class ParsingUtils {
                         if (value.equals("log")) {
                             trackProperties.setLogScale(true);
                         }
-                    } else if(key.equals("gfftags")) {
+                    }
+                     else if(key.equals("gfftags")) {
                         // Any value other than 0 or off => on
                         boolean gffTags = !(value.equals("0") || (value.toLowerCase().equals("off")));
                         trackProperties.setGffTags(gffTags);
                     }
-
+                     else if(key.equals("sortable")) {
+                        // Any value other than 0 or off => on
+                        boolean sortable = (value.equals("1") || (value.toLowerCase().equals("true")));
+                        trackProperties.setSortable(sortable);
+                    }
                 }
             }
 

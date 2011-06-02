@@ -25,6 +25,7 @@ package org.broad.igv.sam;
 
 import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.tdf.TDFDataSource;
@@ -54,17 +55,17 @@ public class EWigTrack extends AbstractTrack {
     Map<Character, TDFDataSource> baseSources;
     TDFDataSource scoreSource;
 
-    public EWigTrack(ResourceLocator locator) {
+    public EWigTrack(ResourceLocator locator, Genome genome) {
         super(locator);
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
-        scoreSource = new TDFDataSource(reader, 4, "Pi");
+        scoreSource = new TDFDataSource(reader, 4, "Pi", genome);
         scoreSource.setAggregateLikeBins(false);
 
         setDataRange(new DataRange(0, 0, 10));
         baseSources = new HashMap();
         for (int i = 0; i < 4; i++) {
-            TDFDataSource src = new TDFDataSource(reader, i, Character.toString(nucleotides[i]));
+            TDFDataSource src = new TDFDataSource(reader, i, Character.toString(nucleotides[i]), genome);
             src.setAggregateLikeBins(false);
             baseSources.put(nucleotides[i], src);
         }

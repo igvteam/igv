@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -91,14 +92,16 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     private int selectionColorIndex = 0;
     private int minHeight = 100;
     private AlignmentDataManager dataManager;
+    Genome genome;
 
     // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     DataPanel parent;
 
-    public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager) {
+    public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager, Genome genome) {
         super(locator);
 
+        this.genome = genome;
         this.dataManager = dataManager;
 
         PreferenceManager prefs = PreferenceManager.getInstance();
@@ -1232,7 +1235,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                                 if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
 
                                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
-                                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage");
+                                    TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
                                 } else {

@@ -161,7 +161,7 @@ public class PeakTrack extends AbstractTrack {
             }
             signalPath = tokens[1];
             if (signalPath != null) {
-                signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, ""));
+                signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
                 signalSource.setNormalizeCounts(true, 1.0e9f);
             }
 
@@ -175,7 +175,7 @@ public class PeakTrack extends AbstractTrack {
                 timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
                 for (int i = 0; i < timeSignalPaths.length; i++) {
                     try {
-                        timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, ""));
+                        timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, "", genome));
                         timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
                     } catch (Exception e) {
                         timeSignalSources[i] = null;

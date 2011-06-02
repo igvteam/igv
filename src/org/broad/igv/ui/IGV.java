@@ -1374,13 +1374,7 @@ public class IGV {
 
             sessionReader.loadSession(inputStream, session, sessionPath);
 
-            String genomeId = session.getGenomeId();
-            if (genomeId != null) {
-                selectGenomeFromList(genomeId);
-            }
-
-
-            String searchText = locus == null ? session.getLocusString() : locus;
+            String searchText = locus == null ? session.getLocus() : locus;
 
             // NOTE: Nothing to do if chr == all
             if (!FrameManager.isGeneListMode() && searchText != null &&

@@ -50,6 +50,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     CachingFeatureReader reader;
     DataSource coverageSource;
     boolean isVCF;
+    Genome genome;
 
     /**
      * Map of IGV chromosome name -> source name
@@ -59,25 +60,11 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Object header;
     Class featureClass;
 
-    public TribbleFeatureSource(String path, int windowSize) throws IOException {
+
+    public TribbleFeatureSource(String path, Genome genome) throws IOException {
 
         FeatureCodec codec = CodecFactory.getCodec(path);
-        this.featureWindowSize = windowSize;
-        isVCF = codec.getClass().isAssignableFrom(org.broad.tribble.vcf.VCFCodec.class);
-        featureClass = codec.getFeatureType();
-        BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
-        header = basicReader.getHeader();
-        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
-
-
-        init();
-
-        initCoverageSource(path + ".tdf");
-
-    }
-    public TribbleFeatureSource(String path) throws IOException {
-
-        FeatureCodec codec = CodecFactory.getCodec(path);
+        this.genome = genome;
         isVCF = codec.getClass().isAssignableFrom(org.broad.tribble.vcf.VCFCodec.class);       
         featureClass = codec.getFeatureType();
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
@@ -95,7 +82,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     private void initCoverageSource(String covPath) {
         if (ParsingUtils.pathExists(covPath)) {
             TDFReader reader = TDFReader.getReader(covPath);
-            coverageSource = new TDFDataSource(reader, 0, "");
+            coverageSource = new TDFDataSource(reader, 0, "", genome);
         }
     }
 
