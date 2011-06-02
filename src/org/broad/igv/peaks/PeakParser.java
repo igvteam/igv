@@ -23,11 +23,16 @@ import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -35,50 +40,26 @@ import java.util.List;
  */
 public class PeakParser {
 
-    private int nTimePoints;
-    private String [] timePointHeadings;
-    String [] timeSignalPaths;
-    private TrackProperties trackProperties;
-    private String signalPath;
 
-    public List<Peak> loadPeaks(String path) throws IOException {
+
+    public static List<Peak> loadPeaks(InputStream stream, int nTimePoints, String chr) throws IOException {
 
         List<Peak> peaks = new ArrayList(25000);
         BufferedReader reader = null;
 
         try {
-            reader = ParsingUtils.openBufferedReader(path);
+            reader = new BufferedReader(new InputStreamReader(stream));
             String nextLine;
 
             // Skip comments and read header line.  Time points start after line
             while ((nextLine = reader.readLine()) != null) {
                 if (nextLine.startsWith("#")) {
-
-                    if(nextLine.startsWith("#signals")) {
-                        String [] tokens = nextLine.split("=");
-                        if(tokens.length > 1) {
-                            signalPath = tokens[1];
-                        }
-                    }
-                    else if(nextLine.startsWith("#timeSignals")) {
-                        String [] tokens = nextLine.split("=");
-                        if(tokens.length > 1) {
-                            timeSignalPaths = tokens[1].split(",");
-                        }
-                    }
-                    else if(nextLine.startsWith("#track")) {
-                        trackProperties = new TrackProperties();
-                        ParsingUtils.parseTrackLine(nextLine, trackProperties);
-                    }
-
                     continue;
                 }
                 String [] tokens = nextLine.split("\t");
                 if(tokens.length < 7) {
                     throw new RuntimeException("Not enough columns for peak file. At least 2 time points are required");
                 }
-                nTimePoints = tokens.length - 5;
-                timePointHeadings = new String[nTimePoints];
                 break;
             }
 
@@ -86,12 +67,17 @@ public class PeakParser {
             while ((nextLine = reader.readLine()) != null) {
 
                 String [] tokens = nextLine.split("\t");
-                String chr = tokens[0];
+                if(!tokens[0].equals(chr)) {
+                    break;
+                }
                 int start = Integer.parseInt(tokens[1]);
                 int end = Integer.parseInt(tokens[2]);
                 String name = tokens[3];
                 float combinedScore = Float.parseFloat(tokens[4]);
                 float [] timePointScores = new float[nTimePoints];
+                if(nTimePoints > tokens.length - 5) {
+                    System.out.println();
+                }
                 for(int i=0; i<nTimePoints; i++) {
                     timePointScores[i] = Float.parseFloat(tokens[5 + i]);
                 }
@@ -102,24 +88,9 @@ public class PeakParser {
 
         }
         finally {
-            if (reader != null) reader.close();
+            // Don't close reader here,  close stream in calling method
         }
 
     }
 
-    public int getnTimePoints() {
-        return nTimePoints;
-    }
-
-    public String[] getTimePointHeadings() {
-        return timePointHeadings;
-    }
-
-    public TrackProperties getTrackProperties() {
-        return trackProperties;
-    }
-
-    public String getSignalPath() {
-        return signalPath;
-    }
 }

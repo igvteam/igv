@@ -21,6 +21,7 @@ package org.broad.igv.peaks;
 
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.LocusScoreUtils;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -31,10 +32,15 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -62,10 +68,15 @@ public class PeakTrack extends AbstractTrack {
     Map<String, List<Peak>> filteredPeakMap = new HashMap();
     Renderer renderer = new PeakRenderer();
 
-    // Path the signal (TDF) file
+
+    Map<String, Long> index = new HashMap();
+
+
+    // Path to the compressed signal (TDF) file and data source
     String signalPath;
     WrappedDataSource signalSource;
 
+    // Paths to the time series signal files and data sources
     String[] timeSignalPaths;
     WrappedDataSource[] timeSignalSources;
 
@@ -80,11 +91,19 @@ public class PeakTrack extends AbstractTrack {
     int peakHeight;
     int gapHeight;
 
+    Genome genome;
+    private String peaksPath;
 
+    /**
+     * @param locator -- path to a peaks.cfg file
+     * @param genome
+     * @throws IOException
+     */
     public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
+        this.genome = genome;
         setHeight(30);
-        loadPeaks(locator.getPath());
+        parse(locator.getPath());
 
         instances.add(new SoftReference(this));
 
@@ -94,46 +113,94 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
-    private void loadPeaks(String path) throws IOException {
+    /**
+     * timePoints=0,30,60,120
+     * peaks=http://www.broadinstitute.org/igvdata/ichip/peaks/AHR.peak
+     * signals=http://www.broadinstitute.org/igvdata/ichip/tdf/compressed/AHR.merged.bam.tdf
+     * timeSignals=http://www.broadinstitute.org/igvdata/ichip/tdf/timecourses/AHR_0/AHR_0.merged.bam.tdf,http...
+     *
+     * @param path
+     * @throws IOException
+     */
 
-        PeakParser parser = new PeakParser();
-        List<Peak> peaks = parser.loadPeaks(path);
+    private void parse(String path) throws IOException {
 
-        nTimePoints = parser.getnTimePoints();
-        signalPath = parser.getSignalPath();
-        if (signalPath != null) {
-            signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, ""));
-            signalSource.setNormalizeCounts(true, 1.0e9f);
-        }
+        BufferedReader br = null;
 
-        timeSignalPaths = parser.timeSignalPaths;
-        if (timeSignalPaths != null && timeSignalPaths.length > 0) {
-            timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
-            for (int i = 0; i < timeSignalPaths.length; i++) {
-                try {
-                    timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, ""));
-                    timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
-                } catch (Exception e) {
-                    timeSignalSources[i] = null;
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+
+        try {
+            br = ParsingUtils.openBufferedReader(path);
+
+            String nextLine = br.readLine();
+            if (nextLine.startsWith("track")) {
+                TrackProperties props = new TrackProperties();
+                ParsingUtils.parseTrackLine(nextLine, props);
+                setProperties(props);
+            }
+
+            nextLine = br.readLine();
+            String[] tokens = nextLine.split("=");
+            if (tokens.length < 2 || !tokens[0].equals("timePoints")) {
+                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
+            }
+            tokens = tokens[1].split(",");
+            nTimePoints = tokens.length;
+
+            nextLine = br.readLine();
+            tokens = nextLine.split("=");
+            if (tokens.length < 2 || !tokens[0].equals("peaks")) {
+                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
+            }
+            peaksPath = tokens[1];
+
+
+            nextLine = br.readLine();
+            tokens = nextLine.split("=");
+            if (tokens.length < 2 || !tokens[0].equals("signals")) {
+                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
+            }
+            signalPath = tokens[1];
+            if (signalPath != null) {
+                signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, ""));
+                signalSource.setNormalizeCounts(true, 1.0e9f);
+            }
+
+            nextLine = br.readLine();
+            tokens = nextLine.split("=");
+            if (tokens.length < 2 || !tokens[0].equals("timeSignals")) {
+                throw new RuntimeException("Unexpected timePoints line: " + nextLine);
+            }
+            timeSignalPaths = tokens[1].split(",");
+            if (timeSignalPaths != null && timeSignalPaths.length > 0) {
+                timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
+                for (int i = 0; i < timeSignalPaths.length; i++) {
+                    try {
+                        timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, ""));
+                        timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
+                    } catch (Exception e) {
+                        timeSignalSources[i] = null;
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                 }
             }
-        }
 
-        TrackProperties props = parser.getTrackProperties();
-        if (props != null) {
-            setProperties(props);
-        }
-
-        for (Peak peak : peaks) {
-            String chr = peak.getChr();
-            List<Peak> peakList = peakMap.get(chr);
-            if (peakList == null) {
-                peakList = new ArrayList();
-                peakMap.put(chr, peakList);
+            nextLine = br.readLine();
+            if (!nextLine.startsWith("#index")) {
+                throw new RuntimeException("Missing index");
             }
-            peakList.add(peak);
+            while ((nextLine = br.readLine()) != null) {
+                tokens = nextLine.split("\t");
+                String chr = tokens[0];
+                long position = Long.parseLong(tokens[1]);
+                index.put(chr, position);
+            }
+
+
+        } finally {
+            if (br != null) br.close();
         }
+
+
     }
 
 
@@ -149,12 +216,16 @@ public class PeakTrack extends AbstractTrack {
 
     public void render(RenderContext context, Rectangle rect) {
 
-        List<Peak> peakList = getFilteredPeaks(context.getChr());
-        if (peakList == null) {
-            return;
-        }
+        try {
+            List<Peak> peakList = getFilteredPeaks(context.getChr());
+            if (peakList == null) {
+                return;
+            }
 
-        renderer.render(peakList, context, rect, this);
+            renderer.render(peakList, context, rect, this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Renderer getRenderer() {
@@ -200,24 +271,29 @@ public class PeakTrack extends AbstractTrack {
 
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
-        StringBuffer buf = new StringBuffer();
-        buf.append(getName());
-        if (showPeaks) {
-            List<Peak> scores = getFilteredPeaks(chr);
-            LocusScore score = getLocusScoreAt(scores, position, frame);
-            buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
-            if (showSignals) {
-                buf.append("<br>");
+        try {
+            StringBuffer buf = new StringBuffer();
+            buf.append(getName());
+            if (showPeaks) {
+                List<Peak> scores = getFilteredPeaks(chr);
+                LocusScore score = getLocusScoreAt(scores, position, frame);
+                buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
+                if (showSignals) {
+                    buf.append("<br>");
+                }
             }
-        }
-        if (showSignals && signalSource != null) {
-            List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
-            LocusScore score = getLocusScoreAt(scores, position, frame);
-            buf.append((score == null) ? "" : "Score = " + score.getScore());
-        }
+            if (showSignals && signalSource != null) {
+                List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
+                LocusScore score = getLocusScoreAt(scores, position, frame);
+                buf.append((score == null) ? "" : "Score = " + score.getScore());
+            }
 
 
-        return buf.toString();
+            return buf.toString();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return "Error loading peaks: " + e.toString();
+        }
     }
 
 
@@ -235,23 +311,45 @@ public class PeakTrack extends AbstractTrack {
         }
     }
 
-    public synchronized List<Peak> getFilteredPeaks(String chr) {
+    public synchronized List<Peak> getFilteredPeaks(String chr) throws IOException {
         List<Peak> filteredPeaks = filteredPeakMap.get(chr);
         if (filteredPeaks == null) {
-            List<Peak> allPeaks = peakMap.get(chr);
-            if (allPeaks == null) {
-                return null;
-            }
-            filteredPeaks = new ArrayList(allPeaks.size() / 2);
-            for (Peak peak : allPeaks) {
-                if (peak.getCombinedScore() >= scoreThreshold &&
-                        peak.getFoldChange() >= foldChangeThreshold) {
-                    filteredPeaks.add(peak);
+            filteredPeaks = new ArrayList();
+            List<Peak> allPeaks = getAllPeaks(chr);
+            if (allPeaks != null) {
+                for (Peak peak : allPeaks) {
+                    if (peak.getCombinedScore() >= scoreThreshold &&
+                            peak.getFoldChange() >= foldChangeThreshold) {
+                        filteredPeaks.add(peak);
+                    }
                 }
             }
-            filteredPeakMap.put(chr, filteredPeaks);
         }
+        filteredPeakMap.put(chr, filteredPeaks);
+
+
         return filteredPeaks;
+    }
+
+    private List<Peak> getAllPeaks(String chr) throws IOException {
+        List<Peak> peaks = peakMap.get(chr);
+        if (peaks == null) {
+            Long position = index.get(chr);
+            if (position != null) {
+                SeekableStream stream = null;
+                try {
+                    stream = SeekableStreamFactory.getStreamFor(peaksPath);
+                    stream.seek(position);
+                    peaks = PeakParser.loadPeaks(stream, nTimePoints, chr);
+                    peakMap.put(chr, peaks);
+                }
+                finally {
+                    if (stream != null) stream.close();
+                }
+            }
+
+        }
+        return peaks;
     }
 
 
@@ -312,34 +410,24 @@ public class PeakTrack extends AbstractTrack {
             return Float.MIN_VALUE;
         }
 
-        List<Peak> scores = getFilteredPeaks(chr);
-        int startIdx = FeatureUtils.getIndexBefore(start, scores);
+        try {
+            List<Peak> scores = getFilteredPeaks(chr);
+            int startIdx = FeatureUtils.getIndexBefore(start, scores);
 
-        float regionScore = Float.MIN_VALUE;
-        for (int i = startIdx; i < scores.size(); i++) {
-            Peak score = scores.get(i);
-            if (score.getEnd() < start) continue;
-            if (score.getStart() > end) break;
-            final float v = score.getScore();
-            if (v > regionScore) regionScore = v;
-        }
-        return regionScore;
-    }
-
-    public Peak getFilteredPeakInstersecting(String chr, double position) {
-        List<Peak> scores = getFilteredPeaks(chr);
-        int startIdx = FeatureUtils.getIndexBefore(position, scores);
-
-        if (startIdx >= 0) {
+            float regionScore = Float.MIN_VALUE;
             for (int i = startIdx; i < scores.size(); i++) {
                 Peak score = scores.get(i);
-                if (score.getEnd() < position) continue;
-                if (score.getStart() > position) break;
-                return score;
+                if (score.getEnd() < start) continue;
+                if (score.getStart() > end) break;
+                final float v = score.getScore();
+                if (v > regionScore) regionScore = v;
             }
+            return regionScore;
+        } catch (IOException e) {
+            return Float.MIN_VALUE;
         }
-        return null;
     }
+
 
     /**
      * Get the closet filter peak, within 2kb, of the given position.
@@ -349,28 +437,32 @@ public class PeakTrack extends AbstractTrack {
      * @return
      */
     public Peak getFilteredPeakNearest(String chr, double position) {
-        List<Peak> scores = getFilteredPeaks(chr);
-        int startIdx = FeatureUtils.getIndexBefore(position, scores);
+        try {
+            List<Peak> scores = getFilteredPeaks(chr);
+            int startIdx = FeatureUtils.getIndexBefore(position, scores);
 
-        Peak closestPeak = null;
-        double closestDistance = Integer.MAX_VALUE;
-        if (startIdx >= 0) {
-            if (startIdx > 0) startIdx--;
-            for (int i = startIdx; i < scores.size(); i++) {
-                Peak peak = scores.get(i);
-                if (position > peak.getStart() && position < peak.getEnd()) {
-                    return peak;
+            Peak closestPeak = null;
+            double closestDistance = Integer.MAX_VALUE;
+            if (startIdx >= 0) {
+                if (startIdx > 0) startIdx--;
+                for (int i = startIdx; i < scores.size(); i++) {
+                    Peak peak = scores.get(i);
+                    if (position > peak.getStart() && position < peak.getEnd()) {
+                        return peak;
+                    }
+                    double distance = Math.min(Math.abs(position - peak.getStart()), Math.abs(position - peak.getEnd()));
+                    if (distance > closestDistance) {
+                        return closestDistance < 2000 ? closestPeak : null;
+
+                    } else {
+                        closestDistance = distance;
+                        closestPeak = peak;
+                    }
+
                 }
-                double distance = Math.min(Math.abs(position - peak.getStart()), Math.abs(position - peak.getEnd()));
-                if (distance > closestDistance) {
-                    return closestDistance < 2000 ? closestPeak : null;
-
-                } else {
-                    closestDistance = distance;
-                    closestPeak = peak;
-                }
-
             }
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         return null;
 
@@ -415,29 +507,33 @@ public class PeakTrack extends AbstractTrack {
             if (scoreThreshold <= 0 && foldChangeThreshold <= 0) {
                 return source.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
             } else {
-                List<Peak> peaks = getFilteredPeaks(chr);
-                if (peaks == null) {
-                    return scores;
-                }
-                int startIdx = FeatureUtils.getIndexBefore(startLocation, peaks);
-                if (startIdx >= 0) {
-                    for (int i = startIdx; i < peaks.size(); i++) {
-                        Peak peak = peaks.get(i);
-
-                        final int peakEnd = peak.getEnd();
-                        if (peakEnd < startLocation) continue;
-
-                        final int peakStart = peak.getStart();
-                        if (peakStart > endLocation) break;
-
-                        List<LocusScore> peakScores = source.getSummaryScoresForRange(chr, peakStart, peakEnd, zoom);
-                        for (LocusScore ps : peakScores) {
-                            if (ps.getEnd() < peakStart) continue;
-                            if (ps.getStart() > peakEnd) break;
-                            scores.add(ps);
-                        }
-
+                try {
+                    List<Peak> peaks = getFilteredPeaks(chr);
+                    if (peaks == null) {
+                        return scores;
                     }
+                    int startIdx = FeatureUtils.getIndexBefore(startLocation, peaks);
+                    if (startIdx >= 0) {
+                        for (int i = startIdx; i < peaks.size(); i++) {
+                            Peak peak = peaks.get(i);
+
+                            final int peakEnd = peak.getEnd();
+                            if (peakEnd < startLocation) continue;
+
+                            final int peakStart = peak.getStart();
+                            if (peakStart > endLocation) break;
+
+                            List<LocusScore> peakScores = source.getSummaryScoresForRange(chr, peakStart, peakEnd, zoom);
+                            for (LocusScore ps : peakScores) {
+                                if (ps.getEnd() < peakStart) continue;
+                                if (ps.getStart() > peakEnd) break;
+                                scores.add(ps);
+                            }
+
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
                 return scores;
             }

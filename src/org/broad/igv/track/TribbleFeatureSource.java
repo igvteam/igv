@@ -59,6 +59,22 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     Object header;
     Class featureClass;
 
+    public TribbleFeatureSource(String path, int windowSize) throws IOException {
+
+        FeatureCodec codec = CodecFactory.getCodec(path);
+        this.featureWindowSize = windowSize;
+        isVCF = codec.getClass().isAssignableFrom(org.broad.tribble.vcf.VCFCodec.class);
+        featureClass = codec.getFeatureType();
+        BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
+        header = basicReader.getHeader();
+        reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
+
+
+        init();
+
+        initCoverageSource(path + ".tdf");
+
+    }
     public TribbleFeatureSource(String path) throws IOException {
 
         FeatureCodec codec = CodecFactory.getCodec(path);
