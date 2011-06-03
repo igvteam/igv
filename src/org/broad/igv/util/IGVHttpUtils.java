@@ -242,7 +242,14 @@ public class IGVHttpUtils {
     public static InputStream openGSConnectionStream(URL url) throws IOException {
 
         HttpClient client = new HttpClient();
-        Credentials defaultcreds = new UsernamePasswordCredentials("ted", "qw");
+
+        String userpass = getUserPass(url.toString());
+        if(userpass == null) {
+           throw new RuntimeException("Access denied to: " + url.toString());
+        }
+
+        String [] tokens = userpass.split(":");
+        Credentials defaultcreds = new UsernamePasswordCredentials(tokens[0], tokens[1]);
         client.getState().setCredentials(new AuthScope("identitytest.genomespace.org", 8443, AuthScope.ANY_REALM), defaultcreds);
 
         GetMethod get = new GetMethod(url.toExternalForm());
@@ -265,11 +272,6 @@ public class IGVHttpUtils {
     }
 
     public static HttpURLConnection openConnection(URL url) throws IOException {
-
-        // TODO -- handle proxy with genomespace
-        if (url.toString().contains("genomespace.org")) {
-            return openGenomeSpaceConnection(url);
-        }
 
         HttpURLConnection conn = null;
 
@@ -307,49 +309,6 @@ public class IGVHttpUtils {
 
     }
 
-
-    /**
-     * Open a genome space URL.  Be careful not to set credentials if not challenged, including an authorization
-     *
-     * @param url
-     * @return
-     * @throws IOException
-     */
-    private static HttpURLConnection openGenomeSpaceConnection(URL url) throws IOException {
-
-        java.util.List<String> genomeSpaceCookies = gsCookies.get(url.toString());
-
-        if (genomeSpaceCookies == null) {
-
-            HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
-            uconn.setInstanceFollowRedirects(false);
-            Map<String, java.util.List<String>> params = uconn.getHeaderFields();
-            disconnect(uconn);
-
-            // Assume we got a redirect to the login url
-            String authString = getUserPass(url.toString());
-            String authStringEnc = base64Encode(authString);
-            String loginURL = params.get("Location").get(0);
-            URL url2 = new URL(loginURL);
-            HttpURLConnection uconn2 = (HttpURLConnection) url2.openConnection();
-            uconn2.setRequestProperty("Authorization", "Basic " + authStringEnc);
-            uconn2.setInstanceFollowRedirects(false);
-            Map<String, java.util.List<String>> params2 = uconn2.getHeaderFields();
-            genomeSpaceCookies = params2.get("Set-Cookie");
-            gsCookies.put(url.toString(), genomeSpaceCookies);
-            disconnect(uconn2);
-        }
-
-
-        // Assume we are redirected back to the original URL.  Need to get the cookie from the last requestand pass it along
-        HttpURLConnection uconn3 = (HttpURLConnection) url.openConnection();
-        // uconn3.setRequestProperty("Authorization", "Basic " + authStringEnc);
-        for (String cookie : genomeSpaceCookies) {
-            uconn3.setRequestProperty("Cookie", cookie);
-        }
-        return uconn3;
-
-    }
 
 
     public static Proxy getProxy() {
