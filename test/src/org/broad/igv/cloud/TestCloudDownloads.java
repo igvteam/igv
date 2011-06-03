@@ -68,7 +68,7 @@ public class TestCloudDownloads {
     }
 
     static void readByteRange(String urlString, int start, int end) throws IOException {
-
+     /*
         URL url = new URL(urlString);
         Map<String, String> reqProps = new HashMap();
         String byteRange = "bytes=" + start + "-" + end;
@@ -84,6 +84,7 @@ public class TestCloudDownloads {
         //System.out.println("Read " + n + " bytes");
 
         is.close();
+        */
     }
 
 }

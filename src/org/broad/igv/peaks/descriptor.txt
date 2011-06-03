@@ -1,0 +1,4 @@
+timePoints=0,30,60,120
+peaks -- igv (or tdf) file,  compressed + time signals
+compressedSignals -- tdf file
+timeSignals -- 4 tdf files

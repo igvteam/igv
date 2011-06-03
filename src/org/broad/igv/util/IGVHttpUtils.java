@@ -19,6 +19,13 @@
 
 package org.broad.igv.util;
 
+
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -31,10 +38,10 @@ import org.broad.tribble.util.SeekableHTTPStream;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.List;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class IGVHttpUtils {
 
@@ -46,6 +53,8 @@ public class IGVHttpUtils {
     private static ProxySettings proxySettings = null;
     static boolean byteRangeTested = false;
     static boolean useByteRange = true;
+    private static Map<String, java.util.List<String>> gsCookies = new HashMap();
+
 
     private static boolean testByteRange() {
 
@@ -223,101 +232,125 @@ public class IGVHttpUtils {
             ftp.pasv();
             ftp.retr(file);
             return new FTPStream(ftp);
+        } else if (url.toString().contains("genomespace.org")) {
+            return openGSConnectionStream(url);
         } else {
-            return openHttpStream(url, (Map<String, String>) null);
+            return openHttpStream(url);
         }
     }
 
+    public static InputStream openGSConnectionStream(URL url) throws IOException {
 
-    public static InputStream openHttpStream(URL url, Map<String, String> requestProperties) throws IOException {
+        HttpClient client = new HttpClient();
+        Credentials defaultcreds = new UsernamePasswordCredentials("ted", "qw");
+        client.getState().setCredentials(new AuthScope("identitytest.genomespace.org", 8443, AuthScope.ANY_REALM), defaultcreds);
 
-        if (requestProperties == null) {
-            requestProperties = new HashMap();
-        }
-        requestProperties.put("User-Agent", Globals.applicationString());
-        HttpURLConnection conn = openHttpConnectionPrivate(url, requestProperties);
-        return openHttpStream(url, conn);
+        GetMethod get = new GetMethod(url.toExternalForm());
+        get.setDoAuthentication(true);
 
+        client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
 
-    }
-
-    public static InputStream openHttpStream(URL url, HttpURLConnection conn) throws IOException {
-        // IF this is a protected directory we will get a 401.  Continue requesting a user / password until
-        // the user cancels or the connectino succeeds.
-
-        while (true) {
-            InputStream is = null;
-            try {
-                is = conn.getInputStream();
-                return new URLInputStream(conn, is);
-            }
-            catch (SocketTimeoutException e) {
-                throw e;
-            }
-            catch (IOException e) {
-                if (conn.getResponseCode() == 401) {
-                    if (is != null) {
-                        is.close();
-                    }
-                    disconnect(conn);
-                } else {
-                    throw e;
-                }
-            }
-
-            String shortName = StringUtils.checkLength(url.toExternalForm(), 80);
-            if (getUserPass(shortName) == false) {
-                throw new RuntimeException("A password is required to access " + shortName);
-            }
-
-            Map<String, String> requestProperties = new HashMap();
-            for (Map.Entry<String, java.util.List<String>> entry : conn.getRequestProperties().entrySet()) {
-                if (entry.getValue().size() > 0) {
-                    requestProperties.put(entry.getKey(), entry.getValue().get(0));
-                }
-            }
-            conn.getRequestProperties();
-            conn = openHttpConnectionPrivate(url, null);
-
-        }
+        int status = client.executeMethod(get);
+        System.out.println("Status = " + status);
+        return new HttpClientInputStream(get, get.getResponseBodyAsStream());
 
     }
 
 
-    private static HttpURLConnection openHttpConnectionPrivate(URL url, Map<String, String> requestProperties) throws IOException {
-        URLConnection conn = openConnection(url);
-        conn.setConnectTimeout(10000);
-        conn.setReadTimeout(60000);
+    public static InputStream openHttpStream(URL url) throws IOException {
 
-        if (conn instanceof HttpURLConnection) {
-            ((HttpURLConnection) conn).setRequestMethod("GET");
-        }
-
-        conn.setRequestProperty("Connection", "close");
-        if (requestProperties != null) {
-            for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
-                conn.setRequestProperty(prop.getKey(), prop.getValue());
-            }
-        }
-        return (HttpURLConnection) conn;
+        HttpURLConnection conn = openConnection(url);
+        InputStream is = conn.getInputStream();
+        return new URLInputStream(conn, is);
     }
 
+    public static HttpURLConnection openConnection(URL url) throws IOException {
 
-    public static URLConnection openConnection(URL url) throws IOException {
+        // TODO -- handle proxy with genomespace
+        if (url.toString().contains("genomespace.org")) {
+            return openGenomeSpaceConnection(url);
+        }
+
+        HttpURLConnection conn = null;
+
         if (useProxy()) {
             Proxy proxy = getProxy();
-            URLConnection conn = url.openConnection(proxy);
+            conn = (HttpURLConnection) url.openConnection(proxy);
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 String encodedUserPwd = base64Encode(proxySettings.user + ":" + proxySettings.pw);
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-                conn.setReadTimeout(60000);
             }
-            return conn;
         } else {
-            URLConnection conn = url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
+        }
+
+        if (conn.getResponseCode() == 401) {
+
+            final String userPass = getUserPass(url.toExternalForm());
+            if (userPass == null) {
+                throw new RuntimeException("A password is required to access " + url.toString());
+            }
+            Authenticator.setDefault(new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    String[] tokens = userPass.split(":");
+                    return new PasswordAuthentication(tokens[0], tokens[1].toCharArray());
+                }
+            });
+
+
+            disconnect(conn);
+            return openConnection(url);
+
+        } else {
             return conn;
         }
+
     }
+
+
+    /**
+     * Open a genome space URL.  Be careful not to set credentials if not challenged, including an authorization
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private static HttpURLConnection openGenomeSpaceConnection(URL url) throws IOException {
+
+        java.util.List<String> genomeSpaceCookies = gsCookies.get(url.toString());
+
+        if (genomeSpaceCookies == null) {
+
+            HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
+            uconn.setInstanceFollowRedirects(false);
+            Map<String, java.util.List<String>> params = uconn.getHeaderFields();
+            disconnect(uconn);
+
+            // Assume we got a redirect to the login url
+            String authString = getUserPass(url.toString());
+            String authStringEnc = base64Encode(authString);
+            String loginURL = params.get("Location").get(0);
+            URL url2 = new URL(loginURL);
+            HttpURLConnection uconn2 = (HttpURLConnection) url2.openConnection();
+            uconn2.setRequestProperty("Authorization", "Basic " + authStringEnc);
+            uconn2.setInstanceFollowRedirects(false);
+            Map<String, java.util.List<String>> params2 = uconn2.getHeaderFields();
+            genomeSpaceCookies = params2.get("Set-Cookie");
+            gsCookies.put(url.toString(), genomeSpaceCookies);
+            disconnect(uconn2);
+        }
+
+
+        // Assume we are redirected back to the original URL.  Need to get the cookie from the last requestand pass it along
+        HttpURLConnection uconn3 = (HttpURLConnection) url.openConnection();
+        // uconn3.setRequestProperty("Authorization", "Basic " + authStringEnc);
+        for (String cookie : genomeSpaceCookies) {
+            uconn3.setRequestProperty("Cookie", cookie);
+        }
+        return uconn3;
+
+    }
+
 
     public static Proxy getProxy() {
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
@@ -329,19 +362,16 @@ public class IGVHttpUtils {
     }
 
 
-    /**
-     * Todo,  add comment -- what is returned
-     *
-     * @param locationString
-     * @return
-     */
-    public static boolean getUserPass(String locationString) {
+    public static String getUserPass(String locationString) {
 
         //http://www.broadinstitute.org/igvdata/private/cpgIslands.hg18.bed
         JPanel passPanel = new JPanel();
         passPanel.setLayout(new GridLayout(6, 1));
 
-        JLabel message = new JLabel("Please enter your username and password for:");
+        JLabel message = new JLabel("Please enter your username and password");
+        if (locationString.length() > 80) {
+            locationString = "..." + locationString.substring((locationString.length() - 80));
+        }
         JLabel location = new JLabel(locationString);
         JLabel username = new JLabel("User:");
         JLabel password = new JLabel("Pass:");
@@ -354,22 +384,17 @@ public class IGVHttpUtils {
         passPanel.add(password);
         passPanel.add(passwordField);
 
-        int a = JOptionPane.showConfirmDialog(IGV.getMainFrame(), passPanel, "Authentication Required",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        int a = JOptionPane.showConfirmDialog(null, passPanel, "Authentication Required", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (a == JOptionPane.CANCEL_OPTION) {
-            return false;
+            return null;
         } else {
             final String userString = userField.getText();
-            final char[] userPass = passwordField.getPassword();
-            Authenticator.setDefault(new Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(userString, userPass);
-                }
-            });
-            return true;
+            final String userPass = new String(passwordField.getPassword());
+            return userString + ":" + userPass;
         }
     }
+
 
     public static void updateProxySettings() {
 
@@ -490,7 +515,7 @@ public class IGVHttpUtils {
 
         HttpURLConnection conn = null;
         try {
-            conn =  (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             int rc = conn.getResponseCode();
             return rc < 400;
         } catch (Exception e) {
@@ -515,6 +540,21 @@ public class IGVHttpUtils {
         public void close() throws IOException {
             super.close();
             connection.disconnect();
+        }
+    }
+
+    public static class HttpClientInputStream extends FilterInputStream {
+        GetMethod getMethod;
+
+        protected HttpClientInputStream(GetMethod getMethod, InputStream inputStream) {
+            super(inputStream);
+            this.getMethod = getMethod;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            getMethod.releaseConnection();
         }
     }
 
