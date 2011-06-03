@@ -171,18 +171,6 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             timeSignalPaths = tokens[1].split(",");
-            if (timeSignalPaths != null && timeSignalPaths.length > 0) {
-                timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
-                for (int i = 0; i < timeSignalPaths.length; i++) {
-                    try {
-                        timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, "", genome));
-                        timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
-                    } catch (Exception e) {
-                        timeSignalSources[i] = null;
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                }
-            }
 
             nextLine = br.readLine();
             if (!nextLine.startsWith("#index")) {
@@ -483,6 +471,26 @@ public class PeakTrack extends AbstractTrack {
 
     public static void setShowSignals(boolean b) {
         showSignals = b;
+    }
+
+    public DataSource[] getTimeSignalSources() {
+
+        if (timeSignalSources == null) {
+            if (timeSignalPaths != null && timeSignalPaths.length > 0) {
+                timeSignalSources = new WrappedDataSource[timeSignalPaths.length];
+                for (int i = 0; i < timeSignalPaths.length; i++) {
+                    try {
+                        timeSignalSources[i] = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(timeSignalPaths[i]), 0, "", genome));
+                        timeSignalSources[i].setNormalizeCounts(true, 1.0e9f);
+                    } catch (Exception e) {
+                        timeSignalSources[i] = null;
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                }
+            }
+        }
+
+        return timeSignalSources;
     }
 
 

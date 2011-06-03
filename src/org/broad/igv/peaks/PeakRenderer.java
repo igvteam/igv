@@ -109,7 +109,8 @@ public class PeakRenderer implements Renderer<LocusScore> {
 
 
             if (track.getDisplayMode() == Track.DisplayMode.EXPANDED) {
-                DataSource[] timeSignalSources = track.timeSignalSources;
+
+                DataSource[] timeSignalSources = track.getTimeSignalSources();
                 if (timeSignalSources != null) {
                     int top = rect.y + 2;
                     for (int i = 0; i < timeSignalSources.length; i++) {
