@@ -51,6 +51,7 @@ public class IGVHttpUtils {
     static boolean useByteRange = true;
     private static Map<String, java.util.List<String>> gsCookies = new HashMap();
     public static  Credentials GENOME_SPACE_CREDS = null;
+    public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
 
 
     private static boolean testByteRange() {
@@ -246,12 +247,10 @@ public class IGVHttpUtils {
             if (userpass == null) {
                 throw new RuntimeException("Access denied to: " + url.toString());
             }
-            String[] tokens = userpass.split(":");
-            GENOME_SPACE_CREDS = new UsernamePasswordCredentials(tokens[0], tokens[1]);
+            GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
         }
 
-
-        client.getState().setCredentials(new AuthScope("identitytest.genomespace.org", 8443, AuthScope.ANY_REALM), GENOME_SPACE_CREDS);
+        client.getState().setCredentials(new AuthScope(GENOME_SPACE_ID_SERVER, -1, AuthScope.ANY_REALM), GENOME_SPACE_CREDS);
 
         GetMethod getMethod = new GetMethod(url.toExternalForm());
         getMethod.setDoAuthentication(true);
@@ -259,6 +258,7 @@ public class IGVHttpUtils {
         int status = client.executeMethod(getMethod);
         if(status == 401) {
             // Try again
+            client.getState().clearCredentials();
             getMethod.releaseConnection();
             GENOME_SPACE_CREDS = null;
 

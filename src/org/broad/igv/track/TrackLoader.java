@@ -99,11 +99,17 @@ public class TrackLoader {
         try {
             String typeString = locator.getType();
             if (typeString == null) {
-                typeString = locator.getPath().toLowerCase();
-                if (!typeString.endsWith("_sorted.txt") &&
-                        (typeString.endsWith(".txt") || typeString.endsWith(
-                                ".xls") || typeString.endsWith(".gz"))) {
-                    typeString = typeString.substring(0, typeString.lastIndexOf("."));
+
+                // Genome space hack
+                if (locator.getPath().contains("?") && locator.getPath().contains("dataformat/gct")) {
+                    typeString = ".gct";
+                } else {
+                    typeString = locator.getPath().toLowerCase();
+                    if (!typeString.endsWith("_sorted.txt") &&
+                            (typeString.endsWith(".txt") || typeString.endsWith(
+                                    ".xls") || typeString.endsWith(".gz"))) {
+                        typeString = typeString.substring(0, typeString.lastIndexOf("."));
+                    }
                 }
             }
             typeString = typeString.toLowerCase();

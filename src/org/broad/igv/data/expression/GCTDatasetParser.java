@@ -180,6 +180,11 @@ public class GCTDatasetParser {
             fn = fn.substring(0, fn.lastIndexOf("."));
         }
 
+        //TODO genomespace hack
+        if(dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")){
+            fn = ".gct";
+        }
+
 
         descriptionColumn = -1;    // Default - no description column
         if (fn.endsWith("res")) {
