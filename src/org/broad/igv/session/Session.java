@@ -36,7 +36,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.TrackFilter;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ObserverForObject;
 import org.broad.tribble.Feature;
 
@@ -64,7 +63,7 @@ public class Session {
     private TrackFilter filter;
     private HashMap<String, String> preferences;
     private HashMap<TrackType, ContinuousColorScale> colorScales;
-    private boolean removeEmptyTracks = false;
+    private boolean removeEmptyPanels = false;
 
     double [] dividerFractions = null;
 
@@ -361,12 +360,12 @@ public class Session {
         }
     }
 
-    public boolean isRemoveEmptyTracks() {
-        return removeEmptyTracks;
+    public boolean isRemoveEmptyPanels() {
+        return removeEmptyPanels;
     }
 
-    public void setRemoveEmptyTracks(boolean removeEmptyTracks) {
-        this.removeEmptyTracks = removeEmptyTracks;
+    public void setRemoveEmptyPanels(boolean removeEmptyPanels) {
+        this.removeEmptyPanels = removeEmptyPanels;
     }
 
 

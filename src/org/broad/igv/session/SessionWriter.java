@@ -130,7 +130,7 @@ public class SessionWriter {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
 
-            if(session.isRemoveEmptyTracks()) {
+            if(session.isRemoveEmptyPanels()) {
                 globalElement.setAttribute("removeEmptyTracks", "true");
             }
 

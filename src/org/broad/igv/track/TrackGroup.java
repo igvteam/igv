@@ -372,7 +372,8 @@ public class TrackGroup {
 
         // Step 3, put unortable tracks back in original order
         if (unsortableTracks.size() > 0) {
-            for (Track t : unsortableTracks) {
+            for (int i= unsortableTracks.size()-1; i >=0; i-- ) {
+                Track t = unsortableTracks.get(i);
                 int index = trackIndeces.get(t);
                 tracks.add(index, t);
             }

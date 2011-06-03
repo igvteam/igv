@@ -19,9 +19,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.renderer.ColorScale;
@@ -286,7 +284,7 @@ public class SessionReader {
             IGV.getInstance().getTrackManager().setGroupByAttribute(session.getGroupTracksBy());
         }
 
-        if (session.isRemoveEmptyTracks()) {
+        if (session.isRemoveEmptyPanels()) {
             IGV.getInstance().getMainPanel().removeEmptyDataPanels();
         }
 
@@ -319,7 +317,7 @@ public class SessionReader {
         if (removeEmptyTracks != null) {
             try {
                 Boolean b = Boolean.parseBoolean(removeEmptyTracks);
-                session.setRemoveEmptyTracks(b);
+                session.setRemoveEmptyPanels(b);
             }
             catch (Exception e) {
                 log.error("Error parsing removeEmptyTracks string: " + removeEmptyTracks, e);
