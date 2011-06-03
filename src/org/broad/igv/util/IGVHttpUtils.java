@@ -21,15 +21,12 @@ package org.broad.igv.util;
 
 
 import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
@@ -38,7 +35,6 @@ import org.broad.tribble.util.SeekableHTTPStream;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.List;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -54,6 +50,7 @@ public class IGVHttpUtils {
     static boolean byteRangeTested = false;
     static boolean useByteRange = true;
     private static Map<String, java.util.List<String>> gsCookies = new HashMap();
+    public static  Credentials GENOME_SPACE_CREDS = null;
 
 
     private static boolean testByteRange() {
@@ -243,23 +240,35 @@ public class IGVHttpUtils {
 
         HttpClient client = new HttpClient();
 
-        String userpass = getUserPass(url.toString());
-        if(userpass == null) {
-           throw new RuntimeException("Access denied to: " + url.toString());
+        // We know all GS urls will need credentials, so get them now
+        if (GENOME_SPACE_CREDS == null) {
+            String userpass = getUserPass(url.toString());
+            if (userpass == null) {
+                throw new RuntimeException("Access denied to: " + url.toString());
+            }
+            String[] tokens = userpass.split(":");
+            GENOME_SPACE_CREDS = new UsernamePasswordCredentials(tokens[0], tokens[1]);
         }
 
-        String [] tokens = userpass.split(":");
-        Credentials defaultcreds = new UsernamePasswordCredentials(tokens[0], tokens[1]);
-        client.getState().setCredentials(new AuthScope("identitytest.genomespace.org", 8443, AuthScope.ANY_REALM), defaultcreds);
 
-        GetMethod get = new GetMethod(url.toExternalForm());
-        get.setDoAuthentication(true);
+        client.getState().setCredentials(new AuthScope("identitytest.genomespace.org", 8443, AuthScope.ANY_REALM), GENOME_SPACE_CREDS);
 
+        GetMethod getMethod = new GetMethod(url.toExternalForm());
+        getMethod.setDoAuthentication(true);
         client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
+        int status = client.executeMethod(getMethod);
+        if(status == 401) {
+            // Try again
+            getMethod.releaseConnection();
+            GENOME_SPACE_CREDS = null;
 
-        int status = client.executeMethod(get);
-        System.out.println("Status = " + status);
-        return new HttpClientInputStream(get, get.getResponseBodyAsStream());
+            return openGSConnectionStream( url);
+        }
+        if(status != 200) {
+            getMethod.releaseConnection();
+            throw new RuntimeException("Error connecting.  Status code = " + status);
+        }
+        return new HttpClientInputStream(getMethod, getMethod.getResponseBodyAsStream());
 
     }
 
@@ -308,7 +317,6 @@ public class IGVHttpUtils {
         }
 
     }
-
 
 
     public static Proxy getProxy() {
