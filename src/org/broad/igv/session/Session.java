@@ -383,55 +383,6 @@ public class Session {
     }
 
 
-    static Locus getLocus(String searchString) {
-
-        if (searchString != null) {
-            String chr;
-            int[] startEnd;
-            int colon = searchString.indexOf(":");
-
-            if (colon > 0) {
-
-                // The chromosome is that portion of the search string up to the colon.
-                chr = searchString.substring(0, colon);
-                String posString = searchString.substring(colon).replace(":", "");
-                startEnd = getStartEnd(posString);
-
-                if (startEnd != null) {
-                    return new Locus(chr, startEnd[0], startEnd[1]);
-                }
-            } else {
-
-                // No chromosome delimiter (color),  The search string is either chromosome name
-                // or a locus in the current chromosome.
-                if (searchString.contains("-")) {
-
-                    // Presense of a dash indicates this is a locus string in the current chromosome
-                    startEnd = getStartEnd(searchString);
-                    if (startEnd != null) {
-                        return new Locus(null, startEnd[0], startEnd[1]);
-                    }
-                } else {
-                    Feature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
-                    if (feature != null) {
-                        return new Locus(feature.getChr(), feature.getStart(), feature.getEnd());
-                    } else {
-
-                        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                        if (genome.getChromosome(searchString) != null) {
-                            // No dash, this is either a chromosome or an unkown search string
-                            return new Locus(searchString, -1, -1);
-                        } else {
-                            return null;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-
     /**
      * Return the start and end positions as a 2 element array for the input
      * position string.  UCSC conventions  are followed for coordinates,

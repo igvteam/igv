@@ -26,10 +26,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +37,41 @@ import java.util.Map;
  */
 public class PeakParser {
 
+    public static List<Peak> loadPeaksBinary(InputStream stream) throws IOException {
+
+        List<Peak> peaks = new ArrayList(25000);
+        DataInputStream reader = null;
+
+        try {
+            reader = new DataInputStream(new BufferedInputStream(stream));
+            String nextLine;
+
+            // Now parse the data
+            int nTimePoints = reader.readInt();
+
+            String chr;
+            while (!(chr = reader.readUTF()).equals("EOF")) {
+                int nRows = reader.readInt();
+                for (int r = 0; r < nRows; r++) {
+                    int start = reader.readInt();
+                    int end = reader.readInt();
+                    float combinedScore = reader.readFloat();
+                    float[] timePointScores = new float[nTimePoints];
+                    for (int i = 0; i < nTimePoints; i++) {
+                        timePointScores[i] = reader.readFloat();
+                    }
+                    peaks.add(new Peak(chr, start, end, "", combinedScore, timePointScores));
+                }
+            }
+
+            return peaks;
+
+        }
+        finally {
+            // Don't close reader here,  close stream in calling method
+        }
+
+    }
 
 
     public static List<Peak> loadPeaks(InputStream stream, int nTimePoints, String chr) throws IOException {
@@ -56,8 +88,8 @@ public class PeakParser {
                 if (nextLine.startsWith("#")) {
                     continue;
                 }
-                String [] tokens = nextLine.split("\t");
-                if(tokens.length < 7) {
+                String[] tokens = nextLine.split("\t");
+                if (tokens.length < 7) {
                     throw new RuntimeException("Not enough columns for peak file. At least 2 time points are required");
                 }
                 break;
@@ -66,19 +98,19 @@ public class PeakParser {
             // Now parse the data
             while ((nextLine = reader.readLine()) != null) {
 
-                String [] tokens = nextLine.split("\t");
-                if(!tokens[0].equals(chr)) {
+                String[] tokens = nextLine.split("\t");
+                if (!tokens[0].equals(chr)) {
                     break;
                 }
                 int start = Integer.parseInt(tokens[1]);
                 int end = Integer.parseInt(tokens[2]);
                 String name = tokens[3];
                 float combinedScore = Float.parseFloat(tokens[4]);
-                float [] timePointScores = new float[nTimePoints];
-                if(nTimePoints > tokens.length - 5) {
+                float[] timePointScores = new float[nTimePoints];
+                if (nTimePoints > tokens.length - 5) {
                     System.out.println();
                 }
-                for(int i=0; i<nTimePoints; i++) {
+                for (int i = 0; i < nTimePoints; i++) {
                     timePointScores[i] = Float.parseFloat(tokens[5 + i]);
                 }
                 peaks.add(new Peak(chr, start, end, name, combinedScore, timePointScores));

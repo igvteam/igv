@@ -42,6 +42,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.List;
@@ -320,24 +321,29 @@ public class PeakTrack extends AbstractTrack {
     }
 
     private List<Peak> getAllPeaks(String chr) throws IOException {
-        List<Peak> peaks = peakMap.get(chr);
-        if (peaks == null) {
-            Long position = index.get(chr);
-            if (position != null) {
-                SeekableStream stream = null;
-                try {
-                    stream = SeekableStreamFactory.getStreamFor(peaksPath);
-                    stream.seek(position);
-                    peaks = PeakParser.loadPeaks(stream, nTimePoints, chr);
-                    peakMap.put(chr, peaks);
-                }
-                finally {
-                    if (stream != null) stream.close();
-                }
-            }
+        if (peakMap.isEmpty()) {
+            InputStream is = null;
+            try {
+                String binPath = peaksPath + ".bin.gz";
+                is = ParsingUtils.openInputStream(new ResourceLocator(binPath));
+                List<Peak> p = PeakParser.loadPeaksBinary(is);
 
+                for (Peak peak : p) {
+                    final String peakChr = peak.getChr();
+                    List<Peak> peakList = peakMap.get(peakChr);
+                    if (peakList == null) {
+                        peakList = new ArrayList(1000);
+                        peakMap.put(peakChr, peakList);
+                    }
+                    peakList.add(peak);
+                }
+
+            }
+            finally {
+                if (is != null) is.close();
+            }
         }
-        return peaks;
+        return peakMap.get(chr);
     }
 
 
