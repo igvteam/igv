@@ -39,7 +39,7 @@ public class PeakParser {
 
     public static List<Peak> loadPeaksBinary(InputStream stream) throws IOException {
 
-        List<Peak> peaks = new ArrayList(25000);
+        List<Peak> peaks = new ArrayList(2000);
         DataInputStream reader = null;
 
         try {
