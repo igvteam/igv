@@ -105,6 +105,7 @@ public class PeakTrack extends AbstractTrack {
         this.genome = genome;
         setHeight(30);
         parse(locator.getPath());
+        loadPeaks();
 
         instances.add(new SoftReference(this));
 
@@ -322,28 +323,32 @@ public class PeakTrack extends AbstractTrack {
 
     private List<Peak> getAllPeaks(String chr) throws IOException {
         if (peakMap.isEmpty()) {
-            InputStream is = null;
-            try {
-                String binPath = peaksPath + ".bin.gz";
-                is = ParsingUtils.openInputStream(new ResourceLocator(binPath));
-                List<Peak> p = PeakParser.loadPeaksBinary(is);
-
-                for (Peak peak : p) {
-                    final String peakChr = peak.getChr();
-                    List<Peak> peakList = peakMap.get(peakChr);
-                    if (peakList == null) {
-                        peakList = new ArrayList(1000);
-                        peakMap.put(peakChr, peakList);
-                    }
-                    peakList.add(peak);
-                }
-
-            }
-            finally {
-                if (is != null) is.close();
-            }
+            loadPeaks();
         }
         return peakMap.get(chr);
+    }
+
+    private void loadPeaks() throws IOException {
+        InputStream is = null;
+        try {
+            String binPath = peaksPath + ".bin.gz";
+            is = ParsingUtils.openInputStream(new ResourceLocator(binPath));
+            List<Peak> p = PeakParser.loadPeaksBinary(is);
+
+            for (Peak peak : p) {
+                final String peakChr = peak.getChr();
+                List<Peak> peakList = peakMap.get(peakChr);
+                if (peakList == null) {
+                    peakList = new ArrayList(1000);
+                    peakMap.put(peakChr, peakList);
+                }
+                peakList.add(peak);
+            }
+
+        }
+        finally {
+            if (is != null) is.close();
+        }
     }
 
 
