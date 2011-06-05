@@ -52,9 +52,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     private static Logger log = Logger.getLogger(AttributePanel.class);
 
-    private static Map<String, Color> colorMap = new Hashtable();
-
-
+ 
     /**
      * Constructs ...
      */
@@ -159,45 +157,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
     }
 
 
-    private Color getColor(String attKey, String attValue) {
-
-        if (attValue == null || attValue.length() == 0) {
-            return Color.white;
-        }
-
-        String key = (attKey + "_" + attValue).toLowerCase();
-        Color c = colorMap.get(key);
-        if (c == null) {
-
-            Integer cnt = colorCounter.get(attKey);
-            if (cnt == null) {
-                cnt = 0;
-            }
-            cnt++;
-            colorCounter.put(attKey, cnt);
-            float hue = (float) (.4 + 0.2 * Math.random());
-
-            // int index = colorMap.size() + 1;
-            c = randomColor(cnt);
-            colorMap.put(key, c);
-        }
-        return c;
-    }
-
-    Map<String, Integer> colorCounter = new HashMap();
-
-    /**
-     * Method description
-     *
-     * @param idx
-     * @return
-     */
-    public static Color randomColor(int idx) {
-        float hue = (float) Math.random();
-        float sat = (float) (0.8 * Math.random());
-        float bri = (float) (0.6 + 0.4 * Math.random());
-        return Color.getHSBColor(hue, sat, bri);
-    }
 
     private int draw(List<String> keys, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
                      Graphics2D graphics) {
@@ -209,7 +168,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
             if (attributeValue != null) {
 
                 Rectangle trackRectangle = new Rectangle(trackX, trackY, trackWidth, trackHeight);
-                graphics.setColor(getColor(key, attributeValue));
+                graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
                 graphics.fill(trackRectangle);
                 addMousableRegion(new MouseableRegion(trackRectangle, key, attributeValue));
             }

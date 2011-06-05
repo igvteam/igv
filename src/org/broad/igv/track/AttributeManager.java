@@ -32,6 +32,7 @@ import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.HttpUtils;
 
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -80,6 +82,10 @@ public class AttributeManager {
      * assigning unique colors
      */
     Map<String, Set<String>> uniqueAttributeValues;
+
+    Map<String, Color> colorMap = new Hashtable();
+
+    Map<String, Integer> colorCounter = new HashMap();
 
 
     private AttributeManager() {
@@ -132,7 +138,7 @@ public class AttributeManager {
     public List<String> getVisibleAttributes() {
         final List<String> keys = getAttributeKeys();
         Set<String> hiddenKeys = IGV.getInstance().getSession().getHiddenAttributes();
-        if(hiddenKeys != null) keys.removeAll(hiddenKeys);
+        if (hiddenKeys != null) keys.removeAll(hiddenKeys);
         return keys;
     }
 
@@ -201,7 +207,7 @@ public class AttributeManager {
         if (locator.isLocal()) {
             File f = new File(locator.getPath());
             fileLength = f.length();
-        } else if(locator.getPath().startsWith("http")) {
+        } else if (locator.getPath().startsWith("http")) {
             fileLength = IGVHttpUtils.getContentLength(new URL(locator.getPath()));
         }
         if (fileLength > oneMB) {
@@ -246,7 +252,7 @@ public class AttributeManager {
         }
     }
 
-    private String loadOldSampleInfo(AsciiLineReader reader, String nextLine, String path) throws IOException {
+    private void loadOldSampleInfo(AsciiLineReader reader, String nextLine, String path) throws IOException {
         // Parse column neadings for attribute names.
         // Columns 1 and 2 are array and sample name (not attributes)
         boolean foundAttributes = false;
@@ -257,6 +263,12 @@ public class AttributeManager {
             if (nLines++ > lineLimit) {
                 break;
             }
+
+            if (nextLine.startsWith("#colors")) {
+                parseColors(reader);
+                return;
+            }
+
             String[] values = nextLine.split("\t");
 
             if (values.length >= 2) {
@@ -275,7 +287,21 @@ public class AttributeManager {
         if (!foundAttributes) {
             throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
         }
-        return nextLine;
+    }
+
+    private void parseColors(AsciiLineReader reader) throws IOException {
+
+        String nextLine;
+        while ((nextLine = reader.readLine()) != null) {
+            String[] tokens = nextLine.split("\t");
+            if (tokens.length >= 3) {
+                String attKey = tokens[0];
+                String attValue = tokens[1];
+                Color color = ColorUtilities.stringToColor(tokens[2]);
+                String key = (attKey + "_" + attValue).toLowerCase();
+                colorMap.put(key, color);
+            }
+        }
     }
 
     /**
@@ -337,6 +363,9 @@ public class AttributeManager {
                     }
                 }
             }
+        } else if (nextLine.startsWith("#colors")) {
+            parseColors(reader);
+            return;
         } else {
             // No mapping section.
             for (Map.Entry<String, List<Attribute>> entry : sampleTable.entrySet()) {
@@ -397,4 +426,49 @@ public class AttributeManager {
         }
 
     }
+
+
+    public Color getColor(String attKey, String attValue) {
+
+        if (attValue == null || attValue.length() == 0) {
+            return Color.white;
+        }
+
+        String key = (attKey + "_" + attValue).toLowerCase();
+        Color c = colorMap.get(key);
+        if (c == null) {
+            key = ("*_" + attValue).toLowerCase();
+            c = colorMap.get(key);
+
+            if (c == null) {
+                Integer cnt = colorCounter.get(attKey);
+                if (cnt == null) {
+                    cnt = 0;
+                }
+                cnt++;
+                colorCounter.put(attKey, cnt);
+                float hue = (float) (.4 + 0.2 * Math.random());
+
+                // int index = colorMap.size() + 1;
+                c = randomColor(cnt);
+                colorMap.put(key, c);
+            }
+        }
+        return c;
+    }
+
+
+    /**
+     * Method description
+     *
+     * @param idx
+     * @return
+     */
+    public static Color randomColor(int idx) {
+        float hue = (float) Math.random();
+        float sat = (float) (0.8 * Math.random());
+        float bri = (float) (0.6 + 0.4 * Math.random());
+        return Color.getHSBColor(hue, sat, bri);
+    }
+
 }

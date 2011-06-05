@@ -44,7 +44,6 @@ public class PeakParser {
 
         try {
             reader = new DataInputStream(new BufferedInputStream(stream));
-            String nextLine;
 
             // Now parse the data
             int nTimePoints = reader.readInt();
