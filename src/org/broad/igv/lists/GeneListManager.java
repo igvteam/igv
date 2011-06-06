@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -199,7 +200,7 @@ public class GeneListManager {
         return null;
     }
 
-    void importGMTFile(File gmtFile) throws IOException {
+    public void importGMTFile(File gmtFile) throws IOException {
 
         File f = gmtFile;
         File dir = Globals.getGeneListDirectory();
@@ -211,8 +212,8 @@ public class GeneListManager {
         String group = f.getName().replace(".gmt", "");
         BufferedReader reader = null;
         try {
-            importedFiles.put(group, f);
             reader = new BufferedReader(new FileReader(f));
+            importedFiles.put(group, f);
             List<GeneList> lists = loadGMT(group, reader);
             for (GeneList gl : lists) {
                 gl.setEditable(false);
@@ -227,6 +228,25 @@ public class GeneListManager {
                 }
             }
         }
+    }
+
+    public void importGMTFile(String path) throws IOException {
+
+        BufferedReader reader = null;
+        try {
+            String group = new File(path).getName();
+            reader = ParsingUtils.openBufferedReader(path);
+            List<GeneList> lists = loadGMT(group, reader);
+              for (GeneList gl : lists) {
+                  gl.setEditable(false);
+                  addGeneList(gl);
+              }
+
+        }
+        finally {
+            if(reader != null) reader.close();
+        }
+
     }
 
     private List<GeneList> loadGMT(String group, BufferedReader reader) throws IOException {

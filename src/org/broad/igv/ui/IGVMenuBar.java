@@ -625,6 +625,9 @@ menuAction =
 
         MenuAction menuAction = null;
 
+        menuAction = new LoadFromGSMenuAction("Load from GenomeSpace...", KeyEvent.VK_U, IGV.getInstance());
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
         // Preferences reset
         menuAction = new ResetPreferencesAction("Reset Preferences", IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));

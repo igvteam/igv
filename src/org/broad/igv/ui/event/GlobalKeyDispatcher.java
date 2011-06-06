@@ -253,7 +253,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
+                if (!(t instanceof FeatureTrack)) {
                     //JOptionPane.showMessageDialog(IGV.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;

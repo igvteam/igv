@@ -42,6 +42,7 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
+import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
@@ -131,7 +132,9 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.equals("das")) {
+            if (typeString.endsWith(".gmt")) {
+                loadGMT(locator);
+            } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
             } else if (isIndexed(locator.getPath())) {
                 loadIndexed(locator, newTracks, genome);
@@ -257,6 +260,10 @@ public class TrackLoader {
             throw new DataLoadException(e.getMessage(), locator.getPath());
         }
 
+    }
+
+    private void loadGMT(ResourceLocator locator) throws IOException {
+        GeneListManager.getInstance().importGMTFile(locator.getPath());
     }
 
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

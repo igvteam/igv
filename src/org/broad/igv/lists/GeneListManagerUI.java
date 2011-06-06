@@ -531,16 +531,10 @@ public class GeneListManagerUI extends JDialog {
                                 //---- groupJList ----
                                 groupJList.setModel(new AbstractListModel() {
                                     String[] values = {
-                                            "All"
+                                        "All"
                                     };
-
-                                    public int getSize() {
-                                        return values.length;
-                                    }
-
-                                    public Object getElementAt(int i) {
-                                        return values[i];
-                                    }
+                                    public int getSize() { return values.length; }
+                                    public Object getElementAt(int i) { return values[i]; }
                                 });
                                 groupJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                                 groupJList.addListSelectionListener(new ListSelectionListener() {
