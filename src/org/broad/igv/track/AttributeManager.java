@@ -30,16 +30,13 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.HttpUtils;
 
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -75,6 +72,11 @@ public class AttributeManager {
      * is kept so the keys may be fetched in the order they were added.
      */
     List<String> attributeKeys = new ArrayList();
+
+    /**
+     * Column meta data (column == attributeKey).
+     */
+    Map<String, ColumnMetaData> columnMetaData = new HashMap();
 
 
     /**
@@ -132,6 +134,14 @@ public class AttributeManager {
         return new ArrayList(attributeKeys);
     }
 
+    /**
+     * Return true if the associated column contains all numeric values
+     */
+    boolean isNumeric(String attributeKey) {
+        ColumnMetaData metaData = columnMetaData.get(attributeKey);
+        return metaData != null && metaData.isNumeric();
+    }
+
 
     // TODO -- don't compute this on the fly every time its called
 
@@ -150,14 +160,14 @@ public class AttributeManager {
         loadedResources = new HashSet();
     }
 
-
-    //////////////////////////
-
-
     /**
      * Set the attribute value for the given track and key.
      */
     private void addAttribute(String trackIdentifier, String attributeKey, String attributeValue) {
+
+        if (attributeValue.equals("")) {
+            return;
+        }
 
         addAttributeKey(attributeKey);
 
@@ -177,6 +187,8 @@ public class AttributeManager {
         // attributeKey = column header, attributeValue = value for header
         // and track name (trackIdentifier) row intersection
         attributes.put(attributeKey, attributeValue);
+
+        updateMetaData(attributeKey, attributeValue);
     }
 
     public void addAttributeKey(String key) {
@@ -185,6 +197,32 @@ public class AttributeManager {
         }
     }
 
+    /**
+     * Update the column meta data associated with the attribute key.
+     *
+     * @param attributeKey
+     * @param attributeValue
+     */
+    private void updateMetaData(String attributeKey, String attributeValue) {
+
+        ColumnMetaData metaData = columnMetaData.get(attributeKey);
+        if (metaData == null) {
+            metaData = new ColumnMetaData();
+            columnMetaData.put(attributeKey, metaData);
+        }
+
+        if (metaData.isNumeric()) {
+            try {
+                double val = Double.parseDouble(attributeValue);
+                metaData.updateRange(val);
+            }
+            catch (NumberFormatException e) {
+                metaData.setNumeric(false);
+            }
+        }
+
+
+    }
 
     /**
      * Test to see if this file could be a sample information file.  Some characteristics are (1) is tab delimited
@@ -458,12 +496,27 @@ public class AttributeManager {
     }
 
 
-    /**
-     * Method description
-     *
-     * @param idx
-     * @return
-     */
+    static class ColumnMetaData {
+        // Assume meta data is true until proven otherwise
+        private boolean numeric = true;
+        double min = Double.MAX_VALUE;
+        double max = -min;
+
+        void updateRange(double value) {
+            min = Math.min(min, value);
+            max = Math.max(max, value);
+        }
+
+        public boolean isNumeric() {
+            return numeric;
+        }
+
+        public void setNumeric(boolean numeric) {
+            this.numeric = numeric;
+        }
+    }
+
+
     public static Color randomColor(int idx) {
         float hue = (float) Math.random();
         float sat = (float) (0.8 * Math.random());

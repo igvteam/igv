@@ -60,10 +60,6 @@ public class SortTracksMenuAction extends MenuAction {
     final public void doSortTrackByAttribute() {
 
         List<String> keys = AttributeManager.getInstance().getAttributeKeys();
-        //if (keys != null) {
-        //    Collections.sort(keys,
-        //            AttributeManager.getInstance().getAttributeComparator());
-        //}
         Object availableSortKeys[] = keys.toArray();
         SortDialog dialog = new SortDialog(mainFrame.getMainFrame(), true, availableSortKeys);
         dialog.setVisible(true);
@@ -74,8 +70,7 @@ public class SortTracksMenuAction extends MenuAction {
 
         String[] selectedSortKeys = dialog.getSelectedSortKeys();
         if (selectedSortKeys != null) {
-            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(
-                    selectedSortKeys, dialog.isAscending());
+            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(selectedSortKeys, dialog.isAscending());
             mainFrame.getMainFrame().repaint();
         }
 

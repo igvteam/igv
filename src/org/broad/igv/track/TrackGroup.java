@@ -207,6 +207,8 @@ public class TrackGroup {
                     Track t1 = (Track) arg0;
                     Track t2 = (Track) arg1;
 
+                    // Loop through the attributes in order (primary, secondary, tertiary, ...).  The
+                    // first attribute to yield a non-zero comparison wins
                     for (int i = 0; i < attributeNames.length; i++) {
                         String attName = attributeNames[i];
 
@@ -225,69 +227,20 @@ public class TrackGroup {
                             }
                             value2 = value2.toLowerCase();
 
+                            boolean isNumeric = AttributeManager.getInstance().isNumeric(attName);
+
                             int c = 0;
-                            int k = 0;
-                            if (value1.matches("[^0-9]") || value2.matches("[^0-9]")) {
-                                c = value1.compareTo(value2);
+                            if (isNumeric) {
+                                double d1 = Double.parseDouble(value1);
+                                double d2 = Double.parseDouble(value2);
+                                if(d2 > d1) c = 1;
+                                else if(d2 < d1) c = -1;
                             } else {
-                                boolean numeric = false;
-                                while (k < value1.length() && k < value2.length()) {
-                                    while (k < value1.length() && k < value2.length() && Character.isDigit(value1.charAt(
-                                            k)) && Character.isDigit(value2.charAt(k))) {
-                                        int num1 = Character.getNumericValue(value1.charAt(k));
-                                        int num2 = Character.getNumericValue(value2.charAt(k));
-
-                                        if (c == 0) {
-                                            if (num1 < num2) {
-                                                c = -1;
-                                            }
-
-                                            if (num1 > num2) {
-                                                c = 1;
-                                            }
-
-                                        }
-                                        k++;
-                                        numeric =
-                                                true;
-                                    }
-
-                                    if (numeric && k < value1.length() && Character.isDigit(value1.charAt(
-                                            k))) {
-                                        c = 1;
-                                        numeric =
-                                                false;
-                                    } else if (numeric && k < value2.length() && Character.isDigit(value2.charAt(
-                                            k))) {
-                                        c = -1;
-                                        numeric =
-                                                false;
-                                    }
-
-                                    if (k < value1.length() && k < value2.length() && c == 0) {
-                                        c = Character.valueOf(value1.charAt(k)).compareTo(value2.charAt(
-                                                k));
-                                    }
-
-                                    if (c != 0) {
-                                        break;
-                                    }
-
-                                    k++;
-                                }
-
+                                c = value1.compareTo(value2);
                             }
 
-                            if (c == 0 && k < value1.length()) {
-                                c = 1;
-                            }
-
-                            if (c == 0 && k < value2.length()) {
-                                c = -1;
-                            }
-
-                            if (c != 0) {
-                                return (ascending[i] ? c : -c);
+                            if(c != 0) {
+                                return ascending[i] ? c : -c;
                             }
 
                         }
@@ -315,7 +268,7 @@ public class TrackGroup {
 
             // Step 3, put unortable tracks back in original order
             if (unsortableTracks.size() > 0) {
-                for (int i= unsortableTracks.size()-1; i >=0; i-- ) {
+                for (int i = unsortableTracks.size() - 1; i >= 0; i--) {
                     Track t = unsortableTracks.get(i);
                     int index = trackIndeces.get(t);
                     tracks.add(index, t);
@@ -369,7 +322,7 @@ public class TrackGroup {
 
         // Step 3, put unortable tracks back in original order
         if (unsortableTracks.size() > 0) {
-            for (int i= unsortableTracks.size()-1; i >=0; i-- ) {
+            for (int i = unsortableTracks.size() - 1; i >= 0; i--) {
                 Track t = unsortableTracks.get(i);
                 int index = trackIndeces.get(t);
                 tracks.add(index, t);
@@ -398,9 +351,9 @@ public class TrackGroup {
             Comparator<Track> c = new Comparator<Track>() {
 
                 public int compare(Track t1, Track t2) {
-                    if(t1==null && t2 == null) return 0;
-                    if(t1 == null) return 1;
-                    if(t2 == null) return -1;
+                    if (t1 == null && t2 == null) return 0;
+                    if (t1 == null) return 1;
+                    if (t2 == null) return -1;
 
                     float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
                     float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);

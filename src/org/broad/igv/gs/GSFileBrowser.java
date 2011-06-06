@@ -25,7 +25,9 @@ package org.broad.igv.gs;
 
 import java.awt.event.*;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
@@ -52,6 +54,8 @@ import javax.swing.border.*;
  * @author Stan Diamond
  */
 public class GSFileBrowser extends JDialog {
+
+    private static Logger log = Logger.getLogger(GSFileBrowser.class);
 
     static ImageIcon folderIcon;
     static ImageIcon fileIcon;
@@ -172,18 +176,33 @@ public class GSFileBrowser extends JDialog {
 
     private void loadButtonActionPerformed(ActionEvent e) {
 
-        Object[] selections = fileList.getSelectedValues();
-        ArrayList<ResourceLocator> toLoad = new ArrayList(selections.length);
-        for (Object obj : selections) {
-            if (obj instanceof GSMetaData) {
-                GSMetaData md = (GSMetaData) obj;
-                if (!md.isDirectory) {
-                    toLoad.add(new ResourceLocator(md.url));
+        try {
+            Object[] selections = fileList.getSelectedValues();
+
+            // If there is a single selection, and it is a directory,  load that directory
+            if(selections.length == 1) {
+                GSMetaData md = (GSMetaData) selections[0];
+                if(md.isDirectory) {
+                    fetchContents(new URL(md.url));
+                    return;
                 }
             }
-        }
-        if (toLoad.size() > 0) {
-            load(toLoad);
+
+            ArrayList<ResourceLocator> toLoad = new ArrayList(selections.length);
+            for (Object obj : selections) {
+                if (obj instanceof GSMetaData) {
+                    GSMetaData md = (GSMetaData) obj;
+                    if (!md.isDirectory) {
+                        toLoad.add(new ResourceLocator(md.url));
+                    }
+                }
+            }
+            if (toLoad.size() > 0) {
+                load(toLoad);
+            }
+        } catch (Exception e1) {
+            log.error("Error loading GS files", e1);
+            MessageUtils.showMessage("Error: " + e1.toString());
         }
     }
 
@@ -279,7 +298,7 @@ public class GSFileBrowser extends JDialog {
         dialogPane = new JPanel();
         buttonBar = new JPanel();
         cancelButton = new JButton();
-        loadButton = new JButton();
+        openButton = new JButton();
         splitPane1 = new JPanel();
         scrollPane1 = new JScrollPane();
         fileList = new JList();
@@ -298,8 +317,8 @@ public class GSFileBrowser extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 0};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -309,19 +328,19 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
-                //---- loadButton ----
-                loadButton.setText("Load");
-                loadButton.addActionListener(new ActionListener() {
+                //---- openButton ----
+                openButton.setText("Open");
+                openButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         loadButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(loadButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
@@ -353,7 +372,7 @@ public class GSFileBrowser extends JDialog {
     private JPanel dialogPane;
     private JPanel buttonBar;
     private JButton cancelButton;
-    private JButton loadButton;
+    private JButton openButton;
     private JPanel splitPane1;
     private JScrollPane scrollPane1;
     private JList fileList;

@@ -108,10 +108,10 @@
             <string>javax.swing.JButton</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Load</string> 
+             <string>Open</string> 
             </void> 
             <void property="name"> 
-             <string>loadButton</string> 
+             <string>openButton</string> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 

@@ -587,13 +587,6 @@ public class TrackManager {
         }
     }
 
-    public void sortAllTracksByPosition(List<String> trackIds) {
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
-            tsv.sortTracksByPosition(trackIds);
-        }
-    }
-
     /**
      * Return a DataPanel appropriate for the resource type
      *

@@ -24,6 +24,7 @@ package org.broad.igv.util;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -41,6 +42,30 @@ public class ColorUtilities {
     public static Map<Object, Color> colorCache = new WeakHashMap<Object, Color>(1000);
 
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
+
+    // HTML 4.1 color table,  + orange and magenta
+    static Map<String, String> colorSymbols = new HashMap();
+    static {
+        colorSymbols.put("white", "FFFFFF");
+        colorSymbols.put("silver", "C0C0C0");
+        colorSymbols.put("gray", "808080");
+        colorSymbols.put("black", "000000");
+        colorSymbols.put("red", "FF0000");
+        colorSymbols.put("maroon", "800000");
+        colorSymbols.put("yellow", "FFFF00");
+        colorSymbols.put("olive", "808000");
+        colorSymbols.put("lime", "00FF00");
+        colorSymbols.put("green", "008000");
+        colorSymbols.put("aqua", "00FFFF");
+        colorSymbols.put("teal", "008080");
+        colorSymbols.put("blue", "0000FF");
+        colorSymbols.put("navy", "000080");
+        colorSymbols.put("fuchsia", "FF00FF");
+        colorSymbols.put("purple", "800080");
+        colorSymbols.put("orange", "FFA500");
+        colorSymbols.put("magenta", "FF00FF");
+    }
+
 
     /**
      * Method description
@@ -130,17 +155,21 @@ public class ColorUtilities {
                     int green = Integer.parseInt(rgb[1]);
                     int blue = Integer.parseInt(rgb[2]);
                     c = new Color(red, green, blue);
-                } else {
-                    if (string.startsWith("#")) {
-                        string = string.substring(1);
-                    }
+                } else if (string.startsWith("#")) {
+                    c = hexToColor(string.substring(1));
                     if (string.length() == 6) {
                         int red = Integer.parseInt(string.substring(0, 2), 16);
                         int green = Integer.parseInt(string.substring(2, 4), 16);
                         int blue = Integer.parseInt(string.substring(4, 6), 16);
                         c = new Color(red, green, blue);
                     }
+                } else {
+                     String hexString = colorSymbols.get(string.toLowerCase());
+                     if(hexString != null) {
+                         c = hexToColor(hexString);
+                     }
                 }
+
 
                 if (c == null) {
                     c = Color.black;
@@ -153,8 +182,20 @@ public class ColorUtilities {
             log.error("Error in color string. ", numberFormatException);
             return Color.black;
         }
+    }
+
+    private static Color hexToColor(String string) {
+        if (string.length() == 6) {
+            int red = Integer.parseInt(string.substring(0, 2), 16);
+            int green = Integer.parseInt(string.substring(2, 4), 16);
+            int blue = Integer.parseInt(string.substring(4, 6), 16);
+            return new Color(red, green, blue);
+        } else {
+            return null;
+        }
 
     }
+
 
 
     /**
