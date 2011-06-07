@@ -180,7 +180,6 @@ public class Main {
         */
         try {
             String lnf = UIManager.getSystemLookAndFeelClassName();
-            System.out.println("Installing look & feel:  " + lnf);
             UIManager.setLookAndFeel(lnf);
         } catch (Exception e) {
             e.printStackTrace();

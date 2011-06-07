@@ -42,6 +42,7 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
+import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
@@ -263,7 +264,8 @@ public class TrackLoader {
     }
 
     private void loadGMT(ResourceLocator locator) throws IOException {
-        GeneListManager.getInstance().importGMTFile(locator.getPath());
+        List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
+        MessageUtils.showMessage("Loaded " + lists.size() + " gene lists.");
     }
 
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {

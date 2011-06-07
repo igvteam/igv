@@ -230,21 +230,22 @@ public class GeneListManager {
         }
     }
 
-    public void importGMTFile(String path) throws IOException {
+    public List<GeneList> importGMTFile(String path) throws IOException {
 
         BufferedReader reader = null;
         try {
             String group = new File(path).getName();
             reader = ParsingUtils.openBufferedReader(path);
             List<GeneList> lists = loadGMT(group, reader);
-              for (GeneList gl : lists) {
-                  gl.setEditable(false);
-                  addGeneList(gl);
-              }
+            for (GeneList gl : lists) {
+                gl.setEditable(false);
+                addGeneList(gl);
+            }
+            return lists;
 
         }
         finally {
-            if(reader != null) reader.close();
+            if (reader != null) reader.close();
         }
 
     }

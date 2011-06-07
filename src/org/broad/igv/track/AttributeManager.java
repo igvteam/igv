@@ -217,7 +217,7 @@ public class AttributeManager {
                 metaData.updateRange(val);
             }
             catch (NumberFormatException e) {
-                metaData.setNumeric(false);
+                metaData.addNonNumericLabel(attributeValue);
             }
         }
 
@@ -498,7 +498,7 @@ public class AttributeManager {
 
     static class ColumnMetaData {
         // Assume meta data is true until proven otherwise
-        private boolean numeric = true;
+        Set<String> nonNumericLabels = new HashSet();
         double min = Double.MAX_VALUE;
         double max = -min;
 
@@ -507,13 +507,23 @@ public class AttributeManager {
             max = Math.max(max, value);
         }
 
+        // Allow up to 1 non-numeric field
+
         public boolean isNumeric() {
-            return numeric;
+            return nonNumericLabels.size() <= 1;
         }
 
-        public void setNumeric(boolean numeric) {
-            this.numeric = numeric;
+
+        public void addNonNumericLabel(String label) {
+            nonNumericLabels.add(label);
+
         }
+    }
+
+    static class Range {
+        double min;
+        double max;
+        Color color;
     }
 
 

@@ -231,15 +231,27 @@ public class TrackGroup {
 
                             int c = 0;
                             if (isNumeric) {
-                                double d1 = Double.parseDouble(value1);
-                                double d2 = Double.parseDouble(value2);
-                                if(d2 > d1) c = 1;
-                                else if(d2 < d1) c = -1;
+                                double d1;
+                                try {
+                                    d1 = Double.parseDouble(value1);
+                                }
+                                catch (NumberFormatException e) {
+                                    d1 = Double.MIN_VALUE;
+                                }
+                                double d2;
+                                try {
+                                    d2 = Double.parseDouble(value2);
+                                }
+                                catch (NumberFormatException e) {
+                                    d2 = Double.MIN_VALUE;
+                                }
+                                if (d2 > d1) c = 1;
+                                else if (d2 < d1) c = -1;
                             } else {
                                 c = value1.compareTo(value2);
                             }
 
-                            if(c != 0) {
+                            if (c != 0) {
                                 return ascending[i] ? c : -c;
                             }
 
