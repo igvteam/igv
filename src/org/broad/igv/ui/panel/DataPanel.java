@@ -445,7 +445,7 @@ public class DataPanel extends JComponent implements Paintable {
     @Override
     final public String getToolTipText() {
 
-        if(IGV.getInstance().isSuppressTooltip()) {
+        if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
             return "";
         }
 
@@ -665,11 +665,20 @@ public class DataPanel extends JComponent implements Paintable {
          * The mouse was clicked. If this is the second click of a double click, cancel the scheduled single click task.
          * The shift and alt keys are alternative  zoom options
          * shift zooms in by 8x,  alt zooms out by 2x
+         * <p/>
+         * TODO -- the "currenTool" is also a mouselistener, so there are two.  This makes mouse event handling
+         * TODO -- needlessly complicated, which handler has preference, etc.  Move this code to the default
+         * TODO -- PanAndZoomTool
          *
          * @param e
          */
         @Override
         public void mouseClicked(final MouseEvent e) {
+
+            if (currentTool instanceof RegionOfInterestTool) {
+                currentTool.mouseClicked(e); 
+                return;
+            }
 
             if (e.isPopupTrigger()) {
                 doPopupMenu(e);

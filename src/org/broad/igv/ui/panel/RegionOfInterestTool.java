@@ -53,9 +53,13 @@ public class RegionOfInterestTool extends AbstractDataPanelTool {
      * The mouse has been clicked.  Define one edge of the region of interest.
      */
     @Override
-    public void mousePressed(final MouseEvent e) {
+    public void mouseClicked(final MouseEvent e) {
 
         if (e.isPopupTrigger()) {
+            return;
+        }
+
+        if(e.getClickCount() > 1) {
             return;
         }
 
