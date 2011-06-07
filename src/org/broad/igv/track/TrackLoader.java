@@ -72,6 +72,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -98,15 +99,17 @@ public class TrackLoader {
         this.igv = igv;
         Genome genome = igv.getGenomeManager().getCurrentGenome();
 
+        final String path = locator.getPath();
         try {
             String typeString = locator.getType();
             if (typeString == null) {
 
                 // Genome space hack
-                if (locator.getPath().contains("?") && locator.getPath().contains("dataformat/gct")) {
+                 if ((path.contains("?dataFormat") || path.contains("%3Fdataformat")) &&
+                        (path.contains("dataformat/gct") || path.contains("dataformat%2Fgct"))) {
                     typeString = ".gct";
                 } else {
-                    typeString = locator.getPath().toLowerCase();
+                    typeString = path.toLowerCase();
                     if (!typeString.endsWith("_sorted.txt") &&
                             (typeString.endsWith(".txt") || typeString.endsWith(
                                     ".xls") || typeString.endsWith(".gz"))) {
@@ -126,7 +129,7 @@ public class TrackLoader {
             // Check for index
             boolean hasIndex = false;
             if (locator.isLocal()) {
-                File indexFile = new File(locator.getPath() + ".sai");
+                File indexFile = new File(path + ".sai");
                 hasIndex = indexFile.exists();
             }
 
@@ -137,11 +140,11 @@ public class TrackLoader {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
-            } else if (isIndexed(locator.getPath())) {
+            } else if (isIndexed(path)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
                 // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
-                throw new IndexNotFoundException(locator.getPath());
+                throw new IndexNotFoundException(path);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
             } else if (typeString.endsWith("varlist")) {
@@ -207,9 +210,9 @@ public class TrackLoader {
                 this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (locator.getPath().toLowerCase().contains(".maf")) {
+            } else if (path.toLowerCase().contains(".maf")) {
                 loadMAFTrack(locator, newTracks);
-            } else if (locator.getPath().toLowerCase().contains(".peak.cfg")) {
+            } else if (path.toLowerCase().contains(".peak.cfg")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || GCTDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
@@ -217,15 +220,15 @@ public class TrackLoader {
             } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
                     typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
-            } else if (GCTDatasetParser.isGCT(locator.getPath())) {
+            } else if (GCTDatasetParser.isGCT(path)) {
                 loadGctFile(locator, newTracks, genome);
-            } else if (GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
+            } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
             } else {
-                MessageUtils.showMessage("<html>Unknown file type: " + locator.getPath() + "<br>Check file extenstion");
+                MessageUtils.showMessage("<html>Unknown file type: " + path + "<br>Check file extenstion");
             }
 
             // Track line
@@ -258,7 +261,7 @@ public class TrackLoader {
             throw dle;
         } catch (Exception e) {
             log.error(e);
-            throw new DataLoadException(e.getMessage(), locator.getPath());
+            throw new DataLoadException(e.getMessage(), path);
         }
 
     }
@@ -1048,6 +1051,11 @@ public class TrackLoader {
 
 
     public static boolean isIndexed(String path) {
+        // genome space hack -- genome space files are never indexed (at least not yet)
+        if(path.contains("genomespace.org")) {
+            return false;
+        }
+
         String indexExtension = path.endsWith("gz") ? ".tbi" : ".idx";
         String indexPath = path + indexExtension;
         try {
