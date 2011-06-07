@@ -336,6 +336,8 @@ public class IGVHttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
+        conn.setRequestProperty("Connection", "close");
+
         if (conn.getResponseCode() == 401) {
 
             final String userPass = getUserPass(url.toExternalForm());

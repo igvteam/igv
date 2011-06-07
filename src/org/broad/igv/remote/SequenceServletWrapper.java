@@ -60,16 +60,11 @@ public class SequenceServletWrapper {
 
         try {
 
-            URL url = new URL(urlString);
+            URL url = new URL(urlString + "?chr=" + chr + "&start=" + start + "&end=" + end);
             URLConnection connection = IGVHttpUtils.openConnection(url);
             connection.setConnectTimeout(CONNECTION_TIMEOUT);
             connection.setDoOutput(true);
-
-            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
-            out.write("chr=" + chr);
-            out.write("&start=" + start);
-            out.write("&end=" + end);
-            out.close();
+            connection.setAllowUserInteraction(true);
 
             InputStream cis = connection.getInputStream();
 
