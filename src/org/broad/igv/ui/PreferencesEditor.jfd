@@ -233,7 +233,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>235</int> 
+               <int>265</int> 
               </void> 
              </object> 
             </void> 
@@ -299,11 +299,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>41</int> 
+               <int>45</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>265</int> 
+               <int>295</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -334,7 +334,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>401</int> 
+               <int>425</int> 
               </void> 
              </object> 
             </void> 
@@ -369,7 +369,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>395</int> 
+               <int>420</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -400,11 +400,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>41</int> 
+               <int>40</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>430</int> 
+               <int>455</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -423,6 +423,14 @@
                <string>text</string> 
                <string>&lt;html&gt;&lt;i&gt;Resolution in base-pairs per pixel at which sequence track becomes visible. </string> 
               </void> 
+              <void method="setProperty"> 
+               <string>font</string> 
+               <object class="java.awt.Font"> 
+                <string>Lucida Grande</string> 
+                <int>0</int> 
+                <int>12</int> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>label5</string> 
               </void> 
@@ -431,11 +439,11 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>41</int> 
+               <int>40</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>350</int> 
+               <int>380</int> 
               </void> 
              </object> 
             </void> 
@@ -458,7 +466,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>315</int> 
+               <int>345</int> 
               </void> 
              </object> 
             </void> 
@@ -493,7 +501,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>309</int> 
+               <int>340</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -526,7 +534,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>503</int> 
+               <int>530</int> 
               </void> 
              </object> 
             </void> 
@@ -549,7 +557,7 @@
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>497</int> 
+               <int>525</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
@@ -580,15 +588,62 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>356</int> 
+               <int>355</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>497</int> 
+               <int>525</int> 
               </void> 
               <void method="setProperty"> 
                <string>width</string> 
                <int>97</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Show Region Boundaries</string> 
+              </void> 
+              <void property="name"> 
+               <string>showRegionBoundariesCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showAttributesDisplayCheckBoxActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showRegionBoundariesCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>275</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>23</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>225</int> 
               </void> 
              </object> 
             </void> 
@@ -1163,7 +1218,7 @@
            </void> 
            <void method="setProperty"> 
             <string>$verticalGroup</string> 
-            <string>par l {seq l {space :p:55:p, comp jPanel5:::p:394:p, space ::177:x}}</string> 
+            <string>par l {seq l {space :p:55:p, comp jPanel5:::p:394:p, space ::117:x}}</string> 
            </void> 
           </object> 
           <void property="name"> 
@@ -3732,7 +3787,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::16:x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3828,7 +3883,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::170:x}}</string> 
+              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::110:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
