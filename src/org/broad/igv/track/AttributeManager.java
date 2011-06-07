@@ -451,7 +451,7 @@ public class AttributeManager {
         private String value;
 
         public Attribute(String key, String value) {
-            this.key = key.toUpperCase();
+            this.key = key;
             this.value = value;
         }
 

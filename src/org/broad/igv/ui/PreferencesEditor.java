@@ -2291,7 +2291,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void trackNameAttributeFieldFocusLost(java.awt.event.FocusEvent evt) {
         String attributeName = String.valueOf(trackNameAttributeField.getText());
         if (attributeName != null) {
-            attributeName = attributeName.toUpperCase().trim();
+            attributeName = attributeName.trim();
         }
         updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
     }
@@ -2299,7 +2299,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void trackNameAttributeFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String attributeName = String.valueOf(trackNameAttributeField.getText());
         if (attributeName != null) {
-            attributeName = attributeName.toUpperCase().trim();
+            attributeName = attributeName.trim();
         }
         updatedPreferenceMap.put(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY, attributeName);
     }
