@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -124,7 +125,18 @@ public class GSFileBrowser extends JDialog {
             JSONTokener tk = new JSONTokener(buf.toString());
             JSONObject obj = new JSONObject(tk);
 
-            JSONArray contents = (JSONArray) obj.get("contents");
+            Object c = obj.get("contents");
+            List<JSONObject> contents = new ArrayList();
+            if (c instanceof JSONObject) {
+                contents.add((JSONObject) c);
+            } else {
+                JSONArray tmp = (JSONArray) c;
+                int l = tmp.length();
+                for (int i = 0; i < l; i++) {
+                    contents.add((JSONObject) tmp.get(i));
+                }
+            }
+
             JSONObject directory = (JSONObject) obj.get("directory");
 
             String dirUrlString = directory.get("url").toString();
@@ -133,7 +145,7 @@ public class GSFileBrowser extends JDialog {
                 userRootUrl = dirUrlString;
             }
 
-            int contentsLength = contents.length();
+
             ArrayList<GSMetaData> dirElements = new ArrayList();
             ArrayList<GSMetaData> fileElements = new ArrayList();
 
@@ -144,8 +156,9 @@ public class GSFileBrowser extends JDialog {
                 dirElements.add(new GSMetaData("Parent Directory", parentURL, "", "", true));
             }
 
+            int contentsLength = contents.size();
             for (int i = 0; i < contentsLength; i++) {
-                JSONObject o = (JSONObject) contents.get(i);
+                JSONObject o = contents.get(i);
                 String name = (String) o.get("name");
                 String objurl = (String) o.get("url");
                 if (o.get("directory").equals("true")) {
@@ -180,9 +193,9 @@ public class GSFileBrowser extends JDialog {
             Object[] selections = fileList.getSelectedValues();
 
             // If there is a single selection, and it is a directory,  load that directory
-            if(selections.length == 1) {
+            if (selections.length == 1) {
                 GSMetaData md = (GSMetaData) selections[0];
-                if(md.isDirectory) {
+                if (md.isDirectory) {
                     fetchContents(new URL(md.url));
                     return;
                 }
@@ -317,8 +330,8 @@ public class GSFileBrowser extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -328,8 +341,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- openButton ----
                 openButton.setText("Open");
@@ -339,8 +352,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
