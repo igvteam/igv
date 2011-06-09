@@ -23,7 +23,6 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
@@ -569,17 +568,30 @@ public class VCFTrack extends FeatureTrack {
         if (keys.size() > 0) {
             String toolTip = "<br><b>Variant Attributes</b>";
             int count = 0;
+
+            // Put AF and GMAF and put at the top, if present
+            String k = "AF";
+            String afValue = variant.getAttributeAsString(k);
+            if(afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+                toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
+            }
+            k = "GMAF";
+            afValue = variant.getAttributeAsString(k);
+            if(afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+                toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
+            }
+
             for (String key : keys) {
-                try {
-                    count++;
-                    if (count > MAX_FILTER_LINES) {
-                        toolTip = toolTip.concat("<br>....");
-                        break;
-                    }
-                    toolTip = toolTip.concat("<br>" + InfoFieldName.findEnum(key) + ": " + variant.getAttributeAsString(key));
-                } catch (IllegalArgumentException iae) {
-                    toolTip = toolTip.concat("<br>" + key + ": " + variant.getAttributeAsString(key));
+                count++;
+
+                if(key.equals("AF") || key.equals("GMAF")) continue;
+
+                if (count > MAX_FILTER_LINES) {
+                    toolTip = toolTip.concat("<br>....");
+                    break;
                 }
+                toolTip = toolTip.concat("<br>" + getFullName(key) + ": " + variant.getAttributeAsString(key));
+
             }
             return toolTip;
         }
@@ -592,7 +604,7 @@ public class VCFTrack extends FeatureTrack {
             String tooltip = "<br><b>Sample Attributes</b>";
             for (String key : keys) {
                 try {
-                    tooltip = tooltip.concat("<br>" + InfoFieldName.findEnum(key) + ": " + genotype.getAttributeAsString(key));
+                    tooltip = tooltip.concat("<br>" + getFullName(key) + ": " + genotype.getAttributeAsString(key));
                 } catch (IllegalArgumentException iae) {
                     tooltip = tooltip.concat("<br>" + key + ": " + genotype.getAttributeAsString(key));
                 }
@@ -631,45 +643,28 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    public static enum InfoFieldName {
+    static Map<String, String> fullNames = new HashMap();
 
-        AA("Ancestral Allele"),
-        AC("Allele Count in Genotypes"),
-        AN("Total Alleles in Genotypes"),
-        AF("Allele Frequency"),
-        DP("Depth"),
-        MQ("Mapping Quality"),
-        NS("Number of Samples with Data"),
-        BQ("RMS Base Quality"),
-        SB("Strand Bias"),
-        DB("dbSNP Membership"),
-        GQ("Genotype Quality"),
-        GL("Genotype Likelihoods");  //Hom-ref, het, hom-var break this down into a group
-
-        private String name;
-
-        InfoFieldName(String name) {
-            this.name = name;
-        }
-
-        public String getText() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return getText();
-        }
-
-        static public InfoFieldName findEnum(String value) {
-
-            if (value == null) {
-                return null;
-            } else {
-                return InfoFieldName.valueOf(value);
-            }
-        }
+    static {
+        fullNames.put("AA", "Ancestral Allele");
+        fullNames.put("AC", "Allele Count in Genotypes");
+        fullNames.put("AN", "Total Alleles in Genotypes");
+        fullNames.put("AF", "Allele Frequency");
+        fullNames.put("GMAF", "GM Allele Frequency");
+        fullNames.put("DP", "Depth");
+        fullNames.put("MQ", "Mapping Quality");
+        fullNames.put("NS", "Number of Samples with Data");
+        fullNames.put("BQ", "RMS Base Quality");
+        fullNames.put("SB", "Strand Bias");
+        fullNames.put("DB", "dbSNP Membership");
+        fullNames.put("GQ", "Genotype Quality");
+        fullNames.put("GL", "Genotype Likelihoods");  //Hom-ref, het, hom-var break this down into a group
     }
+
+    static String getFullName(String key) {
+        return fullNames.containsKey(key) ? fullNames.get(key) : key;
+    }
+
 
     private String getSampleToolTip(String sample, VariantContext variant) {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
@@ -881,7 +876,6 @@ public class VCFTrack extends FeatureTrack {
         toolTip = toolTip.concat("<br> - Hom Var: " + homVar);
         return toolTip;
     }
-
 
 
     public JPopupMenu getPopupMenu(final TrackClickEvent te) {
