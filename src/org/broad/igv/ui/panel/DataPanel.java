@@ -450,11 +450,15 @@ public class DataPanel extends JComponent implements Paintable {
         }
 
         if (!isWaitingForToolTipText) {
-            isWaitingForToolTipText = true;
-            if (tooltipTextPosition != null) {
-                updateTooltipText(tooltipTextPosition.x, tooltipTextPosition.y);
+            try {
+                isWaitingForToolTipText = true;
+                if (tooltipTextPosition != null) {
+                    updateTooltipText(tooltipTextPosition.x, tooltipTextPosition.y);
+                }
+            } finally {
+                isWaitingForToolTipText = false;
             }
-            isWaitingForToolTipText = false;
+
         }
         return super.getToolTipText();
     }
@@ -676,7 +680,7 @@ public class DataPanel extends JComponent implements Paintable {
         public void mouseClicked(final MouseEvent e) {
 
             if (currentTool instanceof RegionOfInterestTool) {
-                currentTool.mouseClicked(e); 
+                currentTool.mouseClicked(e);
                 return;
             }
 
