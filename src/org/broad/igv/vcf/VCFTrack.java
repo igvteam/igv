@@ -563,6 +563,44 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    private String getVariantToolTip(VariantContext variant) {
+        String id = variant.getAttributeAsString(VariantContext.ID_KEY);
+        StringBuffer toolTip = new StringBuffer();
+        toolTip = toolTip.append("Chr:" + variant.getChr());
+        toolTip = toolTip.append("<br>Position:" + variant.getStart());
+        toolTip = toolTip.append("<br>ID: " + id);
+        toolTip = toolTip.append("<br>Reference: " + variant.getReference().toString());
+        Set alternates = variant.getAlternateAlleles();
+        if (alternates.size() > 0) {
+            toolTip = toolTip.append("<br>Alternate: " + alternates.toString());
+        }
+
+        toolTip = toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
+        toolTip = toolTip.append("<br>Type: " + variant.getType());
+        if (variant.isFiltered()) {
+            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
+            toolTip = toolTip.append(getFilterTooltip(variant));
+        } else {
+            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
+        }
+        toolTip = toolTip.append("<br><b>Alleles:</b>");
+        toolTip = toolTip.append(getAlleleToolTip(getZygosityCounts(variant)));
+
+        double af = getAlleleFreq(variant);
+        if (af < 0 && variant.getSampleNames().size() > 0) {
+            af = getAlleleFraction(variant);
+        }
+        if (af >= 0) {
+            toolTip = toolTip.append("<br>Allele Frequency: " + numFormat.format(af) + "<br>");
+
+        }
+
+        toolTip = toolTip.append("<br><b>Genotypes:</b>");
+        toolTip = toolTip.append(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
+        toolTip = toolTip.append(getVariantInfo(variant) + "<br>");
+        return toolTip.toString();
+    }
+
     protected String getVariantInfo(VariantContext variant) {
         Set<String> keys = variant.getAttributes().keySet();
         if (keys.size() > 0) {
@@ -572,19 +610,19 @@ public class VCFTrack extends FeatureTrack {
             // Put AF and GMAF and put at the top, if present
             String k = "AF";
             String afValue = variant.getAttributeAsString(k);
-            if(afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+            if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
             k = "GMAF";
             afValue = variant.getAttributeAsString(k);
-            if(afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
+            if (afValue != null && afValue.length() > 0 && !afValue.equals("null")) {
                 toolTip = toolTip.concat("<br>" + getFullName(k) + ": " + variant.getAttributeAsString(k));
             }
 
             for (String key : keys) {
                 count++;
 
-                if(key.equals("AF") || key.equals("GMAF")) continue;
+                if (key.equals("AF") || key.equals("GMAF")) continue;
 
                 if (count > MAX_FILTER_LINES) {
                     toolTip = toolTip.concat("<br>....");
@@ -650,7 +688,6 @@ public class VCFTrack extends FeatureTrack {
         fullNames.put("AC", "Allele Count in Genotypes");
         fullNames.put("AN", "Total Alleles in Genotypes");
         fullNames.put("AF", "Allele Frequency");
-        fullNames.put("GMAF", "GM Allele Frequency");
         fullNames.put("DP", "Depth");
         fullNames.put("MQ", "Mapping Quality");
         fullNames.put("NS", "Number of Samples with Data");
@@ -695,34 +732,6 @@ public class VCFTrack extends FeatureTrack {
         return toolTip.toString();
     }
 
-    private String getVariantToolTip(VariantContext variant) {
-        String id = variant.getAttributeAsString(VariantContext.ID_KEY);
-        StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("Chr:" + variant.getChr());
-        toolTip = toolTip.append("<br>Position:" + variant.getStart());
-        toolTip = toolTip.append("<br>ID: " + id);
-        toolTip = toolTip.append("<br>Reference: " + variant.getReference().toString());
-        Set alternates = variant.getAlternateAlleles();
-        if (alternates.size() > 0) {
-            toolTip = toolTip.append("<br>Alternate: " + alternates.toString());
-        }
-
-        toolTip = toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
-        toolTip = toolTip.append("<br>Type: " + variant.getType());
-        if (variant.isFiltered()) {
-            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
-            toolTip = toolTip.append(getFilterTooltip(variant));
-        } else {
-            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
-        }
-        toolTip = toolTip.append("<br><b>Alleles:</b>");
-        toolTip = toolTip.append(getAlleleToolTip(getZygosityCounts(variant)));
-        toolTip = toolTip.append("<br>Allele Frequency: " + numFormat.format(getAlleleFreq(variant)) + "<br>");
-        toolTip = toolTip.append("<br><b>Genotypes:</b>");
-        toolTip = toolTip.append(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
-        toolTip = toolTip.append(getVariantInfo(variant) + "<br>");
-        return toolTip.toString();
-    }
 
     private String getFilterTooltip(VariantContext variant) {
         Set filters = variant.getFilters();
@@ -735,13 +744,18 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public double getAlleleFreq(VariantContext variant) {
-        double alleleFreq = Double.valueOf(variant.getAttributeAsString("AF", "-1"));
-        if (alleleFreq == -1) {
-            ZygosityCount counts = getZygosityCounts(variant);
-            int total = counts.getHomVar() + counts.getHet() + counts.getHomRef();
-            return (((double) counts.getHomVar() + ((double) counts.getHet()) / 2) / total);
+        double alleleFreq = Double.parseDouble(variant.getAttributeAsString("AF", "-1"));
+        if (alleleFreq < 0) {
+            alleleFreq = Double.parseDouble(variant.getAttributeAsString("GMAF", "-1"));
         }
         return alleleFreq;
+    }
+
+    public double getAlleleFraction(VariantContext variant) {
+        ZygosityCount counts = getZygosityCounts(variant);
+        int total = counts.getHomVar() + counts.getHet() + counts.getHomRef();
+        return (((double) counts.getHomVar() + ((double) counts.getHet()) / 2) / total);
+
     }
 
     static class ZygosityCount {
