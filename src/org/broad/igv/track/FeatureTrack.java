@@ -82,7 +82,7 @@ public class FeatureTrack extends AbstractTrack {
     int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
 
     int margin = DEFAULT_MARGIN;
-    
+
     private static boolean drawBorder = true;
 
     /**
@@ -102,7 +102,7 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
-    
+
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
         super(locator);
         init(source);
@@ -123,7 +123,7 @@ public class FeatureTrack extends AbstractTrack {
         setMinimumHeight(10);
         setColor(Color.blue.darker());
 
-        coverageRenderer = new BarChartRenderer(); //HeatmapRenderer();
+        coverageRenderer = new BarChartRenderer(); 
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }
@@ -142,9 +142,6 @@ public class FeatureTrack extends AbstractTrack {
     public int getHeight() {
         if (!isVisible()) {
             return 0;
-        }
-        if (!showFeatures) {
-            return Math.min(expandedRowHeight, super.getHeight());
         }
         int rowHeight = getDisplayMode() == DisplayMode.SQUISHED ? squishedRowHeight : expandedRowHeight;
         int minHeight = rowHeight * Math.max(1, getNumberOfFeatureLevels());
