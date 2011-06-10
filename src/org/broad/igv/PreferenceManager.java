@@ -908,7 +908,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COMPUTE_INSERT_SIZE_THRESHOLD, "false");
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
-        defaultValues.put(SAM_COMPUTE_ISIZES, "true");
+        defaultValues.put(SAM_COMPUTE_ISIZES, "false");
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
 
 
