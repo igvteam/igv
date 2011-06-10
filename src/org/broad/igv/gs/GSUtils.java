@@ -19,13 +19,17 @@
 
 package org.broad.igv.gs;
 
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpState;
+import org.apache.http.client.CookieStore;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -43,12 +47,40 @@ public class GSUtils {
     private static String tokenSaveDir = ".gs";
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
+    public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
 
 
-    public static void setAuthenticationToken(HttpClient httpClient, URL serviceURL, String token) {
-        Cookie cookie = new Cookie(getCookieDomainPattern(serviceURL.getHost()), AUTH_TOKEN_COOKIE_NAME,
-                token, AUTH_TOKEN_COOKIE_DEFAULT_PATH, -1, false);
-        httpClient.getState().addCookie(cookie);
+    public static void checkForCookie(DefaultHttpClient httpClient, URL serviceURL) {
+
+        File file = getTokenFile();
+        if (file.exists()) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(file));
+                String token = br.readLine();
+                setAuthenticationToken(httpClient, serviceURL, token);
+            }
+            catch (IOException e) {
+                log.error("Error reading GS cookie", e);
+            }
+            finally {
+                if (br != null) try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
+    }
+
+    public static void setAuthenticationToken(DefaultHttpClient httpClient, URL serviceURL, String token) {
+        BasicClientCookie cookie = new BasicClientCookie(AUTH_TOKEN_COOKIE_NAME, token);
+        cookie.setDomain(getCookieDomainPattern(serviceURL.getHost()));
+        cookie.setPath(AUTH_TOKEN_COOKIE_DEFAULT_PATH);
+
+        CookieStore cookieStore = new GSCookieStore();
+        cookieStore.addCookie(cookie);
+        httpClient.setCookieStore(cookieStore);
     }
 
     private static String getCookieDomainPattern(String serverName) {
@@ -153,4 +185,38 @@ public class GSUtils {
     }
 
 
+    public static boolean isGenomeSpace(URL url) {
+        return url.toString().contains("genomespace.org");
+    }
+
+    static class GSCookieStore implements CookieStore {
+
+        List<Cookie> cookieList = new ArrayList();
+
+        public void addCookie(Cookie cookie) {
+            cookieList.add(cookie);
+        }
+
+        public List<Cookie> getCookies() {
+            return cookieList;
+        }
+
+        public boolean clearExpired(Date date) {
+            boolean removed = false;
+            List<Cookie> newCookieList = new ArrayList(cookieList.size());
+            for (Cookie cookie : cookieList) {
+                if (cookie.getExpiryDate().after(date)) {
+                    newCookieList.add(cookie);
+                } else {
+                    removed = true;
+                }
+            }
+            cookieList = newCookieList;
+            return removed;
+        }
+
+        public void clear() {
+            cookieList.clear();
+        }
+    }
 }
