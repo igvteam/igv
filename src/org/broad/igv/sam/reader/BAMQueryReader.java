@@ -23,6 +23,7 @@
  */
 package org.broad.igv.sam.reader;
 
+import net.sf.samtools.BAMIndex;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
@@ -43,6 +44,7 @@ import java.util.Set;
 public class BAMQueryReader implements AlignmentQueryReader {
 
     SAMFileReader reader;
+    BAMIndex index;
     SAMFileHeader header;
 
     public BAMQueryReader(File samFile) {

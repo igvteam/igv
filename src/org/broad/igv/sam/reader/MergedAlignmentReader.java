@@ -20,16 +20,11 @@
 package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -81,39 +76,41 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
 
     public class MergedFileIterator implements CloseableIterator<Alignment> {
 
-        PriorityQueue<RecordIterWrapper> iterators;
+        List<CloseableIterator<Alignment>> allIterators = new ArrayList();
+        PriorityQueue<RecordIterWrapper> iteratorQueue;
 
         public MergedFileIterator() {
-            iterators = new PriorityQueue(readers.size());
+            iteratorQueue = new PriorityQueue(readers.size());
             for (AlignmentQueryReader reader : readers) {
                 CloseableIterator<Alignment> iter = reader.iterator();
+                allIterators.add(iter);
                 if (iter.hasNext()) {
-                    iterators.add(new RecordIterWrapper(iter));
-                }
+                    final RecordIterWrapper wrapper = new RecordIterWrapper(iter);
+                    iteratorQueue.add(wrapper);
+                  }
             }
         }
 
         public MergedFileIterator(String chr, int start, int end, boolean contained) throws IOException {
-            iterators = new PriorityQueue(readers.size(), new FooComparator());
+            iteratorQueue = new PriorityQueue(readers.size(), new FooComparator());
             for (AlignmentQueryReader reader : readers) {
                 CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
+                allIterators.add(iter);
                 if (iter.hasNext()) {
-                    iterators.add(new RecordIterWrapper(iter));
-                }
+                    iteratorQueue.add(new RecordIterWrapper(iter));
+                 }
             }
         }
 
         public boolean hasNext() {
-            return iterators.size() > 0;
+            return iteratorQueue.size() > 0;
         }
 
         public Alignment next() {
-            RecordIterWrapper wrapper = iterators.poll();
+            RecordIterWrapper wrapper = iteratorQueue.poll();
             Alignment next = wrapper.advance();
             if (wrapper.hasNext()) {
-                iterators.add(wrapper);
-            } else {
-                wrapper.close();
+                iteratorQueue.add(wrapper);
             }
             return next;
         }
@@ -123,9 +120,11 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
         }
 
         public void close() {
-            for (RecordIterWrapper wrapper : iterators) {
-                wrapper.close();
+            for (CloseableIterator<Alignment> iter : allIterators) {
+                iter.close();
             }
+            allIterators.clear();
+            iteratorQueue.clear();
         }
 
         class RecordIterWrapper {
@@ -151,6 +150,7 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
 
             void close() {
                 if (iterator != null) {
+                    System.out.println("Closing " + this);
                     iterator.close();
                     iterator = null;
                 }
