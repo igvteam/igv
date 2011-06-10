@@ -148,23 +148,6 @@ public class GSUtils {
         }
     }
 
-    public static String getCachedTokenForSSO() throws Exception {
-        String token = null;
-        BufferedReader br = null;
-        try {
-            File tokenFile = getTokenFile();
-            if (tokenFile.exists()) {
-                br = new BufferedReader(new FileReader(tokenFile));
-                token = br.readLine().trim();
-            }
-        } finally {
-            try {
-                if (br != null) br.close();
-            } catch (Exception e) {
-            }
-        }
-        return token;
-    }
 
     public static String getCachedUsernameForSSO() throws Exception {
         String user = null;

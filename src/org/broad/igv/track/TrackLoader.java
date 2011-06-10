@@ -105,7 +105,7 @@ public class TrackLoader {
             if (typeString == null) {
 
                 // Genome space hack
-                 if ((path.contains("?dataFormat") || path.contains("%3Fdataformat")) &&
+                if ((path.contains("?dataFormat") || path.contains("%3Fdataformat")) &&
                         (path.contains("dataformat/gct") || path.contains("dataformat%2Fgct"))) {
                     typeString = ".gct";
                 } else {
@@ -268,7 +268,12 @@ public class TrackLoader {
 
     private void loadGMT(ResourceLocator locator) throws IOException {
         List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
-        MessageUtils.showMessage("Loaded " + lists.size() + " gene lists.");
+        if (lists.size() == 1) {
+            GeneList gl = lists.get(0);
+            IGV.getInstance().setGeneList(gl.getName(), true);
+        } else {
+            MessageUtils.showMessage("Loaded " + lists.size() + " gene lists.");
+        }
     }
 
     private void loadIndexed(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -1052,7 +1057,7 @@ public class TrackLoader {
 
     public static boolean isIndexed(String path) {
         // genome space hack -- genome space files are never indexed (at least not yet)
-        if(path.contains("genomespace.org")) {
+        if (path.contains("genomespace.org")) {
             return false;
         }
 
