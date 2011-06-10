@@ -470,15 +470,9 @@ public class GenomeImporter {
 
                     // Find the first word break.  According the the spec the id of the sequence
                     // is the first "word",  the remaining part of the line is a comment.
-                    char[] chars = fastaDataLine.toCharArray();
-                    int whitespaceIndex = 0;
-                    for (whitespaceIndex = 0; whitespaceIndex < chars.length; whitespaceIndex++) {
-                        if (Character.isSpaceChar(chars[whitespaceIndex])) {
-                            break;
-                        }
-                    }
 
-                    chr = fastaDataLine.substring(1, whitespaceIndex).trim();
+                    String [] tokens = fastaDataLine.split("\\s+");
+                    chr = tokens[0].substring(1);
                     chrSize = 0;
                     String chrFileName = chr + GenomeManager.SEQUENCE_FILE_EXTENSION;
                     String legalFileName = FileUtils.legalFileName(chrFileName);
