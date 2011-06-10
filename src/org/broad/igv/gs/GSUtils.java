@@ -41,6 +41,7 @@ public class GSUtils {
     public static final String AUTH_TOKEN_COOKIE_NAME = "gs-token";
     public static final String AUTH_TOKEN_COOKIE_DEFAULT_PATH = "/";
 
+
     /*
     * Directory and filenames to save the token and username to facilitate SSO
     */
@@ -48,6 +49,7 @@ public class GSUtils {
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
     public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
+     public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
 
 
     public static void checkForCookie(DefaultHttpClient httpClient, URL serviceURL) {

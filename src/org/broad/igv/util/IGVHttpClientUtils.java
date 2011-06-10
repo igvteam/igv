@@ -22,13 +22,17 @@ package org.broad.igv.util;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.log4j.Logger;
 import org.broad.igv.gs.GSLoginDialog;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -43,6 +47,7 @@ import java.net.URL;
  */
 public class IGVHttpClientUtils {
 
+    private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
     static DefaultHttpClient client = null;
 
@@ -87,22 +92,11 @@ public class IGVHttpClientUtils {
             HttpResponse response = client.execute(getMethod);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
+                getMethod.abort();
                 // Try again
                 client.getCredentialsProvider().clear();
-                getMethod.abort();
 
-                Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
-                String userpass = getGSUserPass(owner);
-                if (userpass == null) {
-                    throw new RuntimeException("Access denied to: " + url.toString());
-                }
-                UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
-
-                String host = GSUtils.isGenomeSpace(url) ? GSUtils.GENOME_SPACE_ID_SERVER : url.getHost();
-
-                client.getCredentialsProvider().setCredentials(
-                        new AuthScope(host, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
-                        GENOME_SPACE_CREDS);
+                login(url);
 
 
                 return executeGet(url);
@@ -121,6 +115,42 @@ public class IGVHttpClientUtils {
             throw e;
         }
     }
+
+
+    private static void login(URL url) {
+
+        Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        String userpass = getGSUserPass(owner);
+        if (userpass == null) {
+            throw new RuntimeException("Access denied to: " + url.toString());
+        }
+        UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
+
+        String host = GSUtils.isGenomeSpace(url) ? GSUtils.GENOME_SPACE_ID_SERVER : url.getHost();
+
+        client.getCredentialsProvider().setCredentials(
+                new AuthScope(host, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
+                GENOME_SPACE_CREDS);
+
+        if (GSUtils.isGenomeSpace(url)) {
+            // Get the genomespace token
+            try {
+                HttpGet httpget = new HttpGet(GSUtils.identityServerUrl);
+                ResponseHandler<String> responseHandler = new BasicResponseHandler();
+                String responseBody = client.execute(httpget, responseHandler);
+                if (responseBody != null && responseBody.length() > 0) {
+                    String[] tokens = userpass.split(":");
+                    String user = tokens[0];
+                    GSUtils.saveLoginForSSO(responseBody, user);
+                }
+            } catch (IOException e) {
+                log.error("Error fetching GS token", e);
+            }
+
+        }
+
+    }
+
 
     public static String getGSUserPass(Frame owner) {
 
