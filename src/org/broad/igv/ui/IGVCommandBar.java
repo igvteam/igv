@@ -206,6 +206,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);
 
+                            IGV.getInstance().doRefresh();
+
                         } catch (GenomeServerException e) {
                             log.error("Error accessing genome list: " + e.getMessage());
                             JOptionPane.showMessageDialog(
@@ -646,6 +648,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         IGV.getInstance().getTrackManager().createGeneTrack(genome);
 
+        FrameManager.getDefaultFrame().invalidateLocationScale();
 
         for (Chromosome chr : genome.getChromosomes()) {
             for (Cytoband cyto : chr.getCytobands()) {

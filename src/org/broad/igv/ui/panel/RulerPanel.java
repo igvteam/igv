@@ -43,6 +43,7 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -243,6 +244,7 @@ public class RulerPanel extends JPanel {
             return;
         }
 
+        final FontMetrics fontMetrics = g.getFontMetrics();
         for (String chrName : chrNames) {
             Chromosome c = genome.getChromosome(chrName);
             int chrLength = c.getLength();
@@ -265,14 +267,14 @@ public class RulerPanel extends JPanel {
                     } else {
                         displayName = chrName.replace("chr", "");
                     }
-                    int strWidth = g.getFontMetrics().stringWidth(displayName);
+                     int strWidth = fontMetrics.stringWidth(displayName);
                     int strPosition = center - strWidth / 2;
 
 
                     int y = (even ? getHeight() - 35 : getHeight() - 25);
                     g.drawString(displayName, strPosition, y);
-
-                    Rectangle clickRect = new Rectangle(strPosition, y - 15, 15, 15);
+                    int sw = (int) fontMetrics.getStringBounds(displayName, g).getWidth();
+                    Rectangle clickRect = new Rectangle(strPosition, y - 15, sw, 15);
                     String tooltipText = "Jump to chromosome: " + chrName;
                     chromosomeRects.add(new ClickLink(clickRect, chrName, tooltipText));
 
@@ -373,8 +375,6 @@ public class RulerPanel extends JPanel {
 
                                 return;
                             }
-                            setCursor(Cursor.getDefaultCursor());
-
                         }
                     }
                 } finally {
