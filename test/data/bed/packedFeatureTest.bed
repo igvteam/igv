@@ -1,0 +1,5 @@
+#Test of feature packing -- this file should create 4 rows
+chr1    1   100
+chr1    2   101
+chr1    3   102
+chr1    4   103

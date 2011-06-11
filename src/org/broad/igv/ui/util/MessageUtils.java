@@ -39,7 +39,7 @@ public class MessageUtils {
 
     public static void showMessage(String message) {
 
-        if (Globals.isHeadless() || Globals.isSuppressMessages()) {
+        if (Globals.isHeadless() || Globals.isSuppressMessages() || !IGV.hasInstance()) {
             log.info(message);
         } else {
             JOptionPane.showMessageDialog(IGV.getMainFrame(), message);

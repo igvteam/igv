@@ -52,6 +52,14 @@ public class PanTool extends AbstractDataPanelTool {
         super(owner, Cursor.getDefaultCursor());
         this.dragCursor = IGV.fistCursor;
         setName("Pan");
+        verticalScrollBar = owner.getVerticalScrollbar();
+        Container parentContainer = owner.getParent();
+            if (parentContainer != null) {
+                Container parentOfParent = parentContainer.getParent();
+                if ((parentOfParent != null) && (parentOfParent instanceof JViewport)) {
+                    //viewport = (JViewport) parentOfParent;
+                }
+            }
     }
 
 
@@ -68,25 +76,10 @@ public class PanTool extends AbstractDataPanelTool {
             return;
         }
         
-        Component panel = (Component) e.getSource();
-  
         lastMousePoint = e.getPoint();
-        //lastMousePressedY = (int) e.getPoint().getY();
         cumulativeDeltaX = 0;
         cumulativeDeltaY = 0;
 
-        // Vertical scrolling get the viewport
-        if ((panel != null) && (panel instanceof DataPanel)) {
-
-            verticalScrollBar = ((DataPanel) panel).getVerticalScrollbar();
-            Container parentContainer = panel.getParent();
-            if (parentContainer != null) {
-                Container parentOfParent = parentContainer.getParent();
-                if ((parentOfParent != null) && (parentOfParent instanceof JViewport)) {
-                    //viewport = (JViewport) parentOfParent;
-                }
-            }
-        }
     }
 
 
@@ -106,6 +99,10 @@ public class PanTool extends AbstractDataPanelTool {
 
     @Override
     final public void mouseDragged(final MouseEvent e) {
+
+        if(e.getButton() != MouseEvent.BUTTON1) {
+            return;
+        }
 
         try {
             Component panel = (Component) e.getSource();            

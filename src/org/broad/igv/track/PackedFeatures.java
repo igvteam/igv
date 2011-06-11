@@ -20,6 +20,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
@@ -76,7 +77,7 @@ public class PackedFeatures<T extends Feature> {
      */
     protected int getFeatureStartForPacking(Feature feature)
     {
-        return feature.getStart(); 
+        return feature.getStart();
     }
 
 
@@ -122,6 +123,7 @@ public class PackedFeatures<T extends Feature> {
             }
         };
 
+        // Allocate features to buckets,  1 bucket per base position
         while (iter.hasNext()) {
             T feature = (T) iter.next();
             maxFeatureLength = Math.max(maxFeatureLength,
@@ -140,24 +142,27 @@ public class PackedFeatures<T extends Feature> {
 
         }
 
-        // Allocate alignments to rows
+        // Allocate features to rows, pulling at most 1 per bucket for each row
         FeatureRow currentRow = new FeatureRow();
-        int allocatedCount = 1;
-        int nextStart = currentRow.end + FeatureTrack.MINIMUM_FEATURE_SPACING;
+        int allocatedCount = 0;
+        int nextStart = Integer.MIN_VALUE;
 
 
         int lastKey = 0;
-        int lastAllocatedCount = 0;
+        int lastAllocatedCount = -1;
         while (allocatedCount < totalCount && rows.size() < maxLevels) {
 
             // Check to prevent infinite loops
             if (lastAllocatedCount == allocatedCount) {
+
+                if(IGV.hasInstance()) {
                 String msg = "Infinite loop detected while packing features for track: " + getTrackName() +
                         ".<br>Not all features will be shown." +
                         "<br>Please contact igv-help@broadinstitute.org";
 
                 log.error(msg);
                 MessageUtils.showMessage(msg);
+                }
                 break;
             }
             lastAllocatedCount = allocatedCount;
