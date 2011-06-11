@@ -175,6 +175,8 @@ public abstract class AbstractTrack implements Track {
 
     public void setName(String name) {
         this.name = name;
+        setAttributeValue("NAME", name);
+
     }
 
     public String getName() {
