@@ -30,6 +30,7 @@ import org.broad.igv.renderer.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.Feature;
+import org.broad.tribble.TribbleException;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -54,6 +55,8 @@ public class FeatureTrack extends AbstractTrack {
 
     private int expandedRowHeight = DEFAULT_EXPANDED_HEIGHT;
     private int squishedRowHeight = DEFAULT_SQUISHED_HEIGHT;
+
+    boolean fatalLoadError = false;
 
     Track.DisplayMode lastFeatureMode = null;  // Keeps track of the feature display mode before an auto-switch to COLLAPSE
 
@@ -123,7 +126,7 @@ public class FeatureTrack extends AbstractTrack {
         setMinimumHeight(10);
         setColor(Color.blue.darker());
 
-        coverageRenderer = new BarChartRenderer(); 
+        coverageRenderer = new BarChartRenderer();
         if (source.getFeatureWindowSize() > 0) {
             visibilityWindow = source.getFeatureWindowSize();
         }
@@ -593,7 +596,7 @@ public class FeatureTrack extends AbstractTrack {
 
     protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
-        if (featuresLoading) {
+        if (featuresLoading || fatalLoadError) {
             return;
         }
 
@@ -615,7 +618,24 @@ public class FeatureTrack extends AbstractTrack {
             }
         }
 
-        renderFeatureImpl(context, inputRect, packedFeatures);
+        try {
+            renderFeatureImpl(context, inputRect, packedFeatures);
+        } catch (TribbleException e) {
+            log.error("Tribble error", e);
+            //Error loading features.  We'll let the user decide if this is "fatal" or not.  
+            if (!fatalLoadError) {
+                fatalLoadError = true;
+                boolean unload = MessageUtils.confirm("<html> Error loading features: " + e.getMessage() +
+                        "<br>Unload track " + getName() + "?");
+                if (unload) {
+                    Collection<Track> tmp = Arrays.asList((Track) this);
+                    IGV.getInstance().getTrackManager().removeTracks(tmp);
+                    IGV.getInstance().doRefresh();
+                } else {
+                    fatalLoadError = false;
+                }
+            }
+        }
 
 
     }
