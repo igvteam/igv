@@ -66,6 +66,7 @@ public class VCFTrack extends FeatureTrack {
      * methylation data. This will enable the "Color By/Methylation Rate" menu item.
      */
     private boolean enableMethylationRateSupport;
+    private static final Color borderGray = new Color(200, 200, 200);
 
     public boolean isEnableMethylationRateSupport() {
 
@@ -83,8 +84,8 @@ public class VCFTrack extends FeatureTrack {
 
     }
 
-    private final int EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final int SQUISHED_GENOTYPE_HEIGHT = 4;
+    private final int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
+    private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 1;
     private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final int MAX_FILTER_LINES = 15;
 
@@ -105,7 +106,7 @@ public class VCFTrack extends FeatureTrack {
     private ColorMode coloring = ColorMode.GENOTYPE;
     private boolean hideAncestral = false;
 
-    private boolean hideFiltered = true;
+    private boolean hideFiltered = false;
     private boolean renderID = true;
 
     private static float dash[] = {4.0f, 1.0f};
@@ -159,7 +160,7 @@ public class VCFTrack extends FeatureTrack {
 
         // Estimate visibility window.   TODO -- set beta based on available memory
         int cnt = Math.max(1, sampleCount);
-        int beta = 20000;
+        int beta = 100000;
         int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
     }
@@ -212,21 +213,23 @@ public class VCFTrack extends FeatureTrack {
     public int getGenotypeBandHeight() {
         switch (getDisplayMode()) {
             case SQUISHED:
-                return SQUISHED_GENOTYPE_HEIGHT;
+                return DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
             case COLLAPSED:
                 return 0;
             default:
-                return EXPANDED_GENOTYPE_HEIGHT;
+                return DEFAULT_EXPANDED_GENOTYPE_HEIGHT;
 
         }
     }
 
     public int getHeight() {
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
+
+        final int sampleCount = samples.size();
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
         } else {
-            int groupCount = samples.size();
-            return variantBandHeight + (groupCount - 1) * 3 + (sampleCount * getGenotypeBandHeight());
+            int margins = (sampleCount - 1) * 3;
+            return variantBandHeight + margins + (this.sampleCount * getGenotypeBandHeight());
         }
 
     }
@@ -242,6 +245,9 @@ public class VCFTrack extends FeatureTrack {
 
     public void setDisplayMode(DisplayMode mode) {
         super.setDisplayMode(mode);
+
+        // Set squished row height as
+
         setHeight(getPreferredHeight());
     }
 
@@ -251,6 +257,9 @@ public class VCFTrack extends FeatureTrack {
         Graphics2D g2D = context.getGraphics();
 
         top = trackRectangle.y;
+        final int left = trackRectangle.x;
+        final int right = (int) trackRectangle.getMaxX();
+
         Rectangle visibleRectangle = context.getVisibleRect();
 
         // A disposable rect -- note this gets modified all over the place, bad practice
@@ -260,7 +269,7 @@ public class VCFTrack extends FeatureTrack {
         colorBackground(g2D, rect, visibleRectangle, false);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
+            g2D.drawLine(left, top + 1, right, top + 1);
         }
 
         List<Feature> features = packedFeatures.getFeatures();
@@ -278,6 +287,10 @@ public class VCFTrack extends FeatureTrack {
 
                 VariantContext variant = (VariantContext) feature;
                 //char ref = getReference(variant, windowStart, reference);
+
+                if(hideFiltered && variant.isFiltered()) {
+                    continue;
+                }
 
                 // 1 -> 0 based coordinates
                 int start = variant.getStart() - 1;
@@ -300,18 +313,11 @@ public class VCFTrack extends FeatureTrack {
 
 
                 if (pX + dX > lastPX) {
-                    ZygosityCount zygCounts = getZygosityCounts(variant);
 
                     rect.y = top;
                     rect.height = variantBandHeight;
                     if (rect.intersects(visibleRectangle)) {
-                        if (allSamples.size() == 0) {
-                            renderer.renderVariant(variant, rect, pX, dX, context);
-                        } else {
-                            AlleleCount alleleCounts = new AlleleCount(zygCounts);
-                            renderer.renderAlleleBand(variant, rect, x, w, context, hideFiltered, alleleCounts);
-
-                        }
+                        renderer.renderVariantBand(variant, rect, x, w, context, hideFiltered);
                     }
 
                     if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
@@ -363,23 +369,84 @@ public class VCFTrack extends FeatureTrack {
             GraphicUtils.drawCenteredText("No Variants Found", trackRectangle, g2D);
         }
 
+        // Variant band border
+        if (allSamples.size() > 0) {
+            int variantBandY = trackRectangle.y + variantBandHeight;
+            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
+
+                Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
+                borderGraphics.drawLine(left, variantBandY, right, variantBandY);
+            }
+        }
+
         // Bottom border
         int bottomY = trackRectangle.y + trackRectangle.height;
         if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-            final int left = trackRectangle.x;
-            final int right = (int) trackRectangle.getMaxX();
-            drawBorderLine(g2D, bottomY, left, right);
+            g2D.drawLine(left, bottomY, right, bottomY);
         }
     }
 
 
-    private void drawBorderLine(Graphics2D g2D, int bottomY, int left, int right) {
+    @Override
+    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
+
+
+        // A hack
+        int top = trackRectangle.y;
+        final int left = trackRectangle.x;
+        final int right = (int) trackRectangle.getMaxX();
+
+        Rectangle rect = new Rectangle(trackRectangle);
+        g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+        g2D.setFont(FontManager.getFont(fontSize));
+        g2D.setColor(BAND2_COLOR);
+
+        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
+            g2D.drawLine(left, top + 1, right, top + 1);
+        }
+
+
         g2D.setColor(Color.black);
-        g2D.drawLine(left, bottomY, right, bottomY);
+        rect.height = variantBandHeight;
+        if (rect.intersects(visibleRectangle)) {
+            GraphicUtils.drawWrappedText(getName(), rect, g2D, false);
+        }
+
+        if (grouped) {
+            g2D.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
+        }
+
+        rect.y += rect.height;
+        rect.height = getGenotypeBandHeight();
+        if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+            colorBackground(g2D, rect, visibleRectangle, true);
+        }
+
+        // Bottom border
+        int bottomY = trackRectangle.y + trackRectangle.height;
+        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
+            g2D.setColor(borderGray);
+            g2D.drawLine(left, bottomY, right, bottomY);
+        }
+
+        if (allSamples.size() > 0) {
+            int variantBandY = trackRectangle.y + variantBandHeight;
+            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
+                g2D.setColor(Color.black);
+                g2D.drawLine(left, variantBandY, right, variantBandY);
+            }
+        }
+
     }
 
 
     private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames) {
+
+
+        if(getDisplayMode() == Track.DisplayMode.SQUISHED) {
+            return;
+        }
+        
         boolean coloredLast = true;
 
         Rectangle textRectangle = new Rectangle(bandRectangle);
@@ -486,49 +553,6 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    @Override
-    public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
-
-
-        // A hack
-        int top = trackRectangle.y;
-
-        Rectangle rect = new Rectangle(trackRectangle);
-        g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-        g2D.setFont(FontManager.getFont(fontSize));
-        g2D.setColor(BAND2_COLOR);
-
-        if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
-            drawBorderLine(g2D, top + 1, trackRectangle.x, trackRectangle.x + trackRectangle.width);
-        }
-
-
-        g2D.setColor(Color.black);
-        rect.height = variantBandHeight;
-        if (rect.intersects(visibleRectangle)) {
-            GraphicUtils.drawWrappedText(getName(), rect, g2D, false);
-        }
-
-        if (grouped) {
-            g2D.drawLine(rect.x, rect.y + rect.height - 1, rect.x + rect.width, rect.y + rect.height - 1);
-        }
-
-        rect.y += rect.height;
-        rect.height = getGenotypeBandHeight();
-        if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
-            colorBackground(g2D, rect, visibleRectangle, true);
-        }
-
-        // Bottom border
-        int bottomY = trackRectangle.y + trackRectangle.height;
-        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-            final int left = trackRectangle.x;
-            final int right = (int) trackRectangle.getMaxX();
-            drawBorderLine(g2D, bottomY, left, right);
-        }
-    }
-
-
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         VariantContext variant = (VariantContext) getFeatureAt(chr, position + 1, y, frame); //getVariantAtPosition(chr, (int) position, frame);
@@ -565,39 +589,42 @@ public class VCFTrack extends FeatureTrack {
 
     private String getVariantToolTip(VariantContext variant) {
         String id = variant.getAttributeAsString(VariantContext.ID_KEY);
+
         StringBuffer toolTip = new StringBuffer();
-        toolTip = toolTip.append("Chr:" + variant.getChr());
-        toolTip = toolTip.append("<br>Position:" + variant.getStart());
-        toolTip = toolTip.append("<br>ID: " + id);
-        toolTip = toolTip.append("<br>Reference: " + variant.getReference().toString());
+        toolTip.append("Chr:" + variant.getChr());
+        toolTip.append("<br>Position:" + variant.getStart());
+        toolTip.append("<br>ID: " + id);
+        toolTip.append("<br>Reference: " + variant.getReference().toString());
         Set alternates = variant.getAlternateAlleles();
         if (alternates.size() > 0) {
-            toolTip = toolTip.append("<br>Alternate: " + alternates.toString());
+            toolTip.append("<br>Alternate: " + alternates.toString());
         }
 
-        toolTip = toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
-        toolTip = toolTip.append("<br>Type: " + variant.getType());
+        toolTip.append("<br>Qual: " + numFormat.format(variant.getPhredScaledQual()));
+        toolTip.append("<br>Type: " + variant.getType());
         if (variant.isFiltered()) {
-            toolTip = toolTip.append("<br>Is Filtered Out: Yes</b>");
+            toolTip.append("<br>Is Filtered Out: Yes</b>");
             toolTip = toolTip.append(getFilterTooltip(variant));
         } else {
-            toolTip = toolTip.append("<br>Is Filtered Out: No</b><br>");
+            toolTip.append("<br>Is Filtered Out: No</b><br>");
         }
-        toolTip = toolTip.append("<br><b>Alleles:</b>");
-        toolTip = toolTip.append(getAlleleToolTip(getZygosityCounts(variant)));
+        toolTip.append("<br><b>Alleles:</b>");
+        toolTip.append(getAlleleToolTip(getZygosityCounts(variant)));
 
         double af = getAlleleFreq(variant);
         if (af < 0 && variant.getSampleNames().size() > 0) {
             af = getAlleleFraction(variant);
         }
-        if (af >= 0) {
-            toolTip = toolTip.append("<br>Allele Frequency: " + numFormat.format(af) + "<br>");
+        toolTip.append("<br>Allele Frequency: " + (af >= 0 ? numFormat.format(af) : "Unknown") + "<br>");
 
+        if (variant.getSampleNames().size() > 0) {
+            double afrac = getAlleleFraction(variant);
+            toolTip = toolTip.append("<br>Minor Allele Fraction: " + numFormat.format(afrac) + "<br>");
         }
 
-        toolTip = toolTip.append("<br><b>Genotypes:</b>");
-        toolTip = toolTip.append(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
-        toolTip = toolTip.append(getVariantInfo(variant) + "<br>");
+        toolTip.append("<br><b>Genotypes:</b>");
+        toolTip.append(getGenotypeToolTip(getZygosityCounts(variant)) + "<br>");
+        toolTip.append(getVariantInfo(variant) + "<br>");
         return toolTip.toString();
     }
 
@@ -743,6 +770,10 @@ public class VCFTrack extends FeatureTrack {
         return toolTip;
     }
 
+    /**
+     * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
+     * no annotation (unknown allele frequency).
+     */
     public double getAlleleFreq(VariantContext variant) {
         double alleleFreq = Double.parseDouble(variant.getAttributeAsString("AF", "-1"));
         if (alleleFreq < 0) {
@@ -751,10 +782,23 @@ public class VCFTrack extends FeatureTrack {
         return alleleFreq;
     }
 
+    /**
+     * Return the allele fraction for this variant.  The allele fraction is similiar to allele frequency, but is based
+     * on the samples in this VCF as opposed to an AF or GMAF annotation.
+     * <p/>
+     * A value of -1 indicates unknown
+     */
     public double getAlleleFraction(VariantContext variant) {
         ZygosityCount counts = getZygosityCounts(variant);
         int total = counts.getHomVar() + counts.getHet() + counts.getHomRef();
-        return (((double) counts.getHomVar() + ((double) counts.getHet()) / 2) / total);
+        return total == 0 ? -1 : (((double) counts.getHomVar() + ((double) counts.getHet()) / 2) / total);
+
+    }
+
+    public double getAllelePercent(VariantContext variant) {
+
+        double af = getAlleleFraction(variant);
+        return af < 0 ? getAlleleFreq(variant) : af;
 
     }
 
@@ -829,39 +873,20 @@ public class VCFTrack extends FeatureTrack {
     */
 
     class AlleleCount {
-        private int totalAlleles;
         private int alleleNum;
         private int alleleCount;
 
 
         public AlleleCount(ZygosityCount zygCounts) {
-            totalAlleles = allSamples.size() * 2;
             alleleNum = (zygCounts.getHomVar() + zygCounts.getHet() + zygCounts.getHomRef()) * 2;
             alleleCount = zygCounts.getHomVar() * 2 + zygCounts.getHet();
         }
 
-        public int getTotalAlleles() {
-            return totalAlleles;
-        }
-
-        public int getAlleleNum() {
-            return alleleNum;
-        }
-
-        public int getAlleleCount() {
-            return alleleCount;
-        }
-
         public float getAllelePercent() {
-            return ((float) alleleCount / alleleNum);
+            return alleleNum == 0 ? 0 : ((float) alleleCount / alleleNum);
         }
     }
 
-    public AlleleCount getRenderCounts(VariantContext variant) {
-        ZygosityCount zygCounts = getZygosityCounts(variant);
-        AlleleCount alleleCounts = new AlleleCount(zygCounts);
-        return alleleCounts;
-    }
 
     private String getAlleleToolTip(ZygosityCount counts) {
         double noCall = counts.getNoCall() * 2;

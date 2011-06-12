@@ -113,7 +113,7 @@ public class VCFMenu extends JPopupMenu {
                 add(getColorByMethylationRate());
             }
 
-             //add(getRenderIDItem());
+            //add(getRenderIDItem());
 
             if (this.track.isHasGroups()) {
                 addSeparator();
@@ -146,7 +146,7 @@ public class VCFMenu extends JPopupMenu {
         }
 
         addSeparator();
-        add(getHideFilteredItem());        
+        add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
 
         addSeparator();
@@ -431,6 +431,21 @@ public class VCFMenu extends JPopupMenu {
                 return genotypeSortingDirection ? -1 : 1;
             }
         }
+
+
+        private int classifyGenotype(Genotype genotype) {
+
+            if (genotype.isNoCall()) {
+                return genotypeSortingDirection ? 1 : 10;
+            } else if (genotype.isHomVar()) {
+                return 4;
+            } else if (genotype.isHet()) {
+                return 3;
+            } else if (genotype.isHomRef()) {
+                return genotypeSortingDirection ? 2 : 9;
+            }
+            return -1; //Unknown
+        }
     }
 
 
@@ -480,20 +495,6 @@ public class VCFMenu extends JPopupMenu {
                 return qualitySortingDirection ? 1 : 1;
             }
         }
-    }
-
-    private int classifyGenotype(Genotype genotype) {
-
-        if (genotype.isNoCall()) {
-            return 0;
-        } else if (genotype.isHomVar()) {
-            return 3;
-        } else if (genotype.isHet()) {
-            return 2;
-        } else if (genotype.isHomRef()) {
-            return 1;
-        }
-        return -1; //Unknown
     }
 
 

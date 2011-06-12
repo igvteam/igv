@@ -52,13 +52,14 @@ public class VCFRenderer { //extends FeatureRenderer {
     public static Color colorNoCallAlpha = ColorUtilities.getCompositeColor(colorNoCall.getColorComponents(null), alphaValue);
     public static final Color colorAlleleBand = Color.red;
     public static Color colorAlleleBandAlpha = ColorUtilities.getCompositeColor(colorAlleleBand.getColorComponents(null), alphaValue);
-    public static final Color colorAlleleRef = Color.lightGray;
+    public static final Color colorAlleleRef = Color.gray;
     public static Color colorAlleleRefAlpha = ColorUtilities.getCompositeColor(colorAlleleRef.getColorComponents(null), alphaValue);
+    private static final Color blue = new Color(0, 0, 220);
+    public static Color blueAlpha = ColorUtilities.getCompositeColor(blue.getColorComponents(null), alphaValue);
 
     private static int variantWidth = 3;
     static Map<Character, Color> nucleotideColors = new HashMap<Character, Color>();
     private static final Color DARK_GREEN = new Color(30, 120, 30);
-    private static final Color BLUE = Color.blue.darker();
 
     private VCFTrack track;
 
@@ -81,104 +82,47 @@ public class VCFRenderer { //extends FeatureRenderer {
         this.track = track;
     }
 
-    public void renderVariantBand(VariantContext variant, Rectangle bandRectangle, int pX0, int dX,
-                                  RenderContext context, boolean hideFiltered, VCFTrack.ZygosityCount zygCounts,
-                                  int idBandHeight) {
 
+    public void renderVariantBand(VariantContext variant,
+                                  Rectangle bandRectangle,
+                                  int pX0, int dX,
+                                  RenderContext context,
+                                  boolean hideFiltered) {
 
-        int pY = (int) bandRectangle.getY() + idBandHeight;
-        int dY = (int) bandRectangle.getHeight() - idBandHeight;
-        int bottomY = bandRectangle.y + bandRectangle.height;
+        final int bottomMargin = 0;
+        final int topMargin = 3;
 
-        float sampleHeight = ((float) dY) / zygCounts.getSampleCount();
+        final int bottomY = bandRectangle.y + bandRectangle.height - bottomMargin;
 
-        //Allele Percentages
-        boolean filtered = hideFiltered && variant.isFiltered();
+        final int barHeight = bandRectangle.height - topMargin - bottomMargin;
 
-        int totalHeight = (int) (zygCounts.getTotalCall() * sampleHeight);
-        Color c = filtered ? colorHomRefAlpha : colorHomRef;
-        context.getGraphic2DForColor(c).fillRect(pX0, bottomY - totalHeight, dX, totalHeight);
+        final boolean filtered = variant.isFiltered();
+        final Color alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand;
 
-        int varHeight = (int) (zygCounts.getVarCall() * sampleHeight);
-        c = filtered ? colorHomVarAlpha : colorHomVar;
-        context.getGraphic2DForColor(c).fillRect(pX0, bottomY - varHeight, dX, varHeight);
+        final double allelePercent = Math.min(1, track.getAllelePercent(variant));
+        final int alleleBarHeight;
+        final int remainderHeight;
 
-        int hetHeight = (int) (zygCounts.getHet() * sampleHeight);
-        c = filtered ? colorHetAlpha : colorHet;
-        context.getGraphic2DForColor(c).fillRect(pX0, bottomY - hetHeight, dX, hetHeight);
+        final Color refColor;
+        if (allelePercent <= 0) {
+            alleleBarHeight = 0;
+            remainderHeight = barHeight;
+            refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;
+        } else {
+            alleleBarHeight = (int) (allelePercent * barHeight);
+            remainderHeight = barHeight - alleleBarHeight;
 
-        //Render ID Name
-
-        String id = variant.getAttributeAsString(VariantContext.ID_KEY);
-        if (!id.equals(".") && (idBandHeight > 0)) {
-            Graphics2D g = (Graphics2D) context.getGraphics().create();
-            Font f = FontManager.getFont(Font.BOLD, 10);
-            f = f.deriveFont(AffineTransform.getRotateInstance(-Math.PI / 6.0));
-            g.setFont(f);
-            g.setColor(Color.black);
-            g.drawString(variant.getAttributeAsString(VariantContext.ID_KEY), pX0 + (dX / 2), pY - 1);
-            g.dispose();
+            refColor = filtered ? blueAlpha : blue;
         }
-
-        int w = bandRectangle.width;
-        int x = bandRectangle.x;
-        if (w < 3) {
-            w = 3;
-            x--;
-        }
-
-        context.getGraphic2DForColor(Color.black).drawRect(x, bandRectangle.y, w, bandRectangle.height);
-
-
-    }
-
-    public void renderAlleleBand(VariantContext variant,
-                                 Rectangle bandRectangle,
-                                 int pX0, int dX,
-                                 RenderContext context,
-                                 boolean hideFiltered,
-                                 VCFTrack.AlleleCount alleleCounts) {
-
-
-        int bottomY = bandRectangle.y + bandRectangle.height;
-
-        // Create a small margin
-        int maxBarHeight = bandRectangle.height - 3;
-        float allelePercent = alleleCounts.getAllelePercent();
-        int alleleBarHeight = (int) (allelePercent * maxBarHeight);
-        int remainderHeight = maxBarHeight - alleleBarHeight;
-
-        boolean filtered = variant.isFiltered() && hideFiltered;
-        Color alleleColor = filtered ? colorAlleleBandAlpha : colorAlleleBand;
-        Color refColor = filtered ? colorAlleleRefAlpha : colorAlleleRef;
 
         Graphics2D g = context.getGraphic2DForColor(alleleColor);
-
-
         g.fillRect(pX0, bottomY - alleleBarHeight, dX, alleleBarHeight);
+
         g = context.getGraphic2DForColor(refColor);
-        g.fillRect(pX0, bandRectangle.y + 3, dX, remainderHeight);
-
-        int bottom = bandRectangle.y + bandRectangle.height;
-        context.getGraphic2DForColor(Color.gray).drawLine(bandRectangle.x, bottom,
-                bandRectangle.x + bandRectangle.width, bottom);
+        g.fillRect(pX0, bottomY - alleleBarHeight - remainderHeight, dX, remainderHeight);
 
     }
 
-    public void renderVariant(VariantContext variant, Rectangle bandRectangle, int pX0, int dX, RenderContext context) {
-
-
-        int bottomY = bandRectangle.y + bandRectangle.height;
-
-        int barHeight = (int) (0.8 * bandRectangle.height);
-
-        Graphics2D g = context.getGraphic2DForColor(BLUE);
-        g.fillRect(pX0, bottomY - barHeight, dX, barHeight);
-
-        context.getGraphic2DForColor(Color.black).drawRect(bandRectangle.x, bandRectangle.y, bandRectangle.width,
-                bandRectangle.height);
-
-    }
 
     public void renderGenotypeBandSNP(VariantContext variant, RenderContext context, Rectangle bandRectangle, int pX0, int dX,
                                       String sampleName, VCFTrack.ColorMode coloring, boolean hideFiltered) {
@@ -287,11 +231,10 @@ public class VCFRenderer { //extends FeatureRenderer {
         Color color;
 
         if (mr >= .25) {
-            return Color.getHSBColor((mr-.25f)*(1f/0.75f), 1, 1);
-        }
-        else {
+            return Color.getHSBColor((mr - .25f) * (1f / 0.75f), 1, 1);
+        } else {
             // use a light grey between 0 and 0.25 brightness to indicate moderate methylation at the site.
-           return new Color(1f - mr, 1f - mr, 1f - mr);
+            return new Color(1f - mr, 1f - mr, 1f - mr);
         }
 
 
