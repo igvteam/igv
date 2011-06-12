@@ -23,6 +23,7 @@ package org.broad.igv.track;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -121,8 +122,8 @@ public class DataSourceTrack extends DataTrack {
         if (as != null) {
             try {
                 normalize = Boolean.parseBoolean(as);
-                if (dataSource != null && dataSource instanceof TDFDataSource) {
-                    ((TDFDataSource) dataSource).setNormalize(normalize);
+                if (dataSource != null && dataSource instanceof CoverageDataSource) {
+                    ((CoverageDataSource) dataSource).setNormalize(normalize);
                 }
             }
             catch (Exception e) {

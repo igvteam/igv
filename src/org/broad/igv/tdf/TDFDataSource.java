@@ -26,10 +26,7 @@ package org.broad.igv.tdf;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.BasicScore;
-import org.broad.igv.data.CompositeScore;
-import org.broad.igv.data.DataSource;
-import org.broad.igv.data.NamedScore;
+import org.broad.igv.data.*;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.LocusScore;
@@ -47,7 +44,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class TDFDataSource implements DataSource {
+public class TDFDataSource implements CoverageDataSource {
 
     private static Logger log = Logger.getLogger(TDFDataSource.class);
 

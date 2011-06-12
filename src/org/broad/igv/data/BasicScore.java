@@ -83,7 +83,7 @@ public class BasicScore implements LocusScore {
 
     public String getValueString(double position, WindowFunction windowFunction) {
         StringBuffer buf = new StringBuffer();
-        buf.append("Value: " + score);
+        buf.append(String.format("Value: %g at position %d",  score, (int)position));
         if(windowFunction != null) {
             buf.append("<br>Window function: " + windowFunction);
         }

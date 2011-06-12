@@ -49,6 +49,7 @@ import org.broad.igv.track.TrackManager;
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 import org.broad.igv.ui.dnd.GhostGlassPane;
+import org.broad.igv.ui.filefilters.CoverageFileFilter;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 
@@ -276,6 +277,7 @@ public class IGV {
         //  Note --  why are these reused ? (JTR)
         trackFileChooser = new FileChooserDialog(mainFrame, true);
         trackFileChooser.addChoosableFileFilter(new AlignmentFileFilter());
+        trackFileChooser.addChoosableFileFilter(new CoverageFileFilter());
 
         // This hack is ugly, but I can't see any other way to set the default file filter to "All"
         trackFileChooser.setFileFilter(trackFileChooser.getChoosableFileFilters()[0]);

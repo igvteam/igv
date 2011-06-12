@@ -336,7 +336,8 @@ public class CachingQueryReader {
 
             return true;
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
+
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
         }

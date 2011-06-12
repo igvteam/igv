@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.sam.reader.SamQueryReaderFactory;
@@ -356,10 +355,11 @@ public class AlignmentDataManager {
                     log.error("Error loading alignments", exception);
                     JOptionPane.showMessageDialog(IGV.getMainFrame(), "Error reading file: " + exception.getMessage());
                 } finally {
-                    isLoading = false;
+
                     if (iter != null) {
                         iter.close();
                     }
+                    isLoading = false;
                 }
             }
         };
@@ -415,8 +415,8 @@ public class AlignmentDataManager {
     }
 
     public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
-        if(this.peStats != null) {
-            for(PEStats stats : peStats.values()) {
+        if (this.peStats != null) {
+            for (PEStats stats : peStats.values()) {
                 stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
         }

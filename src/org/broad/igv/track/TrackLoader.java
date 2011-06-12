@@ -37,8 +37,9 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
+import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -49,16 +50,14 @@ import org.broad.igv.maf.MAFTrack;
 import org.broad.igv.maf.conservation.OmegaDataSource;
 import org.broad.igv.maf.conservation.OmegaTrack;
 import org.broad.igv.peaks.PeakTrack;
-import org.broad.igv.sam.reader.IndexNotFoundException;
-import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
+import org.broad.igv.sam.reader.IndexNotFoundException;
 import org.broad.igv.synteny.BlastMapping;
 import org.broad.igv.synteny.BlastParser;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVCommandBar;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;
@@ -72,7 +71,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -200,6 +198,8 @@ public class TrackLoader {
                 loadEwigIBFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".counts")) {
+                loadGobyCountsArchive(locator, newTracks, genome);
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks, genome);
@@ -683,8 +683,11 @@ public class TrackLoader {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
+            final DataSource dataSource = locator.getType().endsWith("counts") ?
+                    new GobyCountArchiveDataSource(locator) :
+                    new TDFDataSource(reader, trackNumber, heading, genome);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                    new TDFDataSource(reader, trackNumber, heading, genome), genome);
+                    dataSource, genome);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -695,6 +698,26 @@ public class TrackLoader {
             newTracks.add(track);
             trackNumber++;
         }
+    }
+
+    private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+
+
+        if (log.isDebugEnabled()) {
+            log.debug("Loading Goby counts archive: " + locator.toString());
+        }
+
+
+        String trackId = locator.getSampleId() + " coverage";
+        String trackName = locator.getFileName();
+        final DataSource dataSource = new GobyCountArchiveDataSource(locator);
+
+        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
+                dataSource, genome);
+
+        newTracks.add(track);
+
+
     }
 
     private void loadEwigIBFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {

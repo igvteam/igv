@@ -26,6 +26,8 @@ package org.broad.igv.sam;
 import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.CoverageDataSource;
+import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
@@ -76,7 +78,7 @@ public class CoverageTrack extends AbstractTrack {
     private boolean showAllSnps;
 
     AlignmentDataManager dataManager;
-    TDFDataSource dataSource;
+    CoverageDataSource dataSource;
     DataRenderer dataSourceRenderer; // = new BarChartRenderer();
     IntervalRenderer intervalRenderer;
     PreferenceManager prefs;
@@ -111,8 +113,8 @@ public class CoverageTrack extends AbstractTrack {
         this.dataManager = dataManager;
     }
 
-    public void setDataSource(TDFDataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = (CoverageDataSource) dataSource;
         dataSourceRenderer = new BarChartRenderer();
         setDataRange(new DataRange(0, 0, 1.5f * (float) dataSource.getDataMax()));
 

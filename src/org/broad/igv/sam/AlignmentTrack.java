@@ -24,8 +24,10 @@ import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.renderer.Renderer;
@@ -1238,7 +1240,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
-                                } else {
+                                } else if ( path.endsWith(".counts"))  {
+                                       DataSource ds = new GobyCountArchiveDataSource(file
+                                       );
+                                    getCoverageTrack().setDataSource(ds);
+
+                                } else{
                                     MessageUtils.showMessage("Coverage data must be in .tdf format");
                                 }
                             }
