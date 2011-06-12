@@ -25,6 +25,7 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
@@ -44,6 +45,7 @@ import java.util.List;
  */
 public class TrackGroup {
 
+    private static Logger log = Logger.getLogger(TrackGroup.class);
     /**
      * Key used to group tracks (e.g. SAMPLE_ID).
      */
@@ -363,18 +365,23 @@ public class TrackGroup {
             Comparator<Track> c = new Comparator<Track>() {
 
                 public int compare(Track t1, Track t2) {
-                    if (t1 == null && t2 == null) return 0;
-                    if (t1 == null) return 1;
-                    if (t2 == null) return -1;
+                    try {
+                        if (t1 == null && t2 == null) return 0;
+                        if (t1 == null) return 1;
+                        if (t2 == null) return -1;
 
-                    float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
-                    float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
+                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
+                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
 
-                    if (s2 > s1) {
-                        return 1;
-                    } else if (s1 < s2) {
-                        return -1;
-                    } else {
+                        if (s2 > s1) {
+                            return 1;
+                        } else if (s1 < s2) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    } catch (Exception e) {
+                        log.error("Error sorting tracks. Sort might not be accurate.", e);
                         return 0;
                     }
 

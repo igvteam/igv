@@ -75,6 +75,13 @@
            <string>paintLabels</string> 
            <boolean>true</boolean> 
           </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>150</int> 
+            <int>52</int> 
+           </object> 
+          </void> 
           <void property="name"> 
            <string>foldChangeSlider</string> 
           </void> 
@@ -130,6 +137,13 @@
            <string>paintLabels</string> 
            <boolean>true</boolean> 
           </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>150</int> 
+            <int>52</int> 
+           </object> 
+          </void> 
           <void property="name"> 
            <string>scoreSlider</string> 
           </void> 
@@ -165,6 +179,13 @@
           <int>0</int> 
           <null/> 
           <null/> 
+         </object> 
+        </void> 
+        <void method="setProperty"> 
+         <string>minimumSize</string> 
+         <object class="java.awt.Dimension"> 
+          <int>250</int> 
+          <int>37</int> 
          </object> 
         </void> 
         <void property="name"> 

@@ -411,7 +411,7 @@ public class PeakTrack extends AbstractTrack {
 
         try {
             List<Peak> scores = getFilteredPeaks(chr);
-            int startIdx = FeatureUtils.getIndexBefore(start, scores);
+            int startIdx = Math.max(0, FeatureUtils.getIndexBefore(start, scores));
 
             float regionScore = Float.MIN_VALUE;
             for (int i = startIdx; i < scores.size(); i++) {

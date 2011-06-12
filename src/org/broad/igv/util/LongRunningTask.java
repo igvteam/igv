@@ -77,8 +77,12 @@ public class LongRunningTask implements Callable {
                 long dt = System.currentTimeMillis() - t0;
                 log.debug(runnable.getName() + "  time= " + dt);
             }
-            return "";
-        } finally {
+            return null;
+        } catch(Exception e) {
+            log.error("Exception running task: " + runnable.getName(), e);
+            return null;
+        }
+        finally {
             WaitCursorManager.removeWaitCursor(token);
         }
 

@@ -175,6 +175,7 @@ public class PeakCommandBar extends JPanel {
             foldChangeSlider.setMaximum(10);
             foldChangeSlider.setValue(0);
             foldChangeSlider.setPaintLabels(true);
+            foldChangeSlider.setPreferredSize(new Dimension(150, 52));
             foldChangeSlider.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     foldChangeSliderStateChanged(e);
@@ -197,6 +198,7 @@ public class PeakCommandBar extends JPanel {
             scoreSlider.setToolTipText("Adjust score threshold");
             scoreSlider.setMajorTickSpacing(20);
             scoreSlider.setPaintLabels(true);
+            scoreSlider.setPreferredSize(new Dimension(150, 52));
             scoreSlider.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
                     scoreSliderStateChanged(e);
@@ -210,6 +212,7 @@ public class PeakCommandBar extends JPanel {
         //======== panel1 ========
         {
             panel1.setBorder(new EtchedBorder(EtchedBorder.RAISED));
+            panel1.setMinimumSize(new Dimension(250, 37));
             panel1.setLayout(new FlowLayout());
 
             //---- label3 ----
