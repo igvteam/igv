@@ -246,6 +246,7 @@ public class Exon extends AbstractFeature {
         if (aaNumber > 0) {
             msg += "<br>Amino acid number: " + aaNumber;
         }
+        msg += "<br>" + getLocusString();
         if (description != null) msg += description;
         return msg;
     }

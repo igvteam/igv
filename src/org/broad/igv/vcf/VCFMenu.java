@@ -102,55 +102,71 @@ public class VCFMenu extends JPopupMenu {
         add(TrackMenuUtils.getChangeFontSizeItem(selectedTracks));
 
 
-        if (variant != null) {
-            //Hides
+        //Hides
+        addSeparator();
+        JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
+        add(colorByItem);
+        add(getColorByGenotype());
+        add(getColorByAllele());
+        if (track.isEnableMethylationRateSupport()) {
+            add(getColorByMethylationRate());
+        }
+
+        //add(getRenderIDItem());
+
+        if (this.track.isHasGroups()) {
             addSeparator();
-            JLabel colorByItem = new JLabel("<html>&nbsp;&nbsp;<b>Color By", JLabel.LEFT);
-            add(colorByItem);
-            add(getColorByGenotype());
-            add(getColorByAllele());
-            if (track.isEnableMethylationRateSupport()) {
-                add(getColorByMethylationRate());
-            }
-
-            //add(getRenderIDItem());
-
-            if (this.track.isHasGroups()) {
-                addSeparator();
-                final JCheckBoxMenuItem groupedItem = new JCheckBoxMenuItem("Group");
-                groupedItem.setSelected(this.track.isGrouped());
-                groupedItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        VCFMenu.this.track.setGrouped(groupedItem.isSelected());
-                        IGV.getInstance().doRefresh();
-                    }
-                });
-                add(groupedItem);
-                addSeparator();
-            }
-
-            //Sorter
+            final JCheckBoxMenuItem groupedItem = new JCheckBoxMenuItem("Group");
+            groupedItem.setSelected(this.track.isGrouped());
+            groupedItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    VCFMenu.this.track.setGrouped(groupedItem.isSelected());
+                    IGV.getInstance().doRefresh();
+                }
+            });
+            add(groupedItem);
             addSeparator();
-            for (JMenuItem item : getSortMenuItems(variant)) {
-                add(item);
-                item.setEnabled(!this.track.isGrouped());
-            }
+        }
 
-            //Variant Information
-            addSeparator();
-            JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
-            add(displayHeading);
-            for (JMenuItem item : getDisplayModeItems()) {
-                add(item);
+        //Sorter
+        addSeparator();
+        for (JMenuItem item : getSortMenuItems(variant)) {
+            add(item);
+            if(variant == null) {
+                item.setEnabled(false);
             }
+            item.setEnabled(!this.track.isGrouped());
+        }
+
+        //Variant Information
+        addSeparator();
+        JLabel displayHeading = new JLabel("Display Mode", JLabel.LEFT);
+        add(displayHeading);
+        for (JMenuItem item : getDisplayModeItems()) {
+            add(item);
         }
 
         addSeparator();
+        JMenuItem item = new JMenuItem("Change Squished Row Height...");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                int currentValue = track.getSquishedHeight();
+                int newValue = TrackMenuUtils.getIntValue("Squished row height", currentValue);
+                if(newValue != Integer.MIN_VALUE) {
+                    track.setSquishedHeight(newValue);
+                    IGV.getInstance().getContentPane().repaint();
+                }
+            }
+        });
+        add(item);
+
         add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
 
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
+
 
     }
 
@@ -199,16 +215,6 @@ public class VCFMenu extends JPopupMenu {
         return item;
     }
 
-    private JMenuItem getRenderIDItem() {
-        JMenuItem item = new JCheckBoxMenuItem("Display Variant Names", track.getRenderID());
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setRenderID(!track.getRenderID());
-                IGV.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
-    }
 
     private JMenuItem getHideFilteredItem() {
         JMenuItem item = new JCheckBoxMenuItem("Suppress Filtered Sites", track.getHideFiltered());

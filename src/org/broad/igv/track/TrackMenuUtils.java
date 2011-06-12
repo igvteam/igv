@@ -822,7 +822,7 @@ public class TrackMenuUtils {
     }
 
 
-    private static int getIntValue(String parameter, int value) {
+    public static int getIntValue(String parameter, int value) {
 
         while (true) {
 

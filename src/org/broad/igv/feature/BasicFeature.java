@@ -29,9 +29,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -164,6 +162,8 @@ public class BasicFeature extends AbstractFeature {
             valueString.append("<br>" + description);
         }
 
+        valueString.append("<br>" + getLocusString());
+
         // Get exon number, if over an exon
         int posZero = (int) position - 1;
         if (this.exons != null) {
@@ -174,14 +174,9 @@ public class BasicFeature extends AbstractFeature {
                         valueString.append("<br>--------------<br>");
                         valueString.append(exonString);
                     }
-
                 }
             }
         }
-
-        valueString.append("<br>--------------<br>");
-        valueString.append(getLocusString());
-
 
         return valueString.toString();
     }

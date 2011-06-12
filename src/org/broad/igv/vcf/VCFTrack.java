@@ -84,12 +84,14 @@ public class VCFTrack extends FeatureTrack {
 
     }
 
-    private final int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
-    private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 1;
-    private final int DEFAULT_VARIANT_BAND_HEIGHT = 25;
-    private final int MAX_FILTER_LINES = 15;
+    private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
+    private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
+    private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
+    private final static int MAX_FILTER_LINES = 15;
 
     private VCFRenderer renderer = new VCFRenderer(this);
+
+    private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
 
     // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
     private int top;
@@ -213,7 +215,7 @@ public class VCFTrack extends FeatureTrack {
     public int getGenotypeBandHeight() {
         switch (getDisplayMode()) {
             case SQUISHED:
-                return DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
+                return getSquishedHeight();
             case COLLAPSED:
                 return 0;
             default:
@@ -288,7 +290,7 @@ public class VCFTrack extends FeatureTrack {
                 VariantContext variant = (VariantContext) feature;
                 //char ref = getReference(variant, windowStart, reference);
 
-                if(hideFiltered && variant.isFiltered()) {
+                if (hideFiltered && variant.isFiltered()) {
                     continue;
                 }
 
@@ -443,10 +445,10 @@ public class VCFTrack extends FeatureTrack {
     private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames) {
 
 
-        if(getDisplayMode() == Track.DisplayMode.SQUISHED) {
+        if (getDisplayMode() == Track.DisplayMode.SQUISHED) {
             return;
         }
-        
+
         boolean coloredLast = true;
 
         Rectangle textRectangle = new Rectangle(bandRectangle);
@@ -703,6 +705,14 @@ public class VCFTrack extends FeatureTrack {
         return hasGroups;
     }
 
+    public int getSquishedHeight() {
+        return squishedHeight;
+    }
+
+    public void setSquishedHeight(int squishedHeight) {
+        this.squishedHeight = squishedHeight;
+    }
+
     public static enum ColorMode {
         GENOTYPE, METHYLATION_RATE, ALLELE
     }
@@ -945,6 +955,11 @@ public class VCFTrack extends FeatureTrack {
         if (mode != null) {
             attributes.put(SessionReader.SessionAttribute.COLOR_MODE.getText(), mode.toString());
         }
+
+        if (squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
+            attributes.put("SQUISHED_ROW_HEIGHT", String.valueOf(squishedHeight));
+        }
+
         return attributes;
     }
 
@@ -953,14 +968,11 @@ public class VCFTrack extends FeatureTrack {
         super.restorePersistentState(attributes);
 
         String rendername = attributes.get(SessionReader.SessionAttribute.RENDER_NAME.getText());
-        String colorModeText = attributes.get(SessionReader.SessionAttribute.COLOR_MODE.getText());
-
-
-        // Set expand
         if (rendername != null) {
             setRenderID(rendername.equalsIgnoreCase("true"));
         }
 
+        String colorModeText = attributes.get(SessionReader.SessionAttribute.COLOR_MODE.getText());
         if (colorModeText != null) {
             try {
                 setColorMode(ColorMode.valueOf(colorModeText));
@@ -970,6 +982,14 @@ public class VCFTrack extends FeatureTrack {
             }
         }
 
-        setHeight(getPreferredHeight());
+        String squishedHeightText = attributes.get("SQUISHED_ROW_HEIGHT");
+        if (squishedHeightText != null) {
+            try {
+                squishedHeight = Integer.parseInt(squishedHeightText);
+            }
+            catch (Exception e) {
+                log.error("Error restoring squished height: " + squishedHeightText);
+            }
+        }
     }
 }
