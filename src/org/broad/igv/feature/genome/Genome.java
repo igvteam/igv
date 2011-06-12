@@ -81,7 +81,7 @@ public class Genome {
 
 
     public String getChromosomeAlias(String str) {
-        if (chrAliasTable == null) {
+        if (chrAliasTable == null || str == null) {
             return str;
         } else {
             if (chrAliasTable.containsKey(str)) {
@@ -199,7 +199,7 @@ public class Genome {
 
 
     public Chromosome getChromosome(String chrName) {
-        return chromosomeMap.get(chrName);
+        return chromosomeMap.get(getChromosomeAlias(chrName));
     }
 
 

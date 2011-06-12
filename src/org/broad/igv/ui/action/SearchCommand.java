@@ -87,7 +87,7 @@ public class SearchCommand implements Command {
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
         if (tokens.length >= 2) {
-            String chr = tokens[0].trim();
+            String chr = genome.getChromosomeAlias(tokens[0].trim());
             int start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
             int end = start + 1;
             if (tokens.length > 2) {
@@ -138,7 +138,7 @@ public class SearchCommand implements Command {
                 if (colon > 0) {
 
                     // The chromosome is that portion of the search string up to the colon.
-                    chr = searchString.substring(0, colon);
+                    chr = genome.getChromosomeAlias(searchString.substring(0, colon));
                     String posString = searchString.substring(colon).replace(":", "");
                     startEnd = getStartEnd(posString);
 
@@ -178,13 +178,14 @@ public class SearchCommand implements Command {
                     } else {
 
                         // No dash, this is either a chromosome or an unkown search string
-                        Chromosome chromosome = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosome(searchString);
+                        chr = genome.getChromosomeAlias(searchString);
+                        Chromosome chromosome = genome.getChromosome(chr);
                         if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
                             if (recordHistory) {
-                                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                                IGV.getInstance().getSession().getHistory().push(chr, referenceFrame.getZoom());
                             }
 
-                            referenceFrame.setChromosomeName(searchString, true);
+                            referenceFrame.setChromosomeName(chr, true);
                             IGV.getInstance().repaintDataAndHeaderPanels();
                             IGV.getInstance().repaintStatusAndZoomSlider();
 
