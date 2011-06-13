@@ -83,7 +83,7 @@
             <pathelement path="${lib.dir}commons-logging-1.1.1.jar" />
 			<pathelement path="${lib.dir}commons-net-2.0.jar" />
             <pathelement path="${lib.dir}concurrent.jar" />
-            <pathelement path="${lib.dir}goby-io.jar" />
+            <pathelement path="${lib.dir}goby-io-igv.jar" />
             <pathelement path="${lib.dir}httpclient-4.1.1.jar" />
             <pathelement path="${lib.dir}httpcore-4.1.jar" />
             <pathelement path="${lib.dir}jargs.jar" />
