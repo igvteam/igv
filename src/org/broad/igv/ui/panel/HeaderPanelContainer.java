@@ -59,6 +59,18 @@ public class HeaderPanelContainer extends JPanel {
 
     }
 
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (contentPanel != null) {
+            for (Component c : contentPanel.getComponents()) {
+                if (c instanceof HeaderPanel) {
+                    c.setBackground(color);
+                }
+            }
+        }
+    }
+
     public void createHeaderPanels() {
 
         removeAll();
@@ -68,11 +80,12 @@ public class HeaderPanelContainer extends JPanel {
         contentPanel.setLayout(new DataPanelLayout());
         for (ReferenceFrame f : frames) {
             HeaderPanel dp = new HeaderPanel(f);
+            dp.setBackground(getBackground());
             contentPanel.add(dp);
         }
         add(contentPanel, BorderLayout.CENTER);
 
-        if(FrameManager.isGeneListMode()) {
+        if (FrameManager.isGeneListMode()) {
             GeneList gl = IGV.getInstance().getSession().getCurrentGeneList();
             String name = gl.getDisplayName();
             JLabel label = new JLabel(name, JLabel.CENTER);

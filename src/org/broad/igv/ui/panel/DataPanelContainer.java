@@ -65,24 +65,29 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         removeAll();
         for (ReferenceFrame f : FrameManager.getFrames()) {
             DataPanel dp = new DataPanel(f, this);
+            dp.setBackground(getBackground());
             add(dp);
         }
         invalidate();
     }
 
-    /**
-     * @return
-     */
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        for (Component c : this.getComponents()) {
+            if (c instanceof DataPanel) {
+                c.setBackground(color);
+            }
+        }
+    }
+
+
     public Collection<TrackGroup> getTrackGroups() {
         TrackPanel dataTrackView = (TrackPanel) getParent();
         return dataTrackView.getGroups();
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public int getVisibleHeight() {
         TrackPanel dataTrackView = (TrackPanel) getParent();
         return dataTrackView.getVisibleRect().height;

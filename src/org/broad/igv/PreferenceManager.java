@@ -22,7 +22,6 @@
  */
 package org.broad.igv;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
 import org.broad.igv.maf.MAFManager;
@@ -33,6 +32,7 @@ import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.ui.util.ColorTable;
+import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.IGVHttpUtils;
 
 import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
@@ -44,21 +44,15 @@ import java.util.*;
 import java.util.List;
 
 /**
- * @author eflakes
+ * Manages user preferences.
  */
 public class PreferenceManager implements PropertyManager {
 
     private static Logger log = Logger.getLogger(PreferenceManager.class);
 
-    private static final String DEFAULT_PORT_NUMBER = "60151";
-    private static final String DEFAULT_AUTOSCALE = "true";
-    private static final String DEFAULT_SHOW_REFERENCE = "false";
 
     public static final String INITIAL_TRACK_HEIGHT = "15";
-    private final String SYSTEM_DEFAULT_FOR_DIRECT_DRAW = System.getProperty("sun.java2d.noddraw");
-    /**
-     * Property keys below
-     */
+
     public static final String SAM_SHOW_ALL_MISMATCHES = "COVERAGE.SHOW_ALL_MISMATCHES";
     public static final String COVERAGE_SHOW_ALL_MISMATCHES = SAM_SHOW_ALL_MISMATCHES;
     public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
@@ -75,7 +69,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_MAX_INSERT_SIZE_THRESHOLD = "SAM.INSERT_SIZE_THRESHOLD";
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
-    public static final String SAM_MIN_INSERT_SIZE_PERCENTILE= "SAM.MIN_ISIZE_MIN_PERCENTILE";
+    public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";
     public static final String SAM_COMPUTE_INSERT_SIZE_THRESHOLD = "SAM.COMPUTE_ISZIE";
     public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
     public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
@@ -136,16 +130,11 @@ public class PreferenceManager implements PropertyManager {
     final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
     final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
     final public static String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
-    final public static String LAST_CYTOBAND_DIRECTORY_KEY = "LAST_CYTOBAND_DIRECTORY_KEY";
-    final public static String LAST_REFFLAT_DIRECTORY_KEY = "LAST_REFFLAT_DIRECTORY_KEY";
-    final public static String LAST_FASTA_DIRECTORY_KEY = "LAST_FASTA_DIRECTORY_KEY";
-    final public static String LAST_SEQUENCE_DIRECTORY_KEY = "LAST_SEQUENCE_DIRECTORY_KEY";
     final public static String MAF_SPECIES_KEY = "MAF_SPECIES_KEY";
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
     final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
     final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
-    public static final String FTP_ANON_EMAIL = "FTP_ANON_EMAIL";
 
     public static final String SHOW_SIZE_WARNING = "SHOW_SIZE_WARNING";
     public static final String SHOW_GENOME_SERVER_WARNING = "SHOW_GENOME_SERVER_WARNING";
@@ -183,9 +172,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String DEFAULT_FONT_ATTRIBUTE = "DEFAULT_FONT_ATTRIBUTE";
 
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
-
-
-
+    public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
 
 
     public static String DEFAULT_DATA_SERVER_URL;
@@ -257,11 +244,11 @@ public class PreferenceManager implements PropertyManager {
         Boolean boolValue = booleanCache.get(key);
         if (boolValue == null) {
             String value = get(key);
-            boolValue = new Boolean(get(key, value));
-            if (boolValue == null) {
+            if (value == null) {
                 log.error("No default value for: " + key);
                 return false;
             }
+            boolValue = new Boolean(get(key, value));
             booleanCache.put(key, boolValue);
         }
         return boolValue.booleanValue();
@@ -277,14 +264,34 @@ public class PreferenceManager implements PropertyManager {
         Number value = (Number) objectCache.get(key);
         if (value == null) {
             String defValue = get(key);
-            value = new Integer(get(key, defValue));
-            if (value == null) {
+            if (defValue == null) {
                 log.error("No default value for: " + key);
                 return 0;
             }
+            value = new Integer(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.intValue();
+    }
+
+    /**
+     * Return the preference as a color.
+     *
+     * @param key
+     * @return
+     */
+    public Color getAsColor(String key) {
+        Color value = (Color) objectCache.get(key);
+        if (value == null) {
+            String defValue = get(key);
+            if (defValue == null) {
+                log.error("No default value for: " + key);
+                return Color.white;
+            }
+            value = ColorUtilities.stringToColor(defValue);
+            objectCache.put(key, value);
+        }
+        return value;
     }
 
     /**
@@ -297,11 +304,11 @@ public class PreferenceManager implements PropertyManager {
         Number value = (Number) objectCache.get(key);
         if (value == null) {
             String defValue = get(key);
-            value = new Float(get(key, defValue));
-            if (value == null) {
+            if (defValue == null) {
                 log.error("No default value for: " + key);
                 return 0;
             }
+            value = new Float(get(key, defValue));
             objectCache.put(key, value);
         }
         return value.floatValue();
@@ -953,6 +960,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
+        defaultValues.put(BACKGROUND_COLOR, "245,245,245");
 
     }
 }

@@ -197,7 +197,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         } else {
                             graphics2D.setBackground(Color.WHITE);
                         }
-                        graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+                        //graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                         track.renderName(graphics2D, rect, visibleRect);

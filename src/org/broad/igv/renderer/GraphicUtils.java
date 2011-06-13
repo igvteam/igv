@@ -22,8 +22,6 @@
  */
 package org.broad.igv.renderer;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import org.broad.igv.Globals;
 import org.broad.igv.util.StringUtils;
 
@@ -38,16 +36,7 @@ import java.util.regex.Pattern;
  */
 public class GraphicUtils {
 
-    /**
-     * Method description
-     *
-     * @param g
-     * @param chars
-     * @param x
-     * @param y
-     * @param w
-     * @param h
-     */
+   
     public static void drawCenteredChar(Graphics g, char[] chars, int x, int y,
                                         int w, int h) {
 

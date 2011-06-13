@@ -422,7 +422,7 @@ public class VCFTrack extends FeatureTrack {
         final int right = (int) trackRectangle.getMaxX();
 
         Rectangle rect = new Rectangle(trackRectangle);
-        g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+        //g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getFont(fontSize));
         g2D.setColor(BAND2_COLOR);
 
@@ -893,33 +893,6 @@ public class VCFTrack extends FeatureTrack {
         }
         return zc;
     }
-
-
-    /*
-   int noCall = counts[3];
-   int homRef = counts[2];
-   int nonVar = noCall + homRef;
-   int het = counts[1];
-   int homVar = counts[0];
-   int var = het + homVar;
-
-    */
-
-    class AlleleCount {
-        private int alleleNum;
-        private int alleleCount;
-
-
-        public AlleleCount(ZygosityCount zygCounts) {
-            alleleNum = (zygCounts.getHomVar() + zygCounts.getHet() + zygCounts.getHomRef()) * 2;
-            alleleCount = zygCounts.getHomVar() * 2 + zygCounts.getHet();
-        }
-
-        public float getAllelePercent() {
-            return alleleNum == 0 ? 0 : ((float) alleleCount / alleleNum);
-        }
-    }
-
 
     private String getAlleleToolTip(ZygosityCount counts) {
         double noCall = counts.getNoCall() * 2;

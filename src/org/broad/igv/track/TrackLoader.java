@@ -203,7 +203,7 @@ public class TrackLoader {
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks, genome);
-                //AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
+                //TODO AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
             } else if (AbstractFeatureParser.getInstanceFor(locator, genome) != null) {
                 loadFeatureFile(locator, newTracks, genome);
             } else if (MutationParser.isMutationAnnotationFile(locator)) {

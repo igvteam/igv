@@ -229,22 +229,6 @@ public abstract class AbstractTrack implements Track {
                 GraphicUtils.drawWrappedText(trackName, rect, g2D, false);
 
                 //g2D.dispose();
-            } else {
-
-                /*Font font = FontManager.getScalableFont(2);
-                graphics.setFont(font);
-                FontMetrics fm = graphics.getFontMetrics();
-                int nameWidth = Math.min(rect.width - 2, fm.stringWidth(trackName));
-
-                graphics.setColor(Color.GRAY);
-                int y = (rect.y + rect.height / 2);
-                int start = rect.x + 1;
-                while (start < nameWidth) {
-                    graphics.drawLine(start, y, start + 1, y);
-                    start += 2 + (int) (2 * Math.random() * 4);
-                }
-                */
-
             }
         }
     }
@@ -288,20 +272,6 @@ public abstract class AbstractTrack implements Track {
         return altColor;
 
     }
-
-    private Color getColorAttribute(String key, Color defaultValue) {
-        String rgb = this.getAttributeValue(key);
-        if (rgb != null) {
-            try {
-                return ColorUtilities.stringToColor(rgb.replace("\"", ""));
-
-            } catch (Exception exception) {
-                log.info("Invalid color string " + rgb + " for track: " + getName());
-            }
-        }
-        return defaultValue;
-    }
-
 
     public ResourceLocator getResourceLocator() {
         return resourceLocator;

@@ -75,6 +75,13 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
     }
 
     @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (trackPanel != null)
+            trackPanel.setBackground(color);
+    }
+
+    @Override
     public void setViewportView(Component trackSetView) {
         if (!(trackSetView instanceof TrackPanel)) {
             throw new IllegalArgumentException("Class TrackPanelScrollPane can only contain a TrackPanel");

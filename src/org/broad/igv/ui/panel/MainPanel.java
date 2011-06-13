@@ -61,6 +61,8 @@ public class MainPanel extends JPanel implements Paintable {
     private TrackPanelScrollPane dataTrackScrollPane;
     private TrackPanelScrollPane featureTrackScrollPane;
     private JideSplitPane centerSplitPane;
+    private NameHeaderPanel nameHeaderPanel;
+    private AttributeHeaderPanel attributeHeaderPanel;
 
     private int hgap = 5;
 
@@ -136,21 +138,36 @@ public class MainPanel extends JPanel implements Paintable {
         }
     }
 
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (headerPanelContainer != null) {
+            nameHeaderPanel.setBackground(color);
+            attributeHeaderPanel.setBackground(color);
+            headerPanelContainer.setBackground(color);
+            nameHeaderPanel.setBackground(color);
+            attributeHeaderPanel.setBackground(color);
+            for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
+                tsp.setBackground(color);
+            }
+        }
+
+    }
+
     private void initComponents() {
 
         setBackground(new java.awt.Color(204, 204, 204));
         setPreferredSize(new java.awt.Dimension(1021, 510));
         setLayout(new java.awt.BorderLayout());
 
-
-        NameHeaderPanel nameHeaderPanel = new NameHeaderPanel();
+        nameHeaderPanel = new NameHeaderPanel();
         nameHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
         nameHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         nameHeaderPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setPreferredSize(new java.awt.Dimension(0, 0));
         nameHeaderPanel.setLayout(null);
 
-        AttributeHeaderPanel attributeHeaderPanel = new AttributeHeaderPanel();
+        attributeHeaderPanel = new AttributeHeaderPanel();
         attributeHeaderPanel.setBackground(new java.awt.Color(255, 255, 255));
         attributeHeaderPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         attributeHeaderPanel.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
@@ -208,6 +225,8 @@ public class MainPanel extends JPanel implements Paintable {
         }
 
         add(centerSplitPane, BorderLayout.CENTER);
+
+        setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
 
 
     }
@@ -323,9 +342,9 @@ public class MainPanel extends JPanel implements Paintable {
         centerSplitPane.removeAll();
         idx = 0;
         int divLoc = 0;
-        for(String name : names) {
+        for (String name : names) {
             centerSplitPane.add(panes.get(name));
-            if(idx < dividerLocations.length) {
+            if (idx < dividerLocations.length) {
                 divLoc += panelHeights.get(name);
                 dividerLocations[idx] = divLoc;
                 idx++;
@@ -362,12 +381,12 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void removeEmptyDataPanels() {
         List<TrackPanelScrollPane> emptyPanels = new ArrayList();
-        for(TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
-            if(sp.getTrackPanel().getTracks().isEmpty()) {
+        for (TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
+            if (sp.getTrackPanel().getTracks().isEmpty()) {
                 emptyPanels.add(sp);
             }
         }
-        for(TrackPanelScrollPane panel : emptyPanels) {
+        for (TrackPanelScrollPane panel : emptyPanels) {
             if (panel != null) {
                 centerSplitPane.remove(panel);
                 trackManager.removeScrollPane(panel.getTrackPanelName());
@@ -436,7 +455,7 @@ public class MainPanel extends JPanel implements Paintable {
         HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeKeys());
 
         Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if(hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
+        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
 
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +

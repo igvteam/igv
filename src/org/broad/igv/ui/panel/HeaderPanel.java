@@ -57,6 +57,10 @@ public class HeaderPanel extends JPanel implements Transferable {
     private JLabel label;
     public static final Color BUTTON_BACKGROUND = new Color(230, 240, 250);
     static DataFlavor dragAndDropPanelDataFlavor;
+    private CytobandPanel cytobandPanel;
+    private RulerPanel rulerPanel;
+    private RegionOfInterestPanel regionOfInterestPane;
+    private JPanel geneListPanel;
 
 
     public HeaderPanel(ReferenceFrame frame) {
@@ -74,8 +78,7 @@ public class HeaderPanel extends JPanel implements Transferable {
 
         if (FrameManager.isGeneListMode()) {
 
-            JPanel geneListPanel = new JPanel();
-            geneListPanel.setBackground(Color.white);
+            geneListPanel = new JPanel();
             geneListPanel.setMinimumSize(new java.awt.Dimension(700, 0));
             geneListPanel.setPreferredSize(new java.awt.Dimension(0, 0));
             geneListPanel.setLayout(new java.awt.BorderLayout());
@@ -94,7 +97,7 @@ public class HeaderPanel extends JPanel implements Transferable {
             setSize(400, 100);
             setVisible(true);
 
-            CytobandPanel cytobandPanel = new CytobandPanel(frame, false);
+            cytobandPanel = new CytobandPanel(frame, false);
             cytobandPanel.setBackground(new java.awt.Color(255, 255, 255));
             cytobandPanel.setPreferredSize(new java.awt.Dimension(0, 20));
             cytobandPanel.setRequestFocusEnabled(false);
@@ -174,19 +177,19 @@ public class HeaderPanel extends JPanel implements Transferable {
             panel.setPreferredSize(new java.awt.Dimension(0, 0));
             panel.setLayout(new java.awt.BorderLayout());
 
-            CytobandPanel cytobandPanel = new CytobandPanel(frame);
+            cytobandPanel = new CytobandPanel(frame);
             cytobandPanel.setBackground(new java.awt.Color(255, 255, 255));
             cytobandPanel.setPreferredSize(new java.awt.Dimension(0, 50));
             cytobandPanel.setRequestFocusEnabled(false);
             cytobandPanel.setLayout(null);
             panel.add(cytobandPanel, java.awt.BorderLayout.NORTH);
 
-            RulerPanel rulerPanel = new RulerPanel(frame);
+            rulerPanel = new RulerPanel(frame);
             rulerPanel.setBackground(new java.awt.Color(255, 255, 255));
             rulerPanel.setLayout(null);
             panel.add(rulerPanel, java.awt.BorderLayout.CENTER);
 
-            RegionOfInterestPanel regionOfInterestPane = new RegionOfInterestPanel(frame);
+            regionOfInterestPane = new RegionOfInterestPanel(frame);
             regionOfInterestPane.setBackground(new java.awt.Color(255, 255, 255));
             regionOfInterestPane.setMinimumSize(new java.awt.Dimension(0, 13));
 
@@ -209,7 +212,7 @@ public class HeaderPanel extends JPanel implements Transferable {
         int end = (int) frame.getEnd();
         final RegionOfInterest roi = new RegionOfInterest(frame.getChrName(), start, end, "");
 
-        JPopupMenu popupMenu = new RegionMenu(roi, frame, "Panel: " + frame.getName() );
+        JPopupMenu popupMenu = new RegionMenu(roi, frame, "Panel: " + frame.getName());
 
 
         // Zoom items
@@ -247,6 +250,17 @@ public class HeaderPanel extends JPanel implements Transferable {
             IGV.getInstance().resetFrames();
         }
     }
+
+    @Override
+
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (cytobandPanel != null) cytobandPanel.setBackground(color);
+        if (rulerPanel != null) rulerPanel.setBackground(color);
+        if (regionOfInterestPane != null) regionOfInterestPane.setBackground(color);
+        if (geneListPanel != null) geneListPanel.setBackground(color);
+    }
+
 
     /**
      * <p>Returns (creating, if necessary) the DataFlavor representing RandomDragAndDropPanel</p>

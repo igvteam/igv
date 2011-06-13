@@ -76,8 +76,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        g.setColor(Color.white);
-        g.fill(rect);
         paintImpl(g, rect);
         super.paintBorder(g);
     }

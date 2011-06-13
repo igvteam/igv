@@ -70,9 +70,7 @@ public class TrackPanel extends IGVPanel {
 
 
     private void init() {
-        //grabPanel = new JPanel();
-        //grabPanel.setBackground(Color.lightGray);
-        //grabPanel.setBorder(BorderFactory.createBevelBorder(2));
+
         namePanel = new TrackNamePanel(this);
         attributePanel = new AttributePanel(this);
         dataPanelContainer = new DataPanelContainer(this);
@@ -89,24 +87,27 @@ public class TrackPanel extends IGVPanel {
         dataPanelContainer.createDataPanels();
     }
 
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (namePanel != null) {
+            namePanel.setBackground(color);
+            attributePanel.setBackground(color);
+            dataPanelContainer.setBackground(color);
+        }
+    }
 
-    /**
-     * @return the namePanel
-     */
+
     public TrackNamePanel getNamePanel() {
         return namePanel;
     }
 
-    /**
-     * @return the attributePanel
-     */
+
     public AttributePanel getAttributePanel() {
         return attributePanel;
     }
 
-    /**
-     * @return the dataPanel
-     */
+
     public DataPanelContainer getDataPanelContainer() {
         return dataPanelContainer;
     }
