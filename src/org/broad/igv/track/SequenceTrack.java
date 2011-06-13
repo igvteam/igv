@@ -68,7 +68,7 @@ public class SequenceTrack extends AbstractTrack {
 
     public SequenceTrack(String name) {
         super(name);
-
+        setSortable(false);
         shouldShowTranslation = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SEQUENCE_TRANSLATION);
 
     }
