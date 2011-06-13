@@ -97,7 +97,7 @@ public class VCFTrack extends FeatureTrack {
     private int top;
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
-    LinkedHashMap<String, List<String>> samples = new LinkedHashMap();
+    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
     List<String> allSamples;
     List<String> groupNames;
 
@@ -143,16 +143,16 @@ public class VCFTrack extends FeatureTrack {
             if (key == null) {
                 key = "Other";
             }
-            List<String> sampleList = samples.get(key);
+            List<String> sampleList = samplesByGroups.get(key);
             if (sampleList == null) {
                 sampleList = new ArrayList();
-                samples.put(key, sampleList);
+                samplesByGroups.put(key, sampleList);
             }
             sampleList.add(sample);
         }
 
-        grouped = samples.size() > 1;
-        hasGroups = samples.size() > 1;
+        grouped = samplesByGroups.size() > 1;
+        hasGroups = samplesByGroups.size() > 1;
         if (grouped && REFERENCE_GROUP_SAMPLE_MAP != null) {
             sortGroups();
         }
@@ -176,7 +176,7 @@ public class VCFTrack extends FeatureTrack {
             groupRank.put(family, idx++);
         }
 
-        groupNames = new ArrayList(samples.keySet());
+        groupNames = new ArrayList(samplesByGroups.keySet());
         Collections.sort(groupNames, new Comparator<String>() {
             public int compare(String s1, String s2) {
                 int r1 = groupRank.containsKey(s1) ? groupRank.get(s1) : Integer.MAX_VALUE;
@@ -188,7 +188,7 @@ public class VCFTrack extends FeatureTrack {
 
         LinkedHashMap<String, List<String>> newSamples = new LinkedHashMap();
         for (String family : groupNames) {
-            List<String> sampleList = samples.get(family);
+            List<String> sampleList = samplesByGroups.get(family);
             if (sampleList != null && sampleList.size() > 0) {
                 final List<String> referenceGroup = REFERENCE_GROUP_SAMPLE_MAP.get(family);
                 if (referenceGroup != null) {
@@ -208,7 +208,7 @@ public class VCFTrack extends FeatureTrack {
             }
 
         }
-        this.samples = newSamples;
+        this.samplesByGroups = newSamples;
     }
 
 
@@ -226,11 +226,11 @@ public class VCFTrack extends FeatureTrack {
 
     public int getHeight() {
 
-        final int sampleCount = samples.size();
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
+        final int groupCount = samplesByGroups.size();
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || groupCount == 0) {
             return variantBandHeight;
         } else {
-            int margins = (sampleCount - 1) * 3;
+            int margins = (groupCount - 1) * 3;
             return variantBandHeight + margins + (this.sampleCount * getGenotypeBandHeight());
         }
 
@@ -242,15 +242,32 @@ public class VCFTrack extends FeatureTrack {
     }
 
     public void setHeight(int height) {
-        this.height = Math.max(minimumHeight, height);
+
+        final DisplayMode displayMode = getDisplayMode();
+
+        // If collapsed there's nothing we can do to affect height
+        if (displayMode == DisplayMode.COLLAPSED) {
+            return;
+        }
+
+        // If height is < expanded height try "squishing" track, otherwise expand it
+        final int groupCount = samplesByGroups.size();
+        final int margins = (groupCount - 1) * 3;
+        final int expandedHeight = variantBandHeight + margins + (this.sampleCount * getGenotypeBandHeight());
+        if (height < expandedHeight) {
+            setDisplayMode(DisplayMode.SQUISHED);
+            squishedHeight = Math.max(1, (height - variantBandHeight - margins) / sampleCount);
+        } else {
+            if (displayMode != DisplayMode.EXPANDED) {
+                setDisplayMode(DisplayMode.EXPANDED);
+            }
+        }
+
+
     }
 
     public void setDisplayMode(DisplayMode mode) {
         super.setDisplayMode(mode);
-
-        // Set squished row height as
-
-        setHeight(getPreferredHeight());
     }
 
     @Override
@@ -328,7 +345,7 @@ public class VCFTrack extends FeatureTrack {
 
                         // Loop through groups
                         if (grouped) {
-                            for (Map.Entry<String, List<String>> entry : samples.entrySet()) {
+                            for (Map.Entry<String, List<String>> entry : samplesByGroups.entrySet()) {
                                 for (String sample : entry.getValue()) {
                                     if (rect.intersects(visibleRectangle)) {
                                         renderer.renderGenotypeBandSNP(variant, context, rect, x, w, sample, coloring,
@@ -389,6 +406,12 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    /**
+     * Render the names
+     * @param g2D
+     * @param trackRectangle
+     * @param visibleRectangle
+     */
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
@@ -445,7 +468,7 @@ public class VCFTrack extends FeatureTrack {
     private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames) {
 
 
-        if (getDisplayMode() == Track.DisplayMode.SQUISHED) {
+        if (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4) {
             return;
         }
 
@@ -460,7 +483,7 @@ public class VCFTrack extends FeatureTrack {
         g2D.setFont(font);
 
         if (grouped) {
-            for (List<String> sampleList : samples.values()) {
+            for (List<String> sampleList : samplesByGroups.values()) {
                 for (String sample : sampleList) {
 
                     if (coloredLast) {
@@ -569,7 +592,7 @@ public class VCFTrack extends FeatureTrack {
                     int groupHeight = 3 * getGenotypeBandHeight() + 3;
                     int groupNumber = Math.min(groupNames.size() - 1, (y - top - variantBandHeight) / groupHeight);
                     String group = groupNames.get(groupNumber);
-                    List<String> sampleList = samples.get(group);
+                    List<String> sampleList = samplesByGroups.get(group);
                     int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
                     if (sampleNumber >= 0 || sampleNumber < sampleList.size()) {
                         sample = sampleList.get(sampleNumber);
