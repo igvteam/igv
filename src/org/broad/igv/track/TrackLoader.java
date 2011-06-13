@@ -683,7 +683,7 @@ public class TrackLoader {
 
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
-            final DataSource dataSource = locator.getType().endsWith("counts") ?
+            final DataSource dataSource = locator.getPath().endsWith(".counts") ?
                     new GobyCountArchiveDataSource(locator) :
                     new TDFDataSource(reader, trackNumber, heading, genome);
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
