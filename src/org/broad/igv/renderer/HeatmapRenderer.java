@@ -136,7 +136,7 @@ public class HeatmapRenderer extends DataRenderer {
                     }
 
                     // Segmented copy numbers (score type "segment") can be optionally joined
-                    if (score instanceof Segment &&
+                    /*if (score instanceof Segment &&
                             PreferenceManager.getInstance().getAsBoolean(PreferenceManager.JOIN_ADJACENT_SEGMENTS_KEY) &&
                             lastColor != null && (pStart - lastPEnd) > 1) {
 
@@ -159,7 +159,7 @@ public class HeatmapRenderer extends DataRenderer {
                                 gLine.drawLine(lastPEnd, minY + height / 2, pStart - 1, minY + height / 2);
                             }
                         }
-                    }
+                    } */
                 } // End special RNAi treagment
             }
             lastPStart = pStart;

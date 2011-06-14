@@ -142,6 +142,7 @@ public class MainPanel extends JPanel implements Paintable {
     public void setBackground(Color color) {
         super.setBackground(color);
         if (headerPanelContainer != null) {
+            applicationHeaderPanel.setBackground(color);
             nameHeaderPanel.setBackground(color);
             attributeHeaderPanel.setBackground(color);
             headerPanelContainer.setBackground(color);
@@ -156,7 +157,6 @@ public class MainPanel extends JPanel implements Paintable {
 
     private void initComponents() {
 
-        setBackground(new java.awt.Color(204, 204, 204));
         setPreferredSize(new java.awt.Dimension(1021, 510));
         setLayout(new java.awt.BorderLayout());
 

@@ -963,4 +963,5 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(BACKGROUND_COLOR, "245,245,245");
 
     }
+
 }
