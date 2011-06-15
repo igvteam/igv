@@ -395,7 +395,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     showRegionBoundariesCB.setText("Show Region Boundaries");
                     showRegionBoundariesCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            showAttributesDisplayCheckBoxActionPerformed(e);
                             showRegionBoundariesCBActionPerformed(e);
                         }
                     });
@@ -1684,7 +1683,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25)
+                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                                 .addContainerGap())
                     );
                 }

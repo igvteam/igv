@@ -558,14 +558,6 @@
                <object class="com.jformdesigner.model.FormEvent"> 
                 <string>java.awt.event.ActionListener</string> 
                 <string>actionPerformed</string> 
-                <string>showAttributesDisplayCheckBoxActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
                 <string>showRegionBoundariesCBActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
@@ -3852,7 +3844,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::16:x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
