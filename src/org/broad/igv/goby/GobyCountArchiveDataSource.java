@@ -93,6 +93,7 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
         if ("All".equals(chr)) return new Vector<LocusScore>();
+       CountBinningAdapterI binAdaptor=null;
         try {
 
             CountsReader reader = getCountsReader(chr);
@@ -111,7 +112,7 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
           //  final boolean adapterChoice = regionLength > 50000 && regionLength < 1000000;
             final boolean adapterChoice = regionLength > 3000000 && regionLength < 10000000;
       //      System.out.println(adapterChoice?"CountAdaptiveBinningAdaptor":"CountBinningAdaptor");
-            CountBinningAdapterI binAdaptor = adapterChoice ?new CountAdaptiveBinningAdaptor(reader):
+            binAdaptor = adapterChoice ?new CountAdaptiveBinningAdaptor(reader):
                     new CountBinningAdaptor(reader,binSize);
 
             binAdaptor.skipTo(startLocation);
@@ -149,6 +150,14 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
                     String.format("Error getting summary scores for range %s:%d-%d in goby counts archive file %s %n",
                             chr, startLocation, endLocation, filename), filename);
 
+        } finally {
+            if (binAdaptor!=null) {
+                try {
+                    binAdaptor.close();
+                } catch (IOException e) {
+                    // close quietly
+                }
+            }
         }
     }
 
