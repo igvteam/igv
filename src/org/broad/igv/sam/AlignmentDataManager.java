@@ -317,7 +317,7 @@ public class AlignmentDataManager {
                 // DON'T expand mitochondria
 
                 int expandLength = reader.getTileSize(chr) / 2;
-                int intervalStart = Math.max(0, start - expandLength);
+                int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
                 CloseableIterator<Alignment> iter = null;
