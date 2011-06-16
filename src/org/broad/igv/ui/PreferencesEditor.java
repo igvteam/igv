@@ -22,8 +22,6 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.border.*;
 
-import com.jidesoft.combobox.*;
-
 import com.jidesoft.dialog.*;
 import com.jidesoft.swing.*;
 import org.broad.igv.PreferenceManager;

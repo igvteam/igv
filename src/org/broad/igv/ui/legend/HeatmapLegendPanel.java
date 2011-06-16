@@ -90,8 +90,7 @@ public class HeatmapLegendPanel extends LegendPanel {
 
                 IGV.getInstance().setStatusBarMessage("Setting view properties...");
 
-                HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getMainFrame(),
-                        true, type, colorScale);
+                HeatmapLegendEditor dialog = new HeatmapLegendEditor(IGV.getMainFrame(), true, type, colorScale);
 
                 dialog.setTitle("HeatMap Preferences");
                 dialog.setVisible(true);

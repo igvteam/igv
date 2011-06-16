@@ -391,7 +391,7 @@ public class IGVMenuBar extends JMenuBar {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        (new LegendDialog(IGV.getMainFrame(), false)).setVisible(true);
+                        (new LegendDialog(IGV.getMainFrame())).setVisible(true);
                     }
                 };
         menuAction.setToolTipText(SHOW_HEATMAP_LEGEND_TOOLTIP);

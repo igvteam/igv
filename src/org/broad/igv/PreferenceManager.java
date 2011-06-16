@@ -751,32 +751,24 @@ public class PreferenceManager implements PropertyManager {
     }
 
     /**
-     * @param colorScheme
+     * Original labels:  Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown
+     * Nico's labels:   Synonymous, Missense, Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
      */
     public void setMutationColorScheme(ColorTable colorScheme) {
 
-        setMutationColorScheme(
-                getcommaSeparatedRGBString(colorScheme.get("Indel")),
-                getcommaSeparatedRGBString(colorScheme.get("Missense")),
-                getcommaSeparatedRGBString(colorScheme.get("Nonsense")),
-                getcommaSeparatedRGBString(colorScheme.get("Splice_site")),
-                getcommaSeparatedRGBString(colorScheme.get("Synonymous")),
-                getcommaSeparatedRGBString(colorScheme.get("Targeted_Region")),
-                getcommaSeparatedRGBString(colorScheme.get("Unknown")));
-    }
+        String indel = getcommaSeparatedRGBString(colorScheme.get("Indel"));
+        String missense = getcommaSeparatedRGBString(colorScheme.get("Missense"));
+        String nonsense = getcommaSeparatedRGBString(colorScheme.get("Nonsense"));
+        String spliceSite = getcommaSeparatedRGBString(colorScheme.get("Splice_site"));
+        String synonymous = getcommaSeparatedRGBString(colorScheme.get("Synonymous"));
+        String targetedRegion = getcommaSeparatedRGBString(colorScheme.get("Targeted_Region"));
+        String unknown = getcommaSeparatedRGBString(colorScheme.get("Unknown"));
 
-    /**
-     * @param indel
-     * @param missense
-     * @param nonsense
-     * @param spliceSite
-     * @param synonymous
-     * @param targetedRegion
-     * @param unknown
-     */
-    public void setMutationColorScheme(String indel, String missense, String nonsense,
-                                       String spliceSite, String synonymous, String targetedRegion,
-                                       String unknown) {
+        // nico
+        String truncating = getcommaSeparatedRGBString(colorScheme.get("Truncating"));
+        String nonCodingTranscript = getcommaSeparatedRGBString(colorScheme.get("Non-coding_Transcript"));
+        String otherAAChanging = getcommaSeparatedRGBString(colorScheme.get("Other_AA_changing"));
+        String otherLikelyNeutral = getcommaSeparatedRGBString(colorScheme.get("Other_likely_neutral"));
 
         put(MUTATION_INDEL_COLOR_KEY, indel);
         put(MUTATION_MISSENSE_COLOR_KEY, missense);
@@ -785,20 +777,28 @@ public class PreferenceManager implements PropertyManager {
         put(MUTATION_SYNONYMOUS_COLOR_KEY, synonymous);
         put(MUTATION_TARGETED_REGION_COLOR_KEY, targetedRegion);
         put(MUTATION_UNKNOWN_COLOR_KEY, unknown);
+
+        put("MUTATION_Truncating_COLOR", truncating);
+        put("MUTATION_Non-coding_Transcript_COLOR", nonCodingTranscript);
+        put("MUTATION_Other_AA_changing_COLOR", otherAAChanging);
+        put("MUTATION_Other_likely_neutral_COLOR", otherLikelyNeutral);
     }
 
     /**
-     * @return
+     * Original labels:  Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown
+     * Nico's labels:   Synonymous, Missense, Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
+     * Combined: Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown, Truncating,
+     * Non-coding_Transcript, Other_AA_changing, Other_likely_neutral
      */
     public ColorTable getMutationColorScheme() {
 
-        String indelColor = get(MUTATION_INDEL_COLOR_KEY, null);
-        String missenseColor = get(MUTATION_MISSENSE_COLOR_KEY, null);
-        String nonsenseColor = get(MUTATION_NONSENSE_COLOR_KEY, null);
-        String spliceSiteColor = get(MUTATION_SPLICE_SITE_COLOR_KEY, null);
-        String synonymousColor = get(MUTATION_SYNONYMOUS_COLOR_KEY, null);
-        String targetedRegionColor = get(MUTATION_TARGETED_REGION_COLOR_KEY, null);
-        String unknownColor = get(MUTATION_UNKNOWN_COLOR_KEY, null);
+        String indelColor = get(MUTATION_INDEL_COLOR_KEY);
+        String missenseColor = get(MUTATION_MISSENSE_COLOR_KEY);
+        String nonsenseColor = get(MUTATION_NONSENSE_COLOR_KEY);
+        String spliceSiteColor = get(MUTATION_SPLICE_SITE_COLOR_KEY);
+        String synonymousColor = get(MUTATION_SYNONYMOUS_COLOR_KEY);
+        String targetedRegionColor = get(MUTATION_TARGETED_REGION_COLOR_KEY);
+        String unknownColor = get(MUTATION_UNKNOWN_COLOR_KEY);
 
         ColorTable colorTable = new ColorTable();
         if ((indelColor != null) && (missenseColor != null) && (nonsenseColor != null) &&
@@ -807,37 +807,33 @@ public class PreferenceManager implements PropertyManager {
                 (targetedRegionColor != null) &&
                 (unknownColor != null)) {
 
-
-            String rgb[] = indelColor.split(",");
-            Color color1 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+            Color color1 = ColorUtilities.stringToColor(indelColor);
             colorTable.put("Indel", color1);
 
-            rgb = missenseColor.split(",");
-            Color color2 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+            Color color2 = ColorUtilities.stringToColor(missenseColor);
             colorTable.put("Missense", color2);
 
-            rgb = nonsenseColor.split(",");
-            Color color3 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+            Color color3 = ColorUtilities.stringToColor(nonsenseColor);
             colorTable.put("Nonsense", color3);
 
-            rgb = spliceSiteColor.split(",");
-            Color color4 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+            Color color4 = ColorUtilities.stringToColor(spliceSiteColor);
             colorTable.put("Splice_site", color4);
 
-            rgb = synonymousColor.split(",");
-            Color color5 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]),
-                    Integer.parseInt(rgb[2]));
+            Color color5 = ColorUtilities.stringToColor(synonymousColor);
             colorTable.put("Synonymous", color5);
 
-            rgb = targetedRegionColor.split(",");
-            Color color6 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]),
-                    Integer.parseInt(rgb[2]));
+            Color color6 = ColorUtilities.stringToColor(targetedRegionColor);
             colorTable.put("Targeted_Region", color6);
 
-            rgb = unknownColor.split(",");
-            Color color7 = new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]),
-                    Integer.parseInt(rgb[2]));
+            Color color7 = ColorUtilities.stringToColor(unknownColor);
             colorTable.put("Unknown", color7);
+
+            // Nicos extensions
+            String[] nicosCats = {"Truncating", "Non-coding_Transcript", "Other_AA_changing", "Other_likely_neutral"};
+            for (String cat : nicosCats) {
+                String key = "MUTATION_" + cat + "_COLOR";
+                colorTable.put(cat, ColorUtilities.stringToColor(get(key)));
+            }
         }
 
         return colorTable;
@@ -862,6 +858,20 @@ public class PreferenceManager implements PropertyManager {
     private void initDefaultValues() {
 
         defaultValues = new HashMap();
+
+        defaultValues.put(MUTATION_INDEL_COLOR_KEY, "0,200,0");
+        defaultValues.put(MUTATION_MISSENSE_COLOR_KEY, "170,20,240");
+        defaultValues.put(MUTATION_NONSENSE_COLOR_KEY, "50,30,75");
+        defaultValues.put(MUTATION_SPLICE_SITE_COLOR_KEY, "150,0,150");
+        defaultValues.put(MUTATION_SYNONYMOUS_COLOR_KEY, "200,200,200");
+        defaultValues.put(MUTATION_TARGETED_REGION_COLOR_KEY, "236,155,43");
+        defaultValues.put(MUTATION_UNKNOWN_COLOR_KEY, "0,180,225");
+        //     * Nico's labels:   Truncating, Non-coding_Transcript, Other_AA_changing, Other_likely_neutral.
+        defaultValues.put("MUTATION_Truncating_COLOR", "150,0,0");
+        defaultValues.put("MUTATION_Non-coding_Transcript_COLOR", "0,0,150");
+        defaultValues.put("MUTATION_Other_AA_changing_COLOR", "0,150,150");
+        defaultValues.put("MUTATION_Other_likely_neutral_COLOR", "225,180,225");
+
 
         defaultValues.put(PROBE_MAPPING_KEY, "false");
         defaultValues.put(SHOW_REGION_BARS, "false");

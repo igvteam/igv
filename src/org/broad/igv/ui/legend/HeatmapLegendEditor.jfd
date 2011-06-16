@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+ <object class="com.jformdesigner.model.FormModel"> 
+  <void property="contentType"> 
+   <string>form/swing</string> 
+  </void> 
+  <void property="root"> 
+   <object class="com.jformdesigner.model.FormRoot"> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormWindow"> 
+      <string>javax.swing.JDialog</string> 
+      <object class="com.jformdesigner.model.FormLayoutManager"> 
+       <class>org.jdesktop.layout.GroupLayout</class> 
+       <void method="setProperty"> 
+        <string>$horizontalGroup</string> 
+        <string>par l {seq {space :p:35:p, par l:::p {comp doubleGradientCheckbox::l:p:175:p, comp jPanel1::l:p:184:p:1, comp negRangePanel::l:::x:1, comp posRangePanel::t:::x:1}, space ::101:x}, seq t {space ::124:x, comp okButton:::p::p, space :::p, comp cancelButton:::p::p, space :p:132:p}}</string> 
+       </void> 
+       <void method="setProperty"> 
+        <string>$verticalGroup</string> 
+        <string>par l {seq l {space :p:52:p, comp doubleGradientCheckbox:::p::p, space s:::p, comp jPanel1:::p::p, space :::p, comp negRangePanel:::p:30:p, space u:::p, comp posRangePanel:::p:30:p, space s:::p, par b {comp okButton::b:p::p, comp cancelButton::b:p::p}, space :p:34:p}}</string> 
+       </void> 
+      </object> 
+      <void method="setProperty"> 
+       <string>defaultCloseOperation</string> 
+       <int>2</int> 
+      </void> 
+      <void method="setProperty"> 
+       <string>resizable</string> 
+       <boolean>false</boolean> 
+      </void> 
+      <void method="setProperty"> 
+       <string>$sizePolicy</string> 
+       <int>1</int> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>org.jdesktop.layout.GroupLayout</class> 
+         <void method="setProperty"> 
+          <string>$horizontalGroup</string> 
+          <string>par l {seq {par l {seq l {comp jLabel3:::p::p, space :::x, comp maxColor:4::p:50:p}, seq l {comp minColorLabel:::p::p, space ::9:x, comp minColor:4::p:75:p}, seq t {comp midColorLabel:::p::p, space ::12:x, comp midColor:4::p:50:p}}, space :p::p}}</string> 
+         </void> 
+         <void method="setProperty"> 
+          <string>$verticalGroup</string> 
+          <string>par l {seq {par l {seq {comp minColorLabel:3::p::p, space u:::p, comp midColorLabel:2::p::p}, seq l {comp minColor:3::p:25:p, space :p:14:p, comp midColor:2::p:25:p}}, space :p:12:p, par l {seq t {comp jLabel3:1::p::p, space :p:20:p}, seq l {comp maxColor:1::p:25:p, space :::p}}}}</string> 
+         </void> 
+        </object> 
+        <void property="name"> 
+         <string>jPanel1</string> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Midpoint Color</string> 
+          </void> 
+          <void property="name"> 
+           <string>midColorLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Maximum Color</string> 
+          </void> 
+          <void property="name"> 
+           <string>jLabel3</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Minimum Color</string> 
+          </void> 
+          <void property="name"> 
+           <string>minColorLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jidesoft.combobox.ColorComboBox</string> 
+          <void method="setProperty"> 
+           <string>colorValueVisible</string> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="name"> 
+           <string>minColor</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jidesoft.combobox.ColorComboBox</string> 
+          <void method="setProperty"> 
+           <string>colorValueVisible</string> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="name"> 
+           <string>midColor</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jidesoft.combobox.ColorComboBox</string> 
+          <void method="setProperty"> 
+           <string>colorValueVisible</string> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="name"> 
+           <string>maxColor</string> 
+          </void> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormComponent"> 
+        <string>javax.swing.JButton</string> 
+        <void method="setProperty"> 
+         <string>text</string> 
+         <string>OK</string> 
+        </void> 
+        <void property="name"> 
+         <string>okButton</string> 
+        </void> 
+        <void method="addEvent"> 
+         <object class="com.jformdesigner.model.FormEvent"> 
+          <string>java.awt.event.ActionListener</string> 
+          <string>actionPerformed</string> 
+          <string>okButtonActionPerformed</string> 
+          <boolean>true</boolean> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormComponent"> 
+        <string>javax.swing.JButton</string> 
+        <void method="setProperty"> 
+         <string>text</string> 
+         <string>Cancel</string> 
+        </void> 
+        <void property="name"> 
+         <string>cancelButton</string> 
+        </void> 
+        <void method="addEvent"> 
+         <object class="com.jformdesigner.model.FormEvent"> 
+          <string>java.awt.event.ActionListener</string> 
+          <string>actionPerformed</string> 
+          <string>cancelButtonActionPerformed</string> 
+          <boolean>true</boolean> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>org.jdesktop.layout.GroupLayout</class> 
+         <void method="setProperty"> 
+          <string>$horizontalGroup</string> 
+          <string>par l {seq l {comp negRangeLabel:::p:115:p, space :::p, comp negRangeStart:::p:59:p, space u:::p, comp negRangeToLabel:::p:30:p:1, space :::p, comp negRangeEnd:::p:59:p:1}}</string> 
+         </void> 
+         <void method="setProperty"> 
+          <string>$verticalGroup</string> 
+          <string>par l {seq {par l {comp negRangeLabel:::p:22:p, par b:l {comp negRangeStart::b:p::p, comp negRangeToLabel::b:p:22:p, comp negRangeEnd::b:p::p}}, space :::x}}</string> 
+         </void> 
+        </object> 
+        <void property="name"> 
+         <string>negRangePanel</string> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Negative Range: </string> 
+          </void> 
+          <void property="name"> 
+           <string>negRangeLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>-0.1</string> 
+          </void> 
+          <void property="name"> 
+           <string>negRangeStart</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>To:</string> 
+          </void> 
+          <void property="name"> 
+           <string>negRangeToLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>-1.5</string> 
+          </void> 
+          <void property="name"> 
+           <string>negRangeEnd</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>negRangeEndActionPerformed</string> 
+            <boolean>true</boolean> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormComponent"> 
+        <string>javax.swing.JCheckBox</string> 
+        <void method="setProperty"> 
+         <string>text</string> 
+         <string>Use Double Gradient</string> 
+        </void> 
+        <void property="name"> 
+         <string>doubleGradientCheckbox</string> 
+        </void> 
+        <void method="addEvent"> 
+         <object class="com.jformdesigner.model.FormEvent"> 
+          <string>java.awt.event.ActionListener</string> 
+          <string>actionPerformed</string> 
+          <string>doubleGradientCheckboxActionPerformed</string> 
+          <boolean>true</boolean> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void method="add"> 
+       <object class="com.jformdesigner.model.FormContainer"> 
+        <string>javax.swing.JPanel</string> 
+        <object class="com.jformdesigner.model.FormLayoutManager"> 
+         <class>org.jdesktop.layout.GroupLayout</class> 
+         <void method="setProperty"> 
+          <string>$horizontalGroup</string> 
+          <string>par l {seq l {comp posRangeLabel:::p:115:p, space :::p, comp posRangeStart:::p:59:p, space u:::p, comp posRangeToLabel:::p:30:p:1, space :::p, comp posRangeEnd:::p:59:p:1}}</string> 
+         </void> 
+         <void method="setProperty"> 
+          <string>$verticalGroup</string> 
+          <string>par l {seq l {par l {comp posRangeLabel::l:p:22:p, par b:l {comp posRangeStart::b:p::p, comp posRangeToLabel::b:p:22:p, comp posRangeEnd::b:p::p}}, space :::x}}</string> 
+         </void> 
+        </object> 
+        <void property="name"> 
+         <string>posRangePanel</string> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>Positive Range: </string> 
+          </void> 
+          <void property="name"> 
+           <string>posRangeLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>-0.1</string> 
+          </void> 
+          <void property="name"> 
+           <string>posRangeStart</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>To:</string> 
+          </void> 
+          <void property="name"> 
+           <string>posRangeToLabel</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string>-1.5</string> 
+          </void> 
+          <void method="setProperty"> 
+           <string>maximumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>36</int> 
+            <int>22</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>minimumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>36</int> 
+            <int>22</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>posRangeEnd</string> 
+          </void> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="name"> 
+       <string>this</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>size</string> 
+       <object class="java.awt.Dimension"> 
+        <int>425</int> 
+        <int>405</int> 
+       </object> 
+      </void> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>0</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+   </object> 
+  </void> 
+ </object> 
+</java> 
