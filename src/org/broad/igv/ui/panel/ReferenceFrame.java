@@ -655,6 +655,10 @@ public class ReferenceFrame {
         return locus;
     }
 
+    public int getMinZoom() {
+        return minZoom;
+    }
+
     public static class Range {
         private String chr;
         private int start;

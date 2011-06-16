@@ -236,7 +236,8 @@ public class ZoomSliderPanel extends JPanel {
 
                 NamedRunnable runnable = new NamedRunnable() {
                     public void run() {
-                        getViewContext().zoomAndCenterAdjusted(toolZoom);
+                        int effectiveZoom = toolZoom + getViewContext().getMinZoom();
+                        getViewContext().zoomAndCenterAdjusted(effectiveZoom);
                         toolZoom = -1;
                     }
 
