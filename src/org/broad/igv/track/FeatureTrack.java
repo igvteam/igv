@@ -702,8 +702,8 @@ public class FeatureTrack extends AbstractTrack {
                         if (c != null) maxEnd = Math.max(c.getLength(), end);
                     }
                     int delta = (end - start) / 2;
-                    int expandedStart = Math.max(0, start - delta);
-                    int expandedEnd = Math.min(maxEnd, end + delta);
+                    int expandedStart = start - delta;
+                    int expandedEnd = end + delta;
 
 
                     // TODO -- implement source to return iterators
