@@ -327,7 +327,6 @@ public class IGVHttpUtils {
 
     public static void updateProxySettings() {
 
-
         boolean useProxy;
         String proxyHost;
         int proxyPort = -1;
@@ -350,9 +349,11 @@ public class IGVHttpUtils {
             pw = Utilities.base64Decode(pwString);
         }
 
-
         ProxySettings proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort);
         setProxySettings(proxySettings);
+        if(useProxy) {
+            IGVHttpClientUtils.setProxy(proxyHost, proxyPort, auth, user, pw);
+        }
     }
 
 

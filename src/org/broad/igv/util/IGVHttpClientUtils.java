@@ -19,11 +19,14 @@
 
 package org.broad.igv.util;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
@@ -32,9 +35,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 
 /**
@@ -49,7 +50,78 @@ public class IGVHttpClientUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    static DefaultHttpClient client = null;
+    static DefaultHttpClient client  = new DefaultHttpClient();
+
+
+    public static void setProxy(String proxyHost, int proxyPort, boolean auth, String user, String pw) {
+        if (client == null) client = new DefaultHttpClient();
+
+        if (proxyHost != null) {
+            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+            client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+        }
+        if (auth) {
+            client.getCredentialsProvider().setCredentials(
+                    new AuthScope(proxyHost, proxyPort),
+                    new UsernamePasswordCredentials(user, pw));
+
+        }
+    }
+
+    /**
+     * Shutdown client and free all resources.  Called upon application exit.
+     */
+    public static void shutdown() {
+        client.getConnectionManager().shutdown();
+        client = null;
+    }
+
+    public static boolean downloadFile(String url, File outputFile) throws IOException {
+
+        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+        HttpGet httpget = new HttpGet(url);
+
+        HttpResponse response = client.execute(httpget);
+        HttpEntity entity = response.getEntity();
+
+        if (entity != null) {
+            final long contentLength = entity.getContentLength();
+            log.info("Content length = " + contentLength);
+
+            InputStream is = null;
+            OutputStream out = null;
+
+            try {
+                is = entity.getContent();
+                out = new FileOutputStream(outputFile);
+
+                byte[] buf = new byte[64 * 1024];
+                int downloaded = 0;
+                int bytesRead = 0;
+                while ((bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                }
+                log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            }
+            finally {
+                if(is != null) is.close();
+                if(out != null) {
+                    out.flush();
+                    out.close();
+                }
+            }
+            long fileLength = outputFile.length();
+            log.info("File length = " + fileLength);
+
+            return contentLength <= 0 || contentLength == fileLength;
+
+
+        }
+        return false;
+
+    }
+
 
     /**
      * Execute a get on the url and return the response stream.  It is the responsibility of the caller to

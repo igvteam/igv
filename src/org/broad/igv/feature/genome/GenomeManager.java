@@ -38,6 +38,7 @@ import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.Utilities;
 
@@ -362,7 +363,7 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
-                    if (IGVHttpUtils.downloadFile(genomeArchiveURL, tmpFile)) {
+                    if (IGVHttpClientUtils.downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
                         FileUtils.copyFile(tmpFile, archiveFile);
                         tmpFile.deleteOnExit();
                     }
@@ -370,7 +371,7 @@ public class GenomeManager {
 
             } else {
                 // Copy file directly from the server to local cache.
-                IGVHttpUtils.downloadFile(genomeArchiveURL, archiveFile);
+                IGVHttpClientUtils.downloadFile(genomeArchiveURL.toExternalForm(), archiveFile);
             }
         }
         catch (Exception e) {
