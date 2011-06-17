@@ -591,7 +591,7 @@ menuAction =
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 try {
-                                    URI uri = new URI("mailto:igv-help@broadinstitute.org");
+                                    URI uri = new URI("mailto:igv-help@googlegroups.com");
                                     Desktop.getDesktop().mail(uri);
                                 } catch (Exception ex) {
                                     log.error("Error opening email client", ex);
