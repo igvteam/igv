@@ -50,7 +50,7 @@ public class IGVHttpClientUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    static DefaultHttpClient client  = new DefaultHttpClient();
+    static DefaultHttpClient client = new DefaultHttpClient();
 
 
     public static void setProxy(String proxyHost, int proxyPort, boolean auth, String user, String pw) {
@@ -59,6 +59,7 @@ public class IGVHttpClientUtils {
         if (proxyHost != null) {
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
             client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+            log.info("Proxy settings: " + proxyHost + ":" + proxyPort);
         }
         if (auth) {
             client.getCredentialsProvider().setCredentials(
@@ -105,8 +106,8 @@ public class IGVHttpClientUtils {
                 log.info("Download complete.  Total bytes downloaded = " + downloaded);
             }
             finally {
-                if(is != null) is.close();
-                if(out != null) {
+                if (is != null) is.close();
+                if (out != null) {
                     out.flush();
                     out.close();
                 }
