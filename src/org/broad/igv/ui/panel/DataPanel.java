@@ -55,6 +55,10 @@ import java.util.List;
 public class DataPanel extends JComponent implements Paintable {
 
     private static Logger log = Logger.getLogger(DataPanel.class);
+    private boolean isWaitingForToolTipText = false;
+
+
+
 
     // TODO move this to some central place
     final static private boolean IS_MAC = System.getProperty("os.name").toLowerCase().startsWith("mac");
@@ -438,9 +442,6 @@ public class DataPanel extends JComponent implements Paintable {
             setToolTipText(null);
         }
     }
-
-    private boolean isWaitingForToolTipText = false;
-
 
     @Override
     final public String getToolTipText() {

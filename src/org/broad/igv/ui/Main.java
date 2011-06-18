@@ -32,9 +32,7 @@ import org.broad.igv.util.IGVHttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.*;
 import java.io.File;
 
 
@@ -146,6 +144,23 @@ public class Main {
                 }
             });
         }
+
+        // Turn on tooltip in case it was disabled for a temporary keyboard event, e.g. alt-tab
+        frame.addWindowListener(new WindowAdapter() {
+
+            public void windowActivated(WindowEvent e) {
+                if (IGV.hasInstance() && !IGV.getInstance().isSuppressTooltip()) {
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+              }
+
+            @Override
+            public void windowGainedFocus(WindowEvent windowEvent) {
+                if (IGV.hasInstance() && !IGV.getInstance().isSuppressTooltip()) {
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+            }
+        });
 
         initializeLookAndFeel();
 
