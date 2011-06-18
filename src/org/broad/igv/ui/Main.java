@@ -1,8 +1,7 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
- * Technology.  All Rights Reserved.
+ * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
  *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * This software is licensed under the terms of the GNU Lesser General Public License (LGPL), 
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR

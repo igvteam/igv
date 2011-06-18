@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute, Inc. and the Massachusetts Institute of
- * Technology.  All Rights Reserved.
+ * Copyright (c) 2007-2011 by Institute for Computational Biomedicine,
+ *                                          Weill Medical College of Cornell University.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
