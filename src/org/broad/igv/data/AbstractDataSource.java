@@ -45,22 +45,13 @@ public abstract class AbstractDataSource implements DataSource {
     // DataManager dataManager;
     boolean cacheSummaryTiles = true;
     WindowFunction windowFunction = WindowFunction.mean;
-    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this, 20);
-    Genome genome;
+    LRUCache<String, SummaryTile> summaryTileCache = new LRUCache(this, 10);
+    protected Genome genome;
 
     public AbstractDataSource(Genome genome) {
         this.genome = genome;
     }
 
-    // abstract DataManager getDataManager();
-
-    /**
-     * Return the number of precomputed zoom levels for the given chromosome.
-     *
-     * @param chr
-     * @return
-     */
-    abstract protected int getNumZoomLevels(String chr);
 
     // abstract protected TrackType getTrackType();
 
@@ -84,9 +75,7 @@ public abstract class AbstractDataSource implements DataSource {
      * @param zoom
      * @return
      */
-    protected List<SummaryTile> getPrecomputedSummaryTiles(String chr, int startLocation, int endLocation, int zoom) {
-        return null;
-    }
+    abstract protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom);
 
 
     public int getChrLength(String chr) {
@@ -135,80 +124,80 @@ public abstract class AbstractDataSource implements DataSource {
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
 
+        List<LocusScore> scores = getPrecomputedSummaryScores(chr, startLocation, endLocation, zoom);
+        if (scores != null) {
+            return scores;
+        }
+
         List<SummaryTile> tiles = getSummaryTilesForRange(chr, startLocation, endLocation, zoom);
 
-        List<LocusScore> summaryScores = new ArrayList(tiles.size() * 700);
+        scores = new ArrayList(tiles.size() * 700);
 
         for (SummaryTile tile : tiles) {
-            summaryScores.addAll(tile.getScores());
+            scores.addAll(tile.getScores());
 
         }
         //FeatureUtils.sortFeatureList(summaryScores);
-        return summaryScores;
+        return scores;
 
     }
 
     private List<SummaryTile> getSummaryTilesForRange(String chr, int startLocation, int endLocation, int zReq) {
-        int startTile;
-        int endTile;
-        if (zReq < getNumZoomLevels(chr)) {
-            return getPrecomputedSummaryTiles(chr, startLocation, endLocation, zReq);
-        } else {
-            int chrLength = getChrLength(chr);
-            if (chrLength == 0) {
-                return Collections.emptyList();
-            }
-            endLocation = Math.min(endLocation, chrLength);
 
-            // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
-            //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;
-            //int z = Math.min(zReq, maxZoom);
-            int z = zReq;
-            int nTiles = (int) Math.pow(2, z);
-            //double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
+        int chrLength = getChrLength(chr);
+        if (chrLength == 0) {
+            return Collections.emptyList();
+        }
+        endLocation = Math.min(endLocation, chrLength);
+
+        // By definition there are 2^z tiles per chromosome, and 700 bins per tile, where z is the zoom level.
+        //int maxZoom = (int) (Math.log(chrLength/700) / Globals.log2) + 1;
+        //int z = Math.min(zReq, maxZoom);
+        int z = zReq;
+        int nTiles = (int) Math.pow(2, z);
+        //double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
 
 
-            int adjustedStart = Math.max(0, startLocation);
-            int adjustedEnd = Math.min(chrLength, endLocation);
+        int adjustedStart = Math.max(0, startLocation);
+        int adjustedEnd = Math.min(chrLength, endLocation);
 
+        List<SummaryTile> tiles = new ArrayList();
+        if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
+            double tileWidth = ((double) chrLength) / nTiles;
+            int startTile = (int) (adjustedStart / tileWidth);
+            int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;
+            tiles = new ArrayList(nTiles);
+            for (int t = startTile; t <= endTile; t++) {
+                int tileStart = (int) (t * tileWidth);
+                int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
 
-            if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
-                double tileWidth = ((double) chrLength) / nTiles;
+                String key = chr + "_" + z + "_" + t + getWindowFunction();
+                SummaryTile summaryTile = summaryTileCache.get(key);
+                if (summaryTile == null) {
 
-                startTile = (int) (adjustedStart / tileWidth);
-                endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;
-                List<SummaryTile> tiles = new ArrayList(nTiles);
-                for (int t = startTile; t <= endTile; t++) {
-                    int tileStart = (int) (t * tileWidth);
-                    int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
+                    summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, 700);
 
-                    String key = chr + "_" + z + "_" + t + getWindowFunction();
-                    SummaryTile summaryTile = summaryTileCache.get(key);
-                    if (summaryTile == null) {
-
-                        summaryTile = computeSummaryTile(chr, t, tileStart, tileEnd, 700);
-
-                        if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
-                            synchronized (summaryTileCache) {
-                                summaryTileCache.put(key, summaryTile);
-                            }
+                    if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
+                        synchronized (summaryTileCache) {
+                            summaryTileCache.put(key, summaryTile);
                         }
                     }
-
-
-                    if (summaryTile != null) {
-                        tiles.add(summaryTile);
-                    }
                 }
-                return tiles;
-            } else {
-                SummaryTile summaryTile = computeSummaryTile(chr, 0, startLocation, endLocation, 700);
-                return Arrays.asList(summaryTile);
+
+
+                if (summaryTile != null) {
+                    tiles.add(summaryTile);
+                }
             }
-
-
+            return tiles;
+        } else {
+            SummaryTile summaryTile = computeSummaryTile(chr, 0, startLocation, endLocation, 700);
+            return Arrays.asList(summaryTile);
         }
+
+
     }
+
 
     /**
      * Note:  Package scope used so this method can be unit tested
@@ -237,7 +226,7 @@ public abstract class AbstractDataSource implements DataSource {
             float[] values = rawTile.getValues();
             String[] features = rawTile.getFeatureNames();
 
-            tile = new SummaryTile(tileNumber, startLocation);
+            tile = new SummaryTile();
 
             if (windowFunction == WindowFunction.none) {
 
@@ -339,32 +328,6 @@ public abstract class AbstractDataSource implements DataSource {
 
 
         return tile;
-    }
-
-
-    static class PendingScore {
-        int start;
-        int end;
-        FloatArrayList scores = new FloatArrayList();
-
-        PendingScore(int start, int end, FloatArrayList scores, float newVal) {
-            this.end = end;
-            this.scores.addAll(scores);
-            this.scores.add(newVal);
-            this.start = start;
-        }
-
-        PendingScore(int start, int end, FloatArrayList scores) {
-            this.end = end;
-            this.scores.addAll(scores);
-            this.start = start;
-        }
-
-        PendingScore(int start, int end, float newVal) {
-            this.end = end;
-            this.scores.add(newVal);
-            this.start = start;
-        }
     }
 
 

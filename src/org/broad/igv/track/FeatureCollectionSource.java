@@ -21,6 +21,7 @@ package org.broad.igv.track;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
+import org.broad.igv.data.SummaryTile;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -51,7 +52,7 @@ public class FeatureCollectionSource implements FeatureSource {
     public FeatureCollectionSource(List<Feature> allFeatures, Genome genome) {
         this.genome = genome;
         initFeatures(allFeatures);
-        coverageData = new CoverageDataSource();
+        coverageData = new CoverageDataSource(genome);
         coverageData.computeGenomeCoverage();
         sampleGenomeFeatures();
     }
@@ -64,7 +65,7 @@ public class FeatureCollectionSource implements FeatureSource {
     public FeatureCollectionSource(Map<String, List<Feature>> features, Genome genome) {
         this.genome = genome;
         this.featureMap = features;
-        coverageData = new CoverageDataSource();
+        coverageData = new CoverageDataSource(genome);
         coverageData.computeGenomeCoverage();
         sampleGenomeFeatures();
 
@@ -225,12 +226,8 @@ public class FeatureCollectionSource implements FeatureSource {
 
         Map<String, DataTile> dataCache = new HashMap();
 
-        CoverageDataSource() {
+        CoverageDataSource(Genome genome) {
             super(genome);
-        }
-
-        protected int getNumZoomLevels(String chr) {
-            return 0;
         }
 
         protected DataTile getRawData(String chr, int startLocation, int endLocation) {
@@ -243,6 +240,11 @@ public class FeatureCollectionSource implements FeatureSource {
             }
             return coverageData;
 
+        }
+
+        @Override
+        protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
         @Override

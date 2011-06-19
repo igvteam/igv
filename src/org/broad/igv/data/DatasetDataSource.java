@@ -28,11 +28,13 @@ package org.broad.igv.data;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,10 +83,6 @@ public class DatasetDataSource extends AbstractDataSource {
         //}
     }
 
-    @Override
-    protected int getNumZoomLevels(String chr) {
-        return 0;
-    }
 
     @Override
     protected DataTile getRawData(String chr, int startLocation, int endLocation) {
@@ -106,6 +104,11 @@ public class DatasetDataSource extends AbstractDataSource {
 
             return new DataTile(startLocs, endLocs, data, features);
         }
+    }
+
+    @Override
+    protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
 

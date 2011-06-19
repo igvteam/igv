@@ -25,6 +25,8 @@ package org.broad.igv.maf.conservation;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
+import org.broad.igv.data.SummaryTile;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -58,30 +60,7 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
         return 1;
     }
 
-    /**
-     * public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation,
-     * int zoom) {
-     * <p/>
-     * if((endLocation - startLocation) > 1999000) {
-     * return new ArrayList();
-     * }
-     * String fn1 = getFileNameForPosition(chr, startLocation);
-     * String fn2 = getFileNameForPosition(chr, endLocation);
-     * <p/>
-     * int sz = (fn1.equals(fn2) ? 1000000 : 2000000);
-     * List<LocusScore> scores = new ArrayList(sz);
-     * <p/>
-     * File chrDir = new File(rootDir, chr.substring(3));
-     * <p/>
-     * OmegaFileParser parser = new OmegaFileParser();
-     * parser.parse(new File(chrDir, fn1), scores);
-     * if(!fn1.equals(fn2)) {
-     * parser.parse(new File(fn2), scores);
-     * }
-     * <p/>
-     * return scores;
-     * }
-     */
+
     public TrackType getTrackType() {
         return TrackType.OTHER;
     }
@@ -111,11 +90,6 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
         int mb = (pos / 1000000) * 1000000;
         int end = mb + 999999;
         return chr + "_" + mb + "-" + end + ".omega";
-    }
-
-    @Override
-    protected int getNumZoomLevels(String chr) {
-        return 0;
     }
 
 
@@ -168,6 +142,11 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
         tileCache.put(key, dt);
         return dt;
 
+    }
+
+    @Override
+    protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     /*

@@ -35,26 +35,18 @@ import java.util.List;
  */
 public class SummaryTile {
 
-    /**
-     * The tileNumber.  Used to support unit tests, and  general  debugging
-     */
-    private int tileNumber;
-    private int startLocation;
+     private int startLocation;
 
     List<LocusScore> summaryScores;
 
-    /**
-     * Constructs ...
-     *
-     * @param tileNumber
-     * @param startLocation
-     */
-    public SummaryTile(int tileNumber, int startLocation) {
-        this.tileNumber = tileNumber;
-        this.startLocation = startLocation;
+
+    public SummaryTile() {
         summaryScores = new ArrayList(1000);
     }
 
+    public SummaryTile(List<LocusScore> summaryScores) {
+        this.summaryScores = summaryScores;
+    }
 
     public void addScore(LocusScore score) {
         summaryScores.add(score);
@@ -78,11 +70,6 @@ public class SummaryTile {
 
     public boolean isEmpty() {
         return summaryScores.isEmpty();
-    }
-
-
-    public int getStartLocation() {
-        return startLocation;
     }
 
 

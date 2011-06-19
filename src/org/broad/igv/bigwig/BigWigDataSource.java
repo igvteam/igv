@@ -18,38 +18,40 @@
 
 package org.broad.igv.bigwig;
 
+import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
+import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
-import org.broad.igv.data.DataSource;
+import org.broad.igv.data.DataTile;
+import org.broad.igv.data.SummaryTile;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.FloatArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
- * @date Jun 18, 2011
+ * @date Jun 19, 2011
  */
-public class BigWigDataSource implements DataSource {
+public class BigWigDataSource extends AbstractDataSource {
 
     Collection<WindowFunction> availableWindowFunctions =
             Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max);
     WindowFunction windowFunction = WindowFunction.mean;
-    Genome genome;
+
     BBFileReader reader;
-    private final BBZoomLevels levels;
+    private BBZoomLevels levels;
 
     public BigWigDataSource(String path, Genome genome) throws IOException {
-        this.genome = genome;
+        super(genome);
 
         SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
         reader = new BBFileReader(path, ss);
@@ -64,8 +66,37 @@ public class BigWigDataSource implements DataSource {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public List<LocusScore> getSummaryScoresForRange(String chr, int start, int end, int zoom) {
-        // Convert zoom level to bp/pixel.
+    public TrackType getTrackType() {
+        return TrackType.OTHER;
+    }
+
+    public void setWindowFunction(WindowFunction statType) {
+        this.windowFunction = statType;
+    }
+
+    public boolean isLogNormalized() {
+        return false;
+    }
+
+    public void refreshData(long timestamp) {
+
+    }
+
+    @Override
+    public int getLongestFeature(String chr) {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public WindowFunction getWindowFunction() {
+        return windowFunction;
+    }
+
+    public Collection<WindowFunction> getAvailableWindowFunctions() {
+        return availableWindowFunctions;
+    }
+
+    @Override
+    protected List<LocusScore> getPrecomputedSummaryScores(String chr, int start, int end, int zoom) {
         Chromosome c = genome.getChromosome(chr);
         if (c == null) {
             return null;
@@ -81,8 +112,7 @@ public class BigWigDataSource implements DataSource {
             if (rl > scale) {
                 break;
 
-            }
-            else {
+            } else {
                 bbLevel = zlHeader.getZoomLevel();
             }
         }
@@ -102,34 +132,36 @@ public class BigWigDataSource implements DataSource {
             return scores;
 
         } else {
-            // todo -- compute on the fly
+            return null;
+        }
+    }
+
+
+    @Override
+    protected DataTile getRawData(String chr, int start, int end) {
+
+        if(chr.equals(Globals.CHR_ALL)) {
+            return null;
         }
 
+        // TODO -- catch raw data?
+        // TODO -- fetch data directly in arrays to avoid creation of multiple "WigItem" objects
+        IntArrayList startsList = new IntArrayList(100000);
+        IntArrayList endsList = new IntArrayList(100000);
+        FloatArrayList valuesList = new FloatArrayList(100000);
 
-        return null;
+        Iterator<WigItem> iter = reader.getBigWigIterator(chr, start, chr, end, false);
+
+        while (iter.hasNext()) {
+            WigItem wi = iter.next();
+            startsList.add(wi.getStartBase());
+            endsList.add(wi.getEndBase());
+            valuesList.add(wi.getWigValue());
+        }
+
+        return new DataTile(startsList.toArray(), endsList.toArray(), valuesList.toArray(), null);
+
     }
 
-    public TrackType getTrackType() {
-        return TrackType.OTHER;
-    }
 
-    public void setWindowFunction(WindowFunction statType) {
-        this.windowFunction = statType;
-    }
-
-    public boolean isLogNormalized() {
-        return false;
-    }
-
-    public void refreshData(long timestamp) {
-
-    }
-
-    public WindowFunction getWindowFunction() {
-        return windowFunction;
-    }
-
-    public Collection<WindowFunction> getAvailableWindowFunctions() {
-        return null;
-    }
 }
