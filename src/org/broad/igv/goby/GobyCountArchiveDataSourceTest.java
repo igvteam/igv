@@ -38,11 +38,23 @@ public class GobyCountArchiveDataSourceTest {
     @Test
     public void iteratePickrell() {
 
-        GobyCountArchiveDataSource counts = new GobyCountArchiveDataSource(new File("test/data/goby/counts/CIIIBUD-Pickrell-2010NA19204_argonne.counts"));
+        GobyCountArchiveDataSource counts = new GobyCountArchiveDataSource(new File("test/data/goby/counts/GDFQPGI-pickrellNA18486_yale"));
         assertTrue(counts.getAvailableWindowFunctions().size() > 0);
         List<LocusScore> list1 = counts.getSummaryScoresForRange("chr1", 10000, 2000000, 1);
         assertTrue(list1.size() > 0);
         List<LocusScore> list2 = counts.getSummaryScoresForRange("1", 10000, 2000000, 1);
+        assertTrue(list2.size() > 0);
+        assertEquals(list1.size(), list2.size());
+    }
+
+    @Test
+    public void iteratePickrellChr3() {
+
+        GobyCountArchiveDataSource counts = new GobyCountArchiveDataSource(new File("test/data/goby/counts/GDFQPGI-pickrellNA18486_yale"));
+        assertTrue(counts.getAvailableWindowFunctions().size() > 0);
+        List<LocusScore> list1 = counts.getSummaryScoresForRange("chr3", 0,198022431, 0);
+        assertTrue(list1.size() > 0);
+        List<LocusScore> list2 = counts.getSummaryScoresForRange("3",  0,198022431, 0);
         assertTrue(list2.size() > 0);
         assertEquals(list1.size(), list2.size());
     }

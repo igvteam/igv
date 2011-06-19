@@ -44,6 +44,7 @@ import java.util.Vector;
 /**
  * A data source for <a href="http://goby.campagnelab.org">Goby</a> compressed base-level histograms (.counts files).
  *
+ *
  * @author Fabien Campagne
  *         Date: 6/10/11
  *         Time: 3:18 PM
@@ -51,7 +52,7 @@ import java.util.Vector;
 public class GobyCountArchiveDataSource implements CoverageDataSource {
     static final Logger LOG = Logger.getLogger(TDFReader.class);
 
-    CountsArchiveReader counts;
+    CachingCountsArchiveReader counts;
     private double currentMax = 4;
     private String filename;
     private boolean someIdsStartWithChr;
@@ -72,7 +73,8 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
     private void init(String filename) {
         try {
             this.filename = FilenameUtils.removeExtension(filename);
-            counts = new CountsArchiveReader(this.filename);
+            counts = new CachingCountsArchiveReader(this.filename);
+
             ids = counts.getIdentifiers();
             for (String id : ids) {
                 if (id.startsWith("chr")) {
@@ -98,13 +100,13 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
     }
 
     public double getDataMax() {
-    //    LOG.info("Call in getDataMax currentMax= " + currentMax);
+        //    LOG.info("Call in getDataMax currentMax= " + currentMax);
         return currentMax;
 
     }
 
     public double getDataMin() {
-  //      LOG.info("Call in getDataMin ");
+        //  LOG.info("Call in getDataMin ");
         boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
         return 0.0;
@@ -112,31 +114,30 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
 
     public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
         if ("All".equals(chr)) return new Vector<LocusScore>();
-       CountBinningAdapterI binAdaptor=null;
         try {
-
+            currentMax = 0;
             CountsReader reader = getCountsReader(chr);
+            int initialStartPosition = startLocation;
+            int binSize = getBinSize(startLocation, endLocation);
 
-            final int regionLength = endLocation - startLocation;
-            int binSize = Math.max(1,((regionLength / 2000)));
-
-        /*    LOG.info(String.format("Call in getSummaryScoresForRange %d-%d zoom %d binSize=%d ", startLocation, endLocation,
-                    zoom, binSize));
-          */
+            /*       LOG.info(String.format("Call in getSummaryScoresForRange %d-%d zoom %d binSize=%d ", startLocation, endLocation,
+                       zoom, binSize));
+            */
             if (reader == null) {
-                return new Vector<LocusScore>();
+                return null;
             }
             updateNormalizationFactor();
-
-          //  final boolean adapterChoice = regionLength > 50000 && regionLength < 1000000;
-            final boolean adapterChoice = regionLength > 3000000 && regionLength < 10000000;
-      //      System.out.println(adapterChoice?"CountAdaptiveBinningAdaptor":"CountBinningAdaptor");
-            binAdaptor = adapterChoice ?new CountAdaptiveBinningAdaptor(reader):
-                    new CountBinningAdaptor(reader,binSize);
-
+            CountBinningAdapterI binAdaptor = new CountBinningAdaptor(reader, binSize);
+            if (counts.hasIndex()) {
+                // we can only reposition if the countsreader has an index. Otherwise, we trust the
+               // caching counts  archive  to have created a new reader positioned at the start of the counts sequence.
+                binAdaptor.reposition(startLocation);
+            }
             binAdaptor.skipTo(startLocation);
-            ObjectArrayList<LocusScore> result = new ObjectArrayList<LocusScore>();
+
             int position = binAdaptor.getPosition();
+            ObjectArrayList<LocusScore> result = new ObjectArrayList<LocusScore>();
+            result.add(new BasicScore(initialStartPosition, position, 0.0f));
             while (binAdaptor.hasNextTransition() && position < endLocation) {
                 binAdaptor.nextTransition();
                 // position is the zero-based position before the count is changed by the transition
@@ -146,9 +147,9 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
 
                 final double normalizedCount = count / normalizationFactor;
                 final int length = binAdaptor.getLength();
-          //      System.out.printf("adding results %d-%d count=%g %n", position, position + length , normalizedCount);
-                BasicScore bs = new BasicScore(position, position + length , (float) normalizedCount);
+                //      System.out.printf("adding results %d-%d count=%g %n", position, position + length , normalizedCount);
 
+                BasicScore bs = new BasicScore(position, position + length, (float) normalizedCount);
                 result.add(bs);
 
                 this.currentMax = Math.max(currentMax, normalizedCount);
@@ -160,8 +161,8 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
                     }
                 }
             }
+            result.add(new BasicScore(position, endLocation, 0.0f));
 
-         //   System.out.printf("returning %d results %n", result.size());
             return result;
         } catch (IOException e) {
             LOG.error(e);
@@ -169,22 +170,21 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
                     String.format("Error getting summary scores for range %s:%d-%d in goby counts archive file %s %n",
                             chr, startLocation, endLocation, filename), filename);
 
-        } finally {
-            if (binAdaptor!=null) {
-                try {
-                    binAdaptor.close();
-                } catch (IOException e) {
-                    // close quietly
-                }
-            }
         }
+    }
+
+    private int getBinSize(int startLocation, int endLocation) {
+        final int regionLength = endLocation - startLocation;
+        return Math.max(1, ((regionLength / 2000)));
     }
 
     private void updateNormalizationFactor() {
         if (numSitesSeen == 0) {
             normalizationFactor = 1.0;
         } else {
-            normalizationFactor = doNormalize ? (double) numBasesSeen / (double) numSitesSeen :
+            // normalization factor is estimated such that the average value will be ~2 for autosomes, corresponding
+            // to two copies.
+            normalizationFactor = doNormalize ? (double) numBasesSeen / (double) numSitesSeen *2.0:
                     1.0;
         }
         //  System.out.printf("normalization factor=%g%n", normalizationFactor);
