@@ -20,6 +20,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
 import org.broad.igv.data.expression.GCTDataset;
@@ -195,6 +196,8 @@ public class TrackLoader {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".bw")) {
+                loadBWFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".counts")) {
@@ -697,6 +700,16 @@ public class TrackLoader {
             newTracks.add(track);
             trackNumber++;
         }
+    }
+
+    private void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        String trackName = locator.getTrackName();
+        String trackId = locator.getPath();
+        final DataSource dataSource = new BigWigDataSource(locator.getPath(), genome);
+        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
+                dataSource, genome);
+        newTracks.add(track);
     }
 
     private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
