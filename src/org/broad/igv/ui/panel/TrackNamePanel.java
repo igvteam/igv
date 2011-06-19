@@ -27,6 +27,7 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
@@ -175,6 +176,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
 
         List<Track> tmp = new ArrayList(group.getTracks());
+        final Color backgroundColor = PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR);
+        graphics2D.setBackground(backgroundColor);
+        graphics2D.clearRect(visibleRect.x, visibleRect.y, visibleRect.width, visibleRect.height);
+
         for (Track track : tmp) {
             if (track == null) continue;
             track.setTop(regionY);
@@ -193,10 +198,11 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         //Graphics2D g2D = graphics; //(Graphics2D) graphics.create();
                         if (track.isSelected()) {
                             graphics2D.setBackground(Color.LIGHT_GRAY);
-                        } else {
-                            graphics2D.setBackground(Color.WHITE);
+                            graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
                         }
-                        //graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
+                        else {
+                           graphics2D.setBackground(backgroundColor);
+                        }
                         graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                         track.renderName(graphics2D, rect, visibleRect);
