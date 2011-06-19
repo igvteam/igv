@@ -49,11 +49,14 @@ public class BigWigDataSource extends AbstractDataSource {
 
     BBFileReader reader;
     private BBZoomLevels levels;
+    String path;
+    SeekableStream ss;
 
     public BigWigDataSource(String path, Genome genome) throws IOException {
         super(genome);
+        this.path = path;
 
-        SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
+        ss = SeekableStreamFactory.getStreamFor(path);
         reader = new BBFileReader(path, ss);
         levels = reader.getZoomLevels();
     }
@@ -137,15 +140,21 @@ public class BigWigDataSource extends AbstractDataSource {
     }
 
 
-    @Override
-    protected DataTile getRawData(String chr, int start, int end) {
+    RawDataInterval currentInterval = null;
 
-        if(chr.equals(Globals.CHR_ALL)) {
+    @Override
+    protected synchronized DataTile getRawData(String chr, int start, int end) {
+
+        if (chr.equals(Globals.CHR_ALL)) {
             return null;
         }
 
+        if (currentInterval != null && currentInterval.contains(chr, start, end)) {
+            return currentInterval.tile;
+        }
+
         // TODO -- catch raw data?
-        // TODO -- fetch data directly in arrays to avoid creation of multiple "WigItem" objects
+        // TODO -- fetch data directly in arrays to avoid creation of multiple "WigItem" objects?
         IntArrayList startsList = new IntArrayList(100000);
         IntArrayList endsList = new IntArrayList(100000);
         FloatArrayList valuesList = new FloatArrayList(100000);
@@ -159,8 +168,29 @@ public class BigWigDataSource extends AbstractDataSource {
             valuesList.add(wi.getWigValue());
         }
 
-        return new DataTile(startsList.toArray(), endsList.toArray(), valuesList.toArray(), null);
+        DataTile tile = new DataTile(startsList.toArray(), endsList.toArray(), valuesList.toArray(), null);
+        currentInterval = new RawDataInterval(chr, start, end, tile);
 
+        return tile;
+
+    }
+
+    static class RawDataInterval {
+        String chr;
+        int start;
+        int end;
+        DataTile tile;
+
+        RawDataInterval(String chr, int start, int end, DataTile tile) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.tile = tile;
+        }
+
+        public boolean contains(String chr, int start, int end) {
+            return chr.equals(this.chr) && start >= this.start && end <= this.end;
+        }
     }
 
 

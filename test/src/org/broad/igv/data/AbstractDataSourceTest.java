@@ -142,12 +142,14 @@ public class AbstractDataSourceTest {
         }
 
         @Override
-        public int getLongestFeature(String chr) {
-            return 1000;
+        protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        protected int getNumZoomLevels(String chr) {
-            return 0;  //To change body of implemented methods use File | Settings | File Templates.
+
+        @Override
+        public int getLongestFeature(String chr) {
+            return 1000;
         }
 
         public double getMedian(int zoom, String chr) {
