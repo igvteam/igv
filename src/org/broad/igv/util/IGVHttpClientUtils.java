@@ -76,6 +76,11 @@ public class IGVHttpClientUtils {
         client = null;
     }
 
+    /**
+     * Download the contents of the URL and save the results to a file.
+     *
+     * @throws IOException
+     */
     public static boolean downloadFile(String url, File outputFile) throws IOException {
 
         log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
@@ -131,7 +136,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static InputStream openGSConnectionStream(URL url) throws IOException {
+    public static InputStream openConnectionStream(URL url) throws IOException {
         HttpResponse response = executeGet(url);
         return response.getEntity().getContent();
     }
@@ -143,7 +148,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static String getGSHeaderField(URL url, String key) throws IOException {
+    public static String getHeaderField(URL url, String key) throws IOException {
         HttpResponse response = executeGet(url);
         return response.getFirstHeader(key).getValue();
     }
@@ -170,7 +175,7 @@ public class IGVHttpClientUtils {
 
                 login(url);
 
-
+                // Recursive call, post login.  
                 return executeGet(url);
             }
             if (statusCode != 200) {
@@ -192,6 +197,8 @@ public class IGVHttpClientUtils {
     private static void login(URL url) {
 
         Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
+
+        // TODO -- only use the GS logo if this is a GS URL
         String userpass = getGSUserPass(owner);
         if (userpass == null) {
             throw new RuntimeException("Access denied to: " + url.toString());

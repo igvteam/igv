@@ -21,17 +21,13 @@ package org.broad.igv.data;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tdf.Accumulator;
-import org.broad.igv.tdf.Bin;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
-import org.broad.igv.util.collections.DoubleArrayList;
-import org.broad.igv.util.collections.FloatArrayList;
 
 import java.util.*;
 
@@ -161,12 +157,12 @@ public abstract class AbstractDataSource implements DataSource {
         int adjustedStart = Math.max(0, startLocation);
         int adjustedEnd = Math.min(chrLength, endLocation);
 
-        List<SummaryTile> tiles = new ArrayList();
+
         if (cacheSummaryTiles && !FrameManager.isGeneListMode()) {
             double tileWidth = ((double) chrLength) / nTiles;
             int startTile = (int) (adjustedStart / tileWidth);
             int endTile = (int) (Math.min(chrLength, adjustedEnd) / tileWidth) + 1;
-            tiles = new ArrayList(nTiles);
+            List<SummaryTile> tiles = new ArrayList(nTiles);
             for (int t = startTile; t <= endTile; t++) {
                 int tileStart = (int) (t * tileWidth);
                 int tileEnd = Math.min(chrLength, (int) ((t + 1) * tileWidth));
@@ -277,7 +273,7 @@ public abstract class AbstractDataSource implements DataSource {
 
                     if (endBin == lastEndBin) {
                         // Add to previous bin
-                        accumulator.add(v, probeName);
+                        accumulator.add(e - s, v, probeName);
                         if (accumulatedStart < 0) accumulatedStart = s;
                         accumulatedEnd = e;
                     } else {
@@ -301,7 +297,7 @@ public abstract class AbstractDataSource implements DataSource {
                         if ((endBin - startBin) > 1) {
                             scores.add(new NamedScore(s, e, v, probeName));
                         } else {
-                            accumulator.add(v, probeName);
+                            accumulator.add(e - s, v, probeName);
                             accumulatedStart = s;
                             accumulatedEnd = e;
                         }

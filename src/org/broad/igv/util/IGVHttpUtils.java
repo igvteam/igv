@@ -223,7 +223,7 @@ public class IGVHttpUtils {
             ftp.retr(file);
             return new FTPStream(ftp);
         } else if (url.toString().contains("genomespace.org")) {
-            return IGVHttpClientUtils.openGSConnectionStream(url);
+            return IGVHttpClientUtils.openConnectionStream(url);
         } else {
             return openHttpStream(url);
         }
@@ -400,7 +400,7 @@ public class IGVHttpUtils {
 
         if (url.toString().contains("genomespace.org")) {
             try {
-                return IGVHttpClientUtils.getGSHeaderField(url, name);
+                return IGVHttpClientUtils.getHeaderField(url, name);
             } catch (IOException e) {
                 log.error("Error getting header field: " + name, e);
                 return null;

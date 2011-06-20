@@ -56,10 +56,8 @@ public class ListAccumulator {
     Map<WindowFunction, List<PercentileValue>> percentiles = new HashMap();
     DoubleArrayList values = null;
     float sum = 0.0f;
+    int basesCovered = 0;
     int nPts = 0;
-
-
-
 
     float min = Float.NaN;
     float max = Float.NaN;
@@ -84,11 +82,12 @@ public class ListAccumulator {
         }
     }
 
-    public void add(float v) {
+    public void add(int w, float v) {
         if (!Float.isNaN(v)) {
             min = Float.isNaN(min) ? v : Math.min(min, v);
             max = Float.isNaN(max) ? v : Math.max(max, v);
-            sum += v;
+            sum += w*v;
+            basesCovered +=w;
             nPts++;
             if (values != null) {
                 values.add(v);
@@ -107,7 +106,7 @@ public class ListAccumulator {
             return;
         }
 
-        mean = Float.isNaN(sum) ? Float.NaN : sum / nPts;
+        mean = Float.isNaN(sum) ? Float.NaN : sum / basesCovered;
 
         if (values != null) {
             if (nPts == 1) {

@@ -45,6 +45,7 @@ public class Accumulator {
     WindowFunction windowFunction;
     List<PercentileValue> percentiles;
     float sum = 0.0f;
+    int basesCovered = 0;
     int nPts = 0;
     float value = Float.NaN;
     DoubleArrayList values;
@@ -76,12 +77,16 @@ public class Accumulator {
     }
 
     public boolean hasData() {
-        return nPts > 0;
+        return basesCovered > 0;
     }
 
-    public void add(float v) {
+    public void add(int nBases, float v, String probe) {
         if (!Float.isNaN(v)) {
-            switch (windowFunction) {
+            if (data != null && nPts < data.length) {
+            data[nPts] = v;
+            probes[nPts] = probe;
+        }
+             switch (windowFunction) {
                 case min:
                     value = Float.isNaN(value) ? v : Math.min(value, v);
                     break;
@@ -89,7 +94,7 @@ public class Accumulator {
                     value = Float.isNaN(value) ? v : Math.max(value, v);
                     break;
                 case mean:
-                    sum += v;
+                    sum += nBases * v;
                     break;
                 default:
                     if (values != null) {
@@ -101,15 +106,8 @@ public class Accumulator {
                     }
             }
             nPts++;
+            basesCovered += nBases;
         }
-    }
-
-    public void add(float v, String probe) {
-        if (data != null && nPts < data.length) {
-            data[nPts] = v;
-            probes[nPts] = probe;
-        }
-        add(v);
     }
 
 
@@ -120,7 +118,7 @@ public class Accumulator {
         }
 
         if (windowFunction == WindowFunction.mean) {
-            value = Float.isNaN(sum) ? Float.NaN : sum / nPts;
+            value = Float.isNaN(sum) ? Float.NaN : sum / basesCovered;
         } else if (values != null) {
             if (values.size() == 1) {
                 value = (float) values.get(0);
@@ -135,7 +133,7 @@ public class Accumulator {
                     double weightedSum = 0;
                     double sumOfWeights = 0;
                     for (PercentileValue pv : percentiles) {
-                        double weight = (double) pv.nPoints / nPts;
+                        double weight = (double) pv.nPoints / basesCovered;
                         sumOfWeights += weight;
                         weightedSum += weight * pv.value;
                     }

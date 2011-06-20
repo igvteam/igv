@@ -89,7 +89,7 @@ public class AccumulatorTest {
         // Compute stats for 1,000,000 points
         ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < numberOfPoints; i++) {
-            accum.add((float) Math.random());
+            accum.add(1, (float) Math.random());
         }
         accum.finish();
 
@@ -110,7 +110,7 @@ public class AccumulatorTest {
         // Compute stats for 1,000,000 points
         ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < numberOfPoints; i++) {
-            accum.add(0);
+            accum.add(1, 0);
         }
         accum.finish();
 
@@ -149,7 +149,7 @@ public class AccumulatorTest {
 
         ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < 1000; i++) {
-            accum.add(Float.NaN);
+            accum.add(1, Float.NaN);
         }
         accum.finish();
 
@@ -168,7 +168,7 @@ public class AccumulatorTest {
     public void testSingleNaN() {
 
         ListAccumulator accum = new ListAccumulator(wfs);
-        accum.add(Float.NaN);
+        accum.add(1, Float.NaN);
         accum.finish();
 
         for (WindowFunction wf : wfs) {
@@ -188,7 +188,7 @@ public class AccumulatorTest {
 
         ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT; i++) {
-            accum.add((float) Math.random());
+            accum.add(1, (float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {
@@ -203,7 +203,7 @@ public class AccumulatorTest {
 
         accum = new ListAccumulator(wfs);
         for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT - 1; i++) {
-            accum.add((float) Math.random());
+            accum.add(1, (float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {
@@ -218,7 +218,7 @@ public class AccumulatorTest {
 
         accum = new ListAccumulator(wfs);
         for (int i = 0; i < ListAccumulator.MAX_VALUE_COUNT + 1; i++) {
-            accum.add((float) Math.random());
+            accum.add(1, (float) Math.random());
         }
         accum.finish();
         for (WindowFunction wf : wfs) {

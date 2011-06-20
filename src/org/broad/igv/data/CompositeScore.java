@@ -22,8 +22,6 @@ package org.broad.igv.data;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.List;
-
 /**
  * @author jrobinso
  */
@@ -43,36 +41,28 @@ public class CompositeScore implements LocusScore {
         this.value = value;
         this.probes = probes;
         this.data = data;
-        this.probes = probes;
-    }
-
-    public CompositeScore(int start, int end, float[] scores, String[] probes, WindowFunction windowFunction) {
-        this.data = scores;
-        this.start = start;
-        this.end = end;
-        this.probes = probes;
-        value = ProcessingUtils.computeStat(data, windowFunction);
 
         // Only keep 5 representative values
         if (data.length > 5) {
             float[] temp = new float[5];
             System.arraycopy(data, 0, temp, 0, 5);
-            data = temp;
+            this.data = temp;
 
             if (probes != null && probes.length > 5) {
                 String[] temp2 = new String[5];
                 System.arraycopy(probes, 0, temp2, 0, 5);
-                probes = temp2;
+                this.probes = temp2;
             }
         }
+
     }
 
     public CompositeScore(CompositeScore sc) {
-        this.data = sc.data;
         this.start = sc.start;
-        this.probes = sc.probes;
         this.end = sc.end;
         this.value = sc.value;
+        this.probes = sc.probes;
+        this.data = sc.data;
     }
 
 

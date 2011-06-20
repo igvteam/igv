@@ -202,7 +202,7 @@ public class Preprocessor implements DataConsumer {
         if (!(chr.equals("chrM") || chr.equals("M") || chr.equals("MT"))) {
             genomeZoom.addData(gStart, gEnd, data);
             for (int i = 0; i < data.length; i++) {
-                allDataStats.add(data[i]);
+                allDataStats.add(gEnd-gStart, data[i]);
             }
         }
 
@@ -624,7 +624,7 @@ public class Preprocessor implements DataConsumer {
                     if (accumulators[t][b] == null) {
                         accumulators[t][b] = new ListAccumulator(datasets.keySet());
                     }
-                    accumulators[t][b].add(data[t]);
+                    accumulators[t][b].add(end-start, data[t]);
                 }
             }
         }

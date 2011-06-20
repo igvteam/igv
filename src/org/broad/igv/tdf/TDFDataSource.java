@@ -323,7 +323,7 @@ public class TDFDataSource implements CoverageDataSource {
 
                                 if (endBin == lastEndBin) {
                                     // Add to previous bin
-                                    accumulator.add(v, probeName);
+                                    accumulator.add(e-s, v, probeName);
                                     if (accumulatedStart < 0) accumulatedStart = s;
                                     accumulatedEnd = e;
                                 } else {
@@ -347,7 +347,7 @@ public class TDFDataSource implements CoverageDataSource {
                                     if ((endBin - startBin) > 1) {
                                         scores.add(new NamedScore(s, e, v, probeName));
                                     } else {
-                                        accumulator.add(v, probeName);
+                                        accumulator.add(e-s, v, probeName);
                                         accumulatedStart = s;
                                         accumulatedEnd = e;
                                     }

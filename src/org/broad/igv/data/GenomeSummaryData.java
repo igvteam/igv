@@ -22,15 +22,13 @@
  */
 package org.broad.igv.data;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.Accumulator;
-import org.broad.igv.tools.ListAccumulator;
+import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
-import org.apache.log4j.Logger;
-import org.broad.igv.track.WindowFunction;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +119,7 @@ public class GenomeSummaryData {
                     dataPoints.put(s, dp);
                 }
                 try {
-                    dp.add(data[i]);
+                    dp.add(1, data[i], null);
                 } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }

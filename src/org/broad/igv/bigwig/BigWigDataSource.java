@@ -23,7 +23,6 @@ import org.broad.igv.bbfile.*;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.BasicScore;
 import org.broad.igv.data.DataTile;
-import org.broad.igv.data.SummaryTile;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -62,11 +61,11 @@ public class BigWigDataSource extends AbstractDataSource {
     }
 
     public double getDataMax() {
-        return 100;  //To change body of implemented methods use File | Settings | File Templates.
+        return 100;
     }
 
     public double getDataMin() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public TrackType getTrackType() {
@@ -87,7 +86,7 @@ public class BigWigDataSource extends AbstractDataSource {
 
     @Override
     public int getLongestFeature(String chr) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public WindowFunction getWindowFunction() {
@@ -113,6 +112,7 @@ public class BigWigDataSource extends AbstractDataSource {
         for (BBZoomLevelHeader zlHeader : levels.getZoomLevelHeaders()) {
             int rl = zlHeader.getReductionLevel();
             if (rl > scale) {
+                bbLevel = zlHeader.getZoomLevel();
                 break;
 
             } else {
@@ -126,10 +126,20 @@ public class BigWigDataSource extends AbstractDataSource {
             while (zlIter.hasNext()) {
                 ZoomDataRecord rec = zlIter.next();
 
-                // TODO -- check window function
-                float mean = (float) (rec.getSumData() / rec.getBasesCovered());
+                float v;
+                switch(windowFunction) {
+                    case min:
+                        v = rec.getMinVal();
+                        break;
+                    case max:
+                        v = rec.getMaxVal();
+                        break;
+                    default:
+                        v = rec.getMeanVal();
 
-                BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), mean);
+                }
+
+                BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), v);
                 scores.add(bs);
             }
             return scores;
@@ -153,7 +163,6 @@ public class BigWigDataSource extends AbstractDataSource {
             return currentInterval.tile;
         }
 
-        // TODO -- catch raw data?
         // TODO -- fetch data directly in arrays to avoid creation of multiple "WigItem" objects?
         IntArrayList startsList = new IntArrayList(100000);
         IntArrayList endsList = new IntArrayList(100000);
