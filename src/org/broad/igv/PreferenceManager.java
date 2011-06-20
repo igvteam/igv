@@ -969,7 +969,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DEFAULT_FONT_ATTRIBUTE, String.valueOf(Font.PLAIN));
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
-        defaultValues.put(BACKGROUND_COLOR, "245,245,245");
+        defaultValues.put(BACKGROUND_COLOR, "255,255,255");
 
     }
 
