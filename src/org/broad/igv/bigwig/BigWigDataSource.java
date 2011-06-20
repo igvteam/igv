@@ -58,7 +58,7 @@ public class BigWigDataSource extends AbstractDataSource {
         ss = SeekableStreamFactory.getStreamFor(path);
         reader = new BBFileReader(path, ss);
 
-        if(reader.isBigBedFile()) {
+        if (reader.isBigBedFile()) {
             throw new RuntimeException("BigBed files are not currently supported (coming soon)");
         }
 
@@ -109,30 +109,32 @@ public class BigWigDataSource extends AbstractDataSource {
             return null;
         }
         int l = c.getLength();
-        double scale = l / (Math.pow(2, zoom) * 700);
+        double scale =  l / (Math.pow(2, zoom) * 700);   // TODO -- use actual screen resolution
 
-        // Lookup closest zoomlevel.  bb zoom level order is opposite of IGVs, proceeds from high to low resolution.
+        // Find first zoom level
+
         //
         int bbLevel = -1;
+        int reductionLevel = -1;
         for (BBZoomLevelHeader zlHeader : levels.getZoomLevelHeaders()) {
-            int rl = zlHeader.getReductionLevel();
-            if (rl > scale) {
-                bbLevel = zlHeader.getZoomLevel();
+            reductionLevel = zlHeader.getReductionLevel();
+            bbLevel = zlHeader.getZoomLevel();
+            if (reductionLevel > scale) {
                 break;
-
-            } else {
-                bbLevel = zlHeader.getZoomLevel();
             }
         }
 
-        if (bbLevel >= 0) {
+        // If we are at the highest precomputed resolution compare to the requested resolution.  If they differ
+        // by more than a factor of 2 compute "on the fly"
+
+        if (bbLevel >1 || (bbLevel == 1 && (reductionLevel / scale) < 2)) {
             ArrayList<LocusScore> scores = new ArrayList(1000);
-            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(1, chr, start, chr, end, false);
+            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, chr, start, chr, end, false);
             while (zlIter.hasNext()) {
                 ZoomDataRecord rec = zlIter.next();
 
                 float v;
-                switch(windowFunction) {
+                switch (windowFunction) {
                     case min:
                         v = rec.getMinVal();
                         break;
