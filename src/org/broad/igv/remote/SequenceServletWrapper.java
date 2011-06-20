@@ -25,6 +25,7 @@ package org.broad.igv.remote;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 
 import java.awt.*;
@@ -57,19 +58,16 @@ public class SequenceServletWrapper {
             return bytes;
         }
 
+        InputStream cis = null;
         try {
 
             URL url = new URL(urlString + "?chr=" + chr + "&start=" + start + "&end=" + end);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            connection.setConnectTimeout(CONNECTION_TIMEOUT);
-            connection.setDoOutput(true);
-            connection.setAllowUserInteraction(true);
 
-            InputStream cis = connection.getInputStream();
+            cis = IGVHttpClientUtils.openConnectionStream(url);
 
             DataInputStream is = new DataInputStream(new BufferedInputStream(cis));
             int offset = 0;
-            int numRead = 0;
+            int numRead;
             while ((offset < bytes.length) && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
                 offset += numRead;
             }
@@ -89,6 +87,13 @@ public class SequenceServletWrapper {
                 logger.error("Error retrieving sequence from : " + urlString + ex.getMessage());
             }
             return null;
+        }
+        finally {
+            if(cis != null) try {
+                cis.close();
+            } catch (IOException e) {
+                
+            }
         }
     }
 
