@@ -196,7 +196,7 @@ public class TrackLoader {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bw")) {
+            } else if (typeString.endsWith(".bw") || typeString.endsWith(".bb")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);

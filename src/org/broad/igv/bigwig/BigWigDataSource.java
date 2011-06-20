@@ -57,6 +57,11 @@ public class BigWigDataSource extends AbstractDataSource {
 
         ss = SeekableStreamFactory.getStreamFor(path);
         reader = new BBFileReader(path, ss);
+
+        if(reader.isBigBedFile()) {
+            throw new RuntimeException("BigBed files are not currently supported (coming soon)");
+        }
+
         levels = reader.getZoomLevels();
     }
 
