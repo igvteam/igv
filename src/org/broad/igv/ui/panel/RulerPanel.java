@@ -345,6 +345,7 @@ public class RulerPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 final MouseEvent e = evt;
+                setCursor(Cursor.getDefaultCursor());                
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
 
@@ -379,6 +380,7 @@ public class RulerPanel extends JPanel {
                 } finally {
                     WaitCursorManager.removeWaitCursor(token);
                 }
+
             }
 
             @Override
