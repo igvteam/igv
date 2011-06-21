@@ -53,7 +53,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         DropTarget target = new DropTarget(this, new FileDropTargetListener(trackPanel));
         setDropTarget(target);
         target.setActive(true);
-
         this.setLayout(new DataPanelLayout());
         this.parent = trackPanel;
         createDataPanels();
@@ -64,7 +63,6 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
         removeAll();
         for (ReferenceFrame f : FrameManager.getFrames()) {
             DataPanel dp = new DataPanel(f, this);
-            dp.setBackground(getBackground());
             add(dp);
         }
         invalidate();

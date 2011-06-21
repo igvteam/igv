@@ -76,13 +76,13 @@ public class DataPanel extends JComponent implements Paintable {
         this.currentTool = defaultTool;
         this.frame = frame;
         this.parent = parent;
-        this.setBackground(Color.white);
         setFocusable(true);
         setAutoscrolls(true);
         setToolTipText("");
         painter = new DataPanelPainter();
         //add a listener that kills the tooltip when we navigate away from tne window
         addFocusListener(new DataPanelFocusListener(this));
+        setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
     }
 
     /**
@@ -137,10 +137,8 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void paintComponent(final Graphics g) {
-
-
+        System.out.println(getBackground());
         super.paintComponent(g);
-
         RenderContext context = null;
         try {
 
@@ -154,9 +152,6 @@ public class DataPanel extends JComponent implements Paintable {
             if (IS_MAC) {
                 this.applyMacPerformanceHints((Graphics2D) g);
             }
-
-            graphics2D.setBackground(getBackground());
-            graphics2D.clearRect(damageRect.x, damageRect.y, damageRect.width, damageRect.height);
 
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
 
@@ -482,7 +477,6 @@ public class DataPanel extends JComponent implements Paintable {
 
     private void init() {
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        setBackground(new java.awt.Color(255, 255, 255));
         setRequestFocusEnabled(false);
 
         // Key Events
