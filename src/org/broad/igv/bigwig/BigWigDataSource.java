@@ -20,12 +20,11 @@ package org.broad.igv.bigwig;
 
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
-import org.broad.igv.data.AbstractDataSource;
-import org.broad.igv.data.BasicScore;
-import org.broad.igv.data.DataTile;
+import org.broad.igv.data.*;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
@@ -37,10 +36,12 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * A hybrid source, implements both DataSource and FeatureSource.
+ *
  * @author jrobinso
  * @date Jun 19, 2011
  */
-public class BigWigDataSource extends AbstractDataSource {
+public class BigWigDataSource extends AbstractDataSource implements FeatureSource {
 
     Collection<WindowFunction> availableWindowFunctions =
             Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max);
@@ -48,22 +49,35 @@ public class BigWigDataSource extends AbstractDataSource {
 
     BBFileReader reader;
     private BBZoomLevels levels;
-    String path;
-    SeekableStream ss;
+
+    // Feature visibility window (for bigBed)
+    int featureVisiblityWindow = -1;
+    private GenomeSummaryData genomeSummaryData;
+    private List<LocusScore> wholeGenomeScores;
+
 
     public BigWigDataSource(String path, Genome genome) throws IOException {
         super(genome);
-        this.path = path;
 
-        ss = SeekableStreamFactory.getStreamFor(path);
+        SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
         reader = new BBFileReader(path, ss);
-
-        if (reader.isBigBedFile()) {
-            throw new RuntimeException("BigBed files are not currently supported (coming soon)");
-        }
-
         levels = reader.getZoomLevels();
     }
+
+    public BigWigDataSource(BBFileReader reader, Genome genome) throws IOException {
+        super(genome);
+
+        this.reader = reader;
+        levels = reader.getZoomLevels();
+
+        // Assume 1000 pixel screen, pick visibility level to be @ highest resolution zoom.
+        // TODO -- something smarter, like scaling by actual density
+        if (levels.getZoomHeaderCount() > 0) {
+            BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0);
+            featureVisiblityWindow = firstLevel.getReductionLevel() * 2000;
+        }
+    }
+
 
     public double getDataMax() {
         return 100;
@@ -104,30 +118,48 @@ public class BigWigDataSource extends AbstractDataSource {
 
     @Override
     protected List<LocusScore> getPrecomputedSummaryScores(String chr, int start, int end, int zoom) {
+
+        if (chr.equals(Globals.CHR_ALL)) {
+            return getWholeGenomeScores();
+        } else {
+            return getZoomSummaryScores(chr, start, end, zoom);
+        }
+    }
+
+
+    private BBZoomLevelHeader getZoomLevelForScale(double scale) {
+        final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
+
+        for (BBZoomLevelHeader zlHeader : headers) {
+            int reductionLevel = zlHeader.getReductionLevel();
+            if (reductionLevel > scale) {
+                return zlHeader;
+            }
+        }
+        return headers.get(headers.size() - 1);
+
+    }
+
+    protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
+
         Chromosome c = genome.getChromosome(chr);
         if (c == null) {
             return null;
         }
         int l = c.getLength();
-        double scale =  l / (Math.pow(2, zoom) * 700);   // TODO -- use actual screen resolution
+        double scale = l / (Math.pow(2, zoom) * 700);   // TODO -- use actual screen resolution
 
-        // Find first zoom level
 
         //
-        int bbLevel = -1;
-        int reductionLevel = -1;
-        for (BBZoomLevelHeader zlHeader : levels.getZoomLevelHeaders()) {
-            reductionLevel = zlHeader.getReductionLevel();
-            bbLevel = zlHeader.getZoomLevel();
-            if (reductionLevel > scale) {
-                break;
-            }
-        }
+        BBZoomLevelHeader zlHeader = getZoomLevelForScale(scale);
+        int bbLevel = zlHeader.getZoomLevel();
+        int reductionLevel = zlHeader.getReductionLevel();
+
 
         // If we are at the highest precomputed resolution compare to the requested resolution.  If they differ
         // by more than a factor of 2 compute "on the fly"
 
-        if (bbLevel >1 || (bbLevel == 1 && (reductionLevel / scale) < 2)) {
+        if (reader.isBigBedFile() || bbLevel > 1 || (bbLevel == 1 && (reductionLevel / scale) < 2)) {
             ArrayList<LocusScore> scores = new ArrayList(1000);
             ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, chr, start, chr, end, false);
             while (zlIter.hasNext()) {
@@ -152,6 +184,7 @@ public class BigWigDataSource extends AbstractDataSource {
             return scores;
 
         } else {
+            // No precomputed scores for this resolution level
             return null;
         }
     }
@@ -159,12 +192,14 @@ public class BigWigDataSource extends AbstractDataSource {
 
     RawDataInterval currentInterval = null;
 
+
     @Override
     protected synchronized DataTile getRawData(String chr, int start, int end) {
 
         if (chr.equals(Globals.CHR_ALL)) {
             return null;
         }
+
 
         if (currentInterval != null && currentInterval.contains(chr, start, end)) {
             return currentInterval.tile;
@@ -190,6 +225,70 @@ public class BigWigDataSource extends AbstractDataSource {
         return tile;
 
     }
+
+    private List<LocusScore> getWholeGenomeScores() {
+
+        if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
+            if (wholeGenomeScores == null) {
+                wholeGenomeScores = new ArrayList<LocusScore>();
+                for (Chromosome chr : genome.getChromosomes()) {
+
+                    double scale = chr.getLength() / 1000;  // TODO - use screen width instead of constant "1000"
+                    BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
+
+                    int lastGenomeEnd = -1;
+                    String chrName = chr.getName();
+                    int end = chr.getLength();
+
+                    ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
+                            lowestResHeader.getZoomLevel(), chrName, 0, chrName, end, false);
+                    while (zlIter.hasNext()) {
+                        ZoomDataRecord rec = zlIter.next();
+                        int genomeStart = genome.getGenomeCoordinate(chrName, rec.getChromStart());
+                        if (genomeStart < lastGenomeEnd) {
+                            continue;
+                        }
+
+                        int genomeEnd = genome.getGenomeCoordinate(chrName, rec.getChromEnd());
+                        float value = rec.getMeanVal();  // TODO window function
+                        wholeGenomeScores.add(new BasicScore(genomeStart, genomeEnd, value));
+                        lastGenomeEnd = genomeEnd;
+                    }
+                }
+
+            }
+            return wholeGenomeScores;
+        } else {
+            return null;
+        }
+
+    }
+
+
+    // Feature interface follows ------------------------------------------------------------------------
+
+    public Iterator getFeatures(String chr, int start, int end) throws IOException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
+        return this.getSummaryScoresForRange(chr, start, end, zoom);
+    }
+
+    public int getFeatureWindowSize() {
+        return this.featureVisiblityWindow;
+    }
+
+    public void setFeatureWindowSize(int size) {
+        this.featureVisiblityWindow = size;
+    }
+
+    public Class getFeatureClass() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
+    //  End FeatureSource interface ----------------------------------------------------------------------
 
     static class RawDataInterval {
         String chr;

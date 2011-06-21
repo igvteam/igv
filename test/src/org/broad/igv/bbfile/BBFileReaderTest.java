@@ -29,39 +29,77 @@ import java.util.Iterator;
  * @date Jun 19, 2011
  */
 public class BBFileReaderTest {
-    private static BBFileReader bbReader;
-    private static BBFileHeader bbFileHdr;
-    //ce6_uniqueome.coverage.base-space.25.1.bw
 
 
-    @BeforeClass
-    public static void setupClass() throws IOException {
+    public static BBFileReader openReader(String path) throws IOException {
 
         // time the B+/R+ chromosome an zoom level tree construction
         long time = System.currentTimeMillis(), time_prev = time;
 
-        bbReader = new BBFileReader("/Users/jrobinso/projects/bigwig/test/data/ce6_uniqueome.coverage.base-space.25.1.bw");
+        BBFileReader bbReader = new BBFileReader("/Users/jrobinso/projects/bigwig/test/data/ce6_uniqueome.coverage.base-space.25.1.bw");
 
         // get the time mark
         time = System.currentTimeMillis();
         System.out.println("B+/R+/Zoom tree build = " + (time - time_prev) + " ms");
 
         // check file type
-        bbFileHdr = bbReader.getBBFileHeader();
+        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
         if (bbReader.isBigBedFile())
             System.out.println("BBFileReader header indicates a BigBed file type\n");
         else if (bbReader.isBigWigFile())
             System.out.println("BBFileReader header indicates a BigWig file type\n");
         else
             System.out.println("BBFileReader was not able to identify file type\n");
+
+        return bbReader;
     }
 
     @Test
-    public void test() {
+    public void testBigBed() throws IOException {
+
+        String path = "/Users/jrobinso/projects/bigwig/test/data/chr21.bb";
+        BBFileReader bbReader = openReader(path);
+
+        //chr21:26,490,012-42,182,827
+
+        String chr = "chr21";
+        int start = 26490012;
+        int end = 42182827;
+
+
+        for (BBZoomLevelHeader header : bbReader.getZoomLevels().getZoomLevelHeaders()) {
+
+            header.print();
+        }
+
+
+        ///end = 100000;
+        ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(7, chr, start, chr, end, false);
+
+        while (zlIter.hasNext()) {
+            ZoomDataRecord rec = zlIter.next();
+            int n = rec.getBasesCovered();
+            if (n > 0) {
+                System.out.println("Base covered = " + n);
+                double mean = rec.getSumData() / n;
+                System.out.println(rec.getChromName() + "\t" + rec.getChromStart() + "\t" + rec.getChromEnd() +
+                        "\t" + mean);
+            }
+
+        }
+
+
+    }
+
+    //@Test
+    public void testBigWig() throws IOException {
+
+        String path = "/Users/jrobinso/projects/bigwig/test/data/ce6_uniqueome.coverage.base-space.25.1.bw";
+        BBFileReader bbReader = openReader(path);
 
         String chr = "chrI";
         int start = 7517811;
-        int end =  7521491;
+        int end = 7521491;
 
 
         ///end = 100000;
@@ -107,5 +145,5 @@ public class BBFileReaderTest {
             header.print();
         }
 
-
-    }}
+    }
+}

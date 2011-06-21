@@ -20,6 +20,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
@@ -65,6 +66,8 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.vcf.PedigreeUtils;
 import org.broad.igv.vcf.VCFTrack;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -196,7 +199,7 @@ public class TrackLoader {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bw") || typeString.endsWith(".bb")|| typeString.endsWith(".bigwig")) {
+            } else if (typeString.endsWith(".bw") || typeString.endsWith(".bb") || typeString.endsWith(".bigwig")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);
@@ -706,10 +709,22 @@ public class TrackLoader {
 
         String trackName = locator.getTrackName();
         String trackId = locator.getPath();
-        final DataSource dataSource = new BigWigDataSource(locator.getPath(), genome);
-        DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                dataSource, genome);
-        newTracks.add(track);
+
+        String path = locator.getPath();
+        SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
+        BBFileReader reader = new BBFileReader(path, ss);
+        BigWigDataSource  bigwigSource = new BigWigDataSource(reader, genome);
+
+        if (reader.isBigWigFile()) {
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource, genome);
+            newTracks.add(track);
+        } else if(reader.isBigBedFile()) {
+            FeatureTrack track = new FeatureTrack(trackId, trackName, bigwigSource);
+            newTracks.add(track);
+        }
+        else {
+            throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
+        }
     }
 
     private void loadGobyCountsArchive(ResourceLocator locator, List<Track> newTracks, Genome genome) {
