@@ -137,7 +137,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void paintComponent(final Graphics g) {
-        System.out.println(getBackground());
+        
         super.paintComponent(g);
         RenderContext context = null;
         try {
