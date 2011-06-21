@@ -71,35 +71,42 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      */
     protected class SpliceJunctionFinderFeatureSource implements FeatureSource {
 
-        public SpliceJunctionFinderFeatureSource()
-        {
+        // Cache of features for the current displayed interval. 
+        LoadedInterval loadedInterval;
+
+        public SpliceJunctionFinderFeatureSource() {
         }
 
         public Iterator getFeatures(String chr, int start, int end) throws IOException {
             List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
 
-            if (!shouldShowFeatures())
+            if (!shouldShowFeatures()) {
                 return null;
+            }
 
-            AlignmentInterval interval = null;
+            if (loadedInterval != null && loadedInterval.contains(chr, start, end)) {
+                return loadedInterval.features.iterator();
+            }
+
+            AlignmentInterval alignmentInterval = null;
             if (dataManager != null) {
 
                 //This method is called in a Runnable in its own thread, so we can enter a long while loop here
                 //and make sure the features get loaded, without hanging the interface
-                interval = dataManager.getLoadedInterval(context);
-                if (dataManager.isLoading())
-                {
+                alignmentInterval = dataManager.getLoadedInterval(context);
+                if (dataManager.isLoading()) {
                     while (dataManager.isLoading())
                         try {
                             Thread.sleep(50);
                         }
-                        catch (InterruptedException e) {}
-                    interval = dataManager.getLoadedInterval(context);
+                        catch (InterruptedException e) {
+                        }
+                    alignmentInterval = dataManager.getLoadedInterval(context);
                 }
             }
-            //interval really shouldn't be null at this point
+            //alignmentInterval really shouldn't be null at this point
 
-            if (interval != null && interval.contains(context.getGenomeId(), context.getChr(),
+            if (alignmentInterval != null && alignmentInterval.contains(context.getGenomeId(), context.getChr(),
                     (int) context.getOrigin(), (int) context.getEndLocation())) {
                 //we need to keep the positive and negative strand junctions separate, since
                 //they don't represent the same thing and are rendered separately
@@ -108,17 +115,15 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap =
                         new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
 
-                List<AlignmentInterval.Row> alignmentRows = interval.getAlignmentRows();
+                List<AlignmentInterval.Row> alignmentRows = alignmentInterval.getAlignmentRows();
 
-                for (AlignmentInterval.Row row : alignmentRows)
-                {
-                    //todo: is this dangerous?  Might something else depend on this not being reset?
-                    row.resetIdx();
+                for (AlignmentInterval.Row row : alignmentRows) {
 
-                    while (row.hasNext())
-                    {
+                    AlignmentInterval.Row.AlignmentIterator iterator = row.getIterator();
+
+                    while (iterator.hasNext()) {
                         //Any alignment with 2 or more blocks is considered to be a splice junction
-                        Alignment alignment = row.nextAlignment();
+                        Alignment alignment = iterator.next();
                         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                         if (blocks.length < 2)
                             continue;
@@ -181,13 +186,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                 }
 
                 //Sort by increasing beginning of start flanking region, as required by the renderer
-                Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>()
-                {
+                Collections.sort(spliceJunctionFeatures, new Comparator<IGVFeature>() {
                     public int compare(IGVFeature o1, IGVFeature o2) {
                         return o1.getStart() - o2.getStart();
                     }
                 });
             }
+
+            loadedInterval = new LoadedInterval(alignmentInterval.getChr(), alignmentInterval.getStart(), alignmentInterval.getEnd(), spliceJunctionFeatures);
             return spliceJunctionFeatures.iterator();
 
         }
@@ -214,13 +220,15 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      * @return
      */
     protected boolean shouldShowFeatures()  {
-        //todo: add preference specifically for splice junctions
-        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        float minVisibleScale = (maxRange * 1000) / 700;
 
-        if (context == null || (context.getScale() > minVisibleScale))
-            return false;
-        return true;
+
+        //todo: add preference specifically for splice junctions
+        //float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        //float minVisibleScale = (maxRange * 1000) / 700;
+
+        //if (context == null || (context.getScale() > minVisibleScale))
+        //    return false;
+        return context != null && !dataManager.isLoading() && dataManager.getLoadedInterval(context) != null;
     }
 
 
@@ -232,7 +240,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      */
     protected void renderFeatures(RenderContext context, Rectangle inputRect) {
 
-        if (featuresLoading) {
+        this.context = context;
+        if (featuresLoading || !shouldShowFeatures()) {
             return;
         }
 
@@ -247,14 +256,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-            this.context = context;
-            if (shouldShowFeatures()) {
                 featuresLoading = true;
                 loadFeatures(chr, start, end, context);
 
-            }
-            else if (packedFeatures != null)
-                packedFeaturesMap.put(context.getReferenceFrame().getName(), null);
             if (!IGV.getInstance().isExportingSnapshot()) {
                 return;
             }
@@ -423,6 +427,27 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame) {
         return 0;
+    }
+
+
+    // TODO -- there are variants of this class all over the place, eliminate all but one
+
+    static class LoadedInterval {
+        String chr;
+        int start;
+        int end;
+        List<SpliceJunctionFeature> features;
+
+        LoadedInterval(String chr, int start, int end, List<SpliceJunctionFeature> features) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.features = features;
+        }
+
+        boolean contains(String chr, int start, int end) {
+            return start >= this.start && end <= this.end && chr.equals(this.chr);
+        }
     }
 
 

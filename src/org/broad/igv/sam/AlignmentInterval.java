@@ -27,10 +27,7 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -51,7 +48,7 @@ public class AlignmentInterval extends Locus {
         this.alignmentRows = rows;
         reference = SequenceManager.readSequence(this.genomeId, chr, start, end);
         this.counts = counts;
-        for(AlignmentCounts c : counts) {
+        for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
     }
@@ -123,7 +120,7 @@ public class AlignmentInterval extends Locus {
         sortRows(option, center);
     }
 
-    public void sortRows(AlignmentTrack.SortOption option,  double location) {
+    public void sortRows(AlignmentTrack.SortOption option, double location) {
         if (alignmentRows == null) {
             return;
         }
@@ -195,7 +192,7 @@ public class AlignmentInterval extends Locus {
             }
         }
         return 0;
-     }
+    }
 
     public int getPosCount(int pos, byte b) {
         for (AlignmentCounts c : counts) {
@@ -204,7 +201,7 @@ public class AlignmentInterval extends Locus {
             }
         }
         return 0;
-     }
+    }
 
 
     public static class Row {
@@ -326,5 +323,33 @@ public class AlignmentInterval extends Locus {
         public int getLastEnd() {
             return lastEnd;
         }
-    }
+
+        public AlignmentIterator getIterator() {
+            return new AlignmentIterator();
+        }
+
+
+        public class AlignmentIterator implements Iterator<Alignment> {
+            int nextIdx = 0;
+
+            public boolean hasNext() {
+                return nextIdx < alignments.size();
+            }
+
+            public Alignment next() {
+                if (nextIdx < alignments.size()) {
+                    Alignment tmp = alignments.get(nextIdx);
+                    nextIdx++;
+                    return tmp;
+                } else {
+                    return null;
+                }
+            }
+
+            public void remove() {
+                //ignore
+            }
+        }
+
+    }         // end class row
 }
