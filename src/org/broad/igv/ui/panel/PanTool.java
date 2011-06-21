@@ -99,9 +99,6 @@ public class PanTool extends AbstractDataPanelTool {
     @Override
     final public void mouseDragged(final MouseEvent e) {
 
-        if(e.getButton() != MouseEvent.BUTTON1) {
-            return;
-        }
 
         try {
             Component panel = (Component) e.getSource();            
