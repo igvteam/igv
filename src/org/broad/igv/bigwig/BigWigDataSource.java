@@ -21,14 +21,17 @@ package org.broad.igv.bigwig;
 import org.broad.igv.Globals;
 import org.broad.igv.bbfile.*;
 import org.broad.igv.data.*;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.BEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
+import org.broad.tribble.Feature;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
@@ -43,6 +46,9 @@ import java.util.*;
  */
 public class BigWigDataSource extends AbstractDataSource implements FeatureSource {
 
+    final int screenWidth = 1000; // TODO use actual screen width
+
+
     Collection<WindowFunction> availableWindowFunctions =
             Arrays.asList(WindowFunction.min, WindowFunction.mean, WindowFunction.max);
     WindowFunction windowFunction = WindowFunction.mean;
@@ -52,7 +58,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     // Feature visibility window (for bigBed)
     int featureVisiblityWindow = -1;
-    private GenomeSummaryData genomeSummaryData;
     private List<LocusScore> wholeGenomeScores;
 
 
@@ -92,6 +97,9 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     }
 
     public void setWindowFunction(WindowFunction statType) {
+        // Invalidate caches
+        wholeGenomeScores = null;
+
         this.windowFunction = statType;
     }
 
@@ -142,15 +150,9 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
 
-        Chromosome c = genome.getChromosome(chr);
-        if (c == null) {
-            return null;
-        }
-        int l = c.getLength();
-        double scale = l / (Math.pow(2, zoom) * 700);   // TODO -- use actual screen resolution
 
+        double scale = (end - start) / screenWidth;   // TODO -- use actual scale
 
-        //
         BBZoomLevelHeader zlHeader = getZoomLevelForScale(scale);
         int bbLevel = zlHeader.getZoomLevel();
         int reductionLevel = zlHeader.getReductionLevel();
@@ -165,18 +167,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             while (zlIter.hasNext()) {
                 ZoomDataRecord rec = zlIter.next();
 
-                float v;
-                switch (windowFunction) {
-                    case min:
-                        v = rec.getMinVal();
-                        break;
-                    case max:
-                        v = rec.getMaxVal();
-                        break;
-                    default:
-                        v = rec.getMeanVal();
-
-                }
+                float v = getValue(rec);
 
                 BasicScore bs = new BasicScore(rec.getChromStart(), rec.getChromEnd(), v);
                 scores.add(bs);
@@ -187,6 +178,22 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             // No precomputed scores for this resolution level
             return null;
         }
+    }
+
+    private float getValue(ZoomDataRecord rec) {
+        float v;
+        switch (windowFunction) {
+            case min:
+                v = rec.getMinVal();
+                break;
+            case max:
+                v = rec.getMaxVal();
+                break;
+            default:
+                v = rec.getMeanVal();
+
+        }
+        return v;
     }
 
 
@@ -226,14 +233,16 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     }
 
+
     private List<LocusScore> getWholeGenomeScores() {
+
 
         if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
             if (wholeGenomeScores == null) {
                 wholeGenomeScores = new ArrayList<LocusScore>();
                 for (Chromosome chr : genome.getChromosomes()) {
 
-                    double scale = chr.getLength() / 1000;  // TODO - use screen width instead of constant "1000"
+                    double scale = chr.getLength() / screenWidth;
                     BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
 
                     int lastGenomeEnd = -1;
@@ -250,7 +259,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                         }
 
                         int genomeEnd = genome.getGenomeCoordinate(chrName, rec.getChromEnd());
-                        float value = rec.getMeanVal();  // TODO window function
+                        float value = getValue(rec);
                         wholeGenomeScores.add(new BasicScore(genomeStart, genomeEnd, value));
                         lastGenomeEnd = genomeEnd;
                     }
@@ -268,7 +277,9 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     // Feature interface follows ------------------------------------------------------------------------
 
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+        BigBedIterator bedIterator = reader.getBigBedIterator(chr, start, chr, end, false);
+        return new WrappedIterator(bedIterator);
     }
 
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
@@ -285,6 +296,34 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     public Class getFeatureClass() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public static class WrappedIterator implements Iterator<Feature> {
+
+        BigBedIterator bedIterator;
+
+        public WrappedIterator(BigBedIterator bedIterator) {
+            this.bedIterator = bedIterator;
+        }
+
+        public boolean hasNext() {
+            return bedIterator.hasNext();  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        public Feature next() {
+            BedFeature feat = bedIterator.next();
+            BasicFeature feature = new BasicFeature(feat.getChromosome(), feat.getStartBase(), feat.getEndBase());
+            String restOfFields = feat.getRestOfFields();
+            if (restOfFields != null && restOfFields.length() > 0) {
+                decode(feature, restOfFields);
+            }
+            return feature;
+
+        }
+
+        public void remove() {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
     }
 
 
@@ -305,6 +344,96 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         public boolean contains(String chr, int start, int end) {
             return chr.equals(this.chr) && start >= this.start && end <= this.end;
+        }
+    }
+
+
+    /////////// Decoder for BED features
+
+
+    private static void decode(BasicFeature feature, String restOfFields) {
+
+        String[] tokens = restOfFields.split("\t");
+        int tokenCount = tokens.length;
+
+
+        // The rest of the columns are optional.  Stop parsing upon encountering
+        // a non-expected value
+
+        // Name
+        if (tokenCount > 0) {
+            String name = tokens[0].replaceAll("\"", "");
+            feature.setName(name);
+            feature.setIdentifier(name);
+        }
+
+        // Score
+        if (tokenCount > 1) {
+            try {
+                float score = Float.parseFloat(tokens[1]);
+                feature.setScore(score);
+            } catch (NumberFormatException numberFormatException) {
+
+                // Unexpected, but does not invalidate the previous values.
+                // Stop parsing the line here but keep the feature
+                // Don't log, would just slow parsing down.
+                return;
+            }
+        }
+
+        // Strand
+        if (tokenCount > 2) {
+            String strandString = tokens[2].trim();
+            char strand = (strandString.length() == 0)
+                    ? ' ' : strandString.charAt(0);
+
+            if (strand == '-') {
+                feature.setStrand(Strand.NEGATIVE);
+            } else if (strand == '+') {
+                feature.setStrand(Strand.POSITIVE);
+            } else {
+                feature.setStrand(Strand.NONE);
+            }
+        }
+
+        if (tokenCount > 5) {
+            String colorString = tokens[5];
+            feature.setColor(ColorUtilities.stringToColor(colorString));
+        }
+
+        // Coding information is optional
+        if (tokenCount > 8) {
+            Strand strand = feature.getStrand();
+            int cdStart = Integer.parseInt(tokens[3]);
+            int cdEnd = Integer.parseInt(tokens[4]);
+
+            int exonCount = Integer.parseInt(tokens[6]);
+            String[] exonSizes = new String[exonCount];
+            String[] startsBuffer = new String[exonCount];
+            ParsingUtils.split(tokens[7], exonSizes, ',');
+            ParsingUtils.split(tokens[8], startsBuffer, ',');
+
+            int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
+
+            int start = feature.getStart();
+            String chr = feature.getChr();
+            if (startsBuffer.length == exonSizes.length) {
+                for (int i = 0; i < startsBuffer.length; i++) {
+                    int exonStart = start + Integer.parseInt(startsBuffer[i]);
+                    int exonEnd = exonStart + Integer.parseInt(exonSizes[i]);
+                    Exon exon = new Exon(chr, exonStart, exonEnd, strand);
+                    exon.setCodingStart(cdStart);
+                    exon.setCodingEnd(cdEnd);
+                    exon.setNumber(exonNumber);
+                    feature.addExon(exon);
+
+                    if (strand == Strand.NEGATIVE) {
+                        exonNumber--;
+                    } else {
+                        exonNumber++;
+                    }
+                }
+            }
         }
     }
 
