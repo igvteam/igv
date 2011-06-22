@@ -184,7 +184,7 @@ public class GobyCountArchiveDataSource implements CoverageDataSource {
         } else {
             // normalization factor is estimated such that the average value will be ~2 for autosomes, corresponding
             // to two copies.
-            normalizationFactor = doNormalize ? (double) numBasesSeen / (double) numSitesSeen *2.0:
+            normalizationFactor = doNormalize ?  ((double)numBasesSeen / (double) numSitesSeen) /2.0:
                     1.0;
         }
         //  System.out.printf("normalization factor=%g%n", normalizationFactor);
