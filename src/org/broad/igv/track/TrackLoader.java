@@ -199,7 +199,8 @@ public class TrackLoader {
                 loadDRangerFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ewig.tdf") || (typeString.endsWith(".ewig.ibf"))) {
                 loadEwigIBFFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bw") || typeString.endsWith(".bb") || typeString.endsWith(".bigwig")) {
+            } else if (typeString.endsWith(".bw") || typeString.endsWith(".bb") || typeString.endsWith(".bigwig") ||
+                    typeString.endsWith(".bigbed")) {
                 loadBWFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".ibf") || typeString.endsWith(".tdf")) {
                 loadTDFFile(locator, newTracks, genome);
@@ -713,16 +714,15 @@ public class TrackLoader {
         String path = locator.getPath();
         SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
         BBFileReader reader = new BBFileReader(path, ss);
-        BigWigDataSource  bigwigSource = new BigWigDataSource(reader, genome);
+        BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
 
         if (reader.isBigWigFile()) {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource, genome);
             newTracks.add(track);
-        } else if(reader.isBigBedFile()) {
+        } else if (reader.isBigBedFile()) {
             FeatureTrack track = new FeatureTrack(trackId, trackName, bigwigSource);
             newTracks.add(track);
-        }
-        else {
+        } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());
         }
     }
