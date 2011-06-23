@@ -568,7 +568,7 @@ public class BBFileReader {
             chromDataTreeOffset = fileHeader.getFullIndexOffset();
             if (chromDataTreeOffset != 0) {
                 fileOffset = chromDataTreeOffset;
-                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize);
+                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize, false);
             }
 
         }
@@ -608,7 +608,7 @@ public class BBFileReader {
             chromDataTreeOffset = fileHeader.getFullIndexOffset();
             if (chromDataTreeOffset != 0) {
                 fileOffset = chromDataTreeOffset;
-                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize);
+                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize, true);
             }
 
         }
@@ -653,7 +653,7 @@ public class BBFileReader {
             chromDataTreeOffset = fileHeader.getFullIndexOffset();
             if (chromDataTreeOffset != 0) {
                 fileOffset = chromDataTreeOffset;
-                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize);
+                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize, false);
             }
 
         }
@@ -697,7 +697,7 @@ public class BBFileReader {
             chromDataTreeOffset = fileHeader.getFullIndexOffset();
             if (chromDataTreeOffset != 0) {
                 fileOffset = chromDataTreeOffset;
-                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize);
+                chromosomeDataTree = new RPTree(fis, fileOffset, isLowToHigh, uncompressBufSize, true);
             }
 
         }

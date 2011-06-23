@@ -128,7 +128,7 @@ public class BBZoomLevels {
                 zoomIndexOffset = zoomLevelHeaders.get(index).getIndexOffset();
 
                 // get Zoom Data R+ Tree (Tables K, L, M, N): exists for zoom levels
-                RPTree zoomRPTree = new RPTree(fis, zoomIndexOffset, isLowToHigh, uncompressBufSize);
+                RPTree zoomRPTree = new RPTree(fis, zoomIndexOffset, isLowToHigh, uncompressBufSize, true);
 
                 //if(zoomRPTree.getNodeCount() > 0)
                     zoomLevelRPTree.add(zoomRPTree);

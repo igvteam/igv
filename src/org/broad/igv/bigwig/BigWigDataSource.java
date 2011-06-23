@@ -23,7 +23,6 @@ import org.broad.igv.bbfile.*;
 import org.broad.igv.data.*;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.BEDCodec;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -39,7 +38,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * A hybrid source, implements both DataSource and FeatureSource.
+ * A hybrid source, implements both DataSource and FeatureSource.   Way of the future?
  *
  * @author jrobinso
  * @date Jun 19, 2011
@@ -135,14 +134,23 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     }
 
 
-    private BBZoomLevelHeader getZoomLevelForScale(double scale) {
+    /**
+     * Return the zoom level that most closely matches the given resolution.  Resolution is in BP / Pixel.
+     *  
+     *
+     * @param resolution
+     * @return
+     */
+    private BBZoomLevelHeader getZoomLevelForScale(double resolution) {
         final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
 
+        BBZoomLevelHeader lastLevel = null;
         for (BBZoomLevelHeader zlHeader : headers) {
             int reductionLevel = zlHeader.getReductionLevel();
-            if (reductionLevel > scale) {
-                return zlHeader;
+            if (reductionLevel > resolution) {
+                return lastLevel == null ? zlHeader : lastLevel;
             }
+            lastLevel = zlHeader;
         }
         return headers.get(headers.size() - 1);
 

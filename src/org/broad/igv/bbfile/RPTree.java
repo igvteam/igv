@@ -97,7 +97,7 @@ public class RPTree {
     *       uncompressBuffSize - buffer size for decompression; else 0 for uncompressed data
     * */
 
-    public RPTree(SeekableStream fis, long fileOffset, boolean isLowToHigh, int uncompressBuffSize) {
+    public RPTree(SeekableStream fis, long fileOffset, boolean isLowToHigh, int uncompressBuffSize, boolean forceDescend) {
 
         // save the seekable file handle  and B+ Tree file offset
         // Note: the offset is the file position just after the B+ Tree Header
@@ -126,7 +126,7 @@ public class RPTree {
         RPTreeNode parentNode = null;      // parent node of the root is itself, or null
 
         // start constructing the R+ tree - get the root node
-        rootNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, false);
+        rootNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, forceDescend);
     }
 
     /*
@@ -540,8 +540,7 @@ public class RPTree {
 
     * */
 
-    static RPTreeNode readRPTreeNode(SeekableStream fis, long fileOffset, boolean isLowToHigh,
-                                     boolean forceDescend) {
+    static RPTreeNode readRPTreeNode(SeekableStream fis, long fileOffset, boolean isLowToHigh, boolean forceDescend) {
 
         LittleEndianInputStream lbdis = null; // low o high byte stream reader
         DataInputStream bdis = null;    // high to low byte stream reader
@@ -640,6 +639,8 @@ public class RPTree {
                     }
 
                     // Recursive call to read next child node
+                    // The test on chromIds is designed to stop the descent when the tree reaches the level of an
+                    // individual chromosome.  These are loaded later on demand.
                     RPTreeNode childNode;
                     if (startChromID != endChromID || forceDescend) {
                         childNode = readRPTreeNode(fis, nodeOffset, isLowToHigh, forceDescend);

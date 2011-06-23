@@ -76,8 +76,7 @@ public class RPTreeChildNodeItem implements RPTreeNodeItem {
 
         if (childNode instanceof RPTreeNodeProxy) {
             RPTreeNodeProxy proxy = (RPTreeNodeProxy) childNode;
-            System.out.println("Loading chrom tree " + proxy.chromId);
-            childNode = RPTree.readRPTreeNode(proxy.fis, proxy.fileOffset, proxy.isLowToHigh, true);
+             childNode = RPTree.readRPTreeNode(proxy.fis, proxy.fileOffset, proxy.isLowToHigh, true);
         }
 
         return childNode;
