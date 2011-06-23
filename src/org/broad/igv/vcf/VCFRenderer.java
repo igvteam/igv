@@ -30,6 +30,7 @@ import org.broad.tribble.util.variantcontext.VariantContext;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.*;
+import java.util.List;
 
 /**
  * User: Jesse Whitworth
@@ -151,11 +152,10 @@ public class VCFRenderer { //extends FeatureRenderer {
         if (genotype == null) {
             log.error("Now what?");
         } else {
-            char b1 = getFirstBase(genotype.getAlleles().get(0));
-            char b2 = getFirstBase(genotype.getAlleles().get(1));
-            Color b1Color;
-            Color b2Color;
-
+            Color b1Color = Color.gray;
+            Color b2Color = Color.gray;
+            char b1 = ' ';
+            char b2 = ' ';
             //Assign proper coloring
             switch (coloring) {
                 case GENOTYPE:
@@ -165,8 +165,15 @@ public class VCFRenderer { //extends FeatureRenderer {
                     break;
 
                 case ALLELE:
-                    b1Color = nucleotideColors.get(b1);
-                    b2Color = nucleotideColors.get(b2);
+                    final List<Allele> alleleList = genotype.getAlleles();
+                    if (alleleList.size() > 0) {
+                        b1 = getFirstBase(alleleList.get(0));
+                        b1Color = nucleotideColors.get(b1);
+                    }
+                    if (alleleList.size() > 1) {
+                        b2 = getFirstBase(alleleList.get(1));
+                        b2Color = nucleotideColors.get(b2);
+                    }
                     break;
                 case METHYLATION_RATE:
 
@@ -191,12 +198,6 @@ public class VCFRenderer { //extends FeatureRenderer {
                     b2Color = b1Color;
             }
 
-            //Temp remove to see if no-calls are clearer
-            if (b1 == '.' || b2 == '.') {
-                dX = dX / 2;
-                int offset = dX / 2;
-                pX0 = pX0 + offset;
-            }
 
             int y0 = track.getDisplayMode() == Track.DisplayMode.EXPANDED ? pY + 1 : pY;
             int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY - 2 : dY);
