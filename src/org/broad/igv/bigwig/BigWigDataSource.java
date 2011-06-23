@@ -159,7 +159,12 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
 
 
-        double scale = (end - start) / screenWidth;   // TODO -- use actual scale
+        Chromosome c = genome.getChromosome(chr);
+        if(c == null) return null;
+
+        double nBins = Math.pow(2, zoom);
+
+        double scale = c.getLength() / (nBins * 700);
 
         BBZoomLevelHeader zlHeader = getZoomLevelForScale(scale);
         int bbLevel = zlHeader.getZoomLevel();
