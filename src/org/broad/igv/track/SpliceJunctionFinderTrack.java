@@ -139,12 +139,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
                         int flankingStart = -1;
                         int junctionStart = -1;
+                        int gapCount = -1;
+                        char[] gapTypes = alignment.getGapTypes();
                         //for each pair of blocks, create or add evidence to a splice junction
                         for (AlignmentBlock block : blocks)
                         {
                             int flankingEnd = block.getEnd();
                             int junctionEnd = block.getStart();
-                            if (junctionStart != -1)
+                            if (junctionStart != -1 && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION)
                             {
                                 //only proceed if the flanking regions are both bigger than the minimum
                                 if (minReadFlankingWidth == 0 ||
@@ -170,6 +172,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
                             }
                             flankingStart = junctionEnd;
                             junctionStart = flankingEnd;
+                            gapCount += 1;
                         }
                     }
                 }
