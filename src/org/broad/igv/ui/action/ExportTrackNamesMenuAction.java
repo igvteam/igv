@@ -19,9 +19,14 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.track.DataTrack;
+import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.awt.*;
@@ -30,6 +35,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
@@ -59,14 +66,34 @@ public class ExportTrackNamesMenuAction extends MenuAction {
             return;
         }
 
-        File outputFile = new File(fd.getDirectory(), fname); 
+        File outputFile = new File(fd.getDirectory(), fname);
 
         PrintWriter pw = null;
         try {
             pw = new PrintWriter(new FileWriter(outputFile));
 
+            final List<ReferenceFrame> referenceFrames = FrameManager.getFrames();
+            if (referenceFrames.size() > 1) {
+                pw.print("Sample");
+                for (ReferenceFrame frame : referenceFrames) {
+                    pw.print("\t" + frame.getName());
+                }
+                pw.println();
+            }
+
             for (Track t : mainFrame.getTrackManager().getAllTracks(false)) {
-                pw.println(t.getName());
+                if (t.getTrackType() == TrackType.COPY_NUMBER || t.getTrackType() == TrackType.CNV) {
+                    pw.print(t.getName());
+                    for (ReferenceFrame frame : referenceFrames) {
+                        //track.getRegionScore(chr, start, end, zoom, type, frame));
+                        String chr = frame.getChrName();
+                        int start = (int) frame.getOrigin();
+                        int end = (int) frame.getEnd();
+                        float score = t.getRegionScore(chr, start, end, frame.getZoom(), RegionScoreType.SCORE, frame);
+                        pw.print("\t" + score);
+                    }
+                    pw.println();
+                }
             }
         }
         catch (IOException ex) {
