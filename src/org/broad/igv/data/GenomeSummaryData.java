@@ -90,6 +90,7 @@ public class GenomeSummaryData {
         IntArrayList locations = locationMap.get(chr);
         if (locations == null) {
             log.info("Skipping data for: " + chr);
+            return;
         }
 
         int lastPixel = -1;
