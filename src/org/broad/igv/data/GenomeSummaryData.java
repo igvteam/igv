@@ -29,9 +29,7 @@ import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -62,6 +60,9 @@ public class GenomeSummaryData {
 
     int nDataPts = 0;
 
+    Set<String> skippedChromosomes = new HashSet();
+
+
     /**
      * Scale in KB / pixel
      */
@@ -89,7 +90,10 @@ public class GenomeSummaryData {
 
         IntArrayList locations = locationMap.get(chr);
         if (locations == null) {
-            log.info("Skipping data for: " + chr);
+            if (!skippedChromosomes.contains(chr)) {
+                skippedChromosomes.add(chr);
+                log.info("Skipping data for: " + chr);
+            }
             return;
         }
 
