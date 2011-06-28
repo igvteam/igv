@@ -353,6 +353,7 @@ public class IGVHttpUtils {
         setProxySettings(proxySettings);
         if(useProxy) {
             IGVHttpClientUtils.setProxy(proxyHost, proxyPort, auth, user, pw);
+            HTTPHelper.setProxy(getProxy());
         }
     }
 
