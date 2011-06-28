@@ -230,6 +230,21 @@ public abstract class AbstractTrack implements Track {
                 //g2D.dispose();
             }
         }
+
+        Color c = g2D.getColor();
+
+        try {
+            PreferenceManager prefs = PreferenceManager.getInstance();
+            Color borderColor = (prefs.getAsBoolean(PreferenceManager.CHART_COLOR_BORDERS) && getAltColor() == getColor())
+                    ? getColor() : Color.lightGray;
+            g2D.setColor(borderColor);
+            g2D.drawLine(trackRectangle.x, trackRectangle.y, trackRectangle.x + trackRectangle.width, trackRectangle.y);
+            g2D.drawLine(trackRectangle.x, trackRectangle.y + trackRectangle.height,
+                    trackRectangle.x + trackRectangle.width, trackRectangle.y + trackRectangle.height);
+        } finally {
+            g2D.setColor(c);
+        }
+
     }
 
 
@@ -329,10 +344,9 @@ public abstract class AbstractTrack implements Track {
      */
     public int getDefaultMinimumHeight() {
         Renderer r = getRenderer();
-        if(r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
+        if (r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
             return 1;
-        }
-        else {
+        } else {
             return 10;
         }
     }
@@ -344,6 +358,7 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
+     *
      * @return
      */
     public int getMinimumHeight() {
@@ -637,7 +652,7 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
         }
 
-        if(sortable != true) {
+        if (sortable != true) {
             attributes.put("sortable", "false");
         }
 
@@ -727,7 +742,7 @@ public abstract class AbstractTrack implements Track {
         }
 
         String sortableString = attributes.get("sortable");
-        if(sortableString != null) {
+        if (sortableString != null) {
             sortable = Boolean.parseBoolean(sortableString);
         }
 
