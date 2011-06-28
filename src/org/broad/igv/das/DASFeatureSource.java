@@ -21,8 +21,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 
 import org.broad.igv.feature.*;
-import org.broad.igv.track.FeatureSource;
 import org.broad.igv.feature.tribble.CachingFeatureReader;
+import org.broad.igv.track.FeatureSource;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpUtils;

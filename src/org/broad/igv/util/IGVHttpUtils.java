@@ -25,6 +25,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
+import org.broad.tribble.util.HTTPHelper;
 import org.broad.tribble.util.SeekableHTTPStream;
 
 import javax.swing.*;
@@ -52,7 +53,7 @@ public class IGVHttpUtils {
             String testURL = "http://www.broadinstitute.org/igvdata/byteRangeTest.txt";
             byte[] expectedBytes = {(byte) 'k', (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o'};
 
-            SeekableHTTPStream str = new SeekableHTTPStream(new URL(testURL));
+            SeekableHTTPStream str = new SeekableHTTPStream(new HTTPHelper(new URL(testURL)));
             str.seek(10);
             byte[] buffer = new byte[5];
             str.read(buffer, 0, 5);

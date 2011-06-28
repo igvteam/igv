@@ -23,7 +23,6 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.util.HttpUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -52,7 +51,7 @@ public class FileUtils {
             boolean remoteFile = isRemote(path);
             // TODO -- what if its ftp?
             return (!remoteFile && (new File(path).exists())) ||
-                    (remoteFile && HttpUtils.resourceAvailable(new URL(path)));
+                    (remoteFile && IGVHttpUtils.resourceAvailable(new URL(path)));
         } catch (MalformedURLException e) {
             log.error("Malformed URL: " + path, e);
             return false;
