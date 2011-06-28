@@ -18,17 +18,18 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.feature.tribble.VCFFeature;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
-import org.broad.igv.feature.tribble.VCFCodec;
-import org.broad.igv.feature.tribble.VCFFeature;
 import org.broad.tribble.bed.BEDCodec;
 import org.broad.tribble.bed.BEDFeature;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.After;
 
 import static junit.framework.Assert.*;
@@ -103,10 +104,10 @@ public class IGVToolsTest {
                 1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
 
         BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, new VCFCodec());
-        Iterator<VCFFeature> iter = bfr.query(chr, start, end);
+        Iterator<VariantContext> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
-            VCFFeature feat = iter.next();
+            VariantContext feat = iter.next();
             int expStart = expectedStarts[count] - 1;
             assertEquals(expStart, feat.getStart());
             count++;

@@ -18,12 +18,13 @@
 
 package org.broad.tribble.readers;
 
-import org.broad.igv.feature.tribble.VCFCodec;
-import org.broad.igv.feature.tribble.VCFFeature;
+
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.LittleEndianOutputStream;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -48,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 public class BasicFeatureSourceTest {
 
     static String testFile = "test/data/CEU.SRP000032.2010_03.genotypes.head.vcf";
-    static BasicFeatureSource<VCFFeature> bfr;
+    static BasicFeatureSource<VariantContext> bfr;
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -73,10 +74,10 @@ public class BasicFeatureSourceTest {
                 1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
 
 
-        Iterator<VCFFeature> iter = bfr.query(chr, start, end);
+        Iterator<VariantContext> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
-            VCFFeature feat = iter.next();
+            VariantContext feat = iter.next();
             int expStart = expectedStarts[count] - 1;
             assertEquals(expStart, feat.getStart());
             count++;
