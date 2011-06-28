@@ -32,6 +32,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
 import org.broad.tribble.source.BasicFeatureSource;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -63,7 +64,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
         FeatureCodec codec = CodecFactory.getCodec(path);
         this.genome = genome;
-        isVCF = codec.getClass().isAssignableFrom(org.broad.tribble.vcf.VCFCodec.class);       
+        isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);       
         featureClass = codec.getFeatureType();
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
         header = basicReader.getHeader();

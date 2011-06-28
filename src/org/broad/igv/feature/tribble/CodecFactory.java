@@ -21,6 +21,7 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.tribble.FeatureCodec;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,7 +39,7 @@ public class CodecFactory {
             fn = fn.substring(0, l);
         }
         if (fn.endsWith(".vcf") || fn.endsWith(".vcf4") ) {
-            return new org.broad.tribble.vcf.VCFCodec();
+            return new VCFCodec();
         } else if (fn.endsWith(".bed")) {
             return new BEDCodec();
         } else if (fn.endsWith(".repmask")) {

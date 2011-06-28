@@ -19,7 +19,7 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
-import org.broad.tribble.util.variantcontext.VariantContext;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
 import java.awt.*;

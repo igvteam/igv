@@ -22,10 +22,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.tribble.Feature;
-import org.broad.tribble.util.variantcontext.Genotype;
-import org.broad.tribble.util.variantcontext.VariantContext;
+import org.broadinstitute.sting.utils.variantcontext.Genotype;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;

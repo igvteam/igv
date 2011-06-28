@@ -32,9 +32,9 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
-import org.broad.tribble.util.variantcontext.Genotype;
-import org.broad.tribble.util.variantcontext.VariantContext;
-import org.broad.tribble.vcf.VCFHeader;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
+import org.broadinstitute.sting.utils.variantcontext.Genotype;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import javax.swing.*;
 import java.awt.*;

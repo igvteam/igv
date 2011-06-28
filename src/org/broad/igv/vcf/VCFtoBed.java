@@ -21,7 +21,8 @@ package org.broad.igv.vcf;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.source.BasicFeatureSource;
-import org.broad.tribble.util.variantcontext.VariantContext;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -49,7 +50,7 @@ public class VCFtoBed {
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
             FeatureCodec codec = CodecFactory.getCodec(vcfFile);
-            boolean isVCF = codec.getClass().isAssignableFrom(org.broad.tribble.vcf.VCFCodec.class);
+            boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
             basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);
 
             Iterator<VariantContext> iter = basicReader.iterator();
