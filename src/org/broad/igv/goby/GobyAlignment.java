@@ -154,14 +154,20 @@ public class GobyAlignment implements Alignment {
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
 
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
-        if (alignmentEntry.hasSplicedAlignmentLink()) {
-            // if first in link, store a reference to this alignment in the reader (which represents the window scope)
-            ObjectArrayList<GobyAlignment> list = iterator.cacheSpliceComponent(this);
+        ObjectArrayList<GobyAlignment> list;
+
+        if (alignmentEntry.hasSplicedForwardAlignmentLink()) {
+            // if has a forward link, store a reference to this alignment in the reader (which represents the window scope)
+            list = iterator.cacheSpliceComponent(this);
+        }
+        if (alignmentEntry.hasSplicedBackwardAlignmentLink()) {
+            // if has a backward link get the set of previously cached alignments:
+            list = iterator.cacheSpliceComponent(this);
+
             if (list.size() > 1) {
-                Alignments.RelatedAlignmentEntry link = entry.getSplicedAlignmentLink();
+                Alignments.RelatedAlignmentEntry link = entry.getSplicedBackwardAlignmentLink();
 
-
-                for (GobyAlignment alignment : list) {
+                for (final GobyAlignment alignment : list) {
                     final Alignments.AlignmentEntry entry = alignment.entry;
                     if (entry.getPosition() == link.getPosition() &&
                             entry.getTargetIndex() == link.getTargetIndex() &&
@@ -188,6 +194,8 @@ public class GobyAlignment implements Alignment {
             }
         }
     }
+
+
 
     /**
      * This method splits blocks whose boundaries contain a read deletion.
@@ -307,7 +315,6 @@ public class GobyAlignment implements Alignment {
     public boolean contains(double location) {
         return location >= getStart() && location < getEnd();
     }
-
 
 
     public AlignmentBlock[] getAlignmentBlocks() {
