@@ -328,10 +328,10 @@ public class GobyAlignmentQueryReaderTest {
         Alignments.RelatedAlignmentEntry linkBackward = Alignments.RelatedAlignmentEntry.newBuilder().
                 setFragmentIndex(0).setPosition(1000).setTargetIndex(1).build();
         Alignments.AlignmentEntry entry1 = Alignments.AlignmentEntry.newBuilder().setPosition(1000).setMatchingReverseStrand(false).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(0).setSplicedAlignmentLink(linkForward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(0).setSplicedForwardAlignmentLink(linkForward).
                 setQueryAlignedLength(20).addSequenceVariations(mutation).build();
         Alignments.AlignmentEntry entry2 = Alignments.AlignmentEntry.newBuilder().setPosition(1200).setMatchingReverseStrand(false).
-                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(1).setSplicedAlignmentLink(linkBackward).
+                setQueryLength(50).setQueryIndex(0).setTargetIndex(1).setFragmentIndex(1).setSplicedBackwardAlignmentLink(linkBackward).
                 setQueryAlignedLength(30).build();
         ObjectArrayList<Alignments.AlignmentEntry> alignments = new ObjectArrayList<Alignments.AlignmentEntry>();
         alignments.add(entry1);
