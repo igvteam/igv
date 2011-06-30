@@ -120,7 +120,7 @@ public class AttributeManager {
      * Track.getAttributeValue(key)
      * instead.
      */
-    protected String getAttribute(String trackName, String attributeKey) {
+    public String getAttribute(String trackName, String attributeKey) {
         Map attributes = attributeMap.get(trackName);
         return (attributes == null ? null : (String) attributes.get(attributeKey));
     }

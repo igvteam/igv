@@ -150,11 +150,11 @@ public class VCFTrack extends FeatureTrack {
             sampleList.add(sample);
         }
 
-        grouped = samplesByGroups.size() > 1;
-        hasGroups = samplesByGroups.size() > 1;
-        if (grouped && REFERENCE_GROUP_SAMPLE_MAP != null) {
-            sortGroups();
-        }
+        // this activates the group hack:
+        initGroups();
+
+        // this handles the new attribute grouping mechanism:
+        setupGroupsFromAttributes();
 
         setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
@@ -164,6 +164,52 @@ public class VCFTrack extends FeatureTrack {
         int beta = 100000;
         int visWindow = Math.min(500000, (beta / cnt) * 1000);
         setVisibilityWindow(visWindow);
+    }
+
+    /**
+     * The id of the group used to group samples.
+     */
+    private String previousGroupId;
+
+    /**
+     * Set groups from global sample information attributes.
+     */
+    private void setupGroupsFromAttributes() {
+        // setup groups according to the attribute used for sorting (loaded from a sample information file):
+
+        AttributeManager manager = AttributeManager.getInstance();
+        String groupByAttributeId = IGV.getInstance().getTrackManager().getGroupByAttribute();
+
+        if (groupByAttributeId == null || groupByAttributeId.equals(previousGroupId)) {
+            // nothing to do, already sorted according to attributed.
+            return;
+        }
+        samplesByGroups.clear();
+        REFERENCE_GROUP_SAMPLE_MAP = new LinkedHashMap<String, List<String>>();
+        for (String sample : allSamples) {
+
+
+            String sampleGroup = manager.getAttribute(sample, groupByAttributeId);
+
+            List<String> sampleList = samplesByGroups.get(sampleGroup);
+            if (sampleList == null) {
+                sampleList = new ArrayList();
+                samplesByGroups.put(sampleGroup, sampleList);
+            }
+            sampleList.add(sample);
+            REFERENCE_GROUP_SAMPLE_MAP.put(sampleGroup, sampleList);
+        }
+        previousGroupId = groupByAttributeId;
+        initGroups();
+    }
+    // previous hack to setup groups from some fixed file read from disk:
+    // TODO remove this method as soon as possible
+    private void initGroups() {
+        grouped = samplesByGroups.size() > 1;
+        hasGroups = samplesByGroups.size() > 1;
+        if (grouped && REFERENCE_GROUP_SAMPLE_MAP != null) {
+            sortGroups();
+        }
     }
 
     private void sortGroups() {
@@ -593,7 +639,7 @@ public class VCFTrack extends FeatureTrack {
                     String group = groupNames.get(groupNumber);
                     List<String> sampleList = samplesByGroups.get(group);
                     int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
-                    if (sampleNumber >= 0 || sampleNumber < sampleList.size()) {
+                    if (sampleNumber >= 0 && sampleNumber < sampleList.size()) {
                         sample = sampleList.get(sampleNumber);
                     }
 
@@ -929,8 +975,13 @@ public class VCFTrack extends FeatureTrack {
             selectedVariant = f;
             IGV.getInstance().doRefresh();
         }
+            return new VCFMenu(this, f);
+    }
 
-        return new VCFMenu(this, f);
+    @Override
+    public void refreshData(long timestamp) {
+        super.refreshData(timestamp);
+        setupGroupsFromAttributes();
     }
 
     public static void refresh() {

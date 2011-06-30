@@ -30,6 +30,7 @@ import java.util.List;
 /**
  * @author jrobinso
  * @date Apr 25, 2011
+ * TODO: remove this class, no longer needed now that VCFTrack supports groups defined in attribute files.
  */
 public class PedigreeUtils {
 

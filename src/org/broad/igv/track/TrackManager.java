@@ -138,6 +138,9 @@ public class TrackManager {
     public void setGroupByAttribute(String attributeName) {
         groupByAttribute = attributeName;
         groupTracksByAttribute();
+        // propagate change so VCFTracks and others can reoder their samples internally according to
+        // groupByAttribute as well:
+        refreshData();
     }
 
     public void reset() {
