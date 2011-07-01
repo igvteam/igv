@@ -52,12 +52,6 @@ public class AlignmentInterval extends Locus {
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
-
-        RowIterator iter = new RowIterator();
-        while(iter.hasNext()) {
-            System.out.println(iter.next());
-        }
-
     }
 
     public boolean contains(String genomeId, String chr, int start, int end) {
