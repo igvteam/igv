@@ -161,32 +161,25 @@ public class GenomeManager {
     }
 
 
-    public GenomeListItem loadGenomeFromLocalFile(File zipFile) {
+    public GenomeListItem loadGenomeFromLocalFile(File zipFile) throws IOException {
 
         GenomeListItem genomeListItem = null;
 
-        try {
-            boolean isUserDefined = false;
-            File parentFolder = zipFile.getParentFile();
-            if (parentFolder == null || !parentFolder.equals(Globals.getGenomeCacheDirectory())) {
-                isUserDefined = true;
-            }
-
-            // user imported genomes are not versioned
-            GenomeDescriptor genomeDescriptor = createGenomeDescriptor(zipFile, isUserDefined);
-            loadGenome(genomeDescriptor);
-            genomeDescriptorMap.put(genomeDescriptor.getId(), genomeDescriptor);
-            genomeListItem = new GenomeListItem(genomeDescriptor.getName(),
-                    genomeDescriptor.getSequenceLocation(), genomeDescriptor.getId(),
-                    genomeDescriptor.getVersion(),
-                    isUserDefined);
-
-
-        } catch (Exception e) {
-
-            // Log any error and keep going
-            log.warn("Error loading genome archive: " + zipFile, e);
+        boolean isUserDefined = false;
+        File parentFolder = zipFile.getParentFile();
+        if (parentFolder == null || !parentFolder.equals(Globals.getGenomeCacheDirectory())) {
+            isUserDefined = true;
         }
+
+        // user imported genomes are not versioned
+        GenomeDescriptor genomeDescriptor = createGenomeDescriptor(zipFile, isUserDefined);
+        loadGenome(genomeDescriptor);
+        genomeDescriptorMap.put(genomeDescriptor.getId(), genomeDescriptor);
+        genomeListItem = new GenomeListItem(genomeDescriptor.getName(),
+                genomeDescriptor.getSequenceLocation(), genomeDescriptor.getId(),
+                genomeDescriptor.getVersion(),
+                isUserDefined);
+
 
         return genomeListItem;
     }
@@ -323,7 +316,7 @@ public class GenomeManager {
             throw e;
         } catch (SocketException e) {
             throw new GenomeServerException("Server connection error", e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Error Importing Genome!", e);
         }
 

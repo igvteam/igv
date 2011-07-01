@@ -52,7 +52,7 @@ public class FileUtils {
             // TODO -- what if its ftp?
             return (!remoteFile && (new File(path).exists())) ||
                     (remoteFile && IGVHttpUtils.resourceAvailable(new URL(path)));
-        } catch (MalformedURLException e) {
+        } catch (IOException e) {
             log.error("Malformed URL: " + path, e);
             return false;
         }

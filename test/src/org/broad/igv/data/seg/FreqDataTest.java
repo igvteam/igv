@@ -26,6 +26,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * @author jrobinso
  * @date Oct 13, 2010
@@ -41,7 +43,7 @@ public class FreqDataTest {
 
 
     @Test
-    public void test() {
+    public void test() throws IOException {
 
         Genome genome = TestUtils.loadGenome("hg18");
         

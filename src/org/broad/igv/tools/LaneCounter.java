@@ -51,7 +51,7 @@ public class LaneCounter {
      * arg[2] => comma delimited list of bam files
      * arg[3] =>  query interval string
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Globals.setHeadless(true);
 

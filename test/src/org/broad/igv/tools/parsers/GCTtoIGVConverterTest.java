@@ -28,6 +28,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
+import static org.broad.igv.util.TestUtils.loadGenome;
+
 /**
  * @author jrobinso
  * @date Oct 9, 2010
@@ -37,8 +39,8 @@ public class GCTtoIGVConverterTest {
     Genome genome;
 
     @Before
-    public void setup() {
-        genome = TestUtils.loadGenome("/Users/jrobinso/projects/client/genomes/hg18.genome");
+    public void setup() throws IOException {
+        genome = loadGenome("/Users/jrobinso/projects/client/genomes/hg18.genome");
     }
 
 

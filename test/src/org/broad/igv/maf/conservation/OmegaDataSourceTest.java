@@ -30,6 +30,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * @author jrobinso
  */
@@ -51,7 +53,7 @@ public class OmegaDataSourceTest {
      * Test of getRawData method, of class OmegaDataSource.
      */
     @Test
-    public void testGetRawData() {
+    public void testGetRawData() throws IOException {
         Genome genome = TestUtils.loadGenome("hg18");
         OmegaDataSource ds = new OmegaDataSource(genome);
 

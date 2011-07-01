@@ -677,7 +677,7 @@ public class IgvTools {
     }
 
 
-    public static Genome loadGenome(String genomeFileOrID) {
+    public static Genome loadGenome(String genomeFileOrID) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
