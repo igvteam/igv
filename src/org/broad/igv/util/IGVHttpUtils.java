@@ -255,7 +255,8 @@ public class IGVHttpUtils {
 
         conn.setRequestProperty("Connection", "close");
 
-        if (conn.getResponseCode() == 401) {
+        final int responseCode = conn.getResponseCode();
+        if (responseCode == 401) {
 
             final String userPass = getUserPass(url.toExternalForm());
             if (userPass == null) {
@@ -455,9 +456,9 @@ public class IGVHttpUtils {
 
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) url.openConnection();
-            int rc = conn.getResponseCode();
-            return rc < 400;
+            conn = IGVHttpUtils.openConnection(url);
+            conn.setRequestMethod("HEAD");
+            return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
         } catch (Exception e) {
             return false;
         }
