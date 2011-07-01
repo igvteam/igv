@@ -22,6 +22,7 @@
  */
 package org.broad.igv.sam;
 
+import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
@@ -51,6 +52,12 @@ public class AlignmentInterval extends Locus {
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
+
+        RowIterator iter = new RowIterator();
+        while(iter.hasNext()) {
+            System.out.println(iter.next());
+        }
+
     }
 
     public boolean contains(String genomeId, String chr, int start, int end) {
@@ -267,9 +274,9 @@ public class AlignmentInterval extends Locus {
                         setScore(score);
                         break;
                     case INSERT_SIZE:
-                         setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
-                         break;
-                 }
+                        setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
+                        break;
+                }
             }
         }
 
@@ -352,4 +359,69 @@ public class AlignmentInterval extends Locus {
         }
 
     }         // end class row
+
+
+    /**
+     * An alignment iterator that iterates over packed rows.  Used for
+     * "repacking".   Using the iterator avoids the need to copy alignments
+     * from the rows
+     */
+    class RowIterator implements CloseableIterator<Alignment> {
+
+        PriorityQueue<AlignmentInterval.Row> rows;
+        Alignment nextAlignment;
+
+        RowIterator() {
+            rows = new PriorityQueue(5, new Comparator<AlignmentInterval.Row>() {
+
+                public int compare(AlignmentInterval.Row o1, AlignmentInterval.Row o2) {
+                    return o1.getNextStartPos() - o2.getNextStartPos();
+                }
+            });
+
+            for (AlignmentInterval.Row r : alignmentRows) {
+                r.resetIdx();
+                rows.add(r);
+            }
+
+            advance();
+        }
+
+        public void close() {
+            // Ignored
+        }
+
+        public boolean hasNext() {
+            return nextAlignment != null;
+        }
+
+        public Alignment next() {
+            Alignment tmp = nextAlignment;
+            if (tmp != null) {
+                advance();
+            }
+            return tmp;
+        }
+
+        private void advance() {
+
+            nextAlignment = null;
+            AlignmentInterval.Row nextRow = null;
+            while (nextAlignment == null && !rows.isEmpty()) {
+                while ((nextRow = rows.poll()) != null) {
+                    if (nextRow.hasNext()) {
+                        nextAlignment = nextRow.nextAlignment();
+                        break;
+                    }
+                }
+            }
+            if (nextRow != null && nextAlignment != null) {
+                rows.add(nextRow);
+            }
+        }
+
+        public void remove() {
+            // ignore
+        }
+    }
 }
