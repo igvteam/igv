@@ -80,6 +80,7 @@ public class CoverageCounter {
     private File wigFile = null;
     private WigWriter wigWriter = null;
     private boolean keepZeroes = false;
+    private boolean includeDuplicates = false;
     private Genome genome;
 
     private String readGroup; // The read group to count
@@ -102,6 +103,7 @@ public class CoverageCounter {
                            File wigFile,
                            Genome genome,
                            int strandOption,
+                           boolean includeDuplicates,
                            String options) {
         this.alignmentFile = alignmentFile;
         this.tdfFile = tdfFile;
@@ -111,6 +113,7 @@ public class CoverageCounter {
         this.wigFile = wigFile;
         this.genome = genome;
         this.strandOption = strandOption;
+        this.includeDuplicates = includeDuplicates;
         buffer = strandOption < 0 ? new float[1] : new float[2];
 
         if (options != null) {
@@ -205,7 +208,7 @@ public class CoverageCounter {
     private boolean passFilter(Alignment alignment) {
         return (readGroup == null || readGroup.equals(alignment.getReadGroup())) &&
                 alignment.isMapped() &&
-                !alignment.isDuplicate() &&
+                (includeDuplicates || !alignment.isDuplicate()) &&
                 alignment.getMappingQuality() >= minMappingQuality &&
                 !alignment.isVendorFailedRead();
     }

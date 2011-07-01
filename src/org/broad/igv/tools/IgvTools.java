@@ -166,6 +166,7 @@ public class IgvTools {
         // extended options for coverage
         //  q, t, .....
         CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
+        CmdLineParser.Option includeDuplicatesOption = parser.addStringOption('d', "includeDuplicates");
 
         // Trackline
         CmdLineParser.Option colorOption = parser.addStringOption('c', "color");
@@ -243,8 +244,10 @@ public class IgvTools {
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
                     int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
+                    boolean includeDuplicates = (Boolean) parser.getOptionValue(includeDuplicatesOption, false);
+
                     doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
-                            strandOptionValue, coverageOpt, trackLine);
+                            strandOptionValue, coverageOpt, trackLine, includeDuplicates);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                     doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
@@ -473,7 +476,7 @@ public class IgvTools {
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
                         Collection<WindowFunction> windowFunctions,
                         int windowSizeValue, int extFactorValue, int strandOption,
-                        String coverageOpt, String trackLine) throws IOException {
+                        String coverageOpt, String trackLine, boolean includeDuplicates) throws IOException {
 
 
         System.out.println("Computing coverage.  File = " + ifile);
@@ -514,7 +517,8 @@ public class IgvTools {
         }
 
         Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt, trackLine);
+        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt, trackLine,
+                includeDuplicates);
         p.finish();
 
         System.out.flush();
