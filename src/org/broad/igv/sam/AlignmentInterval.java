@@ -204,6 +204,10 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
+    public Iterator<Alignment> getAlignmentIterator() {
+        return new AlignmentIterator();
+    }
+
 
     public static class Row {
         int nextIdx;
@@ -352,7 +356,7 @@ public class AlignmentInterval extends Locus {
             }
         }
 
-    }         // end class row
+    } // end class row
 
 
     /**
@@ -360,12 +364,12 @@ public class AlignmentInterval extends Locus {
      * "repacking".   Using the iterator avoids the need to copy alignments
      * from the rows
      */
-    class RowIterator implements CloseableIterator<Alignment> {
+    class AlignmentIterator implements Iterator<Alignment> {
 
         PriorityQueue<AlignmentInterval.Row> rows;
         Alignment nextAlignment;
 
-        RowIterator() {
+        AlignmentIterator() {
             rows = new PriorityQueue(5, new Comparator<AlignmentInterval.Row>() {
 
                 public int compare(AlignmentInterval.Row o1, AlignmentInterval.Row o2) {
@@ -379,10 +383,6 @@ public class AlignmentInterval extends Locus {
             }
 
             advance();
-        }
-
-        public void close() {
-            // Ignored
         }
 
         public boolean hasNext() {

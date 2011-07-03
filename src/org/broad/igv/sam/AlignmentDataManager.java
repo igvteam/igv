@@ -252,7 +252,8 @@ public class AlignmentDataManager {
         if (loadedInterval == null) {
             return;
         }
-        RowIterator iter = new RowIterator(referenceFrame);
+
+        Iterator<Alignment> iter = loadedInterval.getAlignmentIterator();
 
         // When repacking keep all currently loaded alignments (don't limit to levels)
         int max = Integer.MAX_VALUE;
@@ -418,70 +419,6 @@ public class AlignmentDataManager {
             for (PEStats stats : peStats.values()) {
                 stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
             }
-        }
-    }
-
-    /**
-     * An alignment iterator that iterates over packed rows.  Used for
-     * "repacking".   Using the iterator avoids the need to copy alignments
-     * from the rows
-     */
-    class RowIterator implements CloseableIterator<Alignment> {
-
-        PriorityQueue<AlignmentInterval.Row> rows;
-        Alignment nextAlignment;
-
-        RowIterator(ReferenceFrame referenceFrame) {
-            rows = new PriorityQueue(5, new Comparator<AlignmentInterval.Row>() {
-
-                public int compare(AlignmentInterval.Row o1, AlignmentInterval.Row o2) {
-                    return o1.getNextStartPos() - o2.getNextStartPos();
-                }
-            });
-
-            for (AlignmentInterval.Row r : getAlignmentRows(referenceFrame)) {
-                r.resetIdx();
-                rows.add(r);
-            }
-
-            advance();
-        }
-
-        public void close() {
-            // Ignored
-        }
-
-        public boolean hasNext() {
-            return nextAlignment != null;
-        }
-
-        public Alignment next() {
-            Alignment tmp = nextAlignment;
-            if (tmp != null) {
-                advance();
-            }
-            return tmp;
-        }
-
-        private void advance() {
-
-            nextAlignment = null;
-            AlignmentInterval.Row nextRow = null;
-            while (nextAlignment == null && !rows.isEmpty()) {
-                while ((nextRow = rows.poll()) != null) {
-                    if (nextRow.hasNext()) {
-                        nextAlignment = nextRow.nextAlignment();
-                        break;
-                    }
-                }
-            }
-            if (nextRow != null && nextAlignment != null) {
-                rows.add(nextRow);
-            }
-        }
-
-        public void remove() {
-            // ignore
         }
     }
 
