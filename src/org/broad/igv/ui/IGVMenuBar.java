@@ -548,7 +548,7 @@ menuAction =
         MenuAction menuAction = null;
 
         menuAction =
-                new MenuAction("Help ... ") {
+                new MenuAction("User Guide ... ") {
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -590,10 +590,10 @@ menuAction =
                             @Override
                             public void actionPerformed(ActionEvent e) {
                                 try {
-                                    URI uri = new URI("mailto:igv-help@googlegroups.com");
-                                    Desktop.getDesktop().mail(uri);
+                                    URI uri = new URI("http://groups.google.com/forum/#!forum/igv-help");
+                                    Desktop.getDesktop().browse(uri);
                                 } catch (Exception ex) {
-                                    log.error("Error opening email client", ex);
+                                    log.error("Error opening igv-help uri", ex);
                                 }
 
                             }
