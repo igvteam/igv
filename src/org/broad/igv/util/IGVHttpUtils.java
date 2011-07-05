@@ -457,8 +457,8 @@ public class IGVHttpUtils {
         HttpURLConnection conn = null;
         try {
             conn = IGVHttpUtils.openConnection(url);
-            conn.setRequestMethod("HEAD");
-            return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
+            int code = conn.getResponseCode();
+            return code == HttpURLConnection.HTTP_OK;
         } catch (Exception e) {
             return false;
         }
