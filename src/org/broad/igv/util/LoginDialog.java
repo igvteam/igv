@@ -20,7 +20,7 @@
  * Created by JFormDesigner on Sun Jun 05 16:03:30 EDT 2011
  */
 
-package org.broad.igv.gs;
+package org.broad.igv.util;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -28,17 +28,27 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
-public class GSLoginDialog extends JDialog {
+public class LoginDialog extends JDialog {
 
     boolean canceled = false;
     
-    public GSLoginDialog(Frame owner) {
-        super(owner);
-        initComponents();
+    public LoginDialog(Frame owner) {
+        this(owner, false);
     }
 
+    public LoginDialog(Frame owner, boolean isGenomeSpace) {
+        super(owner);
+        initComponents();
+        if(isGenomeSpace) {
+            promptLabel.setText("Please login to your GenomeSpace account");
+            iconLabel.setVisible(true);
+        }
+        else {
+            iconLabel.setVisible(false);
+        }
+    }
 
     public String getUsername() {
         return usernameField.getText();
@@ -66,12 +76,14 @@ public class GSLoginDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
+        panel1 = new JPanel();
         label1 = new JLabel();
         usernameField = new JTextField();
+        panel2 = new JPanel();
         label2 = new JLabel();
         passwordField = new JPasswordField();
-        label3 = new JLabel();
-        label4 = new JLabel();
+        iconLabel = new JLabel();
+        promptLabel = new JLabel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -90,32 +102,74 @@ public class GSLoginDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
 
-                //---- label1 ----
-                label1.setText("Username:");
-                label1.setFont(new Font("Arial", Font.PLAIN, 14));
-                contentPanel.add(label1);
-                label1.setBounds(25, 75, 90, 28);
-                contentPanel.add(usernameField);
-                usernameField.setBounds(125, 75, 220, usernameField.getPreferredSize().height);
+                //======== panel1 ========
+                {
+                    panel1.setLayout(null);
 
-                //---- label2 ----
-                label2.setText("Password:");
-                label2.setFont(new Font("Arial", Font.PLAIN, 14));
-                contentPanel.add(label2);
-                label2.setBounds(new Rectangle(new Point(25, 121), label2.getPreferredSize()));
-                contentPanel.add(passwordField);
-                passwordField.setBounds(125, 115, 220, 28);
+                    //---- label1 ----
+                    label1.setText("Username:");
+                    label1.setFont(new Font("Arial", Font.PLAIN, 14));
+                    panel1.add(label1);
+                    label1.setBounds(0, 0, 90, 28);
+                    panel1.add(usernameField);
+                    usernameField.setBounds(100, 0, 220, usernameField.getPreferredSize().height);
 
-                //---- label3 ----
-                label3.setIcon(new ImageIcon(getClass().getResource("/images/genomespacelogo.png")));
-                contentPanel.add(label3);
-                label3.setBounds(new Rectangle(new Point(55, 160), label3.getPreferredSize()));
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel1.getComponentCount(); i++) {
+                            Rectangle bounds = panel1.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel1.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel1.setMinimumSize(preferredSize);
+                        panel1.setPreferredSize(preferredSize);
+                    }
+                }
+                contentPanel.add(panel1);
+                panel1.setBounds(new Rectangle(new Point(20, 75), panel1.getPreferredSize()));
 
-                //---- label4 ----
-                label4.setText("Please login to your GenomeSpace account");
-                label4.setFont(new Font("Arial", Font.PLAIN, 16));
-                contentPanel.add(label4);
-                label4.setBounds(25, 20, 375, label4.getPreferredSize().height);
+                //======== panel2 ========
+                {
+                    panel2.setLayout(null);
+
+                    //---- label2 ----
+                    label2.setText("Password:");
+                    label2.setFont(new Font("Arial", Font.PLAIN, 14));
+                    panel2.add(label2);
+                    label2.setBounds(new Rectangle(new Point(0, 0), label2.getPreferredSize()));
+                    panel2.add(passwordField);
+                    passwordField.setBounds(100, -6, 220, 28);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel2.getComponentCount(); i++) {
+                            Rectangle bounds = panel2.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel2.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel2.setMinimumSize(preferredSize);
+                        panel2.setPreferredSize(preferredSize);
+                    }
+                }
+                contentPanel.add(panel2);
+                panel2.setBounds(20, 120, 320, panel2.getPreferredSize().height);
+
+                //---- iconLabel ----
+                iconLabel.setIcon(new ImageIcon(getClass().getResource("/images/genomespacelogo.png")));
+                contentPanel.add(iconLabel);
+                iconLabel.setBounds(20, 160, 320, iconLabel.getPreferredSize().height);
+
+                //---- promptLabel ----
+                promptLabel.setText("Please login");
+                promptLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+                contentPanel.add(promptLabel);
+                promptLabel.setBounds(20, 20, 375, promptLabel.getPreferredSize().height);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -174,12 +228,14 @@ public class GSLoginDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
+    private JPanel panel1;
     private JLabel label1;
     private JTextField usernameField;
+    private JPanel panel2;
     private JLabel label2;
     private JPasswordField passwordField;
-    private JLabel label3;
-    private JLabel label4;
+    private JLabel iconLabel;
+    private JLabel promptLabel;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;

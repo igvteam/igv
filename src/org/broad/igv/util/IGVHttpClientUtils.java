@@ -25,11 +25,13 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
-import org.broad.igv.gs.GSLoginDialog;
+import org.broad.igv.Globals;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 
@@ -49,11 +51,14 @@ public class IGVHttpClientUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    static DefaultHttpClient client = new DefaultHttpClient();
+    final static DefaultHttpClient client = new DefaultHttpClient();
 
+    static {
+        client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
+        client.getParams().setParameter("http.useragent", Globals.applicationString());
+    }
 
     public static void setProxy(String proxyHost, int proxyPort, boolean auth, String user, String pw) {
-        if (client == null) client = new DefaultHttpClient();
 
         if (proxyHost != null) {
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
@@ -73,7 +78,6 @@ public class IGVHttpClientUtils {
      */
     public static void shutdown() {
         client.getConnectionManager().shutdown();
-        client = null;
     }
 
     /**
@@ -84,6 +88,7 @@ public class IGVHttpClientUtils {
     public static boolean downloadFile(String url, File outputFile) throws IOException {
 
         log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+
         HttpGet httpget = new HttpGet(url);
 
         HttpResponse response = client.execute(httpget);
@@ -137,8 +142,22 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
     public static InputStream openConnectionStream(URL url) throws IOException {
-        HttpResponse response = executeGet(url);
+        HttpGet getMethod = new HttpGet(url.toExternalForm());
+        HttpResponse response = execute(getMethod, url);
         return response.getEntity().getContent();
+    }
+
+    public static boolean resourceAvailable(URL url) {
+        try {
+            HttpHead headMethod = new HttpHead(url.toExternalForm());
+            HttpResponse response = execute(headMethod, url);
+            final int statusCode = response.getStatusLine().getStatusCode();
+            return statusCode == 200;
+        } catch (Exception e) {
+            //log.error("Error checking for existence of resource: " + url);
+            return false;
+        }
+
     }
 
     /**
@@ -149,34 +168,35 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
     public static String getHeaderField(URL url, String key) throws IOException {
-        HttpResponse response = executeGet(url);
+        HttpHead headMethod = new HttpHead(url.toExternalForm());
+        HttpResponse response = execute(headMethod, url);
         return response.getFirstHeader(key).getValue();
     }
 
-    private static HttpResponse executeGet(URL url) throws IOException {
+    /**
+     * Execute a get request.  In the case of an authorization failure (401) this method is called recursively
+     * with a login prompt until the correct credentials are entered,  or the user cancels triggering an
+     * authorization exception.
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private static HttpResponse execute(HttpRequestBase getMethod, URL url) throws IOException {
 
-        if (client == null) client = new DefaultHttpClient();
-        HttpGet getMethod = null;
         try {
 
             if (GSUtils.isGenomeSpace(url)) {
                 GSUtils.checkForCookie(client, url);
             }
-
-            getMethod = new HttpGet(url.toExternalForm());
-            //getMethod.setDoAuthentication(true);
-            client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
             HttpResponse response = client.execute(getMethod);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
+                // Try again                
                 getMethod.abort();
-                // Try again
                 client.getCredentialsProvider().clear();
-
                 login(url);
-
-                // Recursive call, post login.  
-                return executeGet(url);
+                return execute(getMethod, url);
             }
             if (statusCode != 200) {
                 getMethod.abort();
@@ -201,7 +221,7 @@ public class IGVHttpClientUtils {
         // TODO -- only use the GS logo if this is a GS URL
         String userpass = getGSUserPass(owner);
         if (userpass == null) {
-            throw new RuntimeException("Access denied to: " + url.toString());
+            throw new RuntimeException("Access denied:  " + url.toString());
         }
         UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
 
@@ -233,7 +253,7 @@ public class IGVHttpClientUtils {
 
     public static String getGSUserPass(Frame owner) {
 
-        GSLoginDialog dlg = new GSLoginDialog(owner);
+        LoginDialog dlg = new LoginDialog(owner);
         dlg.setVisible(true);
         if (dlg.isCanceled()) {
             return null;

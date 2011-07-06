@@ -352,7 +352,7 @@ public class IGVHttpUtils {
 
         ProxySettings proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort);
         setProxySettings(proxySettings);
-        if(useProxy) {
+        if (useProxy) {
             IGVHttpClientUtils.setProxy(proxyHost, proxyPort, auth, user, pw);
             HTTPHelper.setProxy(getProxy());
         }
@@ -452,20 +452,8 @@ public class IGVHttpUtils {
 
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
-        }
-
-        HttpURLConnection conn = null;
-        try {
-            conn = IGVHttpUtils.openConnection(url);
-            int code = conn.getResponseCode();
-            return code == HttpURLConnection.HTTP_OK;
-        } catch (Exception e) {
-            return false;
-        }
-        finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
+        } else {
+            return IGVHttpClientUtils.resourceAvailable(url);
         }
     }
 
