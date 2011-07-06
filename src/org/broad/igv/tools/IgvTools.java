@@ -244,7 +244,10 @@ public class IgvTools {
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
                     int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-                    boolean includeDuplicates = (Boolean) parser.getOptionValue(includeDuplicatesOption, false);
+
+                    Object includeDuplicatesString = parser.getOptionValue(includeDuplicatesOption, null);
+                    boolean includeDuplicates = includeDuplicatesString != null && !includeDuplicatesString.equals("false");
+                    if(includeDuplicates) System.out.println("include duplicates");
 
                     doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
                             strandOptionValue, coverageOpt, trackLine, includeDuplicates);
