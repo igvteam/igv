@@ -532,11 +532,7 @@ public class FeatureTrack extends AbstractTrack {
         renderRect.height -= margin;
 
 
-        double windowSize = context.getEndLocation() - context.getOrigin();
-
-        int vw = getVisibilityWindow();
-        showFeatures = (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
-                windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
+        showFeatures = isShowFeatures(context);
         if (showFeatures) {
             if (lastFeatureMode != null) {
                 super.setDisplayMode(lastFeatureMode);
@@ -558,7 +554,14 @@ public class FeatureTrack extends AbstractTrack {
 
     }
 
-    private void renderCoverage(RenderContext context, Rectangle inputRect) {
+    protected boolean isShowFeatures(RenderContext context) {
+        double windowSize = context.getEndLocation() - context.getOrigin();
+        int vw = getVisibilityWindow();
+        return (vw <= 0 && !context.getChr().equals(Globals.CHR_ALL) ||
+                windowSize <= vw && !context.getChr().equals(Globals.CHR_ALL));
+    }
+
+    protected void renderCoverage(RenderContext context, Rectangle inputRect) {
         List<LocusScore> scores = source.getCoverageScores(context.getChr(), (int) context.getOrigin(),
                 (int) context.getEndLocation(), context.getZoom());
         if (scores == null) {
@@ -708,8 +711,8 @@ public class FeatureTrack extends AbstractTrack {
                     // TODO -- implement source to return iterators
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     if (iter == null) {
-                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                       // PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
+                       // packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     } else {
                         //dhmay putting a switch in for different packing behavior in splice junction tracks.
                         //This should probably be switched somewhere else, but that would require a big refactor.

@@ -26,8 +26,10 @@ import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -43,6 +45,11 @@ public class AlignmentInterval extends Locus {
     byte[] reference;
     int maxCount = 0;
 
+    /**
+     * List of splice junction features.  This list is computed lazily, and can be null.
+     */
+    private List<SpliceJunctionFeature> spliceJunctions = null;
+
     public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
         super(chr, start, end);
         this.genomeId = genomeId;
@@ -51,6 +58,12 @@ public class AlignmentInterval extends Locus {
         this.counts = counts;
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
+        }
+
+        try {
+            this.getSpliceJunctions();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -206,6 +219,13 @@ public class AlignmentInterval extends Locus {
 
     public Iterator<Alignment> getAlignmentIterator() {
         return new AlignmentIterator();
+    }
+
+    public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
+        if(spliceJunctions == null) {
+            spliceJunctions = SpliceJunctionHelper.computeFeatures(getAlignmentIterator());
+        }
+        return spliceJunctions;
     }
 
 
