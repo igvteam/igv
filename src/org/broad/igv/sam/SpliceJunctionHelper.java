@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * A helper class for computing splice junctions from alignmentes.
+ * A helper class for computing splice junctions from alignments.
  *
  * @author dhmay, jrobinso
  * @date Jul 3, 2011
@@ -84,7 +84,7 @@ public class SpliceJunctionHelper {
             for (AlignmentBlock block : blocks) {
                 int flankingEnd = block.getEnd();
                 int junctionEnd = block.getStart();
-                if (junctionStart != -1 && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
+                if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
                     //only proceed if the flanking regions are both bigger than the minimum
                     if (minReadFlankingWidth == 0 ||
                             ((junctionStart - flankingStart >= minReadFlankingWidth) &&
@@ -110,7 +110,10 @@ public class SpliceJunctionHelper {
                 gapCount += 1;
             }
         }
-        System.out.println(alignment.getStart() + " - " + alignment.getEnd());
+        if (alignment != null) {
+            // If we never stepped into the iterator, this will still be null.
+            System.out.println(alignment.getStart() + " - " + alignment.getEnd());
+        }
         System.out.println("End computing splice junctions");
 
         //get rid of any features without enough coverage
