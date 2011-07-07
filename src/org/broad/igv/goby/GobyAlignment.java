@@ -27,11 +27,13 @@ import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.lang.MutableString;
 import org.apache.log4j.Logger;
+import org.broad.igv.data.CharArrayList;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
+import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -60,7 +62,7 @@ public class GobyAlignment implements Alignment {
     protected AlignmentBlock[] block = new AlignmentBlock[1];
     protected AlignmentBlock[] insertionBlock;
     private Color defaultColor = new Color(200, 200, 200);
-
+    private CharArrayList gapTypes = null;
 
     /**
      * Construct the facade for an iterator and entry.
@@ -154,47 +156,64 @@ public class GobyAlignment implements Alignment {
         block = blocks.toArray(new AlignmentBlock[blocks.size()]);
 
         insertionBlock = insertionBlocks.toArray(new AlignmentBlock[insertionBlocks.size()]);
-        ObjectArrayList<GobyAlignment> list;
+        ObjectArrayList<GobyAlignment> list = null;
 
-        if (alignmentEntry.hasSplicedForwardAlignmentLink()) {
+        if (alignmentEntry.hasSplicedForwardAlignmentLink() || alignmentEntry.hasSplicedBackwardAlignmentLink()) {
             // if has a forward link, store a reference to this alignment in the reader (which represents the window scope)
             list = iterator.cacheSpliceComponent(this);
-        }
-        if (alignmentEntry.hasSplicedBackwardAlignmentLink()) {
-            // if has a backward link get the set of previously cached alignments:
-            list = iterator.cacheSpliceComponent(this);
+            if (list.size() > 1 && spliceListIsValid(list)) {
 
-            if (list.size() > 1) {
-                Alignments.RelatedAlignmentEntry link = entry.getSplicedBackwardAlignmentLink();
+                final GobyAlignment spliceHeadAlignment = list.get(0);
 
-                for (final GobyAlignment alignment : list) {
-                    final Alignments.AlignmentEntry entry = alignment.entry;
-                    if (entry.getPosition() == link.getPosition() &&
-                            entry.getTargetIndex() == link.getTargetIndex() &&
-                            entry.getFragmentIndex() == link.getFragmentIndex() &&
-                            entry.getQueryIndex() == alignmentEntry.getQueryIndex()) {
-                        // the current alignmentEntry is the continuation of a read that matched through a splice site.
-                        // We append the block and insertion block to the previous alignment entry
-                        ObjectArrayList<AlignmentBlock> splicedBlocks = new ObjectArrayList<AlignmentBlock>();
-                        splicedBlocks.addAll(ObjectArrayList.wrap(alignment.block));
-                        splicedBlocks.addAll(blocks);
-                        alignment.block = splicedBlocks.toArray(new AlignmentBlock[splicedBlocks.size()]);
+                ObjectArrayList<AlignmentBlock> splicedBlocks = new ObjectArrayList<AlignmentBlock>();
+                splicedBlocks.addAll(ObjectArrayList.wrap(spliceHeadAlignment.block));
+                splicedBlocks.addAll(blocks);
+                spliceHeadAlignment.block = splicedBlocks.toArray(new AlignmentBlock[splicedBlocks.size()]);
 
-                        ObjectArrayList<AlignmentBlock> splicedInsertionBlocks = new ObjectArrayList<AlignmentBlock>();
-                        splicedInsertionBlocks.addAll(ObjectArrayList.wrap(alignment.insertionBlock));
-                        splicedInsertionBlocks.addAll(insertionBlocks);
-                        alignment.insertionBlock = splicedInsertionBlocks.toArray(new AlignmentBlock[splicedInsertionBlocks.size()]);
+                ObjectArrayList<AlignmentBlock> splicedInsertionBlocks = new ObjectArrayList<AlignmentBlock>();
+                splicedInsertionBlocks.addAll(ObjectArrayList.wrap(spliceHeadAlignment.insertionBlock));
+                splicedInsertionBlocks.addAll(insertionBlocks);
+                spliceHeadAlignment.insertionBlock = splicedInsertionBlocks.toArray(new AlignmentBlock[splicedInsertionBlocks.size()]);
 
-                        // Since the previous alignment carries this information, we clear up block and insertionBlock
-                        // in this alignment:
-                        block = new AlignmentBlock[0];
-                        insertionBlock = new AlignmentBlock[0];
-                    }
+                if (spliceHeadAlignment.gapTypes == null) {
+                    spliceHeadAlignment.gapTypes = new CharArrayList(10);
                 }
+                spliceHeadAlignment.gapTypes.add(SamAlignment.SKIPPED_REGION);
+
+                // Since the previous alignment carries this information, we clear up block and insertionBlock
+                // in this alignment:
+                this.block = new AlignmentBlock[0];
+                this.insertionBlock = new AlignmentBlock[0];
             }
         }
     }
 
+    /**
+     * Verify that the list has an appropriate unbroken chain of back links.
+     * @param list the list of splices to validate
+     * @return true if the list has an unbroken chain of back links
+     */
+    boolean spliceListIsValid(final ObjectArrayList<GobyAlignment> list) {
+        if (list != null && list.size() > 1) {
+            Alignments.AlignmentEntry prevEntry = list.get(0).entry;
+            for (int i = 1; i < list.size(); i++) {
+                Alignments.AlignmentEntry currentEntry = list.get(i).entry;
+                Alignments.RelatedAlignmentEntry currentBackwardLink = currentEntry.getSplicedBackwardAlignmentLink();
+
+                if ((currentBackwardLink == null) ||
+                    (prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
+                    (prevEntry.getFragmentIndex() >= currentEntry.getFragmentIndex()) ||
+                    (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
+                    (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
+                    (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
+                    return false;
+                }
+
+                prevEntry = currentEntry;
+            }
+        }
+        return true;
+    }
 
 
     /**
@@ -331,7 +350,11 @@ public class GobyAlignment implements Alignment {
 
     public char[] getGapTypes() {
         //LOG.info("getGapTypes");
-        return new char[0];
+        if (gapTypes == null) {
+            return new char[0];
+        } else {
+            return gapTypes.toArray();
+        }
     }
 
     public String getCigarString() {
