@@ -76,14 +76,12 @@ public class LoginDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         contentPanel = new JPanel();
-        panel1 = new JPanel();
-        label1 = new JLabel();
-        usernameField = new JTextField();
-        panel2 = new JPanel();
-        label2 = new JLabel();
-        passwordField = new JPasswordField();
         iconLabel = new JLabel();
         promptLabel = new JLabel();
+        passwordField = new JPasswordField();
+        label2 = new JLabel();
+        usernameField = new JTextField();
+        label1 = new JLabel();
         buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -102,74 +100,32 @@ public class LoginDialog extends JDialog {
             {
                 contentPanel.setLayout(null);
 
-                //======== panel1 ========
-                {
-                    panel1.setLayout(null);
-
-                    //---- label1 ----
-                    label1.setText("Username:");
-                    label1.setFont(new Font("Arial", Font.PLAIN, 14));
-                    panel1.add(label1);
-                    label1.setBounds(0, 0, 90, 28);
-                    panel1.add(usernameField);
-                    usernameField.setBounds(100, 0, 220, usernameField.getPreferredSize().height);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel1.getComponentCount(); i++) {
-                            Rectangle bounds = panel1.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel1.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel1.setMinimumSize(preferredSize);
-                        panel1.setPreferredSize(preferredSize);
-                    }
-                }
-                contentPanel.add(panel1);
-                panel1.setBounds(new Rectangle(new Point(20, 75), panel1.getPreferredSize()));
-
-                //======== panel2 ========
-                {
-                    panel2.setLayout(null);
-
-                    //---- label2 ----
-                    label2.setText("Password:");
-                    label2.setFont(new Font("Arial", Font.PLAIN, 14));
-                    panel2.add(label2);
-                    label2.setBounds(new Rectangle(new Point(0, 0), label2.getPreferredSize()));
-                    panel2.add(passwordField);
-                    passwordField.setBounds(100, -6, 220, 28);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel2.getComponentCount(); i++) {
-                            Rectangle bounds = panel2.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel2.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel2.setMinimumSize(preferredSize);
-                        panel2.setPreferredSize(preferredSize);
-                    }
-                }
-                contentPanel.add(panel2);
-                panel2.setBounds(20, 120, 320, panel2.getPreferredSize().height);
-
                 //---- iconLabel ----
                 iconLabel.setIcon(new ImageIcon(getClass().getResource("/images/genomespacelogo.png")));
                 contentPanel.add(iconLabel);
                 iconLabel.setBounds(20, 160, 320, iconLabel.getPreferredSize().height);
 
                 //---- promptLabel ----
-                promptLabel.setText("Please login");
-                promptLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+                promptLabel.setText("Enter username and password to access this resource");
+                promptLabel.setFont(new Font("Arial", Font.PLAIN, 14));
                 contentPanel.add(promptLabel);
                 promptLabel.setBounds(20, 20, 375, promptLabel.getPreferredSize().height);
+                contentPanel.add(passwordField);
+                passwordField.setBounds(125, 115, 220, 32);
+
+                //---- label2 ----
+                label2.setText("Password:");
+                label2.setFont(new Font("Arial", Font.PLAIN, 14));
+                contentPanel.add(label2);
+                label2.setBounds(new Rectangle(new Point(25, 123), label2.getPreferredSize()));
+                contentPanel.add(usernameField);
+                usernameField.setBounds(125, 70, 220, 32);
+
+                //---- label1 ----
+                label1.setText("Username:");
+                label1.setFont(new Font("Arial", Font.PLAIN, 14));
+                contentPanel.add(label1);
+                label1.setBounds(25, 72, 90, 28);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -228,14 +184,12 @@ public class LoginDialog extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel contentPanel;
-    private JPanel panel1;
-    private JLabel label1;
-    private JTextField usernameField;
-    private JPanel panel2;
-    private JLabel label2;
-    private JPasswordField passwordField;
     private JLabel iconLabel;
     private JLabel promptLabel;
+    private JPasswordField passwordField;
+    private JLabel label2;
+    private JTextField usernameField;
+    private JLabel label1;
     private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
