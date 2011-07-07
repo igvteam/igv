@@ -51,7 +51,7 @@ public class FileUtils {
             boolean remoteFile = isRemote(path);
             // TODO -- what if its ftp?
             return (!remoteFile && (new File(path).exists())) ||
-                    (remoteFile && IGVHttpUtils.resourceAvailable(new URL(path)));
+                    (remoteFile && IGVHttpClientUtils.resourceAvailable(new URL(path)));
         } catch (IOException e) {
             log.error("Malformed URL: " + path, e);
             return false;

@@ -23,6 +23,7 @@
 package org.broad.igv.data.seg;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -60,7 +61,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
         InputStream is = null;
         try {
             URL url = new URL(serverURL + "?method=getChromosomeData&file=" + filePath + "&chr=" + chr);
-            is = IGVHttpUtils.openConnectionStream(url);
+            is = IGVHttpClientUtils.openConnectionStream(url);
             SegmentedChromosomeData cd = new SegmentedChromosomeData();
             cd.deserialize(is);
             return cd;
@@ -87,7 +88,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
         try {
             List<String> childNames = new ArrayList(100);
             URL url = new URL(serverURL + "?method=getSampleNames&file=" + filePath);
-            urlStream = IGVHttpUtils.openConnectionStream(url);
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
             String nextLine = "";
             while ((nextLine = reader.readLine()) != null) {
@@ -129,7 +130,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
 
             try {
                 URL url = new URL(serverURL + "?method=getAttributes&file=" + filePath);
-                urlStream = IGVHttpUtils.openConnectionStream(url);
+                urlStream = IGVHttpClientUtils.openConnectionStream(url);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
                 String nextLine = "";
                 while ((nextLine = reader.readLine()) != null) {

@@ -24,7 +24,7 @@ import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.MessageCollection;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
@@ -184,7 +184,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                     }
                 }
                 String obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-                if (IGVHttpUtils.isURL(obj)) {
+                if (IGVHttpClientUtils.isURL(obj)) {
                     IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
                 } else {
 
@@ -198,7 +198,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 String obj = null;
                 try {
                     obj = transferable.getTransferData(DataFlavor.stringFlavor).toString();
-                    if (IGVHttpUtils.isURL(obj)) {
+                    if (IGVHttpClientUtils.isURL(obj)) {
                         IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(obj)));
                     }
                 }

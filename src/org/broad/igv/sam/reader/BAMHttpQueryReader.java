@@ -28,9 +28,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.stream.SeekablePicardFtpStream;
+import org.broad.igv.util.stream.SeekablePicardHTTPStream;
 
 import java.io.*;
 import java.net.Proxy;
@@ -65,7 +66,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
             reader = new SAMFileReader(ss, indexFile, false);
         } else {
-            InputStream is = IGVHttpUtils.openConnectionStream(url);
+            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
             reader = new SAMFileReader(new BufferedInputStream(is));
         }
 
@@ -138,13 +139,9 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            boolean useByteRange = IGVHttpUtils.useByteRange();
-            if (useByteRange) {
-                Proxy proxy = null;
-                if (IGVHttpUtils.useProxy()) {
-                    proxy = IGVHttpUtils.getProxy();
-                }
-                is = new SeekableHTTPStream(url, proxy);
+            boolean useByteRange = IGVHttpClientUtils.useByteRange();
+            if (useByteRange) {              
+                is = new SeekablePicardHTTPStream(url);
             } else {
                 throw new RuntimeException("Byte-range requests are disabled.  HTTP and FTP access to BAM files require byte-range support.");
             }
@@ -193,7 +190,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             URL indexURL = new URL(idx);
             os = new FileOutputStream(indexFile);
             try {
-                is = IGVHttpUtils.openConnectionStream(indexURL);
+                is = IGVHttpClientUtils.openConnectionStream(indexURL);
             }
             catch (FileNotFoundException e) {
                 // Try other index convention
@@ -201,7 +198,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                 indexURL = new URL(baseName + ".bai");
 
                 try {
-                    is = IGVHttpUtils.openConnectionStream(indexURL);
+                    is = IGVHttpClientUtils.openConnectionStream(indexURL);
                 }
                 catch (FileNotFoundException e1) {
                     MessageUtils.showMessage("Index file not found for file: " + path);

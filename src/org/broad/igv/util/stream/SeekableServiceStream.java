@@ -19,6 +19,7 @@
 package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
@@ -84,7 +85,6 @@ public class SeekableServiceStream extends SeekableStream {
             throw new IndexOutOfBoundsException();
         }
 
-        URLConnection connection = null;
         InputStream is = null;
 
         URL url = new URL(WEBSERVICE_URL + "?method=getRange&file=" + dataPath +
@@ -94,7 +94,7 @@ public class SeekableServiceStream extends SeekableStream {
         int n = 0;
         try {
 
-            is = IGVHttpUtils.openConnectionStream (url);
+            is = IGVHttpClientUtils.openConnectionStream (url);
             
             while (n < length) {
                 int count = is.read(buffer, offset + n, length - n);
@@ -125,7 +125,7 @@ public class SeekableServiceStream extends SeekableStream {
             if (is != null) {
                 is.close();
             }
-            IGVHttpUtils.disconnect(connection);
+
         }
     }
 

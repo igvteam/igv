@@ -16,16 +16,47 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.util;
+package org.broad.igv.util.stream;
 
+import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.tribble.util.URLHelper;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.*;
+/**
+ * @author jrobinso
+ * @date Jul 6, 2011
+ */
+public class ApacheURLHelper implements URLHelper {
 
-public class IGVHttpUtils {
+    URL url;
 
+    public ApacheURLHelper(URL url) {
+        this.url = url;
+    }
 
+    public URL getUrl() {
+        return url;
+    }
 
+    public long getContentLength() throws IOException {
+        return IGVHttpClientUtils.getContentLength(url);
+    }
 
+    public InputStream openInputStreamForRange(long start, long end) throws IOException {
+
+        String byteRange = "bytes=" + start + "-" + end;
+        Map<String, String> params = new HashMap();
+        params.put("Range", byteRange);
+        return IGVHttpClientUtils.executeGet(url, params).getEntity().getContent();
+    }
+
+    public boolean exists() {
+        return IGVHttpClientUtils.resourceAvailable(url);
+    }
 }

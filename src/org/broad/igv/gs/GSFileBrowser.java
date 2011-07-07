@@ -27,10 +27,7 @@ import java.awt.event.*;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -112,7 +109,7 @@ public class GSFileBrowser extends JDialog {
         StringBuffer buf = new StringBuffer();
         InputStream is = null;
         try {
-            is = IGVHttpUtils.openConnectionStream(url);
+            is = IGVHttpClientUtils.openConnectionStream(url);
             BufferedInputStream bis = new BufferedInputStream(is);
             int b;
             while ((b = bis.read()) >= 0) {

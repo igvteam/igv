@@ -19,13 +19,14 @@
 package org.broad.igv.util;
 
 import junit.framework.TestCase;
-import org.broad.igv.Globals;
+import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
+
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by IntelliJ IDEA.
@@ -34,32 +35,24 @@ import java.net.URL;
  * Time: 1:46:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IGVHttpUtilsTest extends TestCase {
+public class IGVHttpClientUtilsTest  {
 
-    public void testGetETag() throws Exception {
-
-        String url = "http://www.broadinstitute.org/igvdata/test/NA12878.SLX.bam";
-
-        String eTag = IGVHttpUtils.getETag(new URL(url));
-
-        assertEquals("\"47c51-2aa59e7866-486ff338f6d35\"", eTag);
-    }
-
-
+    @Test
     public void testGetContentLength() throws IOException {
 
         String url = "http://igvdata.broadinstitute.org/genomes/hg18.genome";
-        assertEquals(3617657, IGVHttpUtils.getContentLength(new URL(url)));
+        assertEquals(3617644, IGVHttpClientUtils.getContentLength(new URL(url)));
     }
 
+    @Test
     public void testExists() throws IOException {
         URL url = new URL("http://igvdata.broadinstitute.org/genomes/hg18.genome");
-        assertTrue(IGVHttpUtils.resourceAvailable(url));
+        assertTrue(IGVHttpClientUtils.resourceAvailable(url));
 
         url = new URL("http://nosuchserver/genomes/hg18.genome");
-        assertFalse(IGVHttpUtils.resourceAvailable(url));
+        assertFalse(IGVHttpClientUtils.resourceAvailable(url));
 
         url = new URL("http://igvdata.broadinstitute.org/nosuchfile.txt");
-        assertFalse(IGVHttpUtils.resourceAvailable(url));
+        assertFalse(IGVHttpClientUtils.resourceAvailable(url));
     }
 }

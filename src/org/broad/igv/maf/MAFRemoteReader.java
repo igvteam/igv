@@ -23,6 +23,7 @@
 package org.broad.igv.maf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -53,7 +54,7 @@ public class MAFRemoteReader implements MAFReader {
         InputStream is = null;
         try {
             URL url = new URL(serverURL + "?method=maf&chr=" + chr + "&start=" + start + "&end=" + end);
-            is = IGVHttpUtils.openConnectionStream(url);
+            is = IGVHttpClientUtils.openConnectionStream(url);
             DataInputStream dis = new DataInputStream(new GZIPInputStream(new BufferedInputStream(is)));
             MAFTile tile = codec.decode(dis);
             return tile;

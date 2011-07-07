@@ -22,6 +22,7 @@
  */
 package org.broad.igv.remote;
 
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 
 import java.io.IOException;
@@ -36,32 +37,16 @@ import java.util.Map;
  */
 public class HTTPConnectionTests {
 
-    public static void main(String[] args) throws IOException {
-        getContentLength();
-    }
 
-    public static int getContentLength() throws IOException {
+    public static long getContentLength(URL url) throws IOException {
 
-
-        //URL url = new URL("http://www.broadinstitute.org/~jrobinso/test.tdf");
-        URL url = new URL("http://www.broadinstitute.org/igv/resources/dataServerRegistry.txt");
-        HttpURLConnection connection = (HttpURLConnection) IGVHttpUtils.openConnection(url);
-
-        connection.setRequestMethod("HEAD");
-
-        connection.connect();
-
-        int len = connection.getContentLength();
-
-        connection.disconnect();
-
-        return len;
+        return IGVHttpClientUtils.getContentLength(url);
     }
 
     public static void dumpHeaderFields() throws IOException {
 
 
-        URL url = new URL("http://www.broadinstitute.org/igv/resources/dataServerRegistry.txt");
+   /*     URL url = new URL("http://www.broadinstitute.org/igv/resources/dataServerRegistry.txt");
         HttpURLConnection connection = (HttpURLConnection) IGVHttpUtils.openConnection(url);
 
         connection.setRequestMethod("HEAD");
@@ -79,15 +64,17 @@ public class HTTPConnectionTests {
         }
 
 
-        connection.disconnect();
+        connection.disconnect();     */
     }
 
     public static void getByteRange() throws IOException {
 
-        int len = getContentLength();
 
-        URL url = new URL("http://www.broadinstitute.org/igv/resources/dataServerRegistry.txt");
+    /*    URL url = new URL("http://www.broadinstitute.org/igv/resources/dataServerRegistry.txt");
         //URL url = new URL("http://www.broadinstitute.org/~jrobinso/dataServerRegistry.txt");
+
+        long len = getContentLength(url);
+
         HttpURLConnection connection = (HttpURLConnection) IGVHttpUtils.openConnection(url);
         connection.setRequestMethod("POST");
 
@@ -114,6 +101,6 @@ public class HTTPConnectionTests {
             n++;
         }
 
-        connection.disconnect();
+        connection.disconnect();   */
     }
 }

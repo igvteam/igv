@@ -48,9 +48,9 @@ public class ParsingUtils {
             throws FileNotFoundException, IOException {
         BufferedReader reader = null;
 
-        if (IGVHttpUtils.isURL(pathOrUrl)) {
+        if (IGVHttpClientUtils.isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            reader = new BufferedReader(new InputStreamReader(IGVHttpUtils.openConnectionStream(url)));
+            reader = new BufferedReader(new InputStreamReader(IGVHttpClientUtils.openConnectionStream(url)));
         } else {
             File file = new File(pathOrUrl);
 
@@ -90,9 +90,9 @@ public class ParsingUtils {
         try {
             long fileLength = 0;
             final int defaultLength = 100000;
-            if (IGVHttpUtils.isURL(filename)) {
+            if (IGVHttpClientUtils.isURL(filename)) {
                 URL url = new URL(filename);
-                fileLength = IGVHttpUtils.getContentLength(url);
+                fileLength = IGVHttpClientUtils.getContentLength(url);
                 if(fileLength <= 0) {
                     return defaultLength;
                 }
@@ -162,7 +162,7 @@ public class ParsingUtils {
 
         if (locator.getServerURL() != null) {
             URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
-            InputStream is = IGVHttpUtils.openConnectionStream(url);
+            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
 
             // Note -- assumption that url stream is compressed!
             try {
@@ -178,9 +178,9 @@ public class ParsingUtils {
         } else {
 
             InputStream inputStream = null;
-            if (IGVHttpUtils.isURL(locator.getPath())) {
+            if (IGVHttpClientUtils.isURL(locator.getPath())) {
                 URL url = new URL(locator.getPath());
-                inputStream = IGVHttpUtils.openConnectionStream(url);
+                inputStream = IGVHttpClientUtils.openConnectionStream(url);
             } else {
                 String path = locator.getPath();
                 if(path.startsWith("file://")) {
@@ -617,7 +617,7 @@ public class ParsingUtils {
     public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||
-                    (IGVHttpUtils.isURL(covPath) && IGVHttpUtils.resourceAvailable(new URL(covPath)));
+                    (IGVHttpClientUtils.isURL(covPath) && IGVHttpClientUtils.resourceAvailable(new URL(covPath)));
         } catch (MalformedURLException e) {
             // todo -- log
             return false;

@@ -22,6 +22,7 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 
 import java.io.DataInputStream;
@@ -58,7 +59,7 @@ public class GetSequenceTest {
 
             // Get the url content as an array of bytes
             byte[] sequence = new byte[end - start];
-            DataInputStream dis = new DataInputStream(IGVHttpUtils.openConnectionStream(url));
+            DataInputStream dis = new DataInputStream(IGVHttpClientUtils.openConnectionStream(url));
             dis.readFully(sequence);
             dis.close();
 

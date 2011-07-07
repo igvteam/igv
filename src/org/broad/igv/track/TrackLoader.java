@@ -61,7 +61,7 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.vcf.PedigreeUtils;
@@ -906,8 +906,8 @@ public class TrackLoader {
             }
             if (covPath != null) {
                 try {
-                    if ((new File(covPath)).exists() || (IGVHttpUtils.isURL(covPath) &&
-                            IGVHttpUtils.resourceAvailable(new URL(covPath)))) {
+                    if ((new File(covPath)).exists() || (IGVHttpClientUtils.isURL(covPath) &&
+                            IGVHttpClientUtils.resourceAvailable(new URL(covPath)))) {
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
                         covTrack.setDataSource(ds);
@@ -921,7 +921,7 @@ public class TrackLoader {
             boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
             if (showSpliceJunctionTrack) {
                 SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator.getPath() + "_junctions",
-                        alignmentTrack.getName() + " Junctions", dataManager);
+                        alignmentTrack.getName() + " Junctions", dataManager, genome);
 //            spliceJunctionTrack.setDataManager(dataManager);
                 spliceJunctionTrack.setHeight(60);
                 spliceJunctionTrack.setPreferredHeight(60);
@@ -1114,8 +1114,8 @@ public class TrackLoader {
         String indexExtension = path.endsWith("gz") ? ".tbi" : ".idx";
         String indexPath = path + indexExtension;
         try {
-            if (IGVHttpUtils.isURL(path)) {
-                return IGVHttpUtils.resourceAvailable(new URL(indexPath));
+            if (IGVHttpClientUtils.isURL(path)) {
+                return IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
             } else {
                 File f = new File(path + indexExtension);
                 return f.exists();

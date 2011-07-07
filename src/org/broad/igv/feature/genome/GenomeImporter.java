@@ -27,11 +27,8 @@ import org.broad.igv.Globals;
 
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.ui.util.ProgressMonitor;
-import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.Utilities;
-import org.broad.igv.util.ZipArchiveWrapper;
 import org.broad.igv.util.ZipArchiveWrapper.ZipIterator;
 
 import java.io.*;
@@ -308,7 +305,7 @@ public class GenomeImporter {
                 propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
             if (relativeSequenceLocation != null) {
-                if (!IGVHttpUtils.isURL(relativeSequenceLocation)) {
+                if (!IGVHttpClientUtils.isURL(relativeSequenceLocation)) {
                     relativeSequenceLocation = relativeSequenceLocation.replace('\\', '/');
                 }
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + relativeSequenceLocation);

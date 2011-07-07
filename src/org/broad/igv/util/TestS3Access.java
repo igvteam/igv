@@ -21,7 +21,6 @@ package org.broad.igv.util;
 
 import java.io.*;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
@@ -68,10 +67,10 @@ public class TestS3Access {
 
         BufferedReader reader = null;
 
-        if (IGVHttpUtils.isURL(pathOrUrl)) {
+        if (IGVHttpClientUtils.isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
+            reader = new BufferedReader(new InputStreamReader(is));
         } else {
             File file = new File(pathOrUrl);
 

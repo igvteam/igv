@@ -24,7 +24,9 @@ package org.broad.igv.h5;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -70,8 +72,7 @@ public class HDF5RemoteReader implements HDF5Reader {
 
             try {
                 URL url = new URL(server + "?method=closeFiles&fileId=" + fileIdString);
-                URLConnection connection = IGVHttpUtils.openConnection(url);
-                connection.getInputStream().read();
+                IGVHttpClientUtils.executeGet(url);
 
             }
             catch (IOException ex) {
@@ -108,7 +109,7 @@ public class HDF5RemoteReader implements HDF5Reader {
             this.locator = locator;
             URL url = new URL(locator.getServerURL() + "?method=openFile&file="
                     + locator.getPath());
-            urlStream = IGVHttpUtils.openConnectionStream(url);
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             fileId = is.readInt();
             recordFile(locator.getServerURL(), fileId);
@@ -206,8 +207,7 @@ public class HDF5RemoteReader implements HDF5Reader {
         try {
             URL url = new URL(locator.getServerURL() + "?method=readIntegerAttribute&id=" + groupId
                     + "&name=" + attrName);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            urlStream = connection.getInputStream();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             int value = is.readInt();
             is.close();
@@ -247,8 +247,7 @@ public class HDF5RemoteReader implements HDF5Reader {
         InputStream urlStream = null;
         try {
             URL url = new URL(locator.getServerURL() + "?method=readStringAttribute&id=" + groupId + "&name=" + attrName);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            urlStream = connection.getInputStream();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
             String value = reader.readLine().replace((char) 711, ' ').trim();
@@ -284,12 +283,12 @@ public class HDF5RemoteReader implements HDF5Reader {
         try {
             URL url = new URL(locator.getServerURL() + "?method=readDoubleAttribute&id=" + groupId
                     + "&name=" + attrName);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            urlStream = connection.getInputStream();
 
-            DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
-            double value = is.readDouble();
-            is.close();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
+
+            DataInputStream dis = new DataInputStream(new BufferedInputStream(urlStream));
+            double value = dis.readDouble();
+            dis.close();
             return value;
         }
         catch (IOException ex) {
@@ -317,16 +316,16 @@ public class HDF5RemoteReader implements HDF5Reader {
         InputStream urlStream = null;
         try {
             URL url = new URL(locator.getServerURL() + "?method=readAllFloats&id=" + datasetId);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
 
-            int byteLength = connection.getContentLength();
+            HttpResponse response = IGVHttpClientUtils.executeGet(url);
+            int byteLength = (int) IGVHttpClientUtils.getContentLength(response);
 
             // Compute # of floats in the stream.
             int nFloats = byteLength / 4;
 
             float[] data = new float[nFloats];
 
-            urlStream = connection.getInputStream();
+            urlStream = response.getEntity().getContent();
 
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             for (int i = 0; i < nFloats; i++) {
@@ -361,15 +360,15 @@ public class HDF5RemoteReader implements HDF5Reader {
         InputStream urlStream = null;
         try {
             URL url = new URL(locator.getServerURL() + "?method=readAllInts&id=" + datasetId);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
 
             // Compute the # of ints in the stream.
-            int byteLength = connection.getContentLength();
+            HttpResponse response = IGVHttpClientUtils.executeGet(url);
+            int byteLength = (int) IGVHttpClientUtils.getContentLength(response);
             int nInts = byteLength / 4;
 
             int[] data = new int[nInts];
 
-            urlStream = connection.getInputStream();
+            urlStream = response.getEntity().getContent();
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             for (int i = 0; i < nInts; i++) {
                 data[i] = is.readInt();
@@ -403,11 +402,9 @@ public class HDF5RemoteReader implements HDF5Reader {
         InputStream urlStream = null;
         try {
             URL url = new URL(locator.getServerURL() + "?method=readAllStrings&id=" + datasetId);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-
             ArrayList<String> strings = new ArrayList(100);
 
-            urlStream = connection.getInputStream();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
 
             String nextLine = "";
@@ -419,7 +416,7 @@ public class HDF5RemoteReader implements HDF5Reader {
             }
             reader.close();
 
-            return  strings;
+            return strings;
 
         }
         catch (IOException ex) {
@@ -451,14 +448,14 @@ public class HDF5RemoteReader implements HDF5Reader {
         try {
             URL url = new URL(locator.getServerURL() + "?method=readFloats&id=" + datasetId
                     + "&from=" + fromIndex + "&to=" + toIndex);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
 
-            int byteLength = connection.getContentLength();
+            HttpResponse response = IGVHttpClientUtils.executeGet(url);
+            int byteLength = (int) IGVHttpClientUtils.getContentLength(response);
             int nFloats = byteLength / 4;
 
             float[] data = new float[nFloats];
 
-            urlStream = connection.getInputStream();
+            urlStream = response.getEntity().getContent();
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             for (int i = 0; i < nFloats; i++) {
                 data[i] = is.readFloat();
@@ -495,14 +492,14 @@ public class HDF5RemoteReader implements HDF5Reader {
         try {
             URL url = new URL(locator.getServerURL() + "?method=readInts&id=" + datasetId
                     + "&from=" + fromIndex + "&to=" + toIndex);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
 
-            int byteLength = connection.getContentLength();
+            HttpResponse response = IGVHttpClientUtils.executeGet(url);
+            int byteLength = (int) IGVHttpClientUtils.getContentLength(response);
             int nInts = byteLength / 4;
 
             int[] data = new int[nInts];
 
-            urlStream = connection.getInputStream();
+            urlStream = response.getEntity().getContent();
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             for (int i = 0; i < nInts; i++) {
                 data[i] = is.readInt();
@@ -543,9 +540,8 @@ public class HDF5RemoteReader implements HDF5Reader {
         try {
             URL url = new URL(locator.getServerURL() + "?method=readDataSlice&id=" + datasetId
                     + "&from=" + fromIndex + "&to=" + toIndex);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
 
-            urlStream = connection.getInputStream();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             int nRows = is.readInt();
             int nColumns = is.readInt();
@@ -587,7 +583,7 @@ public class HDF5RemoteReader implements HDF5Reader {
         InputStream urlStream = null;
         try {
             URL url = new URL(locator.getServerURL() + "?method=" + method + "&id=" + datasetId);
-            urlStream = IGVHttpUtils.openConnectionStream(url);
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
 
             // TODO -- read result;
         }
@@ -633,10 +629,7 @@ public class HDF5RemoteReader implements HDF5Reader {
 
             URL url = new URL(locator.getServerURL() + "?method=" + method + "&id=" + parentNodeId
                     + "&name=" + name);
-            URLConnection connection = IGVHttpUtils.openConnection(url);
-            connection.setDoOutput(true);
-
-            urlStream = connection.getInputStream();
+            urlStream = IGVHttpClientUtils.openConnectionStream(url);
             DataInputStream is = new DataInputStream(new BufferedInputStream(urlStream));
             int id = is.readInt();
             if (id < 0) {

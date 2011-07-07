@@ -38,7 +38,6 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.Utilities;
 
 import java.io.*;
@@ -248,7 +247,7 @@ public class GenomeManager {
                     Globals.getGenomeCacheDirectory().mkdir();
                 }
 
-                if (IGVHttpUtils.isURL(genomeArchiveFileLocation.toLowerCase())) {
+                if (IGVHttpClientUtils.isURL(genomeArchiveFileLocation.toLowerCase())) {
 
                     URL genomeArchiveURL = new URL(genomeArchiveFileLocation);
                     String fileName = Utilities.getFileNameFromURL(
@@ -344,7 +343,7 @@ public class GenomeManager {
 
 
                 long fileLength = archiveFile.length();
-                long contentLength = IGVHttpUtils.getContentLength(genomeArchiveURL);
+                long contentLength = IGVHttpClientUtils.getContentLength(genomeArchiveURL);
 
                 if (contentLength <= 0) {
                     log.info("Skipping genome update of " + archiveFile.getName() + " due to unknown content length");
@@ -419,7 +418,7 @@ public class GenomeManager {
 
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
-                    if ((sequenceLocation != null) && !IGVHttpUtils.isURL(sequenceLocation)) {
+                    if ((sequenceLocation != null) && !IGVHttpClientUtils.isURL(sequenceLocation)) {
                         File sequenceFolder = null;
                         // Relative or absolute location?
                         if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
@@ -546,8 +545,8 @@ public class GenomeManager {
                 genomeListURLString = PreferenceManager.getInstance().getGenomeListURL();
                 URL serverGenomeURL = new URL(genomeListURLString);
 
-                if (IGVHttpUtils.isURL(genomeListURLString)) {
-                    inputStream = IGVHttpUtils.openConnectionStream(serverGenomeURL);
+                if (IGVHttpClientUtils.isURL(genomeListURLString)) {
+                    inputStream = IGVHttpClientUtils.openConnectionStream(serverGenomeURL);
                 } else {
                     File file = new File(genomeListURLString.startsWith("file:") ? serverGenomeURL.getFile() : genomeListURLString);
                     inputStream = new FileInputStream(file);

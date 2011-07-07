@@ -32,12 +32,21 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.ftp.FTPClient;
+import org.broad.igv.util.ftp.FTPStream;
+import org.broad.igv.util.ftp.FTPUtils;
+import org.broad.igv.util.stream.ApacheURLHelper;
+import org.broad.tribble.util.SeekableHTTPStream;
 
 import java.awt.*;
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * New version of IGVHttpUtils built on Apache HttpClient 4.1.  Currently this version is only used for GenomeSpace
@@ -52,25 +61,16 @@ public class IGVHttpClientUtils {
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
     final static DefaultHttpClient client = new DefaultHttpClient();
+    public static boolean byteRangeTested = false;
+    public static boolean useByteRange = true;
+    /**
+     * Proxy settings (can be null)
+     */
+    //public static ProxySettings proxySettings = null;
 
     static {
         client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
         client.getParams().setParameter("http.useragent", Globals.applicationString());
-    }
-
-    public static void setProxy(String proxyHost, int proxyPort, boolean auth, String user, String pw) {
-
-        if (proxyHost != null) {
-            HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-            client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-            log.info("Proxy settings: " + proxyHost + ":" + proxyPort);
-        }
-        if (auth) {
-            client.getCredentialsProvider().setCredentials(
-                    new AuthScope(proxyHost, proxyPort),
-                    new UsernamePasswordCredentials(user, pw));
-
-        }
     }
 
     /**
@@ -142,11 +142,30 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
     public static InputStream openConnectionStream(URL url) throws IOException {
-        HttpGet getMethod = new HttpGet(url.toExternalForm());
-        HttpResponse response = execute(getMethod, url);
-        return response.getEntity().getContent();
+
+        //TODO -- the protocol (ftp) test should be done before calling this method.
+        if (url.getProtocol().toLowerCase().equals("ftp")) {
+            String userInfo = url.getUserInfo();
+            String host = url.getHost();
+            String file = url.getPath();
+            FTPClient ftp = FTPUtils.connect(host, userInfo);
+            ftp.pasv();
+            ftp.retr(file);
+            return new FTPStream(ftp);
+        } else {
+            HttpGet getMethod = new HttpGet(url.toExternalForm());
+            HttpResponse response = execute(getMethod, url);
+            return response.getEntity().getContent();
+        }
     }
 
+
+    /**
+     * Test for the existence of a URL resource
+     *
+     * @param url
+     * @return
+     */
     public static boolean resourceAvailable(URL url) {
         try {
             HttpHead headMethod = new HttpHead(url.toExternalForm());
@@ -154,14 +173,14 @@ public class IGVHttpClientUtils {
             final int statusCode = response.getStatusLine().getStatusCode();
             return statusCode == 200;
         } catch (Exception e) {
-            //log.error("Error checking for existence of resource: " + url);
+            //TODO -- non-expected exceptions (as opposed to "not found" exceptions) should be logged
             return false;
         }
 
     }
 
     /**
-     * Execute a get on the url and return the header field value.
+     * Execute a HEAD on the url and return the header field value.
      *
      * @param url
      * @return
@@ -182,44 +201,70 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    private static HttpResponse execute(HttpRequestBase getMethod, URL url) throws IOException {
+    private static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
 
         try {
 
             if (GSUtils.isGenomeSpace(url)) {
                 GSUtils.checkForCookie(client, url);
             }
-            HttpResponse response = client.execute(getMethod);
+            HttpResponse response = client.execute(method);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
                 // Try again                
-                getMethod.abort();
+                method.abort();
                 client.getCredentialsProvider().clear();
                 login(url);
-                return execute(getMethod, url);
+                return execute(method, url);
             }
             if (statusCode != 200) {
-                getMethod.abort();
+                method.abort();
                 throw new RuntimeException("Error connecting.  Status code = " + statusCode);
             }
             return response;
 
         } catch (RuntimeException e) {
-            // In case of an unexpected exception you may want to abort
-            // the HTTP request in order to shut down the underlying
+            // An unexpected exception  -- abort the HTTP request in order to shut down the underlying
             // connection immediately. THis happens automatically for an IOException
-            if (getMethod != null) getMethod.abort();
+            if (method != null) method.abort();
             throw e;
         }
     }
 
+    /**
+     * @param url
+     */
+    public static HttpResponse executeGet(URL url) {
+        HttpGet get = new HttpGet(url.toExternalForm());
+        try {
+            return client.execute(get);
+        } catch (IOException e) {
+            log.error("Error executing get: " + url, e);
+            return null;
+        }
+
+    }
+
+    public static HttpResponse executeGet(URL url, Map<String, String> headers) {
+        HttpGet get = new HttpGet(url.toExternalForm());
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            get.setHeader(entry.getKey(), entry.getValue());
+        }
+        try {
+            return client.execute(get);
+        } catch (IOException e) {
+            log.error("Error executing get: " + url, e);
+            return null;
+        }
+
+
+    }
 
     private static void login(URL url) {
 
         Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
-        // TODO -- only use the GS logo if this is a GS URL
-        String userpass = getGSUserPass(owner);
+        String userpass = getUserPass(owner);
         if (userpass == null) {
             throw new RuntimeException("Access denied:  " + url.toString());
         }
@@ -228,7 +273,7 @@ public class IGVHttpClientUtils {
         String host = GSUtils.isGenomeSpace(url) ? GSUtils.GENOME_SPACE_ID_SERVER : url.getHost();
 
         client.getCredentialsProvider().setCredentials(
-                new AuthScope(host, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
+                new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
                 GENOME_SPACE_CREDS);
 
         if (GSUtils.isGenomeSpace(url)) {
@@ -250,8 +295,13 @@ public class IGVHttpClientUtils {
 
     }
 
-
-    public static String getGSUserPass(Frame owner) {
+    /**
+     * Open a modal login dialog and return
+     *
+     * @param owner
+     * @return the user credentials in the form of "user:password".  If the  user cancels return null.
+     */
+    public static String getUserPass(Frame owner) {
 
         LoginDialog dlg = new LoginDialog(owner);
         dlg.setVisible(true);
@@ -262,6 +312,117 @@ public class IGVHttpClientUtils {
             final String userPass = new String(dlg.getPassword());
             return userString + ":" + userPass;
 
+        }
+
+    }
+
+    public static long getContentLength(URL url) {
+        String contentLengthString = "";
+        try {
+            contentLengthString = getHeaderField(url, "Content-Length");
+            return Long.parseLong(contentLengthString);
+        } catch (IOException e) {
+            log.error("Error getting content length from: " + url.toString(), e);
+            return -1;
+
+        }
+        catch (NumberFormatException e) {
+            log.error("Error getting content length from: " + url.toString() + "\n" + "Content-length=" + contentLengthString);
+            return -1;
+        }
+
+    }
+
+    public static long getContentLength(HttpResponse response) {
+        String contentLengthString = "";
+        try {
+            contentLengthString = response.getFirstHeader("Content-Length").getValue();
+            return Long.parseLong(contentLengthString);
+        }
+        catch (NumberFormatException e) {
+            log.error("Error getting content length from: " + contentLengthString + "\n" + "Content-length=" + contentLengthString);
+            return -1;
+        }
+
+    }
+
+
+    public static boolean isURL(String string) {
+        String lcString = string.toLowerCase();
+        return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://")
+                || lcString.startsWith("file://");
+    }
+
+    public static boolean testByteRange() {
+
+        try {
+            String testURL = "http://www.broadinstitute.org/igvdata/byteRangeTest.txt";
+            byte[] expectedBytes = {(byte) 'k', (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o'};
+
+            SeekableHTTPStream str = new SeekableHTTPStream(new ApacheURLHelper(new URL(testURL)));
+            str.seek(10);
+            byte[] buffer = new byte[5];
+            str.read(buffer, 0, 5);
+
+            for (int i = 0; i < buffer.length; i++) {
+                if (buffer[i] != expectedBytes[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (IOException e) {
+            log.error("Error while testing byte range ", e);
+            return false;
+        }
+    }
+
+    public static synchronized boolean useByteRange() {
+        useByteRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
+        if (useByteRange && !byteRangeTested) {
+            useByteRange = testByteRange();
+            byteRangeTested = true;
+        }
+        return useByteRange;
+    }
+
+
+    public static void updateProxySettings() {
+
+        String proxyHost;
+        int proxyPort;
+        boolean auth;
+        String user;
+        String pw = null;
+
+        PreferenceManager prefMgr = PreferenceManager.getInstance();
+        boolean useProxy = prefMgr.getAsBoolean(PreferenceManager.USE_PROXY);
+        proxyHost = prefMgr.get(PreferenceManager.PROXY_HOST, null);
+        try {
+            proxyPort = Integer.parseInt(prefMgr.get(PreferenceManager.PROXY_PORT, "-1"));
+        } catch (NumberFormatException e) {
+            proxyPort = -1;
+        }
+        auth = prefMgr.getAsBoolean(PreferenceManager.PROXY_AUTHENTICATE);
+        user = prefMgr.get(PreferenceManager.PROXY_USER, null);
+        String pwString = prefMgr.get(PreferenceManager.PROXY_PW, null);
+        if (pwString != null) {
+            pw = Utilities.base64Decode(pwString);
+        }
+
+        if (useProxy) {
+            if (proxyHost != null) {
+                HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+                client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+                log.info("Proxy settings: " + proxyHost + ":" + proxyPort);
+            }
+            if (auth && pw != null) {
+                client.getCredentialsProvider().setCredentials(
+                        new AuthScope(proxyHost, proxyPort),
+                        new UsernamePasswordCredentials(user, pw));
+            }
+
+        } else {
+            client.getParams().removeParameter(ConnRoutePNames.DEFAULT_PROXY);
         }
 
     }

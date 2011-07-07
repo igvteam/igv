@@ -1613,7 +1613,7 @@ public class IGV {
 
 
                     if (igvArgs.getSessionFile() != null) {
-                        if (IGVHttpUtils.isURL(igvArgs.getSessionFile())) {
+                        if (IGVHttpClientUtils.isURL(igvArgs.getSessionFile())) {
                             URL url = new URL(igvArgs.getSessionFile());
                             doRestoreSession(url, igvArgs.getLocusString());
                         } else {

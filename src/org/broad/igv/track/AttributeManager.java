@@ -245,7 +245,7 @@ public class AttributeManager {
             File f = new File(locator.getPath());
             fileLength = f.length();
         } else if (locator.getPath().startsWith("http")) {
-            fileLength = IGVHttpUtils.getContentLength(new URL(locator.getPath()));
+            fileLength = IGVHttpClientUtils.getContentLength(new URL(locator.getPath()));
         }
         if (fileLength > oneMB) {
             return MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath() +

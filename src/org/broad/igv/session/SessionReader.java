@@ -33,12 +33,9 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.ColorUtilities;
-import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.*;
 import org.broad.igv.util.FilterElement.BooleanOperator;
 import org.broad.igv.util.FilterElement.Operator;
-import org.broad.igv.util.IGVHttpUtils;
-import org.broad.igv.util.ResourceLocator;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -502,7 +499,7 @@ public class SessionReader {
 
         // If file is local
         if ((serverURL == null || serverURL.trim().equals("")) &&
-                !(IGVHttpUtils.isURL(filePath.toLowerCase()))) {
+                !(IGVHttpClientUtils.isURL(filePath.toLowerCase()))) {
             String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
             boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
             File parent = (relativePaths ? new File(session.getPath()).getParentFile() : null);

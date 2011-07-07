@@ -27,7 +27,7 @@ import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -110,7 +110,7 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
-        IGVHttpUtils.updateProxySettings();
+        IGVHttpClientUtils.updateProxySettings();
 
     }
 
@@ -163,7 +163,7 @@ public class Main {
 
         initializeLookAndFeel();
 
-        IGVHttpUtils.updateProxySettings();
+        IGVHttpClientUtils.updateProxySettings();
 
         IGV.createInstance(frame).startUp(args);
 

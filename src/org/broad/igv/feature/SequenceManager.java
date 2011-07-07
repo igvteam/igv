@@ -25,7 +25,6 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.remote.SequenceServletWrapper;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.*;
@@ -322,7 +321,7 @@ public class SequenceManager {
 
     public static String convertSequenceURL(String url, String genome) {
 
-        final boolean useByteRange = IGVHttpUtils.useByteRange();
+        final boolean useByteRange = IGVHttpClientUtils.useByteRange();
         String key = url + useByteRange;
         String convertedURL = sequenceUrlCache.get(key);
         if (convertedURL == null) {
