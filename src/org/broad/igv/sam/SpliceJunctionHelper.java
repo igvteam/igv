@@ -46,7 +46,6 @@ public class SpliceJunctionHelper {
 
         List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
 
-        log.debug("Computing splice junctions");
 
         //we need to keep the positive and negative strand junctions separate, since
         //they don't represent the same thing and are rendered separately
@@ -113,11 +112,6 @@ public class SpliceJunctionHelper {
                 gapCount += 1;
             }
         }
-        if (alignment != null) {
-            // If we never stepped into the iterator, this will still be null.
-            System.out.println(alignment.getStart() + " - " + alignment.getEnd());
-        }
-        System.out.println("End computing splice junctions");
 
         //get rid of any features without enough coverage
         if (minJunctionCoverage > 1) {
