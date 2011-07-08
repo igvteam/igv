@@ -23,6 +23,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -30,6 +31,8 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -60,7 +63,7 @@ public class IGVHttpClientUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    final static DefaultHttpClient client = new DefaultHttpClient();
+    final static DefaultHttpClient client;
     public static boolean byteRangeTested = false;
     public static boolean useByteRange = true;
     /**
@@ -69,8 +72,15 @@ public class IGVHttpClientUtils {
     //public static ProxySettings proxySettings = null;
 
     static {
+
+        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+        cm.setMaxTotal(100);
+
+        client = new DefaultHttpClient(cm);
         client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
         client.getParams().setParameter("http.useragent", Globals.applicationString());
+        
+        
     }
 
     /**
@@ -155,7 +165,21 @@ public class IGVHttpClientUtils {
         } else {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
             HttpResponse response = execute(getMethod, url);
-            return response.getEntity().getContent();
+            return new InputStreamWrapper(response);
+        }
+    }
+
+    public static class InputStreamWrapper extends FilterInputStream {
+        HttpResponse response;
+        public InputStreamWrapper(HttpResponse response) throws IOException {
+            super(response.getEntity().getContent());
+            this.response = response;
+        }
+
+        @Override
+        public void close() throws IOException {
+            EntityUtils.consume(response.getEntity());
+            super.close();
         }
     }
 
@@ -189,7 +213,9 @@ public class IGVHttpClientUtils {
     public static String getHeaderField(URL url, String key) throws IOException {
         HttpHead headMethod = new HttpHead(url.toExternalForm());
         HttpResponse response = execute(headMethod, url);
-        return response.getFirstHeader(key).getValue();
+        String value =  response.getFirstHeader(key).getValue();
+        EntityUtils.consume(response.getEntity());
+        return value;
     }
 
     /**
@@ -201,7 +227,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    private static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
+    private static synchronized HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
 
         try {
 
@@ -376,7 +402,7 @@ public class IGVHttpClientUtils {
         }
     }
 
-    public static synchronized boolean useByteRange() {
+    public static boolean useByteRange() {
         useByteRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
         if (useByteRange && !byteRangeTested) {
             useByteRange = testByteRange();

@@ -277,6 +277,9 @@ public class FeatureTrack extends AbstractTrack {
             return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
+            if(source == null) {
+                return "";
+            }
             List<LocusScore> scores = source.getCoverageScores(chr, (int) position - 10, (int) position + 10, zoom);
 
             if (scores == null) {
