@@ -40,15 +40,11 @@ public class AlignmentInterval extends Locus {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
-    List<AlignmentCounts> counts;
+    private String genomeId;
+    private byte[] reference;
+    private int maxCount = 0;
+    private List<AlignmentCounts> counts;
     private List<AlignmentInterval.Row> alignmentRows;
-    String genomeId;
-    byte[] reference;
-    int maxCount = 0;
-
-    /**
-     * List of splice junction features.  This list is computed lazily, and can be null.
-     */
     private List<SpliceJunctionFeature> spliceJunctions = null;
 
     public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
@@ -63,16 +59,17 @@ public class AlignmentInterval extends Locus {
 
         // Force caclulation of splice junctions
         boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
-        if(showSpliceJunctionTrack)
-        try {
-            getSpliceJunctions();
-        } catch (IOException e) {
-            log.error("Error loading splice junctions", e);
+        if (showSpliceJunctionTrack) {
+            try {
+                getSpliceJunctions();
+            } catch (IOException e) {
+                log.error("Error computing splice junctions", e);
+            }
         }
     }
 
     public boolean contains(String genomeId, String chr, int start, int end) {
-        return this.genomeId.equals(genomeId) && super.contains(chr, start, end);
+        return this.genomeId.equals(genomeId) && contains(chr, start, end);
     }
 
 
@@ -180,7 +177,16 @@ public class AlignmentInterval extends Locus {
         }
     }
 
+    public List<AlignmentCounts> getCounts() {
+        return counts;
+    }
 
+    /**
+     * Return the count of the specified nucleotide
+     * @param pos genomic position
+     * @param b nucleotide
+     * @return
+     */
     public int getCount(int pos, byte b) {
         for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {
@@ -226,7 +232,7 @@ public class AlignmentInterval extends Locus {
     }
 
     public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
-        if(spliceJunctions == null) {
+        if (spliceJunctions == null) {
             spliceJunctions = SpliceJunctionHelper.computeFeatures(getAlignmentIterator());
         }
         return spliceJunctions;
@@ -351,33 +357,6 @@ public class AlignmentInterval extends Locus {
 
         public int getLastEnd() {
             return lastEnd;
-        }
-
-        public AlignmentIterator getIterator() {
-            return new AlignmentIterator();
-        }
-
-
-        public class AlignmentIterator implements Iterator<Alignment> {
-            int nextIdx = 0;
-
-            public boolean hasNext() {
-                return nextIdx < alignments.size();
-            }
-
-            public Alignment next() {
-                if (nextIdx < alignments.size()) {
-                    Alignment tmp = alignments.get(nextIdx);
-                    nextIdx++;
-                    return tmp;
-                } else {
-                    return null;
-                }
-            }
-
-            public void remove() {
-                //ignore
-            }
         }
 
     } // end class row

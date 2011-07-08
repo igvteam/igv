@@ -80,38 +80,7 @@ public class DataPanel extends JComponent implements Paintable {
         setAutoscrolls(true);
         setToolTipText("");
         painter = new DataPanelPainter();
-        //add a listener that kills the tooltip when we navigate away from tne window
-        addFocusListener(new DataPanelFocusListener(this));
         setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
-    }
-
-    /**
-     * This class exists entirely to tell the ToolTip to go away when the DataPanel loses focus.
-     * Without this, the tooltip stays up and annoyingly visible even if another window is on top of IGV
-     * <p/>
-     * It's also necessary to let the tooltip manager know when we get focus back.  Otherwise, the
-     * tooltip won't display until you move the mouse out of the panel and back.
-     */
-    private class DataPanelFocusListener implements FocusListener {
-        protected Component cmp;
-
-        public DataPanelFocusListener(Component cmp) {
-            this.cmp = cmp;
-        }
-
-        public void focusGained(FocusEvent focusEvent) {
-            //This is a bit of a hack -- if the mouse is in the panel, generate a mouseEntered event to tell
-            // the tooltipmanager that the mouse is back, since we told it earlier that it went away when it hadn't
-            if (cmp != null && getMousePosition() != null && cmp.contains(getMousePosition()))
-                ToolTipManager.sharedInstance().mouseEntered(new MouseEvent(cmp, 0, 0, 0,
-                        (int) getMousePosition().getX(), (int) getMousePosition().getY(), 0, false));
-
-        }
-
-        public void focusLost(FocusEvent focusEvent) {
-            //This is a bit hacky, but it works and shouldn't cause any harm
-            ToolTipManager.sharedInstance().mouseExited(new MouseEvent(cmp, 0, 0, 0, 0, 0, 0, true));
-        }
     }
 
 

@@ -184,7 +184,32 @@ public class IGV {
                 PreferenceManager.getInstance().setApplicationFrameBounds(rootPane.getBounds());
 
             }
+
+            @Override
+            public void windowLostFocus(WindowEvent windowEvent) {
+                ToolTipManager.sharedInstance().setEnabled(false);
+                // TODO -- dismiss any open modal dialog window
+            }
+
+
+            @Override
+            public void windowDeactivated(WindowEvent windowEvent) {
+                ToolTipManager.sharedInstance().setEnabled(false);
+                // TODO -- dismiss any open modal dialog window
+            }
+
+            @Override
+            public void windowActivated(WindowEvent windowEvent) {
+               ToolTipManager.sharedInstance().setEnabled(true);
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent windowEvent) {
+                ToolTipManager.sharedInstance().setEnabled(true);
+            }
         });
+
+
 
         session = new Session(null);
         trackManager = new TrackManager(this);
