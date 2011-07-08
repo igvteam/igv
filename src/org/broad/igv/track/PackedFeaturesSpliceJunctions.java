@@ -49,7 +49,7 @@ import java.util.*;
 public class PackedFeaturesSpliceJunctions<T extends Feature> extends PackedFeatures {
     private static Logger log = Logger.getLogger(PackedFeaturesSpliceJunctions.class);
 
-    PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
+    public PackedFeaturesSpliceJunctions(String chr, int start, int end, Iterator<T> iter, String trackName) {
         super(chr, start, end, iter, trackName);
     }
 

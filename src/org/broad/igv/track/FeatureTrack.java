@@ -562,6 +562,10 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
+        if(source == null) {
+            return;
+        }
+        
         List<LocusScore> scores = source.getCoverageScores(context.getChr(), (int) context.getOrigin(),
                 (int) context.getEndLocation(), context.getZoom());
         if (scores == null) {
@@ -613,7 +617,6 @@ public class FeatureTrack extends AbstractTrack {
         PackedFeatures packedFeatures = packedFeaturesMap.get(context.getReferenceFrame().getName());
 
         if (packedFeatures == null || !packedFeatures.containsInterval(chr, start, end)) {
-            featuresLoading = true;
             loadFeatures(chr, start, end, context);
             if (!IGV.getInstance().isExportingSnapshot()) {
                 return;
@@ -687,6 +690,8 @@ public class FeatureTrack extends AbstractTrack {
      */
     protected synchronized void loadFeatures(final String chr, final int start, final int end, final RenderContext context) {
 
+        featuresLoading = true;
+
         // TODO -- improve or remove the need for this test.  We know that FeatureCollectionSource has all the data
         // in memory, and can by run synchronously
         boolean aSync = !(source instanceof FeatureCollectionSource);
@@ -711,16 +716,12 @@ public class FeatureTrack extends AbstractTrack {
                     // TODO -- implement source to return iterators
                     Iterator<Feature> iter = source.getFeatures(chr, expandedStart, expandedEnd);
                     if (iter == null) {
-                       // PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
-                       // packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd);
+                        packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     } else {
                         //dhmay putting a switch in for different packing behavior in splice junction tracks.
                         //This should probably be switched somewhere else, but that would require a big refactor.
-                        PackedFeatures pf = null;
-                        if (getRenderer() instanceof SpliceJunctionRenderer)
-                            pf = new PackedFeaturesSpliceJunctions(chr, expandedStart, expandedEnd, iter, getName());
-                        else
-                            pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
+                        PackedFeatures pf = new PackedFeatures(chr, expandedStart, expandedEnd, iter, getName());
                         packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
                     }
 

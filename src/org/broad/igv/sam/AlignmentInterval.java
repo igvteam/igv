@@ -24,6 +24,7 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
@@ -60,10 +61,13 @@ public class AlignmentInterval extends Locus {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
 
+        // Force caclulation of splice junctions
+        boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
+        if(showSpliceJunctionTrack)
         try {
-            this.getSpliceJunctions();
+            getSpliceJunctions();
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error("Error loading splice junctions", e);
         }
     }
 

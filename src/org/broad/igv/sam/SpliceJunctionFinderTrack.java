@@ -63,21 +63,19 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         super(id, name);
         super.setDataRange(new DataRange(0, 0, 60));
         this.genome = genome;
-        this.source = new SpliceJunctionFinderFeatureSource();
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
     }
 
 
-   
-      @Override
-      protected boolean isShowFeatures(RenderContext context)  {
-          float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-          float minVisibleScale = (maxRange * 1000) / 700;
-          return context.getScale() < minVisibleScale;
+    @Override
+    protected boolean isShowFeatures(RenderContext context) {
+        float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        float minVisibleScale = (maxRange * 1000) / 700;
+        return context.getScale() < minVisibleScale;
 
-      }
+    }
 
 
     /**
@@ -196,34 +194,20 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         return 0;
     }
 
-
-
-    class SpliceJunctionFinderFeatureSource implements FeatureSource {
-
-        List<Feature> features = null;
-
-        public Iterator getFeatures(String chr, int start, int end) throws IOException {
-            final List<SpliceJunctionFeature> junctions = dataManager.getSpliceJunctions(genome.getId(), chr, start, end);
-            return junctions == null ? null : junctions.iterator();
-        }
-
-
-        public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-            return null;
-        }
-
-        public int getFeatureWindowSize() {
-            return 0;
-        }
-
-        public void setFeatureWindowSize(int size) {
-
-        }
-
-        public Class getFeatureClass() {
-            return null;
+    @Override
+    protected void loadFeatures(String chr, int start, int end, RenderContext context) {
+        try {
+            final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context);
+            if (loadedInterval != null) {
+                List<SpliceJunctionFeature> features = loadedInterval.getSpliceJunctions();
+                int intervalStart = loadedInterval.getStart();
+                int intervalEnd = loadedInterval.getEnd();
+                PackedFeatures pf = new PackedFeaturesSpliceJunctions(chr, intervalStart, intervalEnd, features.iterator(), getName());
+                packedFeaturesMap.put(context.getReferenceFrame().getName(), pf);
+            }
+        } catch (IOException e) {
+            log.error("Error loading splice junctions", e);
         }
     }
-
 
 }

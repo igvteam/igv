@@ -423,25 +423,5 @@ public class AlignmentDataManager {
         }
     }
 
-    /**
-     * Fine the first loaded interval encompassing the requested range.  If found return junctions, if not null.
-     *
-     * TODO -- consider querying interval, or using partial overlap, if not found?
-     * 
-     * @param genome
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     * @throws IOException
-     */
-    public List<SpliceJunctionFeature> getSpliceJunctions(String genome, String chr, int start, int end) throws IOException {
-        for(AlignmentInterval interval : loadedIntervalMap.values()) {
-            //if(interval.overlaps (genome, chr, start, end)) {
-               return interval.getSpliceJunctions();
-           // }
-        }
-        return null;
-    }
 }
 

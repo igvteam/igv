@@ -20,6 +20,7 @@
 
 package org.broad.igv.sam;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
@@ -35,6 +36,8 @@ import java.util.*;
  */
 public class SpliceJunctionHelper {
 
+    static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
+
     static int minReadFlankingWidth = 0;
     static int minJunctionCoverage = 1;
 
@@ -43,7 +46,7 @@ public class SpliceJunctionHelper {
 
         List<SpliceJunctionFeature> spliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>();
 
-        System.out.println("Computing splice junctions");
+        log.debug("Computing splice junctions");
 
         //we need to keep the positive and negative strand junctions separate, since
         //they don't represent the same thing and are rendered separately
