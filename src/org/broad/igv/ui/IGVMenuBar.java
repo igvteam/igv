@@ -585,7 +585,7 @@ menuAction =
             if (desktop.isSupported(Desktop.Action.MAIL)) {
 
                 menuAction =
-                        new MenuAction("Contact Support") {
+                        new MenuAction("Help Forum...") {
 
                             @Override
                             public void actionPerformed(ActionEvent e) {
