@@ -55,16 +55,10 @@ public class SpliceJunctionHelper {
                 new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
 
 
-        Alignment alignment = null;
-        boolean f = true;
         while (iterator.hasNext()) {
             //Any alignment with 2 or more blocks is considered to be a splice junction
-            alignment = iterator.next();
+            Alignment alignment = iterator.next();
 
-            if(f) {
-                System.out.println(alignment.getStart() + " - " + alignment.getEnd());
-                f = false;
-            }
             AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
             if (blocks.length < 2)
                 continue;

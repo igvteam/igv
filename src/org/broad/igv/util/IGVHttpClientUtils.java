@@ -106,8 +106,6 @@ public class IGVHttpClientUtils {
      */
     public static InputStream openConnectionStream(URL url) throws IOException {
 
-        System.out.println("# connections = " + cm.getConnectionsInPool());
-
         //TODO -- the protocol (ftp) test should be done before calling this method.
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             String userInfo = url.getUserInfo();
@@ -120,6 +118,7 @@ public class IGVHttpClientUtils {
         } else {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
             HttpResponse response = execute(getMethod, url);
+            // Wrap the response stream to do extra cleanaup upon close.
             return new EntityStreamWrapper(response);
 
         }
@@ -215,7 +214,15 @@ public class IGVHttpClientUtils {
                 login(url);
                 return execute(method, url);
             }
-            if (statusCode >= 400) {
+            else if(statusCode == 404 || statusCode == 410) {
+                method.abort();
+                throw new RuntimeException("Resource not found: " + url.toString());
+            }
+            else if(statusCode == 407) {
+                method.abort();
+                throw new RuntimeException("Error connecting. Proxy authentication required.");
+            }
+            else if (statusCode >= 400) {
                 method.abort();
                 throw new RuntimeException("Error connecting.  Status code = " + statusCode);
             }
