@@ -29,6 +29,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
@@ -515,9 +516,9 @@ public class GWASTrack extends AbstractTrack {
      * @return
      */
     @Override
-    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
-        JPopupMenu popupMenu = new JidePopupMenu();
+        IGVPopupMenu popupMenu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
 

@@ -161,7 +161,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     @Override
-    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         return new PopupMenu(te);
     }
 
@@ -740,7 +740,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
     }
 
-    class PopupMenu extends JidePopupMenu {
+    class PopupMenu extends IGVPopupMenu {
 
         PopupMenu(final TrackClickEvent e) {
 

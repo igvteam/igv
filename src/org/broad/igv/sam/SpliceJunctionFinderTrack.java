@@ -30,6 +30,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
 import org.broad.tribble.Feature;
@@ -155,9 +156,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      * @return
      */
     @Override
-    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
 
-        JPopupMenu popupMenu = new JidePopupMenu();
+        IGVPopupMenu popupMenu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
 

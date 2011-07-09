@@ -22,6 +22,7 @@
 package org.broad.igv.track;
 
 
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -169,7 +170,7 @@ public interface Track extends Persistable {
 
     void setDisplayMode(DisplayMode mode);
  
-    JPopupMenu getPopupMenu(final TrackClickEvent te);
+    IGVPopupMenu getPopupMenu(final TrackClickEvent te);
 
     boolean isDrawYLine();
 

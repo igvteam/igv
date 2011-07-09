@@ -22,6 +22,7 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.SessionReader;
@@ -968,7 +969,7 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
-    public JPopupMenu getPopupMenu(final TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
         VariantContext f = null;
         if (te.getFrame() != null && te.getFrame().getName() != null) {
             f = (VariantContext) getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());

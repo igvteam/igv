@@ -24,6 +24,7 @@ import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -50,7 +51,7 @@ import java.util.List;
  * @author jrobinso
  * @date Apr 23, 2011
  */
-public class PeakTrackMenu extends JPopupMenu {
+public class PeakTrackMenu extends IGVPopupMenu {
 
     private static Logger log = Logger.getLogger(PeakTrackMenu.class);
     private PeakTrack track;

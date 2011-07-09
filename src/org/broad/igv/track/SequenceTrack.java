@@ -30,6 +30,7 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -173,9 +174,9 @@ public class SequenceTrack extends AbstractTrack {
      * @return
      */
     @Override
-    public JPopupMenu getPopupMenu(final TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
 
-        JPopupMenu menu = new JPopupMenu();
+        IGVPopupMenu menu = new IGVPopupMenu();
 
         JMenuItem m1 = new JMenuItem("Flip strand");
         m1.addActionListener(new ActionListener() {

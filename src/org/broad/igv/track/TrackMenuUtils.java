@@ -27,6 +27,7 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
@@ -75,13 +76,14 @@ public class TrackMenuUtils {
      * @param tracks
      * @return
      */
-    public static JPopupMenu getPopupMenu(final Collection<Track> tracks, String title, TrackClickEvent te) {
+    public static IGVPopupMenu getPopupMenu(final Collection<Track> tracks, String title, TrackClickEvent te) {
 
         if (log.isDebugEnabled()) {
             log.debug("enter getPopupMenu");
         }
 
-        JidePopupMenu menu = new JidePopupMenu();
+        //JidePopupMenu menu = new JidePopupMenu();
+        IGVPopupMenu menu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel(LEADING_HEADING_SPACER + title, JLabel.CENTER);
         popupTitle.setFont(UIConstants.boldFont);

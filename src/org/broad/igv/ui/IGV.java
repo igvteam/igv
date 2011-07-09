@@ -188,14 +188,14 @@ public class IGV {
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
                 ToolTipManager.sharedInstance().setEnabled(false);
-                // TODO -- dismiss any open modal dialog window
+                IGVPopupMenu.closeAll();
             }
 
 
             @Override
             public void windowDeactivated(WindowEvent windowEvent) {
                 ToolTipManager.sharedInstance().setEnabled(false);
-                // TODO -- dismiss any open modal dialog window
+                IGVPopupMenu.closeAll();
             }
 
             @Override

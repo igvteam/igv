@@ -30,6 +30,7 @@ import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -194,7 +195,7 @@ public class PeakTrack extends AbstractTrack {
 
 
     @Override
-    public JPopupMenu getPopupMenu(TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(TrackClickEvent te) {
         return new PeakTrackMenu(this, te);
     }
 

@@ -30,6 +30,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
@@ -927,7 +928,7 @@ public abstract class AbstractTrack implements Track {
      *
      * @return
      */
-    public JPopupMenu getPopupMenu(final TrackClickEvent te) {
+    public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
         return null;
     }
 

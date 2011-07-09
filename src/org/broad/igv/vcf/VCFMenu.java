@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.tribble.Feature;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
@@ -39,7 +40,7 @@ import java.util.List;
  * User: Jesse Whitworth
  * Date: Jul 16, 2010
  */
-public class VCFMenu extends JPopupMenu {
+public class VCFMenu extends IGVPopupMenu {
 
     private static Logger log = Logger.getLogger(VCFMenu.class);
     private VCFTrack track;
@@ -52,6 +53,7 @@ public class VCFMenu extends JPopupMenu {
     static boolean qualitySortingDirection;
 
     public VCFMenu(final VCFTrack vcfTrack, VariantContext variant) {
+        
         this.track = vcfTrack;
 
         this.addPopupMenuListener(new PopupMenuListener() {
