@@ -23,11 +23,11 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -46,10 +46,9 @@ import org.broad.tribble.util.SeekableHTTPStream;
 
 import java.awt.*;
 import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * New version of IGVHttpUtils built on Apache HttpClient 4.1.  Currently this version is only used for GenomeSpace
@@ -63,9 +62,12 @@ public class IGVHttpClientUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    final static DefaultHttpClient client;
     public static boolean byteRangeTested = false;
     public static boolean useByteRange = true;
+    private static ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+    private static DefaultHttpClient client;
+    private static IdleConnectionMonitorThread monitorThread;
+ 
     /**
      * Proxy settings (can be null)
      */
@@ -73,14 +75,16 @@ public class IGVHttpClientUtils {
 
     static {
 
-        ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
         cm.setMaxTotal(100);
+
+        monitorThread = new IdleConnectionMonitorThread(cm);
+        monitorThread.start();
 
         client = new DefaultHttpClient(cm);
         client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
         client.getParams().setParameter("http.useragent", Globals.applicationString());
-        
-        
+
+
     }
 
     /**
@@ -88,58 +92,7 @@ public class IGVHttpClientUtils {
      */
     public static void shutdown() {
         client.getConnectionManager().shutdown();
-    }
-
-    /**
-     * Download the contents of the URL and save the results to a file.
-     *
-     * @throws IOException
-     */
-    public static boolean downloadFile(String url, File outputFile) throws IOException {
-
-        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
-
-        HttpGet httpget = new HttpGet(url);
-
-        HttpResponse response = client.execute(httpget);
-        HttpEntity entity = response.getEntity();
-
-        if (entity != null) {
-            final long contentLength = entity.getContentLength();
-            log.info("Content length = " + contentLength);
-
-            InputStream is = null;
-            OutputStream out = null;
-
-            try {
-                is = entity.getContent();
-                out = new FileOutputStream(outputFile);
-
-                byte[] buf = new byte[64 * 1024];
-                int downloaded = 0;
-                int bytesRead = 0;
-                while ((bytesRead = is.read(buf)) != -1) {
-                    out.write(buf, 0, bytesRead);
-                    downloaded += bytesRead;
-                }
-                log.info("Download complete.  Total bytes downloaded = " + downloaded);
-            }
-            finally {
-                if (is != null) is.close();
-                if (out != null) {
-                    out.flush();
-                    out.close();
-                }
-            }
-            long fileLength = outputFile.length();
-            log.info("File length = " + fileLength);
-
-            return contentLength <= 0 || contentLength == fileLength;
-
-
-        }
-        return false;
-
+        monitorThread.shutdown();
     }
 
 
@@ -153,6 +106,8 @@ public class IGVHttpClientUtils {
      */
     public static InputStream openConnectionStream(URL url) throws IOException {
 
+        System.out.println("# connections = " + cm.getConnectionsInPool());
+
         //TODO -- the protocol (ftp) test should be done before calling this method.
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             String userInfo = url.getUserInfo();
@@ -165,21 +120,8 @@ public class IGVHttpClientUtils {
         } else {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
             HttpResponse response = execute(getMethod, url);
-            return new InputStreamWrapper(response);
-        }
-    }
+            return new EntityStreamWrapper(response);
 
-    public static class InputStreamWrapper extends FilterInputStream {
-        HttpResponse response;
-        public InputStreamWrapper(HttpResponse response) throws IOException {
-            super(response.getEntity().getContent());
-            this.response = response;
-        }
-
-        @Override
-        public void close() throws IOException {
-            EntityUtils.consume(response.getEntity());
-            super.close();
         }
     }
 
@@ -191,14 +133,26 @@ public class IGVHttpClientUtils {
      * @return
      */
     public static boolean resourceAvailable(URL url) {
+        HttpHead headMethod = null;
+        HttpResponse response = null;
         try {
-            HttpHead headMethod = new HttpHead(url.toExternalForm());
-            HttpResponse response = execute(headMethod, url);
+            headMethod = new HttpHead(url.toExternalForm());
+            response = execute(headMethod, url);
             final int statusCode = response.getStatusLine().getStatusCode();
             return statusCode == 200;
         } catch (Exception e) {
             //TODO -- non-expected exceptions (as opposed to "not found" exceptions) should be logged
             return false;
+
+        }
+        finally {
+            if (response != null) {
+                try {
+                    // TODO -- is this even neccessary with HttpClient 4.1 ?
+                    EntityUtils.consume(response.getEntity());
+                } catch (IOException e) {
+                }
+            }
         }
 
     }
@@ -213,10 +167,28 @@ public class IGVHttpClientUtils {
     public static String getHeaderField(URL url, String key) throws IOException {
         HttpHead headMethod = new HttpHead(url.toExternalForm());
         HttpResponse response = execute(headMethod, url);
-        String value =  response.getFirstHeader(key).getValue();
+        String value = response.getFirstHeader(key).getValue();
         EntityUtils.consume(response.getEntity());
         return value;
     }
+
+    /**
+     * @param url
+     */
+    public static HttpResponse executeGet(URL url) throws IOException {
+        HttpGet get = new HttpGet(url.toExternalForm());
+        return execute(get, url);
+
+    }
+
+    public static HttpResponse executeGet(URL url, Map<String, String> headers) throws IOException {
+        HttpGet get = new HttpGet(url.toExternalForm());
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            get.setHeader(entry.getKey(), entry.getValue());
+        }
+        return execute(get, url);
+    }
+
 
     /**
      * Execute a get request.  In the case of an authorization failure (401) this method is called recursively
@@ -227,7 +199,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    private static synchronized HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
+    private static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
 
         try {
 
@@ -243,7 +215,7 @@ public class IGVHttpClientUtils {
                 login(url);
                 return execute(method, url);
             }
-            if (statusCode != 200) {
+            if (statusCode >= 400) {
                 method.abort();
                 throw new RuntimeException("Error connecting.  Status code = " + statusCode);
             }
@@ -257,34 +229,6 @@ public class IGVHttpClientUtils {
         }
     }
 
-    /**
-     * @param url
-     */
-    public static HttpResponse executeGet(URL url) {
-        HttpGet get = new HttpGet(url.toExternalForm());
-        try {
-            return client.execute(get);
-        } catch (IOException e) {
-            log.error("Error executing get: " + url, e);
-            return null;
-        }
-
-    }
-
-    public static HttpResponse executeGet(URL url, Map<String, String> headers) {
-        HttpGet get = new HttpGet(url.toExternalForm());
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            get.setHeader(entry.getKey(), entry.getValue());
-        }
-        try {
-            return client.execute(get);
-        } catch (IOException e) {
-            log.error("Error executing get: " + url, e);
-            return null;
-        }
-
-
-    }
 
     private static void login(URL url) {
 
@@ -449,6 +393,127 @@ public class IGVHttpClientUtils {
 
         } else {
             client.getParams().removeParameter(ConnRoutePNames.DEFAULT_PROXY);
+        }
+
+    }
+
+    /**
+     * Download the contents of the URL and save the results to a file.
+     *
+     * @throws IOException
+     */
+    public static boolean downloadFile(String url, File outputFile) throws IOException {
+
+        log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
+
+        HttpGet httpget = new HttpGet(url);
+
+        HttpResponse response = client.execute(httpget);
+        HttpEntity entity = response.getEntity();
+
+        if (entity != null) {
+            final long contentLength = entity.getContentLength();
+            log.info("Content length = " + contentLength);
+
+            InputStream is = null;
+            OutputStream out = null;
+
+            try {
+                is = entity.getContent();
+                out = new FileOutputStream(outputFile);
+
+                byte[] buf = new byte[64 * 1024];
+                int downloaded = 0;
+                int bytesRead = 0;
+                while ((bytesRead = is.read(buf)) != -1) {
+                    out.write(buf, 0, bytesRead);
+                    downloaded += bytesRead;
+                }
+                log.info("Download complete.  Total bytes downloaded = " + downloaded);
+            }
+            catch (IOException e) {
+                httpget.abort();
+                throw e;
+            }
+            finally {
+                if (is != null) is.close();
+                if (out != null) {
+                    out.flush();
+                    out.close();
+                }
+            }
+            long fileLength = outputFile.length();
+            log.info("File length = " + fileLength);
+
+            return contentLength <= 0 || contentLength == fileLength;
+
+
+        }
+        return false;
+
+    }
+
+
+
+
+    /**
+     * Wrapper for an Entity input stream.  Overrides close() to ensure that the stream is fully
+     * read, so the underlying connection will be release.
+     * <p/>
+     * TODO -- Verify that exhausting the stream is still a requirement in HttpClient 4.1.
+     */
+    public static class EntityStreamWrapper extends FilterInputStream {
+        HttpResponse response;
+
+        public EntityStreamWrapper(HttpResponse response) throws IOException {
+            super(response.getEntity().getContent());
+            this.response = response;
+        }
+
+        @Override
+        public void close() throws IOException {
+            EntityUtils.consume(response.getEntity());
+            super.close();
+        }
+    }
+
+
+    /**
+     * Thread to flush idle connections periodically
+     */
+    public static class IdleConnectionMonitorThread extends Thread {
+
+        private final ClientConnectionManager connMgr;
+        private volatile boolean shutdown;
+
+        public IdleConnectionMonitorThread(ClientConnectionManager connMgr) {
+            super();
+            this.connMgr = connMgr;
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!shutdown) {
+                    synchronized (this) {
+                        wait(60000);
+                        // Close expired connections
+                        connMgr.closeExpiredConnections();
+                        // Optionally, close connections
+                        // that have been idle longer than 300 sec
+                        connMgr.closeIdleConnections(300, TimeUnit.SECONDS);
+                    }
+                }
+            } catch (InterruptedException ex) {
+                // terminate
+            }
+        }
+
+        public void shutdown() {
+            shutdown = true;
+            synchronized (this) {
+                notifyAll();
+            }
         }
 
     }
