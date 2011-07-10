@@ -640,7 +640,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     final String desc = (String) regionTableModel.getValueAt(row, TABLE_COLINDEX_DESC);
 
-                    JPopupMenu popupMenu = new JPopupMenu();
+                    JPopupMenu popupMenu = new IGVPopupMenu();
                     JMenuItem copySequenceItem = new JMenuItem("Copy Sequence");
                     copySequenceItem.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {

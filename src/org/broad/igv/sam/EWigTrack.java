@@ -30,6 +30,7 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 
@@ -214,7 +215,7 @@ public class EWigTrack extends AbstractTrack {
     public JPopupMenu getPopupMenu(
             final MouseEvent evt) {
 
-        JPopupMenu popupMenu = new JidePopupMenu();
+        JPopupMenu popupMenu = new IGVPopupMenu();
 
         JLabel popupTitle = new JLabel("  " + getName(), JLabel.CENTER);
 
