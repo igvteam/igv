@@ -27,6 +27,7 @@ import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
+import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
@@ -139,10 +140,11 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                     int displayPixelStart = (int) Math.max(trackRectangleX, virtualPixelStart);
 
                     float depth = junctionFeature.getJunctionDepth();
+                    Color color = feature.getColor();
 
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight);
+                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight, color);
                 }
             }
 
@@ -199,21 +201,39 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param pixelJunctionEnd the ending position of the junction, whether on-screen or not
      * @param depth coverage depth
      * @param trackRectangle
+     * @param context
+     * @param strand
+     * @param junctionFeature
+     * @param shouldHighlight
+     * @param featureColor the color specified for this feature.  May be null.
      */
      protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                    int pixelJunctionStart, int pixelJunctionEnd, float depth,
                                    Rectangle trackRectangle, RenderContext context, Strand strand,
-                                   SpliceJunctionFeature junctionFeature, boolean shouldHighlight) {
+                                   SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor) {
+
+
         boolean isPositiveStrand = true;
         // Get the feature's direction, color appropriately
         if (strand != null && strand.equals(Strand.NEGATIVE))
             isPositiveStrand = false;
 
-        Color color;
-         if (isPositiveStrand)
-             color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
-         else
-             color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+         //If the feature color is specified, use it, except that we set our own alpha depending on whether
+         //the feature is highlighted.  Otherwise default based on strand and highlight.
+         Color color;
+         if (featureColor != null) {
+             int r = featureColor.getRed();
+             int g = featureColor.getGreen();
+             int b = featureColor.getBlue();
+             int alpha = shouldHighlight ? 255 : 140;
+             color = new Color(r, g, b, alpha);
+         }
+         else {
+             if (isPositiveStrand)
+                 color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
+             else
+                 color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+         }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
                 //Height of top of an arc of maximum depth
