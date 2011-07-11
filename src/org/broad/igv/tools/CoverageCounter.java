@@ -61,6 +61,7 @@ public class CoverageCounter {
 
     private int upperExpectedInsertSize = 600;
     private int lowerExpectedInsertSize = 200;
+    private Locus interval;
 
 
     enum Event {
@@ -92,7 +93,7 @@ public class CoverageCounter {
     private Distribution coverageHistogram;
     private static final double LOG_1__1 = 0.09531018;
 
-    private String interval = null;
+    //private String interval = null;
 
 
     public CoverageCounter(String alignmentFile,
@@ -102,8 +103,6 @@ public class CoverageCounter {
                            File tdfFile,  // For reference
                            File wigFile,
                            Genome genome,
-                           int strandOption,
-                           boolean includeDuplicates,
                            String options) {
         this.alignmentFile = alignmentFile;
         this.tdfFile = tdfFile;
@@ -112,8 +111,6 @@ public class CoverageCounter {
         this.extFactor = extFactor;
         this.wigFile = wigFile;
         this.genome = genome;
-        this.strandOption = strandOption;
-        this.includeDuplicates = includeDuplicates;
         buffer = strandOption < 0 ? new float[1] : new float[2];
 
         if (options != null) {
@@ -126,9 +123,13 @@ public class CoverageCounter {
         try {
             String[] opts = options.split(",");
             for (String opt : opts) {
-
-                if(opt.startsWith("t=")) {
-                    String [] tmp = opt.split("=");
+                if (opt.startsWith("d")) {
+                    includeDuplicates = true;
+                } else if (opt.startsWith("m=")) {
+                    String[] tmp = opt.split("=");
+                    minMappingQuality = Integer.parseInt(tmp[1]);
+                } else if (opt.startsWith("t=")) {
+                    String[] tmp = opt.split("=");
                     countThreshold = Integer.parseInt(tmp[1]);
                     System.out.println("Count threshold = " + countThreshold);
                 } else if (opt.startsWith("l:")) {
@@ -136,7 +137,7 @@ public class CoverageCounter {
                     readGroup = tmp[1];
                 } else if (opt.startsWith("q")) {
                     String[] tmp = opt.split("@");
-                    interval = tmp[1];
+                    interval = new Locus(tmp[1]);
                 } else if (opt.startsWith("i")) {
                     writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize));
                     writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize));
@@ -180,7 +181,7 @@ public class CoverageCounter {
                     writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize));
                 } else if (opt.equals("h")) {
                     coverageHistogram = new Distribution(200);
-                } else if (opt.equals("a")) {
+                } else if (opt.equals("z")) {
                     keepZeroes = true;
                 } else {
                     System.out.println("Unknown coverage option: " + opt);
@@ -232,12 +233,12 @@ public class CoverageCounter {
             }
 
 
-            reader = getReader(alignmentFile, false);
             if (interval == null) {
+                reader = getReader(alignmentFile, false);
                 iter = reader.iterator();
             } else {
-                Locus locus = new Locus(interval);
-                iter = reader.query(locus.getChr(), locus.getStart(), locus.getEnd(), false);
+                reader = getReader(alignmentFile, true);
+                iter = reader.query(interval.getChr(), interval.getStart(), interval.getEnd(), false);
             }
 
             while (iter != null && iter.hasNext()) {
@@ -326,10 +327,16 @@ public class CoverageCounter {
                                 int blockStart = block.getStart();
                                 int adjustedStart = block.getStart();
                                 int adjustedEnd = block.getEnd();
+
                                 if (alignment.isNegativeStrand()) {
                                     adjustedStart = Math.max(0, adjustedStart - extFactor);
                                 } else {
                                     adjustedEnd += extFactor;
+                                }
+
+                                if (interval != null) {
+                                    adjustedStart = Math.max(interval.getStart() - 1, adjustedStart);
+                                    adjustedEnd = Math.min(interval.getEnd(), adjustedEnd);
                                 }
 
                                 for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
@@ -350,11 +357,18 @@ public class CoverageCounter {
                     } else {
                         int adjustedStart = alignment.getAlignmentStart();
                         int adjustedEnd = alignment.getAlignmentEnd();
+
                         if (alignment.isNegativeStrand()) {
                             adjustedStart = Math.max(0, adjustedStart - extFactor);
                         } else {
                             adjustedEnd += extFactor;
                         }
+
+                        if (interval != null) {
+                            adjustedStart = Math.max(interval.getStart() - 1, adjustedStart);
+                            adjustedEnd = Math.min(interval.getEnd(), adjustedEnd);
+                        }
+
 
                         for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
                             counter.incrementCount(pos, (byte) 0, (byte) 0);
@@ -363,7 +377,10 @@ public class CoverageCounter {
 
                     if (writers.containsKey(Event.indel)) {
                         for (AlignmentBlock block : alignment.getInsertions()) {
-                            counter.incrementEvent(block.getStart(), Event.indel);
+                            if (interval == null || (block.getStart() >= interval.getStart() - 1 &&
+                                    block.getStart() <= interval.getEnd())) {
+                                counter.incrementEvent(block.getStart(), Event.indel);
+                            }
                         }
 
                     }
@@ -372,6 +389,9 @@ public class CoverageCounter {
             }
         }
 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 
         finally {
 
@@ -851,5 +871,6 @@ public class CoverageCounter {
         }
 
     }
+
 
 }

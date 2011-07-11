@@ -702,14 +702,13 @@ public class Preprocessor implements DataConsumer {
     }
 
     public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
-                      File wigFile, int strandOption, String coverageOpt,
-                      String trackLine, boolean includeDuplicates) throws IOException {
+                      File wigFile, String coverageOpt, String trackLine) throws IOException {
         setNZoom(maxZoomValue);
         setTrackParameters(TrackType.COVERAGE, trackLine, new String[]{iFile});
         this.setSkipZeroes(true);
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
-                wigFile, genome, strandOption, includeDuplicates, coverageOpt);
+                wigFile, genome, coverageOpt);
 
         /*if(isize != null) {
            String [] tokens = isize.split(",");

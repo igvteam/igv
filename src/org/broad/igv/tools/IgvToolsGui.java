@@ -428,8 +428,7 @@ public class IgvToolsGui extends JDialog {
                     int strandOption = -1;
 
                     runButton.setEnabled(false);
-                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, strandOption,
-                            null, null, false);
+                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, null, null);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }
@@ -463,7 +462,7 @@ public class IgvToolsGui extends JDialog {
                     String probeFile = probeField.getText();
 
                     runButton.setEnabled(false);
-                    igvTools.doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, wfs);
+                    igvTools.toTDF(ifile, ofile, probeFile, genomeId, maxZoomValue, wfs, null, IgvTools.MAX_RECORDS_IN_RAM);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

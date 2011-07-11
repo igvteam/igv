@@ -18,9 +18,12 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.Globals;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -28,27 +31,57 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Jan 18, 2010
- * Time: 11:22:21 AM
- * To change this template use File | Settings | File Templates.
+ *    public CoverageCounter(String alignmentFile,
+                           DataConsumer consumer,
+                           int windowSize,
+                           int extFactor,
+                           File tdfFile,  // For reference
+                           File wigFile,
+                           Genome genome,
+                           String options)
  */
 public class CoverageCounterTest {
 
+    @BeforeClass
+    public static void init() {
+        Globals.setHeadless(true);
+    }
+
     @Test
-    public void testGetTotalCount() throws IOException {
-        String bamURL = "test/data/index_test.bam";
+
+    public void testMappingQualityFlag() throws IOException {
+        String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
+        String options = "m=30,q@1:16731624-16731624";
+        int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, 25, 0, null, null, null, 1, false, null);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, null, options);
 
         cc.parse();
 
         String totalCount = dc.attributes.get("totalCount");
 
-        assertEquals("9721", totalCount);
+        assertEquals("19", totalCount);
+
+    }
+
+    @Test
+
+    public void testInclueDuplicatesFlag() throws IOException {
+        String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/IlluminaHiSeq2000_BodySites/Merged/HBM.adipose.bam.sorted.bam";
+        String options = "d,q@chr1:153425249-153425249";
+        int windowSize = 1;
+
+        TestDataConsumer dc = new TestDataConsumer();
+
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, null, options);
+
+        cc.parse();
+
+        String totalCount = dc.attributes.get("totalCount");
+
+        assertEquals("22", totalCount);
 
     }
 

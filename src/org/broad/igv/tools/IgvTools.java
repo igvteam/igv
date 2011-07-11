@@ -26,7 +26,6 @@ package org.broad.igv.tools;
 import jargs.gnu.CmdLineParser;
 import org.apache.log4j.*;
 import org.broad.igv.Globals;
-import org.broad.igv.data.seg.SegmentedDataWriter;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
@@ -70,10 +69,10 @@ public class IgvTools {
             "version print the version number",
             "sort    sort an alignment file by start position",
             "index   index an alignment file",
-            "tile    convert an input file (cn, gct, wig) to tiled data format (tdf)",
+            "toTDF    convert an input file (cn, gct, wig) to tiled data format (tdf)",
             "count   compute coverage density for an alignment file"
     };
-    static final int MAX_RECORDS_IN_RAM = 500000;
+    public static final int MAX_RECORDS_IN_RAM = 500000;
     public static final int MAX_ZOOM = 7;
     public static final int WINDOW_SIZE = 25;
     public static final int EXT_FACTOR = 0;
@@ -110,7 +109,6 @@ public class IgvTools {
      */
     public static void main(String[] argv) throws IOException, PreprocessingException {
 
-
         RollingFileAppender appender = new RollingFileAppender();
         PatternLayout layout = new PatternLayout();
         layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
@@ -127,13 +125,13 @@ public class IgvTools {
         Globals.setHeadless(true);
 
         (new IgvTools()).run(argv);
-    }
 
-    private void parseArguments(String[] argv) {
-
+        System.out.println("Done");
+        System.exit(1);
     }
 
     private void run(String[] argv) {
+
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option helpOption = parser.addBooleanOption('h', "help");
         CmdLineParser.Option guiOption = parser.addBooleanOption('g', "gui");
@@ -158,15 +156,10 @@ public class IgvTools {
         CmdLineParser.Option binSizeOption = parser.addIntegerOption('b', "binSize");
         CmdLineParser.Option outputDirOption = parser.addStringOption('o', "outputDir");
 
-        // options for gentest
-        //CmdLineParser.Option nRows = parser.addIntegerOption('r', "numRows");
-        CmdLineParser.Option strandOption = parser.addIntegerOption('s', "strand");
-        //CmdLineParser.Option unOrdered = parser.addBooleanOption('u', "unOrdered");
 
         // extended options for coverage
         //  q, t, .....
-        CmdLineParser.Option coverageOptions = parser.addStringOption('x', "coverageOptions");
-        CmdLineParser.Option includeDuplicatesOption = parser.addStringOption('d', "includeDuplicates");
+        CmdLineParser.Option coverageOptions = parser.addStringOption('a', "coverageOptions");
 
         // Trackline
         CmdLineParser.Option colorOption = parser.addStringOption('c', "color");
@@ -215,13 +208,13 @@ public class IgvTools {
             validateArgsLength(nonOptionArgs, 2);
             String ifile = nonOptionArgs[1];
             boolean isList = ifile.indexOf(",") > 0;
-            if (!isList && !(new File(ifile)).exists()) {
+            if (!isList && !FileUtils.resourceExists(ifile)) {
                 throw new PreprocessingException("File not found: " + ifile);
             }
 
             int maxRecords = (Integer) parser.getOptionValue(maxRecordsOption, MAX_RECORDS_IN_RAM);
 
-            if (command.equals("count") || command.equals("pre") || command.equals("tile")) {
+            if (command.equals("count") || command.equals("totdf") || command.equals("tile")) {
 
                 // Parse out options common to both count and tile
                 validateArgsLength(nonOptionArgs, 4);
@@ -233,6 +226,7 @@ public class IgvTools {
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
 
+                
                 String coverageOpt = (String) parser.getOptionValue(coverageOptions);
 
                 String trackLine = null;
@@ -243,17 +237,12 @@ public class IgvTools {
 
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
-                    int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-
-                    Object includeDuplicatesString = parser.getOptionValue(includeDuplicatesOption, null);
-                    boolean includeDuplicates = includeDuplicatesString != null && !includeDuplicatesString.equals("false");
-                    if(includeDuplicates) System.out.println("include duplicates");
 
                     doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
-                            strandOptionValue, coverageOpt, trackLine, includeDuplicates);
+                            coverageOpt, trackLine);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                    doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
+                    toTDF(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
                 }
             } else if (command.toLowerCase().equals("sort")) {
                 validateArgsLength(nonOptionArgs, 3);
@@ -277,13 +266,6 @@ public class IgvTools {
                 validateArgsLength(nonOptionArgs, 3);
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
-                //} else if (command.equals("gentest")) {
-                //  validateArgsLength(nonOptionArgs, 2);
-                //  int nRowsValue = (Integer) parser.getOptionValue(nRows, 10);
-                //  boolean sorted = !((Boolean) parser.getOptionValue(unOrdered, false));
-                //  int strandOptionValue = (Integer) parser.getOptionValue(strandOption, -1);
-                //  String ofile = ifile;
-                //  TestFileGenerator.generateTestFile(ofile, sorted, nRowsValue, strandOptionValue);
             } else if (command.toLowerCase().equals("gcttoigv")) {
                 validateArgsLength(nonOptionArgs, 4);
                 String ofile = nonOptionArgs[2];
@@ -370,13 +352,7 @@ public class IgvTools {
 
     }
 
-    public void doTile(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
-                       Collection<WindowFunction> windowFunctions) throws IOException, PreprocessingException {
-        doTile(ifile, ofile, probeFile, genomeId, maxZoomValue, windowFunctions, null, MAX_RECORDS_IN_RAM);
-    }
-
-
-    public void doTile(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
+    public void toTDF(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
                        Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
         validateIsTilable(ifile);
@@ -473,13 +449,11 @@ public class IgvTools {
      * @param windowFunctions
      * @param windowSizeValue
      * @param extFactorValue
-     * @param strandOption
      * @throws IOException
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
-                        Collection<WindowFunction> windowFunctions,
-                        int windowSizeValue, int extFactorValue, int strandOption,
-                        String coverageOpt, String trackLine, boolean includeDuplicates) throws IOException {
+                        Collection<WindowFunction> windowFunctions, int windowSizeValue, int extFactorValue,
+                        String coverageOpt, String trackLine) throws IOException {
 
 
         System.out.println("Computing coverage.  File = " + ifile);
@@ -520,8 +494,7 @@ public class IgvTools {
         }
 
         Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, strandOption, coverageOpt, trackLine,
-                includeDuplicates);
+        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, coverageOpt, trackLine);
         p.finish();
 
         System.out.flush();
