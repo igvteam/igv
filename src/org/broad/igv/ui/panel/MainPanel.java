@@ -451,11 +451,7 @@ public class MainPanel extends JPanel implements Paintable {
             return 0;
         }
 
-        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeKeys());
-
-        Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
-
+        Collection<String> attributeKeys = AttributeManager.getInstance().getVisibleAttributes();
         int attributeCount = attributeKeys.size();
         int packWidth = (attributeCount) * (AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH +
                 AttributeHeaderPanel.COLUMN_BORDER_WIDTH) + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;

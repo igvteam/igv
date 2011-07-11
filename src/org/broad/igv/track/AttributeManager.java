@@ -25,6 +25,9 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.renderer.AbstractColorScale;
+import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.renderer.MonocolorScale;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -84,7 +87,15 @@ public class AttributeManager {
      */
     Map<String, Set<String>> uniqueAttributeValues;
 
+    /**
+     * Maps symbolic (discrete) attribute values to colors. Key is a composite of attribute name and value
+     */
     Map<String, Color> colorMap = new Hashtable();
+
+    /**
+     * Map of attribute column name -> color scale.   For numeric columns.
+     */
+    Map<String, AbstractColorScale> colorScales = new HashMap();
 
     Map<String, Integer> colorCounter = new HashMap();
 
@@ -161,18 +172,19 @@ public class AttributeManager {
     /**
      * Set the attribute value for the given track and key.
      */
-    private void addAttribute(String trackIdentifier, String attributeName, String attributeValue) {
+    private void addAttribute(String trackIdentifier, String name, String attributeValue) {
 
         if (attributeValue.equals("")) {
             return;
         }
 
-        addAttributeKey(attributeName);
+        String key = name.toUpperCase();
+        addAttributeKey(key);
 
-        Set<String> uniqueSet = uniqueAttributeValues.get(attributeName);
+        Set<String> uniqueSet = uniqueAttributeValues.get(key);
         if (uniqueSet == null) {
             uniqueSet = new HashSet<String>();
-            uniqueAttributeValues.put(attributeName, uniqueSet);
+            uniqueAttributeValues.put(key, uniqueSet);
         }
         uniqueSet.add(attributeValue);
 
@@ -184,7 +196,6 @@ public class AttributeManager {
 
         // attributeKey = column header, attributeValue = value for header
         // and track name (trackIdentifier) row intersection
-        String key = attributeName.toUpperCase();
         attributes.put(key, attributeValue);
         updateMetaData(key, attributeValue);
     }
@@ -330,13 +341,54 @@ public class AttributeManager {
 
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {
-            String[] tokens = nextLine.split("\t");
-            if (tokens.length >= 3) {
-                String attKey = tokens[0];
-                String attValue = tokens[1];
-                Color color = ColorUtilities.stringToColor(tokens[2]);
-                String key = (attKey + "_" + attValue).toLowerCase();
-                colorMap.put(key, color);
+            try {
+                String[] tokens = nextLine.split("\t");
+                if (tokens.length >= 3) {
+                    String attKey = tokens[0].toUpperCase();
+                    if (isNumeric(attKey)) {
+
+                        ColumnMetaData metaData = columnMetaData.get(attKey);
+                        String rangeString = tokens[1].trim();
+                        float min = (float) metaData.min;
+                        float max = (float) metaData.max;
+                        if (!rangeString.equals("*") && rangeString.length() > 0) {
+                            String[] tmp = rangeString.split(":");
+                            if (tmp.length > 1) {
+                                try {
+                                    min = Float.parseFloat(tmp[0]);
+                                    max = Float.parseFloat(tmp[1]);
+                                }
+                                catch (NumberFormatException e) {
+                                    log.error("Error parsing range string: " + rangeString, e);
+                                }
+                            }
+                        }
+
+                        AbstractColorScale scale = null;
+                        if (tokens.length == 3) {
+                            Color baseColor = ColorUtilities.stringToColor(tokens[2]);
+                            scale = new MonocolorScale(min, max, baseColor);
+                            colorScales.put(attKey, scale);
+                        } else {
+                            Color color1 = ColorUtilities.stringToColor(tokens[2]);
+                            Color color2 = ColorUtilities.stringToColor(tokens[3]);
+                            if (min < 0) {
+                                scale = new ContinuousColorScale(min, 0, max, color1, Color.white, color2);
+                            } else {
+                                scale = new ContinuousColorScale(min, max, color1, color2);
+                            }
+                        }
+                        colorScales.put(attKey, scale);
+
+                    } else {
+                        String attValue = tokens[1];
+                        Color color = ColorUtilities.stringToColor(tokens[2]);
+                        String key = (attKey + "_" + attValue).toUpperCase();
+                        colorMap.put(key, color);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error parsing color line: " + nextLine, e);
             }
         }
     }
@@ -363,6 +415,12 @@ public class AttributeManager {
             if (nLines++ > lineLimit || nextLine.toLowerCase().startsWith("#samplemapping")) {
                 break;
             }
+
+            if (nextLine.toLowerCase().startsWith("#colors")) {
+                parseColors(reader);
+                break;
+            }
+
             String[] values = nextLine.split("\t");
 
             if (values.length >= 2) {
@@ -382,9 +440,14 @@ public class AttributeManager {
             throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
         }
 
-
         if (nextLine.toLowerCase().startsWith("#samplemapping")) {
             while ((nextLine = reader.readLine()) != null) {
+
+                if (nextLine.toLowerCase().startsWith("#colors")) {
+                    parseColors(reader);
+                    break;
+                }
+
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length < 2) {
                     continue;
@@ -400,9 +463,6 @@ public class AttributeManager {
                     }
                 }
             }
-        } else if (nextLine.startsWith("#colors")) {
-            parseColors(reader);
-            return;
         } else {
             // No mapping section.
             for (Map.Entry<String, List<Attribute>> entry : sampleTable.entrySet()) {
@@ -471,10 +531,26 @@ public class AttributeManager {
             return Color.white;
         }
 
-        String key = (attKey + "_" + attValue).toLowerCase();
+        if (isNumeric(attKey)) {
+            AbstractColorScale cs = colorScales.get(attKey);
+            {
+                if (cs != null) {
+                    try {
+                        float x = Float.parseFloat(attValue);
+                        return cs.getColor(x);
+                    }
+                    catch (NumberFormatException e) {
+                        return Color.white;
+                    }
+                }
+
+            }
+        }
+
+        String key = (attKey + "_" + attValue).toUpperCase();
         Color c = colorMap.get(key);
         if (c == null) {
-            key = ("*_" + attValue).toLowerCase();
+            key = ("*_" + attValue).toUpperCase();
             c = colorMap.get(key);
 
             if (c == null) {

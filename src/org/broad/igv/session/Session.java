@@ -65,7 +65,7 @@ public class Session {
     private HashMap<TrackType, ContinuousColorScale> colorScales;
     private boolean removeEmptyPanels = false;
 
-    double [] dividerFractions = null;
+    double[] dividerFractions = null;
 
     private History history;
 
@@ -197,7 +197,7 @@ public class Session {
     }
 
     public String getLocusString() {
-        if(getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
+        if (getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
             return Globals.CHR_ALL;
         }
         ReferenceFrame.Range range = getReferenceFrame().getCurrentRange();
@@ -356,8 +356,12 @@ public class Session {
         if (attributes == null) {
             hiddenAttributes.clear();
         } else {
-            this.hiddenAttributes = attributes;
+            hiddenAttributes = new HashSet<String>();
         }
+        for (String att : attributes) {
+            hiddenAttributes.add(att.toUpperCase());
+        }
+
     }
 
     public boolean isRemoveEmptyPanels() {

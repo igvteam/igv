@@ -49,10 +49,9 @@ public class ContinuousColorScale extends AbstractColorScale {
     private double negStart;
     private double posStart;
     private Color minColor;
-    private Color midColor;
+    private Color midColor = Color.white;
     private Color maxColor;
     private Color[] colors;
-    private Color noDataColor = UIConstants.NO_DATA_COLOR;
     private boolean defaultCS = false;
 
 
@@ -102,7 +101,6 @@ public class ContinuousColorScale extends AbstractColorScale {
         this.posEnd = max;
         this.negStart = Math.max(0, min);
         this.posStart = this.negStart;
-        this.midColor = Color.white;
         this.minColor = minColor;
         this.maxColor = maxColor;
         this.useDoubleGradient = false;
@@ -210,7 +208,7 @@ public class ContinuousColorScale extends AbstractColorScale {
     }
 
     /**
-     * Method description
+     * Create a string form of this object.
      *
      * @return
      */
@@ -291,25 +289,6 @@ public class ContinuousColorScale extends AbstractColorScale {
             index = Math.max(0, Math.min(index, colors.length - 1));
             return colors[index];
         }
-    }
-
-    /**
-     * Method description
-     *
-     * @param color
-     */
-    public void setNoDataColor(Color color) {
-        this.noDataColor = color;
-
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
-    public Color getNoDataColor() {
-        return noDataColor;
     }
 
     /**
