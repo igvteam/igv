@@ -554,16 +554,21 @@ public class AttributeManager {
             c = colorMap.get(key);
 
             if (c == null) {
-                Integer cnt = colorCounter.get(attKey);
-                if (cnt == null) {
-                    cnt = 0;
-                }
-                cnt++;
-                colorCounter.put(attKey, cnt);
-                float hue = (float) (.4 + 0.2 * Math.random());
 
-                // int index = colorMap.size() + 1;
-                c = randomColor(cnt);
+                key = (attValue + "_*").toUpperCase();
+                c = colorMap.get(key);
+
+                if (c == null) {
+
+                    Integer cnt = colorCounter.get(attKey);
+                    if (cnt == null) {
+                        cnt = 0;
+                    }
+                    cnt++;
+                    colorCounter.put(attKey, cnt);
+                    c = randomColor(cnt);
+                }
+
                 colorMap.put(key, c);
             }
         }
