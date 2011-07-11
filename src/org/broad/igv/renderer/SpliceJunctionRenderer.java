@@ -22,12 +22,10 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
-import org.broad.igv.sam.SpliceJunctionFinderTrack;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
