@@ -60,6 +60,19 @@ public class SpliceJunctionFeature extends BasicFeature {
     }
 
     /**
+     * Does this splice junction feature represent the same splice junction as another feature? This is used for
+     * splice junction feature selection.
+     * @param otherFeature
+     * @return
+     */
+    public boolean isSameJunction(SpliceJunctionFeature otherFeature) {
+        if (otherFeature.getJunctionStart() == getJunctionStart() &&
+                otherFeature.getJunctionEnd() == getJunctionEnd())
+            return true;
+        return false;
+    }
+
+    /**
      * "Adds a read" to the junction. We don't actually track all the reads associated with a junction
      * (though that might be interesting, in the future), but we track depth of coverage information. By
      * adding all the reads one by one, we can build up the depth of coverage map for the flanking regions

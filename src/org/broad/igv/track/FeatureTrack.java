@@ -81,7 +81,11 @@ public class FeatureTrack extends AbstractTrack {
 
     //track which row of the expanded track is selected by the user.
     //Selection goes away if tracks are collpased
-    int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
+    protected int selectedFeatureRowIndex = NO_FEATURE_ROW_SELECTED;
+
+    //Feature selected by the user.  This is repopulated on each handleDataClick() call.
+    protected IGVFeature selectedFeature = null;
+
 
     int margin = DEFAULT_MARGIN;
 
@@ -463,6 +467,8 @@ public class FeatureTrack extends AbstractTrack {
 
         MouseEvent e = te.getMouseEvent();
 
+        //dhmay adding for feature selection
+        selectedFeature = null;
 
         //dhmay adding selection of an expanded feature row
         if (getDisplayMode() != DisplayMode.COLLAPSED) {
@@ -489,6 +495,15 @@ public class FeatureTrack extends AbstractTrack {
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof IGVFeature) {
             IGVFeature igvFeature = (IGVFeature) f;
+            //if nothing already selected, select this feature
+            if (selectedFeature == null)
+                selectedFeature = igvFeature;
+            //If something already selected, then if it's the same as this feature, deselect, otherwise, select
+            //this feature.
+            //todo: contains() might not do everything I want it to.
+            else if (igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
+                selectedFeature = null;
+            else selectedFeature = igvFeature;
             String url = igvFeature.getURL();
             if (url == null) {
                 String trackURL = getUrl();
@@ -872,6 +887,10 @@ public class FeatureTrack extends AbstractTrack {
 
     public void setSelectedFeatureRowIndex(int selectedFeatureRowIndex) {
         this.selectedFeatureRowIndex = selectedFeatureRowIndex;
+    }
+
+    public IGVFeature getSelectedFeature() {
+        return selectedFeature;
     }
 
     @Override

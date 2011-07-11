@@ -22,6 +22,8 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.sam.SpliceJunctionFinderTrack;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
@@ -44,6 +46,10 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     //color for drawing all arcs
     Color ARC_COLOR_NEG = new Color(50, 50, 150, 140); //transparent dull blue
     Color ARC_COLOR_POS = new Color(150, 50, 50, 140); //transparent dull red
+
+    Color ARC_COLOR_HIGHLIGHT_NEG = new Color(90, 90, 255, 255); //opaque, brighter blue
+    Color ARC_COLOR_HIGHLIGHT_POS = new Color(255, 90, 90, 255); //opaque, brighter red
+
 
     //central horizontal line color
     Color COLOR_CENTERLINE = new Color(0, 0, 0, 100);
@@ -96,9 +102,17 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             // a feature's region
             // TODO -- bugs in "Line Placement" style -- hardocde to fishbone
 
+            SpliceJunctionFeature selectedFeature =
+                    (SpliceJunctionFeature) ((FeatureTrack) track).getSelectedFeature();
 
             for (IGVFeature feature : featureList) {
                 SpliceJunctionFeature junctionFeature = (SpliceJunctionFeature) feature;
+                //if same junction as selected feature, highlight
+                boolean shouldHighlight = false;
+                if (selectedFeature != null && selectedFeature.isSameJunction(junctionFeature)) {
+                    setHighlightFeature(junctionFeature);
+                    shouldHighlight = true;
+                }
 
                 // Get the pStart and pEnd of the entire feature.  at extreme zoom levels the
                 // virtual pixel value can be too large for an int, so the computation is
@@ -126,26 +140,9 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
                     float depth = junctionFeature.getJunctionDepth();
 
-
                     drawFeature((int) virtualPixelStart, (int) virtualPixelEnd,
                             (int) virtualPixelJunctionStart, (int) virtualPixelJunctionEnd, depth,
-                            trackRectangle, context, feature.getStrand(), junctionFeature);
-
-                    // Determine the y offset of features based on strand type
-
-                    // If the width is < 3 there isn't room to draw the
-                    // feature, or orientation.  If the feature has any exons
-                    // at all indicate by filling a small rect
-
-                    int pixelYCenter = trackRectangle.y + NORMAL_STRAND_Y_OFFSET / 2;
-
-                    // If this is the highlight feature highlight it
-                    if (getHighlightFeature() == feature) {
-                        int yStart = pixelYCenter - BLOCK_HEIGHT / 2 - 1;
-                        Graphics2D highlightGraphics = context.getGraphic2DForColor(Color.cyan);
-                        highlightGraphics.drawRect(displayPixelStart - 1, yStart,
-                                (displayPixelEnd - displayPixelStart + 2), BLOCK_HEIGHT + 2);
-                    }
+                            trackRectangle, context, feature.getStrand(), junctionFeature, shouldHighlight);
                 }
             }
 
@@ -206,13 +203,17 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
                                    int pixelJunctionStart, int pixelJunctionEnd, float depth,
                                    Rectangle trackRectangle, RenderContext context, Strand strand,
-                                   SpliceJunctionFeature junctionFeature) {
+                                   SpliceJunctionFeature junctionFeature, boolean shouldHighlight) {
         boolean isPositiveStrand = true;
         // Get the feature's direction, color appropriately
         if (strand != null && strand.equals(Strand.NEGATIVE))
             isPositiveStrand = false;
 
-        Color color = isPositiveStrand ? ARC_COLOR_POS : ARC_COLOR_NEG;
+        Color color;
+         if (isPositiveStrand)
+             color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
+         else
+             color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
                 //Height of top of an arc of maximum depth

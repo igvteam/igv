@@ -30,16 +30,20 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.util.BrowserLauncher;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
 
@@ -58,6 +62,10 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     protected int minReadFlankingWidth = 0;
     protected int minJunctionCoverage = 1;
+
+    // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
+    // directory,  so this field might be null at any given time.  It is updated each repaint.
+    DataPanel parent;
 
 
     public SpliceJunctionFinderTrack(String id, String name, AlignmentDataManager dataManager, Genome genome) {
@@ -197,6 +205,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
     @Override
     protected void loadFeatures(String chr, int start, int end, RenderContext context) {
+        parent = context.getPanel();
         try {
             final AlignmentInterval loadedInterval = dataManager.getLoadedInterval(context);
             if (loadedInterval != null) {
@@ -209,6 +218,14 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         } catch (IOException e) {
             log.error("Error loading splice junctions", e);
         }
+    }
+
+    @Override
+    public boolean handleDataClick(TrackClickEvent te) {
+        boolean result = super.handleDataClick(te);
+        if (parent != null) parent.repaint();
+
+        return result;
     }
 
 }
