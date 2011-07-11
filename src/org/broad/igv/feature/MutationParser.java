@@ -83,6 +83,8 @@ public class MutationParser {
         for (String sampleId : features.keySet()) {
             String id = locator.getPath() + "_" + sampleId;
             FeatureTrack track = new FeatureTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
+            track.setSquishedRowHeight(5);
+            track.setExpandedRowHeight(15);
             track.setHeight(15);
             track.setName(sampleId);
 

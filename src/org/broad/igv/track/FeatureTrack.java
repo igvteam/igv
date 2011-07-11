@@ -156,6 +156,21 @@ public class FeatureTrack extends AbstractTrack {
         super.setHeight(newHeight);
     }
 
+    public int getExpandedRowHeight() {
+        return expandedRowHeight;
+    }
+
+    public void setExpandedRowHeight(int expandedRowHeight) {
+        this.expandedRowHeight = expandedRowHeight;
+    }
+
+    public int getSquishedRowHeight() {
+        return squishedRowHeight;
+    }
+
+    public void setSquishedRowHeight(int squishedRowHeight) {
+        this.squishedRowHeight = squishedRowHeight;
+    }
 
     public void setRendererClass(Class rc) {
         try {
