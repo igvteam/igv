@@ -30,7 +30,6 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.ui.MessageCollection;
-import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -82,6 +81,7 @@ public class TrackManager {
     private SequenceTrack sequenceTrack;
 
     private Map<String, List<Track>> overlayTracksMap = new HashMap();
+    private Set<Track> overlaidTracks = new HashSet();
 
     public static final String DATA_PANEL_NAME = "DataPanel";
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
@@ -104,9 +104,9 @@ public class TrackManager {
 
     public Set<TrackType> getLoadedTypes() {
         Set<TrackType> types = new HashSet();
-        for(Track t : this.getAllTracks(false)) {
+        for (Track t : this.getAllTracks(false)) {
             TrackType type = t.getTrackType();
-            if(t != null) {
+            if (t != null) {
                 types.add(type);
             }
         }
@@ -339,7 +339,6 @@ public class TrackManager {
     }
 
 
-
     /**
      * Load the data file into the specified panel.   Triggered via drag and drop.
      *
@@ -359,19 +358,17 @@ public class TrackManager {
      * type is Mutation.  This method finds all mutation tracks and builds a map
      * of key -> mutatinon track,  where the key is the specified attribute value
      * for linking tracks for overlay.
-     * <p/>
-     * The method also resets all tracks overlay properties from the user
-     * user preference value.  That should probably be done in another method.
      */
     public void resetOverlayTracks() {
         overlayTracksMap.clear();
+        overlaidTracks.clear();
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY)) {
             String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
             if (overlayAttribute != null) {
                 for (Track track : getAllTracks(false)) {
-                    if (track != null) {
-                        if (track.getTrackType() == UIConstants.overlayTrackType) {
+                    if (track != null) {  // <= this should not be neccessary
+                        if (track.getTrackType() == TrackType.MUTATION) {
                             String value = track.getAttributeValue(overlayAttribute);
 
                             if (value != null) {
@@ -388,20 +385,29 @@ public class TrackManager {
                     }
                 }
             }
-        }
-
-        boolean displayOverlays = IGV.getInstance().getSession().getDisplayOverlayTracks();
-
-        for (Track track : getAllTracks(false)) {
-            if (track != null) {
-                if (track.getTrackType() == UIConstants.overlayTrackType) {
-                    track.setOverlayVisible(displayOverlays);
+            for (Track track : getAllTracks(false)) {
+                if (track != null) {  // <= this should not be neccessary
+                    if (track.getTrackType() != TrackType.MUTATION) {
+                        List<Track> trackList = getOverlayTracks(track);
+                        if (trackList != null) overlaidTracks.addAll(trackList);
+                    }
                 }
             }
 
+            boolean displayOverlays = IGV.getInstance().getSession().getDisplayOverlayTracks();
+            for (Track track : getAllTracks(false)) {
+                if (track != null) {
+                    if (track.getTrackType() == TrackType.MUTATION) {
+                        track.setOverlayVisible(displayOverlays || !overlaidTracks.contains(track));
+                    }
+                }
+            }
         }
     }
 
+    public Set<Track> getOverlaidTracks() {
+        return overlaidTracks;
+    }
 
     /**
      * Method description
@@ -724,7 +730,7 @@ public class TrackManager {
                     if (name == null) name = "Genes";
 
                     String id = genome.getId() + "_genes";
-                    geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes,genome));
+                    geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
                     geneFeatureTrack.setMinimumHeight(5);
                     geneFeatureTrack.setHeight(35);
                     geneFeatureTrack.setPreferredHeight(35);

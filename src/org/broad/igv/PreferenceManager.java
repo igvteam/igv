@@ -886,7 +886,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SHOW_MISSING_DATA_KEY, "false");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(SHOW_EXPAND_ICON, "false");
-        defaultValues.put(DISPLAY_OVERLAY_TRACKS_KEY, "true");
+        defaultValues.put(DISPLAY_OVERLAY_TRACKS_KEY, "false");
 
         defaultValues.put(CHART_DRAW_TOP_BORDER, "false");
         defaultValues.put(CHART_DRAW_BOTTOM_BORDER, "false");

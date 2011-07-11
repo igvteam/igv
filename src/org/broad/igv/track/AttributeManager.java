@@ -116,13 +116,11 @@ public class AttributeManager {
 
     /**
      * Return the attribute value for the given track (trackName) and key.
-     * In general this method should not be used,  use
-     * Track.getAttributeValue(key)
-     * instead.
      */
-    public String getAttribute(String trackName, String attributeKey) {
+    public String getAttribute(String trackName, String attributeName) {
         Map attributes = attributeMap.get(trackName);
-        return (attributes == null ? null : (String) attributes.get(attributeKey));
+        String key = attributeName.toUpperCase();
+        return (attributes == null ? null : (String) attributes.get(key));
     }
 
     /**
@@ -136,8 +134,9 @@ public class AttributeManager {
     /**
      * Return true if the associated column contains all numeric values
      */
-    boolean isNumeric(String attributeKey) {
-        ColumnMetaData metaData = columnMetaData.get(attributeKey);
+    boolean isNumeric(String attributeName) {
+        String key = attributeName.toUpperCase();
+        ColumnMetaData metaData = columnMetaData.get(key);
         return metaData != null && metaData.isNumeric();
     }
 
@@ -162,18 +161,18 @@ public class AttributeManager {
     /**
      * Set the attribute value for the given track and key.
      */
-    private void addAttribute(String trackIdentifier, String attributeKey, String attributeValue) {
+    private void addAttribute(String trackIdentifier, String attributeName, String attributeValue) {
 
         if (attributeValue.equals("")) {
             return;
         }
 
-        addAttributeKey(attributeKey);
+        addAttributeKey(attributeName);
 
-        Set<String> uniqueSet = uniqueAttributeValues.get(attributeKey);
+        Set<String> uniqueSet = uniqueAttributeValues.get(attributeName);
         if (uniqueSet == null) {
             uniqueSet = new HashSet<String>();
-            uniqueAttributeValues.put(attributeKey, uniqueSet);
+            uniqueAttributeValues.put(attributeName, uniqueSet);
         }
         uniqueSet.add(attributeValue);
 
@@ -185,9 +184,9 @@ public class AttributeManager {
 
         // attributeKey = column header, attributeValue = value for header
         // and track name (trackIdentifier) row intersection
-        attributes.put(attributeKey, attributeValue);
-
-        updateMetaData(attributeKey, attributeValue);
+        String key = attributeName.toUpperCase();
+        attributes.put(key, attributeValue);
+        updateMetaData(key, attributeValue);
     }
 
     public void addAttributeKey(String key) {
@@ -199,15 +198,16 @@ public class AttributeManager {
     /**
      * Update the column meta data associated with the attribute key.
      *
-     * @param attributeKey
+     * @param attributeName
      * @param attributeValue
      */
-    private void updateMetaData(String attributeKey, String attributeValue) {
+    private void updateMetaData(String attributeName, String attributeValue) {
 
-        ColumnMetaData metaData = columnMetaData.get(attributeKey);
+        String key = attributeName.toUpperCase();
+        ColumnMetaData metaData = columnMetaData.get(key);
         if (metaData == null) {
             metaData = new ColumnMetaData();
-            columnMetaData.put(attributeKey, metaData);
+            columnMetaData.put(key, metaData);
         }
 
         if (metaData.isNumeric()) {

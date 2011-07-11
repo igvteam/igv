@@ -32,11 +32,9 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.*;
@@ -283,20 +281,21 @@ public abstract class AbstractTrack implements Track {
      * Note:  Attribute keys are case insensitive.  Currently this is implemented
      * by forcing all keys to upper case
      *
-     * @param key
+     * @param name
      * @param value
      */
-    public void setAttributeValue(String key, String value) {
-        String uppercaseKey = key.toUpperCase();
-        attributes.put(uppercaseKey, value);
-        AttributeManager.getInstance().addAttributeKey(uppercaseKey);
+    public void setAttributeValue(String name, String value) {
+        String key = name.toUpperCase();
+        attributes.put(key, value);
+        AttributeManager.getInstance().addAttributeKey(key);
     }
 
 
-    public String getAttributeValue(String attributeKey) {
-        String value = attributes.get(attributeKey);
+    public String getAttributeValue(String attributeName) {
+        String key = attributeName.toUpperCase();
+        String value = attributes.get(key);
         if (value == null) {
-            value = AttributeManager.getInstance().getAttribute(getSampleKey(), attributeKey);
+            value = AttributeManager.getInstance().getAttribute(getSampleKey(), key);
         }
         return value;
     }
@@ -330,10 +329,9 @@ public abstract class AbstractTrack implements Track {
      */
     public int getDefaultMinimumHeight() {
         Renderer r = getRenderer();
-        if(r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
+        if (r != null && HeatmapRenderer.class.isAssignableFrom(r.getClass())) {
             return 1;
-        }
-        else {
+        } else {
             return 10;
         }
     }
@@ -345,6 +343,7 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Return the actual minimum height if one has been set, otherwise get the default for the current renderer.
+     *
      * @return
      */
     public int getMinimumHeight() {
@@ -362,7 +361,14 @@ public abstract class AbstractTrack implements Track {
     }
 
     public boolean isVisible() {
-        return visible && ((getTrackType() != UIConstants.overlayTrackType) || (this.overlayVisible == true));
+
+        if (getTrackType() == TrackType.MUTATION) {
+            // Special rules for mutations.  Display if "displayOverlaidTracks" is true or the track is not overlaid anywhere else
+            if (!visible) return false;
+            boolean displayInOwnTrack = overlayVisible;
+            return displayInOwnTrack || !IGV.getInstance().getTrackManager().getOverlaidTracks().contains(this);
+        }
+        return visible;
     }
 
     public void setColor(Color color) {
@@ -638,7 +644,7 @@ public abstract class AbstractTrack implements Track {
             attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
         }
 
-        if(sortable != true) {
+        if (sortable != true) {
             attributes.put("sortable", "false");
         }
 
@@ -728,7 +734,7 @@ public abstract class AbstractTrack implements Track {
         }
 
         String sortableString = attributes.get("sortable");
-        if(sortableString != null) {
+        if (sortableString != null) {
             sortable = Boolean.parseBoolean(sortableString);
         }
 
