@@ -202,7 +202,7 @@ public class FTPClient {
         responseReader = null;
         commandSocket = null;
 
-        log.info("Disconnected from: " + host);
+        log.debug("Disconnected from: " + host);
 
     }
 

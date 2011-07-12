@@ -78,7 +78,7 @@ public class FTPUtils {
      */
     public static FTPClient connect(String host, String userInfo) throws IOException {
 
-        log.info("connect");
+        log.debug("connect");
 
         FTPClient ftp = new FTPClient();
         FTPReply reply = ftp.connect(host);
@@ -130,7 +130,7 @@ public class FTPUtils {
             throw new RuntimeException("Could not set binary mode on host: " + host);
         }
 
-        log.info("Connected to " + host);
+        log.debug("Connected to " + host);
 
         return ftp;
 
