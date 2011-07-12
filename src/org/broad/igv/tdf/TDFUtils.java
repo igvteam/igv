@@ -38,10 +38,10 @@ public class TDFUtils {
 
     public static void main(String[] args) throws FileNotFoundException {
         //chr1:170,118,422-170,764,140
-        //TDFUtils.dumpDatasets("test.tdf");
+        TDFUtils.dumpSummary("/Volumes/seq_transcriptome/public/IGV/PORTALS/Schizos/annotations/SP2/BAMs/Spom_log_61G9EAAXX_and_61G9UAAXX.-.bam.tdf");
         //TDFUtils.dumpAllTiles("/Users/jrobinso/projects/client/compressed.tdf");
-        TDFUtils.tdfToBedgraph("/Users/jrobinso/IGV/time_course/cebpb_0.merged.bam.tdf",
-                "/Users/jrobinso/IGV/time_course/test.wig");
+        //TDFUtils.tdfToBedgraph("/Users/jrobinso/IGV/time_course/cebpb_0.merged.bam.tdf",
+        //        "/Users/jrobinso/IGV/time_course/test.wig");
         //TDFUtils.dumpTile("/Users/jrobinso/IGV/allaml.dataset.gct.tdf", "/chr4/raw", 130);
         //TDFUtils.dumpDatasets("/Users/jrobinso/IGV/affy_1552717.gct.tdf");
         //TDFUtils.dumpDatasets("/Volumes/igv/tools/OV-1116.capture.tumor.20b.cov.tdf");
