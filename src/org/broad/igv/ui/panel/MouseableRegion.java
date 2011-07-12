@@ -51,11 +51,11 @@ public class MouseableRegion {
         trackCltn = new SingleTrackRegion(track);
     }
 
-    public MouseableRegion(Shape region, String key, String value) {
+    public MouseableRegion(Shape region, String name, String value) {
 
         this.region = region;
-        this.text = key + " = " + value;
-        trackCltn = new AttributePanelRegion(key, value);
+        this.text = name + " = " + value;
+        trackCltn = new AttributePanelRegion(name, value);
     }
 
     public boolean containsPoint(double x, double y) {
@@ -114,7 +114,7 @@ public class MouseableRegion {
 
 
         public AttributePanelRegion(String key, String value) {
-            this.key = key;
+            this.key = key.toUpperCase();
             this.value = value;
         }
 

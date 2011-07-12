@@ -292,7 +292,7 @@ public abstract class AbstractTrack implements Track {
     public void setAttributeValue(String name, String value) {
         String key = name.toUpperCase();
         attributes.put(key, value);
-        AttributeManager.getInstance().addAttributeKey(key);
+        AttributeManager.getInstance().addAttributeName(name);
     }
 
 

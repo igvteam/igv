@@ -71,7 +71,7 @@ public class FilterTracksMenuAction extends MenuAction {
 
         boolean previousMatchAllState = matchAllCheckBox.isSelected();
 
-        List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeKeys();
+        List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeNames();
 
         // Sort the attribute keys if we have any
         if (uniqueAttributeKeys != null) {
@@ -306,7 +306,7 @@ public class FilterTracksMenuAction extends MenuAction {
             return;
         }
 
-        List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeKeys();
+        List<String> uniqueAttributeKeys = AttributeManager.getInstance().getAttributeNames();
 
 
         // If we have no attribute we can't display the

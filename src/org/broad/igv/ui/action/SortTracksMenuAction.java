@@ -58,7 +58,7 @@ public class SortTracksMenuAction extends MenuAction {
 
     final public void doSortTrackByAttribute() {
 
-        List<String> keys = AttributeManager.getInstance().getAttributeKeys();
+        List<String> keys = AttributeManager.getInstance().getAttributeNames();
         Object availableSortKeys[] = keys.toArray();
         SortDialog dialog = new SortDialog(mainFrame.getMainFrame(), true, availableSortKeys);
         dialog.setVisible(true);

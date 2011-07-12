@@ -70,10 +70,10 @@ public class AttributeManager {
     LinkedHashMap<String, Map<String, String>> attributeMap = new LinkedHashMap();
 
     /**
-     * List of attribute names (keys).  The list
+     * List of attribute names.  The list
      * is kept so the keys may be fetched in the order they were added.
      */
-    List<String> attributeKeys = new ArrayList();
+    LinkedHashSet<String> attributeNames = new LinkedHashSet<String>();
 
     /**
      * Column meta data (column == attributeKey).
@@ -138,8 +138,8 @@ public class AttributeManager {
      * Return the list of attribute names (keys) in the order they should
      * be displayed.
      */
-    public List<String> getAttributeKeys() {
-        return new ArrayList(attributeKeys);
+    public List<String> getAttributeNames() {
+        return new ArrayList(attributeNames);
     }
 
     /**
@@ -155,15 +155,15 @@ public class AttributeManager {
     // TODO -- don't compute this on the fly every time its called
 
     public List<String> getVisibleAttributes() {
-        final List<String> keys = getAttributeKeys();
-        Set<String> hiddenKeys = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenKeys != null) keys.removeAll(hiddenKeys);
+        final List<String> keys = getAttributeNames();
+        Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
         return keys;
     }
 
     public void clearAllAttributes() {
         attributeMap.clear();
-        attributeKeys.clear();
+        attributeNames.clear();
         uniqueAttributeValues.clear();
         //hiddenAttributes.clear();
         loadedResources = new HashSet();
@@ -179,7 +179,7 @@ public class AttributeManager {
         }
 
         String key = name.toUpperCase();
-        addAttributeKey(key);
+        addAttributeName(name);
 
         Set<String> uniqueSet = uniqueAttributeValues.get(key);
         if (uniqueSet == null) {
@@ -200,9 +200,9 @@ public class AttributeManager {
         updateMetaData(key, attributeValue);
     }
 
-    public void addAttributeKey(String key) {
-        if (!attributeKeys.contains(key) && !key.startsWith("#")) {
-            attributeKeys.add(key);
+    public void addAttributeName(String name) {
+        if (!attributeNames.contains(name) && !name.startsWith("#")) {
+            attributeNames.add(name);
         }
     }
 

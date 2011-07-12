@@ -81,16 +81,16 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     public void paintImpl(Graphics2D g, Rectangle visibleRect) {
 
-        List<String> keys = AttributeManager.getInstance().getAttributeKeys();
+        List<String> names = AttributeManager.getInstance().getAttributeNames();
 
-        if (keys == null) {
+        if (names == null) {
             return;
         }
 
         final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
+        if (hiddenAttributes != null) names.removeAll(hiddenAttributes);
 
-        if (keys.size() > 0) {
+        if (names.size() > 0) {
 
 
             // Get the current tracks
@@ -137,7 +137,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
                             if (track.isVisible()) {
                                 if (regionY + trackHeight >= visibleRect.y) {
-                                    regionY = draw(keys, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
+                                    regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 } else {
                                     regionY += trackHeight;
                                 }
@@ -155,11 +155,12 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
 
 
-    private int draw(List<String> keys, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
+    private int draw(List<String> names, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
                      Graphics2D graphics) {
 
-        for (String key : keys) {
+        for (String name : names) {
 
+            String key = name.toUpperCase();
             String attributeValue = track.getAttributeValue(key);
 
             if (attributeValue != null) {
@@ -252,7 +253,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
             return 0;
         }
 
-        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeKeys());
+        HashSet<String> attributeKeys = new HashSet(AttributeManager.getInstance().getAttributeNames());
         final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
         if (hiddenAttributes != null) attributeKeys.removeAll(hiddenAttributes);
 

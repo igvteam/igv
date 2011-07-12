@@ -981,7 +981,7 @@ public class IGV {
 
     final public void doSelectDisplayableAttribute() {
 
-        List<String> allAttributes = AttributeManager.getInstance().getAttributeKeys();
+        List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
         Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
         final CheckListDialog dlg = new CheckListDialog(mainFrame, allAttributes, hiddenAttributes, false);
         dlg.setVisible(true);

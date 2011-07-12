@@ -63,7 +63,7 @@ public class GroupTracksMenuAction extends MenuAction {
 
         final AttributeSelectionDialog dlg = new AttributeSelectionDialog(mainFrame.getMainFrame(), true);
 
-        List<String> attributeKeys = AttributeManager.getInstance().getAttributeKeys();
+        List<String> attributeKeys = AttributeManager.getInstance().getAttributeNames();
 
 
         // Sorting disabled -- order will match the order in the panel.  If sorting is desired make a copy
