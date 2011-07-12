@@ -72,7 +72,7 @@ public interface Track extends Persistable {
 
     public boolean isVisible();
 
-    public void setOverlayVisible(boolean overlayVisible);
+    public void setOverlayed(boolean overlayVisible);
 
     public TrackType getTrackType();
         

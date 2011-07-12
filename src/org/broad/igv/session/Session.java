@@ -25,8 +25,6 @@ package org.broad.igv.session;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.track.TrackManager;
@@ -37,7 +35,6 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.util.ObserverForObject;
-import org.broad.tribble.Feature;
 
 import java.util.*;
 
@@ -48,8 +45,8 @@ public class Session {
     private static Logger log = Logger.getLogger(Session.class);
 
     public static String[] PREF_KEYS = {
-            PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY,
-            PreferenceManager.COLOR_OVERLAY_KEY,
+            PreferenceManager.OVERLAY_MUTATION_TRACKS,
+            PreferenceManager.COLOR_MUTATIONS,
             PreferenceManager.OVERLAY_ATTRIBUTE_KEY
 
     };
@@ -150,8 +147,8 @@ public class Session {
         }
     }
 
-    public boolean getDisplayOverlayTracks() {
-        final String key = PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY;
+    public boolean getOverlayMutationTracks() {
+        final String key = PreferenceManager.OVERLAY_MUTATION_TRACKS;
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
@@ -160,12 +157,12 @@ public class Session {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY);
+        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS);
 
     }
 
     public boolean getColorOverlay() {
-        final String key = PreferenceManager.COLOR_OVERLAY_KEY;
+        final String key = PreferenceManager.COLOR_MUTATIONS;
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
@@ -174,7 +171,7 @@ public class Session {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
-        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.COLOR_OVERLAY_KEY);
+        return PreferenceManager.getInstance().getAsBoolean(PreferenceManager.COLOR_MUTATIONS);
 
     }
 

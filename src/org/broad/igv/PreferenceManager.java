@@ -120,10 +120,10 @@ public class PreferenceManager implements PropertyManager {
     final public static String MUTATION_SYNONYMOUS_COLOR_KEY = "MUTATION_SYNONYMOUS_COLOR_KEY";
     final public static String MUTATION_TARGETED_REGION_COLOR_KEY = "MUTATION_TARGETED_REGION_COLOR_KEY";
     final public static String MUTATION_UNKNOWN_COLOR_KEY = "MUTATION_UNKNOWN_COLOR_KEY";
-    final public static String OVERLAY_TRACKS_KEY = "OVERLAY_TRACKS_KEY";
-    final public static String DISPLAY_OVERLAY_TRACKS_KEY = "DISPLAY_OVERLAY_TRACKS_KEY";
+    final public static String OVERLAY_MUTATION_TRACKS = "OVERLAY_TRACKS_KEY";
+    final public static String SHOW_ORPHANED_MUTATIONS = "SHOW_ORPHANED_MUTATIONS";
     final public static String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
-    final public static String COLOR_OVERLAY_KEY = "COVER_OVERLAY_KEY";
+    final public static String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
     final public static String ENABLE_LINKED_SORTING = "ENABLE_LINKED_SORTING";
     final public static String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
     final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
@@ -876,8 +876,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SHOW_REGION_BARS, "false");
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");
         defaultValues.put(USE_BYTE_RANGE, "true");
-        defaultValues.put(OVERLAY_TRACKS_KEY, "true");
-        defaultValues.put(COLOR_OVERLAY_KEY, "false");
+        defaultValues.put(OVERLAY_MUTATION_TRACKS, "true");
+        defaultValues.put(SHOW_ORPHANED_MUTATIONS, "false");
+        defaultValues.put(COLOR_MUTATIONS, "false");
         defaultValues.put(ENABLE_LINKED_SORTING, "true");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(PORT_ENABLED, "true");
@@ -886,7 +887,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SHOW_MISSING_DATA_KEY, "false");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(SHOW_EXPAND_ICON, "false");
-        defaultValues.put(DISPLAY_OVERLAY_TRACKS_KEY, "false");
 
         defaultValues.put(CHART_DRAW_TOP_BORDER, "false");
         defaultValues.put(CHART_DRAW_BOTTOM_BORDER, "false");

@@ -363,7 +363,7 @@ public class TrackManager {
         overlayTracksMap.clear();
         overlaidTracks.clear();
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY)) {
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS)) {
             String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
             if (overlayAttribute != null) {
                 for (Track track : getAllTracks(false)) {
@@ -394,11 +394,11 @@ public class TrackManager {
                 }
             }
 
-            boolean displayOverlays = IGV.getInstance().getSession().getDisplayOverlayTracks();
+            boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
             for (Track track : getAllTracks(false)) {
                 if (track != null) {
                     if (track.getTrackType() == TrackType.MUTATION) {
-                        track.setOverlayVisible(displayOverlays || !overlaidTracks.contains(track));
+                        track.setOverlayed(displayOverlays  && overlaidTracks.contains(track));
                     }
                 }
             }

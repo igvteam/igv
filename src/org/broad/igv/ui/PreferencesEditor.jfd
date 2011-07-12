@@ -1295,7 +1295,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Sample attribute column:</string> 
+               <string>Linking attribute column:</string> 
               </void> 
               <void property="name"> 
                <string>jLabel3</string> 
@@ -1339,20 +1339,12 @@
                 <boolean>true</boolean> 
                </object> 
               </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.KeyListener</string> 
-                <string>keyTyped</string> 
-                <string>overlayAttributeTextFieldKeyTyped</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>229</int> 
+               <int>240</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
@@ -1432,41 +1424,6 @@
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JCheckBox</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Display mutation data as distinct tracks</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>actionCommand</string> 
-               <string>displayTracksCB</string> 
-              </void> 
-              <void property="name"> 
-               <string>displayTracksCB</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>displayTracksCBActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>com.jformdesigner.runtime.NullConstraints</class> 
-              <void method="setProperty"> 
-               <string>x</string> 
-               <int>5</int> 
-              </void> 
-              <void method="setProperty"> 
-               <string>y</string> 
-               <int>230</int> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>font</string> 
@@ -1497,16 +1454,16 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Color code overlay</string> 
+               <string>Color code mutations</string> 
               </void> 
               <void property="name"> 
-               <string>colorOverlyCB</string> 
+               <string>colorCodeMutationsCB</string> 
               </void> 
               <void method="addEvent"> 
                <object class="com.jformdesigner.model.FormEvent"> 
                 <string>java.awt.event.ActionListener</string> 
                 <string>actionPerformed</string> 
-                <string>colorOverlyCBActionPerformed</string> 
+                <string>colorMutationsCBActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
               </void> 
@@ -1515,54 +1472,39 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>65</int> 
+               <int>0</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>114</int> 
+               <int>295</int> 
               </void> 
              </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>com.jidesoft.swing.JideButton</string> 
-              <void method="setProperty"> 
-               <string>foreground</string> 
-               <object class="java.awt.Color"> 
-                <int>0</int> 
-                <int>0</int> 
-                <int>247</int> 
-                <int>255</int> 
-               </object> 
-              </void> 
+              <string>javax.swing.JButton</string> 
               <void method="setProperty"> 
                <string>text</string> 
                <string>Choose colors</string> 
               </void> 
               <void method="setProperty"> 
                <string>font</string> 
-               <object class="java.awt.Font"> 
-                <string>Lucida Grande</string> 
-                <int>2</int> 
-                <int>12</int> 
+               <object class="com.jformdesigner.model.SwingFont"> 
+                <string>Button.font</string> 
                </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>verticalAlignment</string> 
-               <int>3</int> 
               </void> 
               <void method="setProperty"> 
                <string>verticalTextPosition</string> 
                <int>3</int> 
               </void> 
               <void property="name"> 
-               <string>chooseOverlayColorsButton</string> 
+               <string>chooseMutationColorsButton</string> 
               </void> 
               <void method="addEvent"> 
                <object class="com.jformdesigner.model.FormEvent"> 
                 <string>java.awt.event.ActionListener</string> 
                 <string>actionPerformed</string> 
-                <string>chooseOverlayColorsButtonActionPerformed</string> 
+                <string>chooseMutationColorsButtonActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
               </void> 
@@ -1571,11 +1513,112 @@
               <class>com.jformdesigner.runtime.NullConstraints</class> 
               <void method="setProperty"> 
                <string>x</string> 
-               <int>220</int> 
+               <int>185</int> 
               </void> 
               <void method="setProperty"> 
                <string>y</string> 
-               <int>116</int> 
+               <int>292</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;i&gt;Name of a sample attribute column to link mutation and data tracks</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>verticalAlignment</string> 
+               <int>1</int> 
+              </void> 
+              <void property="name"> 
+               <string>label11</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>110</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>115</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>360</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>50</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Show orphaned mutation tracks</string> 
+              </void> 
+              <void property="name"> 
+               <string>showOrphanedMutationsCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showOrphanedMutationsCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>70</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>180</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;i&gt;Select to show mutation tracks with no corresponding data track.</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>verticalAlignment</string> 
+               <int>1</int> 
+              </void> 
+              <void property="name"> 
+               <string>label12</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>110</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>210</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>360</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>55</int> 
               </void> 
              </object> 
             </void> 

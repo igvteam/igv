@@ -22,7 +22,6 @@ import java.awt.event.*;
 import javax.swing.border.*;
 
 import com.jidesoft.dialog.*;
-import com.jidesoft.swing.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
@@ -73,13 +72,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         prefMgr.remove(PreferenceManager.BACKGROUND_COLOR);
         Color backgroundColor = prefMgr.getAsColor(PreferenceManager.BACKGROUND_COLOR);
         if (backgroundColor != null) {
-             prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
-             IGV.getInstance().getMainPanel().setBackground(backgroundColor);
-             backgroundColorPanel.setBackground(backgroundColor);
-         }
+            prefMgr.put(PreferenceManager.BACKGROUND_COLOR, ColorUtilities.colorToString(backgroundColor));
+            IGV.getInstance().getMainPanel().setBackground(backgroundColor);
+            backgroundColorPanel.setBackground(backgroundColor);
+        }
 
     }
-
 
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -143,10 +141,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         overlayAttributeTextField = new JTextField();
         overlayTrackCB = new JCheckBox();
         jLabel2 = new JLabel();
-        displayTracksCB = new JCheckBox();
         jLabel4 = new JLabel();
-        colorOverlyCB = new JCheckBox();
-        chooseOverlayColorsButton = new JideButton();
+        colorCodeMutationsCB = new JCheckBox();
+        chooseMutationColorsButton = new JButton();
+        label11 = new JLabel();
+        showOrphanedMutationsCB = new JCheckBox();
+        label12 = new JLabel();
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
         topBorderCB = new JCheckBox();
@@ -628,7 +628,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel5.setLayout(null);
 
                     //---- jLabel3 ----
-                    jLabel3.setText("Sample attribute column:");
+                    jLabel3.setText("Linking attribute column:");
                     jPanel5.add(jLabel3);
                     jLabel3.setBounds(new Rectangle(new Point(65, 86), jLabel3.getPreferredSize()));
 
@@ -645,14 +645,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             overlayAttributeTextFieldFocusLost(e);
                         }
                     });
-                    overlayAttributeTextField.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyTyped(KeyEvent e) {
-                            overlayAttributeTextFieldKeyTyped(e);
-                        }
-                    });
                     jPanel5.add(overlayAttributeTextField);
-                    overlayAttributeTextField.setBounds(229, 80, 228, overlayAttributeTextField.getPreferredSize().height);
+                    overlayAttributeTextField.setBounds(240, 80, 228, overlayAttributeTextField.getPreferredSize().height);
 
                     //---- overlayTrackCB ----
                     overlayTrackCB.setSelected(true);
@@ -671,45 +665,54 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     jPanel5.add(jLabel2);
                     jLabel2.setBounds(new Rectangle(new Point(6, 6), jLabel2.getPreferredSize()));
 
-                    //---- displayTracksCB ----
-                    displayTracksCB.setText("Display mutation data as distinct tracks");
-                    displayTracksCB.setActionCommand("displayTracksCB");
-                    displayTracksCB.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            displayTracksCBActionPerformed(e);
-                        }
-                    });
-                    jPanel5.add(displayTracksCB);
-                    displayTracksCB.setBounds(new Rectangle(new Point(5, 230), displayTracksCB.getPreferredSize()));
-
                     //---- jLabel4 ----
                     jLabel4.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
                     jPanel5.add(jLabel4);
                     jLabel4.setBounds(new Rectangle(new Point(6, 12), jLabel4.getPreferredSize()));
 
-                    //---- colorOverlyCB ----
-                    colorOverlyCB.setText("Color code overlay");
-                    colorOverlyCB.addActionListener(new ActionListener() {
+                    //---- colorCodeMutationsCB ----
+                    colorCodeMutationsCB.setText("Color code mutations");
+                    colorCodeMutationsCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            colorOverlyCBActionPerformed(e);
+                            colorMutationsCBActionPerformed(e);
                         }
                     });
-                    jPanel5.add(colorOverlyCB);
-                    colorOverlyCB.setBounds(new Rectangle(new Point(65, 114), colorOverlyCB.getPreferredSize()));
+                    jPanel5.add(colorCodeMutationsCB);
+                    colorCodeMutationsCB.setBounds(new Rectangle(new Point(0, 295), colorCodeMutationsCB.getPreferredSize()));
 
-                    //---- chooseOverlayColorsButton ----
-                    chooseOverlayColorsButton.setForeground(new Color(0, 0, 247));
-                    chooseOverlayColorsButton.setText("Choose colors");
-                    chooseOverlayColorsButton.setFont(new Font("Lucida Grande", Font.ITALIC, 12));
-                    chooseOverlayColorsButton.setVerticalAlignment(SwingConstants.BOTTOM);
-                    chooseOverlayColorsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-                    chooseOverlayColorsButton.addActionListener(new ActionListener() {
+                    //---- chooseMutationColorsButton ----
+                    chooseMutationColorsButton.setText("Choose colors");
+                    chooseMutationColorsButton.setFont(UIManager.getFont("Button.font"));
+                    chooseMutationColorsButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+                    chooseMutationColorsButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            chooseOverlayColorsButtonActionPerformed(e);
+                            chooseMutationColorsButtonActionPerformed(e);
                         }
                     });
-                    jPanel5.add(chooseOverlayColorsButton);
-                    chooseOverlayColorsButton.setBounds(new Rectangle(new Point(220, 116), chooseOverlayColorsButton.getPreferredSize()));
+                    jPanel5.add(chooseMutationColorsButton);
+                    chooseMutationColorsButton.setBounds(new Rectangle(new Point(185, 292), chooseMutationColorsButton.getPreferredSize()));
+
+                    //---- label11 ----
+                    label11.setText("<html><i>Name of a sample attribute column to link mutation and data tracks");
+                    label11.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel5.add(label11);
+                    label11.setBounds(110, 115, 360, 50);
+
+                    //---- showOrphanedMutationsCB ----
+                    showOrphanedMutationsCB.setText("Show orphaned mutation tracks");
+                    showOrphanedMutationsCB.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            showOrphanedMutationsCBActionPerformed(e);
+                        }
+                    });
+                    jPanel5.add(showOrphanedMutationsCB);
+                    showOrphanedMutationsCB.setBounds(new Rectangle(new Point(70, 180), showOrphanedMutationsCB.getPreferredSize()));
+
+                    //---- label12 ----
+                    label12.setText("<html><i>Select to show mutation tracks with no corresponding data track.");
+                    label12.setVerticalAlignment(SwingConstants.TOP);
+                    jPanel5.add(label12);
+                    label12.setBounds(110, 210, 360, 55);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -2261,48 +2264,43 @@ public class PreferencesEditor extends javax.swing.JDialog {
         updatedPreferenceMap.put(
                 PreferenceManager.CHART_COLOR_BORDERS,
                 String.valueOf(colorBordersCB.isSelected()));
-    }//GEN-LAST:event_colorBordersCBActionPerformed
+    }
 
     private void bottomBorderCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
                 PreferenceManager.CHART_DRAW_BOTTOM_BORDER,
                 String.valueOf(bottomBorderCB.isSelected()));
-    }//GEN-LAST:event_bottomBorderCBActionPerformed
+    }
 
     private void topBorderCBActionPerformed(java.awt.event.ActionEvent evt) {
         updatedPreferenceMap.put(
                 PreferenceManager.CHART_DRAW_TOP_BORDER,
                 String.valueOf(topBorderCB.isSelected()));
-    }//GEN-LAST:event_topBorderCBActionPerformed
+    }
 
-    private void chooseOverlayColorsButtonActionPerformed(java.awt.event.ActionEvent evt) {
+    private void chooseMutationColorsButtonActionPerformed(ActionEvent e) {
         (new LegendDialog(IGV.getMainFrame(), true)).setVisible(true);
-    }//GEN-LAST:event_chooseOverlayColorsButtonActionPerformed
+    }
 
-    private void colorOverlyCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.COLOR_OVERLAY_KEY, String.valueOf(
-                colorOverlyCB.isSelected()));
-    }//GEN-LAST:event_colorOverlyCBActionPerformed
 
-    private void displayTracksCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY, String.valueOf(
-                displayTracksCB.isSelected()));
-        updateOverlays = true;
-    }//GEN-LAST:event_displayTracksCBActionPerformed
+    private void colorMutationsCBActionPerformed(java.awt.event.ActionEvent evt) {
+        updatedPreferenceMap.put(PreferenceManager.COLOR_MUTATIONS, String.valueOf(
+                colorCodeMutationsCB.isSelected()));
+    }
+
+    private void showOrphanedMutationsCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.SHOW_ORPHANED_MUTATIONS, String.valueOf(
+                showOrphanedMutationsCB.isSelected()));
+    }
 
     private void overlayTrackCBActionPerformed(java.awt.event.ActionEvent evt) {
-        updatedPreferenceMap.put(PreferenceManager.OVERLAY_TRACKS_KEY, String.valueOf(
+        updatedPreferenceMap.put(PreferenceManager.OVERLAY_MUTATION_TRACKS, String.valueOf(
                 overlayTrackCB.isSelected()));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
-        colorOverlyCB.setEnabled(overlayTrackCB.isSelected());
-        chooseOverlayColorsButton.setEnabled(overlayTrackCB.isSelected());
-
+        showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
         updateOverlays = true;
     }//GEN-LAST:event_overlayTrackCBActionPerformed
 
-    private void overlayAttributeTextFieldKeyTyped(java.awt.event.KeyEvent evt) {
-        // TODO add your handling code here:
-    }//GEN-LAST:event_overlayAttributeTextFieldKeyTyped
 
     private void overlayAttributeTextFieldFocusLost(java.awt.event.FocusEvent evt) {
         String attributeName = String.valueOf(overlayAttributeTextField.getText());
@@ -2376,7 +2374,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void geneListFlankingFieldFocusLost(FocusEvent e) {
-        // TODO add your code here
+        geneListFlankingFieldActionPerformed(null);
     }
 
 
@@ -2681,15 +2679,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showRegionBoundariesCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_REGION_BARS));
         defaultChartTrackHeightField.setText(prefMgr.get(PreferenceManager.CHART_TRACK_HEIGHT_KEY));
         defaultTrackHeightField.setText(prefMgr.get(PreferenceManager.TRACK_HEIGHT_KEY));
-        displayTracksCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.DISPLAY_OVERLAY_TRACKS_KEY));
+        showOrphanedMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS));
         overlayAttributeTextField.setText(prefMgr.get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY));
-        overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_TRACKS_KEY));
+        overlayTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS));
         showMissingDataCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY));
-        colorOverlyCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.COLOR_OVERLAY_KEY));
+        colorCodeMutationsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.COLOR_MUTATIONS));
         overlayAttributeTextField.setEnabled(overlayTrackCB.isSelected());
-        colorOverlyCB.setEnabled(overlayTrackCB.isSelected());
-        chooseOverlayColorsButton.setEnabled(overlayTrackCB.isSelected());
-
+        showOrphanedMutationsCB.setEnabled(overlayTrackCB.isSelected());
         seqResolutionThreshold.setText(prefMgr.get(PreferenceManager.MAX_SEQUENCE_RESOLUTION));
 
 
@@ -2892,10 +2888,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField overlayAttributeTextField;
     private JCheckBox overlayTrackCB;
     private JLabel jLabel2;
-    private JCheckBox displayTracksCB;
     private JLabel jLabel4;
-    private JCheckBox colorOverlyCB;
-    private JideButton chooseOverlayColorsButton;
+    private JCheckBox colorCodeMutationsCB;
+    private JButton chooseMutationColorsButton;
+    private JLabel label11;
+    private JCheckBox showOrphanedMutationsCB;
+    private JLabel label12;
     private JPanel chartPanel;
     private JPanel jPanel4;
     private JCheckBox topBorderCB;

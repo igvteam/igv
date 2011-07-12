@@ -86,7 +86,7 @@ public abstract class AbstractTrack implements Track {
     private boolean selected = false;
     private boolean visible = true;
     private boolean sortable = true;
-    boolean overlayVisible;
+    boolean overlaid;
 
     boolean drawYLine = false;
     float yLine = 0;
@@ -104,6 +104,7 @@ public abstract class AbstractTrack implements Track {
     private DisplayMode displayMode = DisplayMode.COLLAPSED;
     private int preferredHeight = 25;
     protected int height = -1;
+    private final PreferenceManager prefMgr;
 
     public AbstractTrack(
             ResourceLocator dataResourceLocator,
@@ -113,6 +114,7 @@ public abstract class AbstractTrack implements Track {
         this.id = id;
         this.name = name;
         init();
+        prefMgr = PreferenceManager.getInstance();
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator, String id) {
@@ -121,6 +123,7 @@ public abstract class AbstractTrack implements Track {
         String drName = dataResourceLocator.getName();
         this.name = drName != null ? drName : dataResourceLocator.getFileName();
         init();
+        prefMgr = PreferenceManager.getInstance();
     }
 
     public AbstractTrack(ResourceLocator dataResourceLocator) {
@@ -129,6 +132,7 @@ public abstract class AbstractTrack implements Track {
         String drName = dataResourceLocator.getName();
         this.name = drName != null ? drName : dataResourceLocator.getFileName();
         init();
+        prefMgr = PreferenceManager.getInstance();
     }
 
     public AbstractTrack(String id) {
@@ -136,6 +140,7 @@ public abstract class AbstractTrack implements Track {
         this.id = id;
         init();
 
+        prefMgr = PreferenceManager.getInstance();
     }
 
 
@@ -143,10 +148,10 @@ public abstract class AbstractTrack implements Track {
         this.name = name;
         this.id = id;
         init();
+        prefMgr = PreferenceManager.getInstance();
     }
 
     private void init() {
-        overlayVisible = IGV.getInstance().getSession().getDisplayOverlayTracks();
         showDataRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE);
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.EXPAND_FEAUTRE_TRACKS)) {
             displayMode = DisplayMode.EXPANDED;
@@ -362,11 +367,17 @@ public abstract class AbstractTrack implements Track {
 
     public boolean isVisible() {
 
-        if (getTrackType() == TrackType.MUTATION) {
-            // Special rules for mutations.  Display if "displayOverlaidTracks" is true or the track is not overlaid anywhere else
-            if (!visible) return false;
-            boolean displayInOwnTrack = overlayVisible;
-            return displayInOwnTrack || !IGV.getInstance().getTrackManager().getOverlaidTracks().contains(this);
+        if (visible && getTrackType() == TrackType.MUTATION) {
+            // Special rules for mutations.  If display as overlays == true, only show if not overlaid on another
+            // track and "show orphaned" is true
+            boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
+            if (displayOverlays) {
+                if (overlaid) {
+                    return false;
+                } else {
+                    return prefMgr.getAsBoolean(PreferenceManager.SHOW_ORPHANED_MUTATIONS);
+                }
+            }
         }
         return visible;
     }
@@ -386,8 +397,8 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void setOverlayVisible(boolean bool) {
-        this.overlayVisible = bool;
+    public void setOverlayed(boolean bool) {
+        this.overlaid = bool;
     }
 
 
