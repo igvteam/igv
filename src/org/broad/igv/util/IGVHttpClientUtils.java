@@ -29,6 +29,9 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -44,9 +47,14 @@ import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.ApacheURLHelper;
 import org.broad.tribble.util.SeekableHTTPStream;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -64,27 +72,61 @@ public class IGVHttpClientUtils {
 
     public static boolean byteRangeTested = false;
     public static boolean useByteRange = true;
-    private static ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
     private static DefaultHttpClient client;
     private static IdleConnectionMonitorThread monitorThread;
- 
-    /**
-     * Proxy settings (can be null)
-     */
-    //public static ProxySettings proxySettings = null;
+
 
     static {
-
-        cm.setMaxTotal(100);
-
-        monitorThread = new IdleConnectionMonitorThread(cm);
-        monitorThread.start();
-
-        client = new DefaultHttpClient(cm);
+        client = createClient();
         client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
         client.getParams().setParameter("http.useragent", Globals.applicationString());
 
+    }
 
+
+    public static DefaultHttpClient createClient() {
+
+        try {
+            ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
+            cm.setMaxTotal(100);
+
+            SSLContext ctx = SSLContext.getInstance("TLS");
+            X509TrustManager tm = getDefaultTrustManager();
+            ctx.init(null, new TrustManager[]{tm}, null);
+            SSLSocketFactory ssf = new SSLSocketFactory(ctx);
+            ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+            SchemeRegistry sr = cm.getSchemeRegistry();
+            sr.register(new Scheme("https", ssf, 443));
+
+            monitorThread = new IdleConnectionMonitorThread(cm);
+            monitorThread.start();
+
+            return new DefaultHttpClient(cm);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * A default trust manager for SSL connections.  Basically trusts everybody.
+     * @return
+     */
+    private static X509TrustManager getDefaultTrustManager() {
+        X509TrustManager tm = new X509TrustManager() {
+
+            public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+        };
+        return tm;
     }
 
     /**
@@ -132,28 +174,26 @@ public class IGVHttpClientUtils {
      * @return
      */
     public static boolean resourceAvailable(URL url) {
+
         HttpHead headMethod = null;
         HttpResponse response = null;
         try {
             headMethod = new HttpHead(url.toExternalForm());
             response = execute(headMethod, url);
             final int statusCode = response.getStatusLine().getStatusCode();
+
+            // TODO -- is this even neccessary with HttpClient 4.1 ?
+            EntityUtils.consume(response.getEntity());
+
             return statusCode == 200;
-        } catch (Exception e) {
-            //TODO -- non-expected exceptions (as opposed to "not found" exceptions) should be logged
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+        catch (Exception e) {
+            log.error("Error checking resoruce availability", e);
             return false;
 
         }
-        finally {
-            if (response != null) {
-                try {
-                    // TODO -- is this even neccessary with HttpClient 4.1 ?
-                    EntityUtils.consume(response.getEntity());
-                } catch (IOException e) {
-                }
-            }
-        }
-
     }
 
     /**
@@ -208,21 +248,17 @@ public class IGVHttpClientUtils {
             HttpResponse response = client.execute(method);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
-                // Try again                
-                method.abort();
+                // Try again    
                 client.getCredentialsProvider().clear();
                 login(url);
                 return execute(method, url);
-            }
-            else if(statusCode == 404 || statusCode == 410) {
+            } else if (statusCode == 404 || statusCode == 410) {
                 method.abort();
-                throw new RuntimeException("Resource not found: " + url.toString());
-            }
-            else if(statusCode == 407) {
+                throw new FileNotFoundException("Resource not found: " + url.toString());
+            } else if (statusCode == 407) {
                 method.abort();
                 throw new RuntimeException("Error connecting. Proxy authentication required.");
-            }
-            else if (statusCode >= 400) {
+            } else if (statusCode >= 400) {
                 method.abort();
                 throw new RuntimeException("Error connecting.  Status code = " + statusCode);
             }
@@ -294,6 +330,7 @@ public class IGVHttpClientUtils {
     }
 
     public static long getContentLength(URL url) {
+
         String contentLengthString = "";
         try {
             contentLengthString = getHeaderField(url, "Content-Length");
@@ -459,8 +496,6 @@ public class IGVHttpClientUtils {
         return false;
 
     }
-
-
 
 
     /**
