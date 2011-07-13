@@ -84,23 +84,38 @@ public class ParsingUtils {
 
     }
 
-    public static int estimateLineCount(String filename) {
+    public static long getContentLength(String path) {
+        try {
+            long contentLength = -1;
+            if (path.startsWith("http:") || path.startsWith("https:")) {
+                URL url = new URL(path);
+                contentLength = IGVHttpClientUtils.getContentLength(url);
+
+            } else if (path.startsWith("ftp:")) {
+                // Use JDK url
+                URL url = new URL(path);
+                contentLength = url.openConnection().getContentLength();
+            } else {
+                contentLength = (new File(path)).length();
+            }
+            return contentLength;
+        } catch (IOException e) {
+            log.error("Error getting content length for: " + path, e);
+            return -1;
+        }
+    }
+
+    public static int estimateLineCount(String path) {
 
         AsciiLineReader reader = null;
         try {
-            long fileLength = 0;
             final int defaultLength = 100000;
-            if (IGVHttpClientUtils.isURL(filename)) {
-                URL url = new URL(filename);
-                fileLength = IGVHttpClientUtils.getContentLength(url);
-                if(fileLength <= 0) {
-                    return defaultLength;
-                }
-            } else {
-                fileLength = (new File(filename)).length();
+            long fileLength = getContentLength(path);
+            if (fileLength <= 0) {
+                return defaultLength;
             }
 
-            reader = openAsciiReader(new ResourceLocator(filename));
+            reader = openAsciiReader(new ResourceLocator(path));
             String nextLine;
             int lines = 0;
             // Skip the first 10 lines (headers, etc)
@@ -183,7 +198,7 @@ public class ParsingUtils {
                 inputStream = IGVHttpClientUtils.openConnectionStream(url);
             } else {
                 String path = locator.getPath();
-                if(path.startsWith("file://")) {
+                if (path.startsWith("file://")) {
                     path = path.substring(7);
                 }
                 File file = new File(path);
@@ -546,7 +561,7 @@ public class ParsingUtils {
                     } else if (key.equals("ylinemark")) {
                         try {
                             float yLine = Float.parseFloat(value);
-                            trackProperties.setyLine (yLine);
+                            trackProperties.setyLine(yLine);
                         } catch (NumberFormatException e) {
                             log.error("Number format exception in track line (ylinemark): " + nextLine);
                         }
@@ -569,7 +584,7 @@ public class ParsingUtils {
 
                         } else if (value.equals("percentile90")) {
                             trackProperties.setWindowingFunction(WindowFunction.percentile90);
-                        } else if(value.equals("none")) {
+                        } else if (value.equals("none")) {
                             trackProperties.setWindowingFunction(WindowFunction.none);
                         }
                     } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow") ||
@@ -582,17 +597,15 @@ public class ParsingUtils {
 
                         }
 
-                    }  else if (key.equals("scaletype")) {
+                    } else if (key.equals("scaletype")) {
                         if (value.equals("log")) {
                             trackProperties.setLogScale(true);
                         }
-                    }
-                     else if(key.equals("gfftags")) {
+                    } else if (key.equals("gfftags")) {
                         // Any value other than 0 or off => on
                         boolean gffTags = !(value.equals("0") || (value.toLowerCase().equals("off")));
                         trackProperties.setGffTags(gffTags);
-                    }
-                     else if(key.equals("sortable")) {
+                    } else if (key.equals("sortable")) {
                         // Any value other than 0 or off => on
                         boolean sortable = (value.equals("1") || (value.toLowerCase().equals("true")));
                         trackProperties.setSortable(sortable);

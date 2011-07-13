@@ -18,6 +18,7 @@
 
 package org.broad.igv.util;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -106,4 +107,11 @@ public class ParsingUtilsTest {
             () {
         // Add your code here
     }
+
+    @Test
+    public void testGetContentLengthFTP() {
+        String url = "ftp://ftp.broadinstitute.org/pub/igv/genomes/genomes.txt";
+        assertTrue(ParsingUtils.getContentLength(url) > 0);
+    }
 }
+
