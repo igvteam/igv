@@ -24,9 +24,10 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ParsingUtils;
 
 import java.awt.*;
 import java.io.IOException;
@@ -113,7 +114,7 @@ public class GeneUtils {
         transcripts = new HashMap();
 
         FeatureParser fp = AbstractFeatureParser.getInstanceFor(file, genome);
-        AsciiLineReader reader = ParsingUtils.openAsciiReader(file);
+        AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(file));
         List<Feature> features = fp.loadFeatures(reader);
 
         for (Feature f : features) {
