@@ -578,7 +578,7 @@ public class BBFileReader {
 
         // check for valid selection region
         if (selectionRegion == null)
-            throw new RuntimeException("Error finding BigBedIterator region: chromosome not found \n");
+            return new BigBedIterator();
 
         // compose an iterator
         BigBedIterator bedIterator = new BigBedIterator(fis, chromosomeIDTree, chromosomeDataTree,
@@ -665,9 +665,9 @@ public class BBFileReader {
         RPChromosomeRegion selectionRegion = getChromosomeBounds(startChromosome, startBase,
                 endChromosome, endBase);
 
-        // check for valid selection region
+        // check for valid selection region, return empty iterator if null
         if (selectionRegion == null)
-            throw new RuntimeException("Error finding BigWigIterator region: chromosome not found \n");
+            return new BigWigIterator();
 
         // compose an iterator
         BigWigIterator wigIterator = new BigWigIterator(fis, chromosomeIDTree, chromosomeDataTree,
@@ -846,6 +846,11 @@ public class BBFileReader {
 
     private RPChromosomeRegion getChromosomeBounds(String startChromosome, int startBase,
                                                    String endChromosome, int endBase) {
+
+        // If the chromosome name length is > the key size we can't distinguish it
+        if(startChromosome.length() > chromosomeIDTree.getKeySize()) {
+            return null;
+        }
 
         // find the chromosome ID's using the name to get a valid name key, then associated ID
         String startChromKey = chromosomeIDTree.getChromosomeKey(startChromosome);

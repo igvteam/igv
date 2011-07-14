@@ -59,6 +59,8 @@ public class BigBedIterator implements Iterator<BedFeature> {
     private ArrayList<BedFeature> mBedFeatureList; // array of selected  Bed features
     private int mBedFeatureIndex;       // index of next Bed feature from the list
 
+    private boolean empty = false;
+
     /**
      *  Constructor for a BigBed iterator over the specified chromosome region
      *
@@ -91,23 +93,29 @@ public class BigBedIterator implements Iterator<BedFeature> {
         // set up hit list and first data block read
         int hitCount = getHitRegion(selectionRegion, contained);
         if(hitCount == 0)   // no hits - no point in fetching data
-            throw new RuntimeException("No wig data found in the selection region");
+            empty = true;
 
         // Ready for next() data extraction
 
     }
 
-     /*
-     *  Method returns status on a "next item" being available.
-     *
-     *  Return:
-     *      True if a "next item" exists; else false.
-     *
-     *  Note: If "next" method is called for a false condition,
-     *      an UnsupportedOperationException will be thrown.
-     * */
+    public BigBedIterator() {
+        empty = true;
+    }
+
+    /*
+   *  Method returns status on a "next item" being available.
+   *
+   *  Return:
+   *      True if a "next item" exists; else false.
+   *
+   *  Note: If "next" method is called for a false condition,
+   *      an UnsupportedOperationException will be thrown.
+   * */
      public boolean hasNext() {
 
+        if(empty) return false;
+         
         // first check if current data block can be read for next
         if(mBedFeatureIndex < mBedFeatureList.size())
             return true;
