@@ -22,6 +22,7 @@
  */
 package org.broad.igv.tdf;
 
+import com.sun.xml.internal.bind.v2.util.QNameMap;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -35,10 +36,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.util.LRUCache;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -62,6 +60,7 @@ public class TDFDataSource implements CoverageDataSource {
     boolean normalizeCounts = false;
     int totalCount = 0;
     float normalizationFactor = 1.0f;
+    private Map<String, String> chrAliasTable = new HashMap();
 
 
     public TDFDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
@@ -97,6 +96,16 @@ public class TDFDataSource implements CoverageDataSource {
             log.error("Error reading attribute 'totalCount'", e);
         }
 
+        // If we have a genome, build a reverse-lookup table for queries
+        if (genome != null) {
+            Set<String> chrNames = reader.getChromosomeNames();
+            for (String chr : chrNames) {
+                String alias = genome.getChromosomeAlias(chr);
+                if (!alias.equals(chr)) {
+                    chrAliasTable.put(alias, chr);
+                }
+            }
+        }
 
         boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
@@ -104,7 +113,7 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
     public void setNormalize(boolean normalizeCounts) {
-       setNormalizeCounts(normalizeCounts, 1.0e6f);
+        setNormalizeCounts(normalizeCounts, 1.0e6f);
     }
 
     public void setNormalizeCounts(boolean normalizeCounts, float scalingFactor) {
@@ -179,9 +188,9 @@ public class TDFDataSource implements CoverageDataSource {
         }
     }
 
-    private List<LocusScore> getCachedSummaryScores(String chr, int zoom, int tileNumber, double tileWidth) {
+    private List<LocusScore> getCachedSummaryScores(String querySeq, int zoom, int tileNumber, double tileWidth) {
 
-        String key = chr + "_" + zoom + "_" + tileNumber + "_" + windowFunction;
+        String key = querySeq + "_" + zoom + "_" + tileNumber + "_" + windowFunction;
 
         List<LocusScore> scores = summaryScoreCache.get(key);
         if (scores == null) {
@@ -189,7 +198,7 @@ public class TDFDataSource implements CoverageDataSource {
             int startLocation = (int) (tileNumber * tileWidth);
             int endLocation = (int) ((tileNumber + 1) * tileWidth);
 
-            scores = getSummaryScores(chr, zoom, startLocation, endLocation);
+            scores = getSummaryScores(querySeq, zoom, startLocation, endLocation);
 
             summaryScoreCache.put(key, scores);
         }
@@ -198,7 +207,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
-    private List<LocusScore> getSummaryScores(String chr, int zoom, int startLocation, int endLocation) {
+    private List<LocusScore> getSummaryScores(String querySeq, int zoom, int startLocation, int endLocation) {
         List<LocusScore> scores;
         if (zoom <= this.maxPrecomputedZoom) {
 
@@ -206,7 +215,7 @@ public class TDFDataSource implements CoverageDataSource {
             WindowFunction wf = (windowFunction == WindowFunction.none ? WindowFunction.mean : windowFunction);
 
             scores = new ArrayList(1000);
-            TDFDataset ds = reader.getDataset(chr, zoom, wf);
+            TDFDataset ds = reader.getDataset(querySeq, zoom, wf);
             if (ds != null) {
                 List<TDFTile> tiles = ds.getTiles(startLocation, endLocation);
                 if (tiles.size() > 0) {
@@ -226,7 +235,7 @@ public class TDFDataSource implements CoverageDataSource {
             }
         } else {
 
-            int chrLength = getChrLength(chr);
+            int chrLength = getChrLength(querySeq);
             if (chrLength == 0) {
                 return Collections.emptyList();
             }
@@ -238,7 +247,7 @@ public class TDFDataSource implements CoverageDataSource {
             int nTiles = (int) Math.pow(2, zoom);
             double binSize = Math.max(1, (((double) chrLength) / nTiles) / 700);
 
-            scores = computeSummaryScores(chr, startLocation, endLocation, binSize);
+            scores = computeSummaryScores(querySeq, startLocation, endLocation, binSize);
         }
         return scores;
     }
@@ -323,7 +332,7 @@ public class TDFDataSource implements CoverageDataSource {
 
                                 if (endBin == lastEndBin) {
                                     // Add to previous bin
-                                    accumulator.add(e-s, v, probeName);
+                                    accumulator.add(e - s, v, probeName);
                                     if (accumulatedStart < 0) accumulatedStart = s;
                                     accumulatedEnd = e;
                                 } else {
@@ -347,7 +356,7 @@ public class TDFDataSource implements CoverageDataSource {
                                     if ((endBin - startBin) > 1) {
                                         scores.add(new NamedScore(s, e, v, probeName));
                                     } else {
-                                        accumulator.add(e-s, v, probeName);
+                                        accumulator.add(e - s, v, probeName);
                                         accumulatedStart = s;
                                         accumulatedEnd = e;
                                     }
@@ -388,11 +397,13 @@ public class TDFDataSource implements CoverageDataSource {
 
         Chromosome chromosome = genome.getChromosome(chr);
 
+        String tmp = chrAliasTable.get(chr);
+        String querySeq = tmp == null ? chr : tmp;
 
         // If we are in gene list view bypass caching.
         if (FrameManager.isGeneListMode()) {
 
-            return getSummaryScores(chr, zoom, startLocation, endLocation);
+            return getSummaryScores(querySeq, zoom, startLocation, endLocation);
 
         } else {
 
@@ -410,11 +421,12 @@ public class TDFDataSource implements CoverageDataSource {
             if (tileWidth == 0) {
                 return null;
             }
+            
 
             int startTile = (int) (startLocation / tileWidth);
             int endTile = (int) (endLocation / tileWidth);
             for (int t = startTile; t <= endTile; t++) {
-                List<LocusScore> cachedScores = getCachedSummaryScores(chr, zoom, t, tileWidth);
+                List<LocusScore> cachedScores = getCachedSummaryScores(querySeq, zoom, t, tileWidth);
                 if (cachedScores != null) {
                     for (LocusScore s : cachedScores) {
                         if (s.getEnd() >= startLocation) {

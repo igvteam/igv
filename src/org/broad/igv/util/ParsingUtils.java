@@ -229,6 +229,15 @@ public class ParsingUtils {
         int nTokens = 0;
         int start = 0;
         int end = aString.indexOf(delim);
+        if(end == 0) {
+            if(aString.length() > 1) {
+                start = 1;
+                end = aString.indexOf(delim, start);
+            }
+            else {
+                return 0;
+            }
+        }
         if (end < 0) {
             tokens[nTokens++] = aString;
             return nTokens;

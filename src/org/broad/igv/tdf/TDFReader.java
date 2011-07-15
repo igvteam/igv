@@ -59,6 +59,8 @@ public class TDFReader {
 
     boolean compressed = false;
 
+    Set<String> chrNames;
+
     //private String path;
 
     public static TDFReader getReader(String path) {
@@ -406,6 +408,27 @@ public class TDFReader {
      */
     public List<WindowFunction> getWindowFunctions() {
         return windowFunctions;
+    }
+
+    /**
+     * Return a list of all chromosome names represented in this dataset
+     * TODO -- record this explicitly in the TDF file
+     * @return
+     */
+
+    public Set<String> getChromosomeNames() {
+        if(chrNames == null) {
+            ///DatasetIndex chr1/z0/mean=org.broad.igv.tdf.TDFReader$IndexEntry@6a493b65
+            chrNames = new HashSet();
+            String [] tokens = new String[2];
+            for(String key : datasetIndex.keySet()) {
+                int nTokens = ParsingUtils.split(key, tokens, '/');
+                if(nTokens > 0) {
+                    chrNames.add(tokens[0]);
+                }
+            }
+        }
+        return chrNames;
     }
 
     class IndexEntry {
