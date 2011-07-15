@@ -22,7 +22,6 @@
  */
 package org.broad.igv.tdf;
 
-import com.sun.xml.internal.bind.v2.util.QNameMap;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
