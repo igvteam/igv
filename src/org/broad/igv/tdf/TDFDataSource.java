@@ -59,7 +59,7 @@ public class TDFDataSource implements CoverageDataSource {
     boolean normalizeCounts = false;
     int totalCount = 0;
     float normalizationFactor = 1.0f;
-    private Map<String, String> chrAliasTable = new HashMap();
+    private Map<String, String> chrNameMap = new HashMap();
 
 
     public TDFDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
@@ -99,9 +99,9 @@ public class TDFDataSource implements CoverageDataSource {
         if (genome != null) {
             Set<String> chrNames = reader.getChromosomeNames();
             for (String chr : chrNames) {
-                String alias = genome.getChromosomeAlias(chr);
-                if (!alias.equals(chr)) {
-                    chrAliasTable.put(alias, chr);
+                String igvChr = genome.getChromosomeAlias(chr);
+                if (igvChr != null && !igvChr.equals(chr)) {
+                    chrNameMap.put(igvChr, chr);
                 }
             }
         }
@@ -396,7 +396,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         Chromosome chromosome = genome.getChromosome(chr);
 
-        String tmp = chrAliasTable.get(chr);
+        String tmp = chrNameMap.get(chr);
         String querySeq = tmp == null ? chr : tmp;
 
         // If we are in gene list view bypass caching.

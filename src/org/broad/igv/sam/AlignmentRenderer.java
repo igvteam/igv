@@ -791,13 +791,17 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (!alignment.isProperPair() && !alignment.isSmallInsert()) {
+        if (!alignment.isProperPair()) {
+
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
                 PEStats.Orientation libraryOrientation = peStats.getOrientation();
                 switch (libraryOrientation) {
                     case FR:
-                        c = frOrientationColors.get(pairOrientation);
+                        if (!alignment.isSmallInsert()) {
+                            // if the isize < read length the reads might overlap, invalidating this test
+                            c = frOrientationColors.get(pairOrientation);
+                        }
                         break;
                     case RF:
                         c = rfOrientationColors.get(pairOrientation);
@@ -819,6 +823,11 @@ public class AlignmentRenderer implements FeatureRenderer {
         return c == null ? grey1 : c;
 
     }
+
+    /**
+     * @return
+     */
+
 
     public static Map<Character, Color> getNucleotideColors() {
         return nucleotideColors;
