@@ -164,13 +164,6 @@ public class TrackManager {
         //}
     }
 
-
-    public void chromosomeChanged(String chrName) {
-        for (Track t : getAllTracks(true)) {
-            t.chromosomeChanged(chrName);
-        }
-    }
-
     /**
      * A (hopefully) temporary solution to force SAM track reloads,  until we have a better
      * dependency scheme
@@ -526,19 +519,6 @@ public class TrackManager {
             track.setHeight(newHeight);
         }
 
-    }
-
-
-    public void unloadTracks(Collection<ResourceLocator> locators) {
-
-        Collection<Track> tracksToRemove = new ArrayList();
-        HashSet<ResourceLocator> locatorSet = new HashSet(locators);
-        for (Track t : getAllTracks(true)) {
-            if (locatorSet.contains(t.getResourceLocator())) {
-                tracksToRemove.add(t);
-            }
-        }
-        removeTracks(tracksToRemove);
     }
 
     /**

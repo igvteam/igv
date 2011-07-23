@@ -87,8 +87,8 @@ public class CoverageTrack extends AbstractTrack {
     Genome genome;
 
 
-    public CoverageTrack(String id, String name, Genome genome) {
-        super(id, name);
+    public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
+        super(locator, locator.getPath() + "_coverage", name);
         super.setDataRange(new DataRange(0, 0, 60));
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();

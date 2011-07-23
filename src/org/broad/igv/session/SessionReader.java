@@ -243,7 +243,7 @@ public class SessionReader {
     /**
      * @param inputStream
      * @param session
-     *@param sessionName  @return
+     * @param sessionName @return
      * @throws RuntimeException
      */
 
@@ -305,7 +305,7 @@ public class SessionReader {
         Element element = (Element) node;
 
         IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
-        
+
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
 
@@ -349,12 +349,18 @@ public class SessionReader {
     //TODO -- DONT DO THIS FOR NEW SESSIONS
 
     private void addLeftoverTracks(Collection<List<Track>> tmp) {
+        Map<String, TrackPanel> trackPanelCache = new HashMap();
         if (version < 3 || !panelElementPresent) {
             for (List<Track> tracks : tmp) {
                 for (Track track : tracks) {
                     if (track != geneTrack && track != seqTrack && track.getResourceLocator() != null) {
-                        TrackPanel group = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
-                        group.addTrack(track);
+
+                        TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
+                        if (panel == null) {
+                            panel = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
+                            trackPanelCache.put(track.getResourceLocator().getPath(), panel);
+                        }
+                        panel.addTrack(track);
                     }
                 }
             }
