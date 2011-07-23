@@ -29,16 +29,15 @@ import java.util.WeakHashMap;
 
 
 /**
- * Class description
+ * Miscellaneous utilities for parsing and manipulating colors.
  *
- * @author Enter your name here...
- * @version Enter version here..., 08/11/13
+ * @author Jim Robinson
  */
 public class ColorUtilities {
 
     private static Logger log = Logger.getLogger(ColorUtilities.class);
 
-    public static Map<Object, Color> colorCache = new WeakHashMap<Object, Color>(1000);
+    public static Map<Object, Color> colorCache = new WeakHashMap<Object, Color>(100);
 
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
 
@@ -156,12 +155,6 @@ public class ColorUtilities {
                     c = new Color(red, green, blue);
                 } else if (string.startsWith("#")) {
                     c = hexToColor(string.substring(1));
-                    if (string.length() == 6) {
-                        int red = Integer.parseInt(string.substring(0, 2), 16);
-                        int green = Integer.parseInt(string.substring(2, 4), 16);
-                        int blue = Integer.parseInt(string.substring(4, 6), 16);
-                        c = new Color(red, green, blue);
-                    }
                 } else {
                      String hexString = colorSymbols.get(string.toLowerCase());
                      if(hexString != null) {

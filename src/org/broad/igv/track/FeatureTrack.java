@@ -136,15 +136,6 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     @Override
-    public void chromosomeChanged(String chrName) {
-        if (chrName.equals(Globals.CHR_ALL)) {
-            showFeatures = false;
-        } else if (showFeatures == false) {
-            // Currently showing coverage data.
-        }
-    }
-
-    @Override
     public int getHeight() {
         if (!isVisible()) {
             return 0;

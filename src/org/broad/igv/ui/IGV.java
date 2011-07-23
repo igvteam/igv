@@ -409,7 +409,6 @@ public class IGV {
     public void chromosomeChangeEvent(String chrName, boolean updateCommandBar) {
 
         contentPane.chromosomeChanged(chrName);
-        trackManager.chromosomeChanged(chrName);
         repaintDataAndHeaderPanels(updateCommandBar);
 
     }
