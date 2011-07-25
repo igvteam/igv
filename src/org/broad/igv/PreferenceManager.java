@@ -142,6 +142,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String PROXY_HOST = "PROXY.HOST";
     final public static String PROXY_PORT = "PROXY.PORT";
     final public static String PROXY_AUTHENTICATE = "PROXY.AUTHENTICATE";
+    final public static String PROXY_NTLM = "PROXY.NTLM";
     final public static String PROXY_USER = "PROXY.USERNAME";
     final public static String PROXY_PW = "PROXY.PW";
 
@@ -848,6 +849,7 @@ public class PreferenceManager implements PropertyManager {
         remove(PreferenceManager.PROXY_HOST);
         remove(PreferenceManager.PROXY_PORT);
         remove(PreferenceManager.PROXY_AUTHENTICATE);
+        remove(PreferenceManager.PROXY_NTLM);
         remove(PreferenceManager.PROXY_USER);
         remove(PreferenceManager.PROXY_PW);
         IGVHttpClientUtils.updateProxySettings();
@@ -943,6 +945,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(USE_PROXY, "false");
         defaultValues.put(PROXY_AUTHENTICATE, "false");
+        defaultValues.put(PROXY_NTLM, "false");
         defaultValues.put(PORT_NUMBER, "60151");
         defaultValues.put(TRACK_HEIGHT_KEY, "15");
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");

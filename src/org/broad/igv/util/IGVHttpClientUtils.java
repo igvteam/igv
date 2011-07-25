@@ -22,6 +22,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -111,6 +113,7 @@ public class IGVHttpClientUtils {
 
     /**
      * A default trust manager for SSL connections.  Basically trusts everybody.
+     *
      * @return
      */
     private static X509TrustManager getDefaultTrustManager() {
@@ -430,9 +433,17 @@ public class IGVHttpClientUtils {
                 log.info("Proxy settings: " + proxyHost + ":" + proxyPort);
             }
             if (auth && pw != null) {
-                client.getCredentialsProvider().setCredentials(
-                        new AuthScope(proxyHost, proxyPort),
-                        new UsernamePasswordCredentials(user, pw));
+                boolean ntlm = prefMgr.getAsBoolean(PreferenceManager.PROXY_NTLM);
+
+                Credentials creds;
+                if (ntlm) {
+                    creds = new NTCredentials(user, pw, "", "");
+                } else {
+                    creds = new UsernamePasswordCredentials(user, pw);
+                }
+                client.getCredentialsProvider().setCredentials(new AuthScope(proxyHost, proxyPort), creds);
+
+
             }
 
         } else {

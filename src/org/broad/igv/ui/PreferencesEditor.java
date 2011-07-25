@@ -79,6 +79,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -231,6 +232,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         authenticateProxyCB = new JCheckBox();
         jLabel29 = new JLabel();
         proxyPasswordField = new JPasswordField();
+        ntlmAuthenticationButton = new JCheckBox();
         jPanel17 = new JPanel();
         proxyHostField = new JTextField();
         proxyPortField = new JTextField();
@@ -1683,7 +1685,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                                .add(jLabel25)
                                 .addContainerGap())
                     );
                 }
@@ -1755,12 +1757,25 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
 
+                        //---- ntlmAuthenticationButton ----
+                        ntlmAuthenticationButton.setText("Use NTLM Authentication");
+                        ntlmAuthenticationButton.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                ntlmAuthenticationButtonActionPerformed(e);
+                            }
+                        });
+
                         GroupLayout jPanel16Layout = new GroupLayout(jPanel16);
                         jPanel16.setLayout(jPanel16Layout);
                         jPanel16Layout.setHorizontalGroup(
                             jPanel16Layout.createParallelGroup()
                                 .add(jPanel16Layout.createSequentialGroup()
                                     .add(jPanel16Layout.createParallelGroup()
+                                        .add(jPanel16Layout.createSequentialGroup()
+                                            .addContainerGap()
+                                            .add(jPanel16Layout.createParallelGroup()
+                                                .add(authenticateProxyCB)
+                                                .add(ntlmAuthenticationButton)))
                                         .add(jPanel16Layout.createSequentialGroup()
                                             .add(28, 28, 28)
                                             .add(jPanel16Layout.createParallelGroup()
@@ -1769,10 +1784,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                             .add(37, 37, 37)
                                             .add(jPanel16Layout.createParallelGroup(GroupLayout.LEADING, false)
                                                 .add(proxyPasswordField)
-                                                .add(proxyUsernameField, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)))
-                                        .add(jPanel16Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .add(authenticateProxyCB)))
+                                                .add(proxyUsernameField, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
                                     .addContainerGap(381, Short.MAX_VALUE))
                         );
                         jPanel16Layout.setVerticalGroup(
@@ -1788,7 +1800,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                     .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
                                         .add(jLabel29)
                                         .add(proxyPasswordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addContainerGap(70, Short.MAX_VALUE))
+                                    .addPreferredGap(LayoutStyle.RELATED, 24, Short.MAX_VALUE)
+                                    .add(ntlmAuthenticationButton)
+                                    .add(23, 23, 23))
                         );
                     }
 
@@ -2598,6 +2612,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
+    private void ntlmAuthenticationButtonActionPerformed(ActionEvent e) {
+        proxySettingsChanged = true;
+        boolean ntlmAuthentication = ntlmAuthenticationButton.isSelected();
+        updatedPreferenceMap.put(PreferenceManager.PROXY_NTLM, String.valueOf(ntlmAuthentication));
+    }
     // Host
 
     private void proxyHostFieldFocusLost(java.awt.event.FocusEvent evt) {
@@ -2657,6 +2676,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxyPortField.setEnabled(useProxy);
         proxyUsernameField.setEnabled(useProxy && authenticateProxy);
         proxyPasswordField.setEnabled(useProxy && authenticateProxy);
+        ntlmAuthenticationButton.setEnabled(authenticateProxy);
     }
 
     private void resetValidation() {
@@ -2757,6 +2777,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         boolean authenticateProxy = prefMgr.getAsBoolean(PreferenceManager.PROXY_AUTHENTICATE);
         authenticateProxyCB.setSelected(authenticateProxy);
+
+        ntlmAuthenticationButton.setSelected(prefMgr.getAsBoolean(PreferenceManager.PROXY_NTLM));
 
         proxyHostField.setText(prefMgr.get(PreferenceManager.PROXY_HOST, ""));
         proxyPortField.setText(prefMgr.get(PreferenceManager.PROXY_PORT, ""));
@@ -2978,6 +3000,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox authenticateProxyCB;
     private JLabel jLabel29;
     private JPasswordField proxyPasswordField;
+    private JCheckBox ntlmAuthenticationButton;
     private JPanel jPanel17;
     private JTextField proxyHostField;
     private JTextField proxyPortField;
