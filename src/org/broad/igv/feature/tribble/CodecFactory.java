@@ -18,28 +18,47 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.peaks.PeakCodec;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.source.tabix.TabixReader;
+import org.broad.tribble.util.BlockCompressedInputStream;
+import org.broad.tribble.util.SeekableStreamFactory;
+import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Jun 28, 2010
- * Time: 11:40:43 AM
- * To change this template use File | Settings | File Templates.
+ * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
+ * path to a feature file  (bed, gff, vcf, etc).
+ *
  */
 public class CodecFactory {
-    public static FeatureCodec getCodec(String file) {
 
-        String fn = file.toLowerCase();
+    private static Logger log = Logger.getLogger(CodecFactory.class);
+
+    /**
+     * Return a tribble codec to decode the supplied file.
+     *
+     * @param path the path (file or URL) to the feature rile.
+     */
+    public static FeatureCodec getCodec(String path) {
+
+        String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
             int l = fn.length() - 3;
             fn = fn.substring(0, l);
         }
-        if (fn.endsWith(".vcf") || fn.endsWith(".vcf4") ) {
+
+        if (fn.endsWith(".vcf4")) {
             return new VCFCodec();
+        } else if (fn.endsWith(".vcf")) {
+            return getVCFCodec(path);
         } else if (fn.endsWith(".bed")) {
             return new BEDCodec();
         } else if (fn.endsWith(".repmask")) {
@@ -56,10 +75,64 @@ public class CodecFactory {
         } else if (fn.endsWith(".peak")) {
             return new PeakCodec();
 
-        }
-        else {
-            throw new DataLoadException("Unknown file type", file);
+        } else {
+            throw new DataLoadException("Unknown file type", path);
         }
 
+    }
+
+
+    /**
+     * Return the appropriate VCFCodec based on the version tag.
+     * 
+     * e.g.  ##fileformat=VCFv4.1
+     *
+     * @param path Path to the VCF file.  Can be a file path, or URL
+     * @return
+     */
+    private static FeatureCodec getVCFCodec(String path) {
+
+        BufferedReader reader = null;
+
+        try {
+            // If the file ends with ".gz" assume it is a tabix indexed file
+            if (path.toLowerCase().endsWith(".gz")) {
+                reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
+                        SeekableStreamFactory.getStreamFor(path))));
+            } else {
+                reader = ParsingUtils.openBufferedReader(path);
+            }
+            // Look for fileformat directive.  This should be the first line, but just in case check the first 20
+            int lineCount = 0;
+            String formatLine;
+            while ((formatLine = reader.readLine()) != null && lineCount < 20) {
+                if (formatLine.toLowerCase().startsWith("##fileformat")) {
+                    String[] tmp = formatLine.split("=");
+                    if (tmp.length > 1) {
+                        String version = tmp[1].toLowerCase();
+                        if (version.startsWith("vcfv3")) {
+                            return new VCF3Codec();
+                        } else {
+                            return new VCFCodec();
+                        }
+                    }
+                }
+                lineCount++;
+            }
+
+        }
+        catch (IOException e) {
+            log.error("Error checking VCF Version");
+
+        }
+        finally {
+            if (reader != null) try {
+                reader.close();
+            } catch (IOException e) {
+
+            }
+        }
+        // Should never get here, but as a last resort assume this is a VCF 4.x file.
+        return new VCFCodec();
     }
 }
