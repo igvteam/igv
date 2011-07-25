@@ -437,7 +437,19 @@ public class IGVHttpClientUtils {
 
                 Credentials creds;
                 if (ntlm) {
-                    creds = new NTCredentials(user, pw, "", "");
+
+                    // Parse domain , e.g.  DOMAIN\\user
+                    String domain = "";
+                    if(user.contains("\\")) {
+                        String [] tmp = new String[2];
+                        int nTokens = ParsingUtils.split(user, tmp, '\\');
+                        if(nTokens == 2) {
+                            domain = tmp[0];
+                            user = tmp[1];
+                        }
+                    }
+
+                    creds = new NTCredentials(user, pw, "localhost", domain);
                 } else {
                     creds = new UsernamePasswordCredentials(user, pw);
                 }

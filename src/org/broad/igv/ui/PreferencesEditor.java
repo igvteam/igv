@@ -2676,7 +2676,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         proxyPortField.setEnabled(useProxy);
         proxyUsernameField.setEnabled(useProxy && authenticateProxy);
         proxyPasswordField.setEnabled(useProxy && authenticateProxy);
-        ntlmAuthenticationButton.setEnabled(authenticateProxy);
+        ntlmAuthenticationButton.setEnabled(useProxy && authenticateProxy);
     }
 
     private void resetValidation() {
