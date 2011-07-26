@@ -442,9 +442,9 @@ public class IGVHttpClientUtils {
                 if (ntlm) {
 
                     ArrayList<String> authpref = new ArrayList<String>();
+                    authpref.add(AuthPolicy.NTLM);
                     authpref.add(AuthPolicy.BASIC);
                     authpref.add(AuthPolicy.DIGEST);
-                    authpref.add(AuthPolicy.NTLM);
                     client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
 
                     // Kerbeos file location
