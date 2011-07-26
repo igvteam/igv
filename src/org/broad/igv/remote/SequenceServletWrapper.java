@@ -26,8 +26,6 @@ package org.broad.igv.remote;
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
-
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
