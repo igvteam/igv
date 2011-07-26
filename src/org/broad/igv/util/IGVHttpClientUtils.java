@@ -25,10 +25,12 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
@@ -57,6 +59,7 @@ import java.io.*;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -438,16 +441,27 @@ public class IGVHttpClientUtils {
                 Credentials creds;
                 if (ntlm) {
 
+                    ArrayList<String> authpref = new ArrayList<String>();
+                    authpref.add(AuthPolicy.BASIC);
+                    authpref.add(AuthPolicy.DIGEST);
+                    authpref.add(AuthPolicy.NTLM);
+                    client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+
+                    // Kerbeos file location
+                    // System.getenv("java.security.krb5.conf");
+
                     // Parse domain , e.g.  DOMAIN\\user
                     String domain = "";
-                    if(user.contains("\\")) {
-                        String [] tmp = new String[2];
+                    if (user.contains("\\")) {
+                        String[] tmp = new String[2];
                         int nTokens = ParsingUtils.split(user, tmp, '\\');
-                        if(nTokens == 2) {
+                        if (nTokens == 2) {
                             domain = tmp[0];
                             user = tmp[1];
                         }
                     }
+
+                    // 
 
                     creds = new NTCredentials(user, pw, "localhost", domain);
                 } else {
