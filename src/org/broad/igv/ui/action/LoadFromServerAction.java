@@ -29,7 +29,6 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.ResourceTree;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.Utilities;

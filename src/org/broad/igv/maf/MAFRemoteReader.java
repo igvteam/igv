@@ -24,7 +24,6 @@ package org.broad.igv.maf;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedInputStream;

@@ -19,15 +19,8 @@
 package org.broad.igv.cloud;
 
 
-import org.broad.igv.util.IGVHttpUtils;
-
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * User: jrobinso

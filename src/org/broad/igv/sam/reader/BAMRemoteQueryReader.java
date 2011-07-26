@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.IOException;

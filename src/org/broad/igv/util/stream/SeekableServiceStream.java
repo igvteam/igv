@@ -20,7 +20,6 @@ package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.EOFException;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * A SeekableStream implementation for the "range" webservice.  The purpose of this class is to serve range-byte

@@ -23,14 +23,9 @@
 package org.broad.igv.remote;
 
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author jrobinso

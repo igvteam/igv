@@ -23,12 +23,10 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * @author jrobinso

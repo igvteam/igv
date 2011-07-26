@@ -24,7 +24,6 @@ package org.broad.igv.data.seg;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;

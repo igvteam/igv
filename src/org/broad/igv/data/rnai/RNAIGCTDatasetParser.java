@@ -22,11 +22,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.igv.util.IGVHttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
