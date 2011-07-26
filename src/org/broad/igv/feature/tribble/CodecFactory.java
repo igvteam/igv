@@ -23,7 +23,6 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.source.tabix.TabixReader;
 import org.broad.tribble.util.BlockCompressedInputStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
