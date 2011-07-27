@@ -82,8 +82,8 @@ public class Accumulator {
 
     public void add(int nBases, float v, String probe) {
 
-        // Some older TDF files created from fixedStep files were improperly coded, with start=end, resulting in
-        // an nBases value of zero.  This is not a possible value, so threshold it
+        // Some older TDF files created in previous versions of igvtools from wig files were improperly coded,
+        // with start=end, resulting in an nBases value of zero.  This is not a possible value, so threshold it
         if(nBases < 1) nBases = 1;
 
         if (!Float.isNaN(v)) {

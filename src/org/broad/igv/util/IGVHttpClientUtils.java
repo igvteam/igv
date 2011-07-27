@@ -56,7 +56,10 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -435,17 +438,23 @@ public class IGVHttpClientUtils {
                 client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
                 log.info("Proxy settings: " + proxyHost + ":" + proxyPort);
             }
+
             if (auth && pw != null) {
                 boolean ntlm = prefMgr.getAsBoolean(PreferenceManager.PROXY_NTLM);
 
                 Credentials creds;
                 if (ntlm) {
+                    log.info("Using NTLM authentication");
 
-                    ArrayList<String> authpref = new ArrayList<String>();
-                    authpref.add(AuthPolicy.NTLM);
-                    authpref.add(AuthPolicy.BASIC);
-                    authpref.add(AuthPolicy.DIGEST);
-                    client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+                    if (!new File(System.getenv("windir") + "\\krb5.ini").exists()) {
+
+                        ArrayList<String> authpref = new ArrayList<String>();
+                        authpref.add(AuthPolicy.NTLM);
+                        authpref.add(AuthPolicy.BASIC);
+                        authpref.add(AuthPolicy.DIGEST);
+                        client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+                        client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
+                    }
 
                     // Kerbeos file location
                     // System.getenv("java.security.krb5.conf");
@@ -460,10 +469,19 @@ public class IGVHttpClientUtils {
                             user = tmp[1];
                         }
                     }
+                    log.info("Domain=" + domain);
+                    log.info("User=" + user);
 
-                    // 
+                    String hostName = "127.0.0.1";
+                    try {
+                        java.net.InetAddress i = java.net.InetAddress.getLocalHost();
+                        hostName = i.getHostName();
+                    } catch (Exception e) {
+                        log.error("Error getting host name", e);
+                    }
+                    log.info("Workstation=" + hostName);
 
-                    creds = new NTCredentials(user, pw, "localhost", domain);
+                    creds = new NTCredentials(user, pw, hostName, domain);
                 } else {
                     creds = new UsernamePasswordCredentials(user, pw);
                 }
@@ -596,5 +614,63 @@ public class IGVHttpClientUtils {
         }
 
     }
+
+
+    /**
+     * Returns the proxy information for the specified sampleURL using JRE 1.4
+     * specific plugin classes.
+     *
+     * Notes:
+     *     Plugin 1.4 Final added
+     *     com.sun.java.browser.net.* classes ProxyInfo & ProxyService...
+     *     Use those with JREs => 1.4
+     *
+     * @param sampleURL the URL to check proxy settings for
+     * @return ProxyHost the host and port of the proxy that should be used
+     */
+    /* private static ProxyHost detectProxySettingsJDK14_JDK15_JDK16(URL sampleURL) {
+      ProxyHost result = null;
+      try {
+          // Look around for the 1.4.X plugin proxy detection class...
+          // Without it, cannot autodetect...
+          Class ProxyServiceClass =
+              Class.forName("com.sun.java.browser.net.ProxyService");
+          Method getProxyInfoMethod =
+              ProxyServiceClass.getDeclaredMethod("getProxyInfo",
+                                                  new Class[] {URL.class});
+          Object proxyInfoArrayObj =
+              getProxyInfoMethod.invoke(null, new Object[] {sampleURL});
+
+          if (proxyInfoArrayObj == null
+                  || Array.getLength(proxyInfoArrayObj) == 0) {
+              if (log.isDebugEnabled()) {
+                  log.debug("1.4.X reported NULL proxy (no proxy assumed)");
+              }
+              result = NO_PROXY_HOST;
+          } else {
+              Object proxyInfoObject = Array.get(proxyInfoArrayObj, 0);
+              Class proxyInfoClass = proxyInfoObject.getClass();
+              Method getHostMethod =
+                  proxyInfoClass.getDeclaredMethod("getHost",null);
+              String proxyIP =
+                  (String)getHostMethod.invoke(proxyInfoObject, null);
+              Method getPortMethod =
+                  proxyInfoClass.getDeclaredMethod("getPort",null);
+              Integer portInteger =
+                  (Integer)getPortMethod.invoke(proxyInfoObject, null);
+              int proxyPort = portInteger.intValue();
+              if (log.isDebugEnabled()) {
+                  log.debug("1.4.X Proxy info geProxy:"+proxyIP+
+                            " get Port:"+proxyPort);
+              }
+              result = new ProxyHost(proxyIP, proxyPort);
+          }
+      } catch (Exception e) {
+          e.printStackTrace();
+          log.warn("Sun Plugin 1.4.X proxy detection class not found, " +
+                   "will try failover detection, e:"+e);
+      }
+      return result;
+  }  */
 
 }
