@@ -47,7 +47,7 @@ public class TrackPanelScrollPane extends JideScrollPane implements Paintable {
         setForeground(new java.awt.Color(153, 153, 153));
         setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
+        getVerticalScrollBar().setUnitIncrement(16);
 
         addMouseWheelListener(new MouseWheelListener() {
             public void mouseWheelMoved(MouseWheelEvent mouseWheelEvent) {
