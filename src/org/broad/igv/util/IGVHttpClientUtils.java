@@ -262,6 +262,9 @@ public class IGVHttpClientUtils {
                 client.getCredentialsProvider().clear();
                 login(url);
                 return execute(method, url);
+            } else if (statusCode == 404 || statusCode == 410)  {
+                method.abort();
+                throw new FileNotFoundException();
             } else if (statusCode >= 400) {
                 method.abort();
                 throw new HttpResponseException(statusCode);
