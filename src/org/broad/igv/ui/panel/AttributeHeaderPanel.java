@@ -48,8 +48,8 @@ import java.util.List;
 public class AttributeHeaderPanel extends JPanel {
 
     final static int MAXIMUM_FONT_SIZE = 10;
-    final static int ATTRIBUTE_COLUMN_WIDTH = 10;
-    final static int COLUMN_BORDER_WIDTH = 2;
+    public final static int ATTRIBUTE_COLUMN_WIDTH = 10;
+    public final static int COLUMN_BORDER_WIDTH = 2;
 
     Map<String, Boolean> sortOrder = new HashMap();
 

@@ -137,10 +137,11 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
                             if (track.isVisible()) {
                                 if (regionY + trackHeight >= visibleRect.y) {
-                                    regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
-                                } else {
-                                    regionY += trackHeight;
+                                    Rectangle trackRectangle = new Rectangle(regionX, regionY, getWidth(), trackHeight);
+                                    track.renderAttributes(graphics2D, trackRectangle, visibleRect, names, mouseRegions);
+                                    //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 }
+                                regionY += trackHeight;
                             }
                         }
 
@@ -155,7 +156,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
 
 
-    private int draw(List<String> names, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
+    /*private int draw(List<String> names, Track track, int trackX, int trackY, int trackWidth, int trackHeight,
                      Graphics2D graphics) {
 
         for (String name : names) {
@@ -175,7 +176,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
         trackY += trackHeight;
 
         return trackY;
-    }
+    }*/
 
     private void init() {
 
@@ -207,7 +208,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
             return selectedTracks.iterator().next().getName();
         } else {
             String keyValue = "";
-            for (MouseableRegion region : this.getTrackRegions()) {
+            for (MouseableRegion region : this.getMouseRegions()) {
                 if (region.containsPoint(x, y)) {
                     keyValue = region.getText();
                 }
@@ -225,7 +226,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
      */
     public String getMouseDoc(int x, int y) {
 
-        List<MouseableRegion> mouseRegions = getTrackRegions();
+        List<MouseableRegion> mouseRegions = getMouseRegions();
 
         for (MouseableRegion mr : mouseRegions) {
             if (mr.containsPoint(x, y)) {

@@ -23,6 +23,7 @@ package org.broad.igv.track;
 
 
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.tribble.Feature;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -34,27 +35,54 @@ import org.broad.igv.session.Persistable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author jrobinso
  */
 public interface Track extends Persistable {
+    void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> names, List<MouseableRegion> mouseRegions);
 
     enum DisplayMode {
         COLLAPSED, SQUISHED, EXPANDED
     }
 
-    // The unique identifier for the track.  This should only be used in saving/restoring sessions.
+    /**
+     * Return an identifier for the track.   The identifier should be unique in the context of a session.  For
+     * files that produce a single track (e.g. wig) the absolute path name for the underlying file can be
+     * used.
+     * @return
+     */
     public String getId();
 
+    /**
+     * Render the track in the supplied rectangle.  It is the responsibility of the track to draw within the
+     * bounds of the rectangle.
+     *
+     * @param context the render context
+     * @param rect the track bounds, relative to the enclosing DataPanel bounds.
+     */
     public void render(RenderContext context, Rectangle rect);
 
-    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
-
+    /**
+     * Render the track as an overlay, presumably on another track.
+     *
+     * @param context the render context
+     * @param rect the track bounds, relative to the enclosing DataPanel bounds.
+     */
     public void overlay(RenderContext context, Rectangle rect);
 
-    void chromosomeChanged(String chrName);
+    /**
+     * Render the name of the track. Both the track and visible rectangles are supplied so the implementor
+     * can adjust the placing of the name based on the current viewport.  This is used to center track names
+     * on the viewport for large tracks that extend outside the viewport.
+     *
+     * @param graphics
+     * @param trackRectangle  the track bounds, relative to the enclosing DataPanel bounds.
+     * @param visibleRectangle
+     */
+    public void renderName(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRectangle);
 
     public void setName(String name);
 
@@ -120,8 +148,6 @@ public interface Track extends Persistable {
 
     public boolean isSortable();
 
-    public boolean isLogNormalized();
-
     public boolean isShowDataRange();
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame);
@@ -133,10 +159,6 @@ public interface Track extends Persistable {
     public void setFontSize(int h);
 
     public int getFontSize();
-
-    //public void setExpanded(boolean value);
-
-    //public boolean isExpanded();
 
     public boolean handleDataClick(TrackClickEvent e);
 

@@ -30,7 +30,9 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -200,14 +202,6 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public String getSampleId() {
-        if (sampleId != null) {
-            return sampleId;
-        } else {
-            return getName();
-        }
-    }
-
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
     }
@@ -237,6 +231,26 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> names, List<MouseableRegion> mouseRegions) {
+
+        int x = trackRectangle.x;
+
+        for (String name : names) {
+
+            String key = name.toUpperCase();
+            String attributeValue = getAttributeValue(key);
+            if (attributeValue != null) {
+                Rectangle rect = new Rectangle(x, trackRectangle.y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH,
+                        trackRectangle.height);
+                graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
+                graphics.fill(rect);
+                mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+            }
+            x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+        }
+    }
+
+
     private Rectangle getDisplayableRect(Rectangle trackRectangle, Rectangle visibleRect) {
         Rectangle rect = null;
         if (visibleRect != null) {
@@ -260,10 +274,6 @@ public abstract class AbstractTrack implements Track {
      * @param rect
      */
     public void overlay(RenderContext context, Rectangle rect) {
-    }
-
-    public void chromosomeChanged(String chrName) {
-        // Nothing to do by default
     }
 
 
@@ -1006,4 +1016,5 @@ public abstract class AbstractTrack implements Track {
     public float getYLine() {
         return yLine;
     }
+
 }

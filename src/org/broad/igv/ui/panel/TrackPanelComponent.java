@@ -45,7 +45,7 @@ import java.util.List;
 abstract public class TrackPanelComponent extends JPanel {
 
     private static Logger log = Logger.getLogger(TrackPanelComponent.class);
-    List<MouseableRegion> trackRegions;
+    List<MouseableRegion> mouseRegions;
 
     private TrackPanel trackPanel;
 
@@ -58,7 +58,7 @@ abstract public class TrackPanelComponent extends JPanel {
     public TrackPanelComponent(TrackPanel trackPanel) {
         this.trackPanel = trackPanel;
         setFocusable(true);
-        trackRegions = new ArrayList();
+        mouseRegions = new ArrayList();
     }
 
     public TrackPanel getTrackPanel() {
@@ -74,15 +74,15 @@ abstract public class TrackPanelComponent extends JPanel {
 
 
     protected void addMousableRegion(MouseableRegion region) {
-        trackRegions.add(region);
+        mouseRegions.add(region);
     }
 
     protected void removeMousableRegions() {
-        trackRegions.clear();
+        mouseRegions.clear();
     }
 
-    protected List<MouseableRegion> getTrackRegions() {
-        return trackRegions;
+    protected List<MouseableRegion> getMouseRegions() {
+        return mouseRegions;
     }
 
     public boolean scrollTo(String trackName) {
@@ -211,7 +211,7 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected void toggleTrackSelections(MouseEvent e) {
-        for (MouseableRegion mouseRegion : trackRegions) {
+        for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 IGV.getInstance().getTrackManager().toggleTrackSelections(mouseRegion.getTracks());
                 return;
@@ -231,7 +231,7 @@ abstract public class TrackPanelComponent extends JPanel {
         }
 
 
-        for (MouseableRegion mouseRegion : trackRegions) {
+        for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 IGV.getInstance().getTrackManager().setTrackSelections(mouseRegion.getTracks());
                 return;
@@ -240,7 +240,7 @@ abstract public class TrackPanelComponent extends JPanel {
     }
 
     protected boolean isTrackSelected(MouseEvent e) {
-        for (MouseableRegion mouseRegion : trackRegions) {
+        for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 for (Track t : mouseRegion.getTracks()) {
                     if (t.isSelected()) {

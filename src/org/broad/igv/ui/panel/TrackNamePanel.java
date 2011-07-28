@@ -31,7 +31,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackClickEvent;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.dnd.AbstractGhostDropManager;
@@ -272,7 +271,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     public String getTooltipTextForLocation(int x, int y) {
 
-        List<MouseableRegion> mouseableRegions = TrackNamePanel.this.getTrackRegions();
+        List<MouseableRegion> mouseableRegions = TrackNamePanel.this.getMouseRegions();
 
         for (MouseableRegion mouseableRegion : mouseableRegions) {
             if (mouseableRegion.containsPoint(x, y)) {
@@ -293,7 +292,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
     }
 
     protected void shiftSelectTracks(MouseEvent e) {
-        for (MouseableRegion mouseRegion : trackRegions) {
+        for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                 Collection<Track> clickedTracks = mouseRegion.getTracks();
                 if (clickedTracks != null && clickedTracks.size() > 0) {
@@ -536,7 +535,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
                 @Override
                 public void run() {
-                    for (MouseableRegion mouseRegion : trackRegions) {
+                    for (MouseableRegion mouseRegion : mouseRegions) {
                         if (mouseRegion.containsPoint(e.getX(), e.getY())) {
                             for (Track t : mouseRegion.getTracks()) {
                                 t.handleNameClick(e);
@@ -595,7 +594,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
             // This cast is horrid but we can't fix everything at once.
             TrackPanel view = ((TrackPanel) getParent());
-            List<MouseableRegion> regions = getTrackRegions();
+            List<MouseableRegion> regions = getMouseRegions();
 
 
             // Find the regions containing the startPoint and point
