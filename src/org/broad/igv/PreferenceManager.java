@@ -890,7 +890,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");
         defaultValues.put(USE_BYTE_RANGE, "true");
         defaultValues.put(OVERLAY_MUTATION_TRACKS, "true");
-        defaultValues.put(SHOW_ORPHANED_MUTATIONS, "false");
+        defaultValues.put(SHOW_ORPHANED_MUTATIONS, "true");
         defaultValues.put(COLOR_MUTATIONS, "false");
         defaultValues.put(ENABLE_LINKED_SORTING, "true");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
