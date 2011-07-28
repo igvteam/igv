@@ -346,7 +346,7 @@ public class DataPanel extends JComponent implements Paintable {
      * @return
      */
     public Track getTrack(int x, int y) {
-        for (MouseableRegion mouseRegion : parent.getTrackRegions()) {
+        for (MouseableRegion mouseRegion : parent.getMouseRegions()) {
             if (mouseRegion.containsPoint(x, y)) {
                 return mouseRegion.getTracks().iterator().next();
             }
@@ -366,7 +366,7 @@ public class DataPanel extends JComponent implements Paintable {
         double displayLocation = location + 1;
 
         Track track = null;
-        List<MouseableRegion> regions = parent.getTrackRegions();
+        List<MouseableRegion> regions = parent.getMouseRegions();
         StringBuffer popupTextBuffer = new StringBuffer();
         for (MouseableRegion mouseRegion : regions) {
             if (mouseRegion.containsPoint(x, y)) {
@@ -534,7 +534,7 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
     protected void removeMousableRegions() {
-        parent.getTrackRegions().clear();
+        parent.getMouseRegions().clear();
     }
 
     public ReferenceFrame getFrame() {
