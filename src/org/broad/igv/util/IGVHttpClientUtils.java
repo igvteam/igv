@@ -18,9 +18,7 @@
 
 package org.broad.igv.util;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
@@ -43,6 +41,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ftp.FTPClient;
@@ -56,10 +55,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -215,8 +211,13 @@ public class IGVHttpClientUtils {
     public static String getHeaderField(URL url, String key) throws IOException {
         HttpHead headMethod = new HttpHead(url.toExternalForm());
         HttpResponse response = execute(headMethod, url);
-        String value = response.getFirstHeader(key).getValue();
-        EntityUtils.consume(response.getEntity());
+
+        String value = null;
+        Header header = response.getFirstHeader(key);
+        if (header != null) {
+            value = header.getValue();
+            EntityUtils.consume(response.getEntity());
+        }
         return value;
     }
 
@@ -261,15 +262,9 @@ public class IGVHttpClientUtils {
                 client.getCredentialsProvider().clear();
                 login(url);
                 return execute(method, url);
-            } else if (statusCode == 404 || statusCode == 410) {
-                method.abort();
-                throw new FileNotFoundException("Resource not found: " + url.toString());
-            } else if (statusCode == 407) {
-                method.abort();
-                throw new RuntimeException("Error connecting. Proxy authentication required.");
             } else if (statusCode >= 400) {
                 method.abort();
-                throw new RuntimeException("Error connecting.  Status code = " + statusCode);
+                throw new HttpResponseException(statusCode);
             }
             return response;
 
@@ -338,33 +333,26 @@ public class IGVHttpClientUtils {
 
     }
 
-    public static long getContentLength(URL url) {
+    public static long getContentLength(URL url) throws IOException {
 
         String contentLengthString = "";
-        try {
-            contentLengthString = getHeaderField(url, "Content-Length");
-            return Long.parseLong(contentLengthString);
-        } catch (IOException e) {
-            log.error("Error getting content length from: " + url.toString(), e);
-            return -1;
 
-        }
-        catch (NumberFormatException e) {
-            log.error("Error getting content length from: " + url.toString() + "\n" + "Content-length=" + contentLengthString);
+        contentLengthString = getHeaderField(url, "Content-Length");
+        if (contentLengthString == null) {
             return -1;
+        } else {
+            return Long.parseLong(contentLengthString);
         }
 
     }
 
     public static long getContentLength(HttpResponse response) {
         String contentLengthString = "";
-        try {
-            contentLengthString = response.getFirstHeader("Content-Length").getValue();
-            return Long.parseLong(contentLengthString);
-        }
-        catch (NumberFormatException e) {
-            log.error("Error getting content length from: " + contentLengthString + "\n" + "Content-length=" + contentLengthString);
+        contentLengthString = response.getFirstHeader("Content-Length").getValue();
+        if (contentLengthString == null) {
             return -1;
+        } else {
+            return Long.parseLong(contentLengthString);
         }
 
     }
@@ -542,7 +530,7 @@ public class IGVHttpClientUtils {
                 }
             }
             long fileLength = outputFile.length();
-            log.info("File length = " + fileLength);
+            //log.info("File length = " + fileLength);
 
             return contentLength <= 0 || contentLength == fileLength;
 

@@ -18,21 +18,38 @@
 
 package org.broad.igv.exceptions;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 /**
- * Author: nazaire
- * Date: Jul 8, 2009
+ * Class for specifc wrapping certain HTTP response codes as exceptions
+ *
+ * @author Jim Robinson
+ * @date Jul 27, 2011
  */
-public class DataLoadException extends RuntimeException {
+public class HttpResponseException extends IOException {
 
-    private String message;
-    private String fileName;
+    int statusCode;
 
-    public DataLoadException(String message, String fileName) {
-        if(message != null) this.message = message.replace("<html>", "");
-        this.fileName = fileName;
+    public HttpResponseException(int statusCode) {
+        this.statusCode = statusCode;
     }
 
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    @Override
     public String getMessage() {
-        return "<html>An error occurred while accessing:    " + fileName + "<br>" + message;
+
+        switch (statusCode) {
+            case 407:
+                return "Proxy authentication required (status code " + statusCode + ")";
+            case 403:
+                return "Access Forbidden (status code " + statusCode + ")";
+            default:
+                return "HTTP access error (status code " + statusCode + ")";
+        }
+
     }
 }

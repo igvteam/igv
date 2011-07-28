@@ -616,10 +616,21 @@ public class PreferenceManager implements PropertyManager {
     }
 
 
-    public void setShowAttributeView(boolean isShowable) {
+    /**
+     * Temporaily overide a preference.   This override will persist for
+     * the duration of the session, or until the user explicitly changes it.
+     *
+     * @param key
+     * @param value
+     */
+    public void override(String key, String value) {
+       preferences.putOverride(key, value);
+    }
 
+    public void setShowAttributeView(boolean isShowable) {
         put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, Boolean.toString(isShowable));
     }
+
 
 
     public void setLastChromosomeViewed(String chromosome) {

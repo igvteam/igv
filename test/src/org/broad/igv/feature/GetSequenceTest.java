@@ -22,6 +22,7 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.util.IGVHttpClientUtils;
 
 import java.io.DataInputStream;
@@ -36,7 +37,7 @@ public class GetSequenceTest {
     static String sequenceURL = "http://www.broadinstitute.org/igv/sequence/hg18";
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws HttpResponseException {
         byte[] sequence = getSequence("hg18", "chr1", 1000000, 1000020);
 
         // Convert bytes to a string for convenience
@@ -48,7 +49,7 @@ public class GetSequenceTest {
     }
 
 
-    public static byte[] getSequence(String genome, String chr, int start, int end) {
+    public static byte[] getSequence(String genome, String chr, int start, int end) throws HttpResponseException {
 
 
         try {
