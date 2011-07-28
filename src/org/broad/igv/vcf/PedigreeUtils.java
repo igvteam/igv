@@ -18,6 +18,9 @@
 
 package org.broad.igv.vcf;
 
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.TrackManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
@@ -30,32 +33,49 @@ import java.util.List;
 /**
  * @author jrobinso
  * @date Apr 25, 2011
- * TODO: remove this class, no longer needed now that VCFTrack supports groups defined in attribute files.
  */
 public class PedigreeUtils {
 
+
+    /**
+     * Parses a pedigree file containing trios of child, father, mother.
+     *
+     * @param path
+     * @throws IOException
+     */
 
     public static void parseTrioFile(String path) throws IOException {
 
         BufferedReader reader = null;
 
 
-        reader = ParsingUtils.openBufferedReader(path);
-
-        LinkedHashMap<String, List<String>> trios = new LinkedHashMap();
-
-        String nextLine;
-        int familyNumber = 1;
-        while ((nextLine = reader.readLine()) != null) {
-            String[] tokens = nextLine.split("\\s+");
-            if (tokens.length == 3) {
-                String family = "fam" + familyNumber++;
-                trios.put(family, Arrays.asList(tokens));
+        try {
+            reader = ParsingUtils.openBufferedReader(path);
+            String nextLine;
+            int familyNumber = 1;
+            while ((nextLine = reader.readLine()) != null) {
+                String[] tokens = nextLine.split("\\s+");
+                if (tokens.length == 3) {
+                    String family = String.valueOf(familyNumber);
+                    for (String member : tokens) {
+                        AttributeManager.getInstance().addAttribute(member, "Family", family);
+                    }
+                    String child = tokens[0];
+                    String father = tokens[1];
+                    String mother = tokens[2];
+                    AttributeManager.getInstance().addAttribute(child, "Member", "child");
+                    AttributeManager.getInstance().addAttribute(child, "Relation", "child");
+                    AttributeManager.getInstance().addAttribute(father, "Member", "father");
+                    AttributeManager.getInstance().addAttribute(father, "Relation", "parent");
+                    AttributeManager.getInstance().addAttribute(mother, "Member", "mother");
+                    AttributeManager.getInstance().addAttribute(mother, "Relation", "parent");
+                    familyNumber++;
+                }
             }
+            IGV.getInstance().getTrackManager().refreshData();
+        } finally {
+            if (reader != null) reader.close();
         }
-
-        VCFTrack.addSampleGroups(trios);
-
 
     }
 }

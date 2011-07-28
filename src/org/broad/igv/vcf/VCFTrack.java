@@ -22,14 +22,14 @@
 package org.broad.igv.vcf;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
-import org.broad.igv.track.TribbleFeatureSource;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.MouseableRegion;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -37,7 +37,6 @@ import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
-import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -55,46 +54,37 @@ public class VCFTrack extends FeatureTrack {
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
     private static final Color BAND2_COLOR = Color.white;
-
-    // Map for organizing samples by family (sample -> family).  This is static (shared) by all vcf tracks
-    // We need maps in both directions to (1) look up a group quickly,  and (2) maintain proper order in the group
-    private static Map<String, String> REFERENCE_SAMPLE_GROUP_MAP = new HashMap();
-    private static LinkedHashMap<String, List<String>> REFERENCE_GROUP_SAMPLE_MAP;
-
-    /**
-     * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
-     * methylation data. This will enable the "Color By/Methylation Rate" menu item.
-     */
-    private boolean enableMethylationRateSupport;
     private static final Color borderGray = new Color(200, 200, 200);
-
-    public boolean isEnableMethylationRateSupport() {
-
-        return enableMethylationRateSupport;
-    }
-
-    public static void addSampleGroups(LinkedHashMap<String, List<String>> map) {
-        REFERENCE_GROUP_SAMPLE_MAP = map;
-        for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-            String family = entry.getKey();
-            for (String sample : entry.getValue()) {
-                REFERENCE_SAMPLE_GROUP_MAP.put(sample, family);
-            }
-        }
-
-    }
 
     private final static int DEFAULT_EXPANDED_GENOTYPE_HEIGHT = 15;
     private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
     private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final static int MAX_FILTER_LINES = 15;
 
+    // Map for organizing samples by family (sample -> family).  This is static (shared) by all vcf tracks
+    private static  Map<String, String> REFERENCE_SAMPLE_GROUP_MAP = new HashMap();
+    // We need maps in both directions to (1) look up a group quickly,  and (2) maintain proper order in the group
+    private static  LinkedHashMap<String, List<String>> REFERENCE_GROUP_SAMPLE_MAP;
+
+    /**
+     * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
+     * methylation data. This will enable the "Color By/Methylation Rate" menu item.
+     */
+    private boolean enableMethylationRateSupport;
+
+    public boolean isEnableMethylationRateSupport() {
+
+        return enableMethylationRateSupport;
+    }
+
     private VCFRenderer renderer = new VCFRenderer(this);
 
-    private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
 
-    // A hack, keeps track of last position drawn.  TODO -- need a proper component "model" for tracks, like a lightweight swing panel
+    /**
+     * Top (y) position of this track.  This is updated whenever the track is drawn.
+     */
     private int top;
+    private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
     LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
@@ -111,10 +101,14 @@ public class VCFTrack extends FeatureTrack {
     private boolean hideFiltered = false;
     private boolean renderID = true;
 
-    private static float dash[] = {4.0f, 1.0f};
     DecimalFormat numFormat = new DecimalFormat("#.###");
 
     Feature selectedVariant;
+
+    /**
+     * The id of the group used to group samples.
+     */
+    private String previousGroupId;
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
@@ -160,17 +154,15 @@ public class VCFTrack extends FeatureTrack {
         setDisplayMode(DisplayMode.EXPANDED);
         setRenderID(false);
 
-        // Estimate visibility window.   TODO -- set beta based on available memory
+        // Estimate visibility window.
+        // TODO -- set beta based on available memory
         int cnt = Math.max(1, sampleCount);
-        int beta = 100000;
-        int visWindow = Math.min(500000, (beta / cnt) * 1000);
+        int beta = 1000000;
+        double p = Math.pow(cnt, 1.5);
+        int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
     }
 
-    /**
-     * The id of the group used to group samples.
-     */
-    private String previousGroupId;
 
     /**
      * Set groups from global sample information attributes.
@@ -205,6 +197,7 @@ public class VCFTrack extends FeatureTrack {
     }
     // previous hack to setup groups from some fixed file read from disk:
     // TODO remove this method as soon as possible
+
     private void initGroups() {
         grouped = samplesByGroups.size() > 1;
         hasGroups = samplesByGroups.size() > 1;
@@ -454,6 +447,7 @@ public class VCFTrack extends FeatureTrack {
 
     /**
      * Render the names
+     *
      * @param g2D
      * @param trackRectangle
      * @param visibleRectangle
@@ -510,8 +504,33 @@ public class VCFTrack extends FeatureTrack {
 
     }
 
+    /**
+     * Render sample attributes, if any.
+     *
+     * @param graphics
+     * @param trackRectangle
+     * @param visibleRect
+     * @param attributeNames
+     * @param mouseRegions
+     */
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+                                 List<String> attributeNames, List<MouseableRegion> mouseRegions) {
 
-    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames) {
+        Rectangle rect = new Rectangle(trackRectangle);
+        rect.height = variantBandHeight;
+        if (rect.intersects(visibleRect)) {
+            super.renderAttributes(graphics, rect, visibleRect, attributeNames, mouseRegions);
+        }
+
+        rect.y += rect.height;
+        rect.height = getGenotypeBandHeight();
+        colorBackground(graphics, rect, visibleRect, false);
+
+    }
+
+
+    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                                 boolean renderNames) {
 
 
         if (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4) {
@@ -519,7 +538,6 @@ public class VCFTrack extends FeatureTrack {
         }
 
         boolean coloredLast = true;
-
         Rectangle textRectangle = new Rectangle(bandRectangle);
         textRectangle.height--;
 
@@ -530,30 +548,8 @@ public class VCFTrack extends FeatureTrack {
 
         if (grouped) {
             for (List<String> sampleList : samplesByGroups.values()) {
-                for (String sample : sampleList) {
-
-                    if (coloredLast) {
-                        g2D.setColor(BAND1_COLOR);
-                        coloredLast = false;
-                    } else {
-                        g2D.setColor(BAND2_COLOR);
-                        coloredLast = true;
-
-                    }
-
-                    if (bandRectangle.intersects(visibleRectangle)) {
-                        g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
-                        if (renderNames && bandRectangle.height >= 3) {
-                            String printName = sample;
-                            textRectangle.y = bandRectangle.y + 1;
-                            g2D.setColor(Color.black);
-                            GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
-
-                        }
-                    }
-                    bandRectangle.y += bandRectangle.height;
-
-                }
+                coloredLast = foo(g2D, bandRectangle, visibleRectangle, renderNames,
+                        coloredLast, textRectangle, sampleList);
 
                 g2D.setColor(OFF_WHITE);
                 g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
@@ -561,34 +557,41 @@ public class VCFTrack extends FeatureTrack {
 
             }
         } else {
-            for (String sample : allSamples) {
-
-                if (coloredLast) {
-                    g2D.setColor(BAND1_COLOR);
-                    coloredLast = false;
-                } else {
-                    g2D.setColor(BAND2_COLOR);
-                    coloredLast = true;
-
-                }
-
-                if (bandRectangle.intersects(visibleRectangle)) {
-                    g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
-                    if (renderNames && bandRectangle.height >= 3) {
-                        String printName = sample;
-                        textRectangle.y = bandRectangle.y + 1;
-                        g2D.setColor(Color.black);
-                        g2D.setFont(font);
-                        GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
-
-                    }
-                }
-                bandRectangle.y += bandRectangle.height;
-
-            }
+            foo(g2D, bandRectangle, visibleRectangle, renderNames, coloredLast, textRectangle, allSamples);
 
         }
         g2D.setFont(oldFont);
+    }
+
+    private boolean foo(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
+                        boolean coloredLast, Rectangle textRectangle, List<String> sampleList) {
+
+        for (String sample : sampleList) {
+
+            if (coloredLast) {
+                g2D.setColor(BAND1_COLOR);
+                coloredLast = false;
+            } else {
+                g2D.setColor(BAND2_COLOR);
+                coloredLast = true;
+
+            }
+
+            if (bandRectangle.intersects(visibleRectangle)) {
+                g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
+
+                if (renderNames && bandRectangle.height >= 3) {
+                    String printName = sample;
+                    textRectangle.y = bandRectangle.y + 1;
+                    g2D.setColor(Color.black);
+                    GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
+
+                }
+            }
+            bandRectangle.y += bandRectangle.height;
+
+        }
+        return coloredLast;
     }
 
     public void setRenderID(boolean value) {
@@ -976,7 +979,7 @@ public class VCFTrack extends FeatureTrack {
             selectedVariant = f;
             IGV.getInstance().doRefresh();
         }
-            return new VCFMenu(this, f);
+        return new VCFMenu(this, f);
     }
 
     @Override

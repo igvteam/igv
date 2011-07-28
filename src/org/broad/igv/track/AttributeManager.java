@@ -170,9 +170,9 @@ public class AttributeManager {
     }
 
     /**
-     * Set the attribute value for the given track and key.
+     * Set the attribute value for the given track or sample id and key.
      */
-    private void addAttribute(String trackIdentifier, String name, String attributeValue) {
+    public void addAttribute(String trackIdentifier, String name, String attributeValue) {
 
         if (attributeValue.equals("")) {
             return;
