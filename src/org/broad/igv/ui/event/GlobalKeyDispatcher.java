@@ -118,13 +118,13 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
         final Action refreshAction = new AbstractAction() {
 
-             public void actionPerformed(ActionEvent e) {
-                 setEnabled(false); // stop any other events from interfering
-                 IGV.getInstance().getTrackManager().refreshData();
-                 IGV.getInstance().repaintDataPanels();
-                 setEnabled(true);
-             }
-         };
+            public void actionPerformed(ActionEvent e) {
+                setEnabled(false); // stop any other events from interfering
+                IGV.getInstance().getTrackManager().refreshData();
+                IGV.getInstance().repaintDataPanels();
+                setEnabled(true);
+            }
+        };
 
 
         final Action toolAction = new AbstractAction() {
@@ -234,11 +234,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
     /**
      * Move to the next exon in the feature located at the center, if:
-     *  -there is such a feature
-     *  -the track is expanded
-     *  -a single feature row is selected
-     *  -the feature has multiple exons
-     *  -there is an exon forward or backward to jump to
+     * -there is such a feature
+     * -the track is expanded
+     * -a single feature row is selected
+     * -the feature has multiple exons
+     * -there is an exon forward or backward to jump to
+     *
      * @param forward
      */
     private void nextExon(boolean forward) {
@@ -252,19 +253,18 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack)) {
-                    //JOptionPane.showMessageDialog(IGV.getInstance(),
-                    //        "Track panning is not enabled for data tracks.");
-                    return;
-                }
+            if (!(t instanceof FeatureTrack)) {
+                //JOptionPane.showMessageDialog(IGV.getInstance(),
+                //        "Track panning is not enabled for data tracks.");
+                return;
+            }
 
-            Exon e =  null;
+            Exon e = null;
             if (t instanceof FeatureTrack) {
                 int center = (int) vc.getCenter();
                 FeatureTrack ft = (FeatureTrack) t;
-                if (ft.getDisplayMode() == Track.DisplayMode.COLLAPSED||
-                        ft.getSelectedFeatureRowIndex() == FeatureTrack.NO_FEATURE_ROW_SELECTED)
-                {
+                if (ft.getDisplayMode() == Track.DisplayMode.COLLAPSED ||
+                        ft.getSelectedFeatureRowIndex() == FeatureTrack.NO_FEATURE_ROW_SELECTED) {
                     MessageUtils.showMessage(
                             "Exon navigation is only allowed when track is expanded and a single " +
                                     "feature row is selected.");
@@ -275,38 +275,29 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
                 if (feature == null)
                     return;
-                if (feature instanceof BasicFeature)
-                {
+                if (feature instanceof BasicFeature) {
                     BasicFeature bf = (BasicFeature) feature;
                     java.util.List<Exon> exons = bf.getExons();
-                    if (exons == null || exons.isEmpty())
-                    {
+                    if (exons == null || exons.isEmpty()) {
                         MessageUtils.showMessage("At least one centered feature does not have exon structure");
                         return;
                     }
 
-                    if (forward)
-                    {
-                        for (Exon exon : bf.getExons())
-                        {
+                    if (forward) {
+                        for (Exon exon : bf.getExons()) {
                             //the "+ 1" here is necessary because the rounding in the recentering method
                             //sometimes places the center one base off.  This should be perfectly safe,
                             //but it does assume no one's abusing the exon datastructure and creating
                             //exons that are right next to each other.
-                            if (exon.getStart() > vc.getCenter() + 1)
-                            {
+                            if (exon.getStart() > vc.getCenter() + 1) {
                                 e = exon;
                                 break;
                             }
                         }
-                    }
-                    else
-                    {
-                        for (int i=exons.size()-1; i>=0; i--)
-                        {
+                    } else {
+                        for (int i = exons.size() - 1; i >= 0; i--) {
                             Exon exon = exons.get(i);
-                            if (exon.getEnd() < vc.getCenter())
-                            {
+                            if (exon.getEnd() < vc.getCenter()) {
                                 e = exon;
                                 break;
                             }
@@ -314,8 +305,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     }
                 }
 
-                if (e != null)
-                {
+                if (e != null) {
                     vc.centerOnLocation(forward ? e.getStart() : e.getEnd());
                     int i = 3;
                 }
@@ -330,6 +320,12 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
     }
 
 
+    /**
+     * Skip to the next feature in the selected track.
+     *
+     * @param forward the direction, true for forward and false for back
+     */
+
     private void nextFeature(boolean forward) {
 
         // Ignore (Disable) if we are in gene list mode
@@ -342,7 +338,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         if (tracks.size() == 1) {
             try {
                 Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack  || t instanceof VCFTrack)) {
+                if (!(t instanceof FeatureTrack || t instanceof VCFTrack)) {
                     //JOptionPane.showMessageDialog(IGV.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;
@@ -360,11 +356,14 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     String chr = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeAlias(f.getChr());
                     double newCenter = f.getStart();
                     if (!chr.equals(vc.getChrName())) {
-                        vc.setChrName(chr);
-                        vc.zoomByAndCenter(0);
+                        // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
+                        double range = vc.getEnd() - vc.getOrigin();
+                        int newOrigin = (int) Math.max(newCenter - range/2, 0);
+                        int newEnd = (int) (newOrigin + range);
+                        vc.jumpTo(chr, newOrigin, newEnd);
+                    } else {
+                        vc.centerOnLocation(newCenter);
                     }
-
-                    vc.centerOnLocation(newCenter);
                 }
             } catch (IOException e) {
                 //logger.error("Error c")
