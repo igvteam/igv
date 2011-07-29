@@ -723,8 +723,8 @@ public abstract class AbstractTrack implements Track {
 
         String isVisible = attributes.get(SessionReader.SessionAttribute.VISIBLE.getText());
         String height = attributes.get(SessionReader.SessionAttribute.HEIGHT.getText());
-        String color = attributes.get(SessionReader.SessionAttribute.COLOR.getText());
-        String altColor = attributes.get(SessionReader.SessionAttribute.ALT_COLOR.getText());
+        String colorString = attributes.get(SessionReader.SessionAttribute.COLOR.getText());
+        String altColorString = attributes.get(SessionReader.SessionAttribute.ALT_COLOR.getText());
         String rendererType = attributes.get(SessionReader.SessionAttribute.RENDERER.getText());
         String windowFunction = attributes.get(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
         String scale = attributes.get(SessionReader.SessionAttribute.SCALE.getText());
@@ -787,15 +787,27 @@ public abstract class AbstractTrack implements Track {
         }
 
         // Set color
-        if (color != null) {
+        if (colorString != null) {
             try {
-                String[] rgb = color.split(",");
+                String[] rgb = colorString.split(",");
                 int red = Integer.parseInt(rgb[0]);
                 int green = Integer.parseInt(rgb[1]);
                 int blue = Integer.parseInt(rgb[2]);
-                setColor(new Color(red, green, blue));
+                posColor = new Color(red, green, blue);
             } catch (NumberFormatException e) {
-                log.error("Error restoring color: " + color);
+                log.error("Error restoring color: " + colorString);
+            }
+        }
+
+        if (altColorString != null) {
+            try {
+                String[] rgb = altColorString.split(",");
+                int red = Integer.parseInt(rgb[0]);
+                int green = Integer.parseInt(rgb[1]);
+                int blue = Integer.parseInt(rgb[2]);
+                altColor=  new Color(red, green, blue);
+            } catch (NumberFormatException e) {
+                log.error("Error restoring color: " + colorString);
             }
         }
 
