@@ -166,7 +166,7 @@ public class IGVHttpClientUtils {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
             HttpResponse response = execute(getMethod, url);
             // Wrap the response stream to do extra cleanaup upon close.
-            return new EntityStreamWrapper(response);
+            return new EntityStreamWrapper(getMethod, response.getEntity().getContent());
 
         }
     }
@@ -262,7 +262,7 @@ public class IGVHttpClientUtils {
                 client.getCredentialsProvider().clear();
                 login(url);
                 return execute(method, url);
-            } else if (statusCode == 404 || statusCode == 410)  {
+            } else if (statusCode == 404 || statusCode == 410) {
                 method.abort();
                 throw new FileNotFoundException();
             } else if (statusCode >= 400) {
@@ -551,16 +551,17 @@ public class IGVHttpClientUtils {
      * TODO -- Verify that exhausting the stream is still a requirement in HttpClient 4.1.
      */
     public static class EntityStreamWrapper extends FilterInputStream {
-        HttpResponse response;
+        HttpGet getMethod;
 
-        public EntityStreamWrapper(HttpResponse response) throws IOException {
-            super(response.getEntity().getContent());
-            this.response = response;
+
+        public EntityStreamWrapper(HttpGet getMethod, InputStream content) {
+            super(content);
+            this.getMethod = getMethod;
         }
 
         @Override
         public void close() throws IOException {
-            EntityUtils.consume(response.getEntity());
+            getMethod.abort();
             super.close();
         }
     }
