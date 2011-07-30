@@ -87,8 +87,12 @@ public class IGVHttpClientUtils {
 
     }
 
-
-    public static DefaultHttpClient createClient() {
+    /**
+     * Create the singleton client instance.  This is private to insure a single instance is created.
+     * 
+     * @return
+     */
+    private static DefaultHttpClient createClient() {
 
         try {
             ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
@@ -152,6 +156,29 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
     public static InputStream openConnectionStream(URL url) throws IOException {
+        return openConnectionStream(url, false);
+    }
+
+
+    /**
+     * Execute a get on the url and return the response stream.  Optionally abort httpget when closing the stream.
+     * This should be done when reading only a portion of the response stream, as otherwise the close() method in the
+     * HttpClient stream class will read the rest of the stream before closing it.
+     *
+     *
+     * NOTE:  A better solution for the partial read problem would be to use byte-range headers to get only the portion
+     * of the file needed. 
+     *
+     * It is the responsibility of the caller to
+     * close the stream.
+     *
+     * @param url
+     * @param abortOnClose true if HttpGet.abort() should be called upon close.  Note this will also kill the connection.
+     * @return
+     * @throws IOException
+     */
+
+    public static InputStream openConnectionStream(URL url, boolean abortOnClose) throws IOException {
 
         //TODO -- the protocol (ftp) test should be done before calling this method.
         if (url.getProtocol().toLowerCase().equals("ftp")) {
@@ -165,8 +192,10 @@ public class IGVHttpClientUtils {
         } else {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
             HttpResponse response = execute(getMethod, url);
+
             // Wrap the response stream to do extra cleanaup upon close.
-            return new EntityStreamWrapper(getMethod, response.getEntity().getContent());
+            InputStream is = response.getEntity().getContent();
+            return abortOnClose ? new ResponseInputStream(getMethod, is) : is;
 
         }
     }
@@ -240,7 +269,7 @@ public class IGVHttpClientUtils {
 
 
     /**
-     * Execute a get request.  In the case of an authorization failure (401) this method is called recursively
+     * Execute a  request.  In the case of an authorization failure (401) this method is called recursively
      * with a login prompt until the correct credentials are entered,  or the user cancels triggering an
      * authorization exception.
      *
@@ -545,16 +574,22 @@ public class IGVHttpClientUtils {
 
 
     /**
-     * Wrapper for an Entity input stream.  Overrides close() to ensure that the stream is fully
-     * read, so the underlying connection will be release.
+     * Wrapper for an Entity input stream.
+     * <p/>
+     * NOTE: Without the call to getMethod.abort() in the close method the entire contents of the underlying
+     * stream will be read by the Apache implementation.  As IGV peeks at large files by opening a stream and
+     * reading a few lines we have to protect against this, or the application might hang.  For the future -- a better
+     * solution would be to use byte-range requests to request only digestible sections of the file at a time.
+     * <p/>
+     * <p/>
      * <p/>
      * TODO -- Verify that exhausting the stream is still a requirement in HttpClient 4.1.
      */
-    public static class EntityStreamWrapper extends FilterInputStream {
+    public static class ResponseInputStream extends FilterInputStream {
         HttpGet getMethod;
 
 
-        public EntityStreamWrapper(HttpGet getMethod, InputStream content) {
+        public ResponseInputStream(HttpGet getMethod, InputStream content) {
             super(content);
             this.getMethod = getMethod;
         }

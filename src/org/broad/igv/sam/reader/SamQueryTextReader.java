@@ -80,7 +80,7 @@ public class SamQueryTextReader implements AlignmentQueryReader {
         InputStream is = null;
         SAMFileReader reader = null;
         try {
-            is = ParsingUtils.openInputStream(new ResourceLocator(samFile));
+            is = ParsingUtils.openInputStream(new ResourceLocator(samFile), true);
             BufferedInputStream bis = new BufferedInputStream(is);
             reader = new SAMFileReader(bis);
             header = reader.getFileHeader();

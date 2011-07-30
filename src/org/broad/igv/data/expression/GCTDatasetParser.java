@@ -97,7 +97,7 @@ public class GCTDatasetParser {
     public static boolean isGCT(String path) throws IOException {
         BufferedReader reader = null;
         try {
-            reader = ParsingUtils.openBufferedReader(path);
+            reader = ParsingUtils.openBufferedReader(path, true);
             String firstLine = reader.readLine();
             return firstLine != null && firstLine.trim().equals("#1.2");
         }

@@ -70,25 +70,18 @@ public class WiggleParser {
      *
      */
     public WiggleParser(String file, DataConsumer dataConsumer, Genome genome) {
-        this(new ResourceLocator(file), dataConsumer, genome);
-    }
-
-    /**
-     *
-     */
-    public WiggleParser(ResourceLocator locator, DataConsumer dataConsumer, Genome genome) {
-        this.resourceLocator = locator;
+        this.resourceLocator = new ResourceLocator(file);
         this.dataConsumer = dataConsumer;
         this.genome = genome;
 
         parseHeader();
 
-        String[] trackNames = {locator.getTrackName()};
+        String[] trackNames = {resourceLocator.getTrackName()};
 
         // TODO -- total hack to get Manuel's file parsed quickly.  Revisit (obviously);
-        if (locator.getPath().endsWith(".ewig") || locator.getPath().endsWith(".ewig.gz")) {
+        if (resourceLocator.getPath().endsWith(".ewig") || resourceLocator.getPath().endsWith(".ewig.gz")) {
             trackNames = new String[5];
-            trackNames[4] = locator.getTrackName();
+            trackNames[4] = resourceLocator.getTrackName();
             trackNames[0] = "A";
             trackNames[1] = "C";
             trackNames[2] = "G";
@@ -109,7 +102,7 @@ public class WiggleParser {
         }
 
 
-        if (locator.getPath().endsWith("CpG.txt")) {
+        if (resourceLocator.getPath().endsWith("CpG.txt")) {
             type = Type.cpg;
         }
 
@@ -133,7 +126,7 @@ public class WiggleParser {
     public static boolean isWiggle(ResourceLocator file) {
         AsciiLineReader reader = null;
         try {
-            reader = ParsingUtils.openAsciiReader(file);
+            reader = ParsingUtils.openAsciiReader(file, true);
             String nextLine = null;
             int lineNo = 0;
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
@@ -164,13 +157,13 @@ public class WiggleParser {
 
         try {
 
-            reader = ParsingUtils.openAsciiReader(resourceLocator);
+            reader = ParsingUtils.openAsciiReader(resourceLocator, true);
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 
                 // Skip comment lines
                 if (nextLine.startsWith("#") || nextLine.startsWith("data") || nextLine.startsWith(
-                        "browser")  || nextLine.trim().length() == 0) {
+                        "browser") || nextLine.trim().length() == 0) {
                     continue;
                 }
 

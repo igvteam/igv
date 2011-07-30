@@ -44,13 +44,18 @@ public class ParsingUtils {
 
     private static Logger log = Logger.getLogger(ParsingUtils.class);
 
-    public static BufferedReader openBufferedReader(String pathOrUrl)
-            throws FileNotFoundException, IOException {
+    public static BufferedReader openBufferedReader(String pathOrUrl) throws IOException {
+        return openBufferedReader(pathOrUrl, false);
+    }
+
+
+    public static BufferedReader openBufferedReader(String pathOrUrl, boolean abortOnClose)
+            throws IOException {
         BufferedReader reader = null;
 
         if (IGVHttpClientUtils.isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            reader = new BufferedReader(new InputStreamReader(IGVHttpClientUtils.openConnectionStream(url)));
+            reader = new BufferedReader(new InputStreamReader(IGVHttpClientUtils.openConnectionStream(url, abortOnClose)));
         } else {
             File file = new File(pathOrUrl);
 
@@ -115,7 +120,7 @@ public class ParsingUtils {
                 return defaultLength;
             }
 
-            reader = openAsciiReader(new ResourceLocator(path));
+            reader = openAsciiReader(new ResourceLocator(path), true);
             String nextLine;
             int lines = 0;
             // Skip the first 10 lines (headers, etc)
@@ -149,30 +154,23 @@ public class ParsingUtils {
 
     }
 
-    /**
-     * Method description
-     *
-     * @param locator
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public static AsciiLineReader openAsciiReader(ResourceLocator locator)
+    public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
+        return openAsciiReader(locator, false);
+    }
+
+    public static AsciiLineReader openAsciiReader(ResourceLocator locator, boolean abortOnClose)
             throws IOException {
-        InputStream stream = openInputStream(locator);
+        InputStream stream = openInputStream(locator, abortOnClose);
         return new AsciiLineReader(stream);
 
     }
 
-    /**
-     * Method description
-     *
-     * @param locator
-     * @return
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public static InputStream openInputStream(ResourceLocator locator)
+    public static InputStream openInputStream(ResourceLocator locator) throws IOException {
+        return openInputStream(locator, false);
+    }
+
+
+    public static InputStream openInputStream(ResourceLocator locator, boolean abortOnClose)
             throws IOException {
 
         if (locator.getServerURL() != null) {
@@ -195,7 +193,7 @@ public class ParsingUtils {
             InputStream inputStream = null;
             if (IGVHttpClientUtils.isURL(locator.getPath())) {
                 URL url = new URL(locator.getPath());
-                inputStream = IGVHttpClientUtils.openConnectionStream(url);
+                inputStream = IGVHttpClientUtils.openConnectionStream(url, abortOnClose);
             } else {
                 String path = locator.getPath();
                 if (path.startsWith("file://")) {
@@ -229,12 +227,11 @@ public class ParsingUtils {
         int nTokens = 0;
         int start = 0;
         int end = aString.indexOf(delim);
-        if(end == 0) {
-            if(aString.length() > 1) {
+        if (end == 0) {
+            if (aString.length() > 1) {
                 start = 1;
                 end = aString.indexOf(delim, start);
-            }
-            else {
+            } else {
                 return 0;
             }
         }
