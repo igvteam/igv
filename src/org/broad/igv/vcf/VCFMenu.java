@@ -53,7 +53,7 @@ public class VCFMenu extends IGVPopupMenu {
     static boolean qualitySortingDirection;
 
     public VCFMenu(final VCFTrack vcfTrack, VariantContext variant) {
-        
+
         this.track = vcfTrack;
 
         this.addPopupMenuListener(new PopupMenuListener() {
@@ -118,10 +118,9 @@ public class VCFMenu extends IGVPopupMenu {
         addSeparator();
         for (JMenuItem item : getSortMenuItems(variant)) {
             add(item);
-            if(variant == null) {
+            if (variant == null) {
                 item.setEnabled(false);
             }
-            item.setEnabled(!this.track.isGrouped());
         }
 
         //Variant Information
@@ -139,7 +138,7 @@ public class VCFMenu extends IGVPopupMenu {
             public void actionPerformed(ActionEvent evt) {
                 int currentValue = track.getSquishedHeight();
                 int newValue = TrackMenuUtils.getIntValue("Squished row height", currentValue);
-                if(newValue != Integer.MIN_VALUE) {
+                if (newValue != Integer.MIN_VALUE) {
                     track.setSquishedHeight(newValue);
                     IGV.getInstance().getContentPane().repaint();
                 }
@@ -228,8 +227,7 @@ public class VCFMenu extends IGVPopupMenu {
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
 
         JMenuItem item = new JMenuItem("Sort By Genotype");
-        try {
-            variant.getAlleles();
+        if (variant != null) {
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     GenotypeComparator compare = new GenotypeComparator();
@@ -238,16 +236,14 @@ public class VCFMenu extends IGVPopupMenu {
                     IGV.getInstance().getContentPane().repaint();
                 }
             });
-        } catch (Exception e) {
-            item.setEnabled(false);
         }
+
         return item;
     }
 
     public JMenuItem getSampleNameSortItem(final VariantContext variant) {
         JMenuItem item = new JMenuItem("Sort By Sample Name");
-        try {
-            variant.getAlleles();
+        if (variant != null) {
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     Comparator<String> compare = new Comparator<String>() {
@@ -264,15 +260,13 @@ public class VCFMenu extends IGVPopupMenu {
                     IGV.getInstance().getContentPane().repaint();
                 }
             });
-        } catch (Exception e) {
-            item.setEnabled(false);
         }
         return item;
     }
 
     public JMenuItem getDepthSortItem(final VariantContext variant) {
         JMenuItem item = new JMenuItem("Sort By Depth");
-        try {
+        if (variant != null) {
             String variantDepth = variant.getAttributeAsString("DP");
             int depth = Integer.valueOf(variantDepth);
             if (depth > -1) {
@@ -284,17 +278,16 @@ public class VCFMenu extends IGVPopupMenu {
                         IGV.getInstance().getContentPane().repaint();
                     }
                 });
-                return item;
+            } else {
+                item.setEnabled(false);
             }
-        } catch (Exception e) {
-            item.setEnabled(false);
         }
         return item;
     }
 
     public JMenuItem getQualitySortItem(final VariantContext variant) {
         JMenuItem item = new JMenuItem("Sort By Quality");
-        try {
+        if (variant != null) {
             double quality = variant.getPhredScaledQual();
             if (quality > -1) {
                 item.addActionListener(new ActionListener() {
@@ -306,9 +299,11 @@ public class VCFMenu extends IGVPopupMenu {
                     }
                 });
             }
-        } catch (Exception e) {
-            item.setEnabled(false);
+            else {
+               item.setEnabled(false); 
+            }
         }
+
         return item;
     }
 
@@ -350,11 +345,9 @@ public class VCFMenu extends IGVPopupMenu {
     }
 
 
-    public Collection<JMenuItem> getSortMenuItems(Feature closestFeature) {
+    public Collection<JMenuItem> getSortMenuItems(VariantContext variant) {
 
         java.util.List<JMenuItem> items = new ArrayList<JMenuItem>();
-        VariantContext variant = (VariantContext) closestFeature;
-
         items.add(getGenotypeSortItem(variant));
         items.add(getSampleNameSortItem(variant));
         items.add(getDepthSortItem(variant));

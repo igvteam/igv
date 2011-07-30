@@ -121,7 +121,14 @@ public class VCFTrack extends FeatureTrack {
 
     DecimalFormat numFormat = new DecimalFormat("#.###");
 
-    Feature selectedVariant;
+    VariantContext selectedVariant;
+
+    /**
+     * Transient list to keep track of the vertical bounds of each sample.  Set when rendering names, used to
+     * select correct sample for popup text.  We use a list and linear lookup for now, some sort of tree structure
+     * would be faster.
+     */
+    List<SampleBounds> sampleBounds = new ArrayList();
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
@@ -182,7 +189,7 @@ public class VCFTrack extends FeatureTrack {
 
         groupByAttribute = newGroupByAttribute;
 
-        if(groupByAttribute == null)  {
+        if (groupByAttribute == null) {
             grouped = false;
             return;
         }
@@ -202,7 +209,6 @@ public class VCFTrack extends FeatureTrack {
         grouped = samplesByGroups.size() > 1;
         groupByAttribute = newGroupByAttribute;
     }
-
 
 
     public boolean isEnableMethylationRateSupport() {
@@ -414,14 +420,11 @@ public class VCFTrack extends FeatureTrack {
     @Override
     public void renderName(Graphics2D g2D, Rectangle trackRectangle, Rectangle visibleRectangle) {
 
-
-        // A hack
-        int top = trackRectangle.y;
+        top = trackRectangle.y;
         final int left = trackRectangle.x;
         final int right = (int) trackRectangle.getMaxX();
 
         Rectangle rect = new Rectangle(trackRectangle);
-        //g2D.clearRect(rect.x, rect.y, rect.width, rect.height);
         g2D.setFont(FontManager.getFont(fontSize));
         g2D.setColor(BAND2_COLOR);
 
@@ -443,6 +446,9 @@ public class VCFTrack extends FeatureTrack {
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
+
+            // The sample bounds list will get reset when  the names are drawn.
+            sampleBounds.clear();
             colorBackground(g2D, rect, visibleRectangle, true);
         }
 
@@ -508,7 +514,7 @@ public class VCFTrack extends FeatureTrack {
 
         if (grouped) {
             for (List<String> sampleList : samplesByGroups.values()) {
-                coloredLast = foo(g2D, bandRectangle, visibleRectangle, renderNames,
+                coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, renderNames,
                         coloredLast, textRectangle, sampleList);
 
                 g2D.setColor(OFF_WHITE);
@@ -517,14 +523,14 @@ public class VCFTrack extends FeatureTrack {
 
             }
         } else {
-            foo(g2D, bandRectangle, visibleRectangle, renderNames, coloredLast, textRectangle, allSamples);
+            coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, renderNames, coloredLast, textRectangle, allSamples);
 
         }
         g2D.setFont(oldFont);
     }
 
-    private boolean foo(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
-                        boolean coloredLast, Rectangle textRectangle, List<String> sampleList) {
+    private boolean colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
+                              boolean coloredLast, Rectangle textRectangle, List<String> sampleList) {
 
         for (String sample : sampleList) {
 
@@ -540,12 +546,15 @@ public class VCFTrack extends FeatureTrack {
             if (bandRectangle.intersects(visibleRectangle)) {
                 g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
 
-                if (renderNames && bandRectangle.height >= 3) {
-                    String printName = sample;
-                    textRectangle.y = bandRectangle.y + 1;
-                    g2D.setColor(Color.black);
-                    GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
+                if (renderNames) {
+                    sampleBounds.add(new SampleBounds(bandRectangle.y, bandRectangle.y + bandRectangle.height, sample));
+                    if (bandRectangle.height >= 3) {
 
+                        String printName = sample;
+                        textRectangle.y = bandRectangle.y + 1;
+                        g2D.setColor(Color.black);
+                        GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
+                    }
                 }
             }
             bandRectangle.y += bandRectangle.height;
@@ -589,35 +598,56 @@ public class VCFTrack extends FeatureTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        VariantContext variant = (VariantContext) getFeatureAt(chr, position + 1, y, frame); //getVariantAtPosition(chr, (int) position, frame);
-        if (variant != null) {
+        try {
+            VariantContext variant = (VariantContext) getFeatureClosest(position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
+            if (variant != null) {
 
-            if (y < top + variantBandHeight) {
-                return getVariantToolTip(variant);
-            } else {
-                String sample = null;
-                if (grouped) {
-                    // TODO This is a hack for the autism site, fix SOON.  Assumes groups are all trios
-                    int groupHeight = 3 * getGenotypeBandHeight() + 3;
-                    int groupNumber = Math.min(groupNames.size() - 1, (y - top - variantBandHeight) / groupHeight);
-                    String group = groupNames.get(groupNumber);
-                    List<String> sampleList = samplesByGroups.get(group);
-                    int sampleNumber = (y - top - variantBandHeight - groupNumber * groupHeight) / getGenotypeBandHeight();
-                    if (sampleNumber >= 0 && sampleNumber < sampleList.size()) {
-                        sample = sampleList.get(sampleNumber);
-                    }
+                // If more than ~ 10 pixels distance reject
+                double pixelDist = Math.abs((position - variant.getStart()) / frame.getScale());
+                if (pixelDist > 10) return null;
 
+                if (y < top + variantBandHeight) {
+                    return getVariantToolTip(variant);
                 } else {
-                    int sampleNumber = (y - top - variantBandHeight) / getGenotypeBandHeight();
-                    if (sampleNumber >= 0 && sampleNumber < allSamples.size()) {
-                        sample = allSamples.get(sampleNumber);
+                    final int sampleCount = sampleBounds.size();
+                    if (sampleCount == 0) return null;
+
+                    String sample = null;
+
+                    // Estimate the sample index
+                    int firstSampleY = sampleBounds.get(0).top;
+                    int idx = Math.min((y - firstSampleY) / getGenotypeBandHeight(), sampleCount - 1);
+
+                    SampleBounds bounds = sampleBounds.get(idx);
+                    if (bounds.contains(y)) {
+                        sample = bounds.sample;
+                    } else if (bounds.top > y) {
+                        while (idx > 0) {
+                            idx--;
+                            bounds = sampleBounds.get(idx);
+                            if (bounds.contains(y)) {
+                                sample = bounds.sample;
+                            }
+                        }
+                    } else {
+                        while (idx < sampleCount - 1) {
+                            idx++;
+                            bounds = sampleBounds.get(idx);
+                            if (bounds.contains(y)) {
+                                sample = bounds.sample;
+                            }
+                        }
                     }
 
+                    if (sample != null)
+                        return getSampleToolTip(sample, variant);
                 }
-                return getSampleToolTip(sample, variant);
             }
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            return null;
         }
-        return null;
     }
 
 
@@ -930,12 +960,19 @@ public class VCFTrack extends FeatureTrack {
 
     public IGVPopupMenu getPopupMenu(final TrackClickEvent te) {
         VariantContext f = null;
-        if (te.getFrame() != null && te.getFrame().getName() != null) {
-            f = (VariantContext) getFeatureClosest(te.getChromosomePosition(), te.getMouseEvent().getY(), te.getFrame());
-            selectedVariant = f;
-            IGV.getInstance().doRefresh();
+        final ReferenceFrame referenceFrame = te.getFrame();
+        selectedVariant = null;
+        if (referenceFrame != null && referenceFrame.getName() != null) {
+            final double position = te.getChromosomePosition();
+            f = (VariantContext) getFeatureClosest(position, te.getMouseEvent().getY(), referenceFrame);
+            // If more than ~ 20 pixels distance reject
+            double pixelDist = Math.abs((position - f.getStart()) / referenceFrame.getScale());
+            if (pixelDist < 20) {
+                selectedVariant = f;
+                IGV.getInstance().doRefresh();
+            }
         }
-        return new VCFMenu(this, f);
+        return new VCFMenu(this, selectedVariant);
     }
 
     @Override
@@ -996,6 +1033,23 @@ public class VCFTrack extends FeatureTrack {
             catch (Exception e) {
                 log.error("Error restoring squished height: " + squishedHeightText);
             }
+        }
+    }
+
+
+    static class SampleBounds {
+        int top;
+        int bottom;
+        String sample;
+
+        SampleBounds(int top, int bottom, String sample) {
+            this.top = top;
+            this.bottom = bottom;
+            this.sample = sample;
+        }
+
+        boolean contains(int y) {
+            return y >= top && y < bottom;
         }
     }
 }
