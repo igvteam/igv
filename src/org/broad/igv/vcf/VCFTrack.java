@@ -61,10 +61,20 @@ public class VCFTrack extends FeatureTrack {
     private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final static int MAX_FILTER_LINES = 15;
 
-    // Map for organizing samples by family (sample -> family).  This is static (shared) by all vcf tracks
-    private static  Map<String, String> REFERENCE_SAMPLE_GROUP_MAP = new HashMap();
-    // We need maps in both directions to (1) look up a group quickly,  and (2) maintain proper order in the group
-    private static  LinkedHashMap<String, List<String>> REFERENCE_GROUP_SAMPLE_MAP;
+    /**
+     * The renderer.
+     */
+    private VCFRenderer renderer = new VCFRenderer(this);
+
+
+    /**
+     * Map for organizing samples by group (sample -> group).
+     */
+    // private static LinkedHashMap<String, List<String>> groupSampleMap;
+    /**
+     * The id of the group used to group samples.
+     */
+    private static String groupByAttribute;
 
     /**
      * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
@@ -72,28 +82,36 @@ public class VCFTrack extends FeatureTrack {
      */
     private boolean enableMethylationRateSupport;
 
-    public boolean isEnableMethylationRateSupport() {
-
-        return enableMethylationRateSupport;
-    }
-
-    private VCFRenderer renderer = new VCFRenderer(this);
-
 
     /**
      * Top (y) position of this track.  This is updated whenever the track is drawn.
      */
     private int top;
+
+    /**
+     * The height of a single row in in squished mode
+     */
     private int squishedHeight = DEFAULT_SQUISHED_GENOTYPE_HEIGHT;
+
+    /**
+     * The height of the top band representing the variant call
+     */
     private int variantBandHeight = DEFAULT_VARIANT_BAND_HEIGHT;
 
-    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
+    /**
+     * List of all samples, in the order they appear in the file.
+     */
     List<String> allSamples;
+
+    /**
+     * Sorted list of group names.  This is a transient list, updated when groupings change.
+     */
     List<String> groupNames;
+
+    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
 
     int sampleCount;
     private boolean grouped;
-    private boolean hasGroups;
 
     private ColorMode coloring = ColorMode.GENOTYPE;
     private boolean hideAncestral = false;
@@ -105,14 +123,10 @@ public class VCFTrack extends FeatureTrack {
 
     Feature selectedVariant;
 
-    /**
-     * The id of the group used to group samples.
-     */
-    private String previousGroupId;
-
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
         super(locator, source);
+
         VCFHeader header = (VCFHeader) source.getHeader();
 
         // Test if the input VCF file contains methylation rate data:
@@ -132,26 +146,11 @@ public class VCFTrack extends FeatureTrack {
         allSamples = new ArrayList(header.getGenotypeSamples());
         sampleCount = allSamples.size();
 
-        for (String sample : allSamples) {
-            String key = REFERENCE_SAMPLE_GROUP_MAP.get(sample);
-            if (key == null) {
-                key = "Other";
-            }
-            List<String> sampleList = samplesByGroups.get(key);
-            if (sampleList == null) {
-                sampleList = new ArrayList();
-                samplesByGroups.put(key, sampleList);
-            }
-            sampleList.add(sample);
-        }
-
-        // this activates the group hack:
-        initGroups();
-
         // this handles the new attribute grouping mechanism:
         setupGroupsFromAttributes();
 
         setDisplayMode(DisplayMode.EXPANDED);
+
         setRenderID(false);
 
         // Estimate visibility window.
@@ -171,18 +170,26 @@ public class VCFTrack extends FeatureTrack {
         // setup groups according to the attribute used for sorting (loaded from a sample information file):
 
         AttributeManager manager = AttributeManager.getInstance();
-        String groupByAttributeId = IGV.getInstance().getTrackManager().getGroupByAttribute();
+        String newGroupByAttribute = IGV.getInstance().getTrackManager().getGroupByAttribute();
 
-        if (groupByAttributeId == null || groupByAttributeId.equals(previousGroupId)) {
+        // The first equality handels the case where both are null
+        if ((newGroupByAttribute == groupByAttribute) ||
+                (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
             // nothing to do, already sorted according to attributed.
             return;
         }
         samplesByGroups.clear();
-        REFERENCE_GROUP_SAMPLE_MAP = new LinkedHashMap<String, List<String>>();
+
+        groupByAttribute = newGroupByAttribute;
+
+        if(groupByAttribute == null)  {
+            grouped = false;
+            return;
+        }
+
         for (String sample : allSamples) {
 
-
-            String sampleGroup = manager.getAttribute(sample, groupByAttributeId);
+            String sampleGroup = manager.getAttribute(sample, newGroupByAttribute);
 
             List<String> sampleList = samplesByGroups.get(sampleGroup);
             if (sampleList == null) {
@@ -190,64 +197,16 @@ public class VCFTrack extends FeatureTrack {
                 samplesByGroups.put(sampleGroup, sampleList);
             }
             sampleList.add(sample);
-            REFERENCE_GROUP_SAMPLE_MAP.put(sampleGroup, sampleList);
         }
-        previousGroupId = groupByAttributeId;
-        initGroups();
-    }
-    // previous hack to setup groups from some fixed file read from disk:
-    // TODO remove this method as soon as possible
 
-    private void initGroups() {
         grouped = samplesByGroups.size() > 1;
-        hasGroups = samplesByGroups.size() > 1;
-        if (grouped && REFERENCE_GROUP_SAMPLE_MAP != null) {
-            sortGroups();
-        }
+        groupByAttribute = newGroupByAttribute;
     }
 
-    private void sortGroups() {
-
-        // First sort the sample groups (keys)
-        final Map<String, Integer> groupRank = new HashMap();
-        int idx = 0;
-        for (String family : REFERENCE_GROUP_SAMPLE_MAP.keySet()) {
-            groupRank.put(family, idx++);
-        }
-
-        groupNames = new ArrayList(samplesByGroups.keySet());
-        Collections.sort(groupNames, new Comparator<String>() {
-            public int compare(String s1, String s2) {
-                int r1 = groupRank.containsKey(s1) ? groupRank.get(s1) : Integer.MAX_VALUE;
-                int r2 = groupRank.containsKey(s2) ? groupRank.get(s2) : Integer.MAX_VALUE;
-                return r1 - r2;
-            }
-        });
 
 
-        LinkedHashMap<String, List<String>> newSamples = new LinkedHashMap();
-        for (String family : groupNames) {
-            List<String> sampleList = samplesByGroups.get(family);
-            if (sampleList != null && sampleList.size() > 0) {
-                final List<String> referenceGroup = REFERENCE_GROUP_SAMPLE_MAP.get(family);
-                if (referenceGroup != null) {
-                    final Map<String, Integer> rank = new HashMap();
-                    for (int i = 0; i < referenceGroup.size(); i++) {
-                        rank.put(referenceGroup.get(i), i);
-                        Collections.sort(sampleList, new Comparator<String>() {
-                            public int compare(String s1, String s2) {
-                                int r1 = rank.containsKey(s1) ? rank.get(s1) : Integer.MAX_VALUE;
-                                int r2 = rank.containsKey(s2) ? rank.get(s2) : Integer.MAX_VALUE;
-                                return r1 - r2;
-                            }
-                        });
-                    }
-                }
-                newSamples.put(family, sampleList);
-            }
-
-        }
-        this.samplesByGroups = newSamples;
+    public boolean isEnableMethylationRateSupport() {
+        return enableMethylationRateSupport;
     }
 
 
@@ -771,10 +730,6 @@ public class VCFTrack extends FeatureTrack {
 
     public void setGrouped(boolean grouped) {
         this.grouped = grouped;
-    }
-
-    public boolean isHasGroups() {
-        return hasGroups;
     }
 
     public int getSquishedHeight() {

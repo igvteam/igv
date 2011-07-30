@@ -287,7 +287,7 @@ public class FeatureTrack extends AbstractTrack {
             return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
-            if(source == null) {
+            if (source == null) {
                 return "";
             }
             List<LocusScore> scores = source.getCoverageScores(chr, (int) position - 10, (int) position + 10, zoom);
@@ -489,9 +489,9 @@ public class FeatureTrack extends AbstractTrack {
             //if nothing already selected, select this feature
             if (selectedFeature == null)
                 selectedFeature = igvFeature;
-            //If something already selected, then if it's the same as this feature, deselect, otherwise, select
-            //this feature.
-            //todo: contains() might not do everything I want it to.
+                //If something already selected, then if it's the same as this feature, deselect, otherwise, select
+                //this feature.
+                //todo: contains() might not do everything I want it to.
             else if (igvFeature.contains(selectedFeature) && (selectedFeature.contains(igvFeature)))
                 selectedFeature = null;
             else selectedFeature = igvFeature;
@@ -565,8 +565,11 @@ public class FeatureTrack extends AbstractTrack {
             renderFeatures(context, renderRect);
         } else {
             if (getDisplayMode() != DisplayMode.COLLAPSED) {
-                lastFeatureMode = getDisplayMode();
-                super.setDisplayMode(DisplayMode.COLLAPSED);
+                // An ugly hack, but we want to prevent thsi for vcf tracks
+                if (!(this instanceof org.broad.igv.vcf.VCFTrack)) {
+                    lastFeatureMode = getDisplayMode();
+                    super.setDisplayMode(DisplayMode.COLLAPSED);
+                }
             }
             renderCoverage(context, renderRect);
         }
@@ -586,10 +589,10 @@ public class FeatureTrack extends AbstractTrack {
     }
 
     protected void renderCoverage(RenderContext context, Rectangle inputRect) {
-        if(source == null) {
+        if (source == null) {
             return;
         }
-        
+
         List<LocusScore> scores = source.getCoverageScores(context.getChr(), (int) context.getOrigin(),
                 (int) context.getEndLocation(), context.getZoom());
         if (scores == null) {

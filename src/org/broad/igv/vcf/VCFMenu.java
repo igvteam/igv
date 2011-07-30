@@ -114,20 +114,6 @@ public class VCFMenu extends IGVPopupMenu {
 
         //add(getRenderIDItem());
 
-        if (this.track.isHasGroups()) {
-            addSeparator();
-            final JCheckBoxMenuItem groupedItem = new JCheckBoxMenuItem("Group");
-            groupedItem.setSelected(this.track.isGrouped());
-            groupedItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    VCFMenu.this.track.setGrouped(groupedItem.isSelected());
-                    IGV.getInstance().doRefresh();
-                }
-            });
-            add(groupedItem);
-            addSeparator();
-        }
-
         //Sorter
         addSeparator();
         for (JMenuItem item : getSortMenuItems(variant)) {

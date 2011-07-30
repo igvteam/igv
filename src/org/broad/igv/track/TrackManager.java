@@ -144,7 +144,7 @@ public class TrackManager {
     }
 
     public void reset() {
-        groupByAttribute = "";
+        groupByAttribute = null;
         TrackPanelScrollPane tsp = trackPanelScrollPanes.get(DATA_PANEL_NAME);
         if (tsp != null) {
             tsp.getTrackPanel().reset();
