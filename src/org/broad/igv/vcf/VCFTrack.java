@@ -66,16 +66,6 @@ public class VCFTrack extends FeatureTrack {
      */
     private VCFRenderer renderer = new VCFRenderer(this);
 
-
-    /**
-     * Map for organizing samples by group (sample -> group).
-     */
-    // private static LinkedHashMap<String, List<String>> groupSampleMap;
-    /**
-     * The id of the group used to group samples.
-     */
-    private static String groupByAttribute;
-
     /**
      * When this flag is true, we have detected that the VCF file contains the FORMAT MR column representing
      * methylation data. This will enable the "Color By/Methylation Rate" menu item.
@@ -108,7 +98,17 @@ public class VCFTrack extends FeatureTrack {
      */
     List<String> groupNames;
 
+    /**
+     * The id of the group used to group samples.
+     */
+    private static String groupByAttribute;
+
+    /**
+     * Map of group -> samples.  Each entry defines a group, the key is the group name and the value the list of
+     * samles in the group.
+     */
     LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
+
 
     int sampleCount;
     private boolean grouped;
@@ -156,7 +156,7 @@ public class VCFTrack extends FeatureTrack {
         // Estimate visibility window.
         // TODO -- set beta based on available memory
         int cnt = Math.max(1, sampleCount);
-        int beta = 1000000;
+        int beta = 10000000;
         double p = Math.pow(cnt, 1.5);
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
@@ -224,12 +224,13 @@ public class VCFTrack extends FeatureTrack {
 
     public int getHeight() {
 
-        final int groupCount = samplesByGroups.size();
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || groupCount == 0) {
+
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
         } else {
-            int margins = (groupCount - 1) * 3;
-            return variantBandHeight + margins + (this.sampleCount * getGenotypeBandHeight());
+            final int groupCount = samplesByGroups.size();
+            int margins = groupCount * 3;
+            return variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         }
 
     }
@@ -390,7 +391,6 @@ public class VCFTrack extends FeatureTrack {
         if (allSamples.size() > 0) {
             int variantBandY = trackRectangle.y + variantBandHeight;
             if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
-
                 Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
                 borderGraphics.drawLine(left, variantBandY, right, variantBandY);
             }
@@ -405,7 +405,7 @@ public class VCFTrack extends FeatureTrack {
 
 
     /**
-     * Render the names
+     * Render the name panel
      *
      * @param g2D
      * @param trackRectangle
@@ -492,7 +492,8 @@ public class VCFTrack extends FeatureTrack {
                                  boolean renderNames) {
 
 
-        if (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4) {
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED ||
+                (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4)) {
             return;
         }
 

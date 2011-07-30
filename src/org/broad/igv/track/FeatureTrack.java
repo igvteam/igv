@@ -547,7 +547,7 @@ public class FeatureTrack extends AbstractTrack {
     public void setDisplayMode(DisplayMode mode) {
         // Explicity setting the display mode overrides the automatic switch
         lastFeatureMode = null;
-        super.setDisplayMode(mode);    //To change body of overridden methods use File | Settings | File Templates.
+        super.setDisplayMode(mode);    
     }
 
     public void render(RenderContext context, Rectangle rect) {
@@ -565,7 +565,7 @@ public class FeatureTrack extends AbstractTrack {
             renderFeatures(context, renderRect);
         } else {
             if (getDisplayMode() != DisplayMode.COLLAPSED) {
-                // An ugly hack, but we want to prevent thsi for vcf tracks
+                // An ugly hack, but we want to prevent this for vcf tracks
                 if (!(this instanceof org.broad.igv.vcf.VCFTrack)) {
                     lastFeatureMode = getDisplayMode();
                     super.setDisplayMode(DisplayMode.COLLAPSED);

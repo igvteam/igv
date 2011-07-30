@@ -108,8 +108,12 @@ public class DataPanel extends JComponent implements Paintable {
     public void paintComponent(final Graphics g) {
         
         super.paintComponent(g);
-        RenderContext context = null;
+         RenderContext context = null;
         try {
+            final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
+            if(mouseableRegions != null) {
+                mouseableRegions.clear();
+            }
 
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle damageRect = clipBounds == null ? getVisibleRect() : clipBounds.intersection(getVisibleRect());
@@ -140,10 +144,9 @@ public class DataPanel extends JComponent implements Paintable {
 
             int trackWidth = getWidth();
             int trackHeight = getHeight();
-            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect);
 
-            // Compute mouse senstive regions
-            computeMousableRegions(groups);
+            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect, mouseableRegions);
+
 
 
             // If there is a partial ROI in progress draw it first
@@ -185,7 +188,7 @@ public class DataPanel extends JComponent implements Paintable {
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
             int height = rect.height;
-            painter.paint(groups, context, width, height, getBackground(), rect);
+            painter.paint(groups, context, width, height, getBackground(), rect, null);
 
             super.paintBorder(g);
 
@@ -258,45 +261,6 @@ public class DataPanel extends JComponent implements Paintable {
         return key;
     }
 
-    /**
-     * TODO -- it is assumed the tracks are drawn in the same order for the
-     * image.  This is brittle, the rects could be computed when the image
-     * is drawn.  Really the y position and height are all that is needed.
-     *
-     * @param groups
-     */
-    private void computeMousableRegions(Collection<TrackGroup> groups) {
-
-        removeMousableRegions();
-
-        int trackX = 0;
-        int trackY = 0;
-
-        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
-            TrackGroup group = groupIter.next();
-
-            if (groups.size() > 1) {
-                trackY += UIConstants.groupGap;
-            }
-            for (Track track : group.getTracks()) {
-                if (track == null) continue;
-                if (track.isVisible()) {
-
-                    int trackWidth = getWidth();
-                    int trackHeight = track.getHeight();
-
-                    Rectangle actualAreaOnDataPanel = new Rectangle(trackX,
-                            trackY, (trackWidth),
-                            (trackHeight));
-
-                    addMousableRegion(new MouseableRegion(actualAreaOnDataPanel, track));
-
-                    trackY += trackHeight;
-                }
-            }
-        }
-
-    }
 
 
     /**

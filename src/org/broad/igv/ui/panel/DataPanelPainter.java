@@ -49,7 +49,8 @@ public class DataPanelPainter {
                       int width,
                       int height,
                       Color background,
-                      Rectangle visibleRect) {
+                      Rectangle visibleRect,
+                      List<MouseableRegion> mouseableRegions) {
 
         Graphics2D graphics2D = null;
 
@@ -85,7 +86,7 @@ public class DataPanelPainter {
 
                     List<Track> trackList = group.getTracks();
                     for (Track track : trackList) {
-                        if(track == null) continue;
+                        if (track == null) continue;
                         int trackHeight = track.getHeight();
                         if (visibleRect != null) {
                             if (trackY > visibleRect.y + visibleRect.height) {
@@ -100,7 +101,12 @@ public class DataPanelPainter {
 
 
                         if (track.isVisible()) {
-                            trackY = draw(track, trackX, trackY, width, trackHeight, context);
+                            Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                            draw(track, rect, context);
+                            if (mouseableRegions != null) {
+                                mouseableRegions.add(new MouseableRegion(rect, track));
+                            }
+                            trackY += trackHeight;
                         }
                     }
 
@@ -111,7 +117,7 @@ public class DataPanelPainter {
                 }
             }
         }
-        catch(RuntimeException e) {
+        catch (RuntimeException e) {
             log.error(e);
             throw e;
         }
@@ -120,12 +126,7 @@ public class DataPanelPainter {
         }
     }
 
-    final private int draw(Track track, int trackX, int trackY, int trackWidth, int trackHeight, RenderContext context) {
-
-
-        // The rectangle in which the track is drawn.  The height is reduced
-        Rectangle rect = new Rectangle(trackX, trackY, trackWidth, trackHeight);
-
+    final private void draw(Track track, Rectangle rect, RenderContext context) {
 
         track.render(context, rect);
 
@@ -141,11 +142,6 @@ public class DataPanelPainter {
                 }
             }
         }
-
-        // Change Y to point to the start of the next track
-        trackY += trackHeight;
-
-        return trackY;
 
     }
 }
