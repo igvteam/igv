@@ -43,8 +43,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * User: Jesse Whitworth
- * Date: Jul 16, 2010
+ * @author Jesse Whitworth, Jim Robinson, Fabien Campagne
  */
 public class VCFTrack extends FeatureTrack {
 
@@ -179,12 +178,14 @@ public class VCFTrack extends FeatureTrack {
         AttributeManager manager = AttributeManager.getInstance();
         String newGroupByAttribute = IGV.getInstance().getTrackManager().getGroupByAttribute();
 
-        // The first equality handels the case where both are null
-        if ((newGroupByAttribute == groupByAttribute) ||
+        // The first equality handles the case where both are null
+       if ((newGroupByAttribute == groupByAttribute) ||
                 (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
-            // nothing to do, already sorted according to attributed.
+            // Nothing to do
             return;
         }
+
+
         samplesByGroups.clear();
 
         groupByAttribute = newGroupByAttribute;
@@ -208,6 +209,18 @@ public class VCFTrack extends FeatureTrack {
 
         grouped = samplesByGroups.size() > 1;
         groupByAttribute = newGroupByAttribute;
+    }
+
+    /**
+     * Sort samples.  Sort both the master list and groups, if any.
+     * 
+     * @param comparator
+     */
+    public void sortSamples(Comparator<String> comparator) {
+        Collections.sort(allSamples, comparator);
+        for(List<String> samples : samplesByGroups.values()) {
+            Collections.sort(samples, comparator);
+        }
     }
 
 
@@ -749,18 +762,6 @@ public class VCFTrack extends FeatureTrack {
 
     public List<String> getAllSamples() {
         return allSamples;
-    }
-
-    public void setAllSamples(List<String> samples) {
-        this.allSamples = samples;
-    }
-
-    public boolean isGrouped() {
-        return grouped;
-    }
-
-    public void setGrouped(boolean grouped) {
-        this.grouped = grouped;
     }
 
     public int getSquishedHeight() {

@@ -23,7 +23,6 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.tribble.Feature;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
@@ -44,8 +43,6 @@ public class VCFMenu extends IGVPopupMenu {
 
     private static Logger log = Logger.getLogger(VCFMenu.class);
     private VCFTrack track;
-    Map<String, Genotype> sampleGenotypes;
-    List<String> samples;
 
     static boolean depthSortingDirection;
     static boolean genotypeSortingDirection;
@@ -71,21 +68,9 @@ public class VCFMenu extends IGVPopupMenu {
 
             private void close() {
                 track.clearSelectedVariant();
-                //IGV.getInstance().repaint();
             }
 
         });
-
-        samples = this.track.getAllSamples();
-        if (samples != null && variant != null) {
-            sampleGenotypes = new HashMap<String, Genotype>();
-            for (String sample : samples) {
-                Genotype genotype = variant.getGenotype(sample);
-                if (genotype != null) {
-                    sampleGenotypes.put(sample, genotype);
-                }
-            }
-        }
 
 
         //Title
@@ -230,9 +215,9 @@ public class VCFMenu extends IGVPopupMenu {
         if (variant != null) {
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    GenotypeComparator compare = new GenotypeComparator();
+                    GenotypeComparator compare = new GenotypeComparator(variant);
                     genotypeSortingDirection = !genotypeSortingDirection;
-                    sortSamples(compare);
+                    track.sortSamples(compare);
                     IGV.getInstance().getContentPane().repaint();
                 }
             });
@@ -256,7 +241,7 @@ public class VCFMenu extends IGVPopupMenu {
                         }
                     };
                     sampleSortingDirection = !sampleSortingDirection;
-                    sortSamples(compare);
+                    track.sortSamples(compare);
                     IGV.getInstance().getContentPane().repaint();
                 }
             });
@@ -272,9 +257,9 @@ public class VCFMenu extends IGVPopupMenu {
             if (depth > -1) {
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        DepthComparator compare = new DepthComparator();
+                        DepthComparator compare = new DepthComparator(variant);
                         depthSortingDirection = !depthSortingDirection;
-                        sortSamples(compare);
+                        track.sortSamples(compare);
                         IGV.getInstance().getContentPane().repaint();
                     }
                 });
@@ -292,15 +277,14 @@ public class VCFMenu extends IGVPopupMenu {
             if (quality > -1) {
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        QualityComparator compare = new QualityComparator();
+                        QualityComparator compare = new QualityComparator(variant);
                         qualitySortingDirection = !qualitySortingDirection;
-                        sortSamples(compare);
+                        track.sortSamples(compare);
                         IGV.getInstance().getContentPane().repaint();
                     }
                 });
-            }
-            else {
-               item.setEnabled(false); 
+            } else {
+                item.setEnabled(false);
             }
         }
 
@@ -333,16 +317,6 @@ public class VCFMenu extends IGVPopupMenu {
         }
     }
 
-    private void sortSamples(Comparator<String> compare) {
-        try {
-            if ((sampleGenotypes.size() > 1)) {
-                Collections.sort(samples, compare);
-                track.setAllSamples(samples);
-            }
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
 
 
     public Collection<JMenuItem> getSortMenuItems(VariantContext variant) {
@@ -402,11 +376,18 @@ public class VCFMenu extends IGVPopupMenu {
     }
 
 
-    class GenotypeComparator implements Comparator<String> {
+    static class GenotypeComparator implements Comparator<String> {
+
+        VariantContext variant;
+
+        GenotypeComparator(VariantContext variant) {
+            this.variant = variant;
+        }
 
         public int compare(String e1, String e2) {
-            int genotype1 = classifyGenotype(sampleGenotypes.get(e1));
-            int genotype2 = classifyGenotype(sampleGenotypes.get(e2));
+
+            int genotype1 = classifyGenotype(variant.getGenotype(e1));
+            int genotype2 = classifyGenotype(variant.getGenotype(e2));
 
             if (genotype2 == genotype1) {
                 return 0;
@@ -434,13 +415,19 @@ public class VCFMenu extends IGVPopupMenu {
     }
 
 
-    class DepthComparator implements Comparator<String> {
+    static class DepthComparator implements Comparator<String> {
+
+        VariantContext variant;
+
+        DepthComparator(VariantContext variant) {
+            this.variant = variant;
+        }
 
         public int compare(String s1, String s2) {
 
 
-            String readDepth1 = sampleGenotypes.get(s1).getAttributeAsString("DP");
-            String readDepth2 = sampleGenotypes.get(s2).getAttributeAsString("DP");
+            String readDepth1 = variant.getGenotype(s1).getAttributeAsString("DP");
+            String readDepth2 = variant.getGenotype(s2).getAttributeAsString("DP");
 
             double depth1;
             try {
@@ -467,10 +454,16 @@ public class VCFMenu extends IGVPopupMenu {
 
     class QualityComparator implements Comparator<String> {
 
+        VariantContext variant;
+
+        QualityComparator(VariantContext variant) {
+            this.variant = variant;
+        }
+
         public int compare(String s1, String s2) {
 
-            double qual1 = sampleGenotypes.get(s1).getPhredScaledQual();
-            double qual2 = sampleGenotypes.get(s2).getPhredScaledQual();
+            double qual1 = variant.getGenotype(s1).getPhredScaledQual();
+            double qual2 = variant.getGenotype(s2).getPhredScaledQual();
 
             if (qual2 == qual1) {
                 return 0;
