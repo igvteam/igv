@@ -1115,7 +1115,12 @@ public class TrackLoader {
         String indexPath = path + indexExtension;
         try {
             if (IGVHttpClientUtils.isURL(path)) {
-                return IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
+                boolean exists =  IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
+                if(!exists) {
+                    // Check for gzipped index
+                    exists = IGVHttpClientUtils.resourceAvailable(new URL(indexPath + ".gz"));
+                }
+                return exists;
             } else {
                 File f = new File(path + indexExtension);
                 return f.exists();
