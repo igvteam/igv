@@ -197,17 +197,6 @@ public class VCFMenu extends IGVPopupMenu {
         return item;
     }
 
-    private JMenuItem getHideAncestralItem() {
-        JMenuItem item = new JCheckBoxMenuItem("Suppress Ancestral Genotypes", track.getHideAncestral());
-        item.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                track.setHideAncestral(!track.getHideAncestral());
-                IGV.getInstance().getContentPane().repaint();
-            }
-        });
-        return item;
-    }
-
 
     public JMenuItem getGenotypeSortItem(final VariantContext variant) {
 
@@ -252,20 +241,15 @@ public class VCFMenu extends IGVPopupMenu {
     public JMenuItem getDepthSortItem(final VariantContext variant) {
         JMenuItem item = new JMenuItem("Sort By Depth");
         if (variant != null) {
-            String variantDepth = variant.getAttributeAsString("DP");
-            int depth = Integer.valueOf(variantDepth);
-            if (depth > -1) {
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        DepthComparator compare = new DepthComparator(variant);
-                        depthSortingDirection = !depthSortingDirection;
-                        track.sortSamples(compare);
-                        IGV.getInstance().getContentPane().repaint();
-                    }
-                });
-            } else {
-                item.setEnabled(false);
-            }
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt) {
+                    DepthComparator compare = new DepthComparator(variant);
+                    depthSortingDirection = !depthSortingDirection;
+                    track.sortSamples(compare);
+                    IGV.getInstance().getContentPane().repaint();
+                }
+            });
+
         }
         return item;
     }
@@ -316,7 +300,6 @@ public class VCFMenu extends IGVPopupMenu {
             }
         }
     }
-
 
 
     public Collection<JMenuItem> getSortMenuItems(VariantContext variant) {
@@ -431,13 +414,13 @@ public class VCFMenu extends IGVPopupMenu {
 
             double depth1;
             try {
-                depth1 = Double.valueOf(readDepth1);
+                depth1 = readDepth1 == null ? -1 : Double.valueOf(readDepth1);
             } catch (Exception e) {
                 depth1 = -1;
             }
             double depth2;
             try {
-                depth2 = Double.valueOf(readDepth2);
+                depth2 = readDepth2 == null ? -1 : Double.valueOf(readDepth2);
             } catch (Exception e) {
                 depth2 = -1;
             }

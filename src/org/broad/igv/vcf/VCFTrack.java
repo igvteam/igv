@@ -27,6 +27,7 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -49,6 +50,8 @@ public class VCFTrack extends FeatureTrack {
 
     private static Logger log = Logger.getLogger(VCFTrack.class);
 
+    static final DecimalFormat numFormat = new DecimalFormat("#.###");
+
     private static final Color OFF_WHITE = new Color(170, 170, 170);
     private static final int GROUP_BORDER_WIDTH = 3;
     private static final Color BAND1_COLOR = new Color(245, 245, 245);
@@ -59,6 +62,7 @@ public class VCFTrack extends FeatureTrack {
     private final int DEFAULT_SQUISHED_GENOTYPE_HEIGHT = 4;
     private final static int DEFAULT_VARIANT_BAND_HEIGHT = 25;
     private final static int MAX_FILTER_LINES = 15;
+
 
     /**
      * The renderer.
@@ -93,14 +97,14 @@ public class VCFTrack extends FeatureTrack {
     List<String> allSamples;
 
     /**
-     * Sorted list of group names.  This is a transient list, updated when groupings change.
+     * Boolean indicating if samples are grouped.
      */
-    List<String> groupNames;
+    private boolean grouped;
 
     /**
      * The id of the group used to group samples.
      */
-    private static String groupByAttribute;
+    private String groupByAttribute;
 
     /**
      * Map of group -> samples.  Each entry defines a group, the key is the group name and the value the list of
@@ -109,25 +113,32 @@ public class VCFTrack extends FeatureTrack {
     LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
 
 
-    int sampleCount;
-    private boolean grouped;
-
+    /**
+     * Current coloring option
+     */
     private ColorMode coloring = ColorMode.GENOTYPE;
-    private boolean hideAncestral = false;
 
+    /**
+     * When true, variants that are marked filtering are not drawn.
+     */
     private boolean hideFiltered = false;
+
+    /**
+     * If true the variant ID, when present, will be rendered.
+     */
     private boolean renderID = true;
 
-    DecimalFormat numFormat = new DecimalFormat("#.###");
-
-    VariantContext selectedVariant;
+    /**
+     * The currently selected variant.  This is a transient variable, set only while the popup menu is up.
+     */
+    private VariantContext selectedVariant;
 
     /**
      * Transient list to keep track of the vertical bounds of each sample.  Set when rendering names, used to
      * select correct sample for popup text.  We use a list and linear lookup for now, some sort of tree structure
      * would be faster.
      */
-    List<SampleBounds> sampleBounds = new ArrayList();
+    private List<SampleBounds> sampleBounds = new ArrayList();
 
 
     public VCFTrack(ResourceLocator locator, TribbleFeatureSource source) {
@@ -150,7 +161,6 @@ public class VCFTrack extends FeatureTrack {
         }
 
         allSamples = new ArrayList(header.getGenotypeSamples());
-        sampleCount = allSamples.size();
 
         // this handles the new attribute grouping mechanism:
         setupGroupsFromAttributes();
@@ -161,7 +171,7 @@ public class VCFTrack extends FeatureTrack {
 
         // Estimate visibility window.
         // TODO -- set beta based on available memory
-        int cnt = Math.max(1, sampleCount);
+        int cnt = Math.max(1, allSamples.size());
         int beta = 10000000;
         double p = Math.pow(cnt, 1.5);
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
@@ -179,7 +189,7 @@ public class VCFTrack extends FeatureTrack {
         String newGroupByAttribute = IGV.getInstance().getTrackManager().getGroupByAttribute();
 
         // The first equality handles the case where both are null
-       if ((newGroupByAttribute == groupByAttribute) ||
+        if ((newGroupByAttribute == groupByAttribute) ||
                 (newGroupByAttribute != null && newGroupByAttribute.equals(groupByAttribute))) {
             // Nothing to do
             return;
@@ -213,12 +223,12 @@ public class VCFTrack extends FeatureTrack {
 
     /**
      * Sort samples.  Sort both the master list and groups, if any.
-     * 
-     * @param comparator
+     *
+     * @param comparator the comparator to sort by
      */
     public void sortSamples(Comparator<String> comparator) {
         Collections.sort(allSamples, comparator);
-        for(List<String> samples : samplesByGroups.values()) {
+        for (List<String> samples : samplesByGroups.values()) {
             Collections.sort(samples, comparator);
         }
     }
@@ -229,6 +239,10 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    /**
+     * Returns the height of a single sample (genotype) band
+     * @return
+     */
     public int getGenotypeBandHeight() {
         switch (getDisplayMode()) {
             case SQUISHED:
@@ -241,9 +255,13 @@ public class VCFTrack extends FeatureTrack {
         }
     }
 
+    /**
+     * Returns the total height of the track (including all sample/genotypes)
+     * @return
+     */
     public int getHeight() {
 
-
+        int sampleCount = allSamples.size();
         if (getDisplayMode() == Track.DisplayMode.COLLAPSED || sampleCount == 0) {
             return variantBandHeight;
         } else {
@@ -252,11 +270,6 @@ public class VCFTrack extends FeatureTrack {
             return variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         }
 
-    }
-
-    @Override
-    public int getPreferredHeight() {
-        return getHeight();
     }
 
     public void setHeight(int height) {
@@ -271,7 +284,8 @@ public class VCFTrack extends FeatureTrack {
         // If height is < expanded height try "squishing" track, otherwise expand it
         final int groupCount = samplesByGroups.size();
         final int margins = (groupCount - 1) * 3;
-        final int expandedHeight = variantBandHeight + margins + (this.sampleCount * getGenotypeBandHeight());
+        int sampleCount = allSamples.size();
+        final int expandedHeight = variantBandHeight + margins + (sampleCount * getGenotypeBandHeight());
         if (height < expandedHeight) {
             setDisplayMode(DisplayMode.SQUISHED);
             squishedHeight = Math.max(1, (height - variantBandHeight - margins) / sampleCount);
@@ -280,14 +294,9 @@ public class VCFTrack extends FeatureTrack {
                 setDisplayMode(DisplayMode.EXPANDED);
             }
         }
-
-
     }
 
-    public void setDisplayMode(DisplayMode mode) {
-        super.setDisplayMode(mode);
-    }
-
+    
     @Override
     protected void renderFeatureImpl(RenderContext context, Rectangle trackRectangle, PackedFeatures packedFeatures) {
 
@@ -303,7 +312,7 @@ public class VCFTrack extends FeatureTrack {
         Rectangle rect = new Rectangle(trackRectangle);
         rect.height = getGenotypeBandHeight();
         rect.y = trackRectangle.y + variantBandHeight;
-        colorBackground(g2D, rect, visibleRectangle, false);
+        drawBackground(g2D, rect, visibleRectangle, BackgroundType.DATA);
 
         if (top > visibleRectangle.y && top < visibleRectangle.getMaxY()) {
             g2D.drawLine(left, top + 1, right, top + 1);
@@ -424,7 +433,9 @@ public class VCFTrack extends FeatureTrack {
 
 
     /**
-     * Render the name panel
+     * Render the name panel.
+     *
+     * NOTE:  The sample names are actually drawn in the drawBackground method!
      *
      * @param g2D
      * @param trackRectangle
@@ -462,7 +473,8 @@ public class VCFTrack extends FeatureTrack {
 
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
-            colorBackground(g2D, rect, visibleRectangle, true);
+            drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
+
         }
 
         // Bottom border
@@ -500,19 +512,77 @@ public class VCFTrack extends FeatureTrack {
             super.renderAttributes(graphics, rect, visibleRect, attributeNames, mouseRegions);
         }
 
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
+            return;
+        }
+
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
-        colorBackground(graphics, rect, visibleRect, false);
+        Rectangle bandRectangle = new Rectangle(rect);  // Make copy for later use
+
+        drawBackground(graphics, rect, visibleRect, BackgroundType.ATTRIBUTE);
+
+        if (grouped) {
+            for (List<String> sampleList : samplesByGroups.values()) {
+                renderAttibuteBand(graphics, bandRectangle, visibleRect, attributeNames, sampleList, mouseRegions);
+                bandRectangle.y += GROUP_BORDER_WIDTH;
+
+            }
+        } else {
+            renderAttibuteBand(graphics, bandRectangle, visibleRect, attributeNames, allSamples, mouseRegions);
+
+        }
 
     }
 
+    /**
+     * Render attribues for a sample.   This is mostly a copy of AbstractTrack.renderAttibutes().
+     * TODO -- refactor to eliminate duplicate code from AbstractTrack
+     *
+     * @param g2D
+     * @param bandRectangle
+     * @param visibleRectangle
+     * @param attributeNames
+     * @param sampleList
+     * @param mouseRegions
+     * @return
+     */
+    private void renderAttibuteBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                                    List<String> attributeNames, List<String> sampleList, List<MouseableRegion> mouseRegions) {
 
-    private void colorBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
-                                 boolean renderNames) {
+
+        for (String sample : sampleList) {
+
+            if (bandRectangle.intersects(visibleRectangle)) {
+
+                int x = bandRectangle.x;
+
+                for (String name : attributeNames) {
+
+                    String key = name.toUpperCase();
+                    String attributeValue = AttributeManager.getInstance().getAttribute(sample, key);
+                    if (attributeValue != null) {
+                        Rectangle rect = new Rectangle(x, bandRectangle.y, AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH,
+                                bandRectangle.height);
+                        g2D.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
+                        g2D.fill(rect);
+                        mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+                    }
+                    x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+                }
+
+            }
+            bandRectangle.y += bandRectangle.height;
+
+        }
+    }
 
 
-        if (getDisplayMode() == Track.DisplayMode.COLLAPSED ||
-                (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4)) {
+    private void drawBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                                 BackgroundType type) {
+
+
+        if (getDisplayMode() == Track.DisplayMode.COLLAPSED) {
             return;
         }
 
@@ -526,24 +596,41 @@ public class VCFTrack extends FeatureTrack {
         g2D.setFont(font);
 
         if (grouped) {
-            for (List<String> sampleList : samplesByGroups.values()) {
-                coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, renderNames,
-                        coloredLast, textRectangle, sampleList);
+            for (Map.Entry<String, List<String>> sampleGroup : samplesByGroups.entrySet()) {
+                int y0 = bandRectangle.y;
+
+                List<String> sampleList = sampleGroup.getValue();
+                coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, sampleList, type);
 
                 g2D.setColor(OFF_WHITE);
                 g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, GROUP_BORDER_WIDTH);
                 bandRectangle.y += GROUP_BORDER_WIDTH;
 
+                if (type == BackgroundType.NAME && bandRectangle.height < 3) {
+                    String group = sampleGroup.getKey();
+                    if (group != null) {
+                        g2D.setColor(Color.black);
+                        g2D.setFont(oldFont);
+                        int y2 = bandRectangle.y;
+                        Rectangle textRect = new Rectangle(bandRectangle.x, y0, bandRectangle.width, y2 - y0);
+                        GraphicUtils.drawWrappedText(group, textRect, g2D, true); 
+                    }
+                }
+
             }
+
         } else {
-            coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, renderNames, coloredLast, textRectangle, allSamples);
+            coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, allSamples, type);
 
         }
         g2D.setFont(oldFont);
     }
 
-    private boolean colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle, boolean renderNames,
-                              boolean coloredLast, Rectangle textRectangle, List<String> sampleList) {
+    private boolean colorBand(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
+                              boolean coloredLast, Rectangle textRectangle, List<String> sampleList,
+                              BackgroundType type) {
+
+        boolean supressFill = (getDisplayMode() == Track.DisplayMode.SQUISHED && squishedHeight < 4);
 
         for (String sample : sampleList) {
 
@@ -557,9 +644,11 @@ public class VCFTrack extends FeatureTrack {
             }
 
             if (bandRectangle.intersects(visibleRectangle)) {
-                g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
+                if (!supressFill) {
+                    g2D.fillRect(bandRectangle.x, bandRectangle.y, bandRectangle.width, bandRectangle.height);
+                }
 
-                if (renderNames) {
+                if (type == BackgroundType.NAME) {
                     sampleBounds.add(new SampleBounds(bandRectangle.y, bandRectangle.y + bandRectangle.height, sample));
                     if (bandRectangle.height >= 3) {
 
@@ -568,6 +657,9 @@ public class VCFTrack extends FeatureTrack {
                         g2D.setColor(Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
                     }
+
+                } else if (type == BackgroundType.ATTRIBUTE) {
+
                 }
             }
             bandRectangle.y += bandRectangle.height;
@@ -580,13 +672,6 @@ public class VCFTrack extends FeatureTrack {
         this.renderID = value;
     }
 
-    public boolean getRenderID() {
-        return renderID;
-    }
-
-    public void setHideAncestral(boolean value) {
-        this.hideAncestral = value;
-    }
 
     public boolean getHideFiltered() {
         return hideFiltered;
@@ -596,9 +681,6 @@ public class VCFTrack extends FeatureTrack {
         this.hideFiltered = value;
     }
 
-    public boolean getHideAncestral() {
-        return hideAncestral;
-    }
 
     public ColorMode getColorMode() {
         return coloring;
@@ -609,6 +691,15 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    /**
+     * Return popup text for the given position
+     *
+     * @param chr
+     * @param position in genomic coordinates
+     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param frame
+     * @return
+     */
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         try {
@@ -776,6 +867,10 @@ public class VCFTrack extends FeatureTrack {
         GENOTYPE, METHYLATION_RATE, ALLELE
     }
 
+    public static enum BackgroundType {
+        NAME, ATTRIBUTE, DATA;
+    }
+
 
     static Map<String, String> fullNames = new HashMap();
 
@@ -871,56 +966,6 @@ public class VCFTrack extends FeatureTrack {
 
     }
 
-    static class ZygosityCount {
-        private int homVar = 0;
-        private int het = 0;
-        private int homRef = 0;
-        private int noCall = 0;
-
-        public void incrementCount(Genotype genotype) {
-            if (genotype != null) {
-                if (genotype.isHomVar()) {
-                    homVar++;
-                } else if (genotype.isHet()) {
-                    het++;
-                } else if (genotype.isHomRef()) {
-                    homRef++;
-                } else {
-                    noCall++;
-                }
-            }
-        }
-
-        public int getHomVar() {
-            return homVar;
-        }
-
-        public int getHet() {
-            return het;
-        }
-
-        public int getHomRef() {
-            return homRef;
-        }
-
-        public int getNoCall() {
-            return noCall;
-        }
-
-        public int getTotalCall() {
-            return homVar + homRef + het;
-        }
-
-        public int getVarCall() {
-            return homVar + het;
-        }
-
-        public int getSampleCount() {
-            return homVar + homRef + het + noCall;
-        }
-
-    }
-
     public ZygosityCount getZygosityCounts(VariantContext variant) {
         ZygosityCount zc = new ZygosityCount();
         for (String sample : allSamples) {
@@ -967,10 +1012,12 @@ public class VCFTrack extends FeatureTrack {
             final double position = te.getChromosomePosition();
             f = (VariantContext) getFeatureClosest(position, te.getMouseEvent().getY(), referenceFrame);
             // If more than ~ 20 pixels distance reject
-            double pixelDist = Math.abs((position - f.getStart()) / referenceFrame.getScale());
-            if (pixelDist < 20) {
-                selectedVariant = f;
-                IGV.getInstance().doRefresh();
+            if (f != null) {
+                double pixelDist = Math.abs((position - f.getStart()) / referenceFrame.getScale());
+                if (pixelDist < 20) {
+                    selectedVariant = f;
+                    IGV.getInstance().doRefresh();
+                }
             }
         }
         return new VCFMenu(this, selectedVariant);
@@ -1038,6 +1085,57 @@ public class VCFTrack extends FeatureTrack {
     }
 
 
+    static class ZygosityCount {
+        private int homVar = 0;
+        private int het = 0;
+        private int homRef = 0;
+        private int noCall = 0;
+
+        public void incrementCount(Genotype genotype) {
+            if (genotype != null) {
+                if (genotype.isHomVar()) {
+                    homVar++;
+                } else if (genotype.isHet()) {
+                    het++;
+                } else if (genotype.isHomRef()) {
+                    homRef++;
+                } else {
+                    noCall++;
+                }
+            }
+        }
+
+        public int getHomVar() {
+            return homVar;
+        }
+
+        public int getHet() {
+            return het;
+        }
+
+        public int getHomRef() {
+            return homRef;
+        }
+
+        public int getNoCall() {
+            return noCall;
+        }
+
+        public int getTotalCall() {
+            return homVar + homRef + het;
+        }
+
+        public int getVarCall() {
+            return homVar + het;
+        }
+
+        public int getSampleCount() {
+            return homVar + homRef + het + noCall;
+        }
+
+    }
+
+
     static class SampleBounds {
         int top;
         int bottom;
@@ -1050,7 +1148,7 @@ public class VCFTrack extends FeatureTrack {
         }
 
         boolean contains(int y) {
-            return y >= top && y < bottom;
+            return y >= top && y <= bottom;
         }
     }
 }

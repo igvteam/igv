@@ -231,7 +231,8 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect, List<String> names, List<MouseableRegion> mouseRegions) {
+    public void renderAttributes(Graphics2D graphics, Rectangle trackRectangle, Rectangle visibleRect,
+                                 List<String> names, List<MouseableRegion> mouseRegions) {
 
         int x = trackRectangle.x;
 

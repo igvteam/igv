@@ -69,20 +69,6 @@ public class TrackGroup {
         return tracks.contains(track);
     }
 
-
-    public int getPreferredHeight() {
-        int height = 0;
-        {
-            for (Track track : tracks) {
-                if (track != null && track.isVisible()) {
-                    height += track.getPreferredHeight();
-                }
-            }
-        }
-        return height;
-    }
-
-
     public List<Track> getTracks() {
         return tracks;
     }

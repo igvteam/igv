@@ -116,8 +116,6 @@ public interface Track extends Persistable {
 
     public int getHeight();
 
-    public int getPreferredHeight();
-
     public int getMinimumHeight();
 
     public void setDataRange(DataRange axisDefinition);
