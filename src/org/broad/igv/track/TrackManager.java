@@ -35,7 +35,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.vcf.VCFTrack;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
@@ -269,7 +269,7 @@ public class TrackManager {
                     if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
                             path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
                         Track t = tracks.get(0);
-                        if (t instanceof VCFTrack && ((VCFTrack) t).getAllSamples().size() > 10) {
+                        if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
                             String newPanelName = "Panel" + System.currentTimeMillis();
                             panel = igv.addDataPanel(newPanelName).getTrackPanel();
                         }

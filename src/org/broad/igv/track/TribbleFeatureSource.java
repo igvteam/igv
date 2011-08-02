@@ -21,6 +21,7 @@ package org.broad.igv.track;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.tribble.CachingFeatureReader;
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.igv.feature.tribble.VCFWrapperCodec;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
@@ -71,7 +72,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
         FeatureCodec codec = CodecFactory.getCodec(path);
         this.genome = genome;
-        isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);       
+        isVCF = codec.getClass() == VCFWrapperCodec.class;
         featureClass = codec.getFeatureType();
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
         header = basicReader.getHeader();

@@ -27,7 +27,7 @@ import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.vcf.VCFTrack;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.Track;
@@ -311,7 +311,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 }
 
             }
-            //todo: implement handling for VCFTrack
+            //todo: implement handling for VariantTrack
 
 
         } else {
@@ -338,7 +338,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         if (tracks.size() == 1) {
             try {
                 Track t = tracks.iterator().next();
-                if (!(t instanceof FeatureTrack || t instanceof VCFTrack)) {
+                if (!(t instanceof FeatureTrack || t instanceof VariantTrack)) {
                     //JOptionPane.showMessageDialog(IGV.getInstance(),
                     //        "Track panning is not enabled for data tracks.");
                     return;
@@ -348,8 +348,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 ReferenceFrame frame = FrameManager.getDefaultFrame();
                 if (t instanceof FeatureTrack) {
                     f = ((FeatureTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
-                } else if (t instanceof VCFTrack) {
-                    f = ((VCFTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
+                } else if (t instanceof VariantTrack) {
+                    f = ((VariantTrack) t).nextFeature(vc.getChrName(), vc.getCenter(), forward, frame);
                 }
 
                 if (f != null) {

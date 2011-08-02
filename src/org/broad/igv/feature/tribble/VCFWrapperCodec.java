@@ -16,31 +16,40 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.session;
+package org.broad.igv.feature.tribble;
 
-import java.util.Map;
+import org.broad.igv.variant.vcf.VCFVariant;
+import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.readers.LineReader;
+import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
 /**
- * Interface for a session persistable object.  Implementors must be able to return object state as a map of
- * key-value string pairs, and restore state from such a map.
- *
- * // TODO -- this whole scheme could probably be more elegantly handled with annotations.
- *
- * @author User: jrobinso
- * Date: Feb 23, 2010
+ * @author Jim Robinson
+ * @date Aug 1, 2011
  */
-public interface Persistable {
+public class VCFWrapperCodec implements FeatureCodec {
 
-    /**
-     * Return object state as a map of key-value string pairs
-     * @return
-     */
+    FeatureCodec wrappedCodec;
 
-    public Map<String, String> getPersistentState();
+    public VCFWrapperCodec(FeatureCodec wrappedCodec) {
+       this.wrappedCodec = wrappedCodec;
+    }
 
-    /**
-     * Restore object state from a map of key-value string pairs
-     * @param values
-     */
-    public void restorePersistentState(Map<String, String> values);
+    public Feature decodeLoc(String line) {
+        return wrappedCodec.decodeLoc(line);
+    }
+
+    public Feature decode(String line) {
+        VariantContext vc = (VariantContext) wrappedCodec.decode(line);
+        return vc == null ? null : new VCFVariant(vc);
+    }
+
+    public Class getFeatureType() {
+        return VCFVariant.class;
+    }
+
+    public Object readHeader(LineReader reader) {
+        return wrappedCodec.readHeader(reader);
+    }
 }

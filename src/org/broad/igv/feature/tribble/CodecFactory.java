@@ -55,9 +55,9 @@ public class CodecFactory {
         }
 
         if (fn.endsWith(".vcf4")) {
-            return new VCFCodec();
+            return new VCFWrapperCodec(new VCFCodec());
         } else if (fn.endsWith(".vcf")) {
-            return getVCFCodec(path);
+            return new VCFWrapperCodec(getVCFCodec(path));
         } else if (fn.endsWith(".bed")) {
             return new BEDCodec();
         } else if (fn.endsWith(".repmask")) {

@@ -641,6 +641,13 @@ public abstract class AbstractTrack implements Track {
         return Color.getHSBColor(rgb[0], rgb[1], rgb[2]);
     }
 
+    /**
+     * Return the current state of this object as map of key-value pairs.  Used to store session state.
+     *
+     * // TODO -- this whole scheme could probably be more elegantly handled with annotations.
+     *
+     * @return
+     */
 
     public Map<String, String> getPersistentState() {
 

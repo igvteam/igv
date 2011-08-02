@@ -31,7 +31,7 @@ import java.awt.*;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.vcf.VCFRenderer;
+import org.broad.igv.variant.VariantRenderer;
 
 /**
  * Renderer for the full "IGV" feature interface (classes implementing
@@ -160,7 +160,7 @@ public class GenotypeRenderer extends FeatureRenderer {
 
 
 
-                    Color color = feature.getName().equals("HET") ? VCFRenderer.colorHet : VCFRenderer.colorHomVar;
+                    Color color = feature.getName().equals("HET") ? VariantRenderer.colorHet : VariantRenderer.colorHomVar;
                     Graphics2D g2D = context.getGraphic2DForColor(color);
                     g2D.fillRect(pixelStart, trackRectangle.y, (pixelEnd - pixelStart), trackRectangle.height);
 

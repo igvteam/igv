@@ -40,7 +40,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.vcf.VCFtoBed;
+import org.broad.igv.variant.util.VCFtoBed;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;

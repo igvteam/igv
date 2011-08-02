@@ -64,10 +64,11 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.vcf.PedigreeUtils;
-import org.broad.igv.vcf.VCFTrack;
+import org.broad.igv.variant.VariantTrack;
+import org.broad.igv.variant.util.PedigreeUtils;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -290,8 +291,24 @@ public class TrackLoader {
 
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
 
-            VCFTrack t = new VCFTrack(locator, src);
-            // VCF tracks handle their own margin
+
+            VCFHeader header = (VCFHeader) src.getHeader();
+
+            // Test if the input VCF file contains methylation rate data:
+
+            // This is determined by testing for the presence of two sample format fields: MR and GB, used in the
+            // rendering of methylation rate.
+            // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
+            // filter for the position. GB is needed to avoid displaying positions for which limited coverage
+            // prevents reliable estimation of methylation rate.
+            boolean enableMethylationRateSupport =  (header.getFormatHeaderLine("MR") != null &&
+                    header.getFormatHeaderLine("GB") != null);
+
+            List<String> allSamples = new ArrayList(header.getGenotypeSamples());
+
+            VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
+
+             // VCF tracks handle their own margin
             t.setMargin(0);
             newTracks.add(t);
         } else {

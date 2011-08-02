@@ -19,7 +19,6 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
@@ -28,6 +27,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
+import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.Feature;
 import org.broad.tribble.TribbleException;
 
@@ -566,7 +566,7 @@ public class FeatureTrack extends AbstractTrack {
         } else {
             if (getDisplayMode() != DisplayMode.COLLAPSED) {
                 // An ugly hack, but we want to prevent this for vcf tracks
-                if (!(this instanceof org.broad.igv.vcf.VCFTrack)) {
+                if (!(this instanceof VariantTrack)) {
                     lastFeatureMode = getDisplayMode();
                     super.setDisplayMode(DisplayMode.COLLAPSED);
                 }
