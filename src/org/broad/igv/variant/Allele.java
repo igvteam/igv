@@ -16,21 +16,17 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.vcf;
-
-import org.broad.igv.track.Track;
-
-import javax.swing.*;
-import java.awt.event.MouseEvent;
+package org.broad.igv.variant;
 
 /**
- * User: Jesse Whitworth
- * Date: Jul 16, 2010
+ * Represents an allele.
+ *
+ * Note:  Currently interface could easily be replaced by a String, but we expect more complex alleles when the
+ * structural variant code is added.
+ *
+ * @author Jim Robinson
+ * @date Aug 1, 2011
  */
-
-public interface TrackMenu {
-
-    public JPopupMenu getDataPanelMenu(MouseEvent evt);
-
-    public JPopupMenu getNamePanelMenu(MouseEvent evt);
+public interface Allele {
+    public byte[] getBases() ;
 }
