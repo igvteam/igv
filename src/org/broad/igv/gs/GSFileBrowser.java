@@ -40,7 +40,6 @@ import java.awt.event.MouseListener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -48,7 +47,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
 public class GSFileBrowser extends JDialog {
 
@@ -84,7 +83,7 @@ public class GSFileBrowser extends JDialog {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     int index = fileList.locationToIndex(e.getPoint());
-                    GSMetaData md = (GSMetaData) fileList.getModel().getElementAt(index);
+                    GSFileMetadata md = (GSFileMetadata) fileList.getModel().getElementAt(index);
                     if (md.isDirectory) {
                         try {
                             fetchContents(new URL(md.url));
@@ -106,76 +105,31 @@ public class GSFileBrowser extends JDialog {
     }
 
     private void fetchContents(URL url) throws IOException, JSONException {
-        StringBuffer buf = new StringBuffer();
-        InputStream is = null;
-        try {
-            is = IGVHttpClientUtils.openConnectionStream(url);
-            BufferedInputStream bis = new BufferedInputStream(is);
-            int b;
-            while ((b = bis.read()) >= 0) {
-                buf.append((char) b);
-            }
 
-            // System.out.println(buf.toString());
+        GSDirectoryListing dirListing = GSFileUtils.fetchContents(url);
+        String dirUrlString = dirListing.getDirectory();
 
-            JSONTokener tk = new JSONTokener(buf.toString());
-            JSONObject obj = new JSONObject(tk);
-
-            Object c = obj.get("contents");
-            List<JSONObject> contents = new ArrayList();
-            if (c instanceof JSONObject) {
-                contents.add((JSONObject) c);
-            } else {
-                JSONArray tmp = (JSONArray) c;
-                int l = tmp.length();
-                for (int i = 0; i < l; i++) {
-                    contents.add((JSONObject) tmp.get(i));
-                }
-            }
-
-            JSONObject directory = (JSONObject) obj.get("directory");
-
-            String dirUrlString = directory.get("url").toString();
-            setTitle(dirUrlString);
-            if (userRootUrl == null) {
-                userRootUrl = dirUrlString;
-            }
-
-
-            ArrayList<GSMetaData> dirElements = new ArrayList();
-            ArrayList<GSMetaData> fileElements = new ArrayList();
-
-            //Unless this is the root directory create a "up-one-level" entry
-            if (!dirUrlString.equals(userRootUrl)) {
-                int lastSlashIdx = dirUrlString.lastIndexOf("/");
-                String parentURL = dirUrlString.substring(0, lastSlashIdx);
-                dirElements.add(new GSMetaData("Parent Directory", parentURL, "", "", true));
-            }
-
-            int contentsLength = contents.size();
-            for (int i = 0; i < contentsLength; i++) {
-                JSONObject o = contents.get(i);
-                String name = (String) o.get("name");
-                String objurl = (String) o.get("url");
-                if (o.get("directory").equals("true")) {
-                    dirElements.add(new GSMetaData(name, objurl, "", "", true));
-                } else {
-                    JSONObject dataFormat = o.has("dataFormat") ? (JSONObject) o.get("dataFormat") : null;
-                    String format = dataFormat == null ? "" : dataFormat.getString("name");
-                    String size = (String) o.get("size");
-                    fileElements.add(new GSMetaData(name, objurl, format, size, false));
-                }
-            }
-            ArrayList elements = new ArrayList(dirElements.size() + fileElements.size());
-            elements.addAll(dirElements);
-            elements.addAll(fileElements);
-
-            ListModel model = new ListModel(elements);
-            fileList.setModel(model);
-
-        } finally {
-            is.close();
+        setTitle(dirUrlString);
+        if (userRootUrl == null) {
+            userRootUrl = dirUrlString;
         }
+
+        setTitle(dirUrlString);
+        if (userRootUrl == null) {
+            userRootUrl = dirUrlString;
+        }
+
+        List<GSFileMetadata> elements = dirListing.getContents();
+        //Unless this is the root directory create a "up-one-level" entry
+        if (!dirUrlString.equals(userRootUrl)) {
+            int lastSlashIdx = dirUrlString.lastIndexOf("/");
+            String parentURL = dirUrlString.substring(0, lastSlashIdx);
+            elements.add(0, new GSFileMetadata("Parent Directory", parentURL, "", "", true));
+        }
+
+        ListModel model = new ListModel(dirListing.getContents());
+        fileList.setModel(model);
+
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
@@ -190,7 +144,7 @@ public class GSFileBrowser extends JDialog {
 
             // If there is a single selection, and it is a directory,  load that directory
             if (selections.length == 1) {
-                GSMetaData md = (GSMetaData) selections[0];
+                GSFileMetadata md = (GSFileMetadata) selections[0];
                 if (md.isDirectory) {
                     fetchContents(new URL(md.url));
                     return;
@@ -199,8 +153,8 @@ public class GSFileBrowser extends JDialog {
 
             ArrayList<ResourceLocator> toLoad = new ArrayList(selections.length);
             for (Object obj : selections) {
-                if (obj instanceof GSMetaData) {
-                    GSMetaData md = (GSMetaData) obj;
+                if (obj instanceof GSFileMetadata) {
+                    GSFileMetadata md = (GSFileMetadata) obj;
                     if (!md.isDirectory) {
                         toLoad.add(new ResourceLocator(md.url));
                     }
@@ -232,32 +186,11 @@ public class GSFileBrowser extends JDialog {
     }
 
 
-    static class GSMetaData {
-        boolean isDirectory;
-        String name;
-        String url;
-        String format;
-        String size;
-
-        GSMetaData(String name, String url, String format, String size, boolean isDirectory) {
-            this.isDirectory = isDirectory;
-            this.name = name;
-            this.url = url;
-            this.format = format;
-            this.size = size;
-        }
-
-        public String toString() {
-            return name;
-        }
-    }
-
-
     static class ListModel extends AbstractListModel {
 
-        ArrayList elements;
+        List<GSFileMetadata> elements;
 
-        ListModel(ArrayList elements) {
+        ListModel(List<GSFileMetadata> elements) {
             this.elements = elements;
         }
 
@@ -282,11 +215,11 @@ public class GSFileBrowser extends JDialog {
                 boolean isSelected,      // is the cell selected
                 boolean cellHasFocus)    // the list and the cell have the focus
         {
-            GSMetaData metaData = (GSMetaData) value;
+            GSFileMetadata fileElement = (GSFileMetadata) value;
 
             String s = value.toString();
             setText(s);
-            setIcon(metaData.isDirectory ? folderIcon : fileIcon);
+            setIcon(fileElement.isDirectory ? folderIcon : fileIcon);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
