@@ -16,30 +16,36 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.gs;
+package org.broad.igv.gs.atm;
+
+import java.util.List;
 
 /**
- * Represents a file or directory in GS storage.
- *
  * @author Jim Robinson
  * @date Aug 2, 2011
  */
-class GSFileMetadata {
-    boolean isDirectory;
+public class WebToolDescriptor {
     String name;
-    String url;
-    String format;
-    String size;
+    String id;
+    String version;
+    String author;
+    String description;
+    String help;
+    String baseUrl;
+    List<SubToolDescriptor> subTools;
+    List<FileParameter> fileParameters;
 
-    GSFileMetadata(String name, String url, String format, String size, boolean isDirectory) {
-        this.isDirectory = isDirectory;
+    public WebToolDescriptor(String name, String id, String version, String author, String description, String help,
+                             String baseUrl, List<FileParameter> fileParameters, List<SubToolDescriptor> subTools) {
         this.name = name;
-        this.url = url;
-        this.format = format;
-        this.size = size;
+        this.id = id;
+        this.version = version;
+        this.author = author;
+        this.description = description;
+        this.help = help;
+        this.fileParameters = fileParameters;
+        this.subTools = subTools;
+        this.baseUrl = baseUrl;
     }
 
-    public String toString() {
-        return name;
-    }
 }

@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.gs;
+package org.broad.igv.gs.dm;
 
 import java.util.List;
 

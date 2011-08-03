@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.gs;
+package org.broad.igv.gs.atm;
 
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.json.JSONArray;
@@ -27,14 +27,13 @@ import org.json.JSONTokener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
+ * Utility class for accessing the GenomeSpace ATM webservice.
+ *
  * https://atmtest.genomespace.org:8443/atm/webtools
  *
  * @author Jim Robinson
@@ -47,8 +46,15 @@ public class GSATMUtils {
         System.exit(-1);
     }
 
+    /**
+     * Parse the contents of the URL as a JSON string encoding a list of WebToolDescriptor objects.
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     */
     public static List<WebToolDescriptor> getWebTools(URL url) throws IOException, JSONException {
-
 
         StringBuffer buf = new StringBuffer();
         InputStream is = null;
@@ -71,6 +77,13 @@ public class GSATMUtils {
         }
     }
 
+    /**
+     * Parse a WebToolDescriptor JSONArray
+     *
+     * @param webDescArray
+     * @return
+     * @throws JSONException
+     */
     private static List<WebToolDescriptor> parseWebtools(JSONArray webDescArray) throws JSONException {
         int count = webDescArray.length();
         List<WebToolDescriptor> webTools = new ArrayList();
@@ -87,10 +100,10 @@ public class GSATMUtils {
             String baseUrl = obj.get("baseUrl").toString();
 
             JSONArray fileParamArray = obj.getJSONArray("fileParameters").getJSONArray(1);
-            List<WebToolDescriptor.FileParameter> fileParams = parseFileParameters(fileParamArray);
+            List<FileParameter> fileParams = parseFileParameters(fileParamArray);
 
             JSONArray subToolsArray = obj.getJSONArray("subTools").getJSONArray(1);
-            List<WebToolDescriptor.SubToolDescriptor> subTools = parseSubtools(subToolsArray);
+            List<SubToolDescriptor> subTools = parseSubtools(subToolsArray);
 
             webTools.add(new WebToolDescriptor(name, id, version, author, description, help, baseUrl,
                     fileParams, subTools));
@@ -98,13 +111,19 @@ public class GSATMUtils {
         return webTools;
     }
 
-    private static List<WebToolDescriptor.SubToolDescriptor> parseSubtools(JSONArray subTools) throws JSONException {
+    /**
+     * Parse a SubToolDescriptor JSONArray
+     * @param subToolsArray
+     * @return
+     * @throws JSONException
+     */
+    private static List<SubToolDescriptor> parseSubtools(JSONArray subToolsArray) throws JSONException {
 
-        List<WebToolDescriptor.SubToolDescriptor> subtoolDescriptors = new ArrayList();
-        if (subTools.length() > 0) {
-            int nTools = subTools.length();
+        List<SubToolDescriptor> subtoolDescriptors = new ArrayList();
+        if (subToolsArray.length() > 0) {
+            int nTools = subToolsArray.length();
             for (int n = 0; n < nTools; n++) {
-                JSONObject stObj = subTools.getJSONArray(n).getJSONObject(1);
+                JSONObject stObj = subToolsArray.getJSONArray(n).getJSONObject(1);
                 String stName = stObj.get("name").toString();
                 String stId = stObj.get("id").toString();
                 String stVersion = stObj.get("version").toString();
@@ -113,23 +132,30 @@ public class GSATMUtils {
                 String stHelp = stObj.get("help").toString();
                 String stUrlModifier = stObj.get("urlModifier").toString();
                 JSONArray stFileParams = stObj.getJSONArray("fileParameters").getJSONArray(1);
-                List<WebToolDescriptor.FileParameter> fileParams = parseFileParameters(stFileParams);
+                List<FileParameter> fileParams = parseFileParameters(stFileParams);
 
-                subtoolDescriptors.add(new WebToolDescriptor.SubToolDescriptor(stName, stId, stVersion, stAuthor,
+                subtoolDescriptors.add(new SubToolDescriptor(stName, stId, stVersion, stAuthor,
                         stDescription, stHelp, stUrlModifier, fileParams));
             }
         }
         return subtoolDescriptors;
     }
 
-    private static List<WebToolDescriptor.FileParameter> parseFileParameters(JSONArray fileParams) throws JSONException {
+    /**
+     * Parse a FileParameter JSONArray
+     * 
+     * @param fileParamsArray
+     * @return
+     * @throws JSONException
+     */
+    private static List<FileParameter> parseFileParameters(JSONArray fileParamsArray) throws JSONException {
 
-        List<WebToolDescriptor.FileParameter> fileParameters = new ArrayList();
+        List<FileParameter> fileParameters = new ArrayList();
 
-        if (fileParams.length() > 0) {
-            int nFileParams = fileParams.length();
+        if (fileParamsArray.length() > 0) {
+            int nFileParams = fileParamsArray.length();
             for (int n = 0; n < nFileParams; n++) {
-                JSONObject fObj = fileParams.getJSONArray(n).getJSONObject(1);
+                JSONObject fObj = fileParamsArray.getJSONArray(n).getJSONObject(1);
                 String fpName = fObj.get("name").toString();
                 String fpDescription = fObj.get("description").toString();
                 String fpRequired = fObj.get("required").toString();
@@ -137,7 +163,7 @@ public class GSATMUtils {
                 String fpNameDelimiters = fObj.get("nameDelimiters").toString();
                 JSONArray formats = fObj.getJSONArray("formats");
 
-                List<WebToolDescriptor.GSDataFormat> dataFormats = new ArrayList();
+                List<GSDataFormat> dataFormats = new ArrayList();
                 if (formats.length() > 0) {
                     final JSONArray formatsArray = formats.getJSONArray(1);
                     int nFormats = formatsArray.length();
@@ -146,11 +172,11 @@ public class GSATMUtils {
                         String fName = format.get("name").toString();
                         String fVersion = format.get("version").toString();
                         String fUrl = format.get("url").toString();
-                        dataFormats.add(new WebToolDescriptor.GSDataFormat(fName, fVersion, fUrl));
+                        dataFormats.add(new GSDataFormat(fName, fVersion, fUrl));
                     }
                 }
 
-                fileParameters.add(new WebToolDescriptor.FileParameter(fpName, fpDescription, fpRequired,
+                fileParameters.add(new FileParameter(fpName, fpDescription, fpRequired,
                         fpCompositeFilename, fpNameDelimiters, dataFormats));
             }
         }

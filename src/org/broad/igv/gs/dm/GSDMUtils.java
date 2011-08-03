@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.gs;
+package org.broad.igv.gs.dm;
 
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.json.JSONArray;
@@ -33,10 +33,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Utility class for accessing the GenomeSpace data manager web service
+ * 
  * @author Jim Robinson
  * @date Aug 2, 2011
  */
-public class GSFileUtils {
+public class GSDMUtils {
 
     /**
      * Fetch the contents of the GenomeSpace directory.
@@ -46,7 +48,7 @@ public class GSFileUtils {
      * @throws IOException
      * @throws JSONException
      */
-    public static GSDirectoryListing fetchContents(URL directoryURL) throws IOException, JSONException {
+    public static GSDirectoryListing getDirectoryListing(URL directoryURL) throws IOException, JSONException {
         StringBuffer buf = new StringBuffer();
         InputStream is = null;
         try {
