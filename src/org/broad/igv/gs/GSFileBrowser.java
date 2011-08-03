@@ -25,21 +25,19 @@ package org.broad.igv.gs;
 import java.awt.event.*;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.gs.dm.GSDMUtils;
+import org.broad.igv.gs.dm.GSDirectoryListing;
+import org.broad.igv.gs.dm.GSFileMetadata;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -84,16 +82,16 @@ public class GSFileBrowser extends JDialog {
                 if (e.getClickCount() == 2) {
                     int index = fileList.locationToIndex(e.getPoint());
                     GSFileMetadata md = (GSFileMetadata) fileList.getModel().getElementAt(index);
-                    if (md.isDirectory) {
+                    if (md.isDirectory()) {
                         try {
-                            fetchContents(new URL(md.url));
+                            fetchContents(new URL(md.getUrl()));
                         } catch (IOException e1) {
                             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         } catch (JSONException e1) {
                             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
                     } else {
-                        load(Arrays.asList(new ResourceLocator(md.url)));
+                        load(Arrays.asList(new ResourceLocator(md.getUrl())));
                     }
                 }
             }
@@ -106,7 +104,7 @@ public class GSFileBrowser extends JDialog {
 
     private void fetchContents(URL url) throws IOException, JSONException {
 
-        GSDirectoryListing dirListing = GSFileUtils.fetchContents(url);
+        GSDirectoryListing dirListing = GSDMUtils.getDirectoryListing(url);
         String dirUrlString = dirListing.getDirectory();
 
         setTitle(dirUrlString);
@@ -145,8 +143,8 @@ public class GSFileBrowser extends JDialog {
             // If there is a single selection, and it is a directory,  load that directory
             if (selections.length == 1) {
                 GSFileMetadata md = (GSFileMetadata) selections[0];
-                if (md.isDirectory) {
-                    fetchContents(new URL(md.url));
+                if (md.isDirectory()) {
+                    fetchContents(new URL(md.getUrl()));
                     return;
                 }
             }
@@ -155,8 +153,8 @@ public class GSFileBrowser extends JDialog {
             for (Object obj : selections) {
                 if (obj instanceof GSFileMetadata) {
                     GSFileMetadata md = (GSFileMetadata) obj;
-                    if (!md.isDirectory) {
-                        toLoad.add(new ResourceLocator(md.url));
+                    if (!md.isDirectory()) {
+                        toLoad.add(new ResourceLocator(md.getUrl()));
                     }
                 }
             }
@@ -219,7 +217,7 @@ public class GSFileBrowser extends JDialog {
 
             String s = value.toString();
             setText(s);
-            setIcon(fileElement.isDirectory ? folderIcon : fileIcon);
+            setIcon(fileElement.isDirectory() ? folderIcon : fileIcon);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -259,8 +257,8 @@ public class GSFileBrowser extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 0};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -270,8 +268,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- openButton ----
                 openButton.setText("Open");
@@ -281,8 +279,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 

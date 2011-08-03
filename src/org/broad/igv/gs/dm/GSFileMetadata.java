@@ -24,14 +24,14 @@ package org.broad.igv.gs.dm;
  * @author Jim Robinson
  * @date Aug 2, 2011
  */
-class GSFileMetadata {
-    boolean isDirectory;
-    String name;
-    String url;
-    String format;
-    String size;
+public class GSFileMetadata {
+    private boolean isDirectory;
+    private String name;
+    private String url;
+    private String format;
+    private String size;
 
-    GSFileMetadata(String name, String url, String format, String size, boolean isDirectory) {
+    public GSFileMetadata(String name, String url, String format, String size, boolean isDirectory) {
         this.isDirectory = isDirectory;
         this.name = name;
         this.url = url;
@@ -40,6 +40,26 @@ class GSFileMetadata {
     }
 
     public String toString() {
+        return getName();
+    }
+
+    public boolean isDirectory() {
+        return isDirectory;
+    }
+
+    public String getName() {
         return name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public String getSize() {
+        return size;
     }
 }
