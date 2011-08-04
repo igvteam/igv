@@ -227,8 +227,6 @@ public class TrackLoader {
             } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
                     typeString.endsWith(".qassoc") || typeString.endsWith(".gwas")) {
                 loadGWASFile(locator, newTracks);
-            } else if (GCTDatasetParser.isGCT(path)) {
-                loadGctFile(locator, newTracks, genome);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
@@ -301,14 +299,14 @@ public class TrackLoader {
             // MR is the methylation rate on a scale of 0 to 100% and GB is the number of bases that pass
             // filter for the position. GB is needed to avoid displaying positions for which limited coverage
             // prevents reliable estimation of methylation rate.
-            boolean enableMethylationRateSupport =  (header.getFormatHeaderLine("MR") != null &&
+            boolean enableMethylationRateSupport = (header.getFormatHeaderLine("MR") != null &&
                     header.getFormatHeaderLine("GB") != null);
 
             List<String> allSamples = new ArrayList(header.getGenotypeSamples());
 
             VariantTrack t = new VariantTrack(locator, src, allSamples, enableMethylationRateSupport);
 
-             // VCF tracks handle their own margin
+            // VCF tracks handle their own margin
             t.setMargin(0);
             newTracks.add(t);
         } else {
@@ -1132,8 +1130,8 @@ public class TrackLoader {
         String indexPath = path + indexExtension;
         try {
             if (IGVHttpClientUtils.isURL(path)) {
-                boolean exists =  IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
-                if(!exists) {
+                boolean exists = IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
+                if (!exists) {
                     // Check for gzipped index
                     exists = IGVHttpClientUtils.resourceAvailable(new URL(indexPath + ".gz"));
                 }
