@@ -48,4 +48,16 @@ public class WebToolDescriptor {
         this.baseUrl = baseUrl;
     }
 
+    public void print() {
+        System.out.println();
+        System.out.println(name);
+        for(FileParameter fp : fileParameters) {
+            fp.print();
+        }
+
+        for(SubToolDescriptor st : subTools) {
+            st.print();
+        }
+    }
+
 }

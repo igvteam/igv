@@ -151,7 +151,7 @@ public class GSUtils {
     }
 
 
-    public static String getCachedUsernameForSSO() throws Exception {
+    public static String getCachedUsernameForSSO() throws IOException {
         String user = null;
         BufferedReader br = null;
         try {

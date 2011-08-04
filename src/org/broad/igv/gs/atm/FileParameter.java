@@ -41,4 +41,14 @@ public class FileParameter {
         this.nameDelimiters = nameDelimiters;
         this.formats = formats;
     }
+
+    public void print() {
+        System.out.print(name + "  ");
+        for(GSDataFormat df : formats) {
+            System.out.print(" " + df + ",");
+        }
+        System.out.println();
+
+    }
+
 }

@@ -27,6 +27,7 @@ import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.ClientConnectionManager;
@@ -34,6 +35,7 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -55,6 +57,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -89,7 +92,7 @@ public class IGVHttpClientUtils {
 
     /**
      * Create the singleton client instance.  This is private to insure a single instance is created.
-     * 
+     *
      * @return
      */
     private static DefaultHttpClient createClient() {
@@ -146,6 +149,35 @@ public class IGVHttpClientUtils {
         monitorThread.shutdown();
     }
 
+    /**
+     * Return the contents of the url as a String.  This method should only be used for queries expected to return
+     * a small amount of data.
+     *
+     * @param url
+     * @return
+     */
+    public static String getContentsAsString(URL url) throws IOException {
+        return getContentsAsString(url, null);
+    }
+
+    public static String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
+        StringBuffer buf = new StringBuffer();
+        InputStream is = null;
+        try {
+            is = IGVHttpClientUtils.openConnectionStream(url, false, headers);
+            BufferedInputStream bis = new BufferedInputStream(is);
+            int b;
+            while ((b = bis.read()) >= 0) {
+                buf.append((char) b);
+            }
+            return buf.toString();
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+        }
+    }
+
 
     /**
      * Execute a get on the url and return the response stream.  It is the responsibility of the caller to
@@ -164,11 +196,11 @@ public class IGVHttpClientUtils {
      * Execute a get on the url and return the response stream.  Optionally abort httpget when closing the stream.
      * This should be done when reading only a portion of the response stream, as otherwise the close() method in the
      * HttpClient stream class will read the rest of the stream before closing it.
-     *
-     *
+     * <p/>
+     * <p/>
      * NOTE:  A better solution for the partial read problem would be to use byte-range headers to get only the portion
-     * of the file needed. 
-     *
+     * of the file needed.
+     * <p/>
      * It is the responsibility of the caller to
      * close the stream.
      *
@@ -179,6 +211,12 @@ public class IGVHttpClientUtils {
      */
 
     public static InputStream openConnectionStream(URL url, boolean abortOnClose) throws IOException {
+
+        return openConnectionStream(url, abortOnClose, null);
+    }
+
+
+    public static InputStream openConnectionStream(URL url, boolean abortOnClose, Map<String, String> headers) throws IOException {
 
         //TODO -- the protocol (ftp) test should be done before calling this method.
         if (url.getProtocol().toLowerCase().equals("ftp")) {
@@ -191,6 +229,12 @@ public class IGVHttpClientUtils {
             return new FTPStream(ftp);
         } else {
             HttpGet getMethod = new HttpGet(url.toExternalForm());
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    getMethod.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
+
             HttpResponse response = execute(getMethod, url);
 
             // Wrap the response stream to do extra cleanaup upon close.
@@ -222,8 +266,7 @@ public class IGVHttpClientUtils {
             return statusCode == 200;
         } catch (FileNotFoundException e) {
             return false;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error checking resoruce availability", e);
             return false;
 
@@ -267,6 +310,26 @@ public class IGVHttpClientUtils {
         return execute(get, url);
     }
 
+    public static void uploadFile(URI uri, File file, Map<String, String> headers) throws IOException {
+
+        HttpPut put = new HttpPut(uri);
+
+        FileEntity entity = new FileEntity(file, "text");
+
+        put.setEntity(entity);
+
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                put.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
+
+        HttpResponse response = client.execute(put);
+
+        System.out.println(response.getStatusLine());
+
+
+    }
 
     /**
      * Execute a  request.  In the case of an authorization failure (401) this method is called recursively
@@ -549,12 +612,10 @@ public class IGVHttpClientUtils {
                     downloaded += bytesRead;
                 }
                 log.info("Download complete.  Total bytes downloaded = " + downloaded);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 httpget.abort();
                 throw e;
-            }
-            finally {
+            } finally {
                 if (is != null) is.close();
                 if (out != null) {
                     out.flush();

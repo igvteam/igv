@@ -58,18 +58,16 @@ public class GSFileBrowser extends JDialog {
         (new GSFileBrowser(null)).setVisible(true);
     }
 
-    URL baseUrl;
     String userRootUrl = null;
 
     public GSFileBrowser(Frame owner) throws IOException, JSONException {
         super(owner);
         initComponents();
-        baseUrl = new URL("https://dmtest.genomespace.org:8444/datamanager/defaultdirectory");
-        init(baseUrl);
+        init();
     }
 
 
-    void init(URL url) throws JSONException, IOException {
+    void init() throws JSONException, IOException {
 
         if (folderIcon == null) {
             folderIcon = new ImageIcon(getClass().getResource("/images/Folder-icon.png"));
@@ -98,8 +96,8 @@ public class GSFileBrowser extends JDialog {
         };
         fileList.addMouseListener(mouseListener);
 
-
-        fetchContents(url);
+        URL defaultURL = new URL(GSDMUtils.baseUrl + "defaultdirectory");
+        fetchContents(defaultURL);
     }
 
     private void fetchContents(URL url) throws IOException, JSONException {
@@ -257,8 +255,8 @@ public class GSFileBrowser extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -268,8 +266,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- openButton ----
                 openButton.setText("Open");
@@ -279,8 +277,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 

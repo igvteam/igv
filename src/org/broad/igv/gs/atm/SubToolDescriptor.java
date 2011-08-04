@@ -21,9 +21,9 @@ package org.broad.igv.gs.atm;
 import java.util.List;
 
 /**
-* @author Jim Robinson
-* @date Aug 3, 2011
-*/
+ * @author Jim Robinson
+ * @date Aug 3, 2011
+ */
 public class SubToolDescriptor {
     String name;//	Name of the web tool.
     String id;//	 	LSID which uniquely identifies the web tool.
@@ -32,7 +32,7 @@ public class SubToolDescriptor {
     String description;//	 	Description of the web tool.
     String help;//	 	URI for help about the web tool.
     List<FileParameter> fileParameters;//		A list of FileParameters.  See below.
-    String urlModifier; // 	The URL fragment that will be appended to the parent WebToolÕs baseUrl.
+    String urlModifier; // 	The URL fragment that will be appended to the parent WebToolï¿½s baseUrl.
 
     public SubToolDescriptor(String name, String id, String version, String author, String description, String help,
                              String urlModifier, List<FileParameter> fileParameters) {
@@ -44,5 +44,14 @@ public class SubToolDescriptor {
         this.help = help;
         this.fileParameters = fileParameters;
         this.urlModifier = urlModifier;
+    }
+
+    public void print() {
+        System.out.println();
+        System.out.println(name);
+        for (FileParameter fp : fileParameters) {
+            fp.print();
+        }
+
     }
 }

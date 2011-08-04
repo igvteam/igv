@@ -34,4 +34,8 @@ public class GSDataFormat {
         this.url = url;
     }
 
+    public String toString() {
+        return name;
+    }
+
 }

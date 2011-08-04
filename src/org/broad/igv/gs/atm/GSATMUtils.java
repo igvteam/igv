@@ -27,13 +27,14 @@ import org.json.JSONTokener;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Utility class for accessing the GenomeSpace ATM webservice.
- *
+ * <p/>
  * https://atmtest.genomespace.org:8443/atm/webtools
  *
  * @author Jim Robinson
@@ -41,8 +42,17 @@ import java.util.List;
  */
 public class GSATMUtils {
 
+    static final String BASE_URL = "https://atmtest.genomespace.org:8443/atm/webtools";
+
     public static void main(String[] args) throws IOException, JSONException {
-        List<WebToolDescriptor> webTools = getWebTools(new URL("https://atmtest.genomespace.org:8443/atm/webtools"));
+
+        String url = getWebtoolLaunchURL("Cytoscape");
+        System.out.println(url);
+
+        List<WebToolDescriptor> webTools = getWebTools(new URL(BASE_URL));
+        for (WebToolDescriptor wt : webTools) {
+            wt.print();
+        }
         System.exit(-1);
     }
 
@@ -70,9 +80,7 @@ public class GSATMUtils {
             JSONArray webDescArray = (JSONArray) array.get(1);
             List<WebToolDescriptor> webTools = parseWebtools(webDescArray);
             return webTools;
-        }
-
-        finally {
+        } finally {
             is.close();
         }
     }
@@ -113,6 +121,7 @@ public class GSATMUtils {
 
     /**
      * Parse a SubToolDescriptor JSONArray
+     *
      * @param subToolsArray
      * @return
      * @throws JSONException
@@ -143,7 +152,7 @@ public class GSATMUtils {
 
     /**
      * Parse a FileParameter JSONArray
-     * 
+     *
      * @param fileParamsArray
      * @return
      * @throws JSONException
@@ -182,6 +191,24 @@ public class GSATMUtils {
         }
 
         return fileParameters;
+    }
+
+    public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
+        URL url = new URL(BASE_URL + "/" + webtoolname);
+
+        StringBuffer buf = new StringBuffer();
+        InputStream is = null;
+        try {
+            is = IGVHttpClientUtils.openConnectionStream(url);
+            BufferedInputStream bis = new BufferedInputStream(is);
+            int b;
+            while ((b = bis.read()) >= 0) {
+                buf.append((char) b);
+            }
+            return buf.toString();
+        } finally {
+            is.close();
+        }
     }
 
 }
