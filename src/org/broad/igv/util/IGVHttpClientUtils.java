@@ -685,7 +685,6 @@ public class IGVHttpClientUtils {
         @Override
         public void close() throws IOException {
             getMethod.abort();
-            super.close();
         }
     }
 
