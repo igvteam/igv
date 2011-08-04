@@ -58,6 +58,7 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -310,23 +311,49 @@ public class IGVHttpClientUtils {
         return execute(get, url);
     }
 
+    /**
+     * Upload a file.
+     * <p/>
+     * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
+     *
+     * @param uri
+     * @param file
+     * @param headers
+     * @throws IOException
+     */
     public static void uploadFile(URI uri, File file, Map<String, String> headers) throws IOException {
 
         HttpPut put = new HttpPut(uri);
-
-        FileEntity entity = new FileEntity(file, "text");
-
-        put.setEntity(entity);
-
-        if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                put.addHeader(entry.getKey(), entry.getValue());
+        try {
+            FileEntity entity = new FileEntity(file, "text");
+            put.setEntity(entity);
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    put.addHeader(entry.getKey(), entry.getValue());
+                }
             }
+
+            HttpResponse response = client.execute(put);
+            final int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == 401) {
+                // Try again
+                client.getCredentialsProvider().clear();
+                login(uri.getHost());
+                uploadFile(uri, file, headers);
+            } else if (statusCode == 404 || statusCode == 410) {
+                put.abort();
+                throw new FileNotFoundException();
+            } else if (statusCode >= 400) {
+                put.abort();
+                throw new HttpResponseException(statusCode);
+            }
+
+        } catch (RuntimeException e) {
+            // An unexpected exception  -- abort the HTTP request in order to shut down the underlying
+            // connection immediately. THis happens automatically for an IOException
+            if (put != null) put.abort();
+            throw e;
         }
-
-        HttpResponse response = client.execute(put);
-
-        System.out.println(response.getStatusLine());
 
 
     }
@@ -344,15 +371,15 @@ public class IGVHttpClientUtils {
 
         try {
 
-            if (GSUtils.isGenomeSpace(url)) {
-                GSUtils.checkForCookie(client, url);
+            if (GSUtils.isGenomeSpace(url.toString())) {
+                GSUtils.checkForCookie(client, url.getHost());
             }
             HttpResponse response = client.execute(method);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
-                // Try again    
+                // Try again
                 client.getCredentialsProvider().clear();
-                login(url);
+                login(url.getHost());
                 return execute(method, url);
             } else if (statusCode == 404 || statusCode == 410) {
                 method.abort();
@@ -372,23 +399,23 @@ public class IGVHttpClientUtils {
     }
 
 
-    private static void login(URL url) {
+    private static void login(String server) {
 
         Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
         String userpass = getUserPass(owner);
         if (userpass == null) {
-            throw new RuntimeException("Access denied:  " + url.toString());
+            throw new RuntimeException("Access denied:  " + server);
         }
         UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
 
-        String host = GSUtils.isGenomeSpace(url) ? GSUtils.GENOME_SPACE_ID_SERVER : url.getHost();
+        String host = GSUtils.isGenomeSpace(server) ? GSUtils.GENOME_SPACE_ID_SERVER : server;
 
         client.getCredentialsProvider().setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
                 GENOME_SPACE_CREDS);
 
-        if (GSUtils.isGenomeSpace(url)) {
+        if (GSUtils.isGenomeSpace(host)) {
             // Get the genomespace token
             try {
                 HttpGet httpget = new HttpGet(GSUtils.identityServerUrl);

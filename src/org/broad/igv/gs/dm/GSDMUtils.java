@@ -18,15 +18,14 @@
 
 package org.broad.igv.gs.dm;
 
-import com.sun.tools.corba.se.idl.StringGen;
-import org.apache.commons.codec.binary.Base64;
+
+import org.apache.log4j.Logger;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import sun.java2d.pipe.BufferedTextPipe;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
@@ -34,7 +33,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.security.DigestException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -48,6 +46,8 @@ import java.util.*;
 public class GSDMUtils {
 
     public static String baseUrl = "https://dmtest.genomespace.org:8444/datamanager/";
+
+    private static Logger log = Logger.getLogger(GSDMUtils.class);
 
     /**
      * Fetch the contents of the GenomeSpace directory.
@@ -105,7 +105,14 @@ public class GSDMUtils {
 
     }
 
-
+    /**
+     * Upload a file to GenomeSpace.
+     *
+     * @param localFile
+     * @param gsPath the relative path in the users GenomeSpace account
+     * @throws IOException
+     * @throws URISyntaxException
+     */
     public static void uploadFile(File localFile, String gsPath) throws IOException, URISyntaxException {
 
 
@@ -115,7 +122,7 @@ public class GSDMUtils {
         long contentLength = localFile.length();
         String contentType = "text";
 
-        // TODO -- is this the correct way to get the user?
+        // The GenomeSpace user,  is this the correct way to get it?
         String user = GSUtils.getCachedUsernameForSSO();
 
         String tmp = baseUrl + "uploadurls/users/" + user + "/" + gsPath + "?Content-Length=" + contentLength +
@@ -133,9 +140,15 @@ public class GSDMUtils {
 
     }
 
+    /**
+     * Compute the MD5 hash for the given file.
+     *
+     * @param file
+     * @return
+     * @throws IOException
+     */
     private static byte[] computeMD5(File file) throws IOException {
         BufferedInputStream in = null;
-
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             in = new BufferedInputStream(new FileInputStream(file));
@@ -146,9 +159,9 @@ public class GSDMUtils {
             return md.digest();
 
         } catch (NoSuchAlgorithmException e) {
-            // Basically impossible to get here
-            e.printStackTrace();
-            return null;
+            // Should be impossible to get here
+            log.error("Error creating MD5 digest");
+            throw new RuntimeException(e);
         } finally {
             if (in != null) in.close();
         }
@@ -156,6 +169,12 @@ public class GSDMUtils {
 
     }
 
+    /**
+     * Convert an array of bytes to a hex string.
+     *
+     * @param v
+     * @return
+     */
     private static String toHexString(byte[] v) {
         final String HEX_DIGITS = "0123456789abcdef";
         StringBuffer sb = new StringBuffer(v.length * 2);

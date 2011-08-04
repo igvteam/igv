@@ -26,6 +26,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,7 +53,7 @@ public class GSUtils {
      public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
 
 
-    public static void checkForCookie(DefaultHttpClient httpClient, URL serviceURL) {
+    public static void checkForCookie(DefaultHttpClient httpClient, String host) {
 
         File file = getTokenFile();
         if (file.exists()) {
@@ -60,7 +61,7 @@ public class GSUtils {
             try {
                 br = new BufferedReader(new FileReader(file));
                 String token = br.readLine();
-                setAuthenticationToken(httpClient, serviceURL, token);
+                setAuthenticationToken(httpClient, host, token);
             }
             catch (IOException e) {
                 log.error("Error reading GS cookie", e);
@@ -75,9 +76,9 @@ public class GSUtils {
         }
     }
 
-    public static void setAuthenticationToken(DefaultHttpClient httpClient, URL serviceURL, String token) {
+    public static void setAuthenticationToken(DefaultHttpClient httpClient,String host,  String token) {
         BasicClientCookie cookie = new BasicClientCookie(AUTH_TOKEN_COOKIE_NAME, token);
-        cookie.setDomain(getCookieDomainPattern(serviceURL.getHost()));
+        cookie.setDomain(getCookieDomainPattern(host));
         cookie.setPath(AUTH_TOKEN_COOKIE_DEFAULT_PATH);
 
         CookieStore cookieStore = new GSCookieStore();
@@ -170,8 +171,8 @@ public class GSUtils {
     }
 
 
-    public static boolean isGenomeSpace(URL url) {
-        return url.toString().contains("genomespace.org");
+    public static boolean isGenomeSpace(String path) {
+        return path.contains("genomespace.org");
     }
 
     static class GSCookieStore implements CookieStore {
