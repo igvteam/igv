@@ -114,6 +114,7 @@ public class IGVHttpClientUtils {
             monitorThread = new IdleConnectionMonitorThread(cm);
             monitorThread.start();
 
+            client = new DefaultHttpClient(cm);
             boolean includeKerbeos = (new File(System.getenv("windir") + "\\krb5.ini").exists());
             ArrayList<String> authpref = new ArrayList<String>();
             authpref.add(AuthPolicy.BASIC);
@@ -125,7 +126,7 @@ public class IGVHttpClientUtils {
             client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
             client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
 
-            return new DefaultHttpClient(cm);
+            return client;
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
