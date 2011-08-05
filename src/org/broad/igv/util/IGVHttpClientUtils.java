@@ -114,6 +114,17 @@ public class IGVHttpClientUtils {
             monitorThread = new IdleConnectionMonitorThread(cm);
             monitorThread.start();
 
+            boolean includeKerbeos = (new File(System.getenv("windir") + "\\krb5.ini").exists());
+            ArrayList<String> authpref = new ArrayList<String>();
+            authpref.add(AuthPolicy.BASIC);
+            authpref.add(AuthPolicy.DIGEST);
+            if(includeKerbeos) {
+                 authpref.add(AuthPolicy.SPNEGO);
+            }
+            authpref.add(AuthPolicy.NTLM);
+            client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
+            client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
+
             return new DefaultHttpClient(cm);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -559,9 +570,9 @@ public class IGVHttpClientUtils {
                     if (!new File(System.getenv("windir") + "\\krb5.ini").exists()) {
 
                         ArrayList<String> authpref = new ArrayList<String>();
-                        authpref.add(AuthPolicy.NTLM);
                         authpref.add(AuthPolicy.BASIC);
                         authpref.add(AuthPolicy.DIGEST);
+                        authpref.add(AuthPolicy.NTLM);
                         client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
                         client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
                     }
