@@ -190,6 +190,8 @@ public class DataPanel extends JComponent implements Paintable {
             int height = rect.height;
             painter.paint(groups, context, width, height, getBackground(), rect, null);
 
+            drawAllRegions(g);
+
             super.paintBorder(g);
 
         } finally {
