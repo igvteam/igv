@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_26" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -1653,7 +1653,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label1:::p::p, space :::p, comp topBorderCB:::p::p, space :::p, comp bottomBorderCB:::p::p, space :p:7:p, comp colorBordersCB:::p::p, space s:::p, comp chartDrawTrackNameCB:::p::p, space :p:23:p, comp labelYAxisCB:::p::p, space s:::p, par b {comp autoscaleCB::b:p::p, comp jLabel7::b:p:50:p}, space u:::p, comp showDatarangeCB:::p::p, space :p:36:p}};par l {seq l {space :p:131:p, comp jLabel9:::p::p, space ::181:x}}</string> 
+              <string>par l {seq {space :::p, comp label1:::p::p, space :::p, comp topBorderCB:::p::p, space :::p, comp bottomBorderCB:::p::p, space :p:7:p, comp colorBordersCB:::p::p, space s:::p, comp chartDrawTrackNameCB:::p::p, space :p:23:p, comp labelYAxisCB:::p::p, space s:::p, par b {comp autoscaleCB::b:p::p, comp jLabel7::b:p:50:p}, space u:::p, comp showDatarangeCB:::p::p, space :p:36:p}};par l {seq l {space :p:131:p, comp jLabel9:::p::p, space ::177:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -2731,6 +2731,41 @@
                 </void> 
                </object> 
               </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JCheckBox</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Show center line</string> 
+                </void> 
+                <void property="name"> 
+                 <string>showCenterLineCB</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.ActionListener</string> 
+                  <string>actionPerformed</string> 
+                  <string>showCenterLineCBActionPerformed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>com.jformdesigner.runtime.NullConstraints</class> 
+                <void method="setProperty"> 
+                 <string>x</string> 
+                 <int>6</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>y</string> 
+                 <int>170</int> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>width</string> 
+                 <int>199</int> 
+                </void> 
+               </object> 
+              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>com.jformdesigner.runtime.NullConstraints</class> 
@@ -2748,7 +2783,7 @@
               </void> 
               <void method="setProperty"> 
                <string>height</string> 
-               <int>175</int> 
+               <int>200</int> 
               </void> 
              </object> 
             </void> 
@@ -3348,11 +3383,11 @@
              <class>org.jdesktop.layout.GroupLayout</class> 
              <void method="setProperty"> 
               <string>$horizontalGroup</string> 
-              <string>par l {seq {par l {seq l {space :p:45:p, par l {comp expMapToLociCB::l:p::p, comp expMapToGeneCB::l:p::p}}, seq l {space :::p, par l {seq {space :24:24:24, comp jLabel21:::p:497:p}, comp jLabel24::l:p::p}}}, space ::193:x}}</string> 
+              <string>par l {seq {par l {seq l {space :p:45:p, par l {comp expMapToLociCB::l:p::p, comp expMapToGeneCB::l:p::p}}, seq l {space :::p, par l {seq {space :24:24:24, comp jLabel21:::p:497:p}, comp jLabel24::l:p::p}}}, space ::179:x}}</string> 
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq l {space :::p, comp jLabel24:::p::p, space :::p, comp jLabel21:::p:44:p, space :::p, comp expMapToLociCB:::p::p, space :p:14:p, comp expMapToGeneCB:::p::p, space ::172:x}}</string> 
+              <string>par l {seq l {space :::p, comp jLabel24:::p::p, space :::p, comp jLabel21:::p:44:p, space :::p, comp expMapToLociCB:::p::p, space :p:14:p, comp expMapToGeneCB:::p::p, space ::158:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3495,7 +3530,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq l {space :p:20:p, comp jPanel7:::p::p, space ::36:x, comp jPanel2:::p::p}}</string> 
+              <string>par l {seq l {space :p:20:p, comp jPanel7:::p::p, space ::20:x, comp jPanel2:::p::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3779,11 +3814,11 @@
                <class>org.jdesktop.layout.GroupLayout</class> 
                <void method="setProperty"> 
                 <string>$horizontalGroup</string> 
-                <string>par l {seq {par l {seq l {space :::p, comp enablePortCB:::p::p, space :p:39:p, comp portField:::p:126:p}, seq l {space :p:48:p, comp jLabel22:::p::p}}, space ::330:x}}</string> 
+                <string>par l {seq {par l {seq l {space :::p, comp enablePortCB:::p::p, space :p:39:p, comp portField:::p:126:p}, seq l {space :p:48:p, comp jLabel22:::p::p}}, space ::302:x}}</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$verticalGroup</string> 
-                <string>par l {seq l {space :p:28:p, par c {comp enablePortCB::c:p::p, comp portField::c:p::p}, space u:::p, comp jLabel22:::p::p, space :::x}}</string> 
+                <string>par l {seq l {space :p:28:p, par c {comp enablePortCB::c:p::p, comp portField::c:p::p}, space u:::p, comp jLabel22:::p::p, space ::20:x}}</string> 
                </void> 
               </object> 
               <void property="name"> 
@@ -3883,11 +3918,11 @@
              <class>org.jdesktop.layout.GroupLayout</class> 
              <void method="setProperty"> 
               <string>$horizontalGroup</string> 
-              <string>par l {seq l {space :::p, par l {seq l {space :p:38:p, comp jLabel25:::p:601:p}, comp useByteRangeCB::l:p::p}, space ::65:x}}</string> 
+              <string>par l {seq l {space :::p, par l {seq l {space :p:38:p, comp jLabel25:::p:601:p}, comp useByteRangeCB::l:p::p}, space ::54:x}}</string> 
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25:::::x, space :::p}}</string> 
+              <string>par l {seq t {space :p:59:p, comp useByteRangeCB:::p:38:p, space :::p, comp jLabel25::::16:x, space :::p}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3983,7 +4018,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::110:x}}</string> 
+              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::77:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3996,7 +4031,7 @@
                <class>org.jdesktop.layout.GroupLayout</class> 
                <void method="setProperty"> 
                 <string>$horizontalGroup</string> 
-                <string>par l {seq {par l {seq {space :::p, par l {comp authenticateProxyCB::l:p::p, comp ntlmAuthenticationButton::l:p::p}}, seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}}, space ::381:x}}</string> 
+                <string>par l {seq {par l {seq {space :::p, par l {comp authenticateProxyCB::l:p::p, comp ntlmAuthenticationButton::l:p::p}}, seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}}, space ::353:x}}</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$verticalGroup</string> 

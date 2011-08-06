@@ -35,6 +35,7 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
 
+import java.awt.image.renderable.RenderableImageOp;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,6 +95,8 @@ public class CommandExecutor {
                     result = genome(param1);
                 } else if (cmd.equals("new") || cmd.equals("reset") || cmd.equals("clear")) {
                     mainFrame.createNewSession(null);
+                } else if (cmd.equals("region")) {
+                    defineRegion(param1, param2, param3);
                 } else if (cmd.equals("sort")) {
                     sort(param1, param2, param3);
                 } else if (cmd.equals("collapse")) {
@@ -139,8 +142,7 @@ public class CommandExecutor {
             Integer h = Integer.parseInt(param1.trim());
             SnapshotUtilities.MAX_PANEL_HEIGHT = h;
             return "OK";
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return "ERROR - max panel height value ('" + param1 + ".) must be a number";
         }
     }
@@ -225,6 +227,27 @@ public class CommandExecutor {
         IGV.getFirstInstance().repaintDataPanels();
     }
 
+    private void defineRegion(String param1, String param2, String param3) {
+
+        RegionOfInterest roi = null;
+        if (param1 != null && param2 != null && param3 != null) {
+            int start = Math.max(0, Integer.parseInt(param2) - 1);
+            int end = Integer.parseInt(param3);
+            roi = new RegionOfInterest(param1, start, end, "");
+        }
+        if (param1 != null) {
+            Locus locus = new Locus(param1);
+            if (locus.isValid()) {
+                int start = Math.max(0, locus.getStart() - 1);
+                roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
+
+            }
+        }
+        if (roi != null) {
+            IGV.getFirstInstance().addRegionOfInterest(roi);
+        }
+    }
+
 
     private void sort(String sortArg, String locusString, String param3) {
         TrackManager tm = IGV.getFirstInstance().getTrackManager();
@@ -234,7 +257,8 @@ public class CommandExecutor {
             if (locusString != null) {
                 Locus locus = new Locus(locusString);
                 if (locus.isValid()) {
-                    roi = new RegionOfInterest(locus.getChr(), locus.getStart(), locus.getEnd(), "");
+                    int start = Math.max(0, locus.getStart() - 1);
+                    roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
                 }
             }
             tm.sortByRegionScore(roi, regionSortOption, FrameManager.getDefaultFrame());
@@ -244,8 +268,7 @@ public class CommandExecutor {
             if (param3 != null) {
                 try {
                     location = new Double(param3.replace(",", ""));
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     log.info("Unexpected sort location argument (expected number): " + param3);
                 }
             }
@@ -305,8 +328,7 @@ public class CommandExecutor {
             if (locus != null) {
                 IGV.getFirstInstance().goToLocus(locus);
             }
-        }
-        finally {
+        } finally {
             WaitCursorManager.removeWaitCursor(token);
         }
 
@@ -333,8 +355,7 @@ public class CommandExecutor {
         String option = str.toUpperCase();
         try {
             return RegionScoreType.valueOf(option);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }

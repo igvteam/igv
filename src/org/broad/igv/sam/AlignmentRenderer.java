@@ -208,7 +208,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
 
             // Draw posA border around the center base
-            if (locScale < 5 && renderOptions.shadeCenters) {
+            if (locScale < 5 && renderOptions.showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
                 int centerLeftP = (int) (center / locScale);

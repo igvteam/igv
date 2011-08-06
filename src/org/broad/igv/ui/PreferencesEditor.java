@@ -80,6 +80,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
+
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -188,6 +189,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         label2 = new JLabel();
         showSoftClippedCB = new JCheckBox();
         showJunctionTrackCB = new JCheckBox();
+        showCenterLineCB = new JCheckBox();
         panel2 = new JPanel();
         isizeComputeCB = new JCheckBox();
         jLabel17 = new JLabel();
@@ -868,7 +870,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(jPanel4Layout.createSequentialGroup()
                                     .add(131, 131, 131)
                                     .add(jLabel9, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap(181, Short.MAX_VALUE)))
+                                    .addContainerGap(177, Short.MAX_VALUE)))
                             .add(jPanel4Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .add(label1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -1184,6 +1186,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         jPanel12.add(showJunctionTrackCB);
                         showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 43), showJunctionTrackCB.getPreferredSize()));
 
+                        //---- showCenterLineCB ----
+                        showCenterLineCB.setText("Show center line");
+                        showCenterLineCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                showCenterLineCBActionPerformed(e);
+                            }
+                        });
+                        jPanel12.add(showCenterLineCB);
+                        showCenterLineCB.setBounds(6, 170, 199, showCenterLineCB.getPreferredSize().height);
+
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
                             for(int i = 0; i < jPanel12.getComponentCount(); i++) {
@@ -1199,7 +1211,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(jPanel12);
-                    jPanel12.setBounds(5, 145, 755, 175);
+                    jPanel12.setBounds(5, 145, 755, 200);
 
                     //======== panel2 ========
                     {
@@ -1424,7 +1436,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                                 .add(24, 24, 24)
                                                 .add(jLabel21, GroupLayout.PREFERRED_SIZE, 497, GroupLayout.PREFERRED_SIZE))
                                             .add(jLabel24))))
-                                .addContainerGap(193, Short.MAX_VALUE))
+                                .addContainerGap(179, Short.MAX_VALUE))
                     );
                     jPanel8Layout.setVerticalGroup(
                         jPanel8Layout.createParallelGroup()
@@ -1437,7 +1449,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(expMapToLociCB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .add(14, 14, 14)
                                 .add(expMapToGeneCB)
-                                .addContainerGap(172, Short.MAX_VALUE))
+                                .addContainerGap(158, Short.MAX_VALUE))
                     );
                 }
                 expressionPane.add(jPanel8);
@@ -1613,7 +1625,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         .add(jPanel7Layout.createSequentialGroup()
                                             .add(48, 48, 48)
                                             .add(jLabel22)))
-                                    .addContainerGap(330, Short.MAX_VALUE))
+                                    .addContainerGap(302, Short.MAX_VALUE))
                         );
                         jPanel7Layout.setVerticalGroup(
                             jPanel7Layout.createParallelGroup()
@@ -1624,7 +1636,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         .add(portField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                                     .addPreferredGap(LayoutStyle.UNRELATED)
                                     .add(jLabel22)
-                                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addContainerGap(20, Short.MAX_VALUE))
                         );
                     }
 
@@ -1644,7 +1656,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             .add(jPanel3Layout.createSequentialGroup()
                                 .add(20, 20, 20)
                                 .add(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.RELATED, 36, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED, 20, Short.MAX_VALUE)
                                 .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     );
                 }
@@ -1677,7 +1689,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                         .add(38, 38, 38)
                                         .add(jLabel25, GroupLayout.PREFERRED_SIZE, 601, GroupLayout.PREFERRED_SIZE))
                                     .add(useByteRangeCB))
-                                .addContainerGap(65, Short.MAX_VALUE))
+                                .addContainerGap(54, Short.MAX_VALUE))
                     );
                     jPanel9Layout.setVerticalGroup(
                         jPanel9Layout.createParallelGroup()
@@ -1685,7 +1697,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25)
+                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                                 .addContainerGap())
                     );
                 }
@@ -1785,7 +1797,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                             .add(jPanel16Layout.createParallelGroup(GroupLayout.LEADING, false)
                                                 .add(proxyPasswordField)
                                                 .add(proxyUsernameField, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
-                                    .addContainerGap(381, Short.MAX_VALUE))
+                                    .addContainerGap(353, Short.MAX_VALUE))
                         );
                         jPanel16Layout.setVerticalGroup(
                             jPanel16Layout.createParallelGroup()
@@ -1929,7 +1941,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(jPanel16, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .add(18, 18, 18)
                                 .add(clearProxySettingsButton)
-                                .addContainerGap(110, Short.MAX_VALUE))
+                                .addContainerGap(77, Short.MAX_VALUE))
                     );
                 }
                 proxyPanel.add(jPanel15);
@@ -2155,6 +2167,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
 
     }
+
+    private void showCenterLineCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.SAM_SHOW_CENTER_LINE,
+                String.valueOf(showCenterLineCB.isSelected()));
+
+    }
+
 
     private void genomeUpdateCBActionPerformed(ActionEvent e) {
         updatedPreferenceMap.put(
@@ -2747,6 +2767,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         filterFailedReadsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS));
         showSoftClippedCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_SOFT_CLIPPED));
         samFlagUnmappedPairCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR));
+        showCenterLineCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE));
         samShadeMismatchedBaseCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY));
         samMinBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN))));
         samMaxBaseQualityField.setText((String.valueOf(prefMgr.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX))));
@@ -2956,6 +2977,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JLabel label2;
     private JCheckBox showSoftClippedCB;
     private JCheckBox showJunctionTrackCB;
+    private JCheckBox showCenterLineCB;
     private JPanel panel2;
     private JCheckBox isizeComputeCB;
     private JLabel jLabel17;

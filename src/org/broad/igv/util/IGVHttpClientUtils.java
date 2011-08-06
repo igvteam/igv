@@ -568,19 +568,6 @@ public class IGVHttpClientUtils {
                 if (ntlm) {
                     log.info("Using NTLM authentication");
 
-                    if (!new File(System.getenv("windir") + "\\krb5.ini").exists()) {
-
-                        ArrayList<String> authpref = new ArrayList<String>();
-                        authpref.add(AuthPolicy.BASIC);
-                        authpref.add(AuthPolicy.DIGEST);
-                        authpref.add(AuthPolicy.NTLM);
-                        client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
-                        client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
-                    }
-
-                    // Kerbeos file location
-                    // System.getenv("java.security.krb5.conf");
-
                     // Parse domain , e.g.  DOMAIN\\user
                     String domain = "";
                     if (user.contains("\\")) {

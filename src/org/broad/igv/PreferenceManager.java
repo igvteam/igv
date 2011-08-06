@@ -72,6 +72,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_COMPUTE_INSERT_SIZE_THRESHOLD = "SAM.COMPUTE_ISZIE";
     public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
     public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
+    public static final String SAM_SHOW_CENTER_LINE = "SAM.SHOW_CENTER_LINE";
     public static final String SAM_SHOW_REF_SEQ = "SAM.SHOW_REF_SEQ";
     public static final String SAM_SHOW_COV_TRACK = "SAM.SHOW_COV_TRACK";
     public static final String SAM_SHADE_BASE_QUALITY = "SAM.SHADE_BASE_QUALITY";
@@ -918,6 +919,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_AUTO_SORT, "false");
         defaultValues.put(SAM_SHADE_CENTER, "true");
         defaultValues.put(SAM_SHOW_REF_SEQ, "false");
+        defaultValues.put(SAM_SHOW_CENTER_LINE, "true");
         defaultValues.put(SAM_SHOW_COV_TRACK, "true");
         defaultValues.put(SAM_SHADE_BASE_QUALITY, "true");
         defaultValues.put(SAM_FILTER_ALIGNMENTS, "false");

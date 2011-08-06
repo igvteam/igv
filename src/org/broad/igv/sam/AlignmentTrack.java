@@ -577,6 +577,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public static class RenderOptions {
         boolean shadeBases;
         boolean shadeCenters;
+        boolean showCenterLine;
         boolean flagUnmappedPairs;
         boolean showAllBases;
         private boolean computeIsizes;
@@ -593,6 +594,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             PreferenceManager prefs = PreferenceManager.getInstance();
             shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
+            showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
             minInsertSize = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
@@ -629,6 +631,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
             if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
                 attributes.put("shadeCenters", String.valueOf(shadeBases));
+            }
+            if (showCenterLine != prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE)) {
+                attributes.put("shadeCenters", String.valueOf(showCenterLine));
             }
             if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
                 attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
