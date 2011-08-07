@@ -33,6 +33,7 @@ import org.broad.igv.util.ZipArchiveWrapper.ZipIterator;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
@@ -45,6 +46,7 @@ public class GenomeImporter {
     public static final int MAX_CONTIGS = 1000000;
 
     static Logger log = Logger.getLogger(GenomeImporter.class);
+    public static final Pattern SEQUENCE_NAME_SPLITTER = Pattern.compile("\\s+");
 
 
     /**
@@ -467,7 +469,7 @@ public class GenomeImporter {
                     // Find the first word break.  According the the spec the id of the sequence
                     // is the first "word",  the remaining part of the line is a comment.
 
-                    String [] tokens = fastaDataLine.split("\\s+");
+                    String [] tokens = SEQUENCE_NAME_SPLITTER.split(fastaDataLine, 2);
                     chr = tokens[0].substring(1);
                     chrSize = 0;
                     String chrFileName = chr + GenomeManager.SEQUENCE_FILE_EXTENSION;
