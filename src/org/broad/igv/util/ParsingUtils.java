@@ -20,7 +20,6 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
@@ -423,33 +422,6 @@ public class ParsingUtils {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    /**
-     * Method description
-     *
-     * @param gene
-     */
-    public static void computeReadingShifts(IGVFeature gene) {
-        List<Exon> exons = gene.getExons();
-        if (exons.size() == 0) {
-            return;
-        }
-
-        int startIndex = (gene.getStrand() == Strand.POSITIVE) ? 0 : exons.size() - 1;
-        int endIndex = (gene.getStrand() == Strand.POSITIVE) ? exons.size() : -1;
-        int increment = (gene.getStrand() == Strand.POSITIVE) ? 1 : -1;
-        int cds = 0;
-        int exonNumber = 1;
-        for (int i = startIndex; i != endIndex; i += increment) {
-            Exon exon = exons.get(i);
-            exon.setNumber(exonNumber);
-            int modCds = cds % 3;
-            int phase = (modCds == 0) ? 0 : 3 - modCds;
-            exon.setPhase(phase);
-            cds += exon.getCodingLength();
-            exonNumber++;
         }
     }
 

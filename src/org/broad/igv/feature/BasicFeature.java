@@ -20,14 +20,8 @@ package org.broad.igv.feature;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.renderer.SpliceJunctionRenderer;
-import org.broad.igv.sam.Alignment;
 import org.broad.igv.track.WindowFunction;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 
