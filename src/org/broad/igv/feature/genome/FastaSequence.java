@@ -29,7 +29,7 @@ import java.io.IOException;
  * Author: jrobinso
  * Date: 8/7/11
  */
-public class FastaSequence {
+public class FastaSequence implements Sequence {
 
     FastaSequenceIndex index;
     String path;

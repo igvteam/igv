@@ -19,7 +19,6 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 
@@ -64,7 +63,7 @@ public class AlignmentCounts {
         String chrAlias = genome.getChromosomeAlias(chr);
         this.start = start;
         this.end = end;
-        reference = SequenceManager.readSequence(this.genomeId, chrAlias, start, end);
+        reference = genome.getSequence(chrAlias, start, end);
 
         int nPts = end - start;
         posA = new int[nPts];

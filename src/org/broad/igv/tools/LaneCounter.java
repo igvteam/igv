@@ -20,7 +20,6 @@ package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
@@ -71,7 +70,7 @@ public class LaneCounter {
         int intervalStart = Integer.parseInt(tokens2[0]);
         int intervalEnd = Integer.parseInt(tokens2[1]);
 
-        byte[] ref = SequenceManager.readSequence(genome.getId(), chr, intervalStart, intervalEnd);
+        byte[] ref = genome.getSequence(chr, intervalStart, intervalEnd);
 
 
         String[] tmp = alignmentFileList.split(",");

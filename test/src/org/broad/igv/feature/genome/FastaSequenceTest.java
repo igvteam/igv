@@ -50,7 +50,8 @@ public class FastaSequenceTest {
 
 
         // TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT;
-        byte [] expectedBytes = SequenceManager.readSequence(chr, start, end, chr02qSeqPath);
+        Sequence igvSequence = new IGVSequence(chr02qSeqPath);
+        byte [] expectedBytes = sequence.readSequence(chr, start, end);
         String expectedSequence = new String(expectedBytes);
 
         byte[] bytes = sequence.readSequence(chr, start, end);

@@ -53,6 +53,12 @@ public class FastaSequenceIndex {
     }
 
 
+    public int getContigSize(String contig)  {
+        FastaSequenceIndexEntry entry = sequenceEntries.get(contig);
+        return entry == null ? -1 : (int) entry.getSize();
+    }
+
+
     /**
      * Parse the contents of an index file
      * <p/>

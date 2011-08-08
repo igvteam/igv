@@ -34,12 +34,34 @@ import java.util.*;
 /**
  * @author jrobinso
  */
-public class SequenceManager {
+public class SequenceHelper {
 
-    private static Logger log = Logger.getLogger(SequenceManager.class);
+    private static Logger log = Logger.getLogger(SequenceHelper.class);
     private static boolean cacheSequences = true;
     private static int chunkSize = 30000;
-    private static ObjectCache<String, SequenceChunk> sequenceCache = new ObjectCache(50);
+
+
+    Genome genome;
+    Sequence sequence;
+    private ObjectCache<String, SequenceChunk> sequenceCache = new ObjectCache(50);
+
+
+    public SequenceHelper(Genome genome) {
+        this.genome = genome;
+
+        String seqpath = genome.descriptor.getSequenceLocation();
+        if (seqpath == null) {
+
+        } else {
+            seqpath = convertSequenceURL(seqpath);
+            if (seqpath.startsWith("http://www.broadinstitute.org/igv/SequenceServlet") ||
+                    seqpath.startsWith("http://www.broadinstitute.org/igv/sequence")) {
+                sequence = new ServletSequence(seqpath);
+            } else {
+                sequence = new IGVSequence(seqpath);
+            }
+        }
+    }
 
     /**
      * Return the sequence in Color Space (SOLID alignment encoding)
@@ -50,10 +72,10 @@ public class SequenceManager {
      * @param end
      * @return
      */
-    public static byte[] readCSSequence(String genome, String chr, int start, int end) {
+    public byte[] readCSSequence(String genome, String chr, int start, int end) {
         // We need to know the base just to the left of the start
         int csStart = (start == 0 ? 0 : start - 1);
-        byte[] baseSequence = readSequence(genome, chr, csStart, end);
+        byte[] baseSequence = sequence.readSequence(chr, csStart, end);
         if (baseSequence == null || baseSequence.length == 0) {
             return baseSequence;
         }
@@ -97,21 +119,10 @@ public class SequenceManager {
      * @param end
      * @return
      */
-    public static byte[] readSequence(String genome, String chr, int start, int end) {
+    public byte[] readSequence(String genome, String chr, int start, int end) {
 
-        File rootDirectory = null;
-
-        try {
-            GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor(genome);
-            if (descriptor != null) {
-                String location = descriptor.getSequenceLocation();
-                if (location != null) {
-                    location = convertSequenceURL(location, genome);
-                    return getSequence(descriptor, chr, start, end, location);
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
+        if (sequence != null) {
+            return getSequence(chr, start, end);
 
         }
         return new byte[0];
@@ -120,20 +131,19 @@ public class SequenceManager {
     /**
      * Return the reference dna sequence for the exact interval specified.
      *
-     * @param genome
      * @param chr
      * @param start
      * @param end
      * @return
      */
-    private static byte[] getSequence(GenomeDescriptor genome, String chr, int start, int end, String location) {
+    public byte[] getSequence(String chr, int start, int end) {
         if (cacheSequences) {
-            byte[] sequence = new byte[end - start];
+            byte[] seqbytes = new byte[end - start];
             int startTile = start / chunkSize;
             int endTile = end / chunkSize;
 
             // Get first chunk
-            SequenceChunk chunk = getSequenceChunk(genome, chr, startTile, location);
+            SequenceChunk chunk = getSequenceChunk(genome.descriptor, chr, startTile);
             int offset = start - chunk.getStart();
             byte[] seqBytes = chunk.getBytes();
             if (seqBytes == null) {
@@ -141,29 +151,29 @@ public class SequenceManager {
             }
 
             // # of bytes to return, minimum of requested sequence lenth or bytes available
-            int nBytes = Math.min(seqBytes.length - offset, sequence.length);
+            int nBytes = Math.min(seqBytes.length - offset, seqbytes.length);
 
             // Copy first chunk
-            System.arraycopy(chunk.getBytes(), offset, sequence, 0, nBytes);
+            System.arraycopy(chunk.getBytes(), offset, seqbytes, 0, nBytes);
 
             // If multiple chunks ...
             for (int tile = startTile + 1; tile <= endTile; tile++) {
-                chunk = getSequenceChunk(genome, chr, tile, location);
+                chunk = getSequenceChunk(genome.descriptor, chr, tile);
 
-                int nNext = Math.min(sequence.length - nBytes, chunk.getSize());
+                int nNext = Math.min(seqbytes.length - nBytes, chunk.getSize());
 
-                System.arraycopy(chunk.getBytes(), 0, sequence, nBytes, nNext);
+                System.arraycopy(chunk.getBytes(), 0, seqbytes, nBytes, nNext);
                 nBytes += nNext;
             }
 
-            return sequence;
+            return seqbytes;
         } else {
-            return readSequence(genome, chr, start, end, location);
+            return sequence.readSequence(chr, start, end);
         }
     }
 
 
-    private static SequenceChunk getSequenceChunk(GenomeDescriptor genome, String chr, int tileNo, String location) {
+    private SequenceChunk getSequenceChunk(GenomeDescriptor genome, String chr, int tileNo) {
         String key = getKey(genome.getId(), chr, tileNo);
         SequenceChunk chunk = sequenceCache.get(key);
 
@@ -171,7 +181,7 @@ public class SequenceManager {
             int start = tileNo * chunkSize;
             int end = start + chunkSize; // <=  UCSC coordinate conventions (end base not inclusive)
 
-            byte[] seq = readSequence(genome, chr, start, end, location);
+            byte[] seq = sequence.readSequence(chr, start, end);
             chunk = new SequenceChunk(start, seq);
             sequenceCache.put(key, chunk);
         }
@@ -179,89 +189,6 @@ public class SequenceManager {
         return chunk;
     }
 
-    /**
-     * Read and return the genomic sequence for the specified interval as a byte array.
-     *
-     * @param genome
-     * @param chr
-     * @param start
-     * @param end
-     * @param path
-     * @return
-     */
-    private static byte[] readSequence(GenomeDescriptor genome, String chr, int start, int end, String path) {
-
-        if (path.startsWith("http://www.broadinstitute.org/igv/SequenceServlet") ||
-                path.startsWith("http://www.broadinstitute.org/igv/sequence")) {
-            return SequenceServletWrapper.readBytes(path, chr, start, end);
-        } else {
-
-            if (!path.endsWith("/")) {
-                path = path + "/";
-            }
-
-            String fn = chr + ".txt";
-            if (genome.isChrNamesAltered()) {
-                fn = getChrFileName(fn);
-            }
-
-            String seqFile = path + fn;
-
-            return readSequence(chr, start, end, seqFile);
-
-
-        }
-    }
-
-
-    /**
-     * Note: This method is "package" scope to permit unit testing.
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param seqFile
-     * @return
-     */
-    static byte[] readSequence(String chr, int start, int end, String seqFile) {
-
-        SeekableStream is = null;
-        try {
-
-
-            is = IGVSeekableStreamFactory.getStreamFor(seqFile);
-
-            byte[] bytes = new byte[end - start];
-            is.seek(start);
-            is.read(bytes);
-            return bytes;
-
-
-        } catch (Exception ex) {
-            log.error("Error reading genome sequence from: " + seqFile, ex);
-            return null;
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException ex) {
-                    log.error("Error closing sequence file.", ex);
-                }
-            }
-        }
-    }
-
-
-    private static Map<String, String> chrFileNameCache = new HashMap();
-
-    private static String getChrFileName(String fn) {
-        String chrFN = chrFileNameCache.get(fn);
-        if (chrFN == null) {
-            chrFN = FileUtils.legalFileName(fn);
-            chrFileNameCache.put(fn, chrFN);
-        }
-        return chrFN;
-    }
 
     static String getKey(String genome, String chr, int tileNo) {
         return genome + chr + tileNo;
@@ -285,7 +212,7 @@ public class SequenceManager {
         cacheSequences = aCacheSequences;
     }
 
-    public static void clearCache() {
+    public void clearCache() {
         sequenceCache.clear();
     }
 
@@ -334,7 +261,7 @@ public class SequenceManager {
     private static Hashtable<String, String> sequenceUrlCache = new Hashtable();
 
 
-    public static String convertSequenceURL(String url, String genome) {
+    public static String convertSequenceURL(String url) {
 
         final boolean useByteRange = IGVHttpClientUtils.useByteRange();
         String key = url + useByteRange;

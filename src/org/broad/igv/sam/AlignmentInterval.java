@@ -25,8 +25,9 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.io.IOException;
@@ -50,7 +51,8 @@ public class AlignmentInterval extends Locus {
         super(chr, start, end);
         this.genomeId = genomeId;
         this.alignmentRows = rows;
-        reference = SequenceManager.readSequence(this.genomeId, chr, start, end);
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        reference = genome.getSequence(chr, start, end);
         this.counts = counts;
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());

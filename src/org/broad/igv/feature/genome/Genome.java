@@ -62,11 +62,14 @@ public class Genome {
 
     GenomeDescriptor descriptor;
 
+    SequenceHelper sequenceHelper;
+
     public Genome(GenomeDescriptor descriptor) {
         this.descriptor = descriptor;
         this.id = descriptor.getId();
         initAnnotationURL();
         chrAliasTable = new HashMap();
+        sequenceHelper = new SequenceHelper(this);
     }
 
 
@@ -310,6 +313,10 @@ public class Genome {
     }
 
 
+    public byte [] getSequence(String chr, int start, int end) {
+        return sequenceHelper.getSequence(chr, start,  end);
+    }
+
     public static class ChromosomeCoordinate {
         private String chr;
         private int coordinate;
@@ -391,8 +398,6 @@ public class Genome {
             }
             return 0;
         }
-
-
     }
 
 }

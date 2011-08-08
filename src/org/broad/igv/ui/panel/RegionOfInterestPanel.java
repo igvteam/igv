@@ -25,7 +25,6 @@ package org.broad.igv.ui.panel;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -174,8 +173,8 @@ public class RegionOfInterestPanel extends JPanel {
                     }
 
                     public void run() {
-                        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-                        byte[] seqBytes = SequenceManager.readSequence(genomeId, roi.getChr(), roi.getStart(), roi.getEnd());
+                        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                        byte[] seqBytes = genome.getSequence(roi.getChr(), roi.getStart(), roi.getEnd());
                         if (seqBytes == null) {
                             MessageUtils.showMessage("Sequence not available");
                         } else {

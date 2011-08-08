@@ -24,9 +24,10 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.SequenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.util.SOLIDUtils;
 
@@ -93,7 +94,8 @@ public class SequenceRenderer {
             double locScale = context.getScale();
             double origin = context.getOrigin();
             String chr = context.getChr();
-            String genome = context.getGenomeId();
+            //String genomeId = context.getGenomeId();
+            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
             //The location of the first base that is loaded, which may include padding around what's visible
             int start = Math.max(0, (int) origin - 1);
@@ -119,7 +121,8 @@ public class SequenceRenderer {
                 lastCodonOffset = 2;
                 end += lastCodonOffset;
             }
-            byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
+
+            byte[] seq = genome.getSequence(chr, start, end);
 
             //The combined height of sequence and (optionally) colorspace bands
             int untranslatedSequenceHeight = (int) trackRectangle.getHeight();

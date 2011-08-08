@@ -18,12 +18,13 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ChromosomeColors;
 import org.broad.igv.util.ColorUtilities;
 
@@ -517,7 +518,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         double origin = context.getOrigin();
         String chr = context.getChr();
-        String genome = context.getGenomeId();
+        String genomeId = context.getGenomeId();
+        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
 
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();
@@ -538,7 +540,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             int start = block.getStart();
             int end = start + read.length;
-            byte[] reference = isSoftClipped ? null : SequenceManager.readSequence(genome, chr, start, end);
+            byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
 
 
             // Loop through base pair coordinates

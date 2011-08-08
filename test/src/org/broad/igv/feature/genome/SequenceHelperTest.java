@@ -37,14 +37,21 @@ import java.io.IOException;
 /**
  * @author jrobinso
  */
-public class SequenceManagerTest {
+public class SequenceHelperTest {
 
-    public SequenceManagerTest() {
+    static Genome genome;
+
+    static SequenceHelper helper;
+
+
+    public SequenceHelperTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         IGV.getInstance().getGenomeManager().loadGenomeByID("hg18");
+        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        helper = new SequenceHelper(genome);
         Globals.setHeadless(true);
     }
 
@@ -54,7 +61,7 @@ public class SequenceManagerTest {
 
     @Before
     public void setUp() {
-        SequenceManager.clearCache();
+        helper.clearCache();
     }
 
     /**
@@ -63,17 +70,18 @@ public class SequenceManagerTest {
     @Test
     public void testCache() {
         try {
-            String genome = "hg18";
             String chr = "chr7";
             int start = 55054464;
             int end = start + 10000;
 
 
-            byte[] cachedSeq = SequenceManager.readSequence(genome, chr, start, end);
+            SequenceHelper helper = new SequenceHelper(genome);
 
-            SequenceManager.setCacheSequences(false);
+            byte[] cachedSeq = helper.getSequence(chr, start, end);
 
-            byte[] uncachedSeq = SequenceManager.readSequence(genome, chr, start, end);
+            SequenceHelper.setCacheSequences(false);
+
+            byte[] uncachedSeq = helper.getSequence(chr, start, end);
 
             assertEquals(uncachedSeq.length, cachedSeq.length);
 
@@ -82,7 +90,7 @@ public class SequenceManagerTest {
             }
 
         } finally {
-            SequenceManager.setCacheSequences(true);
+            SequenceHelper.setCacheSequences(true);
         }
 
     }
@@ -97,7 +105,7 @@ public class SequenceManagerTest {
         String expSequence = "ATTGC";
         IGV.getInstance().getGenomeManager().loadGenomeByID(genome);
 
-        byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end);
         assertEquals(expSequence, new String(seq));
 
     }
@@ -112,7 +120,7 @@ public class SequenceManagerTest {
         int start = 55054464;
         int end = start + 20;
         String expSequence = "ATGCGACCCTCCGGGACGGC";
-        byte[] seq = SequenceManager.readSequence(genome, chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end);
         assertEquals(expSequence, new String(seq));
     }
 
@@ -156,16 +164,16 @@ public class SequenceManagerTest {
             preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(!useByteRange));
 
             testURL1();
-            SequenceManager.clearCache();
+            helper.clearCache();
 
             testURL2();
-            SequenceManager.clearCache();
+            helper.clearCache();
 
             testURL3();
-            SequenceManager.clearCache();
+            helper.clearCache();
 
             testURL4();
-            SequenceManager.clearCache();
+            helper.clearCache();
 
 
         }

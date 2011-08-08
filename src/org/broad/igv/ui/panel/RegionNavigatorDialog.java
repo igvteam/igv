@@ -20,7 +20,7 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.genome.SequenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -649,8 +649,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                             } else {
                                 try {
                                     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                                    String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-                                    byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
+                                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                                    byte[] seqBytes = genome.getSequence(chr, start, end);
                                     if (seqBytes == null) {
                                         MessageUtils.showMessage("Sequence not available");
                                     } else {

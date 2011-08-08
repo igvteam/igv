@@ -19,9 +19,8 @@
 
 package org.broad.igv.feature;
 
-//~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.genome.SequenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 
@@ -173,8 +172,8 @@ public class Exon extends AbstractFeature {
             int readStart = (codingStart > start) ? codingStart : start + readingFrame;
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
-                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
-                byte[] seqBytes = SequenceManager.readSequence(genome, chr, readStart, readEnd);
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
                 aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
             }
         }
@@ -187,8 +186,8 @@ public class Exon extends AbstractFeature {
             int codonStart = readStart + codonNumber * 3;
             int codonEnd = Math.min(codonStart + 3, codingEnd);
             if (codonEnd - codonStart == 3) {
-                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
-                return SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                return genome.getSequence(getChr(), codonStart, codonEnd);
             }
         }
         return null;
@@ -201,8 +200,8 @@ public class Exon extends AbstractFeature {
             int codonStart = readStart + codonNumber * 3;
             int codonEnd = Math.min(codonStart + 3, codingEnd);
             if (codonEnd - codonStart == 3) {
-                String genome = IGV.getInstance().getGenomeManager().getGenomeId();
-                byte [] refBytes = SequenceManager.readSequence(genome, getChr(), codonStart, codonEnd);
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                byte [] refBytes = genome.getSequence(getChr(), codonStart, codonEnd);
                 int delta = position - codonStart;
                 if(delta > 3) {
                     System.out.println("Error getting alternate codon.  Position out of bounds: " + position);

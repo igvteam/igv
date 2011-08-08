@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.genome.SequenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
@@ -921,11 +921,11 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                 String chr = f.getChr();
                 int start = f.getStart();
                 int end = f.getEnd();
-                byte[] seqBytes = SequenceManager.readSequence(genomeId, chr, start, end);
+                byte[] seqBytes = genome.getSequence(chr, start, end);
                 if (seqBytes == null) {
                     MessageUtils.showMessage("Sequence not available");
                 } else {
