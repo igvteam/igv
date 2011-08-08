@@ -48,6 +48,33 @@ import java.util.*;
 public class EmblFeatureTableParser implements FeatureParser {
 
     /**
+     * Method description
+     *
+     * @param gene
+     */
+    public static void computeReadingShifts(IGVFeature gene) {
+        List<org.broad.igv.feature.Exon> exons = gene.getExons();
+        if (exons.size() == 0) {
+            return;
+        }
+
+        int startIndex = (gene.getStrand() == Strand.POSITIVE) ? 0 : exons.size() - 1;
+        int endIndex = (gene.getStrand() == Strand.POSITIVE) ? exons.size() : -1;
+        int increment = (gene.getStrand() == Strand.POSITIVE) ? 1 : -1;
+        int cds = 0;
+        int exonNumber = 1;
+        for (int i = startIndex; i != endIndex; i += increment) {
+            org.broad.igv.feature.Exon exon = exons.get(i);
+            exon.setNumber(exonNumber);
+            int modCds = cds % 3;
+            int phase = (modCds == 0) ? 0 : 3 - modCds;
+            exon.setPhase(phase);
+            cds += exon.getCodingLength();
+            exonNumber++;
+        }
+    }
+
+    /**
      * By definition this is a feature file
      *
      * @param locator
@@ -234,7 +261,7 @@ public class EmblFeatureTableParser implements FeatureParser {
         // TODO -- should we be doing this?  It generally works but could there be reading shifts
         // between exons that would throw this off?
         for (IGVFeature gene : genes.values()) {
-            ParsingUtils.computeReadingShifts(gene);
+            computeReadingShifts(gene);
         }
 
         return newFeatureList;
