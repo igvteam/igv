@@ -34,6 +34,7 @@ import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
+import java.awt.font.NumericShaper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -209,6 +210,8 @@ public class AttributeManager {
     /**
      * Update the column meta data associated with the attribute key.
      *
+     * Note: Currently the meta data only records if the column is numeric.
+     *
      * @param attributeName
      * @param attributeValue
      */
@@ -221,13 +224,13 @@ public class AttributeManager {
             columnMetaData.put(key, metaData);
         }
 
-        if (metaData.isNumeric()) {
+        // Test if data is numeric.  Skip null and blank values
+        if (attributeValue != null && attributeValue.length() > 0 &&  metaData.isNumeric()) {
             try {
                 double val = Double.parseDouble(attributeValue);
                 metaData.updateRange(val);
-            }
-            catch (NumberFormatException e) {
-                metaData.addNonNumericLabel(attributeValue);
+            } catch (NumberFormatException e) {
+                metaData.markNonNumeric();
             }
         }
 
@@ -357,8 +360,7 @@ public class AttributeManager {
                                 try {
                                     min = Float.parseFloat(tmp[0]);
                                     max = Float.parseFloat(tmp[1]);
-                                }
-                                catch (NumberFormatException e) {
+                                } catch (NumberFormatException e) {
                                     log.error("Error parsing range string: " + rangeString, e);
                                 }
                             }
@@ -538,8 +540,7 @@ public class AttributeManager {
                     try {
                         float x = Float.parseFloat(attValue);
                         return cs.getColor(x);
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         return Color.white;
                     }
                 }
@@ -578,7 +579,7 @@ public class AttributeManager {
 
     static class ColumnMetaData {
         // Assume meta data is true until proven otherwise
-        Set<String> nonNumericLabels = new HashSet();
+        boolean numeric = true;
         double min = Double.MAX_VALUE;
         double max = -min;
 
@@ -590,13 +591,12 @@ public class AttributeManager {
         // Allow up to 1 non-numeric field
 
         public boolean isNumeric() {
-            return nonNumericLabels.size() <= 1;
+            return numeric;
         }
 
 
-        public void addNonNumericLabel(String label) {
-            nonNumericLabels.add(label);
-
+        public void markNonNumeric() {
+            numeric = false;
         }
     }
 
