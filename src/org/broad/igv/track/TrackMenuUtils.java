@@ -19,19 +19,18 @@
 package org.broad.igv.track;
 
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.ui.*;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.stats.KMPlotFrame;
 import org.broad.tribble.Feature;
-import org.broad.igv.feature.SequenceManager;
 import org.broad.igv.renderer.*;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -44,7 +43,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;

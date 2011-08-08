@@ -20,8 +20,7 @@ package org.broad.igv.tools;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;

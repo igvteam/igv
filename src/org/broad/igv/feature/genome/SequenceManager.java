@@ -19,13 +19,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.broad.igv.feature;
-
-//~--- non-JDK imports --------------------------------------------------------
+package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.remote.SequenceServletWrapper;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.*;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;

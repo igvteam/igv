@@ -22,11 +22,10 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.ui.panel.ReferenceFrame;
 

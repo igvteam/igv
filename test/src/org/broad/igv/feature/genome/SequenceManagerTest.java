@@ -21,11 +21,10 @@
  * and open the template in the editor.
  */
 
-package org.broad.igv.feature;
+package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;

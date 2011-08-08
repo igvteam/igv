@@ -18,7 +18,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.SequenceManager;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;

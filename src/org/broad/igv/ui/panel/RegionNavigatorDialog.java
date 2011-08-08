@@ -20,8 +20,7 @@ package org.broad.igv.ui.panel;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
-import org.broad.igv.feature.SequenceManager;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 

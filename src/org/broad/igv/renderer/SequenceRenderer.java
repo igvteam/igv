@@ -24,6 +24,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.UIConstants;

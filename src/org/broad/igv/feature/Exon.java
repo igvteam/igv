@@ -21,7 +21,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.SequenceManager;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 
