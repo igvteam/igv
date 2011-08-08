@@ -181,7 +181,7 @@ public class SequenceManager {
 
     /**
      * Read and return the genomic sequence for the specified interval as a byte array.
-     * 
+     *
      * @param genome
      * @param chr
      * @param start
@@ -196,42 +196,61 @@ public class SequenceManager {
             return SequenceServletWrapper.readBytes(path, chr, start, end);
         } else {
 
-            SeekableStream is = null;
-            try {
-                if (!path.endsWith("/")) {
-                    path = path + "/";
-                }
-
-                String fn = chr + ".txt";
-                if (genome.isChrNamesAltered()) {
-                    fn = getChrFileName(fn);
-                }
-
-                String seqFile = path + fn;
-
-                is = IGVSeekableStreamFactory.getStreamFor(seqFile);
-
-                byte[] bytes = new byte[end - start];
-                is.seek(start);
-                is.read(bytes);
-                return bytes;
-
-
-            } catch (Exception ex) {
-                log.error("Error reading genome sequence from: " + path, ex);
-                return null;
+            if (!path.endsWith("/")) {
+                path = path + "/";
             }
-            finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        log.error("Error closing sequence file.", ex);
-                    }
+
+            String fn = chr + ".txt";
+            if (genome.isChrNamesAltered()) {
+                fn = getChrFileName(fn);
+            }
+
+            String seqFile = path + fn;
+
+            return readSequence(chr, start, end, seqFile);
+
+
+        }
+    }
+
+
+    /**
+     * Note: This method is "package" scope to permit unit testing.
+     *
+     * @param chr
+     * @param start
+     * @param end
+     * @param seqFile
+     * @return
+     */
+    static byte[] readSequence(String chr, int start, int end, String seqFile) {
+
+        SeekableStream is = null;
+        try {
+
+
+            is = IGVSeekableStreamFactory.getStreamFor(seqFile);
+
+            byte[] bytes = new byte[end - start];
+            is.seek(start);
+            is.read(bytes);
+            return bytes;
+
+
+        } catch (Exception ex) {
+            log.error("Error reading genome sequence from: " + seqFile, ex);
+            return null;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    log.error("Error closing sequence file.", ex);
                 }
             }
         }
     }
+
 
     private static Map<String, String> chrFileNameCache = new HashMap();
 
