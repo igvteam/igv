@@ -1554,6 +1554,7 @@ public class IGV {
 
         // Optional arguments
         if (igvArgs.getPropertyFile() != null) {
+             PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyFile());
         }
         if (igvArgs.getDataServerURL() != null) {
             PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
@@ -1570,7 +1571,6 @@ public class IGV {
     public boolean isStartupComplete() {
         return startupComplete;
     }
-
 
     /**
      * Swing worker class to startup IGV

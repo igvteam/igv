@@ -23,6 +23,7 @@
 package org.broad.igv;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
 import java.util.Hashtable;
@@ -53,9 +54,8 @@ public class IGVPreferences {
         // Remove from session only, explicitly setting this overrides
         sessionCache.remove(key);
 
-
         if (cache == null) {
-            loadPreferences();
+            loadUserPreferences();
         }
         if (value == null) {
             cache.remove(key);
@@ -70,10 +70,10 @@ public class IGVPreferences {
     }
 
     public String get(String key, String defaultValue) {
-        if(overrides.containsKey(key)) {
+        if (overrides.containsKey(key)) {
             return overrides.get(key);
         }
-        if(sessionCache.containsKey(key)) {
+        if (sessionCache.containsKey(key)) {
             return sessionCache.get(key);
         }
         String val = get(key);
@@ -83,7 +83,7 @@ public class IGVPreferences {
 
     public String get(String key) {
         if (cache == null) {
-            loadPreferences();
+            loadUserPreferences();
         }
         return cache.get(key);
     }
@@ -100,8 +100,10 @@ public class IGVPreferences {
 
     }
 
-
-    private synchronized void loadPreferences() {
+    /**
+     * Load user preferences.
+     */
+    private synchronized void loadUserPreferences() {
         cache = new Hashtable();
         File rootDir = Globals.getIgvDirectory();
         if (!rootDir.exists()) {
@@ -110,30 +112,49 @@ public class IGVPreferences {
         File prefFile = new File(rootDir, "prefs.properties");
 
         if (prefFile.exists()) {
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(prefFile));
-                String nextLine = null;
-                while ((nextLine = reader.readLine()) != null) {
-                    int idx = nextLine.indexOf('=');
-                    if (idx > 0) {
-                        String key = nextLine.substring(0, idx);
-                        String value = nextLine.substring(idx + 1);
-                        if (!value.equals("null")) {
+            String prefFileName = prefFile.getAbsolutePath();
+            load(prefFileName, false);
+        }
+    }
+
+    /**
+     * Load an override preference file.  These preferences to not persist as user preferences.
+     *
+     * @param path
+     */
+    public void loadOverrides(String path) {
+        load(path, true);
+    }
+
+    private void load(String prefFileName, boolean override) {
+        BufferedReader reader = null;
+        try {
+            reader = ParsingUtils.openBufferedReader(prefFileName);
+            String nextLine = null;
+            while ((nextLine = reader.readLine()) != null) {
+                int idx = nextLine.indexOf('=');
+                if (idx > 0) {
+                    String key = nextLine.substring(0, idx);
+                    String value = nextLine.substring(idx + 1);
+                    if (!value.equals("null")) {
+                        if (override) {
+                            overrides.put(key, value);
+                        } else {
                             cache.put(key, value);
                         }
+
                     }
                 }
-            } catch (IOException e) {
-                log.error("Error loading preferences", e);
-            } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (IOException ex) {
-                    log.error("Error closing preferences file", ex);
+            }
+        } catch (IOException e) {
+            log.error("Error loading preferences", e);
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
                 }
+            } catch (IOException ex) {
+                log.error("Error closing preferences file", ex);
             }
         }
     }
