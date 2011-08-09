@@ -138,6 +138,7 @@ public class IGVPreferences {
                     String value = nextLine.substring(idx + 1);
                     if (!value.equals("null")) {
                         if (override) {
+                            log.info("Overriding preference: " + key + "=" + value);
                             overrides.put(key, value);
                         } else {
                             cache.put(key, value);

@@ -291,7 +291,7 @@ public class Main {
          */
         private void parseArgs(String[] args) {
             CmdLineParser parser = new CmdLineParser();
-            CmdLineParser.Option propertyFileOption = parser.addStringOption('p', "preferences");
+            CmdLineParser.Option propertyFileOption = parser.addStringOption('o', "preferences");
             CmdLineParser.Option batchFileOption = parser.addStringOption('b', "batch");
             CmdLineParser.Option portOption = parser.addStringOption('p', "port");
             CmdLineParser.Option genomeOption = parser.addStringOption('g', "genome");
