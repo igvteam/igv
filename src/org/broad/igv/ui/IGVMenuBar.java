@@ -75,9 +75,9 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createFileMenu());
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
-
+        menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
-        extrasMenu.setVisible(false);
+        //extrasMenu.setVisible(false);
         menus.add(extrasMenu);
 
         menus.add(createHelpMenu());
@@ -430,8 +430,7 @@ public class IGVMenuBar extends JMenuBar {
                         if (w <= 0 || w == 1000) throw new NumberFormatException();
                         PreferenceManager.getInstance().put(PreferenceManager.NAME_PANEL_WIDTH, newValue);
                         mainPanel.setNamePanelWidth(w);
-                    }
-                    catch (NumberFormatException ex) {
+                    } catch (NumberFormatException ex) {
                         MessageUtils.showMessage("Error: value must be a positive integer < 1000.");
                     }
                 }
@@ -616,6 +615,21 @@ menuAction =
 
         MenuAction toolMenuAction = new MenuAction("Help");
         return MenuAndToolbarUtils.createMenu(menuItems, toolMenuAction);
+    }
+
+    private JMenu createGenomeSpaceMenu() {
+
+        JMenu menu = new JMenu("GenomeSpace");
+
+        MenuAction menuAction = null;
+        menuAction = new LoadFromGSMenuAction("Load from GenomeSpace...", KeyEvent.VK_U, IGV.getInstance());
+
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
+
+
+        return menu;
     }
 
     private JMenu createExtrasMenu() {
@@ -803,7 +817,7 @@ menuAction =
 
             // Hide and close the application
             IGV.getMainFrame().setVisible(false);
-            IGV.getMainFrame().dispose(); 
+            IGV.getMainFrame().dispose();
 
         } finally {
             System.exit(0);

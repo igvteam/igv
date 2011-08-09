@@ -175,6 +175,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String NAME_PANEL_WIDTH = "NAME_PANEL_WIDTH";
     public static final String BACKGROUND_COLOR = "BACKGROUND_COLOR";
 
+    public static final String GENOME_SPACE_ENABLE = "GENOME_SPACE_ENABLE";
+
 
     public static String DEFAULT_DATA_SERVER_URL;
 
@@ -616,7 +618,6 @@ public class PreferenceManager implements PropertyManager {
         preferences.putOverride(DATA_SERVER_URL_KEY, url);
     }
 
-
     /**
      * Temporaily overide a preference.   This override will persist for
      * the duration of the session, or until the user explicitly changes it.
@@ -626,6 +627,10 @@ public class PreferenceManager implements PropertyManager {
      */
     public void override(String key, String value) {
        preferences.putOverride(key, value);
+    }
+
+    public void loadOverrides(String overridePropertyFilePath) {
+        preferences.loadOverrides(overridePropertyFilePath);
     }
 
     public void setShowAttributeView(boolean isShowable) {
@@ -986,6 +991,8 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
+
+        defaultValues.put(GENOME_SPACE_ENABLE, "true");
 
     }
 
