@@ -42,19 +42,6 @@ import java.util.List;
  */
 public class GSATMUtils {
 
-    static final String BASE_URL = "https://atmtest.genomespace.org:8443/atm/webtools";
-
-    public static void main(String[] args) throws IOException, JSONException {
-
-        String url = getWebtoolLaunchURL("Cytoscape");
-        System.out.println(url);
-
-        List<WebToolDescriptor> webTools = getWebTools(new URL(BASE_URL));
-        for (WebToolDescriptor wt : webTools) {
-            wt.print();
-        }
-        System.exit(-1);
-    }
 
     /**
      * Parse the contents of the URL as a JSON string encoding a list of WebToolDescriptor objects.
@@ -66,23 +53,12 @@ public class GSATMUtils {
      */
     public static List<WebToolDescriptor> getWebTools(URL url) throws IOException, JSONException {
 
-        StringBuffer buf = new StringBuffer();
-        InputStream is = null;
-        try {
-            is = IGVHttpClientUtils.openConnectionStream(url);
-            BufferedInputStream bis = new BufferedInputStream(is);
-            int b;
-            while ((b = bis.read()) >= 0) {
-                buf.append((char) b);
-            }
-            JSONTokener tk = new JSONTokener(buf.toString());
-            JSONArray array = new JSONArray(tk);
-            JSONArray webDescArray = (JSONArray) array.get(1);
-            List<WebToolDescriptor> webTools = parseWebtools(webDescArray);
-            return webTools;
-        } finally {
-            is.close();
-        }
+        String contents = IGVHttpClientUtils.getContentsAsString(url);
+        JSONTokener tk = new JSONTokener(contents);
+        JSONArray array = new JSONArray(tk);
+        JSONArray webDescArray = (JSONArray) array.get(1);
+        List<WebToolDescriptor> webTools = parseWebtools(webDescArray);
+        return webTools;
     }
 
     /**
@@ -193,22 +169,15 @@ public class GSATMUtils {
         return fileParameters;
     }
 
-    public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
-        URL url = new URL(BASE_URL + "/" + webtoolname);
+    public static String getWebtoolLaunchURL(String baseURL, String webtoolname) throws IOException, JSONException {
+        URL url = new URL(baseURL + "/" + webtoolname);
+        return IGVHttpClientUtils.getContentsAsString(url);
+    }
 
-        StringBuffer buf = new StringBuffer();
-        InputStream is = null;
-        try {
-            is = IGVHttpClientUtils.openConnectionStream(url);
-            BufferedInputStream bis = new BufferedInputStream(is);
-            int b;
-            while ((b = bis.read()) >= 0) {
-                buf.append((char) b);
-            }
-            return buf.toString();
-        } finally {
-            is.close();
-        }
+
+    public static String getSubtoolLaunchURL(String baseURL, String webtoolname, String subtoolname) throws IOException, JSONException {
+        URL url = new URL(baseURL + "/" + webtoolname + "/" + subtoolname);
+        return IGVHttpClientUtils.getContentsAsString(url);
     }
 
 }
