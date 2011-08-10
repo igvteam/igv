@@ -25,12 +25,10 @@ package org.broad.igv.gs;
 import java.awt.event.*;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.gs.dm.GSDMUtils;
+import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.gs.dm.GSDirectoryListing;
 import org.broad.igv.gs.dm.GSFileMetadata;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
 import org.json.JSONException;
 
 import java.awt.*;
@@ -39,7 +37,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -49,23 +46,44 @@ import javax.swing.border.*;
  */
 public class GSFileBrowser extends JDialog {
 
+    private GSDirectoryListing dirListing;
+
+    public enum Mode {OPEN, SAVE}
+
     private static Logger log = Logger.getLogger(GSFileBrowser.class);
 
     static ImageIcon folderIcon;
     static ImageIcon fileIcon;
+    static GSFileMetadata selectedFile;
+
+    Mode mode = Mode.OPEN;
 
     public static void main(String[] args) throws IOException, JSONException {
-        (new GSFileBrowser(null)).setVisible(true);
+        GSFileBrowser fb = (new GSFileBrowser(null, GSFileBrowser.Mode.SAVE));
+        fb.setVisible(true);
+        System.out.println(fb.getPath());
     }
 
     String userRootUrl = null;
 
     public GSFileBrowser(Frame owner) throws IOException, JSONException {
-        super(owner);
-        initComponents();
-        init();
+        this(owner, Mode.OPEN);
     }
 
+    public GSFileBrowser(Frame owner, Mode mode) throws IOException, JSONException {
+        super(owner);
+        setModal(true);
+        initComponents();
+        init();
+        // For now single selection
+        this.fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        this.mode = mode;
+        savePanel.setVisible(mode == Mode.SAVE);
+        openButton.setText(mode == Mode.OPEN ? "Open" : "Save");
+        getRootPane().setDefaultButton(openButton);
+
+
+    }
 
     void init() throws JSONException, IOException {
 
@@ -77,9 +95,10 @@ public class GSFileBrowser extends JDialog {
 
         MouseListener mouseListener = new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
+                int index = fileList.locationToIndex(e.getPoint());
+                GSFileMetadata md = (GSFileMetadata) fileList.getModel().getElementAt(index);
+                setSelectedFile(md);
                 if (e.getClickCount() == 2) {
-                    int index = fileList.locationToIndex(e.getPoint());
-                    GSFileMetadata md = (GSFileMetadata) fileList.getModel().getElementAt(index);
                     if (md.isDirectory()) {
                         try {
                             fetchContents(new URL(md.getUrl()));
@@ -89,30 +108,59 @@ public class GSFileBrowser extends JDialog {
                             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         }
                     } else {
-                        load(Arrays.asList(new ResourceLocator(md.getUrl())));
+                        setVisible(false);
                     }
                 }
             }
         };
         fileList.addMouseListener(mouseListener);
 
-        URL defaultURL = new URL(GSDMUtils.baseUrl + "defaultdirectory");
+        URL defaultURL = new URL(DMUtils.baseUrl + "defaultdirectory");
         fetchContents(defaultURL);
     }
 
+    private void setSelectedFile(GSFileMetadata md) {
+        selectedFile = md;
+        if (md.isDirectory()) {
+            selectedFileTextField.setText(null);
+        } else {
+            selectedFileTextField.setText(md.getName());
+        }
+    }
+
+    public String getFileURL() {
+        return selectedFile == null ? null : selectedFile.getUrl();
+    }
+
+    public String getPath() {
+        if (selectedFile == null) {
+            return null;
+        }
+        if (selectedFile.isDirectory()) {
+            if (mode == Mode.OPEN) {
+                return null;
+            } else {
+                return selectedFile.getPath() + "/" + selectedFileTextField.getText();
+            }
+        } else {
+            return selectedFile.getPath();
+        }
+    }
+
+
     private void fetchContents(URL url) throws IOException, JSONException {
 
-        GSDirectoryListing dirListing = GSDMUtils.getDirectoryListing(url);
+        dirListing = DMUtils.getDirectoryListing(url);
         String dirUrlString = dirListing.getDirectory();
 
         setTitle(dirUrlString);
         if (userRootUrl == null) {
             userRootUrl = dirUrlString;
-        }
-
-        setTitle(dirUrlString);
-        if (userRootUrl == null) {
-            userRootUrl = dirUrlString;
+            // A little trick to get the root meta data
+            int idx = userRootUrl.lastIndexOf("/");
+            String user = userRootUrl.substring(idx).replace("/", "");
+            GSFileMetadata rootMD = new GSFileMetadata(".", "/users/" + user, userRootUrl, "", "", true);
+            setSelectedFile(rootMD);
         }
 
         List<GSFileMetadata> elements = dirListing.getContents();
@@ -120,7 +168,7 @@ public class GSFileBrowser extends JDialog {
         if (!dirUrlString.equals(userRootUrl)) {
             int lastSlashIdx = dirUrlString.lastIndexOf("/");
             String parentURL = dirUrlString.substring(0, lastSlashIdx);
-            elements.add(0, new GSFileMetadata("Parent Directory", parentURL, "", "", true));
+            elements.add(0, new GSFileMetadata("Parent Directory", "", parentURL, "", "", true));
         }
 
         ListModel model = new ListModel(dirListing.getContents());
@@ -129,6 +177,7 @@ public class GSFileBrowser extends JDialog {
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
+        selectedFile = null;
         setVisible(false);
         dispose();
     }
@@ -147,38 +196,24 @@ public class GSFileBrowser extends JDialog {
                 }
             }
 
-            ArrayList<ResourceLocator> toLoad = new ArrayList(selections.length);
             for (Object obj : selections) {
                 if (obj instanceof GSFileMetadata) {
                     GSFileMetadata md = (GSFileMetadata) obj;
-                    if (!md.isDirectory()) {
-                        toLoad.add(new ResourceLocator(md.getUrl()));
+                    if (mode == Mode.OPEN) {
+                        if (!md.isDirectory()) {
+                            selectedFile = md;
+                        }
                     }
                 }
             }
-            if (toLoad.size() > 0) {
-                load(toLoad);
-            }
+
+            setVisible(false);
+            dispose();
+
         } catch (Exception e1) {
             log.error("Error loading GS files", e1);
             MessageUtils.showMessage("Error: " + e1.toString());
         }
-    }
-
-    private void load(final java.util.List<ResourceLocator> toLoad) {
-        setVisible(false);
-        dispose();
-        NamedRunnable runnable = new NamedRunnable() {
-            public void run() {
-                IGV.getInstance().loadTracks(toLoad);
-            }
-
-            public String getName() {
-                return "GS Load";
-            }
-        };
-
-        LongRunningTask.submit(runnable);
     }
 
 
@@ -237,6 +272,9 @@ public class GSFileBrowser extends JDialog {
         buttonBar = new JPanel();
         cancelButton = new JButton();
         openButton = new JButton();
+        savePanel = new JPanel();
+        label2 = new JLabel();
+        selectedFileTextField = new JTextField();
         splitPane1 = new JPanel();
         scrollPane1 = new JScrollPane();
         fileList = new JList();
@@ -282,6 +320,18 @@ public class GSFileBrowser extends JDialog {
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
+            //======== savePanel ========
+            {
+                savePanel.setVisible(false);
+                savePanel.setLayout(new BoxLayout(savePanel, BoxLayout.X_AXIS));
+
+                //---- label2 ----
+                label2.setText("Save As: ");
+                savePanel.add(label2);
+                savePanel.add(selectedFileTextField);
+            }
+            dialogPane.add(savePanel, BorderLayout.NORTH);
+
             //======== splitPane1 ========
             {
                 splitPane1.setLayout(new BoxLayout(splitPane1, BoxLayout.Y_AXIS));
@@ -311,6 +361,9 @@ public class GSFileBrowser extends JDialog {
     private JPanel buttonBar;
     private JButton cancelButton;
     private JButton openButton;
+    private JPanel savePanel;
+    private JLabel label2;
+    private JTextField selectedFileTextField;
     private JPanel splitPane1;
     private JScrollPane scrollPane1;
     private JList fileList;

@@ -27,13 +27,15 @@ package org.broad.igv.gs.dm;
 public class GSFileMetadata {
     private boolean isDirectory;
     private String name;
+    private String path;
     private String url;
     private String format;
     private String size;
 
-    public GSFileMetadata(String name, String url, String format, String size, boolean isDirectory) {
+    public GSFileMetadata(String name, String path, String url, String format, String size, boolean isDirectory) {
         this.isDirectory = isDirectory;
         this.name = name;
+        this.path = path;
         this.url = url;
         this.format = format;
         this.size = size;
@@ -50,6 +52,11 @@ public class GSFileMetadata {
     public String getName() {
         return name;
     }
+
+    public String getPath() {
+        return path;
+    }
+
 
     public String getUrl() {
         return url;

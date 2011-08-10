@@ -23,6 +23,8 @@ import org.broad.igv.gs.GSFileBrowser;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -54,6 +56,11 @@ public class LoadFromGSMenuAction extends MenuAction {
         try {
             GSFileBrowser dlg = new GSFileBrowser(IGV.getMainFrame());
             dlg.setVisible(true);
+
+            String url = dlg.getFileURL();
+            if (url != null) {
+                IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(url)));
+            }
         } catch (Exception e1) {
             e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -87,5 +94,6 @@ public class LoadFromGSMenuAction extends MenuAction {
         }
         */
     }
+
 }
 

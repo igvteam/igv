@@ -43,11 +43,11 @@ import java.util.*;
  * @author Jim Robinson
  * @date Aug 2, 2011
  */
-public class GSDMUtils {
+public class DMUtils {
 
     public static String baseUrl = "https://dmtest.genomespace.org:8444/datamanager/";
 
-    private static Logger log = Logger.getLogger(GSDMUtils.class);
+    private static Logger log = Logger.getLogger(DMUtils.class);
 
     /**
      * Fetch the contents of the GenomeSpace directory.
@@ -86,14 +86,15 @@ public class GSDMUtils {
             for (int i = 0; i < contentsLength; i++) {
                 JSONObject o = contents.get(i);
                 String name = (String) o.get("name");
+                String path = (String) o.get("path");
                 String objurl = (String) o.get("url");
                 if (o.get("directory").equals("true")) {
-                    dirElements.add(new GSFileMetadata(name, objurl, "", "", true));
+                    dirElements.add(new GSFileMetadata(name, path, objurl, "", "", true));
                 } else {
                     JSONObject dataFormat = o.has("dataFormat") ? (JSONObject) o.get("dataFormat") : null;
                     String format = dataFormat == null ? "" : dataFormat.getString("name");
                     String size = (String) o.get("size");
-                    fileElements.add(new GSFileMetadata(name, objurl, format, size, false));
+                    fileElements.add(new GSFileMetadata(name, path, objurl, format, size, false));
                 }
             }
 
