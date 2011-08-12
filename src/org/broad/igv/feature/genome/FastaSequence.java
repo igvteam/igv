@@ -23,6 +23,7 @@ import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Class represents an indexed fasta file
@@ -44,9 +45,9 @@ public class FastaSequence implements Sequence {
         // TODO -- check for existence path & index
         String indexPath = path + ".fai";
         index = new FastaSequenceIndex(indexPath);
-
-
     }
+
+
 
 
     /**
@@ -147,4 +148,11 @@ public class FastaSequence implements Sequence {
         }
     }
 
+    public Set<String> getChromosomeNames() {
+        return index.getContigs();
+    }
+
+    public int getChromosomeLength(String chrname) {
+        return index.getContigSize(chrname);
+    }
 }

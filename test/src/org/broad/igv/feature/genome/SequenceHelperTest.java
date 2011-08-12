@@ -39,6 +39,8 @@ import java.io.IOException;
  */
 public class SequenceHelperTest {
 
+    static String seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
+
     static Genome genome;
 
     static SequenceHelper helper;
@@ -49,9 +51,7 @@ public class SequenceHelperTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        IGV.getInstance().getGenomeManager().loadGenomeByID("hg18");
-        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        helper = new SequenceHelper(genome);
+        helper = new SequenceHelper(seqPath);
         Globals.setHeadless(true);
     }
 
@@ -75,7 +75,7 @@ public class SequenceHelperTest {
             int end = start + 10000;
 
 
-            SequenceHelper helper = new SequenceHelper(genome);
+            SequenceHelper helper = new SequenceHelper(seqPath);
 
             byte[] cachedSeq = helper.getSequence(chr, start, end);
 

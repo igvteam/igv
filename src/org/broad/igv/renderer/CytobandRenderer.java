@@ -150,14 +150,17 @@ public class CytobandRenderer {
         int prevEnd = 0;
         double sc = width / frame.getChromosomeLength();
         int adjustedY = y;
-        for (Cytoband cytoband : frame.getChromosome().getCytobands()) {
-            int s = (int) (sc * cytoband.getStart());
-            int e = (int) (sc * cytoband.getEnd());
-            int stringWidth = (int) fm.getStringBounds(cytoband.getName(), g).getWidth();
-            int x = (int) (s + (e - s - stringWidth) / 2);
-            if (x > (prevEnd + minSpacing)) {
-                g.drawString(cytoband.getName(), x, adjustedY);
-                prevEnd = x + stringWidth;
+        final List<Cytoband> cytobands = frame.getChromosome().getCytobands();
+        if (cytobands != null) {
+            for (Cytoband cytoband : cytobands) {
+                int s = (int) (sc * cytoband.getStart());
+                int e = (int) (sc * cytoband.getEnd());
+                int stringWidth = (int) fm.getStringBounds(cytoband.getName(), g).getWidth();
+                int x = (int) (s + (e - s - stringWidth) / 2);
+                if (x > (prevEnd + minSpacing)) {
+                    g.drawString(cytoband.getName(), x, adjustedY);
+                    prevEnd = x + stringWidth;
+                }
             }
         }
     }

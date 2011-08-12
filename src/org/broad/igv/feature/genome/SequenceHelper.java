@@ -22,13 +22,8 @@
 package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.*;
-import org.broad.igv.util.stream.IGVSeekableStreamFactory;
-import org.broad.tribble.util.SeekableStream;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -41,15 +36,13 @@ public class SequenceHelper {
     private static int chunkSize = 30000;
 
 
-    Genome genome;
+    //Genome genome;
     Sequence sequence;
     private ObjectCache<String, SequenceChunk> sequenceCache = new ObjectCache(50);
 
 
-    public SequenceHelper(Genome genome) {
-        this.genome = genome;
+    public SequenceHelper(String seqpath) {
 
-        String seqpath = genome.descriptor.getSequenceLocation();
         if (seqpath == null) {
 
         } else {
@@ -61,6 +54,10 @@ public class SequenceHelper {
                 sequence = new IGVSequence(seqpath);
             }
         }
+    }
+
+    public SequenceHelper(Sequence sequence) {
+        this.sequence = sequence;
     }
 
     /**
@@ -143,7 +140,7 @@ public class SequenceHelper {
             int endTile = end / chunkSize;
 
             // Get first chunk
-            SequenceChunk chunk = getSequenceChunk(genome.descriptor, chr, startTile);
+            SequenceChunk chunk = getSequenceChunk(chr, startTile);
             int offset = start - chunk.getStart();
             byte[] seqBytes = chunk.getBytes();
             if (seqBytes == null) {
@@ -158,7 +155,7 @@ public class SequenceHelper {
 
             // If multiple chunks ...
             for (int tile = startTile + 1; tile <= endTile; tile++) {
-                chunk = getSequenceChunk(genome.descriptor, chr, tile);
+                chunk = getSequenceChunk(chr, tile);
 
                 int nNext = Math.min(seqbytes.length - nBytes, chunk.getSize());
 
@@ -173,8 +170,8 @@ public class SequenceHelper {
     }
 
 
-    private SequenceChunk getSequenceChunk(GenomeDescriptor genome, String chr, int tileNo) {
-        String key = getKey(genome.getId(), chr, tileNo);
+    private SequenceChunk getSequenceChunk(String chr, int tileNo) {
+        String key = getKey(chr, tileNo);
         SequenceChunk chunk = sequenceCache.get(key);
 
         if (chunk == null) {
@@ -190,8 +187,8 @@ public class SequenceHelper {
     }
 
 
-    static String getKey(String genome, String chr, int tileNo) {
-        return genome + chr + tileNo;
+    static String getKey(String chr, int tileNo) {
+        return chr + tileNo;
     }
 
     /**

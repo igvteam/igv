@@ -43,42 +43,56 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Simple model of a genome
+ * Simple model of a genome.  Keeps an ordered list of Chromosomes, an alias table, and genome position offsets
+ * for each chromosome to support a whole-genome view.
  */
 public class Genome {
 
     private static Logger log = Logger.getLogger(Genome.class);
-
-    private Map<String, String> chrAliasTable;
+    public static final int MAX_WHOLE_GENOME = 10000;
 
     private String id;
-    private String formatVersion;
-    private LinkedHashMap<String, Chromosome> chromosomeMap;
     private List<String> chromosomeNames;
+    private LinkedHashMap<String, Chromosome> chromosomeMap;
     private long length = -1;
     private String annotationURL;
     private Map<String, Long> cumulativeOffsets = new HashMap();
-    public static final int MAX_WHOLE_GENOME = 10000;
-
-    GenomeDescriptor descriptor;
+    private Map<String, String> chrAliasTable;
 
     SequenceHelper sequenceHelper;
 
+
+    /**
+     * Construct a genome from a ".genome" file.
+     *
+     * @param descriptor
+     */
     public Genome(GenomeDescriptor descriptor) {
-        this.descriptor = descriptor;
         this.id = descriptor.getId();
-        initAnnotationURL();
+        this.annotationURL = descriptor.getUrl();
         chrAliasTable = new HashMap();
-        sequenceHelper = new SequenceHelper(this);
+        sequenceHelper = new SequenceHelper(descriptor.getSequenceLocation());
     }
 
+    /**
+     * Construct an index from an indexed fasta file
+     *
+     * @param sequencePath
+     * @throws IOException
+     */
+    public Genome(String sequencePath) throws IOException {
 
-    private void initAnnotationURL() {
-        if (id != null) {
-            //if (ucscGenomes.contains(id)) {
-            //    annotationURL = "http://genome.ucsc.edu/cgi-bin/hgGene?hgg_gene=$$&db=" + id;
-            //}
+        FastaSequence sequence = new FastaSequence(sequencePath);
+        sequenceHelper = new SequenceHelper(sequence);
+
+        chromosomeNames = new ArrayList(sequence.getChromosomeNames());
+        chromosomeMap = new LinkedHashMap(chromosomeNames.size());
+        for(String chr : chromosomeNames) {
+            int length = sequence.getChromosomeLength(chr);
+            chromosomeMap.put(chr, new Chromosome(chr, length));
         }
+
+
     }
 
 
@@ -109,9 +123,7 @@ public class Genome {
                 log.error("Error loading chr alias table", e);
                 MessageUtils.showMessage("<html>Error loading chromosome alias table.  Aliases will not be avaliable<br>" +
                         e.toString());
-            }
-
-            finally {
+            } finally {
                 if (br != null) {
                     try {
                         br.close();
@@ -308,13 +320,8 @@ public class Genome {
         return null;
     }
 
-    public void setAnnotationURL(String annotationURL) {
-        this.annotationURL = annotationURL;
-    }
-
-
-    public byte [] getSequence(String chr, int start, int end) {
-        return sequenceHelper.getSequence(chr, start,  end);
+    public byte[] getSequence(String chr, int start, int end) {
+        return sequenceHelper.getSequence(chr, start, end);
     }
 
     public static class ChromosomeCoordinate {
@@ -377,8 +384,7 @@ public class Genome {
                     return -1;
                 }
                 return idx1 - idx2;
-            }
-            catch (Exception numberFormatException) {
+            } catch (Exception numberFormatException) {
                 return 0;
             }
 

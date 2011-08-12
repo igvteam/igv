@@ -31,46 +31,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Simple representation of a chromosome.  Basically a name, length, and optionally a list of cytobands.
+ *
  * @author jrobinso
  */
 public class Chromosome {
     private String name;
-    private int centrimere = 0;
-    private List<Cytoband> cytobands;
     private int length = 0;
+    private List<Cytoband> cytobands;
 
     public Chromosome(String name) {
-
         this.name = name;
-        cytobands = new ArrayList<Cytoband>();
     }
 
-    public int getCentrimere() {
-        return centrimere;
+    public Chromosome(String name, int length) {
+        this.name = name;
+        this.length = length;
     }
 
-    public void setCentrimere(int centrimere) {
-        this.centrimere = centrimere;
-    }
 
+    /**
+     * @return List of cytobands for this chromosome, if any.  Can be null.
+     */
     public List<Cytoband> getCytobands() {
         return cytobands;
     }
 
-    public void setCytobands(List<Cytoband> cytobands) {
-        this.cytobands = cytobands;
-    }
-
     /**
-     * Add a cytoband.  If the band is a centrimere and the centrimere location
-     * has not been initialized set it.
+     * Add a cytoband, and adjust length if required.
      */
     public void addCytoband(Cytoband band) {
-
+        if (cytobands == null) cytobands = new ArrayList<Cytoband>();
         cytobands.add(band);
-        if ((band.getType() == 'c') && (centrimere == 0)) {
-            centrimere = band.getEnd();
-        }
         length = Math.max(length, band.getEnd());
     }
 
