@@ -75,7 +75,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createFileMenu());
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
-            menus.add(createGenomeSpaceMenu());
+        menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
         menus.add(extrasMenu);

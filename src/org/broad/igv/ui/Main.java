@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
@@ -163,9 +164,23 @@ public class Main {
 
         initializeLookAndFeel();
 
+        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
+
+        // Optional arguments
+        if (igvArgs.getPropertyFile() != null) {
+            PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyFile());
+        }
+        if (igvArgs.getDataServerURL() != null) {
+            PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
+        }
+        if (igvArgs.getGenomeServerURL() != null) {
+            PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
+        }
+
+
         IGVHttpClientUtils.updateProxySettings();
 
-        IGV.createInstance(frame).startUp(args);
+        IGV.createInstance(frame).startUp(igvArgs);
 
         // TODO Should this be done here?  Will this step on other key dispatchers?
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new GlobalKeyDispatcher());

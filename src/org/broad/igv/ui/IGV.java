@@ -110,7 +110,6 @@ public class IGV {
     // FileChooser Dialogs
     private FileChooserDialog trackFileChooser;
     private FileChooser snapshotFileChooser;
-    private FileChooser genomeImportFileChooser;
 
 
     // Misc state
@@ -200,7 +199,7 @@ public class IGV {
 
             @Override
             public void windowActivated(WindowEvent windowEvent) {
-               ToolTipManager.sharedInstance().setEnabled(true);
+                ToolTipManager.sharedInstance().setEnabled(true);
             }
 
             @Override
@@ -208,7 +207,6 @@ public class IGV {
                 ToolTipManager.sharedInstance().setEnabled(true);
             }
         });
-
 
 
         session = new Session(null);
@@ -558,131 +556,51 @@ public class IGV {
 
         ProgressBar bar = null;
         GenomeListItem genomeListItem = null;
-        boolean doImport = true;
-        while (doImport) {
-
-            doImport = false;
-            File file = null;
-            CursorToken token = WaitCursorManager.showWaitCursor();
-            try {
-                File importDirectory =
-                        PreferenceManager.getInstance().getLastGenomeImportDirectory();
-                if (importDirectory == null) {
-                    PreferenceManager.getInstance().setLastGenomeImportDirectory(Globals.getUserDirectory());
-                }
-
-                FileFilter[] fileFilters = {new SnapshotUtilities.GenomeArchiveFileFilter()};
-
-                genomeImportFileChooser = getFileChooser(importDirectory, null, fileFilters);
-                genomeImportFileChooser.setDialogTitle("Load Genome");
-                genomeImportFileChooser.addPropertyChangeListener(
-                        new PropertyChangeListener() {
-
-                            public void propertyChange(PropertyChangeEvent e) {
-
-                                File oldFile = null;
-                                String property = e.getPropertyName();
-                                if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(property)) {
-                                    oldFile = (File) e.getOldValue();
-                                    genomeImportFileChooser.setPreviousFile(oldFile);
-                                } else if (JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(property)) {
-
-                                    if (e.getOldValue() instanceof SnapshotUtilities.GenomeArchiveFileFilter &&
-                                            e.getNewValue() instanceof SnapshotUtilities.GenomeArchiveFileFilter) {
-
-                                        SnapshotUtilities.GenomeArchiveFileFilter newFilter =
-                                                (SnapshotUtilities.GenomeArchiveFileFilter) e.getNewValue();
-
-                                        File currentDirectory = genomeImportFileChooser.getCurrentDirectory();
-                                        File previousFile = genomeImportFileChooser.getPreviousFile();
-                                        if (previousFile != null) {
-
-                                            File file = null;
-                                            if (currentDirectory != null) {
-                                                file = new File(currentDirectory, previousFile.getName());
-                                            } else {
-                                                file = previousFile;
-                                            }
-
-                                            final File selectedFile = Utilities.changeFileExtension(
-                                                    file, newFilter.getExtension());
-
-                                            UIUtilities.invokeOnEventThread(new Runnable() {
-
-                                                public void run() {
-                                                    genomeImportFileChooser.setSelectedFile(selectedFile);
-                                                    genomeImportFileChooser.validate();
-                                                }
-                                            });
-                                        }
-
-                                    }
-                                }
-                            }
-                        });
-
-                // Display the dialog
-                genomeImportFileChooser.showOpenDialog(mainFrame);
-                file = genomeImportFileChooser.getSelectedFile();
-
-                // If a file selection was made
-                if (file != null) {
-                    if (monitor != null) {
-                        bar = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
-                    }
-
-                    File directory = genomeImportFileChooser.getCurrentDirectory();
-                    if (directory != null) {
-                        PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
-                    }
-
-                    try {
-
-                        // Import the genome
-
-                        if (log.isDebugEnabled()) {
-                            log.debug("Call loadGenome");
-                        }
-                        genomeListItem = IGV.getInstance().getGenomeManager().loadGenome(file.getAbsolutePath(), true, monitor);
-                        contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-                        contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
-
-
-                        if (monitor != null) {
-                            monitor.fireProgressChange(100);
-                        }
-
-                        if (bar != null) {
-                            bar.close();
-                        }
-
-                    } catch (Exception e) {
-                        log.fatal("Could not import genome!", e);
-                    } finally {
-                    }
-                }
-            } catch (Exception e) {
-
-                String genomePath = "";
-                if (file != null) {
-                    genomePath = file.getAbsolutePath();
-                }
-
-                log.error("Failed to load genome: " + genomePath, e);
-                int option =
-                        JOptionPane.showConfirmDialog(mainFrame, "Failed to load the current genome " +
-                                genomePath + "\n" + "Would you like to load another?",
-                                "Load Genome Failure", JOptionPane.OK_CANCEL_OPTION);
-
-                if (option == JOptionPane.OK_OPTION) {
-                    doImport = true;
-                }
-
-            } finally {
-                WaitCursorManager.removeWaitCursor(token);
+        File file = null;
+        CursorToken token = WaitCursorManager.showWaitCursor();
+        try {
+            File importDirectory =
+                    PreferenceManager.getInstance().getLastGenomeImportDirectory();
+            if (importDirectory == null) {
+                PreferenceManager.getInstance().setLastGenomeImportDirectory(Globals.getUserDirectory());
             }
 
+            // Display the dialog
+            file = FileDialogUtils.chooseFile("Load Genome", importDirectory, FileDialog.LOAD);
+
+            // If a file selection was made
+            if (file != null) {
+                if (monitor != null) {
+                    bar = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
+                }
+
+                File directory = file.getParentFile();
+                if (directory != null) {
+                    PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
+                }
+
+                genomeListItem = IGV.getInstance().getGenomeManager().loadUserDefinedGenome(file.getAbsolutePath(), monitor);
+
+                if (genomeListItem != null) {
+                    contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+                    contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+                }
+
+            }
+        } catch (IOException e) {
+            MessageUtils.showMessage("<html>Error loading: " + file.getAbsolutePath() + "<br>" + e.getMessage());
+            log.error("Error loading: " + file.getAbsolutePath(), e);
+        } finally {
+            WaitCursorManager.removeWaitCursor(token);
+            if (monitor != null) {
+                monitor.fireProgressChange(100);
+            }
+
+            if (bar != null) {
+                bar.close();
+            }
         }
+
 
         return genomeListItem;
     }
@@ -696,21 +614,11 @@ public class IGV {
     /**
      * Load a collection of tracks in a background thread.
      *
-     * @param locators
-     */
-    public void loadTracks(final Collection<ResourceLocator> locators) {
-        loadTracks(locators, false);
-    }
-
-
-    /**
-     * Load tracks corresponding to a collection of resource locations.
      * Note: Most of the code here is to adjust the scrollbars and split pane after loading
-     * // TODO -- why is this in the batch frame (as opposed to TrackManager for example)?
      *
      * @param locators
      */
-    public void loadTracks(final Collection<ResourceLocator> locators, boolean doInBackground) {
+    public void loadTracks(final Collection<ResourceLocator> locators) {
 
         contentPane.getStatusBar().setMessage("Loading ...");
 
@@ -1030,8 +938,7 @@ public class IGV {
             log.error("Error creating exporting image ", e);
             MessageUtils.showMessage(("Error creating the image file: " + defaultFile + "<br> "
                     + e.getMessage()));
-        }
-        finally {
+        } finally {
             WaitCursorManager.removeWaitCursor(token);
             resetStatusMessage();
         }
@@ -1544,25 +1451,11 @@ public class IGV {
         return contentPane != null && contentPane.getCommandBar().isSuppressTooltip();
     }
 
-    public void startUp(final String[] args) {
+    public void startUp( Main.IGVArgs igvArgs) {
 
         if (log.isDebugEnabled()) {
             log.debug("startUp");
         }
-
-        Main.IGVArgs igvArgs = new Main.IGVArgs(args);
-
-        // Optional arguments
-        if (igvArgs.getPropertyFile() != null) {
-             PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyFile());
-        }
-        if (igvArgs.getDataServerURL() != null) {
-            PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
-        }
-        if (igvArgs.getGenomeServerURL() != null) {
-            PreferenceManager.getInstance().overrideGenomeServerURL(igvArgs.getGenomeServerURL());
-        }
-
 
         SwingWorker worker = new StartupWorker(igvArgs);
         worker.execute();
@@ -1605,8 +1498,7 @@ public class IGV {
             } catch (NoRouteToHostException ex) {
                 JOptionPane.showMessageDialog(mainFrame, "Network error initializing genome list: " + ex.getMessage());
                 log.error("Network error initializing genome list: ", ex);
-            }
-            finally {
+            } finally {
                 monitor.fireProgressChange(50);
                 closeWindow(progressBar);
             }
