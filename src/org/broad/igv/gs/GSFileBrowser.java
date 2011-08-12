@@ -115,7 +115,7 @@ public class GSFileBrowser extends JDialog {
         };
         fileList.addMouseListener(mouseListener);
 
-        URL defaultURL = new URL(DMUtils.baseUrl + "defaultdirectory");
+        URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
         fetchContents(defaultURL);
     }
 
@@ -151,7 +151,7 @@ public class GSFileBrowser extends JDialog {
     private void fetchContents(URL url) throws IOException, JSONException {
 
         dirListing = DMUtils.getDirectoryListing(url);
-        String dirUrlString = dirListing.getDirectory();
+        String dirUrlString = dirListing.getDirectory().getUrl();
 
         setTitle(dirUrlString);
         if (userRootUrl == null) {
@@ -293,8 +293,8 @@ public class GSFileBrowser extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 85, 0};
-                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 0.0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
+                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -304,8 +304,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 5), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- openButton ----
                 openButton.setText("Open");
@@ -315,8 +315,8 @@ public class GSFileBrowser extends JDialog {
                     }
                 });
                 buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                        new Insets(0, 0, 0, 0), 0, 0));
+                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                    new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 

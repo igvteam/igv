@@ -45,9 +45,18 @@ import java.util.*;
  */
 public class DMUtils {
 
-    public static String baseUrl = "https://dmtest.genomespace.org:8444/datamanager/";
-
     private static Logger log = Logger.getLogger(DMUtils.class);
+
+
+
+    public static GSDirectoryListing listDefaultDirectory() {
+        try {
+            URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
+            return getDirectoryListing(defaultURL);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Fetch the contents of the GenomeSpace directory.
@@ -110,7 +119,7 @@ public class DMUtils {
      * Upload a file to GenomeSpace.
      *
      * @param localFile
-     * @param gsPath the relative path in the users GenomeSpace account
+     * @param gsPath    the relative path in the users GenomeSpace account
      * @throws IOException
      * @throws URISyntaxException
      */
@@ -126,7 +135,7 @@ public class DMUtils {
         // The GenomeSpace user,  is this the correct way to get it?
         String user = GSUtils.getCachedUsernameForSSO();
 
-        String tmp = baseUrl + "uploadurls/users/" + user + "/" + gsPath + "?Content-Length=" + contentLength +
+        String tmp = GSUtils.dmServer + "uploadurls" + gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
         String uploadURL = IGVHttpClientUtils.getContentsAsString(new URL(tmp));
@@ -148,7 +157,7 @@ public class DMUtils {
      * @return
      * @throws IOException
      */
-    private static byte[] computeMD5(File file) throws IOException {
+    public static byte[] computeMD5(File file) throws IOException {
         BufferedInputStream in = null;
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -176,7 +185,7 @@ public class DMUtils {
      * @param v
      * @return
      */
-    private static String toHexString(byte[] v) {
+    public static String toHexString(byte[] v) {
         final String HEX_DIGITS = "0123456789abcdef";
         StringBuffer sb = new StringBuffer(v.length * 2);
         for (int i = 0; i < v.length; i++) {
@@ -188,9 +197,9 @@ public class DMUtils {
 
 
     public static void main(String[] args) throws IOException, URISyntaxException {
-        final String testFile = "/Users/jrobinso/projects/igv/259.wgs.muc1.hist.txt";
+        final String testFile = "/Users/jrobinso/projects/igv/test/data/bed/Unigene.sample.bed";
         final File localFile = new File(testFile);
-        uploadFile(localFile, "259.wgs.muc1.hist.txt");
+        uploadFile(localFile, "/users/test/Unigene.sample.bed");
         System.exit(-1);
 
         /*
@@ -204,4 +213,5 @@ public class DMUtils {
         String base64String = (new BASE64Encoder()).encode(md5);
         System.out.println(base64String);    */
     }
+
 }

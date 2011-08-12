@@ -18,6 +18,7 @@
 
 package org.broad.igv.gs.atm;
 
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.junit.Test;
@@ -33,14 +34,12 @@ import java.util.List;
  * Time: 9:16 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GSATMUtilsTest {
-
-    static final String BASE_URL = "https://atmtest.genomespace.org:8443/atm/webtools";
+public class ATMUtilsTest {
 
 
     @Test
     public void testGetWebTools() throws Exception {
-        List<WebToolDescriptor> webTools = ATMUtils.getWebTools(new URL(BASE_URL));
+        List<WebToolDescriptor> webTools = ATMUtils.getWebTools();
         for (WebToolDescriptor wt : webTools) {
             wt.print();
         }
@@ -49,8 +48,7 @@ public class GSATMUtilsTest {
 
     @Test
     public void testGetWebtoolLaunchURL() throws Exception {
-
-        String url = ATMUtils.getWebtoolLaunchURL(BASE_URL, "Cytoscape");
+        String url = ATMUtils.getWebtoolLaunchURL("Cytoscape");
         System.out.println(url);
 
     }
@@ -58,13 +56,13 @@ public class GSATMUtilsTest {
 
     @Test
     public void testGetSubtoolLaunchURL() throws Exception {
-        URL defaultURL = new URL(DMUtils.baseUrl + "defaultdirectory");
+        URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
         System.out.println(DMUtils.getDirectoryListing(defaultURL).getDirectory());
         String gsPath = URLEncoder.encode("/users/test/259.wgs.muc1.hist.txt", "UTF-8");
-        String url = ATMUtils.getSubtoolLaunchURL(BASE_URL, "GenePattern", "ConvertLineEndings?input.filename=" + gsPath);
+        String url = ATMUtils.getSubtoolLaunchURL("GenePattern", "ConvertLineEndings?input.filename=" + gsPath);
         System.out.println(url);
 
-        BrowserLauncher.openURL(url);
+        //BrowserLauncher.openURL(url);
 
     }
 }

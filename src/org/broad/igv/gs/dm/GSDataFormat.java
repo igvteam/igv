@@ -18,44 +18,32 @@
 
 package org.broad.igv.gs.dm;
 
-
-import java.io.File;
 import java.net.URL;
-import java.util.List;
 
 /**
  * @author Jim Robinson
- * @date Aug 2, 2011
+ * @date 8/12/11
  */
-public class GSDirectoryListing {
+public class GSDataFormat {
+    private String name;
+    private String version;
+    private URL url;
 
-    private GSFileMetadata directory;
-
-    private List<GSFileMetadata> contents;
-
-    public GSDirectoryListing(String url, List<GSFileMetadata> contents) {
-
-        // Parse URL to get components.
-        //URL u = new URL(url);
-        String path = null;
-        try {
-            path = (new URL(url)).getPath();
-        } catch (Exception e) {
-
-        }
-        String name = (new File(path)).getName();
-        String format = "";
-        String size = "";
-        boolean isDirectory = true;
-        directory = new GSFileMetadata(name, path, url, format, size, isDirectory);
-        this.contents = contents;
+    public GSDataFormat(String name, String version, URL url) {
+        this.name = name;
+        this.version = version;
+        this.url = url;
     }
 
-    public GSFileMetadata getDirectory() {
-        return directory;
+    public String getName() {
+        return name;
     }
 
-    public List<GSFileMetadata> getContents() {
-        return contents;
+    public String getVersion() {
+        return version;
+    }
+
+    public URL getUrl() {
+        return url;
     }
 }

@@ -18,16 +18,14 @@
 
 package org.broad.igv.gs.atm;
 
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.IGVHttpClientUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +33,6 @@ import java.util.List;
 /**
  * Utility class for accessing the GenomeSpace ATM webservice.
  * <p/>
- * https://atmtest.genomespace.org:8443/atm/webtools
  *
  * @author Jim Robinson
  * @date Aug 2, 2011
@@ -46,13 +43,12 @@ public class ATMUtils {
     /**
      * Parse the contents of the URL as a JSON string encoding a list of WebToolDescriptor objects.
      *
-     * @param url
      * @return
      * @throws IOException
      * @throws JSONException
      */
-    public static List<WebToolDescriptor> getWebTools(URL url) throws IOException, JSONException {
-
+    public static List<WebToolDescriptor> getWebTools() throws IOException, JSONException {
+        URL url = new URL(GSUtils.atmServer + "webtools");
         String contents = IGVHttpClientUtils.getContentsAsString(url);
         JSONTokener tk = new JSONTokener(contents);
         JSONArray array = new JSONArray(tk);
@@ -169,14 +165,14 @@ public class ATMUtils {
         return fileParameters;
     }
 
-    public static String getWebtoolLaunchURL(String baseURL, String webtoolname) throws IOException, JSONException {
-        URL url = new URL(baseURL + "/" + webtoolname);
+    public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
+        URL url = new URL(GSUtils.atmServer + "webtools/" + webtoolname);
         return IGVHttpClientUtils.getContentsAsString(url);
     }
 
 
-    public static String getSubtoolLaunchURL(String baseURL, String webtoolname, String subtoolname) throws IOException, JSONException {
-        URL url = new URL(baseURL + "/" + webtoolname + "/" + subtoolname);
+    public static String getSubtoolLaunchURL(String webtoolname, String subtoolname) throws IOException, JSONException {
+        URL url = new URL(GSUtils.atmServer + "webtools/"  + webtoolname + "/" + subtoolname);
         return IGVHttpClientUtils.getContentsAsString(url);
     }
 

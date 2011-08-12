@@ -86,9 +86,6 @@ public class IGVHttpClientUtils {
 
     static {
         client = createClient();
-        client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
-        client.getParams().setParameter("http.useragent", Globals.applicationString());
-
     }
 
     /**
@@ -115,12 +112,16 @@ public class IGVHttpClientUtils {
             monitorThread.start();
 
             client = new DefaultHttpClient(cm);
+            client.getParams().setParameter("http.protocol.allow-circular-redirects", true);
+            client.getParams().setParameter("http.useragent", Globals.applicationString());
+
+
             boolean includeKerbeos = (new File(System.getenv("windir") + "\\krb5.ini").exists());
             ArrayList<String> authpref = new ArrayList<String>();
             authpref.add(AuthPolicy.BASIC);
             authpref.add(AuthPolicy.DIGEST);
-            if(includeKerbeos) {
-                 authpref.add(AuthPolicy.SPNEGO);
+            if (includeKerbeos) {
+                authpref.add(AuthPolicy.SPNEGO);
             }
             authpref.add(AuthPolicy.NTLM);
             client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
@@ -266,17 +267,22 @@ public class IGVHttpClientUtils {
      */
     public static boolean resourceAvailable(URL url) {
 
-        HttpHead headMethod = null;
-        HttpResponse response = null;
         try {
-            headMethod = new HttpHead(url.toExternalForm());
-            response = execute(headMethod, url);
-            final int statusCode = response.getStatusLine().getStatusCode();
+            if (GSUtils.isGenomeSpace(url.toExternalForm())) {
+                //The GenomeSpace server does not support "HEAD".  DO a get and abort the method
+                //after retrieving the status code
+                HttpGet getMethod = new HttpGet(url.toExternalForm());
+                HttpResponse response = execute(getMethod, url);
+                int statusCode = response.getStatusLine().getStatusCode();
+                getMethod.abort();
+                return statusCode == 200;
 
-            // TODO -- is this even neccessary with HttpClient 4.1 ?
-            EntityUtils.consume(response.getEntity());
-
-            return statusCode == 200;
+            } else {
+                HttpHead headMethod = new HttpHead(url.toExternalForm());
+                HttpResponse response = execute(headMethod, url);
+                final int statusCode = response.getStatusLine().getStatusCode();
+                return statusCode == 200;
+            }
         } catch (FileNotFoundException e) {
             return false;
         } catch (Exception e) {
@@ -294,16 +300,31 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
     public static String getHeaderField(URL url, String key) throws IOException {
-        HttpHead headMethod = new HttpHead(url.toExternalForm());
-        HttpResponse response = execute(headMethod, url);
 
-        String value = null;
-        Header header = response.getFirstHeader(key);
-        if (header != null) {
-            value = header.getValue();
-            EntityUtils.consume(response.getEntity());
+        if (GSUtils.isGenomeSpace(url.toExternalForm())) {
+            //The GenomeSpace server does not support "HEAD".  DO a get and abort the method
+            //after retrieving the header value
+            HttpGet getMethod = new HttpGet(url.toExternalForm());
+            HttpResponse response = execute(getMethod, url);
+            String value = null;
+            Header header = response.getFirstHeader(key);
+            if (header != null) {
+                value = header.getValue();
+            }
+            getMethod.abort();
+            return value;
+
+        } else {
+            HttpHead headMethod = new HttpHead(url.toExternalForm());
+            HttpResponse response = execute(headMethod, url);
+
+            String value = null;
+            Header header = response.getFirstHeader(key);
+            if (header != null) {
+                value = header.getValue();
+            }
+            return value;
         }
-        return value;
     }
 
     /**
@@ -386,6 +407,7 @@ public class IGVHttpClientUtils {
             if (GSUtils.isGenomeSpace(url.toString())) {
                 GSUtils.checkForCookie(client, url.getHost());
             }
+
             HttpResponse response = client.execute(method);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {

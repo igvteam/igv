@@ -32,7 +32,7 @@ public class SubToolDescriptor {
     String description;//	 	Description of the web tool.
     String help;//	 	URI for help about the web tool.
     List<FileParameter> fileParameters;//		A list of FileParameters.  See below.
-    String urlModifier; // 	The URL fragment that will be appended to the parent WebTool�s baseUrl.
+    String urlModifier; // 	The URL fragment that will be appended to the parent WebTool�s dmServer.
 
     public SubToolDescriptor(String name, String id, String version, String author, String description, String help,
                              String urlModifier, List<FileParameter> fileParameters) {

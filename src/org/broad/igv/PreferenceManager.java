@@ -992,7 +992,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(NAME_PANEL_WIDTH, "160");
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
 
-        defaultValues.put(GENOME_SPACE_ENABLE, "true");
+        defaultValues.put(GENOME_SPACE_ENABLE, "false");
 
     }
 

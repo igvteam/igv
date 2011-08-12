@@ -19,15 +19,12 @@
 package org.broad.igv.gs;
 
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +32,20 @@ import java.util.List;
 /**
  * @author jrobinso
  * @date Jun 9, 2011
+ * <p/>
+ * <p/>
+ * Prod servers
+ * identityServerUrl=https://identity.genomespace.org/identityServer/basic
+ * atmServer=https://atm.genomespace.org/atm
+ * dmServer=https://dm.genomespace.org/datamanager
+ * Test servers
+ * identityServerUrl=https://identitytest.genomespace.org:8443/identityServer/basic
+ * atmServer=https://atmtest.genomespace.org:8443/atm
+ * dmServer=https://dmtest.genomespace.org:8444/datamanager
+ * Dev servers
+ * identityServerUrl=https://localhost:8443/identityServer/basic
+ * atmServer=https://localhost:8443/atm
+ * dmServer=https://dmtest.genomespace.org:8444/datamanager
  */
 public class GSUtils {
     static final Logger log = Logger.getLogger(GSUtils.class);
@@ -50,8 +61,17 @@ public class GSUtils {
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
     public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
-     public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
 
+
+    public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
+    public static String dmServer = "https://dmtest.genomespace.org:8444/datamanager/";
+    public static final String atmServer = "https://atmtest.genomespace.org:8443/atm/";
+
+    /*
+    public static final String identityServerUrl = "https://identitytest.genomespace.org/identityServer/basic";
+    public static String dmServer = "https://dmtest.genomespace.org/datamanager/";
+    public static final String atmServer = "https://atmtest.genomespace.org/atm";
+    */
 
     public static void checkForCookie(DefaultHttpClient httpClient, String host) {
 
@@ -62,11 +82,9 @@ public class GSUtils {
                 br = new BufferedReader(new FileReader(file));
                 String token = br.readLine();
                 setAuthenticationToken(httpClient, host, token);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 log.error("Error reading GS cookie", e);
-            }
-            finally {
+            } finally {
                 if (br != null) try {
                     br.close();
                 } catch (IOException e) {
@@ -76,7 +94,7 @@ public class GSUtils {
         }
     }
 
-    public static void setAuthenticationToken(DefaultHttpClient httpClient,String host,  String token) {
+    public static void setAuthenticationToken(DefaultHttpClient httpClient, String host, String token) {
         BasicClientCookie cookie = new BasicClientCookie(AUTH_TOKEN_COOKIE_NAME, token);
         cookie.setDomain(getCookieDomainPattern(host));
         cookie.setPath(AUTH_TOKEN_COOKIE_DEFAULT_PATH);
