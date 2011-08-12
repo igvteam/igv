@@ -45,27 +45,18 @@ package org.broad.igv.ui.action;
  */
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSFileBrowser;
 import org.broad.igv.gs.dm.DMUtils;
-import org.broad.igv.gs.dm.GSFileMetadata;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.IGVMainFrame;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
-import org.broad.igv.ui.util.FileDialogUtils;
-import sun.jvm.hotspot.tools.FinalizerInfo;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-
-import java.io.IOException;
 
 /**
  * @author jrobinso
