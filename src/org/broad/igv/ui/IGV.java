@@ -613,7 +613,7 @@ public class IGV {
 
     /**
      * Load a collection of tracks in a background thread.
-     *
+     * <p/>
      * Note: Most of the code here is to adjust the scrollbars and split pane after loading
      *
      * @param locators
@@ -1274,8 +1274,10 @@ public class IGV {
 
         InputStream inputStream = null;
         try {
-            inputStream = new BufferedInputStream(sessionURL.openStream());
+            inputStream = IGVHttpClientUtils.openConnectionStream(sessionURL);
             doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
+        } catch (Exception e) {
+            log.error("Error restoring session", e);
         } finally {
 
             if (inputStream != null) {
@@ -1451,7 +1453,7 @@ public class IGV {
         return contentPane != null && contentPane.getCommandBar().isSuppressTooltip();
     }
 
-    public void startUp( Main.IGVArgs igvArgs) {
+    public void startUp(Main.IGVArgs igvArgs) {
 
         if (log.isDebugEnabled()) {
             log.debug("startUp");

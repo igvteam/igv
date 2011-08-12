@@ -48,7 +48,9 @@ public class ATMUtilsTest {
 
     @Test
     public void testGetWebtoolLaunchURL() throws Exception {
-        String url = ATMUtils.getWebtoolLaunchURL("Cytoscape");
+
+        String gsPath = URLEncoder.encode("/users/test/Unigene.sample.bed", "UTF-8");
+        String url = ATMUtils.getWebtoolLaunchURL("UCSC_Genome_Browser?file=" + gsPath);
         System.out.println(url);
 
     }

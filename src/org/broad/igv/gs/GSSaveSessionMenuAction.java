@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.ui.action;
+package org.broad.igv.gs;
 
 /**
  * @author Jim Robinson
@@ -52,6 +52,8 @@ import org.broad.igv.session.SessionWriter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.igv.ui.action.MenuAction;
+import org.broad.igv.ui.action.SaveSessionMenuAction;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

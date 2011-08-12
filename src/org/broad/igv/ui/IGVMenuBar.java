@@ -20,6 +20,8 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.gs.GSOpenSessionMenuAction;
+import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.tools.IgvToolsGui;
@@ -625,7 +627,12 @@ menuAction =
         menuAction = new LoadFromGSMenuAction("Load from GenomeSpace...", KeyEvent.VK_U, IGV.getInstance());
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        menu.addSeparator();
+
         menuAction = new GSSaveSessionMenuAction("Save session to GenomeSpace...", IGV.getInstance());
+        menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction =  new GSOpenSessionMenuAction("Load session from GenomeSpace...", IGV.getInstance());
         menu.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menu.setVisible(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE));
