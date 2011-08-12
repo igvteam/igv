@@ -209,7 +209,7 @@ public class AttributeManager {
 
     /**
      * Update the column meta data associated with the attribute key.
-     *
+     * <p/>
      * Note: Currently the meta data only records if the column is numeric.
      *
      * @param attributeName
@@ -225,7 +225,7 @@ public class AttributeManager {
         }
 
         // Test if data is numeric.  Skip null and blank values
-        if (attributeValue != null && attributeValue.length() > 0 &&  metaData.isNumeric()) {
+        if (attributeValue != null && attributeValue.length() > 0 && metaData.isNumeric()) {
             try {
                 double val = Double.parseDouble(attributeValue);
                 metaData.updateRange(val);
@@ -251,16 +251,10 @@ public class AttributeManager {
             return false;
         }
 
-        // If the file is "too large" better ask user
+        // If the file is "too large"  ask user
         // TODO -- ftp test
         final int oneMB = 1000000;
-        long fileLength = 0;
-        if (locator.isLocal()) {
-            File f = new File(locator.getPath());
-            fileLength = f.length();
-        } else if (locator.getPath().startsWith("http")) {
-            fileLength = IGVHttpClientUtils.getContentLength(new URL(locator.getPath()));
-        }
+        long fileLength = ParsingUtils.getContentLength(locator.getPath());
         if (fileLength > oneMB) {
             return MessageUtils.confirm("<html>Cannot determine file type of: " + locator.getPath() +
                     "<br>Is this a sample information file?");

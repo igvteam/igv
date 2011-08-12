@@ -127,7 +127,6 @@ public class GenomeManager {
             currentGenome = new Genome(genomeDescriptor);
             LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
             currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
-            currentGenome.setAnnotationURL(genomeDescriptor.getUrl());
 
             InputStream aliasStream = genomeDescriptor.getChrAliasStream();
             if (aliasStream != null) {
@@ -185,7 +184,7 @@ public class GenomeManager {
 
 
     /**
-     * Locates a genome in the set of known genome archive locations  then loads it.
+     * Locates a genome in the set of known genome archive locations  then loads it.   Used by unit tests.
      *
      * @param genome The genome to load.
      */
@@ -195,7 +194,12 @@ public class GenomeManager {
         for (GenomeListItem item : genomes) {
             if (item.getId().equalsIgnoreCase(genome)) {
                 String url = item.getLocation();
-                loadGenome(url, item.isUserDefined(), null);
+                if (item.isUserDefined) {
+                    loadUserDefinedGenome(url, null);
+                } else {
+                    loadSystemGenome(url, null);
+                }
+
             }
         }
     }
@@ -207,22 +211,15 @@ public class GenomeManager {
      * directly from it's own location.
      *
      * @param genomeArchiveFileLocation
-     * @param isUserDefined             true if a user genome.
      * @param monitor                   ProgressMonitor
      * @return GenomeListItem.
      * @throws FileNotFoundException
      * @see GenomeListItem
      */
-    public GenomeListItem loadGenome(
+    public GenomeListItem loadSystemGenome(
             String genomeArchiveFileLocation,
-            boolean isUserDefined,
             ProgressMonitor monitor)
-            throws FileNotFoundException {
-
-        if (log.isDebugEnabled()) {
-            log.debug("Enter loadGenome");
-        }
-
+            throws IOException {
 
         GenomeListItem genomeListItem = null;
 
@@ -240,62 +237,31 @@ public class GenomeManager {
 
             File archiveFile;
 
-            // If a System genome copy to local cache
-            if (!isUserDefined) {
 
-                if (!Globals.getGenomeCacheDirectory().exists()) {
-                    Globals.getGenomeCacheDirectory().mkdir();
-                }
+            if (!Globals.getGenomeCacheDirectory().exists()) {
+                Globals.getGenomeCacheDirectory().mkdir();
+            }
 
-                if (IGVHttpClientUtils.isURL(genomeArchiveFileLocation.toLowerCase())) {
+            if (IGVHttpClientUtils.isURL(genomeArchiveFileLocation.toLowerCase())) {
 
-                    URL genomeArchiveURL = new URL(genomeArchiveFileLocation);
-                    String fileName = Utilities.getFileNameFromURL(
-                            URLDecoder.decode(new URL(genomeArchiveFileLocation).getFile(), "UTF-8"));
+                URL genomeArchiveURL = new URL(genomeArchiveFileLocation);
+                String fileName = Utilities.getFileNameFromURL(
+                        URLDecoder.decode(new URL(genomeArchiveFileLocation).getFile(), "UTF-8"));
 
-                    archiveFile = new File(Globals.getGenomeCacheDirectory(), fileName);
+                archiveFile = new File(Globals.getGenomeCacheDirectory(), fileName);
 
-                    refreshCache(archiveFile, genomeArchiveURL);
-
-                } else {
-
-                    archiveFile = new File(genomeArchiveFileLocation);
-                }
-
-
-                if (!archiveFile.exists()) {
-                    throw new FileNotFoundException(genomeArchiveFileLocation);
-                }
-
+                refreshCache(archiveFile, genomeArchiveURL);
 
             } else {
 
-                // New genome archive file
                 archiveFile = new File(genomeArchiveFileLocation);
-
-                if (!archiveFile.exists()) {
-                    throw new FileNotFoundException(genomeArchiveFileLocation);
-                }
-
-                File userDefinedListFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
-                Properties listProperties =
-                        retrieveUserDefinedGenomeListFromFile(userDefinedListFile);
-
-                if (listProperties == null) {
-                    listProperties = new Properties();
-                }
-
-                String record = buildClientSideGenomeListRecord(archiveFile, isUserDefined);
-
-                if (record != null) {
-                    int version = 0;
-                    String[] fields = record.split("\t");
-                    listProperties.setProperty(fields[2], record);
-                    GenomeImporter.storeUserDefinedGenomeListToFile(userDefinedListFile, listProperties);
-                    genomeListItem = new GenomeListItem(fields[0], fields[1], fields[2], version, isUserDefined);
-                }
-
             }
+
+
+            if (!archiveFile.exists()) {
+                throw new FileNotFoundException(genomeArchiveFileLocation);
+            }
+
 
             // If archive file exists load  it into IGV
 
@@ -309,14 +275,8 @@ public class GenomeManager {
                 monitor.fireProgressChange(25);
             }
 
-        } catch (MalformedURLException e) {
-            log.warn("Error Importing Genome!", e);
-        } catch (FileNotFoundException e) {
-            throw e;
         } catch (SocketException e) {
             throw new GenomeServerException("Server connection error", e);
-        } catch (Exception e) {
-            log.warn("Error Importing Genome!", e);
         }
 
         if (log.isDebugEnabled()) {
@@ -326,6 +286,54 @@ public class GenomeManager {
         return genomeListItem;
     }
 
+    public GenomeListItem loadUserDefinedGenome(
+            String genomeArchiveFileLocation,
+            ProgressMonitor monitor)
+            throws IOException {
+
+       if (genomeArchiveFileLocation == null) {
+            loadGenome(getDefaultGenomeDescriptor());
+            return getDefaultGenomeListItem();
+        }
+
+        try {
+            // New genome archive file
+            File archiveFile = new File(genomeArchiveFileLocation);
+
+            if (!archiveFile.exists()) {
+                throw new FileNotFoundException(genomeArchiveFileLocation);
+            }
+
+            File userDefinedListFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
+            Properties listProperties = retrieveUserDefinedGenomeListFromFile(userDefinedListFile);
+
+            if (listProperties == null) {
+                listProperties = new Properties();
+            }
+
+            String record = buildClientSideGenomeListRecord(archiveFile, true);
+
+            GenomeListItem genomeListItem = null;
+
+             if (record != null) {
+                int version = 0;
+                String[] fields = record.split("\t");
+                listProperties.setProperty(fields[2], record);
+                GenomeImporter.storeUserDefinedGenomeListToFile(userDefinedListFile, listProperties);
+                genomeListItem = new GenomeListItem(fields[0], fields[1], fields[2], version, true);
+            }
+
+           // If archive file exists load  it into IGV
+            if (monitor != null) monitor.fireProgressChange(25);
+            loadGenomeFromLocalFile(archiveFile);
+            if (monitor != null) monitor.fireProgressChange(25);
+
+            return genomeListItem;
+
+        } catch (SocketException e) {
+            throw new GenomeServerException("Server connection error", e);
+        }
+    }
 
     /**
      * Refresh a locally cached genome
@@ -364,8 +372,7 @@ public class GenomeManager {
                 // Copy file directly from the server to local cache.
                 IGVHttpClientUtils.downloadFile(genomeArchiveURL.toExternalForm(), archiveFile);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error refreshing genome cache. ", e);
             MessageUtils.showMessage(("An error was encountered refreshing the genome cache: " + e.getMessage() +
                     "<br> If this problem persists please contact igv-help@broadinstitute.org"));
@@ -458,8 +465,7 @@ public class GenomeManager {
                     if (tmp != null) {
                         try {
                             chromosomesAreOrdered = Boolean.parseBoolean(tmp);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             log.error("Error parsing ordered string: " + tmp);
                         }
                     }
@@ -772,16 +778,14 @@ public class GenomeManager {
                     try {
                         file.delete();
                         zipInputStream.close();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         //ignore exception when trying to delete file
                     }
                 } catch (IOException ex) {
                     log.warn("\nIO error unzipping cached genome.", ex);
                     try {
                         file.delete();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         //ignore exception when trying to delete file
                     }
                 } finally {
@@ -1018,25 +1022,16 @@ public class GenomeManager {
             }
         }
 
-        if (monitor != null) {
-            monitor.fireProgressChange(25);
-        }
+        if (monitor != null) monitor.fireProgressChange(25);
 
         archiveFile = (new GenomeImporter()).createGenomeArchive(zipFileLocation,
                 genomeFileName, genomeId, genomeDisplayName, relativeSequenceLocation,
                 fastaInputFile, refFlatFile, cytobandFile, chrAliasFile,
                 sequenceOutputLocationOverride, monitor);
 
-        if (monitor != null) {
-            monitor.fireProgressChange(75);
-        }
+        if (monitor != null) monitor.fireProgressChange(75);
 
-
-        if (log.isDebugEnabled()) {
-            log.debug("Call loadGenome");
-        }
-
-        GenomeListItem newItem = loadGenome(archiveFile.getAbsolutePath(), true, null);
+        GenomeListItem newItem = loadUserDefinedGenome(archiveFile.getAbsolutePath(), null);
         userDefinedGenomeArchiveList.add(0, newItem);
         updateImportedGenomePropertyFile();
         return newItem;
@@ -1064,7 +1059,6 @@ public class GenomeManager {
      */
     public static class GenomeListItem {
 
-        private int version;
         private String displayableName;
         private String location;
         private String id;
@@ -1083,7 +1077,6 @@ public class GenomeManager {
             this.displayableName = displayableName;
             this.location = url;
             this.id = id;
-            this.version = version;
             this.isUserDefined = isUserDefined;
         }
 

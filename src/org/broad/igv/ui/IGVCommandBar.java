@@ -53,6 +53,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.NoRouteToHostException;
 import java.util.*;
 import java.util.List;
@@ -188,7 +189,12 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         try {
                             monitor.fireProgressChange(50);
 
-                            igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), genomeListItem.isUserDefined(), null);
+                            if (genomeListItem.isUserDefined()) {
+                                igv.getGenomeManager().loadUserDefinedGenome(genomeListItem.getLocation(), null);
+                            } else {
+                                igv.getGenomeManager().loadSystemGenome(genomeListItem.getLocation(), null);
+                            }
+
                             updateGenome(genomeListItem.getId());
                             monitor.fireProgressChange(25);
 
@@ -212,7 +218,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             JOptionPane.showMessageDialog(
                                     IGV.getMainFrame(),
                                     UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-                        } catch (FileNotFoundException e) {
+                        } catch (IOException e) {
                             if (bar != null) {
                                 bar.close();
                             }
@@ -220,7 +226,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             int choice =
                                     JOptionPane.showConfirmDialog(
                                             IGV.getMainFrame(), "The genome file [" + e.getMessage() +
-                                                    "] could not be located. Would you like to remove the selected entry?",
+                                            "] could not be read. Would you like to remove the selected entry?",
                                             "", JOptionPane.OK_CANCEL_OPTION);
 
                             if (choice == JOptionPane.OK_OPTION) {
@@ -650,8 +656,11 @@ public class IGVCommandBar extends javax.swing.JPanel {
         FrameManager.getDefaultFrame().invalidateLocationScale();
 
         for (Chromosome chr : genome.getChromosomes()) {
-            for (Cytoband cyto : chr.getCytobands()) {
-                FeatureDB.addFeature(cyto.getLongName(), cyto);
+            final List<Cytoband> cytobands = chr.getCytobands();
+            if (cytobands != null) {
+                for (Cytoband cyto : cytobands) {
+                    FeatureDB.addFeature(cyto.getLongName(), cyto);
+                }
             }
         }
         updateChromosomeDropdown();
