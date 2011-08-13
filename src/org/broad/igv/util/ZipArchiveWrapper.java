@@ -50,13 +50,13 @@ final public class ZipArchiveWrapper {
 
     public ZipIterator iterator() throws IOException {
         ZipIterator iterator =
-                new ZipIterator(new ZipInputStream(zipUrl.openStream()));
+                new ZipIterator(new ZipInputStream(IGVHttpClientUtils.openConnectionStream(zipUrl)));
         return iterator;
     }
 
     public int getEntryCount() throws IOException {
         ZipIterator iterator =
-                new ZipIterator(new ZipInputStream(zipUrl.openStream()));
+                new ZipIterator(new ZipInputStream(IGVHttpClientUtils.openConnectionStream(zipUrl)));
         int count = 0;
         while (iterator.hasNext()) {
             count++;
@@ -129,8 +129,7 @@ final public class ZipArchiveWrapper {
                             }
                         }
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     logger.error("Zip entry error!", e);
                 }
             }
@@ -154,8 +153,7 @@ final public class ZipArchiveWrapper {
                 if (zipInputStream != null) {
                     zipInputStream.close();
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 logger.warn("Error closing zip file " + zipFile.getAbsolutePath(), ex);
             }
         }

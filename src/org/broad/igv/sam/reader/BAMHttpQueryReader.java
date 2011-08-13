@@ -109,7 +109,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
     public CloseableIterator<Alignment> iterator() {
         try {
             if (reader == null) {
-                InputStream is = url.openStream();
+                InputStream is = IGVHttpClientUtils.openConnectionStream(url);
                 reader = new SAMFileReader(new BufferedInputStream(is));
             }
             return new WrappedIterator(reader.iterator());
