@@ -141,17 +141,28 @@ public class SequenceHelper {
 
             // Get first chunk
             SequenceChunk chunk = getSequenceChunk(chr, startTile);
-            int offset = start - chunk.getStart();
-            byte[] seqBytes = chunk.getBytes();
-            if (seqBytes == null) {
+            int offset1 = start - chunk.getStart();
+            int offset2 = 0;
+            int nEmptyBytes = Math.abs(offset1);
+            byte[] chunkBytes = chunk.getBytes();
+            if (chunkBytes == null) {
                 return null;
             }
 
+            // A negative offset means the requested start is < the chunk size.  This situation can arise at the
+            // left end of chromosomes.
+
+            if (offset1 < 0) {
+                offset2 = -offset1;
+                offset1 = 0;
+            }
+
+
             // # of bytes to return, minimum of requested sequence lenth or bytes available
-            int nBytes = Math.min(seqBytes.length - offset, seqbytes.length);
+            int nBytes = Math.min(chunkBytes.length - nEmptyBytes, seqbytes.length);
 
             // Copy first chunk
-            System.arraycopy(chunk.getBytes(), offset, seqbytes, 0, nBytes);
+            System.arraycopy(chunkBytes, offset1, seqbytes, offset2, nBytes);
 
             // If multiple chunks ...
             for (int tile = startTile + 1; tile <= endTile; tile++) {
