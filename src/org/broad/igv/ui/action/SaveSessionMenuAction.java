@@ -76,42 +76,28 @@ public class SaveSessionMenuAction extends MenuAction {
 
         String currentSessionFilePath = mainFrame.getSession().getPath();
 
-        // If no previous session file or we're doing a save as
-        if (true) // currentSessionFilePath == null)
-        {
-
-            String initFile = currentSessionFilePath == null ? UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
-            sessionFile = FileDialogUtils.chooseFile("Save Session",
-                    PreferenceManager.getInstance().getLastSessionDirectory(),
-                    new File(initFile),
-                    FileDialogUtils.SAVE);
+        String initFile = currentSessionFilePath == null ? UIConstants.DEFAULT_SESSION_FILE : currentSessionFilePath;
+        sessionFile = FileDialogUtils.chooseFile("Save Session",
+                PreferenceManager.getInstance().getLastSessionDirectory(),
+                new File(initFile),
+                FileDialogUtils.SAVE);
 
 
-            if (sessionFile == null) {
-                mainFrame.resetStatusMessage();
-                return;
-            }
+        if (sessionFile == null) {
+            mainFrame.resetStatusMessage();
+            return;
+        }
 
 
-            String filePath = sessionFile.getAbsolutePath();
-            if (!filePath.toLowerCase().endsWith(Globals.SESSION_FILE_EXTENSION)) {
-                sessionFile = new File(filePath + Globals.SESSION_FILE_EXTENSION);
-            }
-
-        } else {
-            sessionFile = new File(currentSessionFilePath);
+        String filePath = sessionFile.getAbsolutePath();
+        if (!filePath.toLowerCase().endsWith(".xml")) {
+            sessionFile = new File(filePath + ".xml");
         }
 
         mainFrame.setStatusBarMessage("Saving session to " + sessionFile.getAbsolutePath());
 
-        // Get rid of old file before creating the new one
-        if (sessionFile.exists()) {
-            sessionFile.delete();
-        }
 
         final File sf = sessionFile;
-
-        FileOutputStream out = null;
         WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
         try {
 
@@ -129,14 +115,7 @@ public class SaveSessionMenuAction extends MenuAction {
             WaitCursorManager.removeWaitCursor(token);
             mainFrame.resetStatusMessage();
 
-            if (out != null) {
 
-                try {
-                    out.close();
-                } catch (IOException exception) {
-                    log.error("Failed to close session file!", exception);
-                }
-            }
         }
 
 

@@ -432,12 +432,8 @@ public abstract class AbstractTrack implements Track {
         return (height < 0) ? getDefaultHeight() : height;
     }
 
-    public int getPreferredHeight() {
-        return preferredHeight;
-    }
-
     public boolean hasDataRange() {
-        return dataRange != null;
+        return  dataRange != null;
     }
 
     public DataRange getDataRange() {

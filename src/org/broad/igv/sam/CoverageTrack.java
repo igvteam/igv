@@ -137,7 +137,9 @@ public class CoverageTrack extends AbstractTrack {
     }
 
     public void rescale(ReferenceFrame frame) {
-        rescaleInterval(dataManager.getLoadedInterval(frame));
+        if (autoScale & dataManager != null) {
+            rescaleInterval(dataManager.getLoadedInterval(frame));
+        }
     }
 
     private void rescaleInterval(AlignmentInterval interval) {
@@ -681,9 +683,7 @@ public class CoverageTrack extends AbstractTrack {
         if (snpThreshold != prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
             attributes.put("snpThreshold", String.valueOf(snpThreshold));
         }
-        if (autoScale != DEFAULT_AUTOSCALE) {
-            attributes.put("autoScale", String.valueOf(autoScale));
-        }
+        attributes.put("autoScale", String.valueOf(autoScale));
         if (showReference != DEFAULT_SHOW_REFERENCE) {
             attributes.put("showReference", String.valueOf(showReference));
         }

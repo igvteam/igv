@@ -120,6 +120,7 @@ public class LoadFilesMenuAction extends MenuAction {
 
                     String path = file.getAbsolutePath();
                     if (path.endsWith(Globals.SESSION_FILE_EXTENSION)) {
+                        // TODO -- a better test for session file than just the extension!
                         MessageUtils.showAndLogErrorMessage(mainFrame.getMainFrame(),
                                 "File " + path +
                                         " appears to be an IGV Session file - " +
@@ -140,8 +141,7 @@ public class LoadFilesMenuAction extends MenuAction {
             if (files.length > 0) {
 
                 // Create DataResouceLocators for the selected files
-                final List<ResourceLocator> locators =
-                        new ArrayList(files.length);
+                final List<ResourceLocator> locators = new ArrayList(files.length);
                 for (File f : files) {
                     locators.add(new ResourceLocator(f.getAbsolutePath()));
                 }

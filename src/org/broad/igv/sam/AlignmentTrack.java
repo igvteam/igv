@@ -190,12 +190,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         return dataManager.getNLevels();
     }
 
-    @Override
-    public int getPreferredHeight() {
-        return Math.max(100, getHeight());
-    }
-
-
     public void render(RenderContext context, Rectangle rect) {
 
         parent = context.getPanel();
