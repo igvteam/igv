@@ -18,7 +18,6 @@
 
 package org.broad.igv.util;
 
-import com.sun.deploy.net.*;
 import org.apache.http.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
