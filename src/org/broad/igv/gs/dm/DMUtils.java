@@ -29,10 +29,7 @@ import org.json.JSONTokener;
 import sun.misc.BASE64Encoder;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -46,7 +43,6 @@ import java.util.*;
 public class DMUtils {
 
     private static Logger log = Logger.getLogger(DMUtils.class);
-
 
 
     public static GSDirectoryListing listDefaultDirectory() {
@@ -94,16 +90,11 @@ public class DMUtils {
             int contentsLength = contents.size();
             for (int i = 0; i < contentsLength; i++) {
                 JSONObject o = contents.get(i);
-                String name = (String) o.get("name");
-                String path = (String) o.get("path");
-                String objurl = (String) o.get("url");
-                if (o.get("directory").equals("true")) {
-                    dirElements.add(new GSFileMetadata(name, path, objurl, "", "", true));
+                GSFileMetadata metaData = new GSFileMetadata(o);
+                if (metaData.isDirectory()) {
+                    dirElements.add(metaData);
                 } else {
-                    JSONObject dataFormat = o.has("dataFormat") ? (JSONObject) o.get("dataFormat") : null;
-                    String format = dataFormat == null ? "" : dataFormat.getString("name");
-                    String size = (String) o.get("size");
-                    fileElements.add(new GSFileMetadata(name, path, objurl, format, size, false));
+                    fileElements.add(metaData);
                 }
             }
 
@@ -114,6 +105,7 @@ public class DMUtils {
         return new GSDirectoryListing(dirUrlString, elements);
 
     }
+
 
     /**
      * Upload a file to GenomeSpace.
@@ -149,6 +141,27 @@ public class DMUtils {
         IGVHttpClientUtils.uploadFile(uri, localFile, headers);
 
     }
+
+
+    public static GSFileMetadata createDirectory(String putURL) throws IOException, JSONException {
+
+        JSONObject dirMeta = new JSONObject();
+        try {
+            dirMeta.put("isDirectory", true);
+            System.out.println(dirMeta.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        String body = "{\"isDirectory\":true}";
+        String response = IGVHttpClientUtils.createDirectory(new URL(putURL), body);
+
+        JSONTokener tk = new JSONTokener(response);
+        JSONObject obj = new JSONObject(tk);
+        return new GSFileMetadata(obj);
+
+    }
+
 
     /**
      * Compute the MD5 hash for the given file.

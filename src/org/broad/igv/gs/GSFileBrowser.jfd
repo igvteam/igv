@@ -40,23 +40,7 @@
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>java.awt.GridBagLayout</class> 
-           <void method="setProperty"> 
-            <string>$columnSpecs</string> 
-            <string>0:1.0, 80, 80, 0</string> 
-           </void> 
-           <void method="setProperty"> 
-            <string>$rowSpecs</string> 
-            <string>0</string> 
-           </void> 
-           <void method="setProperty"> 
-            <string>$hGap</string> 
-            <int>5</int> 
-           </void> 
-           <void method="setProperty"> 
-            <string>$vGap</string> 
-            <int>5</int> 
-           </void> 
+           <class>javax.swing.BoxLayout</class> 
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
@@ -71,6 +55,42 @@
           </void> 
           <void property="name"> 
            <string>buttonBar</string> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+            <void property="name"> 
+             <string>hSpacer2</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JButton</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>New Folder</string> 
+            </void> 
+            <void property="name"> 
+             <string>newFolderButton</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>newFolderButtonActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+            <void property="name"> 
+             <string>hSpacer1</string> 
+            </void> 
+           </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
@@ -91,17 +111,6 @@
              </object> 
             </void> 
            </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-            <void method="setProperty"> 
-             <string>gridx</string> 
-             <int>2</int> 
-            </void> 
-            <void method="setProperty"> 
-             <string>gridy</string> 
-             <int>0</int> 
-            </void> 
-           </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
@@ -120,13 +129,6 @@
               <string>loadButtonActionPerformed</string> 
               <boolean>true</boolean> 
              </object> 
-            </void> 
-           </object> 
-           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-            <class>com.jformdesigner.runtime.GridBagConstraintsEx</class> 
-            <void method="setProperty"> 
-             <string>gridx</string> 
-             <int>3</int> 
             </void> 
            </object> 
           </void> 

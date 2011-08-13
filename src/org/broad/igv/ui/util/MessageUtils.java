@@ -99,7 +99,7 @@ public class MessageUtils {
     }
 
     public static String showInputDialog(String message) {
-        String val = JOptionPane.showInputDialog(IGV.getInstance(), message);
+        String val = JOptionPane.showInputDialog(IGV.getMainFrame(), message);
         return val;
     }
 }

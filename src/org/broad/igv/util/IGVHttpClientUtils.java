@@ -18,17 +18,16 @@
 
 package org.broad.igv.util;
 
+import com.sun.deploy.net.*;
 import org.apache.http.*;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
 import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
@@ -36,6 +35,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -171,25 +171,15 @@ public class IGVHttpClientUtils {
      * @return
      */
     public static String getContentsAsString(URL url) throws IOException {
-        return getContentsAsString(url, null);
-    }
+        HttpResponse response = executeGet(url);
+        return EntityUtils.toString(response.getEntity());
+     }
 
     public static String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-        StringBuffer buf = new StringBuffer();
-        InputStream is = null;
-        try {
-            is = IGVHttpClientUtils.openConnectionStream(url, false, headers);
-            BufferedInputStream bis = new BufferedInputStream(is);
-            int b;
-            while ((b = bis.read()) >= 0) {
-                buf.append((char) b);
-            }
-            return buf.toString();
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
+
+        HttpResponse response = executeGet(url, headers);
+        return EntityUtils.toString(response.getEntity());
+
     }
 
 
@@ -345,6 +335,32 @@ public class IGVHttpClientUtils {
     }
 
     /**
+      * Upload a file.
+      * <p/>
+      * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
+      *
+      * @throws IOException
+      */
+    public static String createDirectory(URL url, String body) throws IOException {
+        HttpPut put = new HttpPut(url.toExternalForm());
+        put.setHeader("Content-Type", "application/json");
+        StringEntity se = new StringEntity(body);
+        put.setEntity(se);
+
+        HttpResponse response = execute(put, url);
+        String responseString = EntityUtils.toString(response.getEntity());
+
+        int code = response.getStatusLine().getStatusCode();
+        if(code != 200) {
+            throw new IOException("Error creating directory: " + code);
+        }
+
+        return responseString;
+
+
+    }
+
+    /**
      * Upload a file.
      * <p/>
      * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
@@ -367,6 +383,8 @@ public class IGVHttpClientUtils {
             }
 
             HttpResponse response = client.execute(put);
+            EntityUtils.consume(response.getEntity());
+
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == 401) {
                 // Try again
@@ -388,7 +406,6 @@ public class IGVHttpClientUtils {
             throw e;
         }
 
-
     }
 
     /**
@@ -400,7 +417,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    private static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
+    public static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
 
         try {
 

@@ -79,6 +79,7 @@ public class GSFileBrowser extends JDialog {
         this.fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.mode = mode;
         savePanel.setVisible(mode == Mode.SAVE);
+        newFolderButton.setVisible(mode == Mode.SAVE);
         openButton.setText(mode == Mode.OPEN ? "Open" : "Save");
         getRootPane().setDefaultButton(openButton);
 
@@ -216,6 +217,33 @@ public class GSFileBrowser extends JDialog {
         }
     }
 
+    private void newFolderButtonActionPerformed(ActionEvent e) {
+        String folderName = MessageUtils.showInputDialog("Name of new folder:");
+        if (folderName != null && folderName.length() > 0) {
+            String dirurl = selectedFile.getUrl();
+            if (!selectedFile.isDirectory()) {
+                // Strip off file part
+                int idx = dirurl.lastIndexOf("/");
+                dirurl = dirurl.substring(0, idx);
+            }
+            String putURL = dirurl + "/" + folderName;
+            try {
+                GSFileMetadata metaData = DMUtils.createDirectory(putURL);
+                if(metaData != null) {
+                    setSelectedFile(metaData);
+                }
+                // Refresh
+                fetchContents(new URL(putURL));
+            } catch (IOException e1) {
+                log.error("Error creating directory: " + putURL, e1);
+                MessageUtils.showMessage("<html>Error creating directory: " + e1 + "<br>" + e1.getMessage());
+            } catch (JSONException e1) {
+                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+    }
+
 
     static class ListModel extends AbstractListModel {
 
@@ -270,6 +298,9 @@ public class GSFileBrowser extends JDialog {
         // Generated using JFormDesigner non-commercial license
         dialogPane = new JPanel();
         buttonBar = new JPanel();
+        hSpacer2 = new JPanel(null);
+        newFolderButton = new JButton();
+        hSpacer1 = new JPanel(null);
         cancelButton = new JButton();
         openButton = new JButton();
         savePanel = new JPanel();
@@ -292,9 +323,18 @@ public class GSFileBrowser extends JDialog {
             //======== buttonBar ========
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
-                buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 85, 0};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 0.0};
+                buttonBar.setLayout(new BoxLayout(buttonBar, BoxLayout.X_AXIS));
+                buttonBar.add(hSpacer2);
+
+                //---- newFolderButton ----
+                newFolderButton.setText("New Folder");
+                newFolderButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        newFolderButtonActionPerformed(e);
+                    }
+                });
+                buttonBar.add(newFolderButton);
+                buttonBar.add(hSpacer1);
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -303,9 +343,7 @@ public class GSFileBrowser extends JDialog {
                         cancelButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                buttonBar.add(cancelButton);
 
                 //---- openButton ----
                 openButton.setText("Open");
@@ -314,9 +352,7 @@ public class GSFileBrowser extends JDialog {
                         loadButtonActionPerformed(e);
                     }
                 });
-                buttonBar.add(openButton, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                buttonBar.add(openButton);
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
@@ -359,6 +395,9 @@ public class GSFileBrowser extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;
     private JPanel buttonBar;
+    private JPanel hSpacer2;
+    private JButton newFolderButton;
+    private JPanel hSpacer1;
     private JButton cancelButton;
     private JButton openButton;
     private JPanel savePanel;

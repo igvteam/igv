@@ -18,6 +18,9 @@
 
 package org.broad.igv.gs.dm;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Represents a file or directory in GS storage.
  *
@@ -39,6 +42,19 @@ public class GSFileMetadata {
         this.url = url;
         this.format = format;
         this.size = size;
+    }
+
+    public GSFileMetadata(JSONObject o) throws JSONException {
+        name = (String) o.get("name");
+        path = (String) o.get("path");
+        url = (String) o.get("url");
+        isDirectory = o.get("directory").equals("true");
+        if (o.has("dataFormat")) {
+            JSONObject dataFormat = o.has("dataFormat") ? (JSONObject) o.get("dataFormat") : null;
+            format = dataFormat == null ? "" : dataFormat.getString("name");
+            size = (String) o.get("size");
+        }
+
     }
 
     public String toString() {
