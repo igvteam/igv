@@ -71,7 +71,7 @@ public class WiggleParser {
     String lastChr = "";
     int lastPosition = 0;
     private int start;
-    private int step;
+    private int step = 1;
     private int windowSpan = 1;
     private int startBase = 1;   // <- set to zero for zero based coordinates
     IntArrayList startLocations = null;
