@@ -638,7 +638,7 @@ public class BPTree {
                     keychars[index] = (char)bval;
                }
 
-               String key = new String(keychars);
+               String key = new String(keychars).trim();
                 
                int chromID;
                int chromSize;

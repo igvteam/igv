@@ -59,14 +59,10 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     int featureVisiblityWindow = -1;
     private List<LocusScore> wholeGenomeScores;
 
+    // Lookup table to support chromosome aliasing.  TODO -- move this up to a higher level, to share
+    private Map<String, String> chrNameMap = new HashMap();
 
-    public BigWigDataSource(String path, Genome genome) throws IOException {
-        super(genome);
 
-        SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
-        reader = new BBFileReader(path, ss);
-        levels = reader.getZoomLevels();
-    }
 
     public BigWigDataSource(BBFileReader reader, Genome genome) throws IOException {
         super(genome);
@@ -80,6 +76,17 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
             BBZoomLevelHeader firstLevel = levels.getZoomLevelHeaders().get(0);
             featureVisiblityWindow = firstLevel.getReductionLevel() * 2000;
         }
+
+        if (genome != null) {
+            Collection<String> chrNames = reader.getChromosomeNames();
+            for (String chr : chrNames) {
+                String igvChr = genome.getChromosomeAlias(chr);
+                if (igvChr != null && !igvChr.equals(chr)) {
+                    chrNameMap.put(igvChr, chr);
+                }
+            }
+        }
+
     }
 
 
@@ -158,7 +165,6 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
 
-
         Chromosome c = genome.getChromosome(chr);
         if(c == null) return null;
 
@@ -173,10 +179,12 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         // If we are at the highest precomputed resolution compare to the requested resolution.  If they differ
         // by more than a factor of 2 compute "on the fly"
+        String tmp = chrNameMap.get(chr);
+        String querySeq = tmp == null ? chr : tmp;
 
         if (reader.isBigBedFile() || bbLevel > 1 || (bbLevel == 1 && (reductionLevel / scale) < 2)) {
             ArrayList<LocusScore> scores = new ArrayList(1000);
-            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, chr, start, chr, end, false);
+            ZoomLevelIterator zlIter = reader.getZoomLevelIterator(bbLevel, querySeq, start, querySeq, end, false);
             while (zlIter.hasNext()) {
                 ZoomDataRecord rec = zlIter.next();
 
@@ -230,7 +238,9 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         IntArrayList endsList = new IntArrayList(100000);
         FloatArrayList valuesList = new FloatArrayList(100000);
 
-        Iterator<WigItem> iter = reader.getBigWigIterator(chr, start, chr, end, false);
+        String tmp = chrNameMap.get(chr);
+        String querySeq = tmp == null ? chr : tmp;
+        Iterator<WigItem> iter = reader.getBigWigIterator(querySeq, start, chr, end, false);
 
         while (iter.hasNext()) {
             WigItem wi = iter.next();
@@ -262,8 +272,11 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
                     String chrName = chr.getName();
                     int end = chr.getLength();
 
+                    String tmp = chrNameMap.get(chrName);
+                    String querySeq = tmp == null ? chrName : tmp;
+
                     ZoomLevelIterator zlIter = reader.getZoomLevelIterator(
-                            lowestResHeader.getZoomLevel(), chrName, 0, chrName, end, false);
+                            lowestResHeader.getZoomLevel(), querySeq, 0, querySeq, end, false);
                     while (zlIter.hasNext()) {
                         ZoomDataRecord rec = zlIter.next();
                         int genomeStart = genome.getGenomeCoordinate(chrName, rec.getChromStart());
@@ -291,12 +304,16 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     public Iterator getFeatures(String chr, int start, int end) throws IOException {
 
-        BigBedIterator bedIterator = reader.getBigBedIterator(chr, start, chr, end, false);
+        String tmp = chrNameMap.get(chr);
+        String querySeq = tmp == null ? chr : tmp;
+        BigBedIterator bedIterator = reader.getBigBedIterator(querySeq, start, chr, end, false);
         return new WrappedIterator(bedIterator);
     }
 
     public List<LocusScore> getCoverageScores(String chr, int start, int end, int zoom) {
-        return this.getSummaryScoresForRange(chr, start, end, zoom);
+        String tmp = chrNameMap.get(chr);
+        String querySeq = tmp == null ? chr : tmp;
+        return this.getSummaryScoresForRange(querySeq, start, end, zoom);
     }
 
     public int getFeatureWindowSize() {
