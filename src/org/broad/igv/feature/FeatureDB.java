@@ -58,6 +58,15 @@ public class FeatureDB {
             if (id != null && id.length() > 0) {
                 put(id, feature);
             }
+
+            Map<String, String> attributes = ((IGVFeature) feature).getAttributes();
+            if (attributes != null) {
+                for (String value : attributes.values()) {
+                    if (value.length() < 20) {
+                        put(value, feature);
+                    }
+                }
+            }
         }
     }
 

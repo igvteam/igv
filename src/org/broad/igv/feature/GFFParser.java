@@ -284,13 +284,13 @@ public class GFFParser implements FeatureParser {
 
                 if (featureType.equals("CDS_parts")) {
                     for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description);
+                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description, attributes);
                     }
 
                 } else if (featureType.equals("intron")) {
 
                     for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description);
+                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description, attributes);
                     }
                 } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
                         parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
@@ -337,6 +337,7 @@ public class GFFParser implements FeatureParser {
                     BasicFeature f = new BasicFeature(chromosome, start, end, strand);
                     f.setName(getName(attributes));
                     f.setDescription(description);
+                    f.setAttributes(attributes);
 
                     if (attributes.containsKey("color")) {
                         f.setColor(ColorUtilities.stringToColor(attributes.get("color")));
@@ -548,6 +549,7 @@ public class GFFParser implements FeatureParser {
         int start = Integer.MAX_VALUE;
         int end = Integer.MIN_VALUE;
         String description;
+        Map<String, String> attributes;
 
         GFF3Transcript(String id) {
             this.id = id;
@@ -590,20 +592,27 @@ public class GFFParser implements FeatureParser {
             this.end = Math.max(cds.getEnd(), end);
         }
 
-        void addCDSParts(String chr, int start, int end, String desc) {
+        void addCDSParts(String chr, int start, int end, String desc, Map<String, String> atts) {
             this.chr = chr;
             this.start = Math.min(this.start, start);
             this.end = Math.max(this.end, end);
-            appendDescription(desc);
+            appendDescription(desc, atts);
         }
 
-        void appendDescription(String desc) {
+        void appendDescription(String desc, Map<String, String> atts) {
             if (description == null) {
                 description = "<html>";
             } else {
                 description += "<br>---------<br>";
             }
             description += desc;
+
+            if(attributes == null) {
+                attributes = atts;
+            }
+            else {
+                attributes.putAll(atts);
+            }
         }
 
         /**
@@ -646,6 +655,7 @@ public class GFFParser implements FeatureParser {
                 transcript.setIdentifier(id);
                 transcript.setName(name == null ? id : name);
                 transcript.setDescription(description);
+                transcript.setAttributes(attributes);
             }
 
             if ((parentId != null) && geneCache.containsKey(parentId)) {
