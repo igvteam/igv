@@ -232,7 +232,7 @@ public abstract class AbstractDataSource implements DataSource {
 
                     if (e < startLocation) {
                         continue;
-                    } else if (s > endLocation) {
+                    } else if (s >= endLocation) {
                         break;
                     }
 
@@ -258,7 +258,12 @@ public abstract class AbstractDataSource implements DataSource {
                 int size = starts.length;
                 for (int i = 0; i < size; i++) {
                     int s = Math.max(startLocation, starts[i]);
+                    if( s >= endLocation) {
+                        break;  // We're beyond the end of the requested interval
+                    }
+
                     int e = ends == null ? s + 1 : Math.min(endLocation, ends[i]);
+
                     String probeName = features == null ? null : features[i];
                     float v = values[i] * normalizationFactor;
 
