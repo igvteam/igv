@@ -33,12 +33,12 @@ public class SequenceHelper {
 
     private static Logger log = Logger.getLogger(SequenceHelper.class);
     private static boolean cacheSequences = true;
-    private static int chunkSize = 30000;
+    private static int tileSize = 30000;
 
 
     //Genome genome;
     Sequence sequence;
-    private ObjectCache<String, SequenceChunk> sequenceCache = new ObjectCache(50);
+    private ObjectCache<String, SequenceTile> sequenceCache = new ObjectCache(50);
 
 
     public SequenceHelper(String seqpath) {
@@ -106,25 +106,6 @@ public class SequenceHelper {
         return -1;
     }
 
-
-    /**
-     * Return the reference dna sequence for the exact interval specified.
-     *
-     * @param genome
-     * @param chr
-     * @param start
-     * @param end
-     * @return
-     */
-    public byte[] readSequence(String genome, String chr, int start, int end) {
-
-        if (sequence != null) {
-            return getSequence(chr, start, end);
-
-        }
-        return new byte[0];
-    }
-
     /**
      * Return the reference dna sequence for the exact interval specified.
      *
@@ -136,41 +117,40 @@ public class SequenceHelper {
     public byte[] getSequence(String chr, int start, int end) {
         if (cacheSequences) {
             byte[] seqbytes = new byte[end - start];
-            int startTile = start / chunkSize;
-            int endTile = end / chunkSize;
+            int startTile = start / tileSize;
+            int endTile = end / tileSize;
 
             // Get first chunk
-            SequenceChunk chunk = getSequenceChunk(chr, startTile);
-            int offset1 = start - chunk.getStart();
-            int offset2 = 0;
-            byte[] chunkBytes = chunk.getBytes();
-            if (chunkBytes == null) {
+            SequenceTile tile = getSequenceTile(chr, startTile);
+            byte[] tileBytes = tile.getBytes();
+            if (tileBytes == null) {
                 return null;
             }
 
-            // A negative offset means the requested start is < the chunk size.  This situation can arise at the
-            // left end of chromosomes.
+            int fromOffset = start - tile.getStart();
+            int toOffset = 0;
 
-            if (offset1 < 0) {
-                offset2 = -offset1;
-                offset1 = 0;
+            // A negative offset means the requested start is < the the first tile start.  This situation can arise at the
+            // left end of chromosomes.  In this case we want to copy the first tile to some offset location in the
+            // destination sequence array.
+            if (fromOffset < 0) {
+                toOffset = -fromOffset;
+                fromOffset = 0;
             }
 
-
-            // # of bytes to return, minimum of requested sequence lenth or bytes available
-            int nBytes = Math.min(chunkBytes.length - Math.abs(offset1),
-                    seqbytes.length - Math.abs(offset2));
+            // # of bytes to copy.  Note that only one of fromOffset or toOffset is non-zero.
+            int nBytes = Math.min(tileBytes.length - Math.abs(fromOffset), seqbytes.length - Math.abs(toOffset));
 
             // Copy first chunk
-            System.arraycopy(chunkBytes, offset1, seqbytes, offset2, nBytes);
+            System.arraycopy(tileBytes, fromOffset, seqbytes, toOffset, nBytes);
 
             // If multiple chunks ...
-            for (int tile = startTile + 1; tile <= endTile; tile++) {
-                chunk = getSequenceChunk(chr, tile);
+            for (int t = startTile + 1; t <= endTile; t++) {
+                tile = getSequenceTile(chr, t);
 
-                int nNext = Math.min(seqbytes.length - nBytes, chunk.getSize());
+                int nNext = Math.min(seqbytes.length - nBytes, tile.getSize());
 
-                System.arraycopy(chunk.getBytes(), 0, seqbytes, nBytes, nNext);
+                System.arraycopy(tile.getBytes(), 0, seqbytes, nBytes, nNext);
                 nBytes += nNext;
             }
 
@@ -181,20 +161,20 @@ public class SequenceHelper {
     }
 
 
-    private SequenceChunk getSequenceChunk(String chr, int tileNo) {
+    private SequenceTile getSequenceTile(String chr, int tileNo) {
         String key = getKey(chr, tileNo);
-        SequenceChunk chunk = sequenceCache.get(key);
+        SequenceTile tile = sequenceCache.get(key);
 
-        if (chunk == null) {
-            int start = tileNo * chunkSize;
-            int end = start + chunkSize; // <=  UCSC coordinate conventions (end base not inclusive)
+        if (tile == null) {
+            int start = tileNo * tileSize;
+            int end = start + tileSize; // <=  UCSC coordinate conventions (end base not inclusive)
 
             byte[] seq = sequence.readSequence(chr, start, end);
-            chunk = new SequenceChunk(start, seq);
-            sequenceCache.put(key, chunk);
+            tile = new SequenceTile(start, seq);
+            sequenceCache.put(key, tile);
         }
 
-        return chunk;
+        return tile;
     }
 
 
@@ -207,8 +187,8 @@ public class SequenceHelper {
      *
      * @param aChunkSize
      */
-    static void setChunkSize(int aChunkSize) {
-        chunkSize = aChunkSize;
+    static void setTileSize(int aChunkSize) {
+        tileSize = aChunkSize;
     }
 
     /**
@@ -224,12 +204,12 @@ public class SequenceHelper {
         sequenceCache.clear();
     }
 
-    static class SequenceChunk {
+    static class SequenceTile {
 
         private int start;
         private byte[] bytes;
 
-        SequenceChunk(int start, byte[] bytes) {
+        SequenceTile(int start, byte[] bytes) {
             this.start = start;
             this.bytes = bytes;
         }

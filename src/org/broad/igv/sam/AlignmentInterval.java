@@ -141,10 +141,9 @@ public class AlignmentInterval extends Locus {
             return;
         }
 
-        // TODO -- need the context.  This is here so it will compile       
         for (AlignmentInterval.Row row : alignmentRows) {
             if (option == AlignmentTrack.SortOption.NUCELOTIDE) {
-
+                // TODO -- why is this here?
             }
             row.updateScore(option, location, this);
         }
@@ -184,8 +183,9 @@ public class AlignmentInterval extends Locus {
 
     /**
      * Return the count of the specified nucleotide
+     *
      * @param pos genomic position
-     * @param b nucleotide
+     * @param b   nucleotide
      * @return
      */
     public int getCount(int pos, byte b) {
@@ -279,8 +279,10 @@ public class AlignmentInterval extends Locus {
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
                         if (base == 'N' || base == 'n') {
-                            setScore(Integer.MAX_VALUE - 1);
+                            setScore(Integer.MAX_VALUE - 2);  // Base is "n"
                         } else if (base == ref) {
+                            setScore(Integer.MAX_VALUE - 1);  // Base is reference
+                        } else if (base == 0) {      // Base not covered (splice junction)
                             setScore(Integer.MAX_VALUE);
                         } else {
                             int count = interval.getCount(adjustedCenter, base);
