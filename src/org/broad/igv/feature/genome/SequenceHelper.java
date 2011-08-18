@@ -143,7 +143,6 @@ public class SequenceHelper {
             SequenceChunk chunk = getSequenceChunk(chr, startTile);
             int offset1 = start - chunk.getStart();
             int offset2 = 0;
-            int nEmptyBytes = Math.abs(offset1);
             byte[] chunkBytes = chunk.getBytes();
             if (chunkBytes == null) {
                 return null;
@@ -159,7 +158,8 @@ public class SequenceHelper {
 
 
             // # of bytes to return, minimum of requested sequence lenth or bytes available
-            int nBytes = Math.min(chunkBytes.length - nEmptyBytes, seqbytes.length);
+            int nBytes = Math.min(chunkBytes.length - Math.abs(offset1),
+                    seqbytes.length - Math.abs(offset2));
 
             // Copy first chunk
             System.arraycopy(chunkBytes, offset1, seqbytes, offset2, nBytes);
