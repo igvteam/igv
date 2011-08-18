@@ -282,15 +282,16 @@ public class GFFParser implements FeatureParser {
 
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
 
-                if (featureType.equals("CDS_parts")) {
+
+                 if (featureType.equals("CDS_parts")) {
                     for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description, attributes);
+                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
                     }
 
                 } else if (featureType.equals("intron")) {
 
                     for (String pid : parentIds) {
-                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end, description, attributes);
+                        getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
                     }
                 } else if (exonTerms.contains(featureType) && parentIds != null && parentIds.length > 0 &&
                         parentIds[0] != null && parentIds[0].length() > 0 && !parentIds[0].equals(".")) {
@@ -313,6 +314,7 @@ public class GFFParser implements FeatureParser {
 
                         Exon exon = new Exon(chromosome, start, end, strand);
                         exon.setDescription(description);
+                        exon.setAttributes(attributes);
                         exon.setUTR(utrTerms.contains(featureType));
 
                         if (phase >= 0) {
@@ -478,7 +480,7 @@ public class GFFParser implements FeatureParser {
 
         Map<String, PrintWriter> writers = new HashMap();
         String [] tokens = new String[20];
-        
+
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
             if (!nextLine.startsWith("#")) {
@@ -592,11 +594,10 @@ public class GFFParser implements FeatureParser {
             this.end = Math.max(cds.getEnd(), end);
         }
 
-        void addCDSParts(String chr, int start, int end, String desc, Map<String, String> atts) {
+        void addCDSParts(String chr, int start, int end) {
             this.chr = chr;
             this.start = Math.min(this.start, start);
             this.end = Math.max(this.end, end);
-            appendDescription(desc, atts);
         }
 
         void appendDescription(String desc, Map<String, String> atts) {

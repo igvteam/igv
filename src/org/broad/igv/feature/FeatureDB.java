@@ -54,17 +54,29 @@ public class FeatureDB {
             put(name, feature);
         }
         if (feature instanceof IGVFeature) {
-            final String id = ((IGVFeature) feature).getIdentifier();
+            final IGVFeature igvFeature = (IGVFeature) feature;
+            final String id = igvFeature.getIdentifier();
             if (id != null && id.length() > 0) {
                 put(id, feature);
             }
 
-            Map<String, String> attributes = ((IGVFeature) feature).getAttributes();
-            if (attributes != null) {
-                for (String value : attributes.values()) {
-                    if (value.length() < 20) {
-                        put(value, feature);
-                    }
+            addByAttributes(igvFeature);
+
+            List<Exon> exons = igvFeature.getExons();
+            if(exons != null) {
+                for(Exon exon : exons) {
+                    addByAttributes(exon);
+                }
+            }
+        }
+    }
+
+    private static void addByAttributes(IGVFeature igvFeature) {
+        Map<String, String> attributes = igvFeature.getAttributes();
+        if (attributes != null) {
+            for (String value : attributes.values()) {
+                if (value.length() < 20) {
+                    put(value, igvFeature);
                 }
             }
         }
