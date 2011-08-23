@@ -518,8 +518,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         double origin = context.getOrigin();
         String chr = context.getChr();
-        String genomeId = context.getGenomeId();
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        //String genomeId = context.getGenomeId();
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
 
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();

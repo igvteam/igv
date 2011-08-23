@@ -334,7 +334,7 @@ public class AlignmentDataManager {
                     List<AlignmentInterval.Row> alignmentRows = alignmentPacker.packAlignments(iter,
                             intervalEnd, loadAsPairs, null, maxLevels);
 
-                    AlignmentInterval loadedInterval = new AlignmentInterval(genomeId, chr, intervalStart, intervalEnd,
+                    AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
                             alignmentRows, counts);
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 

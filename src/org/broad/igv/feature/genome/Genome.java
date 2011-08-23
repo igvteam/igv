@@ -52,46 +52,36 @@ public class Genome {
     public static final int MAX_WHOLE_GENOME = 10000;
 
     private String id;
+    private String displayName;
     private List<String> chromosomeNames;
     private LinkedHashMap<String, Chromosome> chromosomeMap;
     private long length = -1;
-    private String annotationURL;
     private Map<String, Long> cumulativeOffsets = new HashMap();
     private Map<String, String> chrAliasTable;
 
     SequenceHelper sequenceHelper;
 
 
-    /**
-     * Construct a genome from a ".genome" file.
-     *
-     * @param descriptor
-     */
-    public Genome(GenomeDescriptor descriptor) {
-        this.id = descriptor.getId();
-        this.annotationURL = descriptor.getUrl();
+    public Genome(String id, String displayName, String sequencePath, boolean fasta) throws IOException {
+        this.id = id;
+        this.displayName = displayName;
         chrAliasTable = new HashMap();
-        sequenceHelper = new SequenceHelper(descriptor.getSequenceLocation());
-    }
 
-    /**
-     * Construct an index from an indexed fasta file
-     *
-     * @param sequencePath
-     * @throws IOException
-     */
-    public Genome(String sequencePath) throws IOException {
+        if (!fasta) {
+            sequenceHelper = new SequenceHelper(sequencePath);
 
-        FastaSequence sequence = new FastaSequence(sequencePath);
-        sequenceHelper = new SequenceHelper(sequence);
+        } else {
 
-        chromosomeNames = new ArrayList(sequence.getChromosomeNames());
-        chromosomeMap = new LinkedHashMap(chromosomeNames.size());
-        for(String chr : chromosomeNames) {
-            int length = sequence.getChromosomeLength(chr);
-            chromosomeMap.put(chr, new Chromosome(chr, length));
+            FastaSequence sequence = new FastaSequence(sequencePath);
+            sequenceHelper = new SequenceHelper(sequence);
+
+            chromosomeNames = new ArrayList(sequence.getChromosomeNames());
+            chromosomeMap = new LinkedHashMap(chromosomeNames.size());
+            for (String chr : chromosomeNames) {
+                int length = sequence.getChromosomeLength(chr);
+                chromosomeMap.put(chr, new Chromosome(chr, length));
+            }
         }
-
 
     }
 
@@ -143,6 +133,10 @@ public class Genome {
                 chrAliasTable.put(kv[0], kv[1]);
             }
         }
+    }
+
+    public void addChrAliases(Map<String, String> aliases) {
+        chrAliasTable.putAll(aliases);
     }
 
 
@@ -295,11 +289,6 @@ public class Genome {
         return id;
     }
 
-
-    public String getAnnotationURL() {
-        return annotationURL;
-    }
-
     public String getNextChrName(String chr) {
         List<String> chrList = getChromosomeNames();
         for (int i = 0; i < chrList.size() - 1; i++) {
@@ -322,6 +311,10 @@ public class Genome {
 
     public byte[] getSequence(String chr, int start, int end) {
         return sequenceHelper.getSequence(chr, start, end);
+    }
+
+    public String getDisplayName() {
+        return displayName;
     }
 
     public static class ChromosomeCoordinate {

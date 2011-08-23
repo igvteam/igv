@@ -53,7 +53,7 @@ public class CytoBandFileParser {
         }
 
         try {
-            String nextLine = null;
+            String nextLine;
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = nextLine.split("\t");
                 String chr = tokens[0].trim();

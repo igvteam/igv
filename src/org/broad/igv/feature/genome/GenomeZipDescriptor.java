@@ -18,9 +18,13 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.tribble.readers.AsciiLineReader;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -28,7 +32,6 @@ import java.util.zip.ZipFile;
 public class GenomeZipDescriptor extends GenomeDescriptor {
     private Map<String, ZipEntry> zipEntries;
     private ZipFile genomeZipFile;
-    private boolean userDefined;
 
     public GenomeZipDescriptor(String name,
                                int version,
@@ -41,13 +44,11 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
                                String sequenceLocation,
                                ZipFile genomeZipFile,
                                Map<String, ZipEntry> zipEntries,
-                               boolean userDefined,
                                boolean chromosomesAreOrdered) {
         super(name, version, chrNamesAltered, id, cytoBandFileName, geneFileName, chrAliasFileName, geneTrackName,
                 sequenceLocation, chromosomesAreOrdered);
         this.zipEntries = zipEntries;
         this.genomeZipFile = genomeZipFile;
-        this.userDefined = userDefined;
 
     }
 
@@ -58,7 +59,10 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
         if (fileName == null) {
             return null;
         }
-        return genomeZipFile.getInputStream(zipEntries.get(fileName));
+
+        boolean  isGZipped = fileName.toLowerCase().endsWith((".gz"));
+        InputStream is = genomeZipFile.getInputStream(zipEntries.get(fileName));
+        return isGZipped ? new GZIPInputStream(is) : is;
     }
 
     public InputStream getGeneStream()
@@ -66,7 +70,8 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
         if (geneFileName == null) {
             return null;
         }
-        return genomeZipFile.getInputStream(zipEntries.get(geneFileName));
+        InputStream is = genomeZipFile.getInputStream(zipEntries.get(geneFileName));
+        return (geneFileName.endsWith(".gz") ? new GZIPInputStream(is) : is);
     }
 
     @Override
@@ -79,7 +84,4 @@ public class GenomeZipDescriptor extends GenomeDescriptor {
         return genomeZipFile.getInputStream(zipEntries.get(fileName));
     }
 
-    public boolean isUserDefined() {
-        return userDefined;
-    }
 }

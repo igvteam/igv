@@ -37,7 +37,7 @@ public class FastaSequenceIndex {
     /**
      * Store the entries.  Use a LinkedHashMap for consistent iteration in insertion order.
      */
-    private final Map<String, FastaSequenceIndexEntry> sequenceEntries = new LinkedHashMap<String, FastaSequenceIndexEntry>();
+    private final LinkedHashMap<String, FastaSequenceIndexEntry> sequenceEntries = new LinkedHashMap<String, FastaSequenceIndexEntry>();
 
 
     public FastaSequenceIndex(String indexPath) throws IOException {

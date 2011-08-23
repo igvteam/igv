@@ -47,7 +47,7 @@ public class FeatureDatasetTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Genome genome = (new GenomeManager()).getGenome(genomeId);
+        Genome genome =   (new GenomeManager()).loadGenome("", null);
         GCTDatasetParser parser = new GCTDatasetParser(new File(file), null, genome);
 
         dataset = parser.createDataset();

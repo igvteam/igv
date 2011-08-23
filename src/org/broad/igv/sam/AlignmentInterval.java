@@ -47,11 +47,11 @@ public class AlignmentInterval extends Locus {
     private List<AlignmentInterval.Row> alignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions = null;
 
-    public AlignmentInterval(String genomeId, String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
+    public AlignmentInterval(String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
         super(chr, start, end);
         this.genomeId = genomeId;
         this.alignmentRows = rows;
-        Genome genome = IGV.getInstance().getGenomeManager().getGenome(genomeId);
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         reference = genome.getSequence(chr, start, end);
         this.counts = counts;
         for (AlignmentCounts c : counts) {

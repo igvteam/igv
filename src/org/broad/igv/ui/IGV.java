@@ -31,9 +31,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.GenomeBuilderDialog;
-import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.batch.BatchRunner;
@@ -491,11 +489,12 @@ public class IGV {
                     fastaFileName, chrAliasFile, relativeSequenceLocation, genomeDisplayName,
                     genomeId, genomeFileName, monitor, seqLocationOverride);
 
-            enableRemoveGenomes();
+            if (genomeListItem != null) {
+                enableRemoveGenomes();
 
-            contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-            contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
-
+                contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+                contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+            }
             if (monitor != null) {
                 monitor.fireProgressChange(100);
             }
@@ -579,9 +578,16 @@ public class IGV {
                     PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
                 }
 
-                genomeListItem = IGV.getInstance().getGenomeManager().loadUserDefinedGenome(file.getAbsolutePath(), monitor);
+                Genome genome = getGenomeManager().loadGenome(file.getAbsolutePath(), monitor);
+                final String name = genome.getDisplayName();
+                final String path = file.getAbsolutePath();
+                final String id = genome.getId();
+                genomeListItem = new GenomeListItem(name, path, id, true);
 
                 if (genomeListItem != null) {
+                    if (genomeListItem != null) {
+                        getGenomeManager().addUserDefineGenomeItem(genomeListItem);
+                    }
                     contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
                     contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
                 }

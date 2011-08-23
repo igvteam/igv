@@ -46,6 +46,7 @@ public abstract class GenomeDescriptor {
     private String url;
     private String sequenceLocation;
     private boolean chromosomesAreOrdered = false;
+    private boolean fasta = false;
 
     public GenomeDescriptor(String name,
                             int version,
@@ -99,18 +100,9 @@ public abstract class GenomeDescriptor {
 
     public abstract InputStream getCytoBandStream() throws IOException;
 
-    public boolean isCytoBandFileGZipFormat() {
-        return isFileGZipFormat(cytoBandFileName);
-    }
-
     public abstract InputStream getGeneStream() throws IOException;
 
     public abstract InputStream getChrAliasStream() throws IOException;
-
-    public boolean isGeneFileGZipFormat() {
-        String fileName = getGeneFileName();
-        return isFileGZipFormat(fileName);
-    }
 
     /**
      * Setter provided vor unit tests.
@@ -124,8 +116,6 @@ public abstract class GenomeDescriptor {
     public String getSequenceLocation() {
         return sequenceLocation;
     }
-
-    public abstract boolean isUserDefined();
 
     @Override
     public String toString() {
@@ -173,5 +163,9 @@ public abstract class GenomeDescriptor {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isFasta() {
+        return fasta;
     }
 }

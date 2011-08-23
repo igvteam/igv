@@ -33,7 +33,7 @@ import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
@@ -189,13 +189,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         try {
                             monitor.fireProgressChange(50);
 
-                            if (genomeListItem.isUserDefined()) {
-                                igv.getGenomeManager().loadUserDefinedGenome(genomeListItem.getLocation(), null);
-                            } else {
-                                igv.getGenomeManager().loadSystemGenome(genomeListItem.getLocation(), null);
-                            }
 
-                            updateGenome(genomeListItem.getId());
+                            Genome genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+
+                            updateGenome(genome);
                             monitor.fireProgressChange(25);
 
                             if (!isGenomeCached(genomeListItem.getId())) {
@@ -644,14 +641,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
-    public void updateGenome(String id) {
+    public void updateGenome(Genome genome) {
 
-        FeatureDB.clearFeatures();
-
-        // TODO -- this is all rather circular
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-
-        IGV.getInstance().getTrackManager().createGeneTrack(genome);
 
         FrameManager.getDefaultFrame().invalidateLocationScale();
 

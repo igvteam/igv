@@ -1,11 +1,10 @@
 package org.broad.igv.feature.genome;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: 8/8/11
- * Time: 8:18 AM
- * To change this template use File | Settings | File Templates.
+ * @author jrobinso
+ * @date 8/8/11
+ *
+ * Represents a reference sequence.
  */
 public interface Sequence {
 

@@ -28,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Author jrobinso
+ * Represents a sequence database composed of plain text files with no white space, one per chromosome, in a directory.
+ * This is the original IGV "sequence" format, replaced in favor if indexed fasta files.
+ *
+ * @author jrobinso
  * @Date 8/8/11
  */
 

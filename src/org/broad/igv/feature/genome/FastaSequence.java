@@ -26,9 +26,10 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Class represents an indexed fasta file
- * Author: jrobinso
- * Date: 8/7/11
+ * Implementation of Sequence backed by an index fasta file
+ *
+ * @author jrobinso
+ * @date 8/7/11
  */
 public class FastaSequence implements Sequence {
 

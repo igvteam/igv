@@ -26,7 +26,7 @@ package org.broad.igv.ui.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.GenomeManager.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.UserDefinedGenomeCheckList;

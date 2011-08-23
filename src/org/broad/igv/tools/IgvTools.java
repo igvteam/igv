@@ -682,8 +682,7 @@ public class IgvTools {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
 
-        genomeManager.loadGenomeFromLocalFile(genomeFile);
-        genome = genomeManager.getCurrentGenome();
+        genome = genomeManager.loadGenome(genomeFile.getAbsolutePath(), null);
         if (genome == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }

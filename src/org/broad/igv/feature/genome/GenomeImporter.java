@@ -324,44 +324,6 @@ public class GenomeImporter {
     }
 
     /**
-     * Writes a user-defined genome property file.
-     *
-     * @param outputFile A java properties file containing tab delimetered data
-     *                   (display name [tab] genome file location [tab] genome id) about
-     *                   the user-defined genome.
-     * @param properties A list of properties to store.
-     * @throws IOException
-     */
-    public static void storeUserDefinedGenomeListToFile(File outputFile, Properties properties)
-            throws IOException {
-
-        if ((properties != null) && (outputFile != null)) {
-
-            if (!outputFile.exists()) {
-                File genomeDir = outputFile.getParentFile();
-                if (!genomeDir.exists()) {
-                    genomeDir.mkdir();
-                }
-                outputFile.createNewFile();
-            }
-
-            FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(outputFile);
-                properties.store(out, "");
-            } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        log.error("Error closing property file for imported genomes!", e);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Creates chromosome sequence files.
      *
      * @param sequenceInputFile    A FASTA file.
@@ -472,7 +434,7 @@ public class GenomeImporter {
                     String [] tokens = SEQUENCE_NAME_SPLITTER.split(fastaDataLine, 2);
                     chr = tokens[0].substring(1);
                     chrSize = 0;
-                    String chrFileName = chr + GenomeManager.SEQUENCE_FILE_EXTENSION;
+                    String chrFileName = chr + ".txt";
                     String legalFileName = FileUtils.legalFileName(chrFileName);
                     if (!chrFileName.equals(legalFileName)) {
                         alteredChrFilenames = true;
