@@ -593,7 +593,7 @@ public class IGV {
                 }
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             MessageUtils.showMessage("<html>Error loading: " + file.getAbsolutePath() + "<br>" + e.getMessage());
             log.error("Error loading: " + file.getAbsolutePath(), e);
         } finally {

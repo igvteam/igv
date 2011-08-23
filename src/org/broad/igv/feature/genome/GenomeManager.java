@@ -100,8 +100,6 @@ public class GenomeManager {
                 monitor.fireProgressChange(25);
             }
 
-            FeatureDB.clearFeatures();
-
             if (genomePath.endsWith(".genome")) {
 
                 File archiveFile;
@@ -134,13 +132,24 @@ public class GenomeManager {
 
             } else {
                 // Assume its a fasta
-                String fastaIndexPath = genomePath + ".fai";
-                if (!FileUtils.resourceExists(fastaIndexPath)) {
-                    // Throw error
+                String fastaPath = null;
+                String fastaIndexPath = null;
+                if (genomePath.endsWith(".fai")) {
+                    fastaPath = genomePath.substring(0, genomePath.length() - 4);
+                    fastaIndexPath = genomePath;
+                } else {
+                    fastaPath = genomePath;
+                    fastaIndexPath = genomePath + ".fai";
                 }
-                String id = genomePath;
-                String name = (new File(genomePath)).getName();
-                currentGenome = new Genome(id, name, genomePath, true);
+                if (!FileUtils.resourceExists(fastaIndexPath)) {
+                    throw new RuntimeException("<html>No index found, fasta files must be indexed.<br>" +
+                            "Indexes can be created with samtools (http://samtools.sourceforge.net/)<br>" +
+                            "or Picard(http://picard.sourceforge.net/).");
+                }
+                String id = fastaPath;
+                String name = (new File(fastaPath)).getName();
+                currentGenome = new Genome(id, name, fastaPath, true);
+                IGV.getInstance().getTrackManager().createGeneTrack(currentGenome, null, null, null, null);
             }
 
             if (monitor != null) {
@@ -162,7 +171,7 @@ public class GenomeManager {
         InputStream geneStream = null;
         try {
             geneStream = genomeDescriptor.getGeneStream();
-            AsciiLineReader reader = new AsciiLineReader(geneStream);
+            AsciiLineReader reader = geneStream == null ? null : new AsciiLineReader(geneStream);
             IGV.getInstance().getTrackManager().createGeneTrack(currentGenome, reader,
                     genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
                     genomeDescriptor.getUrl());

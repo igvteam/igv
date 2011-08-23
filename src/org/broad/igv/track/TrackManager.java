@@ -695,6 +695,7 @@ public class TrackManager {
     public void createGeneTrack(Genome genome, AsciiLineReader reader,  String geneFileName, String geneTrackName,
                                 String annotationURL) {
 
+        FeatureDB.clearFeatures();
         FeatureTrack geneFeatureTrack = null;
 
         if (reader != null) {
