@@ -556,31 +556,41 @@ public class GenomeManager {
 
             File listFile = new File(Globals.getGenomeCacheDirectory(), USER_DEFINED_GENOME_LIST_FILE);
 
-            Properties listProperties = retrieveUserDefinedGenomeListFromFile(listFile);
+            BufferedReader reader = null;
 
-            if (listProperties != null) {
-
-                Collection records = listProperties.values();
-                for (Object value : records) {
-
-                    String record = (String) value;
-                    if (record.trim().equals("")) {
+            boolean mightBeProperties = false;
+            try {
+                reader = new BufferedReader(new FileReader(listFile));
+                String nextLine;
+                while ((nextLine = reader.readLine()) != null) {
+                    if (nextLine.startsWith("#") || nextLine.trim().length() == 0) {
+                        mightBeProperties = true;
                         continue;
                     }
 
-                    String[] fields = record.split("\t");
-                    File file = new File(fields[1]);
-                    if (file.isDirectory() || !file.getName().toLowerCase().endsWith(Globals.GENOME_FILE_EXTENSION)) {
-                        continue;
+                    String[] fields = nextLine.split("\t");
+                    if (fields.length < 3) {
+                        if (mightBeProperties && fields[0].contains("=")) {
+                            fields = nextLine.split("\\\\t");
+                            if(fields.length < 3) {
+                                continue;
+                            }
+                            int idx = fields[0].indexOf("=");
+                            fields[0] = fields[0].substring(idx + 1);
+                        }
                     }
-                    if (!file.exists()) {
+
+                    String file = fields[1];
+                    if (!FileUtils.resourceExists(file)) {
                         updateClientGenomeListFile = true;
                         continue;
                     }
 
-                    GenomeListItem item = new GenomeListItem(fields[0], file.getAbsolutePath(), fields[2], true);
+                    GenomeListItem item = new GenomeListItem(fields[0], file, fields[2], true);
                     userDefinedGenomeArchiveList.add(item);
                 }
+            } finally {
+                if (reader != null) reader.close();
             }
             if (updateClientGenomeListFile) {
                 updateImportedGenomePropertyFile();
@@ -754,43 +764,6 @@ public class GenomeManager {
             if (writer != null) writer.close();
             if (backup != null) backup.delete();
         }
-    }
-
-
-    /**
-     * Read the user-defined genome property file to find enough information to
-     * display the genome in IGV.
-     *
-     * @param file A java properties file containing tab delimetered data
-     *             (display name [tab] genome file location [tab] genome id) about
-     *             the user-defined genome.
-     * @return A java Properties object contain the file's content.
-     */
-    public static Properties retrieveUserDefinedGenomeListFromFile(File file) {
-
-        Properties properties = new Properties();
-
-        if ((file != null) && file.exists()) {
-            FileInputStream input = null;
-            try {
-                input = new FileInputStream(file);
-                properties.load(input);
-            } catch (FileNotFoundException e) {
-                log.error("Property file for user-defined genomes was not " + "found!", e);
-            } catch (IOException e) {
-                log.error("Error readin property file for user-defined " + "genomes!", e);
-            } finally {
-                if (input != null) {
-                    try {
-                        input.close();
-                    } catch (IOException e) {
-                        log.error("Error closing property file for " + "user-defined genomes!",
-                                e);
-                    }
-                }
-            }
-        }
-        return properties;
     }
 
     /**
