@@ -40,7 +40,7 @@ public class AlignmentInterval extends Locus {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
-    private String genomeId;
+    //private String genomeId;
     private byte[] reference;
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
@@ -49,7 +49,6 @@ public class AlignmentInterval extends Locus {
 
     public AlignmentInterval(String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
         super(chr, start, end);
-        this.genomeId = genomeId;
         this.alignmentRows = rows;
         Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         reference = genome.getSequence(chr, start, end);
@@ -69,14 +68,6 @@ public class AlignmentInterval extends Locus {
         }
     }
 
-    public boolean contains(String genomeId, String chr, int start, int end) {
-        return this.genomeId.equals(genomeId) && contains(chr, start, end);
-    }
-
-
-    public boolean overlaps(String genomeId, String chr, int start, int end) {
-        return this.genomeId.equals(genomeId) && overlaps(chr, start, end);
-    }
 
     public int getDepth() {
         return alignmentRows.size();

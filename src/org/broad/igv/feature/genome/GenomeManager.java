@@ -642,8 +642,6 @@ public class GenomeManager {
                     continue;
                 }
 
-                URL zipUrl = file.toURI().toURL();
-
 
                 ZipFile zipFile = null;
                 FileInputStream fis = null;

@@ -166,8 +166,7 @@ public class CoverageTrack extends AbstractTrack {
             }
 
 
-            if (interval != null && interval.contains(context.getGenomeId(), context.getChr(), (int) context.getOrigin(),
-                    (int) context.getEndLocation())) {
+            if (interval != null && interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
                 List<AlignmentCounts> counts = interval.getCounts();
                 intervalRenderer.paint(context, rect, counts);
             }

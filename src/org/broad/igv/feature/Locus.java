@@ -101,7 +101,7 @@ public class Locus {
         return this.chr.equals(chr) && this.start <= start && this.end >= end;
     }
 
-    protected boolean overlaps(String chr, int start, int end) {
+    public boolean overlaps(String chr, int start, int end) {
         return this.chr.equals(chr) && this.start <= end && this.end >= start;
     }
 }

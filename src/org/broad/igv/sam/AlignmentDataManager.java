@@ -147,7 +147,7 @@ public class AlignmentDataManager {
             if (Globals.batch) {
                 int start = Math.max(0, (int) context.getOrigin() - 100);
                 int end = (int) context.getEndLocation() + 100;
-                loadAlignments(context.getGenomeId(), context.getChr(), start, end, context);
+                loadAlignments(context.getChr(), start, end, context);
             }
         }
 
@@ -277,13 +277,13 @@ public class AlignmentDataManager {
         AlignmentInterval loadedInterval = loadedIntervalMap.get(context.getReferenceFrame().getName());
 
         // If we've moved out of the loaded interval start a new load.
-        if (loadedInterval == null || !loadedInterval.contains(genomeId, chr, start, end)) {
+        if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
             log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
-            loadAlignments(genomeId, chr, start, end, context);
+            loadAlignments(chr, start, end, context);
         }
 
         // If there is any overlap in the loaded interval and the requested interval return it.
-        if (loadedInterval != null && loadedInterval.overlaps(genomeId, chr, start, end)) {
+        if (loadedInterval != null && loadedInterval.overlaps(chr, start, end)) {
             return loadedInterval.getAlignmentRows();
         } else {
             return null;
@@ -296,7 +296,7 @@ public class AlignmentDataManager {
         loadedIntervalMap.clear();
     }
 
-    public void loadAlignments(final String genomeId, final String chr, final int start, final int end, final RenderContext context) {
+    public void loadAlignments(final String chr, final int start, final int end, final RenderContext context) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
