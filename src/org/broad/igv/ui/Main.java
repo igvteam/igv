@@ -111,7 +111,6 @@ public class Main {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
-        IGVHttpClientUtils.updateProxySettings();
 
     }
 

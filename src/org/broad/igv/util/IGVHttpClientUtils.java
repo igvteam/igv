@@ -37,6 +37,7 @@ import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
@@ -56,6 +57,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
+import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -126,6 +128,8 @@ public class IGVHttpClientUtils {
             client.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
             client.getParams().setParameter(AuthPNames.TARGET_AUTH_PREF, authpref);
 
+            updateProxySettings();
+
             return client;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -172,7 +176,7 @@ public class IGVHttpClientUtils {
     public static String getContentsAsString(URL url) throws IOException {
         HttpResponse response = executeGet(url);
         return EntityUtils.toString(response.getEntity());
-     }
+    }
 
     public static String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
 
@@ -334,12 +338,12 @@ public class IGVHttpClientUtils {
     }
 
     /**
-      * Upload a file.
-      * <p/>
-      * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
-      *
-      * @throws IOException
-      */
+     * Upload a file.
+     * <p/>
+     * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
+     *
+     * @throws IOException
+     */
     public static String createDirectory(URL url, String body) throws IOException {
         HttpPut put = new HttpPut(url.toExternalForm());
         put.setHeader("Content-Type", "application/json");
@@ -350,7 +354,7 @@ public class IGVHttpClientUtils {
         String responseString = EntityUtils.toString(response.getEntity());
 
         int code = response.getStatusLine().getStatusCode();
-        if(code != 200) {
+        if (code != 200) {
             throw new IOException("Error creating directory: " + code);
         }
 
@@ -639,6 +643,10 @@ public class IGVHttpClientUtils {
 
         } else {
             client.getParams().removeParameter(ConnRoutePNames.DEFAULT_PROXY);
+            ProxySelectorRoutePlanner routePlanner = new ProxySelectorRoutePlanner(
+                    client.getConnectionManager().getSchemeRegistry(),
+                    ProxySelector.getDefault());
+            client.setRoutePlanner(routePlanner);
         }
 
     }
