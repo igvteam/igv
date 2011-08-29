@@ -57,53 +57,68 @@ public class SpliceJunctionHelper {
 
         while (iterator.hasNext()) {
             //Any alignment with 2 or more blocks is considered to be a splice junction
-            Alignment alignment = iterator.next();
+            Alignment alignmentFromIterator = iterator.next();
 
-            AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-            if (blocks.length < 2)
-                continue;
+            //This is an odd bit of code.  If alignmentFromIterator is a paired alignment, then we actually need
+            //to do the processing separately on each of the paired alignments.  Otherwise, we need to process
+            //alignmentFromIterator, itself.
+            List<Alignment> alignmentsRepresentedByThisAlignment = new ArrayList<Alignment>();
+            if (alignmentFromIterator instanceof PairedAlignment) {
+                PairedAlignment alAsPair = (PairedAlignment) alignmentFromIterator;
+                if (alAsPair.getFirstAlignment() != null)
+                    alignmentsRepresentedByThisAlignment.add(alAsPair.getFirstAlignment());
+                if (alAsPair.getSecondAlignment() != null)
+                    alignmentsRepresentedByThisAlignment.add(alAsPair.getSecondAlignment());
+            }
+            else alignmentsRepresentedByThisAlignment.add(alignmentFromIterator);
 
-            //there may be other ways in which this is indicated. May have to code for them later
-            boolean isNegativeStrand = false;
-            Object strandAttr = alignment.getAttribute("XS");
-            if (strandAttr != null)
-                isNegativeStrand = strandAttr.toString().charAt(0) == '-';
+            for (Alignment alignment : alignmentsRepresentedByThisAlignment) {
+                AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+                if (blocks.length < 2)
+                    continue;
 
-            Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
-                    isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
+                //there may be other ways in which this is indicated. May have to code for them later
+                boolean isNegativeStrand = false;
+                Object strandAttr = alignment.getAttribute("XS");
+                if (strandAttr != null)
+                    isNegativeStrand = strandAttr.toString().charAt(0) == '-';
 
-            int flankingStart = -1;
-            int junctionStart = -1;
-            int gapCount = -1;
-            char[] gapTypes = alignment.getGapTypes();
-            //for each pair of blocks, create or add evidence to a splice junction
-            for (AlignmentBlock block : blocks) {
-                int flankingEnd = block.getEnd();
-                int junctionEnd = block.getStart();
-                if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
-                    //only proceed if the flanking regions are both bigger than the minimum
-                    if (minReadFlankingWidth == 0 ||
-                            ((junctionStart - flankingStart >= minReadFlankingWidth) &&
-                                    (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
-                        Map<Integer, SpliceJunctionFeature> endJunctionsMap =
-                                startEndJunctionsMapThisStrand.get(junctionStart);
-                        if (endJunctionsMap == null) {
-                            endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
-                            startEndJunctionsMapThisStrand.put(junctionStart, endJunctionsMap);
+                Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
+                        isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
+
+                int flankingStart = -1;
+                int junctionStart = -1;
+                int gapCount = -1;
+                char[] gapTypes = alignment.getGapTypes();
+                //for each pair of blocks, create or add evidence to a splice junction
+                for (AlignmentBlock block : blocks) {
+                    int flankingEnd = block.getEnd();
+                    int junctionEnd = block.getStart();
+                    if (junctionStart != -1 && gapCount < gapTypes.length && gapTypes[gapCount] == SamAlignment.SKIPPED_REGION) {
+                        //only proceed if the flanking regions are both bigger than the minimum
+                        if (minReadFlankingWidth == 0 ||
+                                ((junctionStart - flankingStart >= minReadFlankingWidth) &&
+                                        (flankingEnd - junctionEnd >= minReadFlankingWidth))) {
+                            Map<Integer, SpliceJunctionFeature> endJunctionsMap =
+                                    startEndJunctionsMapThisStrand.get(junctionStart);
+                            if (endJunctionsMap == null) {
+                                endJunctionsMap = new HashMap<Integer, SpliceJunctionFeature>();
+                                startEndJunctionsMapThisStrand.put(junctionStart, endJunctionsMap);
+                            }
+                            SpliceJunctionFeature junction = endJunctionsMap.get(junctionEnd);
+                            if (junction == null) {
+                                junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
+                                        isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
+                                endJunctionsMap.put(junctionEnd, junction);
+                                spliceJunctionFeatures.add(junction);
+                            }
+                            junction.addRead(flankingStart, flankingEnd);
                         }
-                        SpliceJunctionFeature junction = endJunctionsMap.get(junctionEnd);
-                        if (junction == null) {
-                            junction = new SpliceJunctionFeature(alignment.getChr(), junctionStart, junctionEnd,
-                                    isNegativeStrand ? Strand.NEGATIVE : Strand.POSITIVE);
-                            endJunctionsMap.put(junctionEnd, junction);
-                            spliceJunctionFeatures.add(junction);
-                        }
-                        junction.addRead(flankingStart, flankingEnd);
                     }
+                    flankingStart = junctionEnd;
+                    junctionStart = flankingEnd;
+                    gapCount += 1;
                 }
-                flankingStart = junctionEnd;
-                junctionStart = flankingEnd;
-                gapCount += 1;
             }
         }
 
