@@ -25,10 +25,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -59,7 +56,8 @@ public class FileUtils {
     }
 
 
-    public static boolean isRemote(String path) {
+    public static boolean isRemote(String p) {
+        String path = URLDecoder.decode(p);
         return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
     }
 
