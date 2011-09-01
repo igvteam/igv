@@ -41,6 +41,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -106,10 +107,18 @@ public class TrackLoader {
             String typeString = locator.getType();
             if (typeString == null) {
 
-                // Genome space hack
-                if ((path.contains("?dataFormat") || path.contains("%3Fdataformat")) &&
-                        (path.contains("dataformat/gct") || path.contains("dataformat%2Fgct"))) {
-                    typeString = ".gct";
+                // Genome space hack -- check for explicit type converter
+                //https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
+                //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
+                if (GSUtils.isGenomeSpace(path) && path.contains("?dataformat")) {
+                    if (path.contains("dataformat/gct")) {
+                        typeString = ".gct";
+                    } else if (path.contains("dataformat/bed")) {
+                        typeString = ".bed";
+                    } else if (path.contains("dataformat/cn")) {
+                        typeString = ".cn";
+                    }
+
                 } else {
                     typeString = path.toLowerCase();
                     if (!typeString.endsWith("_sorted.txt") &&
