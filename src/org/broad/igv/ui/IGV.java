@@ -1552,6 +1552,10 @@ public class IGV {
                         String indexFile = igvArgs.getIndexFile();
                         List<ResourceLocator> locators = new ArrayList();
                         for (String p : tokens) {
+                            URLDecoder decoder = new URLDecoder();
+                            if(FileUtils.isRemote(p)) {
+                                 p = decoder.decode(p);
+                            }
                             ResourceLocator rl = new ResourceLocator(p);
                             rl.setIndexPath(indexFile);
                             locators.add(rl);
