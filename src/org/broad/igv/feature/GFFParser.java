@@ -204,14 +204,14 @@ public class GFFParser implements FeatureParser {
                     if (line.startsWith("#track") || line.startsWith("##track")) {
                         trackProperties = new TrackProperties();
                         ParsingUtils.parseTrackLine(line, trackProperties);
-                    } else if (line.startsWith("#nodecode")) {
+                    } else if (line.startsWith("#nodecode") || line.startsWith("##nodecode")) {
                         helper.setUrlDecoding(false);
-                    } else if (line.startsWith("#hide")) {
+                    } else if (line.startsWith("#hide") || line.startsWith("##hide")) {
                         String[] kv = line.split("=");
                         if (kv.length > 1) {
                             featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
                         }
-                    } else if (line.startsWith("#displayName")) {
+                    } else if (line.startsWith("#displayName") || line.startsWith("##displayName")) {
                         String [] nameTokens = line.split("=");
                         if(nameTokens.length < 2) {
                             helper.setNameFields(null);

@@ -30,6 +30,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.nio.channels.ClosedByInterruptException;
+import java.text.BreakIterator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,104 +42,99 @@ public class CommandListener implements Runnable {
     private static CommandListener listener;
 
     private int port = -1;
+    private ServerSocket serverSocket = null;
+    private Socket clientSocket = null;
+    private Thread listenerThread;
+    boolean halt = false;
 
-    private CommandListener(int port) {
-        this.port = port;
+    public static synchronized void start(int port) {
+        listener = new CommandListener(port);
+        listener.listenerThread.start();
     }
+
 
     public static synchronized void halt() {
         if (listener != null) {
             listener.halt = true;
+            listener.listenerThread.interrupt();
+            listener.closeSockets();
+            listener = null;
         }
     }
 
-    public static synchronized void start(int port) {
-        listener = new CommandListener(port);
-        Thread listenerThread = new Thread(listener);
-        listenerThread.start();
+    private CommandListener(int port) {
+        this.port = port;
+        listenerThread = new Thread(this);
     }
-
-    boolean halt = false;
 
     public void run() {
 
         CommandExecutor cmdExe = new CommandExecutor();
 
-        ServerSocket serverSocket = null;
+        PrintWriter out = null;
+        BufferedReader in = null;
         try {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
 
-            while (halt == false) {
-                Socket clientSocket = null;
-                try {
-//                    System.out.println("Listening on port: " + port);
-                    clientSocket = serverSocket.accept();
+            clientSocket = serverSocket.accept();
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String inputLine;
+            while (!halt && (inputLine = in.readLine()) != null) {
+                Globals.batch = true;
+                Globals.setSuppressMessages(true);
 
-                    String inputLine;
+                String cmd = inputLine;
+                if (cmd.startsWith("GET")) {
+                    String result = processGet(cmd, in, cmdExe);
+                    sendHTTPResponse(out, result);
 
-
-                    while ((inputLine = in.readLine()) != null) {
-                        Globals.batch = true;
-                        Globals.setSuppressMessages(true);
-                        WaitCursorManager.CursorToken cursorToken = null;
-                        try {
-                            String cmd = inputLine;
-                            if (halt == true) {
-                                if (cmd.startsWith("GET")) {
-                                    sendHTTPResponse(out, "ERROR IGV port is closed");
-                                } else {
-                                    out.println("ERROR IGV port is closed");
-                                }
-                                break;
-                            }
-                            if (cmd.startsWith("GET")) {
-                                String result = processGet(cmd, in, cmdExe);
-                                sendHTTPResponse(out, result);
-                                clientSocket.close();
-
-                                clientSocket = serverSocket.accept();
-                                out = new PrintWriter(clientSocket.getOutputStream(), true);
-                                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-                            } else {
-                                out.println(cmdExe.execute(inputLine));
-                            }
-                        } finally {
-                            Globals.setSuppressMessages(false);
-                            Globals.batch = false;
-                            if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
-                        }
-
-                    }
-
-
-                    out.close();
-                    in.close();
-                    clientSocket.close();
-                } catch (IOException e) {
-                    log.error("Accept failed.", e);
-                } finally {
-                    clientSocket.close();
-                    Globals.setSuppressMessages(false);
+                } else {
+                    out.println(cmdExe.execute(inputLine));
                 }
-
             }
+
 
         } catch (java.net.BindException e) {
             log.error(e);
+        } catch (ClosedByInterruptException e) {
+            // Not really an error, caused by an interrupt
+
+        } catch (IOException e) {
+            if (!halt) {
+                log.error("IO Error on port socket ", e);
+            }
         } catch (Exception e) {
-            log.error("Could not listen on port: " + port, e);
+            e.printStackTrace();
         } finally {
+
+            Globals.setSuppressMessages(false);
+            Globals.batch = false;
+            Globals.setSuppressMessages(false);
+
+            closeSockets();
+
+        }
+    }
+
+    private void closeSockets() {
+        if (clientSocket != null) {
             try {
-                if (serverSocket != null) {
-                    serverSocket.close();
-                }
-            } catch (IOException ex) {
-                log.error("Error closing command listener socket", ex);
+                clientSocket.close();
+                clientSocket = null;
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        if (serverSocket != null) {
+            try {
+                serverSocket.close();
+                serverSocket = null;
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
     }

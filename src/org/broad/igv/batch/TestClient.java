@@ -73,7 +73,7 @@ public class TestClient {
         response = in.readLine();
         System.out.println(cmd + " " + response);
 
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 5; i++) {
 
             int start = 1 + (int) (Math.random() * (chrLength - 10000));
             int end = start + 8000;
