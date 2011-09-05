@@ -205,15 +205,6 @@ public class CommandExecutor {
         }
         String locus = param1;
         IGV.getFirstInstance().goToLocus(locus);
-
-        // Sleep, a goto depends on an asynchronous call to repaint() to update IGV's state
-        // TODO -- redesign to eliminate the need for this sleep.
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-
-        }
-
         return "OK";
     }
 

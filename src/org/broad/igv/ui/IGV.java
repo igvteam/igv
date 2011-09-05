@@ -417,18 +417,53 @@ public class IGV {
         repaintDataAndHeaderPanels(true);
     }
 
+    /**
+     * Repaint the header and data panels.
+     *
+     * Note:  If running in Batch mode a monitor is used to force synchrnous painting.  This is neccessary as the
+     * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
+     * might execute before the data from a previous command has loaded.
+     *
+     * @param updateCommandBar
+     */
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        rootPane.repaint();
+        if (Globals.batch) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                rootPane.paintImmediately(rootPane.getBounds());
+            } else {
+                synchronized (this) {
+                    Runnable r = new Runnable() {
+                        public void run() {
+                            synchronized (IGV.this) {
+                                rootPane.paintImmediately(rootPane.getBounds());
+                                IGV.this.notify();
+                            }
+                         }
+                    };
+                    UIUtilities.invokeOnEventThread(r);
+                    try {
+                        // Wait a maximum of 5 minutes
+                        this.wait(5*60*1000);
+                    } catch (InterruptedException e) {
+                        // Just continue
+                    }
+                }
+            }
+        } else {
+            rootPane.repaint();
+        }
         if (updateCommandBar) {
             contentPane.updateCurrentCoordinates();
         }
     }
 
+    /**
+     * Repaint the data panels.  Deprecated, but kept for backwards compatibility.
+     *
+     * @deprecated
+     */
     public void repaintDataPanels() {
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
-            tsv.getDataPanel().repaint();
-        }
-
+        repaintDataAndHeaderPanels(false);
     }
 
     public void repaintNamePanels() {
@@ -1553,8 +1588,8 @@ public class IGV {
                         String indexFile = igvArgs.getIndexFile();
                         List<ResourceLocator> locators = new ArrayList();
                         for (String p : tokens) {
-                            if(FileUtils.isRemote(p)) {
-                                 p = URLDecoder.decode(p);
+                            if (FileUtils.isRemote(p)) {
+                                p = URLDecoder.decode(p);
                             }
                             ResourceLocator rl = new ResourceLocator(p);
                             rl.setIndexPath(indexFile);

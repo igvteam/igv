@@ -83,8 +83,6 @@ public class CommandListener implements Runnable {
 
             String inputLine;
             while (!halt && (inputLine = in.readLine()) != null) {
-                Globals.batch = true;
-                Globals.setSuppressMessages(true);
 
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
@@ -92,8 +90,18 @@ public class CommandListener implements Runnable {
                     sendHTTPResponse(out, result);
 
                 } else {
-                    out.println(cmdExe.execute(inputLine));
+                    // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
+                    // This is neccessary to avoid random "blank" screens.
+                    try {
+                        Globals.batch = true;
+                        Globals.setSuppressMessages(true);
+                        out.println(cmdExe.execute(inputLine));
+                    } finally {
+                        Globals.setSuppressMessages(false);
+                        Globals.batch = false;
+                    }
                 }
+
             }
 
 
@@ -112,7 +120,6 @@ public class CommandListener implements Runnable {
 
             Globals.setSuppressMessages(false);
             Globals.batch = false;
-            Globals.setSuppressMessages(false);
 
             closeSockets();
 
