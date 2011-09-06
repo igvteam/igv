@@ -1,0 +1,58 @@
+------
+Header
+------
+
+  masterIndexPointer
+
+  --------
+  Matrix
+  --------
+  chr1  // lowest index chromosome
+  chr2  // highest index chromosome
+  numberOfZooms
+
+    --------------
+    MatrixZoomHeader // repeat for each zoom
+    --------------
+    zoom
+    binSize     // in bp
+    blockSize   // in # bin columns
+    blockColumnCount
+    numberOfBlocks
+
+      -----------
+      Block Index   // repeat for each block
+      -----------
+      blockNumber
+      filePosition
+      sizeInbytes
+
+    --------------
+    MatrixZoomData  //repeat for each zoom
+    --------------
+
+      ----------
+      Block         // repeat for each block
+      ----------
+      numberOfRecords
+
+        -----------
+        ContactRecord   // repeat for each contact record
+        -----------
+        bin1
+        bin2
+        counts
+
+
+------------
+Master Index
+------------
+numberOfEntries
+
+   -----
+   Entry          // repeat for each entry
+   -----
+   matrixKey      // chr1_chr2
+   filePosition
+   sizeInBytes
+   
