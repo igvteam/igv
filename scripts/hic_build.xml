@@ -85,7 +85,7 @@
             </patternset>
             <fileset dir="${lib.dir}">
                 <include name="**/*.jar"/>
-                <exclude name="**/batik*.jar"/>
+                <exclude name="**/batik-codec.jar"/>
             </fileset>
         </unzip>
 
