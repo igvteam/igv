@@ -343,8 +343,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         public Feature next() {
             BedFeature feat = bedIterator.next();
             BasicFeature feature = new BasicFeature(feat.getChromosome(), feat.getStartBase(), feat.getEndBase());
-            String restOfFields = feat.getRestOfFields();
-            if (restOfFields != null && restOfFields.length() > 0) {
+            String [] restOfFields = feat.getRestOfFields();
+            if (restOfFields != null && restOfFields.length > 0) {
                 decode(feature, restOfFields);
             }
             return feature;
@@ -381,10 +381,9 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     /////////// Decoder for BED features
 
 
-    private static void decode(BasicFeature feature, String restOfFields) {
+    private static void decode(BasicFeature feature, String [] restOfFields) {
 
-        String[] tokens = restOfFields.split("\t");
-        int tokenCount = tokens.length;
+        int tokenCount = restOfFields.length;
 
 
         // The rest of the columns are optional.  Stop parsing upon encountering
@@ -392,7 +391,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         // Name
         if (tokenCount > 0) {
-            String name = tokens[0].replaceAll("\"", "");
+            String name = restOfFields[0].replaceAll("\"", "");
             feature.setName(name);
             feature.setIdentifier(name);
         }
@@ -400,7 +399,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         // Score
         if (tokenCount > 1) {
             try {
-                float score = Float.parseFloat(tokens[1]);
+                float score = Float.parseFloat(restOfFields[1]);
                 feature.setScore(score);
             } catch (NumberFormatException numberFormatException) {
 
@@ -413,7 +412,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         // Strand
         if (tokenCount > 2) {
-            String strandString = tokens[2].trim();
+            String strandString = restOfFields[2].trim();
             char strand = (strandString.length() == 0)
                     ? ' ' : strandString.charAt(0);
 
@@ -427,21 +426,21 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         }
 
         if (tokenCount > 5) {
-            String colorString = tokens[5];
+            String colorString = restOfFields[5];
             feature.setColor(ColorUtilities.stringToColor(colorString));
         }
 
         // Coding information is optional
         if (tokenCount > 8) {
             Strand strand = feature.getStrand();
-            int cdStart = Integer.parseInt(tokens[3]);
-            int cdEnd = Integer.parseInt(tokens[4]);
+            int cdStart = Integer.parseInt(restOfFields[3]);
+            int cdEnd = Integer.parseInt(restOfFields[4]);
 
-            int exonCount = Integer.parseInt(tokens[6]);
+            int exonCount = Integer.parseInt(restOfFields[6]);
             String[] exonSizes = new String[exonCount];
             String[] startsBuffer = new String[exonCount];
-            ParsingUtils.split(tokens[7], exonSizes, ',');
-            ParsingUtils.split(tokens[8], startsBuffer, ',');
+            ParsingUtils.split(restOfFields[7], exonSizes, ',');
+            ParsingUtils.split(restOfFields[8], startsBuffer, ',');
 
             int exonNumber = (strand == Strand.NEGATIVE ? exonCount : 1);
 
