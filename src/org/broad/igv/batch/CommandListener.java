@@ -214,7 +214,7 @@ public class CommandListener implements Runnable {
         }
 
         // Consume the remainder of the request, if any.  This is important to free the connection.
-        while (nextLine.length() > 0) {
+        while (nextLine != null && nextLine.length() > 0) {
             nextLine = reader.readLine();
         }
         return result;
