@@ -82,26 +82,27 @@ public class CommandListener implements Runnable {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             String inputLine;
-            while (!halt && (inputLine = in.readLine()) != null) {
+            while (!halt) {
+                while (!halt && (inputLine = in.readLine()) != null) {
 
-                String cmd = inputLine;
-                if (cmd.startsWith("GET")) {
-                    String result = processGet(cmd, in, cmdExe);
-                    sendHTTPResponse(out, result);
+                    String cmd = inputLine;
+                    if (cmd.startsWith("GET")) {
+                        String result = processGet(cmd, in, cmdExe);
+                        sendHTTPResponse(out, result);
 
-                } else {
-                    // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
-                    // This is neccessary to avoid random "blank" screens.
-                    try {
-                        Globals.batch = true;
-                        Globals.setSuppressMessages(true);
-                        out.println(cmdExe.execute(inputLine));
-                    } finally {
-                        Globals.setSuppressMessages(false);
-                        Globals.batch = false;
+                    } else {
+                        // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
+                        // This is neccessary to avoid random "blank" screens.
+                        try {
+                            Globals.batch = true;
+                            Globals.setSuppressMessages(true);
+                            out.println(cmdExe.execute(inputLine));
+                        } finally {
+                            Globals.setSuppressMessages(false);
+                            Globals.batch = false;
+                        }
                     }
                 }
-
             }
 
 
