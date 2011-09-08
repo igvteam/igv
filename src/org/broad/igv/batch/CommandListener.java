@@ -90,6 +90,13 @@ public class CommandListener implements Runnable {
                         String result = processGet(cmd, in, cmdExe);
                         sendHTTPResponse(out, result);
 
+                        out.close();
+                        in.close();
+                        clientSocket.close();
+                        clientSocket = serverSocket.accept();
+                        out = new PrintWriter(clientSocket.getOutputStream(), true);
+                        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
                     } else {
                         // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
                         // This is neccessary to avoid random "blank" screens.
@@ -103,6 +110,7 @@ public class CommandListener implements Runnable {
                         }
                     }
                 }
+                closeSockets();
             }
 
 
