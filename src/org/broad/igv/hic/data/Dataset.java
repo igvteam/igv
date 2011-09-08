@@ -12,7 +12,6 @@ public class Dataset {
 
     private boolean caching = true;
 
-    // TODO -- use soft reference cache
     Map<String, Matrix> matrices = new HashMap(25 * 25);
 
     private DatasetReader reader;

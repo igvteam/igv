@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
-    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, int maxCount, Graphics g, Rectangle bounds) {
+    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g, Rectangle bounds) {
 
         int chr1 = zd.getChr1(); //Context.chr1Index;
         int chr2 = zd.getChr2(); //Context.chr2Index;
@@ -58,11 +58,12 @@ public class HeatmapRenderer {
                     ContactRecord rec = recs[i];
 
                     Color color = null;
-                    float score = rec.getCounts();
+                    double binSizeHKB = binSize / 100000.0;
+                    double score = rec.getCounts() / (binSizeHKB * binSizeHKB);
                     if (maxCount > 0 && score > 2 * maxCount) {
                         color = Color.ORANGE;
                     } else {
-                        float alpha = Math.max(0.05f, Math.min(1.0f, score / maxCount));
+                        float alpha = (float) Math.max(0.05f, Math.min(1.0f, score / maxCount));
                         color = getColor(alpha);
                     }
 

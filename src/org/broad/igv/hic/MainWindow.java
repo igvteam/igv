@@ -9,7 +9,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 
 import org.broad.igv.hic.data.*;
-import sun.security.krb5.internal.crypto.Crc32CksumType;
 
 import java.awt.*;
 import java.io.File;
@@ -22,19 +21,17 @@ import javax.swing.*;
  */
 public class MainWindow extends JFrame {
 
-    //String file = "test/data/test.summary.binned.sorted.hic";
-    //String file = "data/GSE18199_RAW/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt";
-    //String file = "data/GSE18199_RAW/GSM455140_428EGAAXX.8.maq.hic.summary.binned.compressed.hic";
+    int refMaxCount = 500;
 
-    static int refMaxCount = 30;
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
     public static final int MAX_ZOOM = 10;
 
     String genomeId;
     Chromosome chr1;
     Chromosome chr2;
-    int len;
-    public Context context;
+    private int len;
+    public Context xContext;
+    public Context yContext;
     Dataset dataset;
     MatrixZoomData zd;
     java.util.List<Chromosome> chromosomes;
@@ -61,7 +58,10 @@ public class MainWindow extends JFrame {
 
         updateGenome();
 
-        context = new Context();
+        xContext = new Context();
+        yContext = new Context();
+        ((HiCRulerPanel) rulerPanel2).setFrame(xContext);
+       // ((HiCRulerPanel) rulerPanel1).setFrame(yContext);
 
         rangeScale.setValue(refMaxCount);
 
@@ -75,14 +75,33 @@ public class MainWindow extends JFrame {
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         thumbnailPanel.setBinWidth(1);
         thumbnailPanel.setMaxCount((int) (6.25 * refMaxCount));
-        thumbnailPanel.setContext(context);
+        thumbnailPanel.setContext(xContext);
 
-        Hashtable<Integer, JLabel> zoomLabels = new Hashtable();
-        zoomLabels.put(1, new JLabel("1 MB"));
-        zoomLabels.put(4, new JLabel("100 KB"));
-        zoomLabels.put(7, new JLabel("10 KB"));
-        zoomLabels.put(10, new JLabel("1 KB"));
-        zoomSlider.setLabelTable(zoomLabels);
+        ZoomLabel[] zooms = new ZoomLabel[]{
+                new ZoomLabel("2.5 mb", 0),
+                new ZoomLabel("1   mb", 1),
+                new ZoomLabel("500 kb", 2),
+                new ZoomLabel("250 kb", 3),
+                new ZoomLabel("100 kb", 4),
+                new ZoomLabel("50  kb", 5),
+                new ZoomLabel("10  kb", 6),
+                new ZoomLabel("5   kb", 7),
+                new ZoomLabel("1   kb", 8)};
+        zoomComboBox.setModel(new DefaultComboBoxModel(zooms));
+    }
+
+    class ZoomLabel {
+        String label;
+        int zoom;
+
+        ZoomLabel(String label, int zoom) {
+            this.label = label;
+            this.zoom = zoom;
+        }
+
+        public String toString() {
+            return label;
+        }
     }
 
     private void load(String file) throws IOException {
@@ -147,14 +166,14 @@ public class MainWindow extends JFrame {
 
     private void setInitialZoom() {
 
-        context.setLenX(chr1.getSize());
-        context.setLenY(chr2.getSize());
-        len = Math.max(context.getLenX(), context.getLenY());
+        xContext.setChrLength(chr1.getSize());
+        yContext.setChrLength(chr2.getSize());
+        setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = heatmapPanel.getVisibleRect().width;
         int maxNBins = pixels / 2;
 
         // Main panel
-        int bp_bin = len / maxNBins;
+        int bp_bin = getLen() / maxNBins;
         int initialZoom = zoomBinSizes.length - 1;
         for (int z = 1; z < zoomBinSizes.length; z++) {
             if (zoomBinSizes[z] < bp_bin) {
@@ -162,7 +181,7 @@ public class MainWindow extends JFrame {
                 break;
             }
         }
-        int nBins = len / zoomBinSizes[initialZoom] + 1;
+        int nBins = getLen() / zoomBinSizes[initialZoom] + 1;
         int binWidth = (pixels / nBins);
         heatmapPanel.setBinWidth(binWidth);
 
@@ -170,7 +189,7 @@ public class MainWindow extends JFrame {
         // Thumbnail
         pixels = thumbnailPanel.getVisibleRect().width;
         maxNBins = pixels;
-        bp_bin = len / maxNBins;
+        bp_bin = getLen() / maxNBins;
         int thumbnailZoom = zoomBinSizes.length - 1;
         for (int z = 1; z < zoomBinSizes.length; z++) {
             if (zoomBinSizes[z] < bp_bin) {
@@ -178,7 +197,7 @@ public class MainWindow extends JFrame {
                 break;
             }
         }
-        nBins = len / zoomBinSizes[thumbnailZoom] + 1;
+        nBins = getLen() / zoomBinSizes[thumbnailZoom] + 1;
         binWidth = (pixels / nBins);
         thumbnailPanel.setBinWidth(binWidth);
         thumbnailPanel.setZd(dataset.getMatrix(chr1.getIndex(), chr2.getIndex()).getZoomData(thumbnailZoom));
@@ -194,8 +213,8 @@ public class MainWindow extends JFrame {
 
         Rectangle visibleRect = heatmapPanel.getVisibleRect();
         int binSize = zoomBinSizes[zoom];
-        int centerLocationX = context.getOriginX() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
-        int centerLocationY = context.getOriginY() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
+        int centerLocationX = xContext.getOrigin() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
+        int centerLocationY = yContext.getOrigin() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
         setZoom(zoom, centerLocationX, centerLocationY);
     }
 
@@ -203,21 +222,25 @@ public class MainWindow extends JFrame {
 
         if (newZoom < 1 || newZoom > MAX_ZOOM) return;
 
+        //int currentBinSize = zoomBinSizes[xContext.getZoom()];
         int newBinSize = zoomBinSizes[newZoom];
-        double ratio = ((double) newBinSize) / zoomBinSizes[1];
-        int scale = Math.max(1, (int) (ratio * refMaxCount));
-        rangeScale.setValue(scale);
+        //double ratio = Math.pow(((double) newBinSize) / currentBinSize, 2);
+        //int scale = Math.max(1, (int) (ratio * refMaxCount));
+        //rangeScale.setValue(scale);
 
-        context.setZoom(newZoom);
+        xContext.setZoom(newZoom, ((double) newBinSize) / heatmapPanel.getBinWidth());
+        yContext.setZoom(newZoom, ((double) newBinSize) / heatmapPanel.getBinWidth());
 
-        zd = dataset.getMatrix(chr1.getIndex(), chr2.getIndex()).getZoomData(context.getZoom());
+        zd = dataset.getMatrix(chr1.getIndex(), chr2.getIndex()).getZoomData(xContext.getZoom());
 
-        context.setVisibleWidth((int) ((double) heatmapPanel.getVisibleRect().width / heatmapPanel.getBinWidth() * zoomBinSizes[context.getZoom()]));
-        context.setVisibleHeight((int) ((double) heatmapPanel.getVisibleRect().height / heatmapPanel.getBinWidth() * zoomBinSizes[context.getZoom()]));
+        xContext.setVisibleWidth((int) ((double) heatmapPanel.getVisibleRect().width / heatmapPanel.getBinWidth() * zoomBinSizes[xContext.getZoom()]));
+        yContext.setVisibleWidth((int) ((double) heatmapPanel.getVisibleRect().height / heatmapPanel.getBinWidth() * zoomBinSizes[xContext.getZoom()]));
 
-        zoomSlider.setValue(newZoom);
+        zoomComboBox.setSelectedIndex(newZoom);
 
         center(centerLocationX, centerLocationY);
+
+        repaint();
 
     }
 
@@ -225,46 +248,44 @@ public class MainWindow extends JFrame {
 
         int binSize = zd.getBinSize();
         int w = (int) (heatmapPanel.getVisibleRect().getWidth() * binSize / heatmapPanel.getBinWidth());
-        context.setOrigin(((int) (centerLocationX - w / 2)), (int) (centerLocationY - w / 2));
-        heatmapPanel.repaint();
-        thumbnailPanel.repaint();
+        xContext.setOrigin((int) (centerLocationX - w / 2));
+        yContext.setOrigin((int) (centerLocationY - w / 2));
+        //heatmapPanel.repaint();
+        //thumbnailPanel.repaint();
+        repaint();
     }
 
 
     public void moveBy(int dx, int dy) {
-        context.increment(dx, dy);
-        heatmapPanel.repaint();
-        thumbnailPanel.repaint();
+        xContext.increment(dx);
+        yContext.increment(dy);
+        //heatmapPanel.repaint();
+        //thumbnailPanel.repaint();
+        repaint();
     }
 
     private void rangeStateChanged(ChangeEvent e) {
         JSlider slider = (JSlider) e.getSource();
-        int maxCount = Math.max(1, slider.getValue());
+        int maxCount = slider.getValue();
 
         heatmapPanel.setMaxCount(maxCount); //getZoomMaxCount());
-        heatmapPanel.repaint();
-    }
-
-    private void zoomSliderStateChanged(ChangeEvent e) {
-
-        int newZoom = zoomSlider.getValue();
-        if (newZoom == context.getZoom()) return;
-        setZoom(newZoom);
+        //heatmapPanel.repaint();
+        repaint();
     }
 
     public int getZoomMaxCount() {
 
-        int factor = (int) Math.pow((double) zoomBinSizes[context.getZoom()] / zoomBinSizes[1], 2);
+        int factor = (int) Math.pow((double) zoomBinSizes[xContext.getZoom()] / zoomBinSizes[1], 2);
         return (int) Math.max(1, (refMaxCount * factor));
     }
 
     private void thumbnailPanelMouseClicked(MouseEvent e) {
         int bw = thumbnailPanel.getBinWidth();
-        int nBins = len / thumbnailPanel.getZd().getBinSize();
+        int nBins = getLen() / thumbnailPanel.getZd().getBinSize();
         int effectiveWidth = nBins * bw;
 
-        int newX = (int) (((double) e.getX() / effectiveWidth) * len);
-        int newY = (int) (((double) e.getY() / effectiveWidth) * len);
+        int newX = (int) (((double) e.getX() / effectiveWidth) * getLen());
+        int newY = (int) (((double) e.getY() / effectiveWidth) * getLen());
         center(newX, newY);
     }
 
@@ -293,6 +314,29 @@ public class MainWindow extends JFrame {
 
     private void genomeBoxActionPerformed(ActionEvent e) {
         updateGenome();
+    }
+
+    public int getLen() {
+        return len;
+    }
+
+    public void setLen(int len) {
+        this.len = len;
+    }
+
+    private void zoomComboBoxActionPerformed(ActionEvent e) {
+        Object selected = zoomComboBox.getSelectedItem();
+        if (selected != null) {
+            int newZoom = ((ZoomLabel) selected).zoom;
+            if (newZoom == xContext.getZoom()) return;
+            setZoom(newZoom);
+            repaint();
+        }
+
+    }
+
+    private void zoomSliderStateChanged(ChangeEvent e) {
+        // TODO add your code here
     }
 
     class HeatmapMouseHandler extends MouseAdapter {
@@ -345,6 +389,7 @@ public class MainWindow extends JFrame {
                 double deltaX = lastMousePoint.getX() - e.getX();
                 double deltaY = lastMousePoint.getY() - e.getY();
 
+                // Size i
                 int dx = (int) (deltaX * zd.getBinSize() / heatmapPanel.getBinWidth());
                 int dy = (int) (deltaY * zd.getBinSize() / heatmapPanel.getBinWidth());
 
@@ -360,13 +405,13 @@ public class MainWindow extends JFrame {
         public void mouseClicked(MouseEvent e) {
 
             if (!e.isPopupTrigger() && (e.getClickCount() > 1)) {
-                int currentZoom = context.getZoom();
+                int currentZoom = xContext.getZoom();
                 final int newZoom = e.isAltDown()
                         ? Math.max(currentZoom - 1, 1)
                         : Math.min(11, currentZoom + 1);
 
-                int centerLocationX = context.getOriginX() + e.getX() * zd.getBinSize() / heatmapPanel.getBinWidth();
-                int centerLocationY = context.getOriginY() + e.getY() * zd.getBinSize() / heatmapPanel.getBinWidth();
+                int centerLocationX = xContext.getOrigin() + e.getX() * zd.getBinSize() / heatmapPanel.getBinWidth();
+                int centerLocationY = yContext.getOrigin() + e.getY() * zd.getBinSize() / heatmapPanel.getBinWidth();
 
                 setZoom(newZoom, centerLocationX, centerLocationY);
 
@@ -375,11 +420,11 @@ public class MainWindow extends JFrame {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (context != null && zd != null) {
+            if (xContext != null && zd != null) {
                 Rectangle visRect = heatmapPanel.getVisibleRect();
                 final int binSize = zd.getBinSize();
-                int binX = (context.getOriginX() / binSize) + (e.getX() - visRect.x) / heatmapPanel.getBinWidth();
-                int binY = (context.getOriginY() / binSize) + (e.getY() - visRect.y) / heatmapPanel.getBinWidth();
+                int binX = (xContext.getOrigin() / binSize) + (e.getX() - visRect.x) / heatmapPanel.getBinWidth();
+                int binY = (yContext.getOrigin() / binSize) + (e.getY() - visRect.y) / heatmapPanel.getBinWidth();
                 StringBuffer txt = new StringBuffer();
                 txt.append("<html>");
                 txt.append(chr1.getName());
@@ -408,11 +453,16 @@ public class MainWindow extends JFrame {
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
         refreshButton = new JButton();
-        zoomSlider = new JSlider();
+        zoomComboBox = new JComboBox();
+        thumbnailPanel = new ThumbnailPanel();
+        panel3 = new JPanel();
+        panel5 = new JPanel();
+        rulerPanel2 = new HiCRulerPanel();
+        panel6 = new JPanel();
         heatmapPanel = new HeatmapPanel();
+        rulerPanel1 = new JPanel();
         panel1 = new JPanel();
         rangeScale = new JSlider();
-        thumbnailPanel = new ThumbnailPanel();
         menuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
@@ -459,55 +509,13 @@ public class MainWindow extends JFrame {
                 }
                 panel4.add(chrSelectionPanel);
 
-                //---- zoomSlider ----
-                zoomSlider.setMinimum(1);
-                zoomSlider.setMaximum(10);
-                zoomSlider.setMajorTickSpacing(3);
-                zoomSlider.setPaintLabels(true);
-                zoomSlider.setValue(1);
-                zoomSlider.setSnapToTicks(true);
-                zoomSlider.setName("Zoom slider");
-                zoomSlider.setPaintTicks(true);
-                zoomSlider.setMinorTickSpacing(1);
-                zoomSlider.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent e) {
-                        zoomSliderStateChanged(e);
+                //---- zoomComboBox ----
+                zoomComboBox.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        zoomComboBoxActionPerformed(e);
                     }
                 });
-                panel4.add(zoomSlider);
-            }
-            panel2.add(panel4, BorderLayout.NORTH);
-
-            //---- heatmapPanel ----
-            heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
-            heatmapPanel.setMaximumSize(new Dimension(800, 800));
-            heatmapPanel.setMinimumSize(new Dimension(800, 800));
-            heatmapPanel.setPreferredSize(new Dimension(800, 800));
-            heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
-                @Override
-                public void mouseDragged(MouseEvent e) {
-                    heatmapPanelMouseDragged(e);
-                }
-            });
-            panel2.add(heatmapPanel, BorderLayout.CENTER);
-
-            //======== panel1 ========
-            {
-                panel1.setLayout(new FlowLayout());
-
-                //---- rangeScale ----
-                rangeScale.setMaximum(500);
-                rangeScale.setMinorTickSpacing(10);
-                rangeScale.setMajorTickSpacing(50);
-                rangeScale.setPaintTicks(true);
-                rangeScale.setPaintLabels(true);
-                rangeScale.setPreferredSize(new Dimension(300, 52));
-                rangeScale.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent e) {
-                        rangeStateChanged(e);
-                    }
-                });
-                panel1.add(rangeScale);
+                panel4.add(zoomComboBox);
 
                 //---- thumbnailPanel ----
                 thumbnailPanel.setMaximumSize(new Dimension(100, 100));
@@ -520,7 +528,105 @@ public class MainWindow extends JFrame {
                         thumbnailPanelMouseClicked(e);
                     }
                 });
-                panel1.add(thumbnailPanel);
+                panel4.add(thumbnailPanel);
+            }
+            panel2.add(panel4, BorderLayout.NORTH);
+
+            //======== panel3 ========
+            {
+                panel3.setLayout(new BorderLayout());
+
+                //======== panel5 ========
+                {
+                    panel5.setLayout(new BorderLayout());
+
+                    //---- rulerPanel2 ----
+                    rulerPanel2.setMaximumSize(new Dimension(4000, 50));
+                    rulerPanel2.setMinimumSize(new Dimension(1, 50));
+                    rulerPanel2.setPreferredSize(new Dimension(1, 50));
+                    rulerPanel2.setBorder(LineBorder.createBlackLineBorder());
+                    panel5.add(rulerPanel2, BorderLayout.CENTER);
+
+                    //======== panel6 ========
+                    {
+                        panel6.setMaximumSize(new Dimension(50, 50));
+                        panel6.setMinimumSize(new Dimension(50, 50));
+                        panel6.setPreferredSize(new Dimension(50, 50));
+                        panel6.setLayout(null);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < panel6.getComponentCount(); i++) {
+                                Rectangle bounds = panel6.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel6.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel6.setMinimumSize(preferredSize);
+                            panel6.setPreferredSize(preferredSize);
+                        }
+                    }
+                    panel5.add(panel6, BorderLayout.WEST);
+                }
+                panel3.add(panel5, BorderLayout.NORTH);
+
+                //---- heatmapPanel ----
+                heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
+                heatmapPanel.setMaximumSize(new Dimension(800, 800));
+                heatmapPanel.setMinimumSize(new Dimension(800, 800));
+                heatmapPanel.setPreferredSize(new Dimension(800, 800));
+                heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        heatmapPanelMouseDragged(e);
+                    }
+                });
+                panel3.add(heatmapPanel, BorderLayout.CENTER);
+
+                //======== rulerPanel1 ========
+                {
+                    rulerPanel1.setMaximumSize(new Dimension(50, 4000));
+                    rulerPanel1.setPreferredSize(new Dimension(50, 1));
+                    rulerPanel1.setBorder(LineBorder.createBlackLineBorder());
+                    rulerPanel1.setLayout(null);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < rulerPanel1.getComponentCount(); i++) {
+                            Rectangle bounds = rulerPanel1.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = rulerPanel1.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        rulerPanel1.setMinimumSize(preferredSize);
+                        rulerPanel1.setPreferredSize(preferredSize);
+                    }
+                }
+                panel3.add(rulerPanel1, BorderLayout.WEST);
+            }
+            panel2.add(panel3, BorderLayout.CENTER);
+
+            //======== panel1 ========
+            {
+                panel1.setLayout(new FlowLayout());
+
+                //---- rangeScale ----
+                rangeScale.setMajorTickSpacing(100);
+                rangeScale.setPaintTicks(true);
+                rangeScale.setPaintLabels(true);
+                rangeScale.setPreferredSize(new Dimension(300, 52));
+                rangeScale.setValue(500);
+                rangeScale.setMaximum(1000);
+                rangeScale.addChangeListener(new ChangeListener() {
+                    public void stateChanged(ChangeEvent e) {
+                        rangeStateChanged(e);
+                    }
+                });
+                panel1.add(rangeScale);
             }
             panel2.add(panel1, BorderLayout.SOUTH);
         }
@@ -559,11 +665,16 @@ public class MainWindow extends JFrame {
     private JComboBox chrBox1;
     private JComboBox chrBox2;
     private JButton refreshButton;
-    private JSlider zoomSlider;
+    private JComboBox zoomComboBox;
+    private ThumbnailPanel thumbnailPanel;
+    private JPanel panel3;
+    private JPanel panel5;
+    private JPanel rulerPanel2;
+    private JPanel panel6;
     private HeatmapPanel heatmapPanel;
+    private JPanel rulerPanel1;
     private JPanel panel1;
     private JSlider rangeScale;
-    private ThumbnailPanel thumbnailPanel;
     private JMenuBar menuBar1;
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;

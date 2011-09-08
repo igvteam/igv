@@ -50,16 +50,16 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     }
 
     private void renderVisibleWindow(Graphics g) {
-        if (mainWindow != null && mainWindow.context.getVisibleWidth() > 0) {
+        if (mainWindow != null && mainWindow.xContext.getVisibleWidth() > 0) {
 
             int bw = getBinWidth();
-            int nBins = mainWindow.len / zd.getBinSize();
+            int nBins = mainWindow.getLen() / zd.getBinSize();
             int effectiveWidth = nBins * bw;
 
-            int w = (int) ((((double) mainWindow.context.getVisibleWidth()) / mainWindow.len) * effectiveWidth);
-            int h = (int) ((((double) mainWindow.context.getVisibleHeight()) / mainWindow.len) * effectiveWidth);
-            int x = (int) ((((double) getContext().getOriginX()) / mainWindow.len) * effectiveWidth);
-            int y = (int) ((((double) getContext().getOriginY()) / mainWindow.len) * effectiveWidth);
+            int w = (int) ((((double) mainWindow.xContext.getVisibleWidth()) / mainWindow.getLen()) * effectiveWidth);
+            int h = (int) ((((double) mainWindow.yContext.getVisibleWidth()) / mainWindow.getLen()) * effectiveWidth);
+            int x = (int) ((((double) mainWindow.xContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
+            int y = (int) ((((double) mainWindow.yContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
             g.setColor(Color.black);
             g.drawRect(x, y, w, h);
         }

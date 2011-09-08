@@ -11,7 +11,7 @@ import java.io.Serializable;
 public class HeatmapPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
-    private int maxCount = 50;
+    private double maxCount = 200.0 / (1 * 1);
     private int binWidth = 2;
 
     HeatmapRenderer renderer = new HeatmapRenderer();
@@ -26,17 +26,13 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         if (mainWindow != null && mainWindow.zd != null) {
             Rectangle bounds = this.getVisibleRect();
-            renderer.render(mainWindow.context.getOriginX(), mainWindow.context.getOriginY(), mainWindow.zd,
-                    getBinWidth(), getMaxCount(), g, bounds);
+            renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), mainWindow.zd,
+                    binWidth, maxCount, g, bounds);
 
         }
     }
 
-    public int getMaxCount() {
-        return maxCount;
-    }
-
-    public void setMaxCount(int maxCount) {
+    public void setMaxCount(double maxCount) {
         this.maxCount = maxCount;
     }
 

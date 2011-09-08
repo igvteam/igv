@@ -88,7 +88,7 @@ public class RulerPanel extends JPanel {
     }
 
     private boolean isWholeGenomeView() {
-        return getViewContext().getChrName().equals(Globals.CHR_ALL);
+        return frame.getChrName().equals(Globals.CHR_ALL);
     }
 
     @Override
@@ -126,10 +126,6 @@ public class RulerPanel extends JPanel {
 
     }
 
-    private ReferenceFrame getViewContext() {
-        return frame;
-    }
-
     private void drawSpan(Graphics g) {
 
         //TODO -- hack
@@ -139,9 +135,12 @@ public class RulerPanel extends JPanel {
         g.setFont(spanFont);
 
         // Positions are 1/2 open, subtract 1 to compensate
-        int range = (int) (getViewContext().getScale() * w) + 1;
+        int range = (int) (frame.getScale() * w) + 1;
 
-        TickSpacing ts = findSpacing(getViewContext(), range);
+        // TODO -- hack, assumes location unit for whole genome is kilo-base
+        boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
+
+        TickSpacing ts = findSpacing(range,scaleInKB);
         String rangeString = formatNumber((double) range / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
         int strWidth = g.getFontMetrics().stringWidth(rangeString);
         int strHeight = g.getFontMetrics().getAscent();
@@ -163,13 +162,13 @@ public class RulerPanel extends JPanel {
     }
 
     private void drawEllipsis(Graphics g) {
-        double cytobandScale = ((double) getViewContext().getChromosomeLength()) / getWidth();
+        double cytobandScale = ((double) frame.getChromosomeLength()) / getWidth();
 
-        double maxPixel = getViewContext().getMaxPixel();
+        double maxPixel = frame.getMaxPixel();
         //visibleFraction = maxPixel < 0 ? 0 : ((double) getViewContext().getDataPanelWidth()) / maxPixel;
 
-        int start = (int) ((getViewContext().getOrigin()) / cytobandScale);
-        int span = (int) ((getWidth() * getViewContext().getScale()) / cytobandScale);
+        int start = (int) ((frame.getOrigin()) / cytobandScale);
+        int span = (int) ((getWidth() * frame.getScale()) / cytobandScale);
         int end = start + span;
 
         g.drawLine(start, 0, 0, getHeight());
@@ -186,18 +185,21 @@ public class RulerPanel extends JPanel {
 
         g.setFont(tickFont);
 
-        int range = (int) (w * getViewContext().getScale());
-        TickSpacing ts = findSpacing(getViewContext(), range);
+        // TODO -- hack, assumes location unit for whole genome is kilo-base
+        boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
+
+        int range = (int) (w * frame.getScale());
+        TickSpacing ts = findSpacing(range, scaleInKB);
         double spacing = ts.getMajorTick();
 
         // Find starting point closest to the current origin
-        int nTick = (int) (getViewContext().getOrigin() / spacing) - 1;
+        int nTick = (int) (frame.getOrigin() / spacing) - 1;
         int l = (int) (nTick * spacing);
-        int x = getViewContext().getScreenPosition(l - 1);    // 0 vs 1 based coordinates
+        int x = frame.getScreenPosition(l - 1);    // 0 vs 1 based coordinates
         //int strEnd = Integer.MIN_VALUE;
         while (x < getWidth()) {
             l = (int) (nTick * spacing);
-            x = getViewContext().getScreenPosition(l - 1);
+            x = frame.getScreenPosition(l - 1);
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
@@ -248,8 +250,8 @@ public class RulerPanel extends JPanel {
             Chromosome c = genome.getChromosome(chrName);
             int chrLength = c.getLength();
 
-            int x = (int) (offset / (locationUnit * getViewContext().getScale()));
-            int dw = (int) (chrLength / (locationUnit * getViewContext().getScale()));
+            int x = (int) (offset / (locationUnit * frame.getScale()));
+            int dw = (int) (chrLength / (locationUnit * frame.getScale()));
 
             // Dont draw very small chromosome & contigs in whole genome view
             if (dw > 1) {
@@ -294,13 +296,11 @@ public class RulerPanel extends JPanel {
 
     }
 
-    public static TickSpacing findSpacing(ReferenceFrame frame, long maxValue) {
+    public static TickSpacing findSpacing(long maxValue, boolean scaleInKB) {
 
         if (maxValue < 10) {
             return new TickSpacing(1, "bp", 1);
         }
-        // TODO -- hack, assumes location unit for whole genome is kilo-base
-        boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
 
 
         // Now man zeroes?
@@ -351,7 +351,7 @@ public class RulerPanel extends JPanel {
 
                     if (!isWholeGenomeView()) {
                         double newLocation = frame.getChromosomePosition(e.getX());
-                        getViewContext().centerOnLocation(newLocation);
+                        frame.centerOnLocation(newLocation);
                     } else {
                         for (final ClickLink link : chromosomeRects) {
                             if (link.region.contains(e.getPoint())) {
@@ -360,8 +360,8 @@ public class RulerPanel extends JPanel {
 
                                     public void run() {
 
-                                        getViewContext().setChrName(chrName);
-                                        getViewContext().recordHistory();
+                                        frame.setChrName(chrName);
+                                        frame.recordHistory();
                                         // TODO -- get rid of this ugly reference to IGV.theInstance
                                         IGV.getInstance().chromosomeChangeEvent(chrName);
                                     }
@@ -450,9 +450,8 @@ public class RulerPanel extends JPanel {
 
         NamedRunnable runnable = new NamedRunnable() {
             public void run() {
-                final ReferenceFrame vc = getViewContext();
-                double s = vc.getChromosomePosition(dragStart);
-                double e = vc.getChromosomePosition(dragEnd);
+                double s = frame.getChromosomePosition(dragStart);
+                double e = frame.getChromosomePosition(dragEnd);
                 if (e < s) {
                     double tmp = s;
                     s = e;
@@ -477,11 +476,11 @@ public class RulerPanel extends JPanel {
                         e = genome.getChromosome(start.getChr()).getLength();
                     }
                 } else {
-                    chr = vc.getChrName();
+                    chr = frame.getChrName();
                 }
 
-                vc.jumpTo(chr, (int) Math.min(s, e), (int) Math.max(s, e));
-                vc.recordHistory();
+                frame.jumpTo(chr, (int) Math.min(s, e), (int) Math.max(s, e));
+                frame.recordHistory();
             }
 
             public String getName() {

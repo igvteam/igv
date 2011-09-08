@@ -291,7 +291,7 @@ public class TrackMenuUtils {
         menu.add(getShowDataRangeItem(tracks));
 
 
-        menu.add(getChangeKMPlotItem(tracks));
+        //menu.add(getChangeKMPlotItem(tracks));
 
     }
 
