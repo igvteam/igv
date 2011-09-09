@@ -31,7 +31,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -111,9 +113,20 @@ public class SamQueryReaderFactory {
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(listFile);
+            Map<String, String> replacements = new HashMap();
             String nextLine = null;
             while ((nextLine = reader.readLine()) != null) {
+
+                if(nextLine.startsWith("#replace")) {
+                    String [] tokens = nextLine.split("\\s+");
+                    if(tokens.length == 3) {
+                       replacements.put(tokens[1], tokens[2]);
+                    }
+                }
                 String f = nextLine.trim();
+                for(Map.Entry<String, String> entry : replacements.entrySet()) {
+                    f = f.replace(entry.getKey(), entry.getValue());
+                }
                 readers.add(SamQueryReaderFactory.getReader(f, requireIndex));
             }
             return new MergedAlignmentReader(readers);
