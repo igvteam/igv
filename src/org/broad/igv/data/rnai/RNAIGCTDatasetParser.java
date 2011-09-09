@@ -19,6 +19,7 @@
 package org.broad.igv.data.rnai;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;

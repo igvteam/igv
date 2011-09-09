@@ -15,7 +15,7 @@
  * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
-package org.broad.igv.feature;
+package org.broad.igv.data.expression;
 
 
 import org.apache.log4j.Logger;
