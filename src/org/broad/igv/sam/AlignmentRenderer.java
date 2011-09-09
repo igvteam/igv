@@ -689,7 +689,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (lb == null) lb = "null";
         PEStats peStats = renderOptions.peStats.get(lb);
 
-        Color c = grey1;
+        Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
             case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
