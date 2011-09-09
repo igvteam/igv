@@ -78,8 +78,7 @@ public class SamQueryReaderFactory {
             } else if (IGVHttpClientUtils.isURL(locator.getPath().toLowerCase())) {
                 try {
                     reader = new BAMHttpQueryReader(locator, requireIndex);
-                }
-                catch (MalformedURLException e) {
+                } catch (MalformedURLException e) {
                     log.error("", e);
                     throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
                 }
@@ -117,25 +116,26 @@ public class SamQueryReaderFactory {
             String nextLine = null;
             while ((nextLine = reader.readLine()) != null) {
 
-                if(nextLine.startsWith("#replace")) {
-                    String [] tokens = nextLine.split("\\s+");
-                    if(tokens.length == 3) {
-                       replacements.put(tokens[1], tokens[2]);
+                if (nextLine.startsWith("#replace")) {
+                    String[] tokens = nextLine.split("\\s+");
+                    if (tokens.length == 2) {
+                        String [] kv = tokens[1].split("=");
+                        if(kv.length == 2)
+                        replacements.put(kv[0], kv[1]);
                     }
+                } else {
+                    String f = nextLine.trim();
+                    for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                        f = f.replace(entry.getKey(), entry.getValue());
+                    }
+                    readers.add(SamQueryReaderFactory.getReader(f, requireIndex));
                 }
-                String f = nextLine.trim();
-                for(Map.Entry<String, String> entry : replacements.entrySet()) {
-                    f = f.replace(entry.getKey(), entry.getValue());
-                }
-                readers.add(SamQueryReaderFactory.getReader(f, requireIndex));
             }
             return new MergedAlignmentReader(readers);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error parsing " + listFile, e);
             throw new RuntimeException("Error parsing: " + listFile + " (" + e.toString() + ")");
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 try {
                     reader.close();
