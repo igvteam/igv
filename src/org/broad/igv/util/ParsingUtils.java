@@ -486,11 +486,15 @@ public class ParsingUtils {
                         boolean autoscale = value.equals("on");
                         trackProperties.setAutoScale(autoscale);
                     } else if (key.equals("maxheightpixels")) {
-
-                        // Ignore the min and max
+                        // There should be 3 values per UCSC spec,  max:default:min.  In the past we have accepted
+                        // 2 values,  def:min,  so keep this for backwards compatibility.   IGV currently doesn't
+                        // have a "max height"
                         String[] maxDefMin = value.split(":");
-                        trackProperties.setMinHeight(Integer.parseInt(maxDefMin[1].trim()));
-                        trackProperties.setHeight(Integer.parseInt(maxDefMin[0].trim()));
+                        if (maxDefMin.length >= 2) {
+                            int defIDX = (maxDefMin.length == 2 ? 0 : 1);
+                            trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
+                            trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
+                        }
 
                     } else if (key.equals("url")) {
                         trackProperties.setUrl(value);
@@ -591,9 +595,7 @@ public class ParsingUtils {
                 }
             }
 
-        }
-
-        catch (
+        } catch (
                 Exception exception
                 )
 
