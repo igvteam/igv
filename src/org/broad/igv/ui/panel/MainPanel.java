@@ -64,6 +64,7 @@ public class MainPanel extends JPanel implements Paintable {
     private AttributeHeaderPanel attributeHeaderPanel;
 
     private int hgap = 5;
+    private JScrollPane headerScrollPane;
 
 
     public MainPanel(TrackManager trackManager) {
@@ -126,6 +127,16 @@ public class MainPanel extends JPanel implements Paintable {
         revalidate();
     }
 
+    public void removeHeader() {
+        remove(headerScrollPane);
+        revalidate();
+    }
+
+    public void restoreHeader() {
+        add(headerScrollPane, BorderLayout.NORTH);
+        revalidate();
+    }
+
 
     @Override
     public void doLayout() {
@@ -177,7 +188,7 @@ public class MainPanel extends JPanel implements Paintable {
         headerPanelContainer = new HeaderPanelContainer();
 
 
-        JScrollPane headerScrollPane = new JScrollPane();
+        headerScrollPane = new JScrollPane();
         headerScrollPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         headerScrollPane.setForeground(new java.awt.Color(153, 153, 153));
         headerScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

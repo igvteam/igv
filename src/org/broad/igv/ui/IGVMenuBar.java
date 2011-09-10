@@ -401,19 +401,19 @@ public class IGVMenuBar extends JMenuBar {
         menuItems.add(new JSeparator());
 
         menuAction = new MenuAction("Show Name Panel", null, KeyEvent.VK_A) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+             @Override
+             public void actionPerformed(ActionEvent e) {
 
-                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                if (menuItem.isSelected()) {
-                    IGV.getInstance().getMainPanel().expandNamePanel();
-                } else {
-                    IGV.getInstance().getMainPanel().collapseNamePanel();
-                }
-                IGV.getInstance().doRefresh();
-            }
-        };
-        boolean isShowing = IGV.getInstance().getMainPanel().isExpanded();
+                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
+                 if (menuItem.isSelected()) {
+                     IGV.getInstance().getMainPanel().expandNamePanel();
+                 } else {
+                     IGV.getInstance().getMainPanel().collapseNamePanel();
+                 }
+                 IGV.getInstance().doRefresh();
+             }
+         };
+         boolean isShowing = IGV.getInstance().getMainPanel().isExpanded();
         JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem();
         menuItem.setSelected(isShowing);
         menuItem.setAction(menuAction);
@@ -470,6 +470,21 @@ public class IGVMenuBar extends JMenuBar {
                 };
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        menuAction = new MenuAction("Show Header Panel", null, KeyEvent.VK_A) {
+             @Override
+             public void actionPerformed(ActionEvent e) {
+
+                 JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
+                 if (menuItem.isSelected()) {
+                     IGV.getInstance().getMainPanel().restoreHeader();
+                 } else {
+                     IGV.getInstance().getMainPanel().removeHeader();
+                 }
+                 IGV.getInstance().doRefresh();
+             }
+         };
+         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction, true));
 
         menuItems.add(new JSeparator());
         menuAction =
