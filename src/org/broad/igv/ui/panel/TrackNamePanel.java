@@ -114,7 +114,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
             Rectangle clipRect = g.getClipBounds();
 
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
+            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
                 TrackGroup group = groupIter.next();
 
                 if (regionY > clipRect.getMaxY()) {
@@ -134,15 +134,14 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         g.drawLine(0, regionY - 1, getWidth(), regionY - 1);
                     }
 
-                    int y = regionY;
-                    regionY = printTrackNames(group, visibleRect, clipRect, graphics2D, 0, regionY);
+                    int h = group.getHeight();
+                    Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
+                    regionY = printTrackNames(group, groupRect, clipRect, graphics2D, 0, regionY);
 
                     if (isGrouped) {
-                        int h = group.getHeight();
-                        groupExtents.add(new GroupExtent(group, y, y + h));
+                        groupExtents.add(new GroupExtent(group, groupRect.y, groupRect.y + groupRect.height));
                         if (showGroupNames) {
-                            Rectangle rect = new Rectangle(visibleRect.x, y, visibleRect.width, h);
-                            Rectangle displayableRect = getDisplayableRect(rect, visibleRect);
+                            Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
                             group.renderName(graphics2D, displayableRect, group == selectedGroup);
                         }
                     }
@@ -198,9 +197,8 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                         if (track.isSelected()) {
                             graphics2D.setBackground(Color.LIGHT_GRAY);
                             graphics2D.clearRect(rect.x, rect.y, rect.width, rect.height);
-                        }
-                        else {
-                           graphics2D.setBackground(backgroundColor);
+                        } else {
+                            graphics2D.setBackground(backgroundColor);
                         }
                         graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
                                 RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -346,10 +344,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 if (isGrouped) {
                     clearTrackSelections();
                     TrackGroup g = getGroup(e.getY());
-                    if (g == selectedGroup) {
+                    if (null == g || g == selectedGroup) {
                         selectedGroup = null;
                     } else {
-                        selectGroup(getGroup(e.getY()));
+                        selectGroup(g);
                     }
                 } else if (!isTrackSelected(e)) {
                     clearTrackSelections();
@@ -633,8 +631,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     private void selectGroup(TrackGroup group) {
         selectedGroup = group;
-        for (Track t : selectedGroup.getTracks()) {
-            t.setSelected(true);
+        if (selectedGroup != null) {
+            for (Track t : selectedGroup.getTracks()) {
+                t.setSelected(true);
+            }
         }
     }
 
