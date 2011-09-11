@@ -262,6 +262,10 @@
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
                <class>com.jformdesigner.runtime.NullLayout</class> 
+               <void method="setProperty"> 
+                <string>autoSize</string> 
+                <boolean>false</boolean> 
+               </void> 
               </object> 
               <void method="setProperty"> 
                <string>maximumSize</string> 
@@ -358,11 +362,8 @@
            </object> 
           </void> 
           <void method="add"> 
-           <object class="com.jformdesigner.model.FormContainer"> 
-            <string>javax.swing.JPanel</string> 
-            <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>com.jformdesigner.runtime.NullLayout</class> 
-            </object> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>org.broad.igv.hic.HiCRulerPanel</string> 
             <void method="setProperty"> 
              <string>maximumSize</string> 
              <object class="java.awt.Dimension"> 
@@ -374,7 +375,7 @@
              <string>preferredSize</string> 
              <object class="java.awt.Dimension"> 
               <int>50</int> 
-              <int>1</int> 
+              <int>500</int> 
              </object> 
             </void> 
             <void method="setProperty"> 
@@ -383,6 +384,13 @@
               <object class="java.awt.Color" field="black"/> 
               <int>1</int> 
               <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>minimumSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>50</int> 
+              <int>1</int> 
              </object> 
             </void> 
             <void property="name"> 

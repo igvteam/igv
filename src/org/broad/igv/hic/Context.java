@@ -1,5 +1,7 @@
 package org.broad.igv.hic;
 
+import org.broad.igv.hic.data.Chromosome;
+
 /**
  * @author jrobinso
  * @date Aug 11, 2010
@@ -14,17 +16,21 @@ public class Context {
     /**
      * Total length of the chromosome
      */
-    private int chrLength;
     private double scale;
+    private Chromosome chromosome;
+
+    public Context(Chromosome chromosome) {
+        this.chromosome = chromosome;
+    }
 
 
-    public void increment(int origin) {
-       setOrigin(origin);
+    public void increment(int delta) {
+       setOrigin(origin + delta);
     }
 
 
     public void setOrigin(int x) {
-        int maxOrigin = Math.max(0, chrLength - visibleWidth);
+        int maxOrigin = Math.max(0, chromosome.getSize() - visibleWidth);
         origin = Math.min(maxOrigin, Math.max(0, x));
     }
 
@@ -50,12 +56,9 @@ public class Context {
     }
 
     public int getChrLength() {
-        return chrLength;
+        return chromosome.getSize();
     }
 
-    public void setChrLength(int lenX) {
-        this.chrLength = lenX;
-    }
 
     public double getScale() {
         return scale;  //To change body of created methods use File | Settings | File Templates.
@@ -69,5 +72,9 @@ public class Context {
      */
     public int getScreenPosition(double chromosomePosition) {
         return (int) ((chromosomePosition - origin) / getScale());
+    }
+
+    public String getChr() {
+        return chromosome.getName();
     }
 }

@@ -14,7 +14,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
     private MatrixZoomData zd;
-    private int maxCount = 50;
+    private int maxCount = 500;
     private int binWidth = 1;
     private Context context;
 
@@ -50,7 +50,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     }
 
     private void renderVisibleWindow(Graphics g) {
-        if (mainWindow != null && mainWindow.xContext.getVisibleWidth() > 0) {
+        if (mainWindow != null && mainWindow.xContext != null && mainWindow.xContext.getVisibleWidth() > 0) {
 
             int bw = getBinWidth();
             int nBins = mainWindow.getLen() / zd.getBinSize();

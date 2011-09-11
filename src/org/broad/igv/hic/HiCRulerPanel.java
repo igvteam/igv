@@ -29,6 +29,7 @@ import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -41,9 +42,12 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
     private static Logger log = Logger.getLogger(HiCRulerPanel.class);
 
-    // TODO -- get from preferences
-    boolean drawSpan = true;
-    boolean drawEllipsis = false;
+    enum Orientation {HORIZONTAL, VERTICAL}
+
+    ;
+
+    private Orientation orientation;
+
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
     private List<ClickLink> chromosomeRects = new ArrayList();
@@ -54,8 +58,9 @@ public class HiCRulerPanel extends JPanel implements Serializable {
     public HiCRulerPanel() {
     }
 
-    public void setFrame(Context frame) {
+    public void setFrame(Context frame, Orientation orientation) {
         this.frame = frame;
+        this.orientation = orientation;
     }
 
 
@@ -64,70 +69,63 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         super.paintComponent(g);
 
-        if(frame == null) return;
+        Graphics2D g2D = (Graphics2D) g;
+
+
+        if (frame == null) return;
 
         g.setColor(Color.black);
 
+        AffineTransform t = g2D.getTransform();
+
+        if (orientation == Orientation.VERTICAL) {
+            AffineTransform rotateTransform = new AffineTransform();
+
+            rotateTransform.quadrantRotate(-1);
+            //rotateTransform.translate(-getHeight(), 0);
+
+            //rotateTransform.quadrantRotate(1);
+            //rotateTransform.translate(0, -getWidth());
+
+            g2D.transform(rotateTransform);
+        }
+
         // Clear panel
-        drawTicks(g);
-        if (drawSpan) {
-            drawSpan(g);
-        }
-        if (drawEllipsis) {
-            drawEllipsis(g);
-        }
+        drawTicks(g2D);
+        drawChr(g2D);
+
+        g2D.setTransform(t);
+
 
     }
 
-    private void drawSpan(Graphics g) {
-
-        //TODO -- hack
-
-        int w = getWidth();
+    private void drawChr(Graphics g) {
+        int w = isHorizontal() ? getWidth() : getHeight();
+        int h = isHorizontal() ? getHeight() : getWidth();
 
         g.setFont(spanFont);
 
-        // Positions are 1/2 open, subtract 1 to compensate
-        int range = (int) (frame.getScale() * w) + 1;
-
-
-        TickSpacing ts = findSpacing(range, false);
-        String rangeString = formatNumber((double) range / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
+        String rangeString = frame.getChr();
         int strWidth = g.getFontMetrics().stringWidth(rangeString);
-        int strHeight = g.getFontMetrics().getAscent();
         int strPosition = (w - strWidth) / 2;
 
-        int lineY = getHeight() - 35 - strHeight / 2;
+        if(!isHorizontal()) strPosition = -strPosition;
 
-        g.drawLine(0, lineY, (w - strWidth) / 2 - 10, lineY);
-        int[] arrowX = {0, 10, 10};
-        int[] arrowY = {lineY, lineY + 3, lineY - 3};
-        g.fillPolygon(arrowX, arrowY, arrowX.length);
-
-        g.drawLine((w + strWidth) / 2 + 10, lineY, w, lineY);
-        arrowX = new int[]{w, w - 10, w - 10};
-        g.fillPolygon(arrowX, arrowY, arrowX.length);
-
-        g.drawString(rangeString, strPosition, getHeight() - 35);
+        int vPos = h - 35;
+        g.drawString(rangeString, strPosition, vPos);
 
     }
 
-    private void drawEllipsis(Graphics g) {
-        double cytobandScale = ((double) frame.getChrLength()) / getWidth();
-
-
-        int start = (int) ((frame.getOrigin()) / cytobandScale);
-        int span = (int) ((getWidth() * frame.getScale()) / cytobandScale);
-        int end = start + span;
-
-        g.drawLine(start, 0, 0, getHeight());
-        g.drawLine(end, 0, getWidth(), getHeight());
-
+    private boolean isHorizontal() {
+        return orientation == Orientation.HORIZONTAL;
     }
+
 
     private void drawTicks(Graphics g) {
 
-        int w = getWidth();
+        int w = isHorizontal() ? getWidth() : getHeight();
+        int h = isHorizontal() ? getHeight() : getWidth();
+
         if (w < 200) {
             return;
         }
@@ -144,21 +142,23 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         int l = (int) (nTick * spacing);
         int x = frame.getScreenPosition(l - 1);    // 0 vs 1 based coordinates
         //int strEnd = Integer.MIN_VALUE;
-        while (x < getWidth()) {
+        while (x < w) {
             l = (int) (nTick * spacing);
             x = frame.getScreenPosition(l - 1);
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
-            int strPosition = x - strWidth / 2;
+            int strPosition = isHorizontal() ? x - strWidth/2 : -x - strWidth/2;
             //if (strPosition > strEnd) {
 
             if (nTick % 2 == 0) {
-                g.drawString(chrPosition, strPosition, getHeight() - 15);
+                g.drawString(chrPosition, strPosition, h - 15);
             }
             //strEnd = strPosition + strWidth;
             //}
-            g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
+
+            int xpos = (orientation == Orientation.HORIZONTAL ? x : -x);
+            g.drawLine(xpos, h - 10, xpos,h - 2);
             nTick++;
         }
     }
