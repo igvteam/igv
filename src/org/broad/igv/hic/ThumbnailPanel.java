@@ -44,7 +44,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
         if (getZd() != null) {
             Rectangle bounds = this.getVisibleRect();
 
-            renderer.render(0, 0, getZd(), getBinWidth(), getMaxCount(), g, bounds);
+            renderer.render(0, 0, getZd(), getBinWidth(), getMaxCount(), g, bounds, getBackground());
             renderVisibleWindow(g);
         }
     }

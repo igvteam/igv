@@ -26,8 +26,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         if (mainWindow != null && mainWindow.zd != null) {
             Rectangle bounds = this.getVisibleRect();
+            ((Graphics2D) g).clearRect(bounds.x, bounds.y, bounds.width, bounds.height);
             renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), mainWindow.zd,
-                    binWidth, maxCount, g, bounds);
+                    binWidth, maxCount, g, bounds, getBackground());
 
         }
     }

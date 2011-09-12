@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
-    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g, Rectangle bounds) {
+    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g, Rectangle bounds, Color background) {
 
         int chr1 = zd.getChr1(); //Context.chr1Index;
         int chr2 = zd.getChr2(); //Context.chr2Index;
@@ -64,7 +64,7 @@ public class HeatmapRenderer {
                         color = Color.ORANGE;
                     } else {
                         float alpha = (float) Math.max(0.05f, Math.min(1.0f, score / maxCount));
-                        color = getColor(alpha);
+                        color = getColor(alpha, background);
                     }
 
                     int px = bounds.x + (rec.getX() - originX / binSize) * binWidth;
@@ -97,14 +97,18 @@ public class HeatmapRenderer {
 
     static Map<Integer, Color> colorCache = new Hashtable();
 
-    static Color getColor(float alpha) {
+    static Color getColor(float alpha, Color background) {
 
+        float [] comps = background.getColorComponents(null);
 
-        int idx = (int) (10 * alpha);
+        int idx = (int) (100 * alpha);
         Color c = colorCache.get(idx);
         if (c == null) {
-            float rAlpha = Math.max(0.05f, Math.min(1.0f, 0.1f * idx));
-            c = new Color(1, 0, 0, rAlpha);
+            float rAlpha = Math.max(0.05f, Math.min(1.0f, 0.01f * idx));
+            float red =  ((1-rAlpha) * comps[0] + rAlpha);
+            float green =  ((1-rAlpha) * comps[1]);
+            float blue = ((1-rAlpha) * comps[2]);
+            c = new Color(red, green, blue);
             colorCache.put(idx, c);
         }
         return c;

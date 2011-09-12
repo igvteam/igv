@@ -126,7 +126,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         int w = isHorizontal() ? getWidth() : getHeight();
         int h = isHorizontal() ? getHeight() : getWidth();
 
-        if (w < 200) {
+        if (w < 50 || frame.getScale() == 0) {
             return;
         }
 
@@ -145,6 +145,8 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         while (x < w) {
             l = (int) (nTick * spacing);
             x = frame.getScreenPosition(l - 1);
+
+
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
@@ -160,6 +162,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
             int xpos = (orientation == Orientation.HORIZONTAL ? x : -x);
             g.drawLine(xpos, h - 10, xpos,h - 2);
             nTick++;
+
         }
     }
 
@@ -175,6 +178,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
     public static TickSpacing findSpacing(long maxValue, boolean scaleInKB) {
 
         if (maxValue < 10) {
+            System.out.println("max value = " + maxValue);
             return new TickSpacing(1, "bp", 1);
         }
 

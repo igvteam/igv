@@ -113,7 +113,8 @@ public class MainWindow extends JFrame {
     }
 
     private void updateGenome() {
-        genomeId = (String) genomeBox.getSelectedItem();
+        //genomeId = (String) genomeBox.getSelectedItem();
+        String genomeId = "dmel";
         chromosomes = Chromosome.chromosomes.get(genomeId);
         chrBox1.setModel(new DefaultComboBoxModel(chromosomes.toArray()));
         chrBox2.setModel(new DefaultComboBoxModel(chromosomes.toArray()));
@@ -439,11 +440,13 @@ public class MainWindow extends JFrame {
         // Generated using JFormDesigner non-commercial license
         panel2 = new JPanel();
         panel4 = new JPanel();
-        genomeBox = new JComboBox();
         chrSelectionPanel = new JPanel();
+        label1 = new JLabel();
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
         refreshButton = new JButton();
+        panel7 = new JPanel();
+        label2 = new JLabel();
         zoomComboBox = new JComboBox();
         thumbnailPanel = new ThumbnailPanel();
         panel3 = new JPanel();
@@ -468,24 +471,22 @@ public class MainWindow extends JFrame {
 
             //======== panel4 ========
             {
+                panel4.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
                 panel4.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 5));
-
-                //---- genomeBox ----
-                genomeBox.setModel(new DefaultComboBoxModel(new String[] {
-                    "dmel",
-                    "hg18"
-                }));
-                genomeBox.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        genomeBoxActionPerformed(e);
-                    }
-                });
-                panel4.add(genomeBox);
 
                 //======== chrSelectionPanel ========
                 {
-                    chrSelectionPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+                    chrSelectionPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
                     chrSelectionPanel.setLayout(new FlowLayout());
+
+                    //---- label1 ----
+                    label1.setText("Chromosomes");
+                    chrSelectionPanel.add(label1);
+
+                    //---- chrBox1 ----
+                    chrBox1.setModel(new DefaultComboBoxModel(new String[] {
+                        "..........."
+                    }));
                     chrSelectionPanel.add(chrBox1);
                     chrSelectionPanel.add(chrBox2);
 
@@ -500,13 +501,24 @@ public class MainWindow extends JFrame {
                 }
                 panel4.add(chrSelectionPanel);
 
-                //---- zoomComboBox ----
-                zoomComboBox.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        zoomComboBoxActionPerformed(e);
-                    }
-                });
-                panel4.add(zoomComboBox);
+                //======== panel7 ========
+                {
+                    panel7.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
+                    panel7.setLayout(new FlowLayout());
+
+                    //---- label2 ----
+                    label2.setText("Resolution");
+                    panel7.add(label2);
+
+                    //---- zoomComboBox ----
+                    zoomComboBox.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            zoomComboBoxActionPerformed(e);
+                        }
+                    });
+                    panel7.add(zoomComboBox);
+                }
+                panel4.add(panel7);
 
                 //---- thumbnailPanel ----
                 thumbnailPanel.setMaximumSize(new Dimension(100, 100));
@@ -535,7 +547,7 @@ public class MainWindow extends JFrame {
                     rulerPanel2.setMaximumSize(new Dimension(4000, 50));
                     rulerPanel2.setMinimumSize(new Dimension(1, 50));
                     rulerPanel2.setPreferredSize(new Dimension(1, 50));
-                    rulerPanel2.setBorder(LineBorder.createBlackLineBorder());
+                    rulerPanel2.setBorder(null);
                     panel5.add(rulerPanel2, BorderLayout.CENTER);
 
                     //======== panel6 ========
@@ -551,9 +563,9 @@ public class MainWindow extends JFrame {
 
                 //---- heatmapPanel ----
                 heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
-                heatmapPanel.setMaximumSize(new Dimension(800, 800));
-                heatmapPanel.setMinimumSize(new Dimension(800, 800));
-                heatmapPanel.setPreferredSize(new Dimension(800, 800));
+                heatmapPanel.setMaximumSize(new Dimension(500, 500));
+                heatmapPanel.setMinimumSize(new Dimension(500, 500));
+                heatmapPanel.setPreferredSize(new Dimension(500, 500));
                 heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
                     @Override
                     public void mouseDragged(MouseEvent e) {
@@ -565,7 +577,7 @@ public class MainWindow extends JFrame {
                 //---- rulerPanel1 ----
                 rulerPanel1.setMaximumSize(new Dimension(50, 4000));
                 rulerPanel1.setPreferredSize(new Dimension(50, 500));
-                rulerPanel1.setBorder(LineBorder.createBlackLineBorder());
+                rulerPanel1.setBorder(null);
                 rulerPanel1.setMinimumSize(new Dimension(50, 1));
                 panel3.add(rulerPanel1, BorderLayout.WEST);
             }
@@ -621,11 +633,13 @@ public class MainWindow extends JFrame {
     // Generated using JFormDesigner non-commercial license
     private JPanel panel2;
     private JPanel panel4;
-    private JComboBox genomeBox;
     private JPanel chrSelectionPanel;
+    private JLabel label1;
     private JComboBox chrBox1;
     private JComboBox chrBox2;
     private JButton refreshButton;
+    private JPanel panel7;
+    private JLabel label2;
     private JComboBox zoomComboBox;
     private ThumbnailPanel thumbnailPanel;
     private JPanel panel3;
