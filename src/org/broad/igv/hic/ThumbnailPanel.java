@@ -4,6 +4,7 @@ import org.broad.igv.hic.data.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.*;
 import java.io.Serializable;
 
 /**
@@ -45,11 +46,11 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             Rectangle bounds = this.getVisibleRect();
 
             renderer.render(0, 0, getZd(), getBinWidth(), getMaxCount(), g, bounds, getBackground());
-            renderVisibleWindow(g);
+            renderVisibleWindow((Graphics2D) g);
         }
     }
 
-    private void renderVisibleWindow(Graphics g) {
+    private void renderVisibleWindow(Graphics2D g) {
         if (mainWindow != null && mainWindow.xContext != null && mainWindow.xContext.getVisibleWidth() > 0) {
 
             int bw = getBinWidth();
@@ -60,8 +61,62 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             int h = (int) ((((double) mainWindow.yContext.getVisibleWidth()) / mainWindow.getLen()) * effectiveWidth);
             int x = (int) ((((double) mainWindow.xContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
             int y = (int) ((((double) mainWindow.yContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
-            g.setColor(Color.black);
-            g.drawRect(x, y, w, h);
+
+            Rectangle outerRectangle = new Rectangle(0, 0, getBounds().width, getBounds().height);
+            Rectangle innerRectangle = new Rectangle(x, y, w, h);
+            final Area area = new Area(outerRectangle);
+            area.subtract(new Area(innerRectangle));
+
+            Shape shape = new Shape() {
+                public Rectangle getBounds() {
+                    return area.getBounds();
+                }
+
+                public Rectangle2D getBounds2D() {
+                    return area.getBounds2D();
+                }
+
+                public boolean contains(double v, double v1) {
+                    return area.contains(v, v1);
+                }
+
+                public boolean contains(Point2D point2D) {
+                    return area.contains(point2D);
+                }
+
+                public boolean intersects(double v, double v1, double v2, double v3) {
+                    return area.intersects(v, v1, v2, v3);
+                }
+
+                public boolean intersects(Rectangle2D rectangle2D) {
+                    return area.intersects(rectangle2D);
+                }
+
+                public boolean contains(double v, double v1, double v2, double v3) {
+                    return area.contains(v, v1, v2, v3);
+                }
+
+                public boolean contains(Rectangle2D rectangle2D) {
+                    return area.contains(rectangle2D);
+                }
+
+                public PathIterator getPathIterator(AffineTransform affineTransform) {
+                    return area.getPathIterator(affineTransform);
+                }
+
+                public PathIterator getPathIterator(AffineTransform affineTransform, double v) {
+                    return area.getPathIterator(affineTransform, v);
+                }
+            };
+
+            g.setColor(Color.gray);
+            AlphaComposite alphaComp = AlphaComposite.getInstance(
+                    AlphaComposite.SRC_OVER, 0.75f);
+            g.setComposite(alphaComp);
+            g.fill(shape);
+
+            //g.setColor(Color.black);
+            g.draw(innerRectangle);
         }
     }
 
@@ -71,6 +126,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     public void setZd(MatrixZoomData zd) {
         this.zd = zd;
+        // TODO -- draw image here
     }
 
     public int getMaxCount() {
