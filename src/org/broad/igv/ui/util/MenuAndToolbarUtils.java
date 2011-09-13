@@ -40,31 +40,6 @@ import java.util.List;
  */
 public class MenuAndToolbarUtils {
 
-    static public JMenuBar createMenuBar(List<AbstractButton> menus) {
-
-        JMenuBar menuBar = new JMenuBar();
-        menuBar.setBorder(new BasicBorders.MenuBarBorder(Color.GRAY, Color.GRAY));
-        menuBar.setBorderPainted(true);
-        for (AbstractButton menu : menus) {
-            menuBar.add(menu);
-        }
-
-        return menuBar;
-    }
-
-
-    static public CommandBar createToolBar(List<JComponent> actionComponent) {
-
-        CommandBar toolBar = new CommandBar();
-
-        if (actionComponent != null) {
-            for (JComponent action : actionComponent) {
-                toolBar.add(action);
-            }
-        }
-
-        return toolBar;
-    }
 
     static public JMenu createMenu(List<JComponent> menuItems, MenuAction action) {
 
