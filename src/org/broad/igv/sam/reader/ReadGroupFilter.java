@@ -65,7 +65,7 @@ public class ReadGroupFilter {
 
             ReadGroupFilter filter = filterURL == null ? null : filterCache.get(filterURL);
 
-            if (filter == null) {
+            if (filter == null && filterURL != null && filterURL.trim().length() > 0) {
                 Set<String> readGroups = new HashSet();
                 AsciiLineReader reader = null;
                 try {
@@ -77,7 +77,7 @@ public class ReadGroupFilter {
                     filter = new ReadGroupFilter(readGroups);
                     filterCache.put(filterURL, filter);
                 }
-                catch (IOException e) {
+                catch (Exception e) {
                     MessageUtils.showMessage("Error reading read filter list: " + e.getMessage());
                 }
             }
