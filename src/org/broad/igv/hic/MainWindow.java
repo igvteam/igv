@@ -42,12 +42,14 @@ public class MainWindow extends JFrame {
         mainWindow.pack();
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.setVisible(true);
+        mainWindow.setSize(870, 870);
 
 
     }
 
 
     public MainWindow() throws IOException {
+
         initComponents();
 
 
@@ -158,6 +160,7 @@ public class MainWindow extends JFrame {
                     setInitialZoom();
                 }
 
+                heatmapPanel.clearTileCache();
 
                 return null;
             }
@@ -441,22 +444,22 @@ public class MainWindow extends JFrame {
         panel2 = new JPanel();
         panel4 = new JPanel();
         chrSelectionPanel = new JPanel();
-        label1 = new JLabel();
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
         refreshButton = new JButton();
         panel7 = new JPanel();
         label2 = new JLabel();
         zoomComboBox = new JComboBox();
-        thumbnailPanel = new ThumbnailPanel();
+        panel1 = new JPanel();
+        rangeScale = new JSlider();
         panel3 = new JPanel();
         panel5 = new JPanel();
         rulerPanel2 = new HiCRulerPanel();
         panel6 = new JPanel();
         heatmapPanel = new HeatmapPanel();
         rulerPanel1 = new HiCRulerPanel();
-        panel1 = new JPanel();
-        rangeScale = new JSlider();
+        panel8 = new JPanel();
+        thumbnailPanel = new ThumbnailPanel();
         menuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
@@ -478,10 +481,6 @@ public class MainWindow extends JFrame {
                 {
                     chrSelectionPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
                     chrSelectionPanel.setLayout(new FlowLayout());
-
-                    //---- label1 ----
-                    label1.setText("Chromosomes");
-                    chrSelectionPanel.add(label1);
 
                     //---- chrBox1 ----
                     chrBox1.setModel(new DefaultComboBoxModel(new String[] {
@@ -520,18 +519,25 @@ public class MainWindow extends JFrame {
                 }
                 panel4.add(panel7);
 
-                //---- thumbnailPanel ----
-                thumbnailPanel.setMaximumSize(new Dimension(100, 100));
-                thumbnailPanel.setMinimumSize(new Dimension(100, 100));
-                thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-                thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
-                thumbnailPanel.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        thumbnailPanelMouseClicked(e);
-                    }
-                });
-                panel4.add(thumbnailPanel);
+                //======== panel1 ========
+                {
+                    panel1.setLayout(new FlowLayout());
+
+                    //---- rangeScale ----
+                    rangeScale.setMajorTickSpacing(200);
+                    rangeScale.setPaintTicks(true);
+                    rangeScale.setPaintLabels(true);
+                    rangeScale.setPreferredSize(new Dimension(300, 52));
+                    rangeScale.setValue(500);
+                    rangeScale.setMaximum(1000);
+                    rangeScale.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent e) {
+                            rangeStateChanged(e);
+                        }
+                    });
+                    panel1.add(rangeScale);
+                }
+                panel4.add(panel1);
             }
             panel2.add(panel4, BorderLayout.NORTH);
 
@@ -580,28 +586,29 @@ public class MainWindow extends JFrame {
                 rulerPanel1.setBorder(null);
                 rulerPanel1.setMinimumSize(new Dimension(50, 1));
                 panel3.add(rulerPanel1, BorderLayout.WEST);
+
+                //======== panel8 ========
+                {
+                    panel8.setMaximumSize(new Dimension(100, 100));
+                    panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
+                    panel8.setLayout(new FlowLayout());
+
+                    //---- thumbnailPanel ----
+                    thumbnailPanel.setMaximumSize(new Dimension(100, 100));
+                    thumbnailPanel.setMinimumSize(new Dimension(100, 100));
+                    thumbnailPanel.setPreferredSize(new Dimension(100, 100));
+                    thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
+                    thumbnailPanel.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            thumbnailPanelMouseClicked(e);
+                        }
+                    });
+                    panel8.add(thumbnailPanel);
+                }
+                panel3.add(panel8, BorderLayout.EAST);
             }
             panel2.add(panel3, BorderLayout.CENTER);
-
-            //======== panel1 ========
-            {
-                panel1.setLayout(new FlowLayout());
-
-                //---- rangeScale ----
-                rangeScale.setMajorTickSpacing(100);
-                rangeScale.setPaintTicks(true);
-                rangeScale.setPaintLabels(true);
-                rangeScale.setPreferredSize(new Dimension(300, 52));
-                rangeScale.setValue(500);
-                rangeScale.setMaximum(1000);
-                rangeScale.addChangeListener(new ChangeListener() {
-                    public void stateChanged(ChangeEvent e) {
-                        rangeStateChanged(e);
-                    }
-                });
-                panel1.add(rangeScale);
-            }
-            panel2.add(panel1, BorderLayout.SOUTH);
         }
         contentPane.add(panel2, BorderLayout.CENTER);
 
@@ -624,7 +631,6 @@ public class MainWindow extends JFrame {
             menuBar1.add(fileMenu);
         }
         contentPane.add(menuBar1, BorderLayout.NORTH);
-        pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -634,22 +640,22 @@ public class MainWindow extends JFrame {
     private JPanel panel2;
     private JPanel panel4;
     private JPanel chrSelectionPanel;
-    private JLabel label1;
     private JComboBox chrBox1;
     private JComboBox chrBox2;
     private JButton refreshButton;
     private JPanel panel7;
     private JLabel label2;
     private JComboBox zoomComboBox;
-    private ThumbnailPanel thumbnailPanel;
+    private JPanel panel1;
+    private JSlider rangeScale;
     private JPanel panel3;
     private JPanel panel5;
     private HiCRulerPanel rulerPanel2;
     private JPanel panel6;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
-    private JPanel panel1;
-    private JSlider rangeScale;
+    private JPanel panel8;
+    private ThumbnailPanel thumbnailPanel;
     private JMenuBar menuBar1;
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;

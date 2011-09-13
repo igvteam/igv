@@ -20,6 +20,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private Context context;
 
     HeatmapRenderer renderer = new HeatmapRenderer();
+    public static final AlphaComposite ALPHA_COMP = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f);
 
 
     public ThumbnailPanel() {
@@ -64,58 +65,12 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
             Rectangle outerRectangle = new Rectangle(0, 0, getBounds().width, getBounds().height);
             Rectangle innerRectangle = new Rectangle(x, y, w, h);
-            final Area area = new Area(outerRectangle);
-            area.subtract(new Area(innerRectangle));
-
-            Shape shape = new Shape() {
-                public Rectangle getBounds() {
-                    return area.getBounds();
-                }
-
-                public Rectangle2D getBounds2D() {
-                    return area.getBounds2D();
-                }
-
-                public boolean contains(double v, double v1) {
-                    return area.contains(v, v1);
-                }
-
-                public boolean contains(Point2D point2D) {
-                    return area.contains(point2D);
-                }
-
-                public boolean intersects(double v, double v1, double v2, double v3) {
-                    return area.intersects(v, v1, v2, v3);
-                }
-
-                public boolean intersects(Rectangle2D rectangle2D) {
-                    return area.intersects(rectangle2D);
-                }
-
-                public boolean contains(double v, double v1, double v2, double v3) {
-                    return area.contains(v, v1, v2, v3);
-                }
-
-                public boolean contains(Rectangle2D rectangle2D) {
-                    return area.contains(rectangle2D);
-                }
-
-                public PathIterator getPathIterator(AffineTransform affineTransform) {
-                    return area.getPathIterator(affineTransform);
-                }
-
-                public PathIterator getPathIterator(AffineTransform affineTransform, double v) {
-                    return area.getPathIterator(affineTransform, v);
-                }
-            };
+            Shape shape = new SquareDonut(outerRectangle, innerRectangle);
 
             g.setColor(Color.gray);
-            AlphaComposite alphaComp = AlphaComposite.getInstance(
-                    AlphaComposite.SRC_OVER, 0.75f);
-            g.setComposite(alphaComp);
+            g.setComposite(ALPHA_COMP);
             g.fill(shape);
 
-            //g.setColor(Color.black);
             g.draw(innerRectangle);
         }
     }
@@ -145,11 +100,57 @@ public class ThumbnailPanel extends JComponent implements Serializable {
         this.binWidth = binWidth;
     }
 
-    public Context getContext() {
-        return context;
-    }
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    private static class SquareDonut implements Shape {
+        private final Area area;
+
+        public SquareDonut(Rectangle outerRectangle, Rectangle innerRectangle) {
+            this.area = new Area(outerRectangle);
+            area.subtract(new Area(innerRectangle));
+        }
+
+        public Rectangle getBounds() {
+            return area.getBounds();
+        }
+
+        public Rectangle2D getBounds2D() {
+            return area.getBounds2D();
+        }
+
+        public boolean contains(double v, double v1) {
+            return area.contains(v, v1);
+        }
+
+        public boolean contains(Point2D point2D) {
+            return area.contains(point2D);
+        }
+
+        public boolean intersects(double v, double v1, double v2, double v3) {
+            return area.intersects(v, v1, v2, v3);
+        }
+
+        public boolean intersects(Rectangle2D rectangle2D) {
+            return area.intersects(rectangle2D);
+        }
+
+        public boolean contains(double v, double v1, double v2, double v3) {
+            return area.contains(v, v1, v2, v3);
+        }
+
+        public boolean contains(Rectangle2D rectangle2D) {
+            return area.contains(rectangle2D);
+        }
+
+        public PathIterator getPathIterator(AffineTransform affineTransform) {
+            return area.getPathIterator(affineTransform);
+        }
+
+        public PathIterator getPathIterator(AffineTransform affineTransform, double v) {
+            return area.getPathIterator(affineTransform, v);
+        }
     }
 }

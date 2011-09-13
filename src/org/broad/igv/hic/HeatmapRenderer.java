@@ -14,7 +14,9 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
-    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g, Rectangle bounds, Color background) {
+    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g,
+                       Rectangle bounds,
+                       Color background) {
 
         int chr1 = zd.getChr1(); //Context.chr1Index;
         int chr2 = zd.getChr2(); //Context.chr2Index;
