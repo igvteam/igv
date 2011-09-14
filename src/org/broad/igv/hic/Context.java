@@ -8,30 +8,24 @@ import org.broad.igv.hic.data.Chromosome;
  */
 public class Context {
 
+    private Chromosome chromosome;
     private int zoom = 4;
     private int origin = 0;
-
     private int visibleWidth;
-
-    /**
-     * Total length of the chromosome
-     */
     private double scale;
-    private Chromosome chromosome;
 
     public Context(Chromosome chromosome) {
         this.chromosome = chromosome;
     }
 
 
-    public void increment(int delta) {
-       setOrigin(origin + delta);
-    }
-
-
     public void setOrigin(int x) {
         int maxOrigin = Math.max(0, chromosome.getSize() - visibleWidth);
         origin = Math.min(maxOrigin, Math.max(0, x));
+    }
+
+    public void moveBy(int delta) {
+       setOrigin(origin + delta);
     }
 
     public int getZoom() {

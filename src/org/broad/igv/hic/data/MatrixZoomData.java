@@ -13,26 +13,26 @@ public class MatrixZoomData {
     private int chr2; // Redundant, but convenient
 
     private int zoom;
-    int binSize;     // in bp
+    private int binSize;     // in bp
     private int blockSize;   // in bins
     private int blockColumnCount;   // number of block columns
-    private LinkedHashMap<Integer, Block> blocks;
 
-    Map<Integer, DatasetWriter.IndexEntry> blockIndex;
-    BinDatasetReader reader ;
+    private LinkedHashMap<Integer, Block> blocks;
+    private Map<Integer, DatasetWriter.IndexEntry> blockIndex;
+    private DatasetReader reader ;
 
 
     /**
      * Constructor used by the alignment file parser.
      */
-    public MatrixZoomData(String genomeId, int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
+    public MatrixZoomData(int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
         this.chr1 = chr1;
         this.chr2 = chr2;
         this.binSize = binSize;
         this.blockColumnCount = blockColumnCount;
         this.zoom = zoom;
 
-        int nBinsX = ChromSizes.getChromSizes(genomeId).getSize(chr1) / binSize + 1;
+        int nBinsX = Dataset.chromosomes[chr1].getSize() / binSize + 1;
         blockSize = nBinsX / blockColumnCount + 1;
         blocks = new LinkedHashMap(blockColumnCount * blockColumnCount);
     }
@@ -49,7 +49,7 @@ public class MatrixZoomData {
      * @param reader
      */
     public MatrixZoomData(int chr1, int chr2, int binSize, int blockSize, int blockColumnCount, int zoom,
-                          Map<Integer, DatasetWriter.IndexEntry> blockIndex, BinDatasetReader reader) {
+                          Map<Integer, DatasetWriter.IndexEntry> blockIndex, DatasetReader reader) {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
@@ -105,16 +105,9 @@ public class MatrixZoomData {
         return chr1;
     }
 
-    public void setChr1(int chr1) {
-        this.chr1 = chr1;
-    }
 
     public int getChr2() {
         return chr2;
-    }
-
-    public void setChr2(int chr2) {
-        this.chr2 = chr2;
     }
 
     public int getZoom() {

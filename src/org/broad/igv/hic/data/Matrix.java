@@ -8,13 +8,11 @@ import org.broad.igv.hic.MainWindow;
  */
 public class Matrix {
 
-    String genomeId;
     int chr1;
     int chr2;
     MatrixZoomData[] zoomData;
 
-    public Matrix(String genomeId, int chr1, int chr2) {
-        this.genomeId = genomeId;
+    public Matrix(int chr1, int chr2) {
         this.chr1 = chr1;
         this.chr2 = chr2;
         zoomData = new MatrixZoomData[MainWindow.zoomBinSizes.length];
@@ -22,7 +20,7 @@ public class Matrix {
             int binSize = MainWindow.zoomBinSizes[i];
             int nBlocks = (int) Math.pow(Math.pow(2, i), 0.25);
 
-            zoomData[i] = new MatrixZoomData(genomeId, chr1, chr2, binSize, nBlocks, i);
+            zoomData[i] = new MatrixZoomData(chr1, chr2, binSize, nBlocks, i);
         }
     }
 

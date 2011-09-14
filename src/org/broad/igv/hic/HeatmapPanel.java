@@ -1,7 +1,9 @@
 package org.broad.igv.hic;
 
 import org.apache.batik.dom.util.HashTable;
+import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.ObjectCache;
+import org.jfree.ui.RectangleEdge;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +34,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
     protected void paintComponent(Graphics g) {
 
         if (mainWindow != null && mainWindow.zd != null) {
-            Rectangle bounds = this.getVisibleRect();
 
             int originX = mainWindow.xContext.getOrigin();
             int originY = mainWindow.yContext.getOrigin();
@@ -59,20 +60,30 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                     g.drawImage(tile.image, pxOffset, pyOffset, null);
 
-
                 }
             }
-
-           // renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), mainWindow.zd,
-           //         binWidth, maxCount, g, bounds, getBackground());
 
         }
     }
 
+    public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
+
+        int w =  Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.chr1.getSize()));
+        int h = Math.min(getHeight(), mainWindow.yContext.getScreenPosition(mainWindow.chr2.getSize()));
+
+        BufferedImage image = (BufferedImage) createImage(w, h);
+        Rectangle bounds = new Rectangle(0, 0, w, h);
+        Graphics g = image.createGraphics();
+        renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), mainWindow.zd,
+                binWidth, maxCount, g, bounds, getBackground());
+
+        return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
+
+    }
 
 
     private ImageTile getImageTile(int z, int i, int j) {
-        String key = z + "_" +i + "_" + j;
+        String key = z + "_" + i + "_" + j;
         ImageTile tile = tileCache.get(key);
         if (tile == null) {
 
@@ -83,7 +94,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int x0 = (int) (px0 * mainWindow.xContext.getScale());
             final int py0 = j * imageTileWidth;
             int y0 = (int) (py0 * mainWindow.yContext.getScale());
-            Rectangle bounds =  new Rectangle(0, 0, imageTileWidth, imageTileWidth);
+            Rectangle bounds = new Rectangle(0, 0, imageTileWidth, imageTileWidth);
             renderer.render(x0, y0, mainWindow.zd, binWidth, maxCount, g2D, bounds, getBackground());
 
             tile = new ImageTile(image, px0, py0);
@@ -110,8 +121,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
     }
 
     public void setBinWidth(int binWidth) {
+        System.out.println("bin width = " + binWidth);
         this.binWidth = binWidth;
-         tileCache.clear();
+        tileCache.clear();
     }
 
     @Override

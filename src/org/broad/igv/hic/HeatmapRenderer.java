@@ -18,8 +18,8 @@ public class HeatmapRenderer {
                        Rectangle bounds,
                        Color background) {
 
-        int chr1 = zd.getChr1(); //Context.chr1Index;
-        int chr2 = zd.getChr2(); //Context.chr2Index;
+        int chr1 = zd.getChr1();
+        int chr2 = zd.getChr2();
 
 
         final double boundsRight = bounds.getMaxX();

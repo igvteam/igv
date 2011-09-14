@@ -18,6 +18,7 @@
 
 package org.broad.igv.hic;
 
+import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.Dataset;
 import org.broad.igv.hic.data.Matrix;
 import org.broad.tribble.util.ParsingUtils;
@@ -37,20 +38,20 @@ public class AlignmentsParser {
     public static Map<String, Integer> chromOrdinals = new HashMap<String, Integer>();
 
     static {
-        chromOrdinals.put("2L", 1);
-        chromOrdinals.put("2R", 2);
-        chromOrdinals.put("3L", 3);
-        chromOrdinals.put("3R", 4);
-        chromOrdinals.put("4", 5);
-        chromOrdinals.put("X", 6);
-        chromOrdinals.put("U", 7);
+        chromOrdinals.put("2L", 0);
+        chromOrdinals.put("2R", 1);
+        chromOrdinals.put("3L", 2);
+        chromOrdinals.put("3R", 3);
+        chromOrdinals.put("4", 4);
+        chromOrdinals.put("X", 5);
+        chromOrdinals.put("U", 6);
     }
 
     public static Matrix readMatrix(InputStream is, String genomeId, int c1, int c2) throws IOException {
         String[] tokens = new String[9];
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-        Matrix matrix = new Matrix(genomeId, c1, c2);
+        Matrix matrix = new Matrix(c1, c2);
         String nextLine;
         while ((nextLine = br.readLine()) != null) {
 
@@ -59,6 +60,7 @@ public class AlignmentsParser {
                 int chr1 = 0;
                 int chr2 = 0;
                 try {
+                    // TODO -- use gnomeID to look up chromosome table
                     chr1 = chromOrdinals.get(tokens[1]);
                     chr2 = chromOrdinals.get(tokens[5]);
                 } catch (Exception e) {

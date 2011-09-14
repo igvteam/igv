@@ -42,6 +42,16 @@ public class DatasetWriter {
             // Placeholde for matrix index position
             writeLong(0l);
 
+            // Chromosome dictionary
+            final Chromosome[] chromosomes = dataset.getChromosomes();
+            int nChrs = chromosomes.length;
+            writeInt(nChrs);
+            for(int i=0; i<nChrs; i++) {
+                writeInt(chromosomes[i].getIndex());
+                writeString(chromosomes[i].getName());
+                writeInt(chromosomes[i].getSize());
+            }
+
             // TODO -- parse file and create matrices on the fly, one chr-chr pair at a time.
             Collection<Matrix> matrices = dataset.matrices.values();
             for (Matrix matrix : matrices) {

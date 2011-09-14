@@ -14,10 +14,9 @@ import java.io.Serializable;
 public class ThumbnailPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
-    private MatrixZoomData zd;
-    private int maxCount = 500;
     private int binWidth = 1;
-    private Context context;
+    
+    Image image;
 
     HeatmapRenderer renderer = new HeatmapRenderer();
     public static final AlphaComposite ALPHA_COMP = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f);
@@ -25,6 +24,10 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     public ThumbnailPanel() {
 
+    }
+    
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     public void setMainWindow(MainWindow mainWindow) {
@@ -39,14 +42,11 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     }
 
-
     @Override
     protected void paintComponent(Graphics g) {
 
-        if (getZd() != null) {
-            Rectangle bounds = this.getVisibleRect();
-
-            renderer.render(0, 0, getZd(), getBinWidth(), getMaxCount(), g, bounds, getBackground());
+        if (image != null) {
+            g.drawImage(image, 0, 0, null);
             renderVisibleWindow((Graphics2D) g);
         }
     }
@@ -54,14 +54,21 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private void renderVisibleWindow(Graphics2D g) {
         if (mainWindow != null && mainWindow.xContext != null && mainWindow.xContext.getVisibleWidth() > 0) {
 
-            int bw = getBinWidth();
-            int nBins = mainWindow.getLen() / zd.getBinSize();
-            int effectiveWidth = nBins * bw;
 
-            int w = (int) ((((double) mainWindow.xContext.getVisibleWidth()) / mainWindow.getLen()) * effectiveWidth);
-            int h = (int) ((((double) mainWindow.yContext.getVisibleWidth()) / mainWindow.getLen()) * effectiveWidth);
-            int x = (int) ((((double) mainWindow.xContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
-            int y = (int) ((((double) mainWindow.yContext.getOrigin()) / mainWindow.getLen()) * effectiveWidth);
+            int originX = mainWindow.xContext.getOrigin();
+            int originY = mainWindow.yContext.getOrigin();
+
+            int wBP = (int) (mainWindow.xContext.getVisibleWidth());
+            int yBP = (int) (mainWindow.yContext.getVisibleWidth());
+
+            double xFrac = (double) wBP / mainWindow.chr1.getSize();
+            double yFrac = (double) yBP / mainWindow.chr2.getSize();
+
+            int x = (int) ((double) originX / mainWindow.chr1.getSize()  * getWidth());
+            int y = (int) ((double) originY / mainWindow.chr2.getSize()  * getHeight());
+
+            int w = (int) (xFrac * getWidth());
+            int h = (int) (yFrac * getHeight());
 
             Rectangle outerRectangle = new Rectangle(0, 0, getBounds().width, getBounds().height);
             Rectangle innerRectangle = new Rectangle(x, y, w, h);
@@ -75,35 +82,18 @@ public class ThumbnailPanel extends JComponent implements Serializable {
         }
     }
 
-    public MatrixZoomData getZd() {
-        return zd;
-    }
-
-    public void setZd(MatrixZoomData zd) {
-        this.zd = zd;
-        // TODO -- draw image here
-    }
-
-    public int getMaxCount() {
-        return maxCount;
-    }
-
-    public void setMaxCount(int maxCount) {
-        this.maxCount = maxCount;
+    public void setBinWidth(int binWidth) {
+        this.binWidth = binWidth;
     }
 
     public int getBinWidth() {
         return binWidth;
     }
 
-    public void setBinWidth(int binWidth) {
-        this.binWidth = binWidth;
+    public void clearImage() {
+        image = null;
     }
 
-
-    public void setContext(Context context) {
-        this.context = context;
-    }
 
     private static class SquareDonut implements Shape {
         private final Area area;
