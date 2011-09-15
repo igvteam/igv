@@ -1108,8 +1108,7 @@ public class IGV {
             // Draw hand image in middle
             g = handImage.createGraphics();
             g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
-            fistCursor =
-                    mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+            fistCursor = mainFrame.getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
         }
 
     }

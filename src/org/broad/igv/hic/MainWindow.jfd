@@ -283,6 +283,49 @@
              <string>panel5</string> 
             </void> 
             <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>com.jformdesigner.runtime.NullLayout</class> 
+               <void method="setProperty"> 
+                <string>autoSize</string> 
+                <boolean>false</boolean> 
+               </void> 
+              </object> 
+              <void method="setProperty"> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>50</int> 
+                <int>50</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>50</int> 
+                <int>50</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>50</int> 
+                <int>50</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>spacerLeft</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>java.lang.String</class> 
+              <void method="setProperty"> 
+               <string>value</string> 
+               <string>West</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>org.broad.igv.hic.HiCRulerPanel</string> 
               <void method="setProperty"> 
@@ -333,35 +376,35 @@
                </void> 
               </object> 
               <void method="setProperty"> 
-               <string>maximumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
                <string>minimumSize</string> 
                <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
+                <int>120</int> 
+                <int>0</int> 
                </object> 
               </void> 
               <void method="setProperty"> 
                <string>preferredSize</string> 
                <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
+                <int>120</int> 
+                <int>0</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>120</int> 
+                <int>32767</int> 
                </object> 
               </void> 
               <void property="name"> 
-               <string>panel6</string> 
+               <string>spacerRight</string> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>java.lang.String</class> 
               <void method="setProperty"> 
                <string>value</string> 
-               <string>West</string> 
+               <string>East</string> 
               </void> 
              </object> 
             </void> 
@@ -475,7 +518,7 @@
             <void method="setProperty"> 
              <string>maximumSize</string> 
              <object class="java.awt.Dimension"> 
-              <int>100</int> 
+              <int>120</int> 
               <int>100</int> 
              </object> 
             </void> 
@@ -594,6 +637,86 @@
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
               <string>loadMenuItemActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Load from URL ...</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>name</string> 
+             <string>loadFromURL</string> 
+            </void> 
+            <void property="name"> 
+             <string>loadFromURL</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>loadFromURLActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator2</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>https://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic</string> 
+            </void> 
+            <void property="name"> 
+             <string>loadDmelDataset</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>loadDmelDatasetActionPerformed</string> 
+              <boolean>true</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator1</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Exit</string> 
+            </void> 
+            <void property="name"> 
+             <string>exit</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>exitActionPerformed</string> 
               <boolean>true</boolean> 
              </object> 
             </void> 

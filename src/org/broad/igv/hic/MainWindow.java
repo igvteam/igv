@@ -7,9 +7,12 @@ package org.broad.igv.hic;
 import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+
 import com.jidesoft.swing.*;
 
 import org.broad.igv.hic.data.*;
+import org.broad.tribble.util.SeekableStream;
+import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -32,7 +35,7 @@ public class MainWindow extends JFrame {
     public Context yContext;
     Dataset dataset;
     MatrixZoomData zd;
-    Chromosome [] chromosomes;
+    Chromosome[] chromosomes;
 
     public static void main(String[] args) throws IOException {
 
@@ -99,7 +102,8 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
-            dataset = (new DatasetReader(new File(file))).read();
+            SeekableStream ss = SeekableStreamFactory.getStreamFor(file);
+            dataset = (new DatasetReader(ss)).read();
             chromosomes = dataset.getChromosomes();
             chrBox1.setModel(new DefaultComboBoxModel(chromosomes));
             chrBox2.setModel(new DefaultComboBoxModel(chromosomes));
@@ -219,7 +223,7 @@ public class MainWindow extends JFrame {
         Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getZoomData(newZoom);
 
-        int newBinSize =  zd.getBinSize();
+        int newBinSize = zd.getBinSize();
 
         // Adjust bin width to fill space, if possible.  Bins are square at all times
         int nBinsX = chr1.getSize() / newBinSize + 1;
@@ -273,8 +277,6 @@ public class MainWindow extends JFrame {
     }
 
 
-
-
     private void heatmapPanelMouseDragged(MouseEvent e) {
         // TODO add your code here
     }
@@ -298,6 +300,19 @@ public class MainWindow extends JFrame {
         }
     }
 
+
+    private void loadFromURLActionPerformed(ActionEvent e) {
+        String url = JOptionPane.showInputDialog("Enter URL: ");
+        if (url != null) {
+            try {
+                load(url);
+            } catch (IOException e1) {
+                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+    }
+
+
     public int getLen() {
         return len;
     }
@@ -315,6 +330,20 @@ public class MainWindow extends JFrame {
             repaint();
         }
 
+    }
+
+    private void exitActionPerformed(ActionEvent e) {
+        setVisible(false);
+        dispose();
+        System.exit(0);
+    }
+
+    private void loadDmelDatasetActionPerformed(ActionEvent e) {
+        try {
+            load("https://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
     }
 
     class HeatmapMouseHandler extends MouseAdapter {
@@ -439,8 +468,9 @@ public class MainWindow extends JFrame {
         rangeScale = new JSlider();
         panel3 = new JPanel();
         panel5 = new JPanel();
+        spacerLeft = new JPanel();
         rulerPanel2 = new HiCRulerPanel();
-        panel6 = new JPanel();
+        spacerRight = new JPanel();
         heatmapPanel = new HeatmapPanel();
         rulerPanel1 = new HiCRulerPanel();
         panel8 = new JPanel();
@@ -448,6 +478,9 @@ public class MainWindow extends JFrame {
         menuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
+        loadFromURL = new JMenuItem();
+        loadDmelDataset = new JMenuItem();
+        exit = new JMenuItem();
 
         //======== this ========
         Container contentPane = getContentPane();
@@ -541,6 +574,15 @@ public class MainWindow extends JFrame {
                 {
                     panel5.setLayout(new BorderLayout());
 
+                    //======== spacerLeft ========
+                    {
+                        spacerLeft.setMaximumSize(new Dimension(50, 50));
+                        spacerLeft.setMinimumSize(new Dimension(50, 50));
+                        spacerLeft.setPreferredSize(new Dimension(50, 50));
+                        spacerLeft.setLayout(null);
+                    }
+                    panel5.add(spacerLeft, BorderLayout.WEST);
+
                     //---- rulerPanel2 ----
                     rulerPanel2.setMaximumSize(new Dimension(4000, 50));
                     rulerPanel2.setMinimumSize(new Dimension(1, 50));
@@ -548,14 +590,14 @@ public class MainWindow extends JFrame {
                     rulerPanel2.setBorder(null);
                     panel5.add(rulerPanel2, BorderLayout.CENTER);
 
-                    //======== panel6 ========
+                    //======== spacerRight ========
                     {
-                        panel6.setMaximumSize(new Dimension(50, 50));
-                        panel6.setMinimumSize(new Dimension(50, 50));
-                        panel6.setPreferredSize(new Dimension(50, 50));
-                        panel6.setLayout(null);
+                        spacerRight.setMinimumSize(new Dimension(120, 0));
+                        spacerRight.setPreferredSize(new Dimension(120, 0));
+                        spacerRight.setMaximumSize(new Dimension(120, 32767));
+                        spacerRight.setLayout(null);
                     }
-                    panel5.add(panel6, BorderLayout.WEST);
+                    panel5.add(spacerRight, BorderLayout.EAST);
                 }
                 panel3.add(panel5, BorderLayout.NORTH);
 
@@ -581,7 +623,7 @@ public class MainWindow extends JFrame {
 
                 //======== panel8 ========
                 {
-                    panel8.setMaximumSize(new Dimension(100, 100));
+                    panel8.setMaximumSize(new Dimension(120, 100));
                     panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
                     panel8.setLayout(new FlowLayout());
 
@@ -613,6 +655,36 @@ public class MainWindow extends JFrame {
                     }
                 });
                 fileMenu.add(loadMenuItem);
+
+                //---- loadFromURL ----
+                loadFromURL.setText("Load from URL ...");
+                loadFromURL.setName("loadFromURL");
+                loadFromURL.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadFromURLActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadFromURL);
+                fileMenu.addSeparator();
+
+                //---- loadDmelDataset ----
+                loadDmelDataset.setText("https://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
+                loadDmelDataset.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadDmelDatasetActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadDmelDataset);
+                fileMenu.addSeparator();
+
+                //---- exit ----
+                exit.setText("Exit");
+                exit.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        exitActionPerformed(e);
+                    }
+                });
+                fileMenu.add(exit);
             }
             menuBar1.add(fileMenu);
         }
@@ -638,8 +710,9 @@ public class MainWindow extends JFrame {
     private JSlider rangeScale;
     private JPanel panel3;
     private JPanel panel5;
+    private JPanel spacerLeft;
     private HiCRulerPanel rulerPanel2;
-    private JPanel panel6;
+    private JPanel spacerRight;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
     private JPanel panel8;
@@ -647,6 +720,9 @@ public class MainWindow extends JFrame {
     private JMenuBar menuBar1;
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
+    private JMenuItem loadFromURL;
+    private JMenuItem loadDmelDataset;
+    private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 

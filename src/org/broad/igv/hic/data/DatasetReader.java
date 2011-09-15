@@ -17,19 +17,17 @@ import java.util.Map;
 public class DatasetReader {
 
     SeekableStream stream;
-    File file;
 
     Map<String, Preprocessor.IndexEntry> masterIndex = new HashMap();
 
-    public DatasetReader(File file) {
-        this.file = file;
+    public DatasetReader(SeekableStream stream) {
+        this.stream = stream;
     }
 
     public Dataset read() throws FileNotFoundException {
 
         Dataset ds = new Dataset(this);
 
-        stream = new SeekableFileStream(file);
         try {
             // Read the header
             LittleEndianInputStream dis = new LittleEndianInputStream(new BufferedInputStream(stream));

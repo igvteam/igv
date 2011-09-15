@@ -1,6 +1,8 @@
 package org.broad.igv.hic;
 
 import org.broad.igv.hic.data.*;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 /**
@@ -27,9 +30,13 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private double yScale;
     private double xScale;
     Point lastPoint = null;
+    private Rectangle innerRectangle;
+    private Cursor fistCursor;
 
 
     public ThumbnailPanel() {
+
+        createCursors();
 
         addMouseListener(new MouseAdapter() {
 
@@ -43,12 +50,17 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
-                lastPoint = mouseEvent.getPoint();
+                if (innerRectangle != null && innerRectangle.contains(mouseEvent.getPoint())) {
+                    lastPoint = mouseEvent.getPoint();
+                    setCursor(fistCursor);
+                }
+
             }
 
             @Override
             public void mouseReleased(MouseEvent mouseEvent) {
                 lastPoint = null;
+                setCursor(Cursor.getDefaultCursor());
             }
         });
 
@@ -59,12 +71,29 @@ public class ThumbnailPanel extends JComponent implements Serializable {
                     int dxBP = ((int) ((mouseEvent.getX() - lastPoint.x) * xScale));
                     int dyBP = ((int) ((mouseEvent.getY() - lastPoint.y) * xScale));
                     mainWindow.moveBy(dxBP, dyBP);
+                    lastPoint = mouseEvent.getPoint();
                 }
-                lastPoint = mouseEvent.getPoint();
+
 
             }
         });
 
+    }
+
+    public void createCursors() {
+        BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+
+        // Make backgroun transparent
+        Graphics2D g = handImage.createGraphics();
+        g.setComposite(AlphaComposite.getInstance(
+                AlphaComposite.CLEAR, 0.0f));
+        Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 32, 32);
+        g.fill(rect);
+
+        // Draw hand image in middle
+        g = handImage.createGraphics();
+        g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
+        fistCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
     }
 
     public void setImage(Image image) {
@@ -112,8 +141,19 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             int yBP = mainWindow.yContext.getVisibleWidth();
             int h = (int) (yBP / yScale);
 
+            if (w < 4) {
+                int delta = 4 - w;
+                x -= delta / 2;
+                w = 4;
+            }
+            if (h < 4) {
+                int delta = 4 - h;
+                y -= delta / 2;
+                h = 4;
+            }
+
             Rectangle outerRectangle = new Rectangle(0, 0, getBounds().width, getBounds().height);
-            Rectangle innerRectangle = new Rectangle(x, y, w, h);
+            innerRectangle = new Rectangle(x, y, w, h);
             Shape shape = new SquareDonut(outerRectangle, innerRectangle);
 
             g.setColor(Color.gray);
