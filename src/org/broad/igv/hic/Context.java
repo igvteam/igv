@@ -22,6 +22,7 @@ public class Context {
     public void setOrigin(int x) {
         int maxOrigin = Math.max(0, chromosome.getSize() - visibleWidth);
         origin = Math.min(maxOrigin, Math.max(0, x));
+
     }
 
     public void moveBy(int delta) {
@@ -68,7 +69,7 @@ public class Context {
         return (int) ((chromosomePosition - origin) / getScale());
     }
 
-    public String getChr() {
-        return chromosome.getName();
+    public Chromosome getChromosome() {
+        return chromosome;
     }
 }

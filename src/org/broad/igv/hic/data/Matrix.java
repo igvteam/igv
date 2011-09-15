@@ -19,7 +19,6 @@ public class Matrix {
         for (int i = 0; i < MainWindow.zoomBinSizes.length; i++) {
             int binSize = MainWindow.zoomBinSizes[i];
             int nBlocks = (int) Math.pow(Math.pow(2, i), 0.25);
-
             zoomData[i] = new MatrixZoomData(chr1, chr2, binSize, nBlocks, i);
         }
     }

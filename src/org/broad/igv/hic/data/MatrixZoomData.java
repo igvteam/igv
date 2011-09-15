@@ -18,21 +18,24 @@ public class MatrixZoomData {
     private int blockColumnCount;   // number of block columns
 
     private LinkedHashMap<Integer, Block> blocks;
-    private Map<Integer, DatasetWriter.IndexEntry> blockIndex;
-    private DatasetReader reader ;
+    private Map<Integer, Preprocessor.IndexEntry> blockIndex;
+    private DatasetReader reader;
 
 
     /**
      * Constructor used by the alignment file parser.
      */
     public MatrixZoomData(int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
+
+
         this.chr1 = chr1;
         this.chr2 = chr2;
         this.binSize = binSize;
         this.blockColumnCount = blockColumnCount;
         this.zoom = zoom;
 
-        int nBinsX = Dataset.chromosomes[chr1].getSize() / binSize + 1;
+
+        int nBinsX = Preprocessor.chromosomes[chr1].getSize() / binSize + 1;
         blockSize = nBinsX / blockColumnCount + 1;
         blocks = new LinkedHashMap(blockColumnCount * blockColumnCount);
     }
@@ -49,7 +52,7 @@ public class MatrixZoomData {
      * @param reader
      */
     public MatrixZoomData(int chr1, int chr2, int binSize, int blockSize, int blockColumnCount, int zoom,
-                          Map<Integer, DatasetWriter.IndexEntry> blockIndex, DatasetReader reader) {
+                          Map<Integer, Preprocessor.IndexEntry> blockIndex, DatasetReader reader) {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
@@ -158,7 +161,7 @@ public class MatrixZoomData {
         Block b = blocks.get(blockNumber);
         if (b == null) {
             if(reader != null && blockIndex != null) {
-                DatasetWriter.IndexEntry idx = blockIndex.get(blockNumber);
+                Preprocessor.IndexEntry idx = blockIndex.get(blockNumber);
                 if(idx != null) {
                     try {
                         b = reader.readBlock(blockNumber, idx);

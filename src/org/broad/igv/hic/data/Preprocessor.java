@@ -5,7 +5,6 @@ import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -13,7 +12,18 @@ import java.util.Map;
  * @author jrobinso
  * @date Aug 16, 2010
  */
-public class DatasetWriter {
+public class Preprocessor {
+
+    // Hardcoded chromosomes for dMel r4.2.1
+    public final static Chromosome[] chromosomes = new Chromosome[]{
+            new Chromosome(0, "2L", 22407834),
+            new Chromosome(1, "2R", 20766785),
+            new Chromosome(2, "3L", 23771897),
+            new Chromosome(3, "3R", 27905053),
+            new Chromosome(4, "4", 1281640),
+            new Chromosome(5, "X", 22224390),
+            new Chromosome(6, "U", 11561901)
+    };
 
 
     File outputFile;
@@ -26,45 +36,12 @@ public class DatasetWriter {
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
 
 
-    public DatasetWriter(File outputFile) {
+    public Preprocessor(File outputFile) {
 
         this.outputFile = outputFile;
 
     }
 
-
-    public void write(Dataset dataset) throws IOException {
-
-        try {
-            fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
-
-
-            // Placeholde for matrix index position
-            writeLong(0l);
-
-            // Chromosome dictionary
-            final Chromosome[] chromosomes = dataset.getChromosomes();
-            int nChrs = chromosomes.length;
-            writeInt(nChrs);
-            for(int i=0; i<nChrs; i++) {
-                writeInt(chromosomes[i].getIndex());
-                writeString(chromosomes[i].getName());
-                writeInt(chromosomes[i].getSize());
-            }
-
-            // TODO -- parse file and create matrices on the fly, one chr-chr pair at a time.
-            Collection<Matrix> matrices = dataset.matrices.values();
-            for (Matrix matrix : matrices) {
-                writeMatrix(matrix);
-            }
-            masterIndexPosition = bytesWritten;
-            writeMasterIndex();
-        } finally {
-            fos.close();
-        }
-
-        updateIndexPositions();
-    }
 
     public void preprocess(File inputFile, String genomeId) throws IOException {
 
@@ -73,13 +50,21 @@ public class DatasetWriter {
         try {
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
-            // Placeholde for matrix index position
+            // Placeholder for master index position, replace later
             writeLong(0l);
 
-            for(int c1=0; c1<=7; c1++) {
-                for(int c2=c1; c2<=7; c2++) {
+            // Chromosome dictionary
+            int nChrs = chromosomes.length;
+            writeInt(nChrs);
+            for (int i = 0; i < nChrs; i++) {
+                writeString(chromosomes[i].getName());
+                writeInt(chromosomes[i].getSize());
+            }
+
+            for (int c1 = 0; c1 < 7; c1++) {
+                for (int c2 = c1; c2 < 7; c2++) {
                     fis = new FileInputStream(inputFile);
-                    Matrix matrix = AlignmentsParser.readMatrix(fis,genomeId,  c1, c2);
+                    Matrix matrix = AlignmentsParser.readMatrix(fis, c1, c2);
                     System.out.println("writing matrix: " + matrix.getKey());
                     writeMatrix(matrix);
                     fis.close();
@@ -122,8 +107,7 @@ public class DatasetWriter {
                 }
                 raf.write(buffer.getBytes());
             }
-        }
-        finally {
+        } finally {
             if (raf != null) raf.close();
         }
     }
@@ -219,7 +203,7 @@ public class DatasetWriter {
         final ContactRecord[] records = block.getContactRecords();
         final int len = records.length;
 
-        BufferedByteWriter buffer = new BufferedByteWriter(len*12);
+        BufferedByteWriter buffer = new BufferedByteWriter(len * 12);
 
         buffer.putInt(len);
         for (int i = 0; i < len; i++) {
@@ -229,8 +213,8 @@ public class DatasetWriter {
             buffer.putShort(rec.getCounts());
         }
 
-        byte [] bytes = buffer.getBytes();
-        byte [] compressedBytes = CompressionUtils.compress(bytes);
+        byte[] bytes = buffer.getBytes();
+        byte[] compressedBytes = CompressionUtils.compress(bytes);
         write(compressedBytes);
 
     }
@@ -335,12 +319,12 @@ public class DatasetWriter {
 
 
     // Example usage
-    public static void main(String [] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         String inputFile = args[0];   // "test/data/test.summary.binned.sorted.txt";
         String outputFile = args[1];  //    "test/data/test.summary.binned.sorted.hic";
 
-        DatasetWriter writer = new DatasetWriter(new File(outputFile));
+        Preprocessor writer = new Preprocessor(new File(outputFile));
         writer.preprocess(new File(inputFile), "dmel");
 
     }

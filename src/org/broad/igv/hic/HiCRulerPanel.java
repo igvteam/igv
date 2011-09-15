@@ -19,13 +19,9 @@
 package org.broad.igv.hic;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.genome.Genome;
+
+import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.UIConstants;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +46,6 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
     private Font spanFont = FontManager.getFont(Font.BOLD, 12);
-    private List<ClickLink> chromosomeRects = new ArrayList();
 
 
     Context frame;
@@ -80,13 +75,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         if (orientation == Orientation.VERTICAL) {
             AffineTransform rotateTransform = new AffineTransform();
-
             rotateTransform.quadrantRotate(-1);
-            //rotateTransform.translate(-getHeight(), 0);
-
-            //rotateTransform.quadrantRotate(1);
-            //rotateTransform.translate(0, -getWidth());
-
             g2D.transform(rotateTransform);
         }
 
@@ -105,14 +94,17 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         g.setFont(spanFont);
 
-        String rangeString = frame.getChr();
-        int strWidth = g.getFontMetrics().stringWidth(rangeString);
-        int strPosition = (w - strWidth) / 2;
+        Chromosome chromosome = frame.getChromosome();
+        if (chromosome != null) {
+            String rangeString = chromosome.getName();
+            int strWidth = g.getFontMetrics().stringWidth(rangeString);
+            int strPosition = (w - strWidth) / 2;
 
-        if(!isHorizontal()) strPosition = -strPosition;
+            if (!isHorizontal()) strPosition = -strPosition;
 
-        int vPos = h - 35;
-        g.drawString(rangeString, strPosition, vPos);
+            int vPos = h - 35;
+            g.drawString(rangeString, strPosition, vPos);
+        }
 
     }
 
@@ -138,19 +130,20 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         double spacing = ts.getMajorTick();
 
         // Find starting point closest to the current origin
+        int maxX = frame.getChromosome().getSize();
         int nTick = (int) (frame.getOrigin() / spacing) - 1;
         int l = (int) (nTick * spacing);
-        int x = frame.getScreenPosition(l - 1);    // 0 vs 1 based coordinates
+        int x = frame.getScreenPosition(l);
         //int strEnd = Integer.MIN_VALUE;
-        while (x < w) {
+        while (l < maxX && x < w) {
             l = (int) (nTick * spacing);
-            x = frame.getScreenPosition(l - 1);
+            x = frame.getScreenPosition(l);
 
 
             String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
                     " " + ts.getMajorUnit();
             int strWidth = g.getFontMetrics().stringWidth(chrPosition);
-            int strPosition = isHorizontal() ? x - strWidth/2 : -x - strWidth/2;
+            int strPosition = isHorizontal() ? x - strWidth / 2 : -x - strWidth / 2;
             //if (strPosition > strEnd) {
 
             if (nTick % 2 == 0) {
@@ -160,7 +153,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
             //}
 
             int xpos = (orientation == Orientation.HORIZONTAL ? x : -x);
-            g.drawLine(xpos, h - 10, xpos,h - 2);
+            g.drawLine(xpos, h - 10, xpos, h - 2);
             nTick++;
 
         }

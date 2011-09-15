@@ -13,15 +13,7 @@ public class Dataset {
     private boolean caching = true;
 
     //Chromosome lookup table
-    public static Chromosome [] chromosomes = new Chromosome [] {
-        new Chromosome(0, "2L", 23011544),
-        new Chromosome(1, "2R", 21146708),
-        new Chromosome(2, "3L", 24543557),
-        new Chromosome(3, "3R", 27905053),
-        new Chromosome(4, "4", 1351857),
-        new Chromosome(5, "X", 22422827),
-        new Chromosome(6, "U", 10049037)
-    };
+    public  Chromosome [] chromosomes;
 
     Map<String, Matrix> matrices = new HashMap(25 * 25);
 
@@ -48,6 +40,7 @@ public class Dataset {
         if (m == null && reader != null) {
             try {
                 m = reader.readMatrix(key);
+
                 if(caching) matrices.put(key, m);
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

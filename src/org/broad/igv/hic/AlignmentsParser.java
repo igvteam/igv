@@ -47,7 +47,7 @@ public class AlignmentsParser {
         chromOrdinals.put("U", 6);
     }
 
-    public static Matrix readMatrix(InputStream is, String genomeId, int c1, int c2) throws IOException {
+    public static Matrix readMatrix(InputStream is, int c1, int c2) throws IOException {
         String[] tokens = new String[9];
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 

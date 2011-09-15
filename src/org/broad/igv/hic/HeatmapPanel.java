@@ -68,13 +68,14 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
 
-        int w =  Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.chr1.getSize()));
-        int h = Math.min(getHeight(), mainWindow.yContext.getScreenPosition(mainWindow.chr2.getSize()));
+        int w =  Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.xContext.getChromosome().getSize()));
+        int h = Math.min(getHeight(), mainWindow.yContext.getScreenPosition(mainWindow.yContext.getChromosome().getSize()));
+        int wh = Math.max(w, h);
 
-        BufferedImage image = (BufferedImage) createImage(w, h);
+        BufferedImage image = (BufferedImage) createImage(wh, wh);
         Rectangle bounds = new Rectangle(0, 0, w, h);
         Graphics g = image.createGraphics();
-        renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), mainWindow.zd,
+        renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), zd,
                 binWidth, maxCount, g, bounds, getBackground());
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);

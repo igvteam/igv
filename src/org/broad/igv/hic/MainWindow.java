@@ -7,6 +7,7 @@ package org.broad.igv.hic;
 import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import com.jidesoft.swing.*;
 
 import org.broad.igv.hic.data.*;
 
@@ -26,9 +27,6 @@ public class MainWindow extends JFrame {
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
     public static final int MAX_ZOOM = 10;
 
-    String genomeId;
-    Chromosome chr1;
-    Chromosome chr2;
     private int len;
     public Context xContext;
     public Context yContext;
@@ -56,11 +54,6 @@ public class MainWindow extends JFrame {
 
         thumbnailPanel.setMainWindow(this);
 
-        //dataset = AlignmentsParser.read(new File(file));
-
-        updateGenome();
-
-
         rangeScale.setValue(refMaxCount);
 
         heatmapPanel.setSize(500, 500);
@@ -74,6 +67,7 @@ public class MainWindow extends JFrame {
         thumbnailPanel.setBinWidth(1);
 
         //2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000
+        // TODO -- these should be read from the data file  (zd.binSize)
         ZoomLabel[] zooms = new ZoomLabel[]{
                 new ZoomLabel("2.5 mb", 0),
                 new ZoomLabel("1   mb", 1),
@@ -106,19 +100,14 @@ public class MainWindow extends JFrame {
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
             dataset = (new DatasetReader(new File(file))).read();
+            chromosomes = dataset.getChromosomes();
+            chrBox1.setModel(new DefaultComboBoxModel(chromosomes));
+            chrBox2.setModel(new DefaultComboBoxModel(chromosomes));
         } else {
             // error -- unknown file type
         }
         setTitle(file);
         refreshChromosomes();
-    }
-
-    private void updateGenome() {
-        //genomeId = (String) genomeBox.getSelectedItem();
-        String genomeId = "dmel";
-        chromosomes = Dataset.chromosomes;
-        chrBox1.setModel(new DefaultComboBoxModel(chromosomes));
-        chrBox2.setModel(new DefaultComboBoxModel(chromosomes));
     }
 
     private void refreshChromosomes() {
@@ -135,12 +124,8 @@ public class MainWindow extends JFrame {
                 getGlassPane().setVisible(true);
                 getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                chr1 = (Chromosome) chrBox1.getSelectedItem();
-                chr2 = (Chromosome) chrBox2.getSelectedItem();
-                xContext = new Context(chr1);
-                yContext = new Context(chr2);
-                rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
-                rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+                Chromosome chr1 = (Chromosome) chrBox1.getSelectedItem();
+                Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
 
                 int t1 = chr1.getIndex();
                 int t2 = chr2.getIndex();
@@ -151,10 +136,14 @@ public class MainWindow extends JFrame {
                     chr1 = tmp;
                 }
 
+                xContext = new Context(chr2);
+                yContext = new Context(chr1);
+                rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
+                rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+
                 Matrix m = dataset.getMatrix(chr1, chr2);
                 if (m == null) {
                 } else {
-                    MatrixZoomData thumbnailData = m.getZoomData(0);
                     setInitialZoom();
                 }
 
@@ -226,6 +215,8 @@ public class MainWindow extends JFrame {
 
         if (newZoom < 1 || newZoom > MAX_ZOOM) return;
 
+        Chromosome chr1 = xContext.getChromosome();
+        Chromosome chr2 = yContext.getChromosome();
         zd = dataset.getMatrix(chr1, chr2).getZoomData(newZoom);
 
         int newBinSize =  zd.getBinSize();
@@ -244,8 +235,8 @@ public class MainWindow extends JFrame {
         yContext.setZoom(newZoom, scale);
 
 
-        xContext.setVisibleWidth((int) (scale * getWidth()));
-        yContext.setVisibleWidth((int) (scale * getHeight()));
+        xContext.setVisibleWidth((int) (scale * heatmapPanel.getWidth()));
+        yContext.setVisibleWidth((int) (scale * heatmapPanel.getHeight()));
 
         zoomComboBox.setSelectedIndex(newZoom);
 
@@ -282,15 +273,7 @@ public class MainWindow extends JFrame {
     }
 
 
-    private void thumbnailPanelMouseClicked(MouseEvent e) {
-        int bw = thumbnailPanel.getBinWidth();
-      //  int nBins = getLen() / thumbnailPanel.getZd().getBinSize();
-      //  int effectiveWidth = nBins * bw;
 
-      //  int newX = (int) (((double) e.getX() / effectiveWidth) * getLen());
-      //  int newY = (int) (((double) e.getY() / effectiveWidth) * getLen());
-      //  center(newX, newY);
-    }
 
     private void heatmapPanelMouseDragged(MouseEvent e) {
         // TODO add your code here
@@ -313,10 +296,6 @@ public class MainWindow extends JFrame {
                 e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }
-    }
-
-    private void genomeBoxActionPerformed(ActionEvent e) {
-        updateGenome();
     }
 
     public int getLen() {
@@ -426,13 +405,13 @@ public class MainWindow extends JFrame {
                 int binY = (yContext.getOrigin() / binSize) + (e.getY() - visRect.y) / heatmapPanel.getBinWidth();
                 StringBuffer txt = new StringBuffer();
                 txt.append("<html>");
-                txt.append(chr1.getName());
+                txt.append(xContext.getChromosome().getName());
                 txt.append(":");
                 txt.append(String.valueOf((binX - 1) * binSize));
                 txt.append("-");
                 txt.append(String.valueOf(binX * binSize));
                 txt.append("<br>");
-                txt.append(chr2.getName());
+                txt.append(yContext.getChromosome().getName());
                 txt.append(":");
                 txt.append(String.valueOf((binY - 1) * binSize));
                 txt.append("-");
@@ -455,6 +434,8 @@ public class MainWindow extends JFrame {
         label2 = new JLabel();
         zoomComboBox = new JComboBox();
         panel1 = new JPanel();
+        panel9 = new JPanel();
+        label1 = new JLabel();
         rangeScale = new JSlider();
         panel3 = new JPanel();
         panel5 = new JPanel();
@@ -485,11 +466,6 @@ public class MainWindow extends JFrame {
                 {
                     chrSelectionPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
                     chrSelectionPanel.setLayout(new FlowLayout());
-
-                    //---- chrBox1 ----
-                    chrBox1.setModel(new DefaultComboBoxModel(new String[]{
-                            "..........."
-                    }));
                     chrSelectionPanel.add(chrBox1);
                     chrSelectionPanel.add(chrBox2);
 
@@ -527,19 +503,31 @@ public class MainWindow extends JFrame {
                 {
                     panel1.setLayout(new FlowLayout());
 
-                    //---- rangeScale ----
-                    rangeScale.setMajorTickSpacing(200);
-                    rangeScale.setPaintTicks(true);
-                    rangeScale.setPaintLabels(true);
-                    rangeScale.setPreferredSize(new Dimension(300, 52));
-                    rangeScale.setValue(500);
-                    rangeScale.setMaximum(1000);
-                    rangeScale.addChangeListener(new ChangeListener() {
-                        public void stateChanged(ChangeEvent e) {
-                            rangeStateChanged(e);
-                        }
-                    });
-                    panel1.add(rangeScale);
+                    //======== panel9 ========
+                    {
+                        panel9.setBorder(null);
+                        panel9.setLayout(new FlowLayout());
+
+                        //---- label1 ----
+                        label1.setText("Scale");
+                        panel9.add(label1);
+
+                        //---- rangeScale ----
+                        rangeScale.setMajorTickSpacing(500);
+                        rangeScale.setPaintTicks(true);
+                        rangeScale.setPaintLabels(true);
+                        rangeScale.setPreferredSize(new Dimension(150, 52));
+                        rangeScale.setValue(500);
+                        rangeScale.setMaximum(1000);
+                        rangeScale.setMinorTickSpacing(100);
+                        rangeScale.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent e) {
+                                rangeStateChanged(e);
+                            }
+                        });
+                        panel9.add(rangeScale);
+                    }
+                    panel1.add(panel9);
                 }
                 panel4.add(panel1);
             }
@@ -602,12 +590,6 @@ public class MainWindow extends JFrame {
                     thumbnailPanel.setMinimumSize(new Dimension(100, 100));
                     thumbnailPanel.setPreferredSize(new Dimension(100, 100));
                     thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
-                    thumbnailPanel.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            thumbnailPanelMouseClicked(e);
-                        }
-                    });
                     panel8.add(thumbnailPanel);
                 }
                 panel3.add(panel8, BorderLayout.EAST);
@@ -651,6 +633,8 @@ public class MainWindow extends JFrame {
     private JLabel label2;
     private JComboBox zoomComboBox;
     private JPanel panel1;
+    private JPanel panel9;
+    private JLabel label1;
     private JSlider rangeScale;
     private JPanel panel3;
     private JPanel panel5;
