@@ -2,8 +2,7 @@ package org.broad.igv.hic.tools;
 
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
-import org.broad.tribble.util.LittleEndianInputStream;
-import org.broad.tribble.util.LittleEndianOutputStream;
+import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
 import java.util.Comparator;
@@ -16,14 +15,14 @@ public class AlignmentsSorter {
 
 
     public static void main(String[] args) throws IOException {
-        File ifile = new File("/Users/jrobinso/projects/hi-c/test/data/selected_formatted.txt");
-        File ofile = new File("/Users/jrobinso/projects/hi-c/test/data/selected_formatted.sorted.txt");
+        String ifile = "/Users/jrobinso/projects/hi-c/test/data/selected_formatted.txt";
+        String ofile = "/Users/jrobinso/projects/hi-c/test/data/selected_formatted.sorted.txt";
         File tmpdir = new File("/Users/jrobinso/tmp");
         sort(ifile, ofile, tmpdir);
 
     }
 
-    public static void sort(File inputFile, File outputFile, File tmpdir) throws IOException {
+    public static void sort(String inputFile, String outputFile, File tmpdir) throws IOException {
 
         int maxRecordsInRam = 500000;
 
@@ -47,7 +46,7 @@ public class AlignmentsSorter {
         // Parse input, create records, and add to sorting collection
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new FileReader(inputFile));
+            br = ParsingUtils.openBufferedReader(inputFile);
 
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
@@ -116,18 +115,18 @@ public class AlignmentsSorter {
 
         public void encode(AlignmentRecord rec) {
 
-                os.println(rec.line);
-                os.flush();
+            os.println(rec.line);
+            os.flush();
         }
 
         public AlignmentRecord decode() {
             AlignmentRecord rec = new AlignmentRecord();
             try {
                 rec.line = is.readLine();
-                if(rec.line == null) {
+                if (rec.line == null) {
                     return null;
                 }
-                String [] tokens = rec.line.split("\\s+");
+                String[] tokens = rec.line.split("\\s+");
                 rec.chr1 = tokens[1].trim();
                 rec.pos1 = Integer.parseInt(tokens[2]);
             } catch (Exception e) {

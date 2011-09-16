@@ -28,7 +28,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Old (human) format
+ *         0        1   2   3       4           5   6   7      8
+ *         readName chr pos strand  resFragment chr pos strand resFragment
+ *         1:50:484:47                    0 238     1       0       0       17      0       0
  * New format (Aug 2011)
+ *         0        1   2   3      4        5   6   7
+ *         readName chr pos strand readName chr pos strand
  *         EAS1533_0010:4:77:10734:2666#0 X 8057 + SI-EAS1533_0010:4:77:10734:2666#0/2 X 5 -
  * @author jrobinso
  * @date Aug 2, 2010
