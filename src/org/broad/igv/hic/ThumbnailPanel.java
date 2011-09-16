@@ -1,14 +1,11 @@
 package org.broad.igv.hic;
 
-import org.broad.igv.hic.data.*;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.IconFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
@@ -25,20 +22,16 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
     Image image;
 
-    HeatmapRenderer renderer = new HeatmapRenderer();
     public static final AlphaComposite ALPHA_COMP = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.75f);
     private double yScale;
     private double xScale;
     Point lastPoint = null;
     private Rectangle innerRectangle;
-    private Cursor fistCursor;
 
 
     public ThumbnailPanel() {
 
-        createCursors();
-
-        addMouseListener(new MouseAdapter() {
+         addMouseListener(new MouseAdapter() {
 
 
             @Override
@@ -52,7 +45,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             public void mousePressed(MouseEvent mouseEvent) {
                 if (innerRectangle != null && innerRectangle.contains(mouseEvent.getPoint())) {
                     lastPoint = mouseEvent.getPoint();
-                    setCursor(fistCursor);
+                    setCursor(MainWindow.fistCursor);
                 }
 
             }
@@ -78,22 +71,6 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             }
         });
 
-    }
-
-    public void createCursors() {
-        BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
-
-        // Make backgroun transparent
-        Graphics2D g = handImage.createGraphics();
-        g.setComposite(AlphaComposite.getInstance(
-                AlphaComposite.CLEAR, 0.0f));
-        Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 32, 32);
-        g.fill(rect);
-
-        // Draw hand image in middle
-        g = handImage.createGraphics();
-        g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
-        fistCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
     }
 
     public void setImage(Image image) {

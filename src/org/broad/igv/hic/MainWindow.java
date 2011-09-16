@@ -11,10 +11,13 @@ import javax.swing.event.*;
 import com.jidesoft.swing.*;
 
 import org.broad.igv.hic.data.*;
+import org.broad.igv.ui.util.IconFactory;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.*;
@@ -25,6 +28,7 @@ import javax.swing.*;
 public class MainWindow extends JFrame {
 
     public static final int MIN_BIN_WIDTH = 2;
+    public static Cursor fistCursor;
     int refMaxCount = 500;
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
@@ -40,9 +44,6 @@ public class MainWindow extends JFrame {
     public static void main(String[] args) throws IOException {
 
         final MainWindow mainWindow = new MainWindow();
-
-        mainWindow.pack();
-        mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.setVisible(true);
         mainWindow.setSize(870, 870);
 
@@ -50,10 +51,28 @@ public class MainWindow extends JFrame {
     }
 
 
+    public void createCursors() {
+        BufferedImage handImage = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+
+        // Make backgroun transparent
+        Graphics2D g = handImage.createGraphics();
+        g.setComposite(AlphaComposite.getInstance(
+                AlphaComposite.CLEAR, 0.0f));
+        Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 32, 32);
+        g.fill(rect);
+
+        // Draw hand image in middle
+        g = handImage.createGraphics();
+        g.drawImage(IconFactory.getInstance().getIcon(IconFactory.IconID.FIST).getImage(), 0, 0, null);
+        MainWindow.fistCursor = getToolkit().createCustomCursor(handImage, new Point(8, 6), "Move");
+    }
+
+
     public MainWindow() throws IOException {
 
         initComponents();
 
+        createCursors();
 
         thumbnailPanel.setMainWindow(this);
 
@@ -84,6 +103,11 @@ public class MainWindow extends JFrame {
                 new ZoomLabel("2.5 kb", 9),
                 new ZoomLabel("1   kb", 10)};
         zoomComboBox.setModel(new DefaultComboBoxModel(zooms));
+
+        pack();
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
     }
 
     class ZoomLabel {
@@ -340,7 +364,7 @@ public class MainWindow extends JFrame {
 
     private void loadDmelDatasetActionPerformed(ActionEvent e) {
         try {
-            load("https://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
+            load("http://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -350,9 +374,6 @@ public class MainWindow extends JFrame {
 
         boolean isDragging = false;
         private Point lastMousePoint;
-        private int lastMousePressedY;
-        private int cumulativeDeltaX;
-        private int cumulativeDeltaY;
 
 
         @Override
@@ -360,14 +381,7 @@ public class MainWindow extends JFrame {
 
             isDragging = true;
 
-            //panel = (Container) e.getSource();
-            //panel.setCursor(dragCursor);
-
             lastMousePoint = e.getPoint();
-            lastMousePressedY = (int) e.getPoint().getY();
-            cumulativeDeltaX = 0;
-            cumulativeDeltaY = 0;
-
 
         }
 
@@ -378,14 +392,13 @@ public class MainWindow extends JFrame {
                 isDragging = false;
             }
             lastMousePoint = null;
-            // ((JComponent) e.getSource()).setCursor(getCursor());
+            ((JComponent) e.getSource()).setCursor(Cursor.getDefaultCursor());
         }
 
 
         @Override
         final public void mouseDragged(final MouseEvent e) {
 
-            // ((JComponent) e.getSource()).setCursor(IGVMainFrame.handCursor);
             try {
 
                 if (lastMousePoint == null) {
@@ -393,6 +406,7 @@ public class MainWindow extends JFrame {
                     return;
                 }
 
+                ((JComponent) e.getSource()).setCursor(fistCursor);
                 double deltaX = lastMousePoint.getX() - e.getX();
                 double deltaY = lastMousePoint.getY() - e.getY();
 
