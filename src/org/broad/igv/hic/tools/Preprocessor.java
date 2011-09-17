@@ -11,6 +11,7 @@ import org.broad.tribble.util.LittleEndianOutputStream;
 import java.io.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author jrobinso
@@ -38,7 +39,7 @@ public class Preprocessor {
 
     public void preprocess(File inputFile, String genomeId) throws IOException {
 
-        FileInputStream fis = null;
+        InputStream fis = null;
 
         try {
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
@@ -57,6 +58,9 @@ public class Preprocessor {
             for (int c1 = 0; c1 < nChrs; c1++) {
                 for (int c2 = c1; c2 < nChrs; c2++) {
                     fis = new FileInputStream(inputFile);
+                    if(inputFile.getName().endsWith(".gz")) {
+                        fis = new GZIPInputStream(fis);
+                    }
                     Matrix matrix = AlignmentsParser.readMatrix(fis, c1, c2);
                     if (matrix != null) {
                         System.out.println("writing matrix: " + matrix.getKey());
