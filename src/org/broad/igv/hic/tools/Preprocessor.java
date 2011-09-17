@@ -54,12 +54,14 @@ public class Preprocessor {
                 writeInt(HiCTools.chromosomes[i].getSize());
             }
 
-            for (int c1 = 0; c1 < 7; c1++) {
-                for (int c2 = c1; c2 < 7; c2++) {
+            for (int c1 = 0; c1 < nChrs; c1++) {
+                for (int c2 = c1; c2 < nChrs; c2++) {
                     fis = new FileInputStream(inputFile);
                     Matrix matrix = AlignmentsParser.readMatrix(fis, c1, c2);
-                    System.out.println("writing matrix: " + matrix.getKey());
-                    writeMatrix(matrix);
+                    if (matrix != null) {
+                        System.out.println("writing matrix: " + matrix.getKey());
+                        writeMatrix(matrix);
+                    }
                     fis.close();
                 }
             }

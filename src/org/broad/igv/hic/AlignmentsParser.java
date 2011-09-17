@@ -55,14 +55,18 @@ public class AlignmentsParser {
             String[] tokens = nextLine.split("\\s+");
             int nTokens = tokens.length;
             if (nTokens <= 9) {
-                int chr1 = 0;
-                int chr2 = 0;
+                Integer chr1 = -1;
+                Integer chr2 = -1;
                 try {
                     // TODO -- use gnomeID to look up chromosome table
                     chr1 = HiCTools.chromosomeOrdinals.get(tokens[1]);
                     chr2 = HiCTools.chromosomeOrdinals.get(tokens[5]);
                 } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+                if(chr1 == null || chr2 == null) {
+                    return null;
                 }
 
                 if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
