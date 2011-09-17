@@ -1,9 +1,9 @@
 package org.broad.igv.hic.data;
 
 
+import org.broad.igv.hic.tools.Preprocessor;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianInputStream;
-import org.broad.tribble.util.SeekableFileStream;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.*;

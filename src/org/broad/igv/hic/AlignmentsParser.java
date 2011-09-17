@@ -21,6 +21,7 @@ package org.broad.igv.hic;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.Dataset;
 import org.broad.igv.hic.data.Matrix;
+import org.broad.igv.hic.tools.HiCTools;
 import org.broad.tribble.util.ParsingUtils;
 
 import java.io.*;
@@ -41,34 +42,25 @@ import java.util.Map;
  */
 public class AlignmentsParser {
 
-    public static Map<String, Integer> chromOrdinals = new HashMap<String, Integer>();
 
-    static {
-        chromOrdinals.put("2L", 0);
-        chromOrdinals.put("2R", 1);
-        chromOrdinals.put("3L", 2);
-        chromOrdinals.put("3R", 3);
-        chromOrdinals.put("4", 4);
-        chromOrdinals.put("X", 5);
-        chromOrdinals.put("U", 6);
-    }
 
     public static Matrix readMatrix(InputStream is, int c1, int c2) throws IOException {
-        String[] tokens = new String[9];
+
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
         Matrix matrix = new Matrix(c1, c2);
         String nextLine;
         while ((nextLine = br.readLine()) != null) {
 
-            int nTokens = ParsingUtils.split(nextLine, tokens, ' ');
+            String[] tokens = nextLine.split("\\s+");
+            int nTokens = tokens.length;
             if (nTokens <= 9) {
                 int chr1 = 0;
                 int chr2 = 0;
                 try {
                     // TODO -- use gnomeID to look up chromosome table
-                    chr1 = chromOrdinals.get(tokens[1]);
-                    chr2 = chromOrdinals.get(tokens[5]);
+                    chr1 = HiCTools.chromosomeOrdinals.get(tokens[1]);
+                    chr2 = HiCTools.chromosomeOrdinals.get(tokens[5]);
                 } catch (Exception e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }

@@ -1,6 +1,10 @@
-package org.broad.igv.hic.data;
+package org.broad.igv.hic.tools;
 
 import org.broad.igv.hic.AlignmentsParser;
+import org.broad.igv.hic.data.Block;
+import org.broad.igv.hic.data.ContactRecord;
+import org.broad.igv.hic.data.Matrix;
+import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
@@ -13,17 +17,6 @@ import java.util.Map;
  * @date Aug 16, 2010
  */
 public class Preprocessor {
-
-    // Hardcoded chromosomes for dMel r4.2.1
-    public final static Chromosome[] chromosomes = new Chromosome[]{
-            new Chromosome(0, "2L", 22407834),
-            new Chromosome(1, "2R", 20766785),
-            new Chromosome(2, "3L", 23771897),
-            new Chromosome(3, "3R", 27905053),
-            new Chromosome(4, "4", 1281640),
-            new Chromosome(5, "X", 22224390),
-            new Chromosome(6, "U", 11561901)
-    };
 
 
     File outputFile;
@@ -54,11 +47,11 @@ public class Preprocessor {
             writeLong(0l);
 
             // Chromosome dictionary
-            int nChrs = chromosomes.length;
+            int nChrs = HiCTools.chromosomes.length;
             writeInt(nChrs);
             for (int i = 0; i < nChrs; i++) {
-                writeString(chromosomes[i].getName());
-                writeInt(chromosomes[i].getSize());
+                writeString(HiCTools.chromosomes[i].getName());
+                writeInt(HiCTools.chromosomes[i].getSize());
             }
 
             for (int c1 = 0; c1 < 7; c1++) {
@@ -302,8 +295,8 @@ public class Preprocessor {
 
     public static class IndexEntry {
         int id;
-        long position;
-        int size;
+        public long position;
+        public int size;
 
         IndexEntry(int id, long position, int size) {
             this.id = id;
@@ -311,7 +304,7 @@ public class Preprocessor {
             this.size = size;
         }
 
-        IndexEntry(long position, int size) {
+        public IndexEntry(long position, int size) {
             this.position = position;
             this.size = size;
         }

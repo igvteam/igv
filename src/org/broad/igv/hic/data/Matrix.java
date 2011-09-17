@@ -8,9 +8,9 @@ import org.broad.igv.hic.MainWindow;
  */
 public class Matrix {
 
-    int chr1;
-    int chr2;
-    MatrixZoomData[] zoomData;
+    public int chr1;
+    public int chr2;
+    public MatrixZoomData[] zoomData;
 
     public Matrix(int chr1, int chr2) {
         this.chr1 = chr1;

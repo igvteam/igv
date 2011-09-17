@@ -1,5 +1,8 @@
 package org.broad.igv.hic.data;
 
+import org.broad.igv.hic.tools.HiCTools;
+import org.broad.igv.hic.tools.Preprocessor;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -35,7 +38,7 @@ public class MatrixZoomData {
         this.zoom = zoom;
 
 
-        int nBinsX = Preprocessor.chromosomes[chr1].getSize() / binSize + 1;
+        int nBinsX = HiCTools.chromosomes[chr1].getSize() / binSize + 1;
         blockSize = nBinsX / blockColumnCount + 1;
         blocks = new LinkedHashMap(blockColumnCount * blockColumnCount);
     }
