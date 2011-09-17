@@ -7,6 +7,8 @@ import org.jfree.ui.RectangleEdge;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.Hashtable;
@@ -18,16 +20,19 @@ import java.util.Hashtable;
 public class HeatmapPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
-    private double maxCount = 200.0 / (1 * 1);
+    private double maxCount = 20000.0 / (1 * 1);
     private int binWidth = 2;
     private int imageTileWidth = 500;
     ObjectCache<String, ImageTile> tileCache = new ObjectCache(100);
+    private Rectangle zoomRectangle;
 
     HeatmapRenderer renderer = new HeatmapRenderer();
 
 
     public HeatmapPanel() {
-
+        final HeatmapMouseHandler mouseHandler = new HeatmapMouseHandler();
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
     }
 
     @Override
@@ -64,11 +69,15 @@ public class HeatmapPanel extends JComponent implements Serializable {
             }
 
         }
+
+        if(zoomRectangle != null) {
+            ((Graphics2D) g).draw(zoomRectangle);
+        }
     }
 
     public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
 
-        int w =  Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.xContext.getChromosome().getSize()));
+        int w = Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.xContext.getChromosome().getSize()));
         int h = Math.min(getHeight(), mainWindow.yContext.getScreenPosition(mainWindow.yContext.getChromosome().getSize()));
         int wh = Math.max(w, h);
 
@@ -163,4 +172,126 @@ public class HeatmapPanel extends JComponent implements Serializable {
             this.image = image;
         }
     }
+
+
+    class HeatmapMouseHandler extends MouseAdapter {
+
+        int dragMode = 0;  // 0 => none, 1 => pan,  2 => zoom
+        private Point lastMousePoint;
+
+
+        @Override
+        public void mousePressed(final MouseEvent e) {
+
+            if (e.isAltDown()) {
+                dragMode = 2;
+            } else {
+                dragMode = 1;
+                setCursor(mainWindow.fistCursor);
+            }
+
+            lastMousePoint = e.getPoint();
+
+        }
+
+
+        @Override
+        public void mouseReleased(final MouseEvent e) {
+            dragMode = 0;
+            lastMousePoint = null;
+            zoomRectangle = null;
+            setCursor(Cursor.getDefaultCursor());
+            repaint();
+        }
+
+
+        @Override
+        final public void mouseDragged(final MouseEvent e) {
+
+            if( mainWindow.zd == null) {
+                return;
+            }
+
+            if (lastMousePoint == null) {
+                lastMousePoint = e.getPoint();
+                return;
+            }
+
+            double deltaX =  e.getX() - lastMousePoint.x;
+            double deltaY =  e.getY() - lastMousePoint.y;
+            switch (dragMode) {
+                case 2:
+
+                    Rectangle lastRectangle = zoomRectangle;
+
+                    if (deltaX == 0 || deltaY == 0) {
+                        return;
+                    }
+                    int x = deltaX > 0 ? lastMousePoint.x : lastMousePoint.x + (int) deltaX;
+                    int y = deltaY > 0 ? lastMousePoint.y : lastMousePoint.y + (int) deltaY;
+                    zoomRectangle = new Rectangle(x, y, (int) Math.abs(deltaX), (int) Math.abs(deltaY));
+
+                    Rectangle damageRect = lastRectangle == null ? zoomRectangle : zoomRectangle.union(lastRectangle);
+                    damageRect.x--;
+                    damageRect.y--;
+                    damageRect.width += 2;
+                    damageRect.height += 2;
+                    paintImmediately(damageRect);
+
+                    break;
+                default:
+
+                    // Size i
+                    int dx = (int) (deltaX * mainWindow.zd.getBinSize() / getBinWidth());
+                    int dy = (int) (deltaY * mainWindow.zd.getBinSize() / getBinWidth());
+                    lastMousePoint = e.getPoint();    // Always save the last Point
+
+                    mainWindow.moveBy(-dx, -dy);
+
+            }
+
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+            if (!e.isPopupTrigger() && (e.getClickCount() > 1)) {
+                int currentZoom = mainWindow.xContext.getZoom();
+                final int newZoom = e.isAltDown()
+                        ? Math.max(currentZoom - 1, 1)
+                        : Math.min(11, currentZoom + 1);
+
+                int centerLocationX = mainWindow.xContext.getOrigin() + e.getX() * mainWindow.zd.getBinSize() / getBinWidth();
+                int centerLocationY = mainWindow.yContext.getOrigin() + e.getY() * mainWindow.zd.getBinSize() / getBinWidth();
+
+                mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+
+            }
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            if (mainWindow.xContext != null && mainWindow.zd != null) {
+                Rectangle visRect = getVisibleRect();
+                final int binSize = mainWindow.zd.getBinSize();
+                int binX = (mainWindow.xContext.getOrigin() / binSize) + (e.getX() - visRect.x) / getBinWidth();
+                int binY = (mainWindow.yContext.getOrigin() / binSize) + (e.getY() - visRect.y) / getBinWidth();
+                StringBuffer txt = new StringBuffer();
+                txt.append("<html>");
+                txt.append(mainWindow.xContext.getChromosome().getName());
+                txt.append(":");
+                txt.append(String.valueOf((binX - 1) * binSize));
+                txt.append("-");
+                txt.append(String.valueOf(binX * binSize));
+                txt.append("<br>");
+                txt.append(mainWindow.yContext.getChromosome().getName());
+                txt.append(":");
+                txt.append(String.valueOf((binY - 1) * binSize));
+                txt.append("-");
+                txt.append(String.valueOf(binY * binSize));
+                setToolTipText(txt.toString());
+            }
+        }
+    }
+
 }

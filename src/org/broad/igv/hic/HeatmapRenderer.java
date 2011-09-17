@@ -60,8 +60,8 @@ public class HeatmapRenderer {
                     ContactRecord rec = recs[i];
 
                     Color color = null;
-                    double binSizeHKB = binSize / 100000.0;
-                    double score = rec.getCounts() / (binSizeHKB * binSizeHKB);
+                    double binSizeMB = binSize / 1000000.0;
+                    double score = rec.getCounts() / (binSizeMB * binSizeMB);
                     if (maxCount > 0 && score > 2 * maxCount) {
                         color = Color.ORANGE;
                     } else {

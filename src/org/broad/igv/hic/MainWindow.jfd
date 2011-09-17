@@ -203,7 +203,7 @@
                 <string>javax.swing.JSlider</string> 
                 <void method="setProperty"> 
                  <string>majorTickSpacing</string> 
-                 <int>500</int> 
+                 <int>50000</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>paintTicks</string> 
@@ -226,11 +226,11 @@
                 </void> 
                 <void method="setProperty"> 
                  <string>maximum</string> 
-                 <int>1000</int> 
+                 <int>100000</int> 
                 </void> 
                 <void method="setProperty"> 
                  <string>minorTickSpacing</string> 
-                 <int>100</int> 
+                 <int>10000</int> 
                 </void> 
                 <void property="name"> 
                  <string>scaleSlider</string> 

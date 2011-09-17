@@ -29,7 +29,7 @@ public class MainWindow extends JFrame {
 
     public static final int MIN_BIN_WIDTH = 2;
     public static Cursor fistCursor;
-    int refMaxCount = 500;
+    //int refMaxCount = 500;
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
     public static final int MAX_ZOOM = 10;
@@ -76,14 +76,11 @@ public class MainWindow extends JFrame {
 
         thumbnailPanel.setMainWindow(this);
 
-        rangeScale.setValue(refMaxCount);
+        int initialMaxCount = 50000;
+        rangeScale.setValue(initialMaxCount);
 
         heatmapPanel.setSize(500, 500);
         heatmapPanel.setMainWindow(this);
-
-        MouseAdapter mh = new HeatmapMouseHandler();
-        heatmapPanel.addMouseListener(mh);
-        heatmapPanel.addMouseMotionListener(mh);
 
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
         thumbnailPanel.setBinWidth(1);
@@ -370,100 +367,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    class HeatmapMouseHandler extends MouseAdapter {
-
-        boolean isDragging = false;
-        private Point lastMousePoint;
-
-
-        @Override
-        public void mousePressed(final MouseEvent e) {
-
-            isDragging = true;
-
-            lastMousePoint = e.getPoint();
-
-        }
-
-
-        @Override
-        public void mouseReleased(final MouseEvent e) {
-            if (isDragging) {
-                isDragging = false;
-            }
-            lastMousePoint = null;
-            ((JComponent) e.getSource()).setCursor(Cursor.getDefaultCursor());
-        }
-
-
-        @Override
-        final public void mouseDragged(final MouseEvent e) {
-
-            try {
-
-                if (lastMousePoint == null) {
-                    lastMousePoint = e.getPoint();
-                    return;
-                }
-
-                ((JComponent) e.getSource()).setCursor(fistCursor);
-                double deltaX = lastMousePoint.getX() - e.getX();
-                double deltaY = lastMousePoint.getY() - e.getY();
-
-                // Size i
-                int dx = (int) (deltaX * zd.getBinSize() / heatmapPanel.getBinWidth());
-                int dy = (int) (deltaY * zd.getBinSize() / heatmapPanel.getBinWidth());
-
-                moveBy(dx, dy);
-
-
-            } finally {
-                lastMousePoint = e.getPoint();    // Always save the last Point
-            }
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-
-            if (!e.isPopupTrigger() && (e.getClickCount() > 1)) {
-                int currentZoom = xContext.getZoom();
-                final int newZoom = e.isAltDown()
-                        ? Math.max(currentZoom - 1, 1)
-                        : Math.min(11, currentZoom + 1);
-
-                int centerLocationX = xContext.getOrigin() + e.getX() * zd.getBinSize() / heatmapPanel.getBinWidth();
-                int centerLocationY = yContext.getOrigin() + e.getY() * zd.getBinSize() / heatmapPanel.getBinWidth();
-
-                setZoom(newZoom, centerLocationX, centerLocationY);
-
-            }
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            if (xContext != null && zd != null) {
-                Rectangle visRect = heatmapPanel.getVisibleRect();
-                final int binSize = zd.getBinSize();
-                int binX = (xContext.getOrigin() / binSize) + (e.getX() - visRect.x) / heatmapPanel.getBinWidth();
-                int binY = (yContext.getOrigin() / binSize) + (e.getY() - visRect.y) / heatmapPanel.getBinWidth();
-                StringBuffer txt = new StringBuffer();
-                txt.append("<html>");
-                txt.append(xContext.getChromosome().getName());
-                txt.append(":");
-                txt.append(String.valueOf((binX - 1) * binSize));
-                txt.append("-");
-                txt.append(String.valueOf(binX * binSize));
-                txt.append("<br>");
-                txt.append(yContext.getChromosome().getName());
-                txt.append(":");
-                txt.append(String.valueOf((binY - 1) * binSize));
-                txt.append("-");
-                txt.append(String.valueOf(binY * binSize));
-                heatmapPanel.setToolTipText(txt.toString());
-            }
-        }
-    }
-
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -560,13 +463,13 @@ public class MainWindow extends JFrame {
                         panel9.add(label1);
 
                         //---- rangeScale ----
-                        rangeScale.setMajorTickSpacing(500);
+                        rangeScale.setMajorTickSpacing(50000);
                         rangeScale.setPaintTicks(true);
                         rangeScale.setPaintLabels(true);
                         rangeScale.setPreferredSize(new Dimension(150, 52));
                         rangeScale.setValue(500);
-                        rangeScale.setMaximum(1000);
-                        rangeScale.setMinorTickSpacing(100);
+                        rangeScale.setMaximum(100000);
+                        rangeScale.setMinorTickSpacing(10000);
                         rangeScale.addChangeListener(new ChangeListener() {
                             public void stateChanged(ChangeEvent e) {
                                 rangeStateChanged(e);
