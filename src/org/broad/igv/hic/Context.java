@@ -72,4 +72,8 @@ public class Context {
     public Chromosome getChromosome() {
         return chromosome;
     }
+
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
 }

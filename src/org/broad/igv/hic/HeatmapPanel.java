@@ -1,9 +1,7 @@
 package org.broad.igv.hic;
 
-import org.apache.batik.dom.util.HashTable;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.ObjectCache;
-import org.jfree.ui.RectangleEdge;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,7 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
-import java.util.Hashtable;
 
 /**
  * @author jrobinso
@@ -21,7 +18,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
     private double maxCount = 20000.0 / (1 * 1);
-    private int binWidth = 2;
     private int imageTileWidth = 500;
     ObjectCache<String, ImageTile> tileCache = new ObjectCache(100);
     private Rectangle zoomRectangle;
@@ -40,28 +36,35 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         if (mainWindow != null && mainWindow.zd != null) {
 
+            // 1  get image in "bin" coordinates.
+
+            // bp / bin
+            int binSize = mainWindow.zd.getBinSize();
+
             int originX = mainWindow.xContext.getOrigin();
             int originY = mainWindow.yContext.getOrigin();
 
-            int px0 = (int) (originX / mainWindow.xContext.getScale());
-            int px1 = px0 + getWidth();
+            int bLeft = (int) (originX / binSize);
+            int bRight = bLeft + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
+            int bTop = (int) (originY / binSize);
+            int bBottom = bTop + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
 
-            int py0 = (int) (originY / mainWindow.yContext.getScale());
-            int py1 = py0 + getHeight();
+            // tile coordinates
+            int tLeft = bLeft / imageTileWidth;
+            int tRight = bRight / imageTileWidth;
+            int tTop = bTop / imageTileWidth;
+            int tBottom = bBottom / imageTileWidth;
 
-            int tx0 = px0 / imageTileWidth;
-            int tx1 = px1 / imageTileWidth;
+            // scale factor -- for now we are using the same scale for x & y (square pixels)
+            double pixelsPerBin = binSize / mainWindow.xContext.getScale();
 
-            int ty0 = py0 / imageTileWidth;
-            int ty1 = py1 / imageTileWidth;
+            for (int i = tLeft; i <= tRight; i++) {
+                for (int j = tTop; j <= tBottom; j++) {
 
-            int zoomLevel = mainWindow.zd.getZoom();
-            for (int i = tx0; i <= tx1; i++) {
-                for (int j = ty0; j <= ty1; j++) {
-                    ImageTile tile = getImageTile(zoomLevel, i, j);
+                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
 
-                    int pxOffset = tile.px0 - px0;
-                    int pyOffset = tile.py0 - py0;
+                    int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
+                    int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
 
                     g.drawImage(tile.image, pxOffset, pyOffset, null);
 
@@ -70,7 +73,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         }
 
-        if(zoomRectangle != null) {
+        if (zoomRectangle != null) {
             ((Graphics2D) g).draw(zoomRectangle);
         }
     }
@@ -84,30 +87,37 @@ public class HeatmapPanel extends JComponent implements Serializable {
         BufferedImage image = (BufferedImage) createImage(wh, wh);
         Rectangle bounds = new Rectangle(0, 0, w, h);
         Graphics g = image.createGraphics();
-        renderer.render(mainWindow.xContext.getOrigin(), mainWindow.yContext.getOrigin(), zd,
-                binWidth, maxCount, g, bounds, getBackground());
+
+        // TODO -- get # of bins
+        int nBins = 500;
+
+        renderer.render(0, 0, 500, 500, zd, maxCount, g, getBackground());
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
     }
 
-
-    private ImageTile getImageTile(int z, int i, int j) {
-        String key = z + "_" + i + "_" + j;
+    private ImageTile getImageTile(int i, int j, double scaleFactor) {
+        String key = "_" + i + "_" + j;
         ImageTile tile = tileCache.get(key);
         if (tile == null) {
 
             BufferedImage image = (BufferedImage) createImage(imageTileWidth, imageTileWidth);
             Graphics2D g2D = (Graphics2D) image.getGraphics();
 
-            final int px0 = i * imageTileWidth;
-            int x0 = (int) (px0 * mainWindow.xContext.getScale());
-            final int py0 = j * imageTileWidth;
-            int y0 = (int) (py0 * mainWindow.yContext.getScale());
-            Rectangle bounds = new Rectangle(0, 0, imageTileWidth, imageTileWidth);
-            renderer.render(x0, y0, mainWindow.zd, binWidth, maxCount, g2D, bounds, getBackground());
+            final int bx0 = i * imageTileWidth;
+            final int by0 = j * imageTileWidth;
+            renderer.render(bx0, by0, imageTileWidth, imageTileWidth, mainWindow.zd, maxCount, g2D, getBackground());
 
-            tile = new ImageTile(image, px0, py0);
+            if (scaleFactor > 0.999 && scaleFactor < 1.001) {
+                tile = new ImageTile(image, bx0, by0);
+            } else {
+                int scaledWidth = (int) (scaleFactor * imageTileWidth);
+                int scaledHeight = (int) (scaleFactor * imageTileWidth);
+                Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+
+                tile = new ImageTile(scaledImage, bx0, by0);
+            }
             tileCache.put(key, tile);
         }
         return tile;
@@ -118,10 +128,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
         tileCache.clear();
     }
 
-    public int getBinWidth() {
-        return binWidth;
-    }
-
     public MainWindow getMainWindow() {
         return mainWindow;
     }
@@ -130,11 +136,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
         this.mainWindow = mainWindow;
     }
 
-    public void setBinWidth(int binWidth) {
-        System.out.println("bin width = " + binWidth);
-        this.binWidth = binWidth;
-        tileCache.clear();
-    }
 
     @Override
     public void setSize(int i, int i1) {
@@ -157,18 +158,19 @@ public class HeatmapPanel extends JComponent implements Serializable {
     }
 
     public void clearTileCache() {
+        System.out.println("Clear cache");
         tileCache.clear();
     }
 
 
     static class ImageTile {
-        int px0;
-        int py0;
-        BufferedImage image;
+        int bLeft;
+        int bTop;
+        Image image;
 
-        ImageTile(BufferedImage image, int px0, int py0) {
-            this.px0 = px0;
-            this.py0 = py0;
+        ImageTile(Image image, int bLeft, int py0) {
+            this.bLeft = bLeft;
+            this.bTop = py0;
             this.image = image;
         }
     }
@@ -197,6 +199,14 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
         @Override
         public void mouseReleased(final MouseEvent e) {
+
+            if (dragMode == 2) {
+                double bpWidth = mainWindow.xContext.getVisibleWidth();
+                double scale = bpWidth / zoomRectangle.width;
+                mainWindow.xContext.setScale(scale);
+
+            }
+
             dragMode = 0;
             lastMousePoint = null;
             zoomRectangle = null;
@@ -208,7 +218,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         final public void mouseDragged(final MouseEvent e) {
 
-            if( mainWindow.zd == null) {
+            if (mainWindow.zd == null) {
                 return;
             }
 
@@ -217,8 +227,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 return;
             }
 
-            double deltaX =  e.getX() - lastMousePoint.x;
-            double deltaY =  e.getY() - lastMousePoint.y;
+            double deltaX = e.getX() - lastMousePoint.x;
+            double deltaY = e.getY() - lastMousePoint.y;
             switch (dragMode) {
                 case 2:
 
@@ -242,8 +252,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 default:
 
                     // Size i
-                    int dx = (int) (deltaX * mainWindow.zd.getBinSize() / getBinWidth());
-                    int dy = (int) (deltaY * mainWindow.zd.getBinSize() / getBinWidth());
+                    int dx = (int) (deltaX * mainWindow.xContext.getScale());
+                    int dy = (int) (deltaY * mainWindow.yContext.getScale());
                     lastMousePoint = e.getPoint();    // Always save the last Point
 
                     mainWindow.moveBy(-dx, -dy);
@@ -261,8 +271,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                         ? Math.max(currentZoom - 1, 1)
                         : Math.min(11, currentZoom + 1);
 
-                int centerLocationX = mainWindow.xContext.getOrigin() + e.getX() * mainWindow.zd.getBinSize() / getBinWidth();
-                int centerLocationY = mainWindow.yContext.getOrigin() + e.getY() * mainWindow.zd.getBinSize() / getBinWidth();
+                int centerLocationX = mainWindow.xContext.getOrigin() + (int) (e.getX() * mainWindow.xContext.getScale());
+                int centerLocationY = mainWindow.yContext.getOrigin() + (int) (e.getY() * mainWindow.yContext.getScale());
 
                 mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
 
@@ -274,21 +284,21 @@ public class HeatmapPanel extends JComponent implements Serializable {
             if (mainWindow.xContext != null && mainWindow.zd != null) {
                 Rectangle visRect = getVisibleRect();
                 final int binSize = mainWindow.zd.getBinSize();
-                int binX = (mainWindow.xContext.getOrigin() / binSize) + (e.getX() - visRect.x) / getBinWidth();
-                int binY = (mainWindow.yContext.getOrigin() / binSize) + (e.getY() - visRect.y) / getBinWidth();
+
+                int posX = (int) (e.getX() / mainWindow.xContext.getScale());
+                int posY = (int) (e.getY() / mainWindow.yContext.getScale());
+
+                //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
+                //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
                 StringBuffer txt = new StringBuffer();
                 txt.append("<html>");
                 txt.append(mainWindow.xContext.getChromosome().getName());
                 txt.append(":");
-                txt.append(String.valueOf((binX - 1) * binSize));
-                txt.append("-");
-                txt.append(String.valueOf(binX * binSize));
+                txt.append(String.valueOf(posX));
                 txt.append("<br>");
                 txt.append(mainWindow.yContext.getChromosome().getName());
                 txt.append(":");
-                txt.append(String.valueOf((binY - 1) * binSize));
-                txt.append("-");
-                txt.append(String.valueOf(binY * binSize));
+                txt.append(String.valueOf(posY));
                 setToolTipText(txt.toString());
             }
         }

@@ -83,7 +83,6 @@ public class MainWindow extends JFrame {
         heatmapPanel.setMainWindow(this);
 
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-        thumbnailPanel.setBinWidth(1);
 
         //2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000
         // TODO -- these should be read from the data file  (zd.binSize)
@@ -202,10 +201,6 @@ public class MainWindow extends JFrame {
                 break;
             }
         }
-        int nBins = getLen() / zoomBinSizes[initialZoom] + 1;
-        int binWidth = Math.max(MIN_BIN_WIDTH, pixels / nBins);
-        heatmapPanel.setBinWidth(binWidth);
-
 
         // Thumbnail
         pixels = thumbnailPanel.getVisibleRect().width;
@@ -218,9 +213,7 @@ public class MainWindow extends JFrame {
                 break;
             }
         }
-        nBins = getLen() / zoomBinSizes[thumbnailZoom] + 1;
-        binWidth = (pixels / nBins);
-        thumbnailPanel.setBinWidth(binWidth);
+
         setZoom(initialZoom);
 
     }
@@ -231,8 +224,8 @@ public class MainWindow extends JFrame {
 
         Rectangle visibleRect = heatmapPanel.getVisibleRect();
         int binSize = zoomBinSizes[zoom];
-        int centerLocationX = xContext.getOrigin() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
-        int centerLocationY = yContext.getOrigin() + (int) (visibleRect.getWidth() * binSize / (2 * heatmapPanel.getBinWidth()));
+        int centerLocationX = xContext.getOrigin() + (int) ((heatmapPanel.getWidth() / 2) / xContext.getScale());
+        int centerLocationY = yContext.getOrigin() + (int) ((heatmapPanel.getHeight() / 2) / yContext.getScale());
         setZoom(zoom, centerLocationX, centerLocationY);
     }
 
@@ -246,16 +239,8 @@ public class MainWindow extends JFrame {
 
         int newBinSize = zd.getBinSize();
 
-        // Adjust bin width to fill space, if possible.  Bins are square at all times
-        int nBinsX = chr1.getSize() / newBinSize + 1;
-        int binWidthX = Math.max(MIN_BIN_WIDTH, heatmapPanel.getWidth() / nBinsX);
-        int nBinsY = chr2.getSize() / newBinSize + 1;
-        int binWidthY = Math.max(MIN_BIN_WIDTH, heatmapPanel.getHeight() / nBinsY);
-        int newBinWidth = Math.min(binWidthX, binWidthY);
-        heatmapPanel.setBinWidth(newBinWidth);
-
         // Scale in basepairs per screen pixel
-        double scale = (double) newBinSize / newBinWidth;
+        double scale = (double) newBinSize;
         xContext.setZoom(newZoom, scale);
         yContext.setZoom(newZoom, scale);
 
@@ -267,6 +252,8 @@ public class MainWindow extends JFrame {
 
         center(centerLocationX, centerLocationY);
 
+        heatmapPanel.clearTileCache();
+
         repaint();
 
     }
@@ -274,9 +261,11 @@ public class MainWindow extends JFrame {
     public void center(int centerLocationX, int centerLocationY) {
 
         int binSize = zd.getBinSize();
-        int w = (int) (heatmapPanel.getVisibleRect().getWidth() * binSize / heatmapPanel.getBinWidth());
+        double w = (heatmapPanel.getWidth() / xContext.getScale());
+        double h = (heatmapPanel.getHeight() / yContext.getScale());
+
         xContext.setOrigin((int) (centerLocationX - w / 2));
-        yContext.setOrigin((int) (centerLocationY - w / 2));
+        yContext.setOrigin((int) (centerLocationY - h / 2));
         //heatmapPanel.repaint();
         //thumbnailPanel.repaint();
         repaint();
@@ -347,7 +336,7 @@ public class MainWindow extends JFrame {
         if (selected != null) {
             int newZoom = ((ZoomLabel) selected).zoom;
             if (newZoom == xContext.getZoom()) return;
-            setZoom(newZoom);
+         //   setZoom(newZoom);
             repaint();
         }
 

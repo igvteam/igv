@@ -18,7 +18,6 @@ import java.io.Serializable;
 public class ThumbnailPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
-    private int binWidth = 1;
 
     Image image;
 
@@ -139,14 +138,6 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
             g.draw(innerRectangle);
         }
-    }
-
-    public void setBinWidth(int binWidth) {
-        this.binWidth = binWidth;
-    }
-
-    public int getBinWidth() {
-        return binWidth;
     }
 
     public void clearImage() {

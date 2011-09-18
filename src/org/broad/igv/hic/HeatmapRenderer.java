@@ -14,25 +14,26 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
-    public void render(int originX, int originY, MatrixZoomData zd, int binWidth, double maxCount, Graphics g,
-                       Rectangle bounds,
+    public void render(int originX,
+                       int originY,
+                       int width,
+                       int height,
+                       MatrixZoomData zd,
+                       double maxCount,
+                       Graphics g,
                        Color background) {
 
         int chr1 = zd.getChr1();
         int chr2 = zd.getChr2();
 
 
-        final double boundsRight = bounds.getMaxX();
-        final double boundsLeft = bounds.getX();
-        final double boundsLower = bounds.getMaxY();
-        final double boundsUpper = bounds.getY();
+        int maxX = originX + width;
+        int maxY = originY + height;
 
         // TODO Lookup zd object from chr1Index, chr2Index, zoom
 
         // Iterate through blocks overlapping visible region
-        int binSize = zd.getBinSize();
-        int maxX = originX + (int) (bounds.getWidth() * binSize / binWidth) + 1;
-        int maxY = originY + (int) (bounds.getHeight() * binSize / binWidth) + 1;
+        //int binSize = zd.getBinSize();
         int x = originX;
         int y = originY;
 
@@ -60,7 +61,7 @@ public class HeatmapRenderer {
                     ContactRecord rec = recs[i];
 
                     Color color = null;
-                    double binSizeMB = binSize / 1000000.0;
+                    double binSizeMB = zd.getBinSize() / 1000000.0;
                     double score = rec.getCounts() / (binSizeMB * binSizeMB);
                     if (maxCount > 0 && score > 2 * maxCount) {
                         color = Color.ORANGE;
@@ -69,26 +70,21 @@ public class HeatmapRenderer {
                         color = getColor(alpha, background);
                     }
 
-                    int px = bounds.x + (rec.getX() - originX / binSize) * binWidth;
-                    int py = bounds.y + (rec.getY() - originY / binSize) * binWidth;
+                    int px = (rec.getX() - originX );
+                    int py = (rec.getY() - originY );
 
 
                     g.setColor(color);
-                    if (px <= boundsRight && (px + binWidth) >= boundsLeft &&
-                            py <= boundsLower && py + binWidth >= boundsUpper) {
-                        g.fillRect(px, py, binWidth, binWidth);
-                    }
+                    g.fillRect(px, py, 1, 1);
 
 
                     if (chr1 == chr2) {
-                        px = bounds.x + (rec.getY() - originX / binSize) * binWidth;
-                        py = bounds.y + (rec.getX() - originY / binSize) * binWidth;
-                        if (px <= boundsRight && (px + binWidth) >= boundsLeft &&
-                                py <= boundsLower && py + binWidth >= boundsUpper) {
-                            g.fillRect(px, py, binWidth, binWidth);
-                        }
-
+                        px = (rec.getY() - originX );
+                        py =(rec.getX() - originY );
+                        g.fillRect(px, py, 1, 1);
                     }
+
+
                 }
 
             }
@@ -101,15 +97,15 @@ public class HeatmapRenderer {
 
     static Color getColor(float alpha, Color background) {
 
-        float [] comps = background.getColorComponents(null);
+        float[] comps = background.getColorComponents(null);
 
         int idx = (int) (100 * alpha);
         Color c = colorCache.get(idx);
         if (c == null) {
             float rAlpha = Math.max(0.05f, Math.min(1.0f, 0.01f * idx));
-            float red =  ((1-rAlpha) * comps[0] + rAlpha);
-            float green =  ((1-rAlpha) * comps[1]);
-            float blue = ((1-rAlpha) * comps[2]);
+            float red = ((1 - rAlpha) * comps[0] + rAlpha);
+            float green = ((1 - rAlpha) * comps[1]);
+            float blue = ((1 - rAlpha) * comps[2]);
             c = new Color(red, green, blue);
             colorCache.put(idx, c);
         }

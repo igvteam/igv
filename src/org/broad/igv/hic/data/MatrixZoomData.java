@@ -139,11 +139,11 @@ public class MatrixZoomData {
 
     public List<Block> getBlocksOverlapping(int x1, int y1, int x2, int y2) {
 
-        int col1 = (x1 / binSize) / getBlockSize();
-        int row1 = (y1 / binSize) / getBlockSize();
+        int col1 = (x1 ) / getBlockSize();
+        int row1 = (y1 ) / getBlockSize();
 
-        int col2 = (x2 / binSize) / getBlockSize();
-        int row2 = (y2 / binSize) / getBlockSize();
+        int col2 = (x2 ) / getBlockSize();
+        int row2 = (y2 ) / getBlockSize();
 
         int maxSize = (col2 - col1 + 1) * (row2 - row1 + 1);
 
