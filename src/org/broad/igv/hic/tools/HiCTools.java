@@ -22,7 +22,9 @@ import org.broad.igv.hic.data.Chromosome;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,7 +55,14 @@ public class HiCTools {
             for(int i=0; i<chromosomes.length; i++) {
                 chromosomeOrdinals.put(chromosomes[i].getName(), i);
             }
-            (new Preprocessor(new File(args[2]))).preprocess(new File(args[1]), genomeId);
+
+            String [] tokens = args[1].split(",");
+            List<File> files = new ArrayList(tokens.length);
+            for(String f : tokens) {
+                files.add(new File(f));
+            }
+
+            (new Preprocessor(new File(args[2]))).preprocess(files, genomeId);
         }
     }
 
