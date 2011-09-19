@@ -190,7 +190,7 @@ public class MainWindow extends JFrame {
 
         setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = heatmapPanel.getVisibleRect().width;
-        int maxNBins = pixels / 2;
+        int maxNBins = pixels;
 
         // Main panel
         int bp_bin = getLen() / maxNBins;
@@ -214,9 +214,12 @@ public class MainWindow extends JFrame {
             }
         }
 
-        setZoom(initialZoom);
 
+        int centerLocationX = xContext.getOrigin() + (int) ((heatmapPanel.getWidth() / 2) / xContext.getScale());
+        int centerLocationY = yContext.getOrigin() + (int) ((heatmapPanel.getHeight() / 2) / yContext.getScale());
+        setZoom(initialZoom, centerLocationX, centerLocationY);
     }
+
 
     public void setZoom(int zoom) {
 
@@ -241,6 +244,13 @@ public class MainWindow extends JFrame {
 
         // Scale in basepairs per screen pixel
         double scale = (double) newBinSize;
+
+        double xScaleMax = (double) xContext.getChrLength() / heatmapPanel.getWidth();
+        double yScaleMax = (double) yContext.getChrLength() / heatmapPanel.getWidth();
+        double scaleMax = Math.min(xScaleMax, yScaleMax);
+
+        scale = Math.min(scale, scaleMax);
+
         xContext.setZoom(newZoom, scale);
         yContext.setZoom(newZoom, scale);
 
@@ -257,6 +267,40 @@ public class MainWindow extends JFrame {
         repaint();
 
     }
+
+
+    public void zoomTo(double xBP, double yBP, double scale) {
+
+        // Find zoom level with resolution
+        int zoom = zoomBinSizes.length - 1;
+        for (int z = 1; z < zoomBinSizes.length; z++) {
+            if (zoomBinSizes[z] < scale) {
+                zoom = z - 1;
+                break;
+            }
+        }
+
+        Chromosome chr1 = xContext.getChromosome();
+        Chromosome chr2 = yContext.getChromosome();
+        zd = dataset.getMatrix(chr1, chr2).getZoomData(zoom);
+
+        xContext.setZoom(zoom, scale);
+        yContext.setZoom(zoom, scale);
+
+
+        xContext.setVisibleWidth((int) (scale * heatmapPanel.getWidth()));
+        yContext.setVisibleWidth((int) (scale * heatmapPanel.getHeight()));
+
+        zoomComboBox.setSelectedIndex(zoom);
+
+        xContext.setOrigin((int) xBP);
+        yContext.setOrigin((int) yBP);
+        heatmapPanel.clearTileCache();
+
+        repaint();
+    }
+
+
 
     public void center(int centerLocationX, int centerLocationY) {
 
@@ -336,7 +380,7 @@ public class MainWindow extends JFrame {
         if (selected != null) {
             int newZoom = ((ZoomLabel) selected).zoom;
             if (newZoom == xContext.getZoom()) return;
-         //   setZoom(newZoom);
+            setZoom(newZoom);
             repaint();
         }
 

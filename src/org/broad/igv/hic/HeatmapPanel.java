@@ -102,18 +102,26 @@ public class HeatmapPanel extends JComponent implements Serializable {
         ImageTile tile = tileCache.get(key);
         if (tile == null) {
 
-            BufferedImage image = (BufferedImage) createImage(imageTileWidth, imageTileWidth);
+            // Image size can be smaller than tile width when zoomed out
+            int maxBinCountX = mainWindow.xContext.getChrLength() / mainWindow.zd.getBinSize() + 1;
+            int maxBinCountY = mainWindow.yContext.getChrLength() / mainWindow.zd.getBinSize() + 1;
+
+            int imageWidth = Math.min(maxBinCountX, imageTileWidth);
+            int imageHeight = Math.min(maxBinCountY, imageTileWidth);
+
+
+            BufferedImage image = (BufferedImage) createImage(imageWidth, imageHeight);
             Graphics2D g2D = (Graphics2D) image.getGraphics();
 
             final int bx0 = i * imageTileWidth;
             final int by0 = j * imageTileWidth;
-            renderer.render(bx0, by0, imageTileWidth, imageTileWidth, mainWindow.zd, maxCount, g2D, getBackground());
+            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, maxCount, g2D, getBackground());
 
             if (scaleFactor > 0.999 && scaleFactor < 1.001) {
                 tile = new ImageTile(image, bx0, by0);
             } else {
-                int scaledWidth = (int) (scaleFactor * imageTileWidth);
-                int scaledHeight = (int) (scaleFactor * imageTileWidth);
+                int scaledWidth = (int) (scaleFactor * imageWidth);
+                int scaledHeight = (int) (scaleFactor * imageHeight);
                 Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
 
                 tile = new ImageTile(scaledImage, bx0, by0);
@@ -201,9 +209,17 @@ public class HeatmapPanel extends JComponent implements Serializable {
         public void mouseReleased(final MouseEvent e) {
 
             if (dragMode == 2) {
-                double bpWidth = mainWindow.xContext.getVisibleWidth();
-                double scale = bpWidth / zoomRectangle.width;
-                mainWindow.xContext.setScale(scale);
+
+                double xBP = mainWindow.xContext.getOrigin() + zoomRectangle.getX() * mainWindow.xContext.getScale();
+                double yBP = mainWindow.yContext.getOrigin() + zoomRectangle.getY() * mainWindow.yContext.getScale();
+                double wBP = zoomRectangle.width * mainWindow.xContext.getScale();
+                double hBP = zoomRectangle.height * mainWindow.yContext.getScale();
+
+                double newXScale = wBP / getWidth();
+                double newYScale = hBP / getHeight();
+                double newScale = Math.max(newXScale, newYScale);
+
+                mainWindow.zoomTo(xBP, yBP, newScale);
 
             }
 
