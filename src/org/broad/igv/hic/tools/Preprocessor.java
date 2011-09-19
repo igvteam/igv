@@ -65,6 +65,7 @@ public class Preprocessor {
                         if (inputFile.getName().endsWith(".gz")) {
                             fis = new GZIPInputStream(fis);
                         }
+                        isList.add(fis);
                     }
 
                     Matrix matrix = AlignmentsParser.readMatrix(isList, c1, c2);
