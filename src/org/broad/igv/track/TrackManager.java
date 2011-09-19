@@ -438,6 +438,7 @@ public class TrackManager {
         for (Track t : getAllTracks(true)) {
             if (t != null)
                 t.setSelected(false);
+
         }
 
     }

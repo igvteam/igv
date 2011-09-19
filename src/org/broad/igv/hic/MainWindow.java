@@ -211,7 +211,7 @@ public class MainWindow extends JFrame {
      * @param newZoom
      */
     public void setZoom(int newZoom) {
-        newZoom = Math.max(0, MAX_ZOOM);
+        newZoom = Math.max(0, Math.min(newZoom, MAX_ZOOM));
         int centerLocationX = (int) xContext.getChromosomePosition(heatmapPanel.getWidth() / 2);
         int centerLocationY = (int) yContext.getChromosomePosition(heatmapPanel.getHeight() / 2);
         setZoom(newZoom, centerLocationX, centerLocationY);
@@ -221,8 +221,8 @@ public class MainWindow extends JFrame {
      * Change zoom level and recenter
      *
      * @param newZoom
-     * @param centerLocationX  center X location in base pairs
-     * @param centerLocationY  center Y location in base pairs
+     * @param centerLocationX center X location in base pairs
+     * @param centerLocationY center Y location in base pairs
      */
     public void setZoom(int newZoom, int centerLocationX, int centerLocationY) {
 
@@ -306,8 +306,15 @@ public class MainWindow extends JFrame {
 
 
     public void moveBy(int dx, int dy) {
-        xContext.moveBy(dx);
-        yContext.moveBy(dy);
+
+        int maxX = (int) (xContext.getChrLength() - xContext.getScale() * heatmapPanel.getWidth());
+        int maxY = (int) (yContext.getChrLength() - yContext.getScale() * heatmapPanel.getHeight());
+
+        int x = Math.max(0, Math.min(maxX, xContext.getOrigin() + dx));
+        int y = Math.max(0, Math.min(maxY, yContext.getOrigin() + dy));
+
+        xContext.setOrigin(x);
+        yContext.setOrigin(y);
         repaint();
     }
 
@@ -389,9 +396,25 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void loadGSM455133ActionPerformed(ActionEvent e) {
+    private void loadGMActionPerformed(ActionEvent e) {
         try {
-            load("http://iwww.broadinstitute.org/igvdata/hic/human/GSM455133_30E0LAAXX.1.maq.hic.summary.binned.hic");
+            load("http://iwww.broadinstitute.org/igvdata/hic/human/GM.summary.binned.hic");
+            rangeScale.setMaximum(500);
+            rangeScale.setMajorTickSpacing(100);
+            rangeScale.setMinorTickSpacing(10);
+            rangeScale.setValue(200);
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
+
+    private void load562ActionPerformed(ActionEvent e) {
+        try {
+            load("http://iwww.broadinstitute.org/igvdata/hic/human/K562.summary.binned.hic");
+            rangeScale.setMaximum(500);
+            rangeScale.setMajorTickSpacing(100);
+            rangeScale.setMinorTickSpacing(10);
+            rangeScale.setValue(200);
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -427,7 +450,8 @@ public class MainWindow extends JFrame {
         loadMenuItem = new JMenuItem();
         loadFromURL = new JMenuItem();
         loadDmelDataset = new JMenuItem();
-        loadGSM455133 = new JMenuItem();
+        loadGM = new JMenuItem();
+        load562 = new JMenuItem();
         exit = new JMenuItem();
 
         //======== this ========
@@ -490,7 +514,7 @@ public class MainWindow extends JFrame {
                         panel9.setLayout(new FlowLayout());
 
                         //---- label1 ----
-                        label1.setText("Scale");
+                        label1.setText("Color Range");
                         panel9.add(label1);
 
                         //---- rangeScale ----
@@ -616,7 +640,7 @@ public class MainWindow extends JFrame {
                 fileMenu.addSeparator();
 
                 //---- loadDmelDataset ----
-                loadDmelDataset.setText("https://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
+                loadDmelDataset.setText("Fly");
                 loadDmelDataset.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         loadDmelDatasetActionPerformed(e);
@@ -624,14 +648,23 @@ public class MainWindow extends JFrame {
                 });
                 fileMenu.add(loadDmelDataset);
 
-                //---- loadGSM455133 ----
-                loadGSM455133.setText("GSM455133");
-                loadGSM455133.addActionListener(new ActionListener() {
+                //---- loadGM ----
+                loadGM.setText("GM cell line (human)");
+                loadGM.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        loadGSM455133ActionPerformed(e);
+                        loadGMActionPerformed(e);
                     }
                 });
-                fileMenu.add(loadGSM455133);
+                fileMenu.add(loadGM);
+
+                //---- load562 ----
+                load562.setText("K562 cell line (human)");
+                load562.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        load562ActionPerformed(e);
+                    }
+                });
+                fileMenu.add(load562);
                 fileMenu.addSeparator();
 
                 //---- exit ----
@@ -670,16 +703,17 @@ public class MainWindow extends JFrame {
     private JPanel spacerLeft;
     private HiCRulerPanel rulerPanel2;
     private JPanel spacerRight;
-    HeatmapPanel heatmapPanel;
+    private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
     private JPanel panel8;
-    private ThumbnailPanel thumbnailPanel;
+    ThumbnailPanel thumbnailPanel;
     private JMenuBar menuBar1;
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
     private JMenuItem loadDmelDataset;
-    private JMenuItem loadGSM455133;
+    private JMenuItem loadGM;
+    private JMenuItem load562;
     private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 

@@ -44,9 +44,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int originX = mainWindow.xContext.getOrigin();
             int originY = mainWindow.yContext.getOrigin();
 
-            int bLeft = (int) (originX / binSize);
+            int bLeft = (originX / binSize);
             int bRight = bLeft + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
-            int bTop = (int) (originY / binSize);
+            int bTop = (originY / binSize);
             int bBottom = bTop + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
 
             // tile coordinates
@@ -70,6 +70,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                 }
             }
+
+            // Uncomment below to see grid (for debugging).
+            /*for (int i = tLeft; i <= tRight; i++) {
+                for (int j = tTop; j <= tBottom; j++) {
+                    ImageTile tile = getImageTile(i, j, pixelsPerBin);
+                    int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
+                    int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
+                    g.drawRect(pxOffset, pyOffset, tile.image.getWidth(null), tile.image.getHeight(null));
+                }
+            }*/
 
         }
 
@@ -136,33 +146,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
         tileCache.clear();
     }
 
-    public MainWindow getMainWindow() {
-        return mainWindow;
-    }
-
     public void setMainWindow(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
-    }
-
-
-    @Override
-    public void setSize(int i, int i1) {
-        super.setSize(i, i1);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setSize(Dimension dimension) {
-        super.setSize(dimension);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setBounds(Rectangle rectangle) {
-        super.setBounds(rectangle);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void setBounds(int i, int i1, int i2, int i3) {
-        super.setBounds(i, i1, i2, i3);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public void clearTileCache() {
@@ -253,6 +238,16 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     if (deltaX == 0 || deltaY == 0) {
                         return;
                     }
+
+                    // Constrain aspect ratio of zoom rectangle to that of panel
+                    double aspectRatio = (double) getWidth() / getHeight();
+                    if (deltaX * aspectRatio > deltaY) {
+                        deltaY = (int) (deltaX / aspectRatio);
+                    } else {
+                        deltaX = (int) (deltaY * aspectRatio);
+                    }
+
+
                     int x = deltaX > 0 ? lastMousePoint.x : lastMousePoint.x + (int) deltaX;
                     int y = deltaY > 0 ? lastMousePoint.y : lastMousePoint.y + (int) deltaY;
                     zoomRectangle = new Rectangle(x, y, (int) Math.abs(deltaX), (int) Math.abs(deltaY));
