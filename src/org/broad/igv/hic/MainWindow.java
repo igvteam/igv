@@ -8,8 +8,6 @@ import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
-import com.jidesoft.swing.*;
-
 import org.broad.igv.hic.data.*;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.tribble.util.SeekableStream;
@@ -78,8 +76,8 @@ public class MainWindow extends JFrame {
         int initialMaxCount = 50000;
         rangeScale.setValue(initialMaxCount);
 
-        heatmapPanel.setSize(500, 500);
-        heatmapPanel.setMainWindow(this);
+        getHeatmapPanel().setSize(500, 500);
+        getHeatmapPanel().setMainWindow(this);
 
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
 
@@ -103,6 +101,10 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
+    }
+
+    public HeatmapPanel getHeatmapPanel() {
+        return heatmapPanel;
     }
 
     class ZoomLabel {
@@ -170,10 +172,10 @@ public class MainWindow extends JFrame {
                     setInitialZoom();
                 }
 
-                heatmapPanel.clearTileCache();
+                getHeatmapPanel().clearTileCache();
 
 
-                Image thumbnail = heatmapPanel.getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
+                Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
                 thumbnailPanel.setImage(thumbnail);
 
                 return null;
@@ -188,7 +190,7 @@ public class MainWindow extends JFrame {
     private void setInitialZoom() {
 
         setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
-        int pixels = heatmapPanel.getWidth();
+        int pixels = getHeatmapPanel().getWidth();
         int maxNBins = pixels;
 
         // Find right zoom level
@@ -212,8 +214,8 @@ public class MainWindow extends JFrame {
      */
     public void setZoom(int newZoom) {
         newZoom = Math.max(0, Math.min(newZoom, MAX_ZOOM));
-        int centerLocationX = (int) xContext.getChromosomePosition(heatmapPanel.getWidth() / 2);
-        int centerLocationY = (int) yContext.getChromosomePosition(heatmapPanel.getHeight() / 2);
+        int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
+        int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
         setZoom(newZoom, centerLocationX, centerLocationY);
     }
 
@@ -237,8 +239,8 @@ public class MainWindow extends JFrame {
         // Scale in basepairs per screen pixel
         double scale = (double) newBinSize;
 
-        double xScaleMax = (double) xContext.getChrLength() / heatmapPanel.getWidth();
-        double yScaleMax = (double) yContext.getChrLength() / heatmapPanel.getWidth();
+        double xScaleMax = (double) xContext.getChrLength() / getHeatmapPanel().getWidth();
+        double yScaleMax = (double) yContext.getChrLength() / getHeatmapPanel().getWidth();
         double scaleMax = Math.min(xScaleMax, yScaleMax);
 
         scale = Math.min(scale, scaleMax);
@@ -250,7 +252,7 @@ public class MainWindow extends JFrame {
 
         center(centerLocationX, centerLocationY);
 
-        heatmapPanel.clearTileCache();
+        getHeatmapPanel().clearTileCache();
 
         repaint();
 
@@ -279,7 +281,7 @@ public class MainWindow extends JFrame {
 
         xContext.setOrigin((int) xBP);
         yContext.setOrigin((int) yBP);
-        heatmapPanel.clearTileCache();
+        getHeatmapPanel().clearTileCache();
 
         repaint();
     }
@@ -291,14 +293,14 @@ public class MainWindow extends JFrame {
             xContext.setOrigin(0);
         } else {
             int binSize = zd.getBinSize();
-            double w = (heatmapPanel.getWidth() * xContext.getScale());
+            double w = (getHeatmapPanel().getWidth() * xContext.getScale());
             xContext.setOrigin((int) (centerLocationX - w / 2));
         }
         if (centerLocationY < 0) {
             yContext.setOrigin(0);
         } else {
             int binSize = zd.getBinSize();
-            double h = (heatmapPanel.getHeight() * yContext.getScale());
+            double h = (getHeatmapPanel().getHeight() * yContext.getScale());
             yContext.setOrigin((int) (centerLocationY - h / 2));
         }
         repaint();
@@ -307,8 +309,8 @@ public class MainWindow extends JFrame {
 
     public void moveBy(int dx, int dy) {
 
-        int maxX = (int) (xContext.getChrLength() - xContext.getScale() * heatmapPanel.getWidth());
-        int maxY = (int) (yContext.getChrLength() - yContext.getScale() * heatmapPanel.getHeight());
+        int maxX = (int) (xContext.getChrLength() - xContext.getScale() * getHeatmapPanel().getWidth());
+        int maxY = (int) (yContext.getChrLength() - yContext.getScale() * getHeatmapPanel().getHeight());
 
         int x = Math.max(0, Math.min(maxX, xContext.getOrigin() + dx));
         int y = Math.max(0, Math.min(maxY, yContext.getOrigin() + dy));
@@ -322,7 +324,7 @@ public class MainWindow extends JFrame {
         JSlider slider = (JSlider) e.getSource();
         int maxCount = slider.getValue();
 
-        heatmapPanel.setMaxCount(maxCount);
+        getHeatmapPanel().setMaxCount(maxCount);
         repaint();
     }
 
@@ -574,17 +576,17 @@ public class MainWindow extends JFrame {
                 panel3.add(panel5, BorderLayout.NORTH);
 
                 //---- heatmapPanel ----
-                heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
-                heatmapPanel.setMaximumSize(new Dimension(500, 500));
-                heatmapPanel.setMinimumSize(new Dimension(500, 500));
-                heatmapPanel.setPreferredSize(new Dimension(500, 500));
-                heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
+                getHeatmapPanel().setBorder(LineBorder.createBlackLineBorder());
+                getHeatmapPanel().setMaximumSize(new Dimension(500, 500));
+                getHeatmapPanel().setMinimumSize(new Dimension(500, 500));
+                getHeatmapPanel().setPreferredSize(new Dimension(500, 500));
+                getHeatmapPanel().addMouseMotionListener(new MouseMotionAdapter() {
                     @Override
                     public void mouseDragged(MouseEvent e) {
                         heatmapPanelMouseDragged(e);
                     }
                 });
-                panel3.add(heatmapPanel, BorderLayout.CENTER);
+                panel3.add(getHeatmapPanel(), BorderLayout.CENTER);
 
                 //---- rulerPanel1 ----
                 rulerPanel1.setMaximumSize(new Dimension(50, 4000));

@@ -1,14 +1,11 @@
 package org.broad.igv.hic;
 
-import org.broad.igv.ui.util.IconFactory;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.*;
-import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 /**
@@ -106,8 +103,8 @@ public class ThumbnailPanel extends JComponent implements Serializable {
 
         if (mainWindow != null && mainWindow.xContext != null) {
 
-            int wPixels = mainWindow.heatmapPanel.getWidth();
-            int hPixels = mainWindow.heatmapPanel.getHeight();
+            int wPixels = mainWindow.getHeatmapPanel().getWidth();
+            int hPixels = mainWindow.getHeatmapPanel().getHeight();
 
             int originX = mainWindow.xContext.getOrigin();
             int x = (int) (originX / xScale);
