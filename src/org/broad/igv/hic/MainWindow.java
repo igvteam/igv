@@ -400,6 +400,14 @@ public class MainWindow extends JFrame {
         }
     }
 
+    private void loadGSM455133ActionPerformed(ActionEvent e) {
+        try {
+            load("http://iwww.broadinstitute.org/igvdata/hic/human/GSM455133_30E0LAAXX.1.maq.hic.summary.binned.hic");
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -430,6 +438,7 @@ public class MainWindow extends JFrame {
         loadMenuItem = new JMenuItem();
         loadFromURL = new JMenuItem();
         loadDmelDataset = new JMenuItem();
+        loadGSM455133 = new JMenuItem();
         exit = new JMenuItem();
 
         //======== this ========
@@ -625,6 +634,15 @@ public class MainWindow extends JFrame {
                     }
                 });
                 fileMenu.add(loadDmelDataset);
+
+                //---- loadGSM455133 ----
+                loadGSM455133.setText("GSM455133");
+                loadGSM455133.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadGSM455133ActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadGSM455133);
                 fileMenu.addSeparator();
 
                 //---- exit ----
@@ -672,6 +690,7 @@ public class MainWindow extends JFrame {
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
     private JMenuItem loadDmelDataset;
+    private JMenuItem loadGSM455133;
     private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
