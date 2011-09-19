@@ -27,8 +27,8 @@ Header
     --------------
     zoom
     binSize     // in bp
-    blockSize   // in # bin columns
-    blockColumnCount
+    blockBinCount   // in # bin columns
+    columnCount
     numberOfBlocks
 
       -----------

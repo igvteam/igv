@@ -17,8 +17,8 @@ public class MatrixZoomData {
 
     private int zoom;
     private int binSize;     // in bp
-    private int blockSize;   // in bins
-    private int blockColumnCount;   // number of block columns
+    private int blockBinCount;   // in bins
+    private int columnCount;   // number of block columns
 
     private LinkedHashMap<Integer, Block> blocks;
     private Map<Integer, Preprocessor.IndexEntry> blockIndex;
@@ -28,19 +28,19 @@ public class MatrixZoomData {
     /**
      * Constructor used by the alignment file parser.
      */
-    public MatrixZoomData(int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
+    public MatrixZoomData(int chr1, int chr2, int binSize, int columnCount, int zoom) {
 
 
         this.chr1 = chr1;
         this.chr2 = chr2;
         this.binSize = binSize;
-        this.blockColumnCount = blockColumnCount;
+        this.columnCount = columnCount;
         this.zoom = zoom;
 
 
         int nBinsX = HiCTools.chromosomes[chr1].getSize() / binSize + 1;
-        blockSize = nBinsX / blockColumnCount + 1;
-        blocks = new LinkedHashMap(blockColumnCount * blockColumnCount);
+        blockBinCount = nBinsX / columnCount + 1;
+        blocks = new LinkedHashMap(columnCount * columnCount);
     }
 
     /**
@@ -48,21 +48,21 @@ public class MatrixZoomData {
      * @param chr1
      * @param chr2
      * @param binSize
-     * @param blockSize
-     * @param blockColumnCount
+     * @param blockBinCount
+     * @param columnCount
      * @param zoom
      * @param blockIndex
      * @param reader
      */
-    public MatrixZoomData(int chr1, int chr2, int binSize, int blockSize, int blockColumnCount, int zoom,
+    public MatrixZoomData(int chr1, int chr2, int binSize, int blockBinCount, int columnCount, int zoom,
                           Map<Integer, Preprocessor.IndexEntry> blockIndex, DatasetReader reader) {
 
         this.chr1 = chr1;
         this.chr2 = chr2;
         this.binSize = binSize;
-        this.blockColumnCount = blockColumnCount;
+        this.columnCount = columnCount;
         this.zoom = zoom;
-        this.blockSize = blockSize;
+        this.blockBinCount = blockBinCount;
         this.blockIndex = blockIndex;
         blocks = new LinkedHashMap(blockIndex.size());
         this.reader = reader;
@@ -80,9 +80,9 @@ public class MatrixZoomData {
         }
 
         // compute block number (fist block is zero)
-        int blockCol = xBin / getBlockSize();
-        int blockRow = yBin / getBlockSize();
-        int blockNumber = getBlockColumnCount() * blockRow + blockCol;
+        int blockCol = xBin / getBlockBinCount();
+        int blockRow = yBin / getBlockBinCount();
+        int blockNumber = getColumnCount() * blockRow + blockCol;
 
         Block block = blocks.get(blockNumber);
         if (block == null) {
@@ -124,12 +124,12 @@ public class MatrixZoomData {
         this.zoom = zoom;
     }
 
-    public int getBlockSize() {
-        return blockSize;
+    public int getBlockBinCount() {
+        return blockBinCount;
     }
 
-    public int getBlockColumnCount() {
-        return blockColumnCount;
+    public int getColumnCount() {
+        return columnCount;
     }
 
     public Map<Integer, Block> getBlocks() {
@@ -139,18 +139,18 @@ public class MatrixZoomData {
 
     public List<Block> getBlocksOverlapping(int x1, int y1, int x2, int y2) {
 
-        int col1 = (x1 ) / getBlockSize();
-        int row1 = (y1 ) / getBlockSize();
+        int col1 = (x1 ) / getBlockBinCount();
+        int row1 = (y1 ) / getBlockBinCount();
 
-        int col2 = (x2 ) / getBlockSize();
-        int row2 = (y2 ) / getBlockSize();
+        int col2 = (x2 ) / getBlockBinCount();
+        int row2 = (y2 ) / getBlockBinCount();
 
         int maxSize = (col2 - col1 + 1) * (row2 - row1 + 1);
 
         List<Block> blockList = new ArrayList(maxSize);
         for (int r = row1; r <= row2; r++) {
             for (int c = col1; c <= col2; c++) {
-                int blockNumber = r * getBlockColumnCount() + c;
+                int blockNumber = r * getColumnCount() + c;
                 Block b = getBlock(blockNumber);
                 if (b != null) {
                     blockList.add(b);

@@ -164,8 +164,8 @@ public class Preprocessor {
 
         writeInt(zd.getZoom());
         writeInt(zd.getBinSize());
-        writeInt(zd.getBlockSize());
-        writeInt(zd.getBlockColumnCount());
+        writeInt(zd.getBlockBinCount());
+        writeInt(zd.getColumnCount());
 
         final Map<Integer, Block> blocks = zd.getBlocks();
         writeInt(blocks.size());

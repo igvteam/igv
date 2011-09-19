@@ -25,6 +25,7 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     private double yScale;
     private double xScale;
     Point lastPoint = null;
+
     private Rectangle innerRectangle;
 
 
@@ -101,8 +102,12 @@ public class ThumbnailPanel extends JComponent implements Serializable {
     }
 
     private void renderVisibleWindow(Graphics2D g) {
-        if (mainWindow != null && mainWindow.xContext != null && mainWindow.xContext.getVisibleWidth() > 0) {
 
+
+        if (mainWindow != null && mainWindow.xContext != null) {
+
+            int wPixels = mainWindow.heatmapPanel.getWidth();
+            int hPixels = mainWindow.heatmapPanel.getHeight();
 
             int originX = mainWindow.xContext.getOrigin();
             int x = (int) (originX / xScale);
@@ -110,11 +115,10 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             int originY = mainWindow.yContext.getOrigin();
             int y = (int) (originY / yScale);
 
-            int wBP = mainWindow.xContext.getVisibleWidth();
+            int wBP = (int) (mainWindow.xContext.getScale() * wPixels);
             int w = (int) (wBP / xScale);
 
-
-            int yBP = mainWindow.yContext.getVisibleWidth();
+            int yBP = (int) (mainWindow.yContext.getScale() * hPixels);
             int h = (int) (yBP / yScale);
 
             if (w < 4) {
@@ -139,11 +143,6 @@ public class ThumbnailPanel extends JComponent implements Serializable {
             g.draw(innerRectangle);
         }
     }
-
-    public void clearImage() {
-        image = null;
-    }
-
 
     private static class SquareDonut implements Shape {
         private final Area area;

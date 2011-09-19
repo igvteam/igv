@@ -11,7 +11,6 @@ public class Context {
     private Chromosome chromosome;
     private int zoom = 4;
     private int origin = 0;
-    private int visibleWidth;
     private double scale;
 
     public Context(Chromosome chromosome) {
@@ -20,8 +19,7 @@ public class Context {
 
 
     public void setOrigin(int x) {
-        int maxOrigin = Math.max(0, chromosome.getSize() - visibleWidth);
-        origin = Math.min(maxOrigin, Math.max(0, x));
+        origin = Math.max(0, x);
 
     }
 
@@ -42,18 +40,9 @@ public class Context {
         return origin;
     }
 
-    public int getVisibleWidth() {
-        return visibleWidth;
-    }
-
-    public void setVisibleWidth(int visibleWidth) {
-        this.visibleWidth = visibleWidth;
-    }
-
     public int getChrLength() {
         return chromosome.getSize();
     }
-
 
     public double getScale() {
         return scale;  //To change body of created methods use File | Settings | File Templates.
@@ -67,6 +56,10 @@ public class Context {
      */
     public int getScreenPosition(double chromosomePosition) {
         return (int) ((chromosomePosition - origin) / getScale());
+    }
+
+    public double getChromosomePosition(int screenPosition) {
+        return origin + screenPosition * scale;
     }
 
     public Chromosome getChromosome() {

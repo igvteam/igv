@@ -210,8 +210,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             if (dragMode == 2) {
 
-                double xBP = mainWindow.xContext.getOrigin() + zoomRectangle.getX() * mainWindow.xContext.getScale();
-                double yBP = mainWindow.yContext.getOrigin() + zoomRectangle.getY() * mainWindow.yContext.getScale();
+                double xBP = mainWindow.xContext.getChromosomePosition(zoomRectangle.x);
+                double yBP = mainWindow.yContext.getChromosomePosition(zoomRectangle.y);
                 double wBP = zoomRectangle.width * mainWindow.xContext.getScale();
                 double hBP = zoomRectangle.height * mainWindow.yContext.getScale();
 
@@ -287,9 +287,8 @@ public class HeatmapPanel extends JComponent implements Serializable {
                         ? Math.max(currentZoom - 1, 1)
                         : Math.min(11, currentZoom + 1);
 
-                int centerLocationX = mainWindow.xContext.getOrigin() + (int) (e.getX() * mainWindow.xContext.getScale());
-                int centerLocationY = mainWindow.yContext.getOrigin() + (int) (e.getY() * mainWindow.yContext.getScale());
-
+                int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
+                int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
                 mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
 
             }
@@ -298,11 +297,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseMoved(MouseEvent e) {
             if (mainWindow.xContext != null && mainWindow.zd != null) {
-                Rectangle visRect = getVisibleRect();
-                final int binSize = mainWindow.zd.getBinSize();
 
-                int posX = (int) (e.getX() / mainWindow.xContext.getScale());
-                int posY = (int) (e.getY() / mainWindow.yContext.getScale());
+                int posX = (int) (mainWindow.xContext.getChromosomePosition(e.getX()));
+                int posY = (int) (mainWindow.yContext.getChromosomePosition(e.getY()));
 
                 //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
                 //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());

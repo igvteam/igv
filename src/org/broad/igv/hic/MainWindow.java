@@ -56,8 +56,7 @@ public class MainWindow extends JFrame {
 
         // Make backgroun transparent
         Graphics2D g = handImage.createGraphics();
-        g.setComposite(AlphaComposite.getInstance(
-                AlphaComposite.CLEAR, 0.0f));
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, 0.0f));
         Rectangle2D.Double rect = new Rectangle2D.Double(0, 0, 32, 32);
         g.fill(rect);
 
@@ -189,10 +188,10 @@ public class MainWindow extends JFrame {
     private void setInitialZoom() {
 
         setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
-        int pixels = heatmapPanel.getVisibleRect().width;
+        int pixels = heatmapPanel.getWidth();
         int maxNBins = pixels;
 
-        // Main panel
+        // Find right zoom level
         int bp_bin = getLen() / maxNBins;
         int initialZoom = zoomBinSizes.length - 1;
         for (int z = 1; z < zoomBinSizes.length; z++) {
@@ -202,36 +201,29 @@ public class MainWindow extends JFrame {
             }
         }
 
-        // Thumbnail
-        pixels = thumbnailPanel.getVisibleRect().width;
-        maxNBins = pixels;
-        bp_bin = getLen() / maxNBins;
-        int thumbnailZoom = zoomBinSizes.length - 1;
-        for (int z = 1; z < zoomBinSizes.length; z++) {
-            if (zoomBinSizes[z] < bp_bin) {
-                thumbnailZoom = z - 1;
-                break;
-            }
-        }
-
-
-        int centerLocationX = xContext.getOrigin() + (int) ((heatmapPanel.getWidth() / 2) / xContext.getScale());
-        int centerLocationY = yContext.getOrigin() + (int) ((heatmapPanel.getHeight() / 2) / yContext.getScale());
-        setZoom(initialZoom, centerLocationX, centerLocationY);
+        setZoom(initialZoom, -1, -1);
     }
 
 
-    public void setZoom(int zoom) {
-
-        if (zoom < 1 || zoom > MAX_ZOOM) return;
-
-        Rectangle visibleRect = heatmapPanel.getVisibleRect();
-        int binSize = zoomBinSizes[zoom];
-        int centerLocationX = xContext.getOrigin() + (int) ((heatmapPanel.getWidth() / 2) / xContext.getScale());
-        int centerLocationY = yContext.getOrigin() + (int) ((heatmapPanel.getHeight() / 2) / yContext.getScale());
-        setZoom(zoom, centerLocationX, centerLocationY);
+    /**
+     * Change zoom level while staying centered on current location.
+     *
+     * @param newZoom
+     */
+    public void setZoom(int newZoom) {
+        newZoom = Math.max(0, MAX_ZOOM);
+        int centerLocationX = (int) xContext.getChromosomePosition(heatmapPanel.getWidth() / 2);
+        int centerLocationY = (int) yContext.getChromosomePosition(heatmapPanel.getHeight() / 2);
+        setZoom(newZoom, centerLocationX, centerLocationY);
     }
 
+    /**
+     * Change zoom level and recenter
+     *
+     * @param newZoom
+     * @param centerLocationX  center X location in base pairs
+     * @param centerLocationY  center Y location in base pairs
+     */
     public void setZoom(int newZoom, int centerLocationX, int centerLocationY) {
 
         if (newZoom < 1 || newZoom > MAX_ZOOM) return;
@@ -253,10 +245,6 @@ public class MainWindow extends JFrame {
 
         xContext.setZoom(newZoom, scale);
         yContext.setZoom(newZoom, scale);
-
-
-        xContext.setVisibleWidth((int) (scale * heatmapPanel.getWidth()));
-        yContext.setVisibleWidth((int) (scale * heatmapPanel.getHeight()));
 
         zoomComboBox.setSelectedIndex(newZoom);
 
@@ -287,10 +275,6 @@ public class MainWindow extends JFrame {
         xContext.setZoom(zoom, scale);
         yContext.setZoom(zoom, scale);
 
-
-        xContext.setVisibleWidth((int) (scale * heatmapPanel.getWidth()));
-        yContext.setVisibleWidth((int) (scale * heatmapPanel.getHeight()));
-
         zoomComboBox.setSelectedIndex(zoom);
 
         xContext.setOrigin((int) xBP);
@@ -301,17 +285,22 @@ public class MainWindow extends JFrame {
     }
 
 
-
     public void center(int centerLocationX, int centerLocationY) {
 
-        int binSize = zd.getBinSize();
-        double w = (heatmapPanel.getWidth() / xContext.getScale());
-        double h = (heatmapPanel.getHeight() / yContext.getScale());
-
-        xContext.setOrigin((int) (centerLocationX - w / 2));
-        yContext.setOrigin((int) (centerLocationY - h / 2));
-        //heatmapPanel.repaint();
-        //thumbnailPanel.repaint();
+        if (centerLocationX < 0) {
+            xContext.setOrigin(0);
+        } else {
+            int binSize = zd.getBinSize();
+            double w = (heatmapPanel.getWidth() * xContext.getScale());
+            xContext.setOrigin((int) (centerLocationX - w / 2));
+        }
+        if (centerLocationY < 0) {
+            yContext.setOrigin(0);
+        } else {
+            int binSize = zd.getBinSize();
+            double h = (heatmapPanel.getHeight() * yContext.getScale());
+            yContext.setOrigin((int) (centerLocationY - h / 2));
+        }
         repaint();
     }
 
@@ -681,7 +670,7 @@ public class MainWindow extends JFrame {
     private JPanel spacerLeft;
     private HiCRulerPanel rulerPanel2;
     private JPanel spacerRight;
-    private HeatmapPanel heatmapPanel;
+    HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
     private JPanel panel8;
     private ThumbnailPanel thumbnailPanel;
