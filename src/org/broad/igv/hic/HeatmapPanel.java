@@ -80,18 +80,18 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     public Image getThumbnailImage(MatrixZoomData zd, int tw, int th) {
 
-        int w = Math.min(getWidth(), mainWindow.xContext.getScreenPosition(mainWindow.xContext.getChromosome().getSize()));
-        int h = Math.min(getHeight(), mainWindow.yContext.getScreenPosition(mainWindow.yContext.getChromosome().getSize()));
-        int wh = Math.max(w, h);
+        int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+        int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+
+        int wh = Math.max(maxBinCountX, maxBinCountY);
 
         BufferedImage image = (BufferedImage) createImage(wh, wh);
-        Rectangle bounds = new Rectangle(0, 0, w, h);
         Graphics g = image.createGraphics();
 
         // TODO -- get # of bins
         int nBins = 500;
 
-        renderer.render(0, 0, 500, 500, zd, maxCount, g, getBackground());
+        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, maxCount, g, getBackground());
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
@@ -102,9 +102,9 @@ public class HeatmapPanel extends JComponent implements Serializable {
         ImageTile tile = tileCache.get(key);
         if (tile == null) {
 
-            // Image size can be smaller than tile width when zoomed out
-            int maxBinCountX = mainWindow.xContext.getChrLength() / mainWindow.zd.getBinSize() + 1;
-            int maxBinCountY = mainWindow.yContext.getChrLength() / mainWindow.zd.getBinSize() + 1;
+            // Image size can be smaller than tile width when zoomed out, or near the edges.
+            int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
+            int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
 
             int imageWidth = Math.min(maxBinCountX, imageTileWidth);
             int imageHeight = Math.min(maxBinCountY, imageTileWidth);
