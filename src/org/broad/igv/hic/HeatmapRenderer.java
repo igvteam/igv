@@ -63,12 +63,12 @@ public class HeatmapRenderer {
                     Color color = null;
                     double binSizeMB = zd.getBinSize() / 1000000.0;
                     double score = rec.getCounts() / (binSizeMB * binSizeMB);
-                    if (maxCount > 0 && score > 2 * maxCount) {
-                        color = Color.ORANGE;
-                    } else {
+                    //if (maxCount > 0 && score > 2 * maxCount) {
+                    //    color = Color.ORANGE;
+                    //} else {
                         float alpha = (float) Math.max(0.05f, Math.min(1.0f, score / maxCount));
                         color = getColor(alpha, background);
-                    }
+                    //}
 
                     int px = (rec.getX() - originX );
                     int py = (rec.getY() - originY );
