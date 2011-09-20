@@ -559,7 +559,9 @@ public class IGVHttpClientUtils {
             return true;
         } catch (IOException e) {
             log.error("Error while testing byte range ", e);
-            return false;
+            // We could not reach the test server, so we can't know if this client can do byte-range tests or
+            // not.  Take the "optimistic" view.
+            return true;
         }
     }
 
