@@ -80,7 +80,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
-
     public PreferencesEditor(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -190,6 +189,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showSoftClippedCB = new JCheckBox();
         showJunctionTrackCB = new JCheckBox();
         showCenterLineCB = new JCheckBox();
+        zeroQualityAlignmentCB = new JCheckBox();
         panel2 = new JPanel();
         isizeComputeCB = new JCheckBox();
         jLabel17 = new JLabel();
@@ -1061,7 +1061,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMinBaseQualityField);
-                        samMinBaseQualityField.setBounds(380, 105, 50, samMinBaseQualityField.getPreferredSize().height);
+                        samMinBaseQualityField.setBounds(315, 137, 50, samMinBaseQualityField.getPreferredSize().height);
 
                         //---- samShadeMismatchedBaseCB ----
                         samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality. ");
@@ -1071,7 +1071,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samShadeMismatchedBaseCB);
-                        samShadeMismatchedBaseCB.setBounds(6, 109, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
+                        samShadeMismatchedBaseCB.setBounds(6, 138, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
 
                         //---- samMaxBaseQualityField ----
                         samMaxBaseQualityField.setText("0");
@@ -1087,7 +1087,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMaxBaseQualityField);
-                        samMaxBaseQualityField.setBounds(505, 105, 50, samMaxBaseQualityField.getPreferredSize().height);
+                        samMaxBaseQualityField.setBounds(440, 137, 50, samMaxBaseQualityField.getPreferredSize().height);
 
                         //---- showCovTrackCB ----
                         showCovTrackCB.setText("Show coverage track");
@@ -1112,7 +1112,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- jLabel19 ----
                         jLabel19.setText("Min: ");
                         jPanel12.add(jLabel19);
-                        jLabel19.setBounds(new Rectangle(new Point(340, 110), jLabel19.getPreferredSize()));
+                        jLabel19.setBounds(new Rectangle(new Point(275, 143), jLabel19.getPreferredSize()));
 
                         //---- filterCB ----
                         filterCB.setText("Filter alignments by read group");
@@ -1122,7 +1122,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterCB);
-                        filterCB.setBounds(6, 142, 244, filterCB.getPreferredSize().height);
+                        filterCB.setBounds(6, 170, 244, filterCB.getPreferredSize().height);
 
                         //---- filterURL ----
                         filterURL.setText("URL or path to filter file");
@@ -1139,7 +1139,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterURL);
-                        filterURL.setBounds(275, 140, 440, filterURL.getPreferredSize().height);
+                        filterURL.setBounds(270, 170, 440, filterURL.getPreferredSize().height);
 
                         //---- samFlagUnmappedPairCB ----
                         samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1149,7 +1149,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samFlagUnmappedPairCB);
-                        samFlagUnmappedPairCB.setBounds(6, 76, 310, samFlagUnmappedPairCB.getPreferredSize().height);
+                        samFlagUnmappedPairCB.setBounds(6, 74, 310, samFlagUnmappedPairCB.getPreferredSize().height);
 
                         //---- filterFailedReadsCB ----
                         filterFailedReadsCB.setText("Filter vendor failed reads");
@@ -1159,12 +1159,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterFailedReadsCB);
-                        filterFailedReadsCB.setBounds(new Rectangle(new Point(6, 43), filterFailedReadsCB.getPreferredSize()));
+                        filterFailedReadsCB.setBounds(new Rectangle(new Point(6, 42), filterFailedReadsCB.getPreferredSize()));
 
                         //---- label2 ----
                         label2.setText("Max:");
                         jPanel12.add(label2);
-                        label2.setBounds(new Rectangle(new Point(455, 110), label2.getPreferredSize()));
+                        label2.setBounds(new Rectangle(new Point(390, 143), label2.getPreferredSize()));
 
                         //---- showSoftClippedCB ----
                         showSoftClippedCB.setText("Show soft-clipped bases");
@@ -1174,7 +1174,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showSoftClippedCB);
-                        showSoftClippedCB.setBounds(new Rectangle(new Point(375, 76), showSoftClippedCB.getPreferredSize()));
+                        showSoftClippedCB.setBounds(new Rectangle(new Point(375, 74), showSoftClippedCB.getPreferredSize()));
 
                         //---- showJunctionTrackCB ----
                         showJunctionTrackCB.setText("Show splice junction track");
@@ -1184,7 +1184,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showJunctionTrackCB);
-                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 43), showJunctionTrackCB.getPreferredSize()));
+                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 42), showJunctionTrackCB.getPreferredSize()));
 
                         //---- showCenterLineCB ----
                         showCenterLineCB.setText("Show center line");
@@ -1194,7 +1194,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showCenterLineCB);
-                        showCenterLineCB.setBounds(6, 170, 199, showCenterLineCB.getPreferredSize().height);
+                        showCenterLineCB.setBounds(6, 106, 199, showCenterLineCB.getPreferredSize().height);
+
+                        //---- zeroQualityAlignmentCB ----
+                        zeroQualityAlignmentCB.setText("Flag zero-quality alignments");
+                        zeroQualityAlignmentCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                zeroQualityAlignmentCBActionPerformed(e);
+                            }
+                        });
+                        jPanel12.add(zeroQualityAlignmentCB);
+                        zeroQualityAlignmentCB.setBounds(new Rectangle(new Point(375, 106), zeroQualityAlignmentCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -1697,7 +1707,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                 .add(59, 59, 59)
                                 .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                                .add(jLabel25)
                                 .addContainerGap())
                     );
                 }
@@ -2174,6 +2184,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 String.valueOf(showCenterLineCB.isSelected()));
 
     }
+
+
+    private void zeroQualityAlignmentCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                 PreferenceManager.SAM_FLAG_ZERO_QUALITY,
+                 String.valueOf(zeroQualityAlignmentCB.isSelected()));
+
+     }
 
 
     private void genomeUpdateCBActionPerformed(ActionEvent e) {
@@ -2775,6 +2793,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         samMaxBaseQualityField.setEnabled(samShadeMismatchedBaseCB.isSelected());
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
         isizeComputeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES));
+        zeroQualityAlignmentCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY));
         //dhmay adding 20110208
         showJunctionTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
         filterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS));
@@ -2978,6 +2997,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox showSoftClippedCB;
     private JCheckBox showJunctionTrackCB;
     private JCheckBox showCenterLineCB;
+    private JCheckBox zeroQualityAlignmentCB;
     private JPanel panel2;
     private JCheckBox isizeComputeCB;
     private JLabel jLabel17;

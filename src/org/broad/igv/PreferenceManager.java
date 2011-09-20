@@ -89,6 +89,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
+    public static final String SAM_FLAG_ZERO_QUALITY = "SAM.FLAG_ZERO_QUALITY";
     //dhmay adding 20110208
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
 
@@ -626,7 +627,7 @@ public class PreferenceManager implements PropertyManager {
      * @param value
      */
     public void override(String key, String value) {
-       preferences.putOverride(key, value);
+        preferences.putOverride(key, value);
     }
 
     public void loadOverrides(String overridePropertyFilePath) {
@@ -636,7 +637,6 @@ public class PreferenceManager implements PropertyManager {
     public void setShowAttributeView(boolean isShowable) {
         put(PreferenceManager.SHOW_ATTRIBUTE_VIEWS_KEY, Boolean.toString(isShowable));
     }
-
 
 
     public void setLastChromosomeViewed(String chromosome) {
@@ -946,7 +946,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_COMPUTE_ISIZES, "false");
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
-
+        defaultValues.put(SAM_FLAG_ZERO_QUALITY, "true");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

@@ -370,7 +370,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
             // Create polygon to represent the alignment.
-            boolean isZeroQuality = alignment.getMappingQuality() == 0;
+            boolean isZeroQuality = alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments;
 
             if (highZoom && w > 10) {
                 x++;
@@ -772,7 +772,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
         }
 
-        if (alignment.getMappingQuality() == 0) {
+        if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
             float alpha = 0.15f;
             c.getColorComponents(rbgBuffer);

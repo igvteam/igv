@@ -582,6 +582,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         ColorOption colorOption;
         //ContinuousColorScale insertSizeColorScale;
         private boolean viewPairs = false;
+        public boolean flagZeroQualityAlignments = true;
         Map<String, PEStats> peStats;
 
         RenderOptions() {
@@ -597,6 +598,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
             colorOption = colorByOption;
+            flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             //updateColorScale();
         }
 

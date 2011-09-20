@@ -540,6 +540,13 @@ public class IGVHttpClientUtils {
                 || lcString.startsWith("file://");
     }
 
+    /**
+     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
+     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
+     * by filters after the request is made by IGV.
+     *
+     * @return
+     */
     public static boolean testByteRange() {
 
         try {
