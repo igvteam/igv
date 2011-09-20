@@ -91,6 +91,8 @@ public class FeatureTrack extends AbstractTrack {
 
     private static boolean drawBorder = true;
 
+    private boolean alternateExonColor = false;
+
     /**
      * Does not initialize with the featuresource
      *
@@ -185,6 +187,7 @@ public class FeatureTrack extends AbstractTrack {
         if (trackProperties.getFeatureVisibilityWindow() >= 0) {
             setVisibilityWindow(trackProperties.getFeatureVisibilityWindow());
         }
+        alternateExonColor = trackProperties.isAlternateExonColor();
 
     }
 
@@ -690,8 +693,7 @@ public class FeatureTrack extends AbstractTrack {
                         levelRects.add(new Rectangle(rect));
                         getRenderer().render(row.features, context, rect, this);
                         if (selectedFeatureRowIndex == i) {
-                            Graphics2D fontGraphics =
-                                    (Graphics2D) context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
+                            Graphics2D fontGraphics = context.getGraphic2DForColor(SELECTED_FEATURE_ROW_COLOR);
                             fontGraphics.fillRect(rect.x, rect.y, rect.width, rect.height);
                         }
                         rect.y += h;
@@ -907,6 +909,10 @@ public class FeatureTrack extends AbstractTrack {
 
     public static void setDrawBorder(boolean drawBorder) {
         FeatureTrack.drawBorder = drawBorder;
+    }
+
+    public boolean isAlternateExonColor() {
+        return alternateExonColor;
     }
 }
 

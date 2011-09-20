@@ -469,8 +469,7 @@ public class ParsingUtils {
                     } else if (key.equals("description")) {
                         trackProperties.setDescription(value);
                     } else if (key.equals("itemrgb")) {
-                        trackProperties.setItemRGB(value.toLowerCase().equals("on") ||
-                                value.equals("1"));
+                        trackProperties.setItemRGB(value.toLowerCase().equals("on") || value.equals("1"));
                     } else if (key.equals("usescore")) {
                         trackProperties.setUseScore(value.equals("1"));
                     } else if (key.equals("color")) {
@@ -591,6 +590,8 @@ public class ParsingUtils {
                         // Any value other than 0 or off => on
                         boolean sortable = (value.equals("1") || (value.toLowerCase().equals("true")));
                         trackProperties.setSortable(sortable);
+                    } else if (key.equals("alternateexoncolor")) {
+                        trackProperties.setAlternateExonColor(value.toLowerCase().equals("on") || value.equals("1"));
                     }
                 }
             }

@@ -491,6 +491,13 @@ public abstract class AbstractTrack implements Track {
     }
 
 
+    /**
+     * Set some properties of this track,  usually from a "track line" specification.
+     *
+     * TODO -- keep the properties object, rather than copy all the values.
+     *
+     * @param properties
+     */
     public void setProperties(TrackProperties properties) {
         this.itemRGB = properties.isItemRGB();
         this.useScore = properties.isUseScore();

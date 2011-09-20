@@ -21,6 +21,7 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -97,6 +98,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
         lastFeatureBoundsMaxY = 0;
         lastRegionMaxY = 0;
 
+
         // TODO -- use enum instead of string "Color"
         if ((featureList != null) && (featureList.size() > 0)) {
 
@@ -122,6 +124,10 @@ public class IGVFeatureRenderer extends FeatureRenderer {
             int lastPixelEnd = -1;
             int occludedCount = 0;
             int maxOcclusions = 2;
+
+
+            boolean alternateExonColor = (track instanceof FeatureTrack && ((FeatureTrack) track).isAlternateExonColor());
+            boolean colorToggle = true;
 
             IGVFeature featureArray[] = featureList.toArray(new IGVFeature[featureList.size()]);
             for (int i = 0; i < featureArray.length; i++) {
@@ -160,8 +166,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         lastPixelEnd = pixelEnd;
                     }
 
-                    Color color = getFeatureColor(feature, track);
-
+                    Color color =  getFeatureColor(feature, track);
 
                     Graphics2D g2D = context.getGraphic2DForColor(color);
 
@@ -192,7 +197,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         drawStrandArrows(feature, pixelStart, pixelEnd, pixelYCenter, displayMode, arrowGraphics);
 
                         if (hasExons) {
-                            drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode);
+                            drawExons(feature, pixelYCenter, context, g2D, trackRectangle, displayMode,
+                                    alternateExonColor, track.getColor(), track.getAltColor());
                         }
 
                     }
@@ -311,7 +317,8 @@ public class IGVFeatureRenderer extends FeatureRenderer {
     }
 
     protected void drawExons(IGVFeature gene, int yOffset, RenderContext context,
-                             Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode) {
+                             Graphics2D g2D, Rectangle trackRectangle, Track.DisplayMode mode,
+                             boolean alternateExonColor, Color color1, Color color2) {
 
         Graphics exonNumberGraphics = g2D.create();
         exonNumberGraphics.setColor(Color.BLACK);
@@ -325,7 +332,19 @@ public class IGVFeatureRenderer extends FeatureRenderer {
 
         Graphics2D fontGraphics = context.getGraphic2DForColor(Color.WHITE);
 
+         boolean  colorToggle = true;
+
+
         for (Exon exon : gene.getExons()) {
+
+            Graphics2D blockGraphics = g2D;
+            if (alternateExonColor) {
+                Color color = colorToggle ? color1 : color2;
+                blockGraphics = context.getGraphic2DForColor(color);
+                colorToggle = !colorToggle;
+            }
+
+
             int pStart = getPixelFromChromosomeLocation(exon.getChr(), exon.getStart(), theOrigin, locationScale);
             int pEnd = getPixelFromChromosomeLocation(exon.getChr(), exon.getEnd(), theOrigin, locationScale);
 
@@ -345,14 +364,14 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                     int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                     int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                     int pClippedWidth = pClippedEnd - pClippedStart;
-                    g2D.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                    blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
 
                 } else {// Exon contains 5' UTR -- draw non-coding part
                     if (pCdStart > pStart) {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pCdStart, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        g2D.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pStart = pCdStart;
                     }
                     //  Exon contains 3' UTR  -- draw non-coding part
@@ -360,7 +379,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pCdEnd, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = pClippedEnd - pClippedStart;
-                        g2D.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
+                        blockGraphics.fillRect(pClippedStart, yOffset - NON_CODING_HEIGHT / 2, pClippedWidth, NON_CODING_HEIGHT);
                         pEnd = pCdEnd;
                     }
 
@@ -369,7 +388,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                         int pClippedStart = (int) Math.max(pStart, trackRectangle.getX());
                         int pClippedEnd = (int) Math.min(pEnd, trackRectangle.getMaxX());
                         int pClippedWidth = Math.max(2, pClippedEnd - pClippedStart);
-                        g2D.fillRect(pClippedStart, yOffset - blockHeight / 2, pClippedWidth, blockHeight);
+                        blockGraphics.fillRect(pClippedStart, yOffset - blockHeight / 2, pClippedWidth, blockHeight);
 
                     }
                 }

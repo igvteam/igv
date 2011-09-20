@@ -31,6 +31,14 @@ import java.awt.*;
  */
 public class TrackProperties {
 
+    public boolean isAlternateExonColor() {
+        return alternateExonColor;
+    }
+
+    public void setAlternateExonColor(boolean alternateExonColor) {
+        this.alternateExonColor = alternateExonColor;
+    }
+
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
     }
@@ -115,6 +123,8 @@ public class TrackProperties {
     private float yLine;
 
     private boolean sortable = true;
+
+    private boolean alternateExonColor = false;
 
     public TrackProperties() {
 
@@ -295,9 +305,7 @@ public class TrackProperties {
         this.rendererClass = rendererClass;
     }
 
-    public void setAutoScale(
-
-            boolean autoScale) {
+    public void setAutoScale(boolean autoScale) {
         this.autoScaleFlag = autoScale;
     }
 

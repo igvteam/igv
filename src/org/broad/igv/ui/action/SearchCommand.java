@@ -29,9 +29,15 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.lists.GeneList;
+import org.broad.igv.session.Session;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -103,6 +109,21 @@ public class SearchCommand implements Command {
         // Feature search
 
         else {
+            // On the fly gene list
+            if (searchString.contains("|")) {
+                List<String> loci = Arrays.asList(searchString.split("\\|")) ;
+                GeneList geneList = new GeneList("", loci, false);
+                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                IGV.getInstance().resetFrames();
+                return;
+
+            } else {
+                if (FrameManager.isGeneListMode()) {
+                    IGV.getInstance().setGeneList(null);
+                }
+            }
+
+
             NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
             if (feature != null) {
                 int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
