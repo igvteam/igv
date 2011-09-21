@@ -88,7 +88,6 @@ public class FileUtils {
         } else {
             return f.getParentFile().getAbsolutePath();
         }
-
     }
 
     static public String getRelativePath(File baseFile, String targetFile) {
@@ -251,19 +250,15 @@ public class FileUtils {
             br.close();
             pw.close();
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
 
         }
     }
 
     /**
      * Test to see if a file is ascii by sampling the first few bytes.  Not perfect (obviously) but usually works
-     *
-
      */
     public static boolean isAscii(ResourceLocator loc) throws IOException {
 
@@ -279,14 +274,14 @@ public class FileUtils {
                 for (int i = 0; i < nBytes; i++) {
                     int j = (int) bytes[i];
                     if (j < 1 || j > 127) {
-                    return false;
-                }
+                        return false;
+                    }
                 }
                 nBytes = in.read(bytes);
             }
             return true;
         } finally {
-            if(in != null) {
+            if (in != null) {
                 in.close();
             }
         }
@@ -295,7 +290,6 @@ public class FileUtils {
 
     /**
      * Test to see if the ascii file is tab delimited.  Samples first 5 non-comment (lines starting with #) lines
-     * 
      */
     public static boolean isTabDelimited(ResourceLocator loc, int minColumnCount) throws IOException {
 
@@ -305,24 +299,23 @@ public class FileUtils {
             reader = ParsingUtils.openBufferedReader(loc.getPath(), true);
             int nLinesTested = 0;
             String nextLine;
-            while((nextLine = reader.readLine()) != null && nLinesTested < 5) {
-                if(nextLine.startsWith("#")) {
+            while ((nextLine = reader.readLine()) != null && nLinesTested < 5) {
+                if (nextLine.startsWith("#")) {
                     continue;
                 }
                 nLinesTested++;
-                String [] tokens = nextLine.split("\t");
-                if(tokens.length >= minColumnCount) {
+                String[] tokens = nextLine.split("\t");
+                if (tokens.length >= minColumnCount) {
                     return true;
                 }
             }
             return nLinesTested > 1;
         } finally {
-            if(reader != null) {
+            if (reader != null) {
                 reader.close();
             }
         }
     }
-
 
 
     /**
@@ -349,16 +342,12 @@ public class FileUtils {
                 totalSize += bytes_read;
             }
 
-        }
-
-
-        catch (Exception e) {
+        } catch (Exception e) {
             outputFile.delete();
             MessageUtils.showMessage("<html>Error copying file: " + outputFile.getAbsoluteFile() +
                     "<br/>" + e.toString());
 
-        }
-        finally {
+        } finally {
             if (in != null) {
                 in.close();
             }
@@ -386,8 +375,7 @@ public class FileUtils {
                 writer.println(nextLine);
             }
 
-        }
-        finally {
+        } finally {
             reader.close();
             writer.close();
 

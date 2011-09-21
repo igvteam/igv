@@ -127,7 +127,9 @@ public class GenomeManager {
                 currentGenome = new Genome(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
                 currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
                 if (aliases != null) currentGenome.addChrAliases(aliases);
-                updateGeneTrack(genomeDescriptor);
+                if(!Globals.isHeadless()) {
+                    updateGeneTrack(genomeDescriptor);
+                }
 
 
             } else {
