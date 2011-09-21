@@ -226,7 +226,7 @@ public class IgvTools {
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
 
-                
+
                 String coverageOpt = (String) parser.getOptionValue(coverageOptions);
 
                 String trackLine = null;
@@ -353,7 +353,7 @@ public class IgvTools {
     }
 
     public void toTDF(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
-                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
+                      Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
         validateIsTilable(ifile);
 
@@ -421,8 +421,7 @@ public class IgvTools {
             if (outputFile.exists()) {
                 outputFile.delete();
             }
-        }
-        finally {
+        } finally {
             if (deleteme != null && deleteme.exists()) {
                 deleteme.delete();
             }
@@ -602,16 +601,14 @@ public class IgvTools {
             try {
                 stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
                 idx.write(stream);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 // Delete output file as its probably corrupt
                 File tmp = new File(idxFile);
                 if (tmp.exists()) {
                     tmp.delete();
                 }
-            }
-            finally {
+            } finally {
                 if (stream != null) {
                     stream.close();
                 }
@@ -664,20 +661,30 @@ public class IgvTools {
         final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
                 IGV.getInstance().getGenomeManager();
         Genome genome = genomeManager.getCurrentGenome();
-        if(genome != null && genome.getId().equals(genomeFileOrID)) {
+        if (genome != null && genome.getId().equals(genomeFileOrID)) {
+            return genome;
+        }
+
+        if (genome != null) {
             return genome;
         }
 
         File genomeFile = new File(genomeFileOrID);
+        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
+
         }
+        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID);
+
         }
+        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(genomeFileOrID);
         }
+        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
