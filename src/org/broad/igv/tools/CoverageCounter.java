@@ -128,6 +128,7 @@ public class CoverageCounter {
                 } else if (opt.startsWith("m=")) {
                     String[] tmp = opt.split("=");
                     minMappingQuality = Integer.parseInt(tmp[1]);
+                    System.out.println("Minimum mapping quality = " + minMappingQuality);
                 } else if (opt.startsWith("t=")) {
                     String[] tmp = opt.split("=");
                     countThreshold = Integer.parseInt(tmp[1]);
