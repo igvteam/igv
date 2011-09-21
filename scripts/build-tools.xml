@@ -65,7 +65,7 @@
             <classfileset dir="${tmp.dir}">
                 <root classname="${main-class}"/>
                 <root classname="org.apache.log4j.ConsoleAppender"/>
-                <rootfileset dir="${tmp.dir}" includes="org/apache/commons/logging/*.class"/>
+                <rootfileset dir="${tmp.dir}" includes="org/apache/commons/logging/**/*.class"/>
                 <rootfileset dir="${tmp.dir}" includes="ncsa/hdf/hdf5lib/exceptions/*.class"/>
             </classfileset>
             <fileset dir="src" includes="resources/**, log4j.properties"/>
