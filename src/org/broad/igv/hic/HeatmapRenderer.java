@@ -53,6 +53,8 @@ public class HeatmapRenderer {
 
         List<Block> blocks = zd.getBlocksOverlapping(x, y, maxX, maxY);
 
+        boolean isWholeGenome = zd.getChr1() == 0 && zd.getChr2() == 0;
+
         for (Block b : blocks) {
 
             ContactRecord[] recs = b.getContactRecords();
@@ -61,7 +63,7 @@ public class HeatmapRenderer {
                     ContactRecord rec = recs[i];
 
                     Color color = null;
-                    double binSizeMB = zd.getBinSize() / 1000000.0;
+                    double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 :   1000000.0);
                     double score = rec.getCounts() / (binSizeMB * binSizeMB);
                     //if (maxCount > 0 && score > 2 * maxCount) {
                     //    color = Color.ORANGE;

@@ -4,6 +4,7 @@ Header
 
   masterIndexPointer
 
+
   --------
   Chr dictionary
   --------
@@ -15,9 +16,21 @@ Header
      name
      size
 
+  ---------
+  Attribute dictionary
+  ---------
+  attributeCount
+  attKey
+  attValue
+  attKey
+  attValue
+  ....
+
   --------
   Matrix
   --------
+  mean
+  variance
   chr1  // lowest index chromosome
   chr2  // highest index chromosome
   numberOfZooms
@@ -52,7 +65,7 @@ Header
         -----------
         bin1
         bin2
-        counts
+        counts   // int
 
 
 ------------

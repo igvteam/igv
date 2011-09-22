@@ -56,8 +56,18 @@ public class Preprocessor {
                 writeInt(HiCTools.chromosomes[i].getSize());
             }
 
+            // Attribute dictionary -- nothing for now, reserve for future.
+            int nAttributes = 0;
+            writeInt(nAttributes);
+            // Future -- loop through attributes writing key/value pairs
+
+
+            // Data
             for (int c1 = 0; c1 < nChrs; c1++) {
                 for (int c2 = c1; c2 < nChrs; c2++) {
+
+                    if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
+
 
                     List<InputStream> isList = new ArrayList<InputStream>();
                     for (File inputFile : inputFileList) {
@@ -80,6 +90,8 @@ public class Preprocessor {
                     }
                 }
             }
+
+
             masterIndexPosition = bytesWritten;
             writeMasterIndex();
         } finally {
@@ -140,6 +152,7 @@ public class Preprocessor {
     public void writeMatrix(Matrix matrix) throws IOException {
 
         long position = bytesWritten;
+
         writeInt(matrix.chr1);
         writeInt(matrix.chr2);
         writeInt(matrix.zoomData.length);
@@ -220,13 +233,18 @@ public class Preprocessor {
             ContactRecord rec = records[i];
             buffer.putInt(rec.getX());
             buffer.putInt(rec.getY());
-            buffer.putShort(rec.getCounts());
+            buffer.putInt(rec.getCounts());
         }
 
         byte[] bytes = buffer.getBytes();
         byte[] compressedBytes = CompressionUtils.compress(bytes);
         write(compressedBytes);
 
+    }
+
+    private void writeDouble(double d) throws IOException {
+        fos.writeDouble(d);
+        bytesWritten += 8;
     }
 
 

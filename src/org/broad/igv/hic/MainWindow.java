@@ -189,21 +189,25 @@ public class MainWindow extends JFrame {
 
     private void setInitialZoom() {
 
+
         setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = getHeatmapPanel().getWidth();
         int maxNBins = pixels;
 
-        // Find right zoom level
-        int bp_bin = getLen() / maxNBins;
-        int initialZoom = zoomBinSizes.length - 1;
-        for (int z = 1; z < zoomBinSizes.length; z++) {
-            if (zoomBinSizes[z] < bp_bin) {
-                initialZoom = z - 1;
-                break;
+        if (xContext.getChromosome().getName().equals("All")) {
+            setZoom(0, -1, -1);
+        } else {// Find right zoom level
+            int bp_bin = getLen() / maxNBins;
+            int initialZoom = zoomBinSizes.length - 1;
+            for (int z = 1; z < zoomBinSizes.length; z++) {
+                if (zoomBinSizes[z] < bp_bin) {
+                    initialZoom = z - 1;
+                    break;
+                }
             }
-        }
 
-        setZoom(initialZoom, -1, -1);
+            setZoom(initialZoom, -1, -1);
+        }
     }
 
 
@@ -228,7 +232,7 @@ public class MainWindow extends JFrame {
      */
     public void setZoom(int newZoom, int centerLocationX, int centerLocationY) {
 
-        if (newZoom < 1 || newZoom > MAX_ZOOM) return;
+        if (newZoom < 0 || newZoom > MAX_ZOOM) return;
 
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();

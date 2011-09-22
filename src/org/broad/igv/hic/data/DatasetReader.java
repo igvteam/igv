@@ -33,22 +33,28 @@ public class DatasetReader {
             LittleEndianInputStream dis = new LittleEndianInputStream(new BufferedInputStream(stream));
             long masterIndexPos = dis.readLong();
 
+            // Read chromosome dictionary
             int nchrs = dis.readInt();
-            Chromosome [] chromosomes  = new Chromosome[nchrs];
-            for(int i=0; i<nchrs; i++) {
+            Chromosome[] chromosomes = new Chromosome[nchrs];
+            for (int i = 0; i < nchrs; i++) {
                 String name = dis.readString();
                 int size = dis.readInt();
                 chromosomes[i] = new Chromosome(i, name, size);
             }
-
             ds.setChromosomes(chromosomes);
+
+            // Read attribute dictionary
+            int nAttributes = dis.readInt();
+            for (int i = 0; i < nAttributes; i++) {
+                String key = dis.readString();
+                String value = dis.readString();
+            }
 
             readMasterIndex(masterIndexPos);
 
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-
 
 
         return ds;
@@ -90,8 +96,8 @@ public class DatasetReader {
         byte[] buffer = new byte[idx.size];
         stream.seek(idx.position);
         stream.readFully(buffer);
-
         LittleEndianInputStream dis = new LittleEndianInputStream(new ByteArrayInputStream(buffer));
+
         int c1 = dis.readInt();
         int c2 = dis.readInt();
         int nZooms = dis.readInt();
@@ -120,7 +126,9 @@ public class DatasetReader {
             zd[i] = new MatrixZoomData(c1, c2, binSize, blockSize, blockColumnCount, zoom, blockIndex, this);
 
         }
-        return new Matrix(c1, c2, zd);
+
+        Matrix m = new Matrix(c1, c2, zd);
+        return m;
     }
 
     public Block readBlock(int blockNumber, Preprocessor.IndexEntry idx) throws IOException {
@@ -137,7 +145,7 @@ public class DatasetReader {
         for (int i = 0; i < nRecords; i++) {
             int bin1 = dis.readInt();
             int bin2 = dis.readInt();
-            short counts = dis.readShort();
+            int counts = dis.readInt();
 
             records[i] = new ContactRecord(blockNumber, bin1, bin2, counts);
         }

@@ -47,9 +47,21 @@ public class AlignmentsParser {
 
     public static Matrix readMatrix(List<InputStream> isList, int c1, int c2) throws IOException {
 
-        Matrix matrix = new Matrix(c1, c2);
+        boolean isWholeGenome = (c1 == 0 && c2 == 0);
+
+        Matrix matrix = null;
+
+        if (isWholeGenome) {
+            int genomeLength = HiCTools.chromosomes[0].getSize();  // <= whole genome in KB
+            int binSize = genomeLength / 500;
+            matrix = new Matrix(c1, c2, binSize);
+        } else {
+            matrix = new Matrix(c1, c2);
+        }
+
         for (InputStream is : isList) {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
 
@@ -70,18 +82,34 @@ public class AlignmentsParser {
                         return null;
                     }
 
-                    if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
-                        int pos1 = Integer.parseInt(tokens[2]);
-                        int pos2 = Integer.parseInt(tokens[6]);
+                    int pos1 = Integer.parseInt(tokens[2]);
+                    int pos2 = Integer.parseInt(tokens[6]);
+                    if (isWholeGenome) {
+                        pos1 = getGenomicPosition(chr1, pos1);
+                        pos2 = getGenomicPosition(chr2, pos2);
+                        incrementCount(matrix, c1, pos1, c2, pos2);
+                    } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
                         incrementCount(matrix, chr1, pos1, chr2, pos2);
                     }
                 }
             }
+
         }
+
         matrix.parsingComplete();
         return matrix;
     }
 
+    private static int getGenomicPosition(int chr, int pos) {
+        long len = 0;
+        for (int i = 1; i < chr; i++) {
+            len += HiCTools.chromosomes[i].getSize();
+        }
+        len += pos;
+
+        return (int) (len / 1000);
+
+    }
 
     private static void incrementCount(Matrix matrix, int chr1, int pos1, int chr2, int pos2) {
 
