@@ -36,7 +36,6 @@ public class SequenceHelper {
     private static int tileSize = 30000;
 
 
-    //Genome genome;
     Sequence sequence;
     private ObjectCache<String, SequenceTile> sequenceCache = new ObjectCache(50);
 
@@ -112,16 +111,21 @@ public class SequenceHelper {
      * @param chr
      * @param start
      * @param end
+     * @param max -- end of the sequence or contig.  Used to constrain last time end
      * @return
      */
-    public byte[] getSequence(String chr, int start, int end) {
+    public byte[] getSequence(String chr, int start, int end, int max) {
         if (cacheSequences) {
             byte[] seqbytes = new byte[end - start];
             int startTile = start / tileSize;
             int endTile = end / tileSize;
 
             // Get first chunk
-            SequenceTile tile = getSequenceTile(chr, startTile);
+            SequenceTile tile = getSequenceTile(chr, startTile, max);
+            if(tile == null) {
+                return null;
+            }
+
             byte[] tileBytes = tile.getBytes();
             if (tileBytes == null) {
                 return null;
@@ -146,7 +150,10 @@ public class SequenceHelper {
 
             // If multiple chunks ...
             for (int t = startTile + 1; t <= endTile; t++) {
-                tile = getSequenceTile(chr, t);
+                tile = getSequenceTile(chr, t, max);
+                if(tile == null) {
+                    break;
+                }
 
                 int nNext = Math.min(seqbytes.length - nBytes, tile.getSize());
 
@@ -161,13 +168,17 @@ public class SequenceHelper {
     }
 
 
-    private SequenceTile getSequenceTile(String chr, int tileNo) {
+    private SequenceTile getSequenceTile(String chr, int tileNo, int maxEnd) {
         String key = getKey(chr, tileNo);
         SequenceTile tile = sequenceCache.get(key);
 
         if (tile == null) {
             int start = tileNo * tileSize;
-            int end = start + tileSize; // <=  UCSC coordinate conventions (end base not inclusive)
+            int end = Math.min(start + tileSize, maxEnd); // <=  UCSC coordinate conventions (end base not inclusive)
+
+            if(end <= start) {
+                return null;
+            }
 
             byte[] seq = sequence.readSequence(chr, start, end);
             tile = new SequenceTile(start, seq);
@@ -219,7 +230,7 @@ public class SequenceHelper {
         }
 
         public int getSize() {
-            return bytes.length;
+            return bytes == null ? 0 : bytes.length;
         }
 
         public byte[] getBytes() {

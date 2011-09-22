@@ -99,6 +99,10 @@ public class FastaSequence implements Sequence {
             int offset1 = end - base1;
             long endByte = Math.min(contentLength, position + endLine * bytesPerLine + offset1);
 
+            if(startByte >= endByte) {
+                return null;
+            }
+
             byte[] allBytes = readBytes(startByte, endByte);
 
             byte[] seqBytes = new byte[end - start];

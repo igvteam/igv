@@ -310,7 +310,16 @@ public class Genome {
     }
 
     public byte[] getSequence(String chr, int start, int end) {
-        return sequenceHelper.getSequence(chr, start, end);
+
+        Chromosome c = getChromosome(chr);
+        if(c == null) {
+            return null;
+        }
+        end = Math.min(end, c.getLength());
+        if(end <= start) {
+            return null;
+        }
+        return sequenceHelper.getSequence(chr, start, end, c.getLength());
     }
 
     public String getDisplayName() {

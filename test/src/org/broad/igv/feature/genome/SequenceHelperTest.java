@@ -77,11 +77,11 @@ public class SequenceHelperTest {
 
             SequenceHelper helper = new SequenceHelper(seqPath);
 
-            byte[] cachedSeq = helper.getSequence(chr, start, end);
+            byte[] cachedSeq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
 
             SequenceHelper.setCacheSequences(false);
 
-            byte[] uncachedSeq = helper.getSequence(chr, start, end);
+            byte[] uncachedSeq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
 
             assertEquals(uncachedSeq.length, cachedSeq.length);
 
@@ -104,7 +104,7 @@ public class SequenceHelperTest {
         int end = 10;
         String expSequence = "ATTGC";
         helper = new SequenceHelper("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
-        byte[] seq = helper.getSequence(chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
         assertEquals(expSequence, new String(seq));
 
     }
@@ -119,7 +119,7 @@ public class SequenceHelperTest {
         int start = 55054464;
         int end = start + 20;
         String expSequence = "ATGCGACCCTCCGGGACGGC";
-        byte[] seq = helper.getSequence(chr, start, end);
+        byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
         assertEquals(expSequence, new String(seq));
     }
 
