@@ -196,8 +196,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
             pw = Utilities.base64Decode(pwString);
         }
 
-        char [] pwchars = pw == null ? null : pw.toCharArray();
-        proxySettings = new ProxySettings(useProxy, user, pwchars, auth, proxyHost, proxyPort);
+        proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort);
     }
 
     public boolean downloadFile(String url, File outputFile) throws IOException {
@@ -268,11 +267,11 @@ public class HttpURLConnectionUtils extends HttpUtils {
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             conn = (HttpURLConnection) url.openConnection(proxy);
 
-//            if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
-//                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-//                String encodedUserPwd = (new BASE64Encoder()).encode(bytes);
-//                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-//            }
+            if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
+                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+                String encodedUserPwd = (new BASE64Encoder()).encode(bytes);
+                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+            }
         } else {
             conn = (HttpURLConnection) url.openConnection();
 
@@ -293,12 +292,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
     public static class ProxySettings {
         boolean auth = false;
         String user;
-        char[] pw;
+        String pw;
         boolean useProxy;
         String proxyHost;
         int proxyPort = -1;
 
-        public ProxySettings(boolean useProxy, String user, char[] pw, boolean auth, String proxyHost, int proxyPort) {
+        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort) {
             this.auth = auth;
             this.proxyHost = proxyHost;
             this.proxyPort = proxyPort;
@@ -319,7 +318,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
             boolean isProxyChallenge = type == RequestorType.PROXY;
             if (isProxyChallenge) {
                 if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
-                    return new PasswordAuthentication(proxySettings.user, proxySettings.pw);
+                    return new PasswordAuthentication(proxySettings.user, proxySettings.pw.toCharArray());
                 }
             }
 
@@ -335,7 +334,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
                 if(isProxyChallenge) {
                     proxySettings.user = userString;
-                    proxySettings.pw = userPass;
+                    proxySettings.pw = new String(userPass);
                 }
 
                 return new PasswordAuthentication(userString, userPass);
