@@ -28,7 +28,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -177,7 +177,7 @@ public class Main {
         }
 
 
-        IGVHttpClientUtils.updateProxySettings();
+        HttpUtils.getInstance().updateProxySettings();
 
         IGV.createInstance(frame).startUp(igvArgs);
 

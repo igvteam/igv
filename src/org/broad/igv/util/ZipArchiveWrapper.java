@@ -50,13 +50,13 @@ final public class ZipArchiveWrapper {
 
     public ZipIterator iterator() throws IOException {
         ZipIterator iterator =
-                new ZipIterator(new ZipInputStream(IGVHttpClientUtils.openConnectionStream(zipUrl)));
+                new ZipIterator(new ZipInputStream(HttpUtils.getInstance().openConnectionStream(zipUrl)));
         return iterator;
     }
 
     public int getEntryCount() throws IOException {
         ZipIterator iterator =
-                new ZipIterator(new ZipInputStream(IGVHttpClientUtils.openConnectionStream(zipUrl)));
+                new ZipIterator(new ZipInputStream(HttpUtils.getInstance().openConnectionStream(zipUrl)));
         int count = 0;
         while (iterator.hasNext()) {
             count++;

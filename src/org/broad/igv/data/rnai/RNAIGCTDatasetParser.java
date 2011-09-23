@@ -23,7 +23,7 @@ import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -97,7 +97,7 @@ public class RNAIGCTDatasetParser {
             Map<String, String[]> rnaiProbeMap = ProbeToLocusMap.getInstance().getRNAiProbeMap();
             URL url = new URL(RNAI_MAPPING_FILE);
 
-            probeMappingStream = new GZIPInputStream(IGVHttpClientUtils.openConnectionStream(url));
+            probeMappingStream = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(url));
             if (probeMappingStream == null) {
                 log.error("Could not retrieve probe mapping file: " + RNAI_MAPPING_FILE);
                 return null;

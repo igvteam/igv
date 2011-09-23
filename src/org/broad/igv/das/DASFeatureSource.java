@@ -24,7 +24,7 @@ import org.broad.igv.feature.tribble.CachingFeatureReader;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
@@ -206,7 +206,7 @@ public class DASFeatureSource implements FeatureSource {
         private Document getDocument(URL query) {
             InputStream is = null;
             try {
-                is = IGVHttpClientUtils.openConnectionStream (query);
+                is = HttpUtils.getInstance().openConnectionStream(query);
                 return createDocument(is);
             } catch (Exception e) {
                 isValid = false;

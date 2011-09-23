@@ -79,7 +79,7 @@ public class AlignmentsParser {
                     }
 
                     if (chr1 == null || chr2 == null) {
-                        return null;
+                        continue;
                     }
 
                     int pos1 = Integer.parseInt(tokens[2]);

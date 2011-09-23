@@ -21,7 +21,7 @@ import net.sf.samtools.SAMFileReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 //import org.broad.igv.goby.GobyAlignmentQueryReader;
@@ -75,7 +75,7 @@ public class SamQueryReaderFactory {
         } else if (pathLowerCase.endsWith(".bam")) {
             if (locator.isLocal()) {
                 reader = new BAMQueryReader(new File(samFile));
-            } else if (IGVHttpClientUtils.isURL(locator.getPath().toLowerCase())) {
+            } else if (HttpUtils.getInstance().isURL(locator.getPath().toLowerCase())) {
                 try {
                     reader = new BAMHttpQueryReader(locator, requireIndex);
                 } catch (MalformedURLException e) {

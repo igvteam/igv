@@ -262,7 +262,7 @@ public class SequenceHelper {
 
     public static String convertSequenceURL(String url) {
 
-        final boolean useByteRange = IGVHttpClientUtils.useByteRange();
+        final boolean useByteRange = HttpUtils.getInstance().useByteRange();
         String key = url + useByteRange;
         String convertedURL = sequenceUrlCache.get(key);
         if (convertedURL == null) {

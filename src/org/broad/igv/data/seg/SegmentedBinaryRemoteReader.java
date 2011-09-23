@@ -23,7 +23,7 @@
 package org.broad.igv.data.seg;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
 import java.io.BufferedReader;
@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +59,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
         InputStream is = null;
         try {
             URL url = new URL(serverURL + "?method=getChromosomeData&file=" + filePath + "&chr=" + chr);
-            is = IGVHttpClientUtils.openConnectionStream(url);
+            is = HttpUtils.getInstance().openConnectionStream(url);
             SegmentedChromosomeData cd = new SegmentedChromosomeData();
             cd.deserialize(is);
             return cd;
@@ -87,7 +86,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
         try {
             List<String> childNames = new ArrayList(100);
             URL url = new URL(serverURL + "?method=getSampleNames&file=" + filePath);
-            urlStream = IGVHttpClientUtils.openConnectionStream(url);
+            urlStream = HttpUtils.getInstance().openConnectionStream(url);
             BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
             String nextLine = "";
             while ((nextLine = reader.readLine()) != null) {
@@ -129,7 +128,7 @@ public class SegmentedBinaryRemoteReader implements SegmentedBinaryReader {
 
             try {
                 URL url = new URL(serverURL + "?method=getAttributes&file=" + filePath);
-                urlStream = IGVHttpClientUtils.openConnectionStream(url);
+                urlStream = HttpUtils.getInstance().openConnectionStream(url);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(urlStream));
                 String nextLine = "";
                 while ((nextLine = reader.readLine()) != null) {

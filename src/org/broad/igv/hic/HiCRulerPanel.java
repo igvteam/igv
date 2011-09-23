@@ -40,8 +40,8 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
     enum Orientation {HORIZONTAL, VERTICAL}
 
-    ;
 
+    private MainWindow mainWindow;
     private Orientation orientation;
 
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
@@ -50,7 +50,14 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
     Context frame;
 
+    /**
+     * Empty constructor for form builder
+     */
     public HiCRulerPanel() {
+    }
+
+    public HiCRulerPanel(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
     }
 
     public void setFrame(Context frame, Orientation orientation) {
@@ -95,15 +102,20 @@ public class HiCRulerPanel extends JPanel implements Serializable {
         g.setFont(spanFont);
 
         Chromosome chromosome = frame.getChromosome();
+
         if (chromosome != null) {
-            String rangeString = chromosome.getName();
-            int strWidth = g.getFontMetrics().stringWidth(rangeString);
-            int strPosition = (w - strWidth) / 2;
+            if (chromosome.getName().equals("All")) {
 
-            if (!isHorizontal()) strPosition = -strPosition;
+            } else {
+                String rangeString = chromosome.getName();
+                int strWidth = g.getFontMetrics().stringWidth(rangeString);
+                int strPosition = (w - strWidth) / 2;
 
-            int vPos = h - 35;
-            g.drawString(rangeString, strPosition, vPos);
+                if (!isHorizontal()) strPosition = -strPosition;
+
+                int vPos = h - 35;
+                g.drawString(rangeString, strPosition, vPos);
+            }
         }
 
     }
@@ -124,38 +136,64 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         g.setFont(tickFont);
 
+        Chromosome chromosome = frame.getChromosome();
 
-        int range = (int) (w * frame.getScale());
-        TickSpacing ts = findSpacing(range, false);
-        double spacing = ts.getMajorTick();
+        if (chromosome == null) return;
 
-        // Find starting point closest to the current origin
-        int maxX = frame.getChromosome().getSize();
-        int nTick = (int) (frame.getOrigin() / spacing) - 1;
-        int l = (int) (nTick * spacing);
-        int x = frame.getScreenPosition(l);
-        //int strEnd = Integer.MIN_VALUE;
-        while (l < maxX && x < w) {
-            l = (int) (nTick * spacing);
-            x = frame.getScreenPosition(l);
+        if (chromosome.getName().equals("All")) {
+            int x1 = 0;
+            Chromosome[] chromosomes = mainWindow.chromosomes;
+            // Index 0 is whole genome
+            int genomeCoord = 0;
+            for(int i=1; i<chromosomes.length; i++) {
+                Chromosome c = chromosomes[i];
+                genomeCoord += (c.getSize() / 1000);
+                int x2 = frame.getScreenPosition(genomeCoord);
 
+                int x = (x1 + x2) / 2;
+                int strWidth = g.getFontMetrics().stringWidth(c.getName());
+                int strPosition = isHorizontal() ? x - strWidth / 2 : -x - strWidth / 2;
+                g.drawString(c.getName(), strPosition, h - 15);
 
-            String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +
-                    " " + ts.getMajorUnit();
-            int strWidth = g.getFontMetrics().stringWidth(chrPosition);
-            int strPosition = isHorizontal() ? x - strWidth / 2 : -x - strWidth / 2;
-            //if (strPosition > strEnd) {
+                int xpos = (orientation == Orientation.HORIZONTAL ? x2 : -x2);
+                g.drawLine(xpos, h - 10, xpos, h - 2);
 
-            if (nTick % 2 == 0) {
-                g.drawString(chrPosition, strPosition, h - 15);
+                x1 = x2;
             }
-            //strEnd = strPosition + strWidth;
-            //}
+        } else {
 
-            int xpos = (orientation == Orientation.HORIZONTAL ? x : -x);
-            g.drawLine(xpos, h - 10, xpos, h - 2);
-            nTick++;
 
+
+            int range = (int) (w * frame.getScale());
+            TickSpacing ts = findSpacing(range, false);
+            double spacing = ts.getMajorTick();
+
+            // Find starting point closest to the current origin
+            int maxX = frame.getChromosome().getSize();
+            int nTick = (int) (frame.getOrigin() / spacing) - 1;
+            int l = (int) (nTick * spacing);
+            int x = frame.getScreenPosition(l);
+            //int strEnd = Integer.MIN_VALUE;
+            while (l < maxX && x < w) {
+                l = (int) (nTick * spacing);
+                x = frame.getScreenPosition(l);
+
+
+                String chrPosition = formatNumber((double) l / ts.getUnitMultiplier()) +  " " + ts.getMajorUnit();
+                int strWidth = g.getFontMetrics().stringWidth(chrPosition);
+                int strPosition = isHorizontal() ? x - strWidth / 2 : -x - strWidth / 2;
+                //if (strPosition > strEnd) {
+
+                if (nTick % 2 == 0) {
+                    g.drawString(chrPosition, strPosition, h - 15);
+                }
+                //strEnd = strPosition + strWidth;
+                //}
+
+                int xpos = (orientation == Orientation.HORIZONTAL ? x : -x);
+                g.drawLine(xpos, h - 10, xpos, h - 2);
+                nTick++;
+            }
         }
     }
 

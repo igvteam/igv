@@ -1,5 +1,6 @@
 package org.broad.igv.hic;
 
+import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.hic.data.MatrixZoomData;
 import org.broad.igv.util.ObjectCache;
 
@@ -17,19 +18,26 @@ import java.io.Serializable;
 public class HeatmapPanel extends JComponent implements Serializable {
 
     private MainWindow mainWindow;
-    private double maxCount = 20000.0 / (1 * 1);
     private int imageTileWidth = 500;
     ObjectCache<String, ImageTile> tileCache = new ObjectCache(100);
     private Rectangle zoomRectangle;
 
-    HeatmapRenderer renderer = new HeatmapRenderer();
+    HeatmapRenderer renderer;
 
-
+    /**
+     * Empty constructor for form builder
+     */
     public HeatmapPanel() {
+    }
+
+    public HeatmapPanel(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        renderer = new HeatmapRenderer(mainWindow.colorScale);
         final HeatmapMouseHandler mouseHandler = new HeatmapMouseHandler();
         addMouseListener(mouseHandler);
         addMouseMotionListener(mouseHandler);
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -71,6 +79,36 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 }
             }
 
+            boolean isWholeGenome = (mainWindow.xContext.getChromosome().getName().equals("All") &&
+                    mainWindow.yContext.getChromosome().getName().equals("All"));
+
+
+            // Draw grid
+            if (isWholeGenome) {
+                Color color = g.getColor();
+                g.setColor(Color.lightGray);
+
+                Chromosome[] chromosomes = mainWindow.chromosomes;
+                // Index 0 is whole genome
+                int xGenomeCoord = 0;
+                for(int i=1; i<chromosomes.length; i++) {
+                    Chromosome c = chromosomes[i];
+                    xGenomeCoord += (c.getSize() / 1000);
+                    int x= mainWindow.xContext.getScreenPosition(xGenomeCoord);
+                    g.drawLine(x, 0, x, getHeight());
+                }
+                int yGenomeCoord = 0;
+                for(int i=1; i<chromosomes.length; i++) {
+                    Chromosome c = chromosomes[i];
+                    yGenomeCoord += (c.getSize() / 1000);
+                    int y= mainWindow.yContext.getScreenPosition(yGenomeCoord);
+                    g.drawLine(0, y, getWidth(), y);
+                }
+
+                g.setColor(color);
+            }
+
+
             // Uncomment below to see grid (for debugging).
             /*for (int i = tLeft; i <= tRight; i++) {
                 for (int j = tTop; j <= tBottom; j++) {
@@ -101,7 +139,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         // TODO -- get # of bins
         int nBins = 500;
 
-        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, maxCount, g, getBackground());
+        renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
@@ -125,7 +163,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
             final int bx0 = i * imageTileWidth;
             final int by0 = j * imageTileWidth;
-            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, maxCount, g2D, getBackground());
+            renderer.render(bx0, by0, imageWidth, imageHeight, mainWindow.zd, g2D);
 
             if (scaleFactor > 0.999 && scaleFactor < 1.001) {
                 tile = new ImageTile(image, bx0, by0);
@@ -141,14 +179,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
         return tile;
     }
 
-    public void setMaxCount(double maxCount) {
-        this.maxCount = maxCount;
-        tileCache.clear();
-    }
-
-    public void setMainWindow(MainWindow mainWindow) {
-        this.mainWindow = mainWindow;
-    }
 
     public void clearTileCache() {
         System.out.println("Clear cache");

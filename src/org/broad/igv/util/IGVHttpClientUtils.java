@@ -51,6 +51,7 @@ import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
 import org.broad.igv.util.stream.ApacheURLHelper;
 import org.broad.tribble.util.SeekableHTTPStream;
+import sun.jvm.hotspot.oops.Instance;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -64,6 +65,7 @@ import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -75,26 +77,36 @@ import java.util.concurrent.TimeUnit;
  * @author jrobinso
  * @date Jun 9, 2011
  */
-public class IGVHttpClientUtils {
+public class IGVHttpClientUtils extends HttpUtils {
 
     private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
 
-    public static boolean byteRangeTested = false;
-    public static boolean useByteRange = true;
-    private static DefaultHttpClient client;
-    private static IdleConnectionMonitorThread monitorThread;
+    private DefaultHttpClient client;
+    private IdleConnectionMonitorThread monitorThread;
 
+    private static IGVHttpClientUtils instance;
 
     static {
+        synchronized (IGVHttpClientUtils.class) {
+            instance = new IGVHttpClientUtils();
+        }
+    }
+
+    public static IGVHttpClientUtils getInstance() {
+        return instance;
+    }
+
+    private IGVHttpClientUtils() {
         client = createClient();
     }
+
 
     /**
      * Create the singleton client instance.  This is private to insure a single instance is created.
      *
      * @return
      */
-    private static DefaultHttpClient createClient() {
+    private DefaultHttpClient createClient() {
 
         try {
             ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager();
@@ -161,7 +173,7 @@ public class IGVHttpClientUtils {
     /**
      * Shutdown client and free all resources.  Called upon application exit.
      */
-    public static void shutdown() {
+    public void shutdown() {
         client.getConnectionManager().shutdown();
         monitorThread.shutdown();
     }
@@ -173,16 +185,9 @@ public class IGVHttpClientUtils {
      * @param url
      * @return
      */
-    public static String getContentsAsString(URL url) throws IOException {
+    public String getContentsAsString(URL url) throws IOException {
         HttpResponse response = executeGet(url);
         return EntityUtils.toString(response.getEntity());
-    }
-
-    public static String getContentsAsString(URL url, Map<String, String> headers) throws IOException {
-
-        HttpResponse response = executeGet(url, headers);
-        return EntityUtils.toString(response.getEntity());
-
     }
 
 
@@ -194,7 +199,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static InputStream openConnectionStream(URL url) throws IOException {
+    public InputStream openConnectionStream(URL url) throws IOException {
         return openConnectionStream(url, false);
     }
 
@@ -217,13 +222,22 @@ public class IGVHttpClientUtils {
      * @throws IOException
      */
 
-    public static InputStream openConnectionStream(URL url, boolean abortOnClose) throws IOException {
+    public InputStream openConnectionStream(URL url, boolean abortOnClose) throws IOException {
 
         return openConnectionStream(url, abortOnClose, null);
     }
 
 
-    public static InputStream openConnectionStream(URL url, boolean abortOnClose, Map<String, String> headers) throws IOException {
+    public InputStream openConnectionStream(URL url, Map<String, String> headers) throws IOException {
+        HttpGet get = new HttpGet(url.toExternalForm());
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            get.setHeader(entry.getKey(), entry.getValue());
+        }
+        return execute(get, url).getEntity().getContent();
+    }
+
+
+    public InputStream openConnectionStream(URL url, boolean abortOnClose, Map<String, String> headers) throws IOException {
 
         //TODO -- the protocol (ftp) test should be done before calling this method.
         if (url.getProtocol().toLowerCase().equals("ftp")) {
@@ -258,7 +272,7 @@ public class IGVHttpClientUtils {
      * @param url
      * @return
      */
-    public static boolean resourceAvailable(URL url) {
+    public boolean resourceAvailable(URL url) {
 
         try {
             if (GSUtils.isGenomeSpace(url.toExternalForm())) {
@@ -292,7 +306,7 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static String getHeaderField(URL url, String key) throws IOException {
+    public String getHeaderField(URL url, String key) throws IOException {
 
         if (GSUtils.isGenomeSpace(url.toExternalForm())) {
             //The GenomeSpace server does not support "HEAD".  DO a get and abort the method
@@ -323,19 +337,13 @@ public class IGVHttpClientUtils {
     /**
      * @param url
      */
-    public static HttpResponse executeGet(URL url) throws IOException {
+    private HttpResponse executeGet(URL url) throws IOException {
         HttpGet get = new HttpGet(url.toExternalForm());
         return execute(get, url);
 
     }
 
-    public static HttpResponse executeGet(URL url, Map<String, String> headers) throws IOException {
-        HttpGet get = new HttpGet(url.toExternalForm());
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            get.setHeader(entry.getKey(), entry.getValue());
-        }
-        return execute(get, url);
-    }
+
 
     /**
      * Upload a file.
@@ -344,7 +352,7 @@ public class IGVHttpClientUtils {
      *
      * @throws IOException
      */
-    public static String createDirectory(URL url, String body) throws IOException {
+    public String createDirectory(URL url, String body) throws IOException {
         HttpPut put = new HttpPut(url.toExternalForm());
         put.setHeader("Content-Type", "application/json");
         StringEntity se = new StringEntity(body);
@@ -373,7 +381,7 @@ public class IGVHttpClientUtils {
      * @param headers
      * @throws IOException
      */
-    public static void uploadFile(URI uri, File file, Map<String, String> headers) throws IOException {
+    public void uploadFile(URI uri, File file, Map<String, String> headers) throws IOException {
 
         HttpPut put = new HttpPut(uri);
         try {
@@ -420,11 +428,11 @@ public class IGVHttpClientUtils {
      * @return
      * @throws IOException
      */
-    public static HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
+    private HttpResponse execute(HttpRequestBase method, URL url) throws IOException {
 
         try {
 
-            if (GSUtils.isGenomeSpace(url.toString())) {
+              if (GSUtils.isGenomeSpace(url.toString())) {
                 GSUtils.checkForCookie(client, url.getHost());
             }
 
@@ -453,7 +461,7 @@ public class IGVHttpClientUtils {
     }
 
 
-    private static void login(String server) {
+    private void login(String server) {
 
         Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
 
@@ -509,7 +517,7 @@ public class IGVHttpClientUtils {
 
     }
 
-    public static long getContentLength(URL url) throws IOException {
+    public long getContentLength(URL url) throws IOException {
 
         String contentLengthString = "";
 
@@ -522,67 +530,8 @@ public class IGVHttpClientUtils {
 
     }
 
-    public static long getContentLength(HttpResponse response) {
-        String contentLengthString = "";
-        contentLengthString = response.getFirstHeader("Content-Length").getValue();
-        if (contentLengthString == null) {
-            return -1;
-        } else {
-            return Long.parseLong(contentLengthString);
-        }
 
-    }
-
-
-    public static boolean isURL(String string) {
-        String lcString = string.toLowerCase();
-        return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://")
-                || lcString.startsWith("file://");
-    }
-
-    /**
-     * Test to see if this client can successfully retrieve a portion of a remote file using the byte-range header.
-     * This is not a test of the server, but the client.  In some environments the byte-range header gets removed
-     * by filters after the request is made by IGV.
-     *
-     * @return
-     */
-    public static boolean testByteRange() {
-
-        try {
-            String testURL = "http://www.broadinstitute.org/igvdata/byteRangeTest.txt";
-            byte[] expectedBytes = {(byte) 'k', (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o'};
-
-            SeekableHTTPStream str = new SeekableHTTPStream(new ApacheURLHelper(new URL(testURL)));
-            str.seek(10);
-            byte[] buffer = new byte[5];
-            str.read(buffer, 0, 5);
-
-            for (int i = 0; i < buffer.length; i++) {
-                if (buffer[i] != expectedBytes[i]) {
-                    return false;
-                }
-            }
-            return true;
-        } catch (IOException e) {
-            log.error("Error while testing byte range ", e);
-            // We could not reach the test server, so we can't know if this client can do byte-range tests or
-            // not.  Take the "optimistic" view.
-            return true;
-        }
-    }
-
-    public static boolean useByteRange() {
-        useByteRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-        if (useByteRange && !byteRangeTested) {
-            useByteRange = testByteRange();
-            byteRangeTested = true;
-        }
-        return useByteRange;
-    }
-
-
-    public static void updateProxySettings() {
+    public void updateProxySettings() {
 
         String proxyHost;
         int proxyPort;
@@ -665,7 +614,7 @@ public class IGVHttpClientUtils {
      *
      * @throws IOException
      */
-    public static boolean downloadFile(String url, File outputFile) throws IOException {
+    public boolean downloadFile(String url, File outputFile) throws IOException {
 
         log.info("Downloading " + url + " to " + outputFile.getAbsolutePath());
 

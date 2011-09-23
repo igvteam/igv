@@ -886,7 +886,7 @@ public class IGV {
             }
             PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
             PreferenceManager.getInstance().setRecentSessions(recentSessions);
-            IGVHttpClientUtils.shutdown();
+            HttpUtils.getInstance().shutdown();
             CommandListener.halt();
         }
 
@@ -1315,7 +1315,7 @@ public class IGV {
 
         InputStream inputStream = null;
         try {
-            inputStream = IGVHttpClientUtils.openConnectionStream(sessionURL);
+            inputStream = HttpUtils.getInstance().openConnectionStream(sessionURL);
             doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
         } catch (Exception e) {
             log.error("Error restoring session", e);
@@ -1572,7 +1572,7 @@ public class IGV {
 
 
                     if (igvArgs.getSessionFile() != null) {
-                        if (IGVHttpClientUtils.isURL(igvArgs.getSessionFile())) {
+                        if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
                             URL url = new URL(igvArgs.getSessionFile());
                             doRestoreSession(url, igvArgs.getLocusString());
                         } else {

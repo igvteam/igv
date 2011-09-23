@@ -307,7 +307,7 @@ public class GenomeImporter {
                 propertyFileWriter.println(Globals.GENOME_CHR_ALIAS_FILE_KEY + "=" + chrAliasFile.getName());
             }
             if (relativeSequenceLocation != null) {
-                if (!IGVHttpClientUtils.isURL(relativeSequenceLocation)) {
+                if (!HttpUtils.getInstance().isURL(relativeSequenceLocation)) {
                     relativeSequenceLocation = relativeSequenceLocation.replace('\\', '/');
                 }
                 propertyFileWriter.println(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY + "=" + relativeSequenceLocation);

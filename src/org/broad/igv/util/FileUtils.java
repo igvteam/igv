@@ -17,18 +17,11 @@
  */
 package org.broad.igv.util;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.RollingFileAppender;
-import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.HashMap;
@@ -48,7 +41,7 @@ public class FileUtils {
             boolean remoteFile = isRemote(path);
             // TODO -- what if its ftp?
             return (!remoteFile && (new File(path).exists())) ||
-                    (remoteFile && IGVHttpClientUtils.resourceAvailable(new URL(path)));
+                    (remoteFile && HttpUtils.getInstance().resourceAvailable(new URL(path)));
         } catch (IOException e) {
             log.error("Malformed URL: " + path, e);
             return false;

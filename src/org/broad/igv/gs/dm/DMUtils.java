@@ -21,7 +21,7 @@ package org.broad.igv.gs.dm;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.gs.GSUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,7 @@ public class DMUtils {
      */
     public static GSDirectoryListing getDirectoryListing(URL directoryURL) throws IOException, JSONException {
 
-        String str = IGVHttpClientUtils.getContentsAsString(directoryURL);
+        String str = HttpUtils.getInstance().getContentsAsString(directoryURL);
         JSONTokener tk = new JSONTokener(str);
         JSONObject obj = new JSONObject(tk);
 
@@ -130,7 +130,7 @@ public class DMUtils {
         String tmp = GSUtils.dmServer + "uploadurls" + gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
-        String uploadURL = IGVHttpClientUtils.getContentsAsString(new URL(tmp));
+        String uploadURL = HttpUtils.getInstance().getContentsAsString(new URL(tmp));
 
         URI uri = new URI(uploadURL);
 
@@ -138,7 +138,7 @@ public class DMUtils {
         headers.put("Content-MD5", base64String);
         headers.put("x-amz-meta-md5-hash", hexString);
 
-        IGVHttpClientUtils.uploadFile(uri, localFile, headers);
+        HttpUtils.getInstance().uploadFile(uri, localFile, headers);
 
     }
 
@@ -154,7 +154,7 @@ public class DMUtils {
         }
 
         String body = "{\"isDirectory\":true}";
-        String response = IGVHttpClientUtils.createDirectory(new URL(putURL), body);
+        String response = HttpUtils.getInstance().createDirectory(new URL(putURL), body);
 
         JSONTokener tk = new JSONTokener(response);
         JSONObject obj = new JSONObject(tk);

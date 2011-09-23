@@ -28,13 +28,12 @@ import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
-import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.*;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.stream.SeekablePicardFtpStream;
 import org.broad.igv.util.stream.SeekablePicardHTTPStream;
 
 import java.io.*;
-import java.net.Proxy;
 import java.net.URL;
 import java.util.*;
 
@@ -66,7 +65,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
             reader = new SAMFileReader(ss, indexFile, false);
         } else {
-            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
+            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
             reader = new SAMFileReader(new BufferedInputStream(is));
         }
 
@@ -109,7 +108,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
     public CloseableIterator<Alignment> iterator() {
         try {
             if (reader == null) {
-                InputStream is = IGVHttpClientUtils.openConnectionStream(url);
+                InputStream is = HttpUtils.getInstance().openConnectionStream(url);
                 reader = new SAMFileReader(new BufferedInputStream(is));
             }
             return new WrappedIterator(reader.iterator());
@@ -139,7 +138,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            boolean useByteRange = IGVHttpClientUtils.useByteRange();
+            boolean useByteRange = HttpUtils.getInstance().useByteRange();
             if (useByteRange) {              
                 is = new SeekablePicardHTTPStream(url);
             } else {
@@ -190,7 +189,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             URL indexURL = new URL(idx);
             os = new FileOutputStream(indexFile);
             try {
-                is = IGVHttpClientUtils.openConnectionStream(indexURL);
+                is = HttpUtils.getInstance().openConnectionStream(indexURL);
             }
             catch (FileNotFoundException e) {
                 // Try other index convention
@@ -198,7 +197,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                 indexURL = new URL(baseName + ".bai");
 
                 try {
-                    is = IGVHttpClientUtils.openConnectionStream(indexURL);
+                    is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
                 }
                 catch (FileNotFoundException e1) {
                     MessageUtils.showMessage("Index file not found for file: " + path);

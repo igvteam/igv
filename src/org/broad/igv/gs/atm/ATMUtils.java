@@ -19,7 +19,7 @@
 package org.broad.igv.gs.atm;
 
 import org.broad.igv.gs.GSUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +49,7 @@ public class ATMUtils {
      */
     public static List<WebToolDescriptor> getWebTools() throws IOException, JSONException {
         URL url = new URL(GSUtils.atmServer + "webtools");
-        String contents = IGVHttpClientUtils.getContentsAsString(url);
+        String contents = HttpUtils.getInstance().getContentsAsString(url);
         JSONTokener tk = new JSONTokener(contents);
         JSONArray array = new JSONArray(tk);
         JSONArray webDescArray = (JSONArray) array.get(1);
@@ -167,13 +167,13 @@ public class ATMUtils {
 
     public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
         URL url = new URL(GSUtils.atmServer + "webtools/" + webtoolname);
-        return IGVHttpClientUtils.getContentsAsString(url);
+        return HttpUtils.getInstance().getContentsAsString(url);
     }
 
 
     public static String getSubtoolLaunchURL(String webtoolname, String subtoolname) throws IOException, JSONException {
         URL url = new URL(GSUtils.atmServer + "webtools/"  + webtoolname + "/" + subtoolname);
-        return IGVHttpClientUtils.getContentsAsString(url);
+        return HttpUtils.getInstance().getContentsAsString(url);
     }
 
 }

@@ -62,7 +62,7 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
@@ -72,7 +72,6 @@ import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -163,7 +162,7 @@ public class TrackLoader {
             } else if (typeString.endsWith("samplepathmap")) {
                 VariantListManager.loadSamplePathMap(locator);
             } else if (typeString.endsWith("h5") || typeString.endsWith("hbin")) {
-                loadH5File(locator, newTracks, genome);
+                throw new DataLoadException("HDF5 files are no longer supported", locator.getPath());
             } else if (typeString.endsWith(".rnai.gct")) {
                 loadRnaiGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".gct") || typeString.endsWith("res") || typeString.endsWith("tab")) {
@@ -930,8 +929,8 @@ public class TrackLoader {
             }
             if (covPath != null) {
                 try {
-                    if ((new File(covPath)).exists() || (IGVHttpClientUtils.isURL(covPath) &&
-                            IGVHttpClientUtils.resourceAvailable(new URL(covPath)))) {
+                    if ((new File(covPath)).exists() || (HttpUtils.getInstance().isURL(covPath) &&
+                            HttpUtils.getInstance().resourceAvailable(new URL(covPath)))) {
                         TDFReader reader = TDFReader.getReader(covPath);
                         TDFDataSource ds = new TDFDataSource(reader, 0, alignmentTrack.getName() + " coverage", genome);
                         covTrack.setDataSource(ds);
@@ -1035,52 +1034,6 @@ public class TrackLoader {
     }
 
 
-    /**
-     * Load the data from an HDF5 file and add resulting tracks to the supplied TrackGroup.
-     * Error messages are appended to the MessageCollection
-     *
-     * @param locator
-     */
-    private void loadH5File(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-
-        TrackSet trackSet = null;
-
-        // TODO -- temporary until "name" property is added to locator
-        // TODO -- "label" has been added, how does that affect this?
-
-        String fName = locator.getTrackName();
-
-        HDFDataManager dataManager = HDFDataManagerFactory.getDataManager(locator);
-        TrackProperties trackProperties = dataManager.getTrackProperties();
-        String[] trackNames = dataManager.getTrackNames();
-
-        List<Track> tracks = new ArrayList();
-
-        for (int trackNumber = 0; trackNumber < trackNames.length; trackNumber++) {
-            String name = trackNames.length == 1 ? fName : trackNames[trackNumber];
-
-            Track track = null;
-            try {
-                track = new HDFDataTrack(dataManager, locator, name, trackNumber, genome);
-            } catch (FileNotFoundException fe) {
-                throw new RuntimeException(fe);
-            }
-            if (trackProperties != null) {
-                track.setProperties(trackProperties);
-            }
-
-            tracks.add(track);
-        }
-
-        trackSet = new TrackSet(tracks);
-
-        if (trackSet.isEmpty()) {
-            throw new RuntimeException("No data found in file");
-        }
-
-        newTracks.addAll(trackSet.getTracks());
-    }
-
     private void loadDASResource(ResourceLocator locator, List<Track> currentTracks) {
 
         //TODO Connect and get all the attributes of the DAS server, and run the appropriate load statements
@@ -1138,11 +1091,11 @@ public class TrackLoader {
         String indexExtension = path.endsWith("gz") ? ".tbi" : ".idx";
         String indexPath = path + indexExtension;
         try {
-            if (IGVHttpClientUtils.isURL(path)) {
-                boolean exists = IGVHttpClientUtils.resourceAvailable(new URL(indexPath));
+            if (HttpUtils.getInstance().isURL(path)) {
+                boolean exists = HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
                 if (!exists) {
                     // Check for gzipped index
-                    exists = IGVHttpClientUtils.resourceAvailable(new URL(indexPath + ".gz"));
+                    exists = HttpUtils.getInstance().resourceAvailable(new URL(indexPath + ".gz"));
                 }
                 return exists;
             } else {

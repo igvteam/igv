@@ -23,7 +23,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 
@@ -118,9 +118,9 @@ public class ProbeToLocusMap {
         AsciiLineReader bufReader = null;
         InputStream is = null;
         try {
-            if (IGVHttpClientUtils.isURL(urlString)) {
+            if (HttpUtils.getInstance().isURL(urlString)) {
                 URL url = new URL(urlString);
-                is = IGVHttpClientUtils.openConnectionStream(url);
+                is = HttpUtils.getInstance().openConnectionStream(url);
             } else {
                 is = new FileInputStream(urlString);
             }

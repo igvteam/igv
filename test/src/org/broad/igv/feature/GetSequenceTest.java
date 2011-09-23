@@ -23,7 +23,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.exceptions.HttpResponseException;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class GetSequenceTest {
 
             // Get the url content as an array of bytes
             byte[] sequence = new byte[end - start];
-            DataInputStream dis = new DataInputStream(IGVHttpClientUtils.openConnectionStream(url));
+            DataInputStream dis = new DataInputStream(HttpUtils.getInstance().openConnectionStream(url));
             dis.readFully(sequence);
             dis.close();
 

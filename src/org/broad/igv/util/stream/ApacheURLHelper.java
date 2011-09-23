@@ -18,12 +18,11 @@
 
 package org.broad.igv.util.stream;
 
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.URLHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class ApacheURLHelper implements URLHelper {
     }
 
     public long getContentLength() throws IOException {
-        return IGVHttpClientUtils.getContentLength(url);
+        return HttpUtils.getInstance().getContentLength(url);
     }
 
     public InputStream openInputStreamForRange(long start, long end) throws IOException {
@@ -53,10 +52,10 @@ public class ApacheURLHelper implements URLHelper {
         String byteRange = "bytes=" + start + "-" + end;
         Map<String, String> params = new HashMap();
         params.put("Range", byteRange);
-        return IGVHttpClientUtils.executeGet(url, params).getEntity().getContent();
+        return HttpUtils.getInstance().openConnectionStream(url, params);
     }
 
     public boolean exists() {
-        return IGVHttpClientUtils.resourceAvailable(url);
+        return HttpUtils.getInstance().resourceAvailable(url);
     }
 }

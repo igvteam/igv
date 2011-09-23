@@ -119,7 +119,7 @@ public class FeatureDirSource implements FeatureSource {
 
     private void setRootDir(String path) {
 
-        if (IGVHttpClientUtils.isURL(path)) {
+        if (HttpUtils.getInstance().isURL(path)) {
             int idx = path.lastIndexOf('/');
             rootDir = path.substring(0, idx);
         } else {

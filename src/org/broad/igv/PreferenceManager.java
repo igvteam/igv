@@ -32,7 +32,7 @@ import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.ui.util.ColorTable;
 import org.broad.igv.util.ColorUtilities;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 
 import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
@@ -869,7 +869,7 @@ public class PreferenceManager implements PropertyManager {
         remove(PreferenceManager.PROXY_NTLM);
         remove(PreferenceManager.PROXY_USER);
         remove(PreferenceManager.PROXY_PW);
-        IGVHttpClientUtils.updateProxySettings();
+        HttpUtils.getInstance().updateProxySettings();
     }
 
 

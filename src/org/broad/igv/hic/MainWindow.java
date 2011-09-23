@@ -39,6 +39,8 @@ public class MainWindow extends JFrame {
     MatrixZoomData zd;
     Chromosome[] chromosomes;
 
+    ColorScale colorScale;
+
     public static void main(String[] args) throws IOException {
 
         final MainWindow mainWindow = new MainWindow();
@@ -67,17 +69,22 @@ public class MainWindow extends JFrame {
 
     public MainWindow() throws IOException {
 
+        int initialMaxCount = 50000;
+        colorScale = new ColorScale();
+        colorScale.maxCount = initialMaxCount;
+        colorScale.background = Color.white;
+
         initComponents();
 
         createCursors();
 
+
+
         thumbnailPanel.setMainWindow(this);
 
-        int initialMaxCount = 50000;
-        rangeScale.setValue(initialMaxCount);
+       rangeScale.setValue(initialMaxCount);
 
         getHeatmapPanel().setSize(500, 500);
-        getHeatmapPanel().setMainWindow(this);
 
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
 
@@ -327,8 +334,8 @@ public class MainWindow extends JFrame {
     private void rangeStateChanged(ChangeEvent e) {
         JSlider slider = (JSlider) e.getSource();
         int maxCount = slider.getValue();
-
-        getHeatmapPanel().setMaxCount(maxCount);
+        colorScale.maxCount = maxCount;
+        heatmapPanel.clearTileCache();
         repaint();
     }
 
@@ -404,7 +411,7 @@ public class MainWindow extends JFrame {
 
     private void loadGMActionPerformed(ActionEvent e) {
         try {
-            load("http://iwww.broadinstitute.org/igvdata/hic/human/GM.summary.binned.hic");
+            load("http://iwww.broadinstitute.org/igvdata/hic/human/GM.summary.binned.2.hic");
             rangeScale.setMaximum(500);
             rangeScale.setMajorTickSpacing(100);
             rangeScale.setMinorTickSpacing(10);
@@ -416,7 +423,7 @@ public class MainWindow extends JFrame {
 
     private void load562ActionPerformed(ActionEvent e) {
         try {
-            load("http://iwww.broadinstitute.org/igvdata/hic/human/K562.summary.binned.hic");
+            load("http://iwww.broadinstitute.org/igvdata/hic/human/K562.summary.binned.2.hic");
             rangeScale.setMaximum(500);
             rangeScale.setMajorTickSpacing(100);
             rangeScale.setMinorTickSpacing(10);
@@ -445,10 +452,10 @@ public class MainWindow extends JFrame {
         panel3 = new JPanel();
         panel5 = new JPanel();
         spacerLeft = new JPanel();
-        rulerPanel2 = new HiCRulerPanel();
+        rulerPanel2 = new HiCRulerPanel(this);
         spacerRight = new JPanel();
-        heatmapPanel = new HeatmapPanel();
-        rulerPanel1 = new HiCRulerPanel();
+        heatmapPanel = new HeatmapPanel(this);
+        rulerPanel1 = new HiCRulerPanel(this);
         panel8 = new JPanel();
         thumbnailPanel = new ThumbnailPanel();
         menuBar1 = new JMenuBar();
@@ -580,17 +587,17 @@ public class MainWindow extends JFrame {
                 panel3.add(panel5, BorderLayout.NORTH);
 
                 //---- heatmapPanel ----
-                getHeatmapPanel().setBorder(LineBorder.createBlackLineBorder());
-                getHeatmapPanel().setMaximumSize(new Dimension(500, 500));
-                getHeatmapPanel().setMinimumSize(new Dimension(500, 500));
-                getHeatmapPanel().setPreferredSize(new Dimension(500, 500));
-                getHeatmapPanel().addMouseMotionListener(new MouseMotionAdapter() {
+                heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
+                heatmapPanel.setMaximumSize(new Dimension(500, 500));
+                heatmapPanel.setMinimumSize(new Dimension(500, 500));
+                heatmapPanel.setPreferredSize(new Dimension(500, 500));
+                heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
                     @Override
                     public void mouseDragged(MouseEvent e) {
                         heatmapPanelMouseDragged(e);
                     }
                 });
-                panel3.add(getHeatmapPanel(), BorderLayout.CENTER);
+                panel3.add(heatmapPanel, BorderLayout.CENTER);
 
                 //---- rulerPanel1 ----
                 rulerPanel1.setMaximumSize(new Dimension(50, 4000));

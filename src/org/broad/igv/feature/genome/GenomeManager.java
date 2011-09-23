@@ -30,14 +30,13 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
-import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.ui.IGV;
 
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 import org.broad.tribble.readers.AsciiLineReader;
 
@@ -103,7 +102,7 @@ public class GenomeManager {
             if (genomePath.endsWith(".genome")) {
 
                 File archiveFile;
-                if (IGVHttpClientUtils.isURL(genomePath.toLowerCase())) {
+                if (HttpUtils.getInstance().isURL(genomePath.toLowerCase())) {
                     // We need a local copy, as there is no http zip file reader
                     URL genomeArchiveURL = new URL(genomePath);
                     String cachedFilename = Utilities.getFileNameFromURL(
@@ -267,7 +266,7 @@ public class GenomeManager {
             if (archiveFile.exists()) {
 
                 long fileLength = archiveFile.length();
-                long contentLength = IGVHttpClientUtils.getContentLength(genomeArchiveURL);
+                long contentLength = HttpUtils.getInstance().getContentLength(genomeArchiveURL);
 
                 if (contentLength <= 0) {
                     log.info("Skipping genome update of " + archiveFile.getName() + " due to unknown content length");
@@ -278,7 +277,7 @@ public class GenomeManager {
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
                     File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
-                    if (IGVHttpClientUtils.downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
+                    if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
                         FileUtils.copyFile(tmpFile, archiveFile);
                         tmpFile.deleteOnExit();
                     }
@@ -286,7 +285,7 @@ public class GenomeManager {
 
             } else {
                 // Copy file directly from the server to local cache.
-                IGVHttpClientUtils.downloadFile(genomeArchiveURL.toExternalForm(), archiveFile);
+                HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), archiveFile);
             }
         } catch (Exception e) {
             log.error("Error refreshing genome cache. ", e);
@@ -341,7 +340,7 @@ public class GenomeManager {
 
                     String sequenceLocation = properties.getProperty(Globals.GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY);
 
-                    if ((sequenceLocation != null) && !IGVHttpClientUtils.isURL(sequenceLocation)) {
+                    if ((sequenceLocation != null) && !HttpUtils.getInstance().isURL(sequenceLocation)) {
                         File sequenceFolder = null;
                         // Relative or absolute location?
                         if (sequenceLocation.startsWith("/") || sequenceLocation.startsWith("\\")) {
@@ -450,8 +449,8 @@ public class GenomeManager {
                 genomeListURLString = PreferenceManager.getInstance().getGenomeListURL();
                 URL serverGenomeURL = new URL(genomeListURLString);
 
-                if (IGVHttpClientUtils.isURL(genomeListURLString)) {
-                    inputStream = IGVHttpClientUtils.openConnectionStream(serverGenomeURL);
+                if (HttpUtils.getInstance().isURL(genomeListURLString)) {
+                    inputStream = HttpUtils.getInstance().openConnectionStream(serverGenomeURL);
                 } else {
                     File file = new File(genomeListURLString.startsWith("file:") ? serverGenomeURL.getFile() : genomeListURLString);
                     inputStream = new FileInputStream(file);

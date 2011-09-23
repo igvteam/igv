@@ -26,9 +26,7 @@ import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.h5.ObjectNotFoundException;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.ArrayList;
@@ -66,13 +64,9 @@ public class DataSourceTrack extends DataTrack {
     }
 
     public List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
-        try {
-            List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
-            return tmp == null ? new ArrayList() : tmp;
-        }
-        catch (ObjectNotFoundException ex) {
-            return new ArrayList();
-        }
+        List<LocusScore> tmp = dataSource.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
+        return tmp == null ? new ArrayList() : tmp;
+
     }
 
 
@@ -124,8 +118,7 @@ public class DataSourceTrack extends DataTrack {
                 if (dataSource != null && dataSource instanceof CoverageDataSource) {
                     ((CoverageDataSource) dataSource).setNormalize(normalize);
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error restoring session.  Invalid normalization value: " + normalize);
             }
         }

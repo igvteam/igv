@@ -30,7 +30,7 @@ import org.broad.igv.ui.util.FontChooser;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ColorUtilities;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 
 import javax.swing.*;
@@ -2026,7 +2026,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
             // Proxies
             if (proxySettingsChanged) {
-                IGVHttpClientUtils.updateProxySettings();
+                HttpUtils.getInstance().updateProxySettings();
             }
 
             updatedPreferenceMap.clear();

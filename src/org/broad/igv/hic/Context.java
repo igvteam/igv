@@ -23,16 +23,12 @@ public class Context {
 
     }
 
-    public void moveBy(int delta) {
-       setOrigin(origin + delta);
-    }
-
     public int getZoom() {
         return zoom;
     }
 
-    public void setZoom(int zoom, double v) {
-        this.scale = v;
+    public void setZoom(int zoom, double scale) {
+        this.scale = scale;
         this.zoom = zoom;
     }
 
@@ -55,7 +51,7 @@ public class Context {
      * @return
      */
     public int getScreenPosition(double chromosomePosition) {
-        return (int) ((chromosomePosition - origin) / getScale());
+        return (int) ((chromosomePosition - origin) / scale);
     }
 
     public double getChromosomePosition(int screenPosition) {
@@ -66,7 +62,4 @@ public class Context {
         return chromosome;
     }
 
-    public void setScale(double scale) {
-        this.scale = scale;
-    }
 }

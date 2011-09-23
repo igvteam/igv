@@ -83,8 +83,7 @@ public class HiCTools {
             new Chromosome(3, "3L", 23771897),
             new Chromosome(4, "3R", 27905053),
             new Chromosome(5, "4", 1281640),
-            new Chromosome(6, "X", 22224390),
-            new Chromosome(7, "U", 11561901)
+            new Chromosome(6, "X", 22224390)
     };
 
     public final static Chromosome[] hg18Chromosomes = new Chromosome[]{

@@ -356,6 +356,12 @@
               <void property="name"> 
                <string>rulerPanel2</string> 
               </void> 
+              <void method="auxiliary"> 
+               <void method="setProperty"> 
+                <string>JavaCodeGenerator.customCreateCode</string> 
+                <string>new HiCRulerPanel(this);</string> 
+               </void> 
+              </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
               <class>java.lang.String</class> 
@@ -452,6 +458,12 @@
             <void property="name"> 
              <string>heatmapPanel</string> 
             </void> 
+            <void method="auxiliary"> 
+             <void method="setProperty"> 
+              <string>JavaCodeGenerator.customCreateCode</string> 
+              <string>new HeatmapPanel(this);</string> 
+             </void> 
+            </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 
               <string>java.awt.event.MouseMotionListener</string> 
@@ -499,6 +511,12 @@
             </void> 
             <void property="name"> 
              <string>rulerPanel1</string> 
+            </void> 
+            <void method="auxiliary"> 
+             <void method="setProperty"> 
+              <string>JavaCodeGenerator.customCreateCode</string> 
+              <string>new HiCRulerPanel(this);</string> 
+             </void> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 

@@ -16,23 +16,50 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package org.broad.igv.hic;
 
-package org.broad.igv.h5;
+import javax.swing.*;
+import java.awt.*;
 
 /**
- * @author jrobinso
+ * @author Jim Robinson
+ * @date 9/22/11
  */
-public class DataAccessException extends RuntimeException {
+public class ColorScalePanel extends JComponent {
 
-    public DataAccessException(String message) {
-        super(message);
+    ColorScale colorScale;
+
+    public ColorScalePanel() {
+
     }
 
-    public DataAccessException(String message, Throwable cause) {
-        super(message, cause);
+    public ColorScalePanel(ColorScale colorScale) {
+        this.colorScale = colorScale;
+    }
+
+
+    @Override
+    protected void paintComponent(Graphics graphics) {
+
+        if (colorScale != null) {
+
+            int nSteps = getWidth() - 1;
+            float delta = (colorScale.maxCount / nSteps);
+
+            int xLast = 0;
+            for (int n = 1; n < nSteps; n++) {
+                int x = n;
+                int dx = x - xLast;
+                xLast = x;
+
+                float v = delta * n;
+                Color c = colorScale.getColor(v);
+                graphics.setColor(c);
+                graphics.fillRect(x, 0, dx, getHeight());
+
+            }
+
+
+        }
     }
 }

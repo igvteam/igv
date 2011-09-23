@@ -14,14 +14,18 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
+    ColorScale colorScale;
+
+    public HeatmapRenderer(ColorScale colorScale) {
+        this.colorScale = colorScale;
+    }
+
     public void render(int originX,
                        int originY,
                        int width,
                        int height,
                        MatrixZoomData zd,
-                       double maxCount,
-                       Graphics g,
-                       Color background) {
+                       Graphics g) {
 
         int chr1 = zd.getChr1();
         int chr2 = zd.getChr2();
@@ -63,17 +67,16 @@ public class HeatmapRenderer {
                     ContactRecord rec = recs[i];
 
                     Color color = null;
-                    double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 :   1000000.0);
+                    double binSizeMB = zd.getBinSize() / (isWholeGenome ? 1000.0 : 1000000.0);
                     double score = rec.getCounts() / (binSizeMB * binSizeMB);
                     //if (maxCount > 0 && score > 2 * maxCount) {
                     //    color = Color.ORANGE;
                     //} else {
-                        float alpha = (float) Math.max(0.05f, Math.min(1.0f, score / maxCount));
-                        color = getColor(alpha, background);
+                    color = colorScale.getColor(score);
                     //}
 
-                    int px = (rec.getX() - originX );
-                    int py = (rec.getY() - originY );
+                    int px = (rec.getX() - originX);
+                    int py = (rec.getY() - originY);
 
 
                     g.setColor(color);
@@ -81,8 +84,8 @@ public class HeatmapRenderer {
 
 
                     if (chr1 == chr2) {
-                        px = (rec.getY() - originX );
-                        py =(rec.getX() - originY );
+                        px = (rec.getY() - originX);
+                        py = (rec.getX() - originY);
                         g.fillRect(px, py, 1, 1);
                     }
 
@@ -95,23 +98,5 @@ public class HeatmapRenderer {
 
     // Cache colors,  100 distinct colors should be enough
 
-    static Map<Integer, Color> colorCache = new Hashtable();
-
-    static Color getColor(float alpha, Color background) {
-
-        float[] comps = background.getColorComponents(null);
-
-        int idx = (int) (100 * alpha);
-        Color c = colorCache.get(idx);
-        if (c == null) {
-            float rAlpha = Math.max(0.05f, Math.min(1.0f, 0.01f * idx));
-            float red = ((1 - rAlpha) * comps[0] + rAlpha);
-            float green = ((1 - rAlpha) * comps[1]);
-            float blue = ((1 - rAlpha) * comps[2]);
-            c = new Color(red, green, blue);
-            colorCache.put(idx, c);
-        }
-        return c;
-    }
 
 }

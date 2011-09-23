@@ -67,9 +67,9 @@ public class TestS3Access {
 
         BufferedReader reader = null;
 
-        if (IGVHttpClientUtils.isURL(pathOrUrl)) {
+        if (HttpUtils.getInstance().isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
+            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
             reader = new BufferedReader(new InputStreamReader(is));
         } else {
             File file = new File(pathOrUrl);

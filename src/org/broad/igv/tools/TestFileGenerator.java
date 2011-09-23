@@ -22,7 +22,7 @@
  */
 package org.broad.igv.tools;
 
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
@@ -192,9 +192,9 @@ public class TestFileGenerator {
         try {
             InputStream is = null;
 
-            if (IGVHttpClientUtils.isURL(urlString)) {
+            if (HttpUtils.getInstance().isURL(urlString)) {
                 URL url = new URL(urlString);
-                is = IGVHttpClientUtils.openConnectionStream(url);
+                is = HttpUtils.getInstance().openConnectionStream(url);
             } else {
                 is = new FileInputStream(urlString);
             }

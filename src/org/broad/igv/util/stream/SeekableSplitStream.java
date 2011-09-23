@@ -19,7 +19,7 @@
 package org.broad.igv.util.stream;
 
 
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.BufferedReader;
@@ -122,7 +122,7 @@ public class SeekableSplitStream extends SeekableStream {
 
                     // Require the files are in the same directory as the list file
                     String listFileName = null;
-                    if(IGVHttpClientUtils.isURL(path)) {
+                    if(HttpUtils.getInstance().isURL(path)) {
                        URL url = new URL(path);
                        listFileName = (new File(url.getPath())).getName();
                     }

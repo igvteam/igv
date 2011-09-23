@@ -20,8 +20,6 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
@@ -52,9 +50,9 @@ public class ParsingUtils {
             throws IOException {
         BufferedReader reader = null;
 
-        if (IGVHttpClientUtils.isURL(pathOrUrl)) {
+        if (HttpUtils.getInstance().isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            reader = new BufferedReader(new InputStreamReader(IGVHttpClientUtils.openConnectionStream(url, abortOnClose)));
+            reader = new BufferedReader(new InputStreamReader(HttpUtils.getInstance().openConnectionStream(url, abortOnClose)));
         } else {
             File file = new File(pathOrUrl);
 
@@ -93,7 +91,7 @@ public class ParsingUtils {
             long contentLength = -1;
             if (path.startsWith("http:") || path.startsWith("https:")) {
                 URL url = new URL(path);
-                contentLength = IGVHttpClientUtils.getContentLength(url);
+                contentLength = HttpUtils.getInstance().getContentLength(url);
 
             } else if (path.startsWith("ftp:")) {
                 // Use JDK url
@@ -174,7 +172,7 @@ public class ParsingUtils {
 
         if (locator.getServerURL() != null) {
             URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
-            InputStream is = IGVHttpClientUtils.openConnectionStream(url);
+            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             // Note -- assumption that url stream is compressed!
             try {
@@ -190,9 +188,9 @@ public class ParsingUtils {
         } else {
 
             InputStream inputStream = null;
-            if (IGVHttpClientUtils.isURL(locator.getPath())) {
+            if (HttpUtils.getInstance().isURL(locator.getPath())) {
                 URL url = new URL(locator.getPath());
-                inputStream = IGVHttpClientUtils.openConnectionStream(url, abortOnClose);
+                inputStream = HttpUtils.getInstance().openConnectionStream(url, abortOnClose);
             } else {
                 String path = locator.getPath();
                 if (path.startsWith("file://")) {
@@ -611,7 +609,7 @@ public class ParsingUtils {
     public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||
-                    (IGVHttpClientUtils.isURL(covPath) && IGVHttpClientUtils.resourceAvailable(new URL(covPath)));
+                    (HttpUtils.getInstance().isURL(covPath) && HttpUtils.getInstance().resourceAvailable(new URL(covPath)));
         } catch (MalformedURLException e) {
             // todo -- log
             return false;

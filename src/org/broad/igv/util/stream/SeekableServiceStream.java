@@ -19,7 +19,7 @@
 package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.EOFException;
@@ -92,7 +92,7 @@ public class SeekableServiceStream extends SeekableStream {
         int n = 0;
         try {
 
-            is = IGVHttpClientUtils.openConnectionStream (url);
+            is = HttpUtils.getInstance().openConnectionStream(url);
             
             while (n < length) {
                 int count = is.read(buffer, offset + n, length - n);

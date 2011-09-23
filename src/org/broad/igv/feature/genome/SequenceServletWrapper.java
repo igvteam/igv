@@ -25,7 +25,8 @@ package org.broad.igv.feature.genome;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
+import org.broad.igv.util.HttpUtils;
+
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
@@ -60,7 +61,7 @@ public class SequenceServletWrapper {
 
             URL url = new URL(urlString + "?chr=" + chr + "&start=" + start + "&end=" + end);
 
-            cis = IGVHttpClientUtils.openConnectionStream(url);
+            cis = HttpUtils.getInstance().openConnectionStream(url);
 
             DataInputStream is = new DataInputStream(new BufferedInputStream(cis));
             int offset = 0;

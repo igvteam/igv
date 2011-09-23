@@ -505,7 +505,7 @@ public class SessionReader {
 
         // If file is local
         if ((serverURL == null || serverURL.trim().equals("")) &&
-                !(IGVHttpClientUtils.isURL(filePath.toLowerCase()))) {
+                !(HttpUtils.getInstance().isURL(filePath.toLowerCase()))) {
             String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
             boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
             File parent = (relativePaths ? new File(session.getPath()).getParentFile() : null);
