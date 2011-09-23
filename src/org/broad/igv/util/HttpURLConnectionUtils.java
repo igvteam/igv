@@ -18,23 +18,24 @@
 
 package org.broad.igv.util;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
+
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
 import sun.misc.BASE64Encoder;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -63,6 +64,38 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
     private HttpURLConnectionUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
+
+    }
+
+    /**
+     * Code for disabling SSL certification
+     */
+    private void disableCertificateValidation() {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(
+                            java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Install the all-trusting trust manager
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+        }
+
     }
 
     public void shutdown() {
@@ -70,12 +103,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
     }
 
     /**
-      * Return the contents of the url as a String.  This method should only be used for queries expected to return
-      * a small amount of data.
-      *
-      * @param url
-      * @return
-      */
+     * Return the contents of the url as a String.  This method should only be used for queries expected to return
+     * a small amount of data.
+     *
+     * @param url
+     * @return
+     */
     public String getContentsAsString(URL url) throws IOException {
         return openConnection(url, null).getContent().toString();
     }
@@ -164,7 +197,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
 
 
-         proxySettings = new ProxySettings(useProxy, user, pw, auth, proxyHost, proxyPort);
+        proxySettings = new ProxySettings(useProxy, user, pw.toCharArray(), auth, proxyHost, proxyPort);
     }
 
     public boolean downloadFile(String url, File outputFile) throws IOException {
@@ -235,11 +268,11 @@ public class HttpURLConnectionUtils extends HttpUtils {
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             conn = (HttpURLConnection) url.openConnection(proxy);
 
-            if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
-                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-                String encodedUserPwd = (new BASE64Encoder()).encode(bytes);
-                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
-            }
+//            if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
+//                byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
+//                String encodedUserPwd = (new BASE64Encoder()).encode(bytes);
+//                conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
+//            }
         } else {
             conn = (HttpURLConnection) url.openConnection();
 
@@ -260,12 +293,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
     public static class ProxySettings {
         boolean auth = false;
         String user;
-        String pw;
+        char[] pw;
         boolean useProxy;
         String proxyHost;
         int proxyPort = -1;
 
-        public ProxySettings(boolean useProxy, String user, String pw, boolean auth, String proxyHost, int proxyPort) {
+        public ProxySettings(boolean useProxy, String user, char[] pw, boolean auth, String proxyHost, int proxyPort) {
             this.auth = auth;
             this.proxyHost = proxyHost;
             this.proxyPort = proxyPort;
@@ -281,20 +314,31 @@ public class HttpURLConnectionUtils extends HttpUtils {
         protected PasswordAuthentication getPasswordAuthentication() {
 
             Authenticator.RequestorType type = getRequestorType();
-            if (type == RequestorType.PROXY) {
-                // Todo -- use stored proxy user/pw?
+            URL url = this.getRequestingURL();
+
+            boolean isProxyChallenge = type == RequestorType.PROXY;
+            if (isProxyChallenge) {
+                if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
+                    return new PasswordAuthentication(proxySettings.user, proxySettings.pw);
+                }
             }
 
+
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            LoginDialog dlg = new LoginDialog(owner);
+            LoginDialog dlg = new LoginDialog(owner, false, url.toString(), isProxyChallenge);
             dlg.setVisible(true);
             if (dlg.isCanceled()) {
                 return null;
             } else {
                 final String userString = dlg.getUsername();
                 final char[] userPass = dlg.getPassword();
-                return new PasswordAuthentication(userString, userPass);
 
+                if(isProxyChallenge) {
+                    proxySettings.user = userString;
+                    proxySettings.pw = userPass;
+                }
+
+                return new PasswordAuthentication(userString, userPass);
             }
         }
     }

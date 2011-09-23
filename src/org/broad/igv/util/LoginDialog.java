@@ -33,19 +33,23 @@ import javax.swing.border.*;
 public class LoginDialog extends JDialog {
 
     boolean canceled = false;
-    
+
     public LoginDialog(Frame owner) {
-        this(owner, false);
+        this(owner, false, "", false);
     }
 
-    public LoginDialog(Frame owner, boolean isGenomeSpace) {
+    public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
         super(owner);
         initComponents();
-        if(isGenomeSpace) {
+        if (isGenomeSpace) {
             promptLabel.setText("Please login to your GenomeSpace account");
             iconLabel.setVisible(true);
-        }
-        else {
+        } else {
+            if (proxyChallenge) {
+                promptLabel.setText("<html>Please enter username and password for your Proxy server to access<br>" + resource);
+            } else {
+                promptLabel.setText("<html>Please enter username and password to access<br>" + resource);
+            }
             iconLabel.setVisible(false);
         }
     }
@@ -54,7 +58,7 @@ public class LoginDialog extends JDialog {
         return usernameField.getText();
     }
 
-    public char [] getPassword() {
+    public char[] getPassword() {
         return passwordField.getPassword();
     }
 
@@ -67,7 +71,7 @@ public class LoginDialog extends JDialog {
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
-        canceled=true;
+        canceled = true;
         setVisible(false);
     }
 
@@ -109,7 +113,7 @@ public class LoginDialog extends JDialog {
                 promptLabel.setText("Enter username and password to access this resource");
                 promptLabel.setFont(new Font("Arial", Font.PLAIN, 14));
                 contentPanel.add(promptLabel);
-                promptLabel.setBounds(20, 20, 375, promptLabel.getPreferredSize().height);
+                promptLabel.setBounds(5, 0, 395, 65);
                 contentPanel.add(passwordField);
                 passwordField.setBounds(125, 115, 220, 32);
 
@@ -129,7 +133,7 @@ public class LoginDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -147,8 +151,8 @@ public class LoginDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -158,8 +162,8 @@ public class LoginDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -169,8 +173,8 @@ public class LoginDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
         }
