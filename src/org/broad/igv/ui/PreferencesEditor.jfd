@@ -4049,7 +4049,7 @@
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::77:x}}</string> 
+              <string>par l {seq {space :::p, comp label3:::p:63:p, space :::p, comp jPanel17:::p::p, space s:::p, comp jPanel16:::p::p, space s:::p, comp clearProxySettingsButton:::p::p, space ::100:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -4062,11 +4062,11 @@
                <class>org.jdesktop.layout.GroupLayout</class> 
                <void method="setProperty"> 
                 <string>$horizontalGroup</string> 
-                <string>par l {seq {par l {seq {space :::p, par l {comp authenticateProxyCB::l:p::p, comp ntlmAuthenticationButton::l:p::p}}, seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}}, space ::353:x}}</string> 
+                <string>par l {seq {par l {seq {space :::p, comp authenticateProxyCB:::p::p}, seq {space :p:28:p, par l {comp jLabel28::l:p::p, comp jLabel29::l:p::p}, space :p:37:p, par l:::p {comp proxyPasswordField:::::x:1, comp proxyUsernameField::l::261:x:1}}}, space ::353:x}}</string> 
                </void> 
                <void method="setProperty"> 
                 <string>$verticalGroup</string> 
-                <string>par l {seq {space :p:17:p, comp authenticateProxyCB:::p::p, space :::p, par b {comp jLabel28::b:p::p, comp proxyUsernameField::b:p::p}, space :::p, par b {comp jLabel29::b:p::p, comp proxyPasswordField::b:p::p}, space ::24:x, comp ntlmAuthenticationButton:::p::p, space :p:23:p}}</string> 
+                <string>par l {seq {space :p:17:p, comp authenticateProxyCB:::p::p, space :::p, par b {comp jLabel28::b:p::p, comp proxyUsernameField::b:p::p}, space :::p, par b {comp jLabel29::b:p::p, comp proxyPasswordField::b:p::p}, space ::47:x}}</string> 
                </void> 
               </object> 
               <void property="name"> 
@@ -4163,26 +4163,6 @@
                   <string>java.awt.event.FocusListener</string> 
                   <string>focusLost</string> 
                   <string>proxyPasswordFieldFocusLost</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JCheckBox</string> 
-                <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Use NTLM Authentication</string> 
-                </void> 
-                <void property="name"> 
-                 <string>ntlmAuthenticationButton</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>java.awt.event.ActionListener</string> 
-                  <string>actionPerformed</string> 
-                  <string>ntlmAuthenticationButtonActionPerformed</string> 
                   <boolean>true</boolean> 
                  </object> 
                 </void> 

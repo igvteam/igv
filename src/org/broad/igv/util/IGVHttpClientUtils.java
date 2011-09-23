@@ -344,7 +344,6 @@ public class IGVHttpClientUtils extends HttpUtils {
     }
 
 
-
     /**
      * Upload a file.
      * <p/>
@@ -432,7 +431,7 @@ public class IGVHttpClientUtils extends HttpUtils {
 
         try {
 
-              if (GSUtils.isGenomeSpace(url.toString())) {
+            if (GSUtils.isGenomeSpace(url.toString())) {
                 GSUtils.checkForCookie(client, url.getHost());
             }
 
@@ -562,41 +561,8 @@ public class IGVHttpClientUtils extends HttpUtils {
             }
 
             if (auth && pw != null) {
-                boolean ntlm = prefMgr.getAsBoolean(PreferenceManager.PROXY_NTLM);
-
-                Credentials creds;
-                if (ntlm) {
-                    log.info("Using NTLM authentication");
-
-                    // Parse domain , e.g.  DOMAIN\\user
-                    String domain = "";
-                    if (user.contains("\\")) {
-                        String[] tmp = new String[2];
-                        int nTokens = ParsingUtils.split(user, tmp, '\\');
-                        if (nTokens == 2) {
-                            domain = tmp[0];
-                            user = tmp[1];
-                        }
-                    }
-                    log.info("Domain=" + domain);
-                    log.info("User=" + user);
-
-                    String hostName = "127.0.0.1";
-                    try {
-                        java.net.InetAddress i = java.net.InetAddress.getLocalHost();
-                        hostName = i.getHostName();
-                    } catch (Exception e) {
-                        log.error("Error getting host name", e);
-                    }
-                    log.info("Workstation=" + hostName);
-
-                    creds = new NTCredentials(user, pw, hostName, domain);
-                } else {
-                    creds = new UsernamePasswordCredentials(user, pw);
-                }
+                Credentials creds = new UsernamePasswordCredentials(user, pw);
                 client.getCredentialsProvider().setCredentials(new AuthScope(proxyHost, proxyPort), creds);
-
-
             }
 
         } else {
