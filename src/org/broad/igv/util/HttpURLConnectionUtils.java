@@ -196,8 +196,8 @@ public class HttpURLConnectionUtils extends HttpUtils {
             pw = Utilities.base64Decode(pwString);
         }
 
-
-        proxySettings = new ProxySettings(useProxy, user, pw.toCharArray(), auth, proxyHost, proxyPort);
+        char [] pwchars = pw == null ? null : pw.toCharArray();
+        proxySettings = new ProxySettings(useProxy, user, pwchars, auth, proxyHost, proxyPort);
     }
 
     public boolean downloadFile(String url, File outputFile) throws IOException {

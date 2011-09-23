@@ -637,10 +637,6 @@ public class IGVHttpClientUtils extends HttpUtils {
      * stream will be read by the Apache implementation.  As IGV peeks at large files by opening a stream and
      * reading a few lines we have to protect against this, or the application might hang.  For the future -- a better
      * solution would be to use byte-range requests to request only digestible sections of the file at a time.
-     * <p/>
-     * <p/>
-     * <p/>
-     * TODO -- Verify that exhausting the stream is still a requirement in HttpClient 4.1.
      */
     public static class ResponseInputStream extends FilterInputStream {
         HttpGet getMethod;
