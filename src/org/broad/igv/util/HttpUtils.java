@@ -20,7 +20,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.util.stream.ApacheURLHelper;
+import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.tribble.util.SeekableHTTPStream;
 
 import java.io.File;
@@ -66,7 +66,7 @@ public abstract class HttpUtils {
             String testURL = "http://www.broadinstitute.org/igvdata/byteRangeTest.txt";
             byte[] expectedBytes = {(byte) 'k', (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o'};
 
-            SeekableHTTPStream str = new SeekableHTTPStream(new ApacheURLHelper(new URL(testURL)));
+            SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
             str.seek(10);
             byte[] buffer = new byte[5];
             str.read(buffer, 0, 5);

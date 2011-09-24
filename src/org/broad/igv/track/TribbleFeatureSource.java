@@ -27,7 +27,7 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.RuntimeUtils;
-import org.broad.igv.util.stream.ApacheURLHelper;
+import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.tribble.Feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.LocusScore;
@@ -35,7 +35,6 @@ import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.SeekableStreamFactory;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -64,7 +63,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     static {
         // Register a helper class with tribble
-        SeekableStreamFactory.registerHelperClass(ApacheURLHelper.class);
+        SeekableStreamFactory.registerHelperClass(IGVUrlHelper.class);
     }
 
 

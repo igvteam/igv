@@ -257,6 +257,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
         return openConnection(url, requestProperties, "GET");
     }
 
+
+    /**
+     * The "real" connection method
+     *
+     * @param url
+     * @param requestProperties
+     * @param method
+     * @return
+     * @throws IOException
+     */
     private static HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
 
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
@@ -276,6 +286,8 @@ public class HttpURLConnectionUtils extends HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
 
         }
+
+
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(60000);
         conn.setRequestMethod(method);
@@ -285,6 +297,22 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
             }
         }
+
+        int code = conn.getResponseCode();
+
+        // Redirect
+        if (code == 302 || code == 301) {
+            String newLocation = conn.getHeaderField("Location");
+            if (newLocation != null) {
+                log.debug("Redirecting to " + newLocation);
+                return openConnection(new URL(newLocation), requestProperties, method);
+            } else {
+                throw new IOException("Error loading : " + url.toString());
+            }
+        }
+
+        // TODO -- handle other response codes
+
         return conn;
     }
 
@@ -332,7 +360,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 final String userString = dlg.getUsername();
                 final char[] userPass = dlg.getPassword();
 
-                if(isProxyChallenge) {
+                if (isProxyChallenge) {
                     proxySettings.user = userString;
                     proxySettings.pw = new String(userPass);
                 }

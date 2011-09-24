@@ -9,6 +9,7 @@ import javax.swing.border.*;
 
 import org.broad.igv.hic.data.*;
 import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
@@ -163,7 +164,7 @@ public class MainWindow extends JFrame {
 
     private void load(String file) throws IOException {
         if (file.endsWith("hic")) {
-            SeekableStream ss = SeekableStreamFactory.getStreamFor(file);
+            SeekableStream ss = IGVSeekableStreamFactory.getStreamFor(file);
             dataset = (new DatasetReader(ss)).read();
             setChromosomes(dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
@@ -452,7 +453,7 @@ public class MainWindow extends JFrame {
             maxRange.setText("100");
             minRange.setText("0");
             zd = null;
-            load("http://iwww.broadinstitute.org/igvdata/hic/human/GM.summary.binned.2.hic");
+            load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -464,7 +465,7 @@ public class MainWindow extends JFrame {
             maxRange.setText("100");
             minRange.setText("0");
             zd = null;
-            load("http://iwww.broadinstitute.org/igvdata/hic/human/K562.summary.binned.2.hic");
+            load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }

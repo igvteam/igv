@@ -19,6 +19,7 @@
 package org.broad.igv.util.stream;
 
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.tribble.util.SeekableFileStream;
 import org.broad.tribble.util.SeekableHTTPStream;
 import org.broad.tribble.util.SeekableStream;
@@ -42,7 +43,11 @@ public class IGVSeekableStreamFactory {
             if (path.toLowerCase().startsWith("http:") || path.toLowerCase().startsWith("https:")) {
                 boolean useByteRange = HttpUtils.getInstance().useByteRange();
                 if (useByteRange) {
-                    is = new SeekableHTTPStream(new ApacheURLHelper(new URL(path)));
+
+                    // Test path
+                    long contentLength = HttpUtils.getInstance().getContentLength(new URL(path));
+
+                    is = new SeekableHTTPStream(new IGVUrlHelper(new URL(path)));
                 } else {
                     is = new SeekableServiceStream(path);
                 }

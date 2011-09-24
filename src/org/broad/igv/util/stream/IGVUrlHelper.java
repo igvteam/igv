@@ -31,11 +31,11 @@ import java.util.Map;
  * @author jrobinso
  * @date Jul 6, 2011
  */
-public class ApacheURLHelper implements URLHelper {
+public class IGVUrlHelper implements URLHelper {
 
     URL url;
 
-    public ApacheURLHelper(URL url) {
+    public IGVUrlHelper(URL url) {
         this.url = url;
     }
 

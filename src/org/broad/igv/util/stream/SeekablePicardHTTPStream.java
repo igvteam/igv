@@ -19,10 +19,8 @@
 package org.broad.igv.util.stream;
 
 import org.broad.tribble.util.SeekableHTTPStream;
-import org.broad.tribble.util.URLHelper;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 /**
@@ -38,7 +36,7 @@ public class SeekablePicardHTTPStream extends net.sf.samtools.util.SeekableStrea
     String source;
 
     public SeekablePicardHTTPStream(URL url) {
-        tribbleStream = new SeekableHTTPStream(new ApacheURLHelper(url));
+        tribbleStream = new SeekableHTTPStream(new IGVUrlHelper(url));
         this.source = url.toExternalForm();
     }
 
