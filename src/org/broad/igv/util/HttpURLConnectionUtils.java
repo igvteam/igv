@@ -51,6 +51,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
     private static ProxySettings proxySettings = null;
 
     private static HttpURLConnectionUtils instance;
+    public static final int MAX_REDIRECTS = 5;
 
     static {
         synchronized (HttpURLConnectionUtils.class) {
@@ -258,6 +259,10 @@ public class HttpURLConnectionUtils extends HttpUtils {
     }
 
 
+    private static HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
+        return openConnection(url, requestProperties, method, 0);
+    }
+
     /**
      * The "real" connection method
      *
@@ -267,7 +272,8 @@ public class HttpURLConnectionUtils extends HttpUtils {
      * @return
      * @throws IOException
      */
-    private static HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
+    private static HttpURLConnection openConnection(
+            URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
                 proxySettings.proxyPort > 0;
@@ -301,17 +307,25 @@ public class HttpURLConnectionUtils extends HttpUtils {
         int code = conn.getResponseCode();
 
         // Redirect
-        if (code == 302 || code == 301) {
+        if (code > 300 && code < 400) {
+
+            if (redirectCount > MAX_REDIRECTS) {
+                throw new IOException("Too many redirects");
+            }
+
             String newLocation = conn.getHeaderField("Location");
             if (newLocation != null) {
                 log.debug("Redirecting to " + newLocation);
-                return openConnection(new URL(newLocation), requestProperties, method);
+                return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
             } else {
-                throw new IOException("Error loading : " + url.toString());
+                throw new IOException("Server indicated redirect but Location header is missing");
             }
         }
 
-        // TODO -- handle other response codes
+        // TODO -- handle other response codes.
+        if (code > 400) {
+           throw new IOException("Server returned error code " + code);
+        }
 
         return conn;
     }
