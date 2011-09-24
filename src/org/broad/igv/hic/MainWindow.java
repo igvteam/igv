@@ -32,7 +32,7 @@ public class MainWindow extends JFrame {
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
     public static final int MAX_ZOOM = 10;
 
-    private int len;
+    //private int len;
     public Context xContext;
     public Context yContext;
     Dataset dataset;
@@ -102,7 +102,7 @@ public class MainWindow extends JFrame {
                 new ZoomLabel("5   kb", 8),
                 new ZoomLabel("2.5 kb", 9),
                 new ZoomLabel("1   kb", 10)};
-        zoomComboBox.setModel(new DefaultComboBoxModel(zooms));
+       // zoomComboBox.setModel(new DefaultComboBoxModel(zooms));
 
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -195,6 +195,10 @@ public class MainWindow extends JFrame {
                 Chromosome chr1 = (Chromosome) chrBox1.getSelectedItem();
                 Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
 
+                //zoomComboBox.setEnabled(chr1.getIndex() != 0);
+                zoomInButton.setEnabled(chr1.getIndex() != 0);
+                zoomOutButton.setEnabled(chr1.getIndex() != 0);
+
                 int t1 = chr1.getIndex();
                 int t2 = chr2.getIndex();
 
@@ -238,14 +242,14 @@ public class MainWindow extends JFrame {
     private void setInitialZoom() {
 
 
-        setLen(Math.max(xContext.getChrLength(), yContext.getChrLength()));
+        int len = (Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = getHeatmapPanel().getWidth();
         int maxNBins = pixels;
 
         if (xContext.getChromosome().getName().equals("All")) {
             setZoom(0, -1, -1);
         } else {// Find right zoom level
-            int bp_bin = getLen() / maxNBins;
+            int bp_bin = len / maxNBins;
             int initialZoom = zoomBinSizes.length - 1;
             for (int z = 1; z < zoomBinSizes.length; z++) {
                 if (zoomBinSizes[z] < bp_bin) {
@@ -269,6 +273,9 @@ public class MainWindow extends JFrame {
         int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
         int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
         setZoom(newZoom, centerLocationX, centerLocationY);
+
+        zoomInButton.setEnabled(newZoom < MAX_ZOOM);
+        zoomOutButton.setEnabled(newZoom > 0);
     }
 
     /**
@@ -300,7 +307,7 @@ public class MainWindow extends JFrame {
         xContext.setZoom(newZoom, scale);
         yContext.setZoom(newZoom, scale);
 
-        zoomComboBox.setSelectedIndex(newZoom);
+        //zoomComboBox.setSelectedIndex(newZoom);
 
         center(centerLocationX, centerLocationY);
 
@@ -329,7 +336,7 @@ public class MainWindow extends JFrame {
         xContext.setZoom(zoom, scale);
         yContext.setZoom(zoom, scale);
 
-        zoomComboBox.setSelectedIndex(zoom);
+        //zoomComboBox.setSelectedIndex(zoom);
 
         xContext.setOrigin((int) xBP);
         yContext.setOrigin((int) yBP);
@@ -408,25 +415,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-
-    public int getLen() {
-        return len;
-    }
-
-    public void setLen(int len) {
-        this.len = len;
-    }
-
-    private void zoomComboBoxActionPerformed(ActionEvent e) {
-        Object selected = zoomComboBox.getSelectedItem();
-        if (selected != null) {
-            int newZoom = ((ZoomLabel) selected).zoom;
-            if (newZoom == xContext.getZoom()) return;
-            setZoom(newZoom);
-            repaint();
-        }
-
-    }
 
     private void exitActionPerformed(ActionEvent e) {
         setVisible(false);
@@ -517,6 +505,21 @@ public class MainWindow extends JFrame {
         }
     }
 
+
+    private void zoomOutButtonActionPerformed(ActionEvent e) {
+        int z = xContext.getZoom();
+        int newZoom = Math.max(z-1, 0 );
+        setZoom(newZoom);
+        repaint();
+    }
+
+    private void zoomInButtonActionPerformed(ActionEvent e) {
+        int z = xContext.getZoom();
+        int newZoom = Math.min(z+1, MAX_ZOOM );
+        setZoom(newZoom);
+        repaint();
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -526,14 +529,15 @@ public class MainWindow extends JFrame {
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
         refreshButton = new JButton();
-        panel7 = new JPanel();
-        label2 = new JLabel();
-        zoomComboBox = new JComboBox();
         panel1 = new JPanel();
         label1 = new JLabel();
         minRange = new JTextField();
         label3 = new JLabel();
         maxRange = new JTextField();
+        panel7 = new JPanel();
+        label2 = new JLabel();
+        zoomOutButton = new JButton();
+        zoomInButton = new JButton();
         panel3 = new JPanel();
         panel5 = new JPanel();
         spacerLeft = new JPanel();
@@ -597,25 +601,6 @@ public class MainWindow extends JFrame {
                 }
                 panel4.add(chrSelectionPanel);
 
-                //======== panel7 ========
-                {
-                    panel7.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
-                    panel7.setLayout(new FlowLayout());
-
-                    //---- label2 ----
-                    label2.setText("Resolution");
-                    panel7.add(label2);
-
-                    //---- zoomComboBox ----
-                    zoomComboBox.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            zoomComboBoxActionPerformed(e);
-                        }
-                    });
-                    panel7.add(zoomComboBox);
-                }
-                panel4.add(panel7);
-
                 //======== panel1 ========
                 {
                     panel1.setBorder(new LineBorder(Color.black));
@@ -663,6 +648,39 @@ public class MainWindow extends JFrame {
                     panel1.add(maxRange);
                 }
                 panel4.add(panel1);
+
+                //======== panel7 ========
+                {
+                    panel7.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
+                    panel7.setLayout(new FlowLayout());
+
+                    //---- label2 ----
+                    label2.setText("Zoom ");
+                    panel7.add(label2);
+
+                    //---- zoomOutButton ----
+                    zoomOutButton.setText("-");
+                    zoomOutButton.setMinimumSize(new Dimension(5, 5));
+                    zoomOutButton.setPreferredSize(new Dimension(29, 29));
+                    zoomOutButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            zoomOutButtonActionPerformed(e);
+                        }
+                    });
+                    panel7.add(zoomOutButton);
+
+                    //---- zoomInButton ----
+                    zoomInButton.setText("+");
+                    zoomInButton.setPreferredSize(new Dimension(25, 29));
+                    zoomInButton.setMinimumSize(new Dimension(5, 29));
+                    zoomInButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            zoomInButtonActionPerformed(e);
+                        }
+                    });
+                    panel7.add(zoomInButton);
+                }
+                panel4.add(panel7);
             }
             panel2.add(panel4, BorderLayout.NORTH);
 
@@ -819,14 +837,15 @@ public class MainWindow extends JFrame {
     private JComboBox chrBox1;
     private JComboBox chrBox2;
     private JButton refreshButton;
-    private JPanel panel7;
-    private JLabel label2;
-    private JComboBox zoomComboBox;
     private JPanel panel1;
     private JLabel label1;
     private JTextField minRange;
     private JLabel label3;
     private JTextField maxRange;
+    private JPanel panel7;
+    private JLabel label2;
+    private JButton zoomOutButton;
+    private JButton zoomInButton;
     private JPanel panel3;
     private JPanel panel5;
     private JPanel spacerLeft;
