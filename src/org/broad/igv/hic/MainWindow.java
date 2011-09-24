@@ -6,7 +6,6 @@ package org.broad.igv.hic;
 
 import java.awt.event.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 
 import org.broad.igv.hic.data.*;
 import org.broad.igv.ui.util.IconFactory;
@@ -37,9 +36,10 @@ public class MainWindow extends JFrame {
     public Context yContext;
     Dataset dataset;
     MatrixZoomData zd;
-    Chromosome[] chromosomes;
+    private Chromosome[] chromosomes;
 
     ColorScale colorScale;
+    private int[] chromosomeBoundaries;
 
     public static void main(String[] args) throws IOException {
 
@@ -78,11 +78,10 @@ public class MainWindow extends JFrame {
 
         createCursors();
 
-
+        maxRange.setText(String.valueOf(colorScale.maxCount));
+        minRange.setText(String.valueOf(colorScale.minCount));
 
         thumbnailPanel.setMainWindow(this);
-
-       rangeScale.setValue(initialMaxCount);
 
         getHeatmapPanel().setSize(500, 500);
 
@@ -114,6 +113,40 @@ public class MainWindow extends JFrame {
         return heatmapPanel;
     }
 
+    public boolean isWholeGenome() {
+        return xContext != null && xContext.getChromosome().getName().equals("All");
+    }
+
+    public Chromosome[] getChromosomes() {
+        return chromosomes;
+    }
+
+    /**
+     * Chromosome "0" is whole genome
+     *
+     * @param chromosomes
+     */
+    public void setChromosomes(Chromosome[] chromosomes) {
+        this.chromosomes = chromosomes;
+        chromosomeBoundaries = new int[chromosomes.length - 1];
+        long bound = 0;
+        for (int i = 1; i < chromosomes.length; i++) {
+            Chromosome c = chromosomes[i];
+            bound += (c.getSize() / 1000);
+            getChromosomeBoundaries()[i-1] = (int) bound;
+        }
+    }
+
+    public int[] getChromosomeBoundaries() {
+        return chromosomeBoundaries;
+    }
+
+    public void setSelectedChromosomes(Chromosome xChrom, Chromosome yChrom) {
+        chrBox1.setSelectedIndex(yChrom.getIndex());
+        chrBox2.setSelectedIndex(xChrom.getIndex());
+        refreshChromosomes();
+    }
+
     class ZoomLabel {
         String label;
         int zoom;
@@ -132,13 +165,15 @@ public class MainWindow extends JFrame {
         if (file.endsWith("hic")) {
             SeekableStream ss = SeekableStreamFactory.getStreamFor(file);
             dataset = (new DatasetReader(ss)).read();
-            chromosomes = dataset.getChromosomes();
-            chrBox1.setModel(new DefaultComboBoxModel(chromosomes));
-            chrBox2.setModel(new DefaultComboBoxModel(chromosomes));
+            setChromosomes(dataset.getChromosomes());
+            chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
+            chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
         } else {
             // error -- unknown file type
         }
         setTitle(file);
+        xContext = null;
+        yContext = null;
         refreshChromosomes();
     }
 
@@ -168,22 +203,27 @@ public class MainWindow extends JFrame {
                     chr1 = tmp;
                 }
 
-                xContext = new Context(chr2);
-                yContext = new Context(chr1);
-                rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
-                rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
-
-                Matrix m = dataset.getMatrix(chr1, chr2);
-                if (m == null) {
-                } else {
-                    setInitialZoom();
-                }
-
                 getHeatmapPanel().clearTileCache();
+                if ((xContext != null && xContext.getChromosome().getIndex() == chr2.getIndex()) &&
+                        (yContext != null && yContext.getChromosome().getIndex() == chr1.getIndex())) {
+                    repaint();
+                } else {
+
+                    xContext = new Context(chr2);
+                    yContext = new Context(chr1);
+                    rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
+                    rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+
+                    Matrix m = dataset.getMatrix(chr1, chr2);
+                    if (m == null) {
+                    } else {
+                        setInitialZoom();
+                    }
 
 
-                Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
-                thumbnailPanel.setImage(thumbnail);
+                    Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
+                    thumbnailPanel.setImage(thumbnail);
+                }
 
                 return null;
             }
@@ -331,14 +371,6 @@ public class MainWindow extends JFrame {
         repaint();
     }
 
-    private void rangeStateChanged(ChangeEvent e) {
-        JSlider slider = (JSlider) e.getSource();
-        int maxCount = slider.getValue();
-        colorScale.maxCount = maxCount;
-        heatmapPanel.clearTileCache();
-        repaint();
-    }
-
 
     private void heatmapPanelMouseDragged(MouseEvent e) {
         // TODO add your code here
@@ -403,7 +435,12 @@ public class MainWindow extends JFrame {
 
     private void loadDmelDatasetActionPerformed(ActionEvent e) {
         try {
-            load("http://iwww.broadinstitute.org/igvdata/hic/selected_formatted.hic");
+            colorScale.maxCount = 20000;
+            maxRange.setText("20000");
+            minRange.setText("0");
+            zd = null;
+            load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
+
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -411,11 +448,11 @@ public class MainWindow extends JFrame {
 
     private void loadGMActionPerformed(ActionEvent e) {
         try {
+            colorScale.maxCount = 100;
+            maxRange.setText("100");
+            minRange.setText("0");
+            zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/human/GM.summary.binned.2.hic");
-            rangeScale.setMaximum(500);
-            rangeScale.setMajorTickSpacing(100);
-            rangeScale.setMinorTickSpacing(10);
-            rangeScale.setValue(200);
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
@@ -423,13 +460,59 @@ public class MainWindow extends JFrame {
 
     private void load562ActionPerformed(ActionEvent e) {
         try {
+            colorScale.maxCount = 100;
+            maxRange.setText("100");
+            minRange.setText("0");
+            zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/human/K562.summary.binned.2.hic");
-            rangeScale.setMaximum(500);
-            rangeScale.setMajorTickSpacing(100);
-            rangeScale.setMinorTickSpacing(10);
-            rangeScale.setValue(200);
         } catch (IOException e1) {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
+
+
+    private void minRangeFocusLost(FocusEvent e) {
+        minRangeActionPerformed(null);
+    }
+
+    private void maxRangeFocusLost(FocusEvent e) {
+        maxRangeActionPerformed(null);
+    }
+
+    private void minRangeActionPerformed(ActionEvent e) {
+        try {
+            int min = Integer.parseInt(minRange.getText());
+            colorScale.minCount = min;
+            heatmapPanel.clearTileCache();
+            repaint();
+
+        } catch (NumberFormatException ex) {
+
+        }
+    }
+
+    private void maxRangeActionPerformed(ActionEvent e) {
+        try {
+            int max = Integer.parseInt(maxRange.getText());
+            colorScale.maxCount = max;
+            heatmapPanel.clearTileCache();
+            repaint();
+        } catch (NumberFormatException ex) {
+
+        }
+    }
+
+    private void chrBox1ActionPerformed(ActionEvent e) {
+        if(chrBox1.getSelectedIndex() == 0) {
+            chrBox2.setSelectedIndex(0);
+            refreshChromosomes();
+        }
+    }
+
+    private void chrBox2ActionPerformed(ActionEvent e) {
+        if(chrBox2.getSelectedIndex() == 0) {
+            chrBox1.setSelectedIndex(0);
+            refreshChromosomes();
         }
     }
 
@@ -446,9 +529,10 @@ public class MainWindow extends JFrame {
         label2 = new JLabel();
         zoomComboBox = new JComboBox();
         panel1 = new JPanel();
-        panel9 = new JPanel();
         label1 = new JLabel();
-        rangeScale = new JSlider();
+        minRange = new JTextField();
+        label3 = new JLabel();
+        maxRange = new JTextField();
         panel3 = new JPanel();
         panel5 = new JPanel();
         spacerLeft = new JPanel();
@@ -484,7 +568,21 @@ public class MainWindow extends JFrame {
                 {
                     chrSelectionPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
                     chrSelectionPanel.setLayout(new FlowLayout());
+
+                    //---- chrBox1 ----
+                    chrBox1.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            chrBox1ActionPerformed(e);
+                        }
+                    });
                     chrSelectionPanel.add(chrBox1);
+
+                    //---- chrBox2 ----
+                    chrBox2.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            chrBox2ActionPerformed(e);
+                        }
+                    });
                     chrSelectionPanel.add(chrBox2);
 
                     //---- refreshButton ----
@@ -519,33 +617,49 @@ public class MainWindow extends JFrame {
 
                 //======== panel1 ========
                 {
+                    panel1.setBorder(new LineBorder(Color.black));
                     panel1.setLayout(new FlowLayout());
 
-                    //======== panel9 ========
-                    {
-                        panel9.setBorder(null);
-                        panel9.setLayout(new FlowLayout());
+                    //---- label1 ----
+                    label1.setText("Range");
+                    label1.setHorizontalAlignment(SwingConstants.CENTER);
+                    panel1.add(label1);
 
-                        //---- label1 ----
-                        label1.setText("Color Range");
-                        panel9.add(label1);
+                    //---- minRange ----
+                    minRange.setPreferredSize(new Dimension(64, 26));
+                    minRange.setMinimumSize(new Dimension(14, 26));
+                    minRange.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            minRangeFocusLost(e);
+                        }
+                    });
+                    minRange.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            minRangeActionPerformed(e);
+                        }
+                    });
+                    panel1.add(minRange);
 
-                        //---- rangeScale ----
-                        rangeScale.setMajorTickSpacing(50000);
-                        rangeScale.setPaintTicks(true);
-                        rangeScale.setPaintLabels(true);
-                        rangeScale.setPreferredSize(new Dimension(150, 52));
-                        rangeScale.setValue(500);
-                        rangeScale.setMaximum(100000);
-                        rangeScale.setMinorTickSpacing(10000);
-                        rangeScale.addChangeListener(new ChangeListener() {
-                            public void stateChanged(ChangeEvent e) {
-                                rangeStateChanged(e);
-                            }
-                        });
-                        panel9.add(rangeScale);
-                    }
-                    panel1.add(panel9);
+                    //---- label3 ----
+                    label3.setText("to");
+                    panel1.add(label3);
+
+                    //---- maxRange ----
+                    maxRange.setPreferredSize(new Dimension(64, 26));
+                    maxRange.setMinimumSize(new Dimension(14, 26));
+                    maxRange.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            maxRangeFocusLost(e);
+                        }
+                    });
+                    maxRange.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            maxRangeActionPerformed(e);
+                        }
+                    });
+                    panel1.add(maxRange);
                 }
                 panel4.add(panel1);
             }
@@ -708,9 +822,10 @@ public class MainWindow extends JFrame {
     private JLabel label2;
     private JComboBox zoomComboBox;
     private JPanel panel1;
-    private JPanel panel9;
     private JLabel label1;
-    private JSlider rangeScale;
+    private JTextField minRange;
+    private JLabel label3;
+    private JTextField maxRange;
     private JPanel panel3;
     private JPanel panel5;
     private JPanel spacerLeft;

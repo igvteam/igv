@@ -20,12 +20,13 @@ package org.broad.igv.hic;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
 
 /**
  * @author Jim Robinson
  * @date 9/22/11
  */
-public class ColorScalePanel extends JComponent {
+public class ColorScalePanel extends JComponent implements Serializable {
 
     ColorScale colorScale;
 
@@ -44,6 +45,9 @@ public class ColorScalePanel extends JComponent {
         if (colorScale != null) {
 
             int nSteps = getWidth() - 1;
+            if(nSteps <= 0) {
+                return;
+            }
             float delta = (colorScale.maxCount / nSteps);
 
             int xLast = 0;

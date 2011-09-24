@@ -42,7 +42,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
     @Override
     protected void paintComponent(Graphics g) {
 
-        if (mainWindow != null && mainWindow.zd != null) {
+        if (mainWindow != null && mainWindow.zd != null && mainWindow.xContext.getScale() > 0) {
 
             // 1  get image in "bin" coordinates.
 
@@ -88,20 +88,20 @@ public class HeatmapPanel extends JComponent implements Serializable {
                 Color color = g.getColor();
                 g.setColor(Color.lightGray);
 
-                Chromosome[] chromosomes = mainWindow.chromosomes;
+                Chromosome[] chromosomes = mainWindow.getChromosomes();
                 // Index 0 is whole genome
                 int xGenomeCoord = 0;
-                for(int i=1; i<chromosomes.length; i++) {
+                for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     xGenomeCoord += (c.getSize() / 1000);
-                    int x= mainWindow.xContext.getScreenPosition(xGenomeCoord);
+                    int x = mainWindow.xContext.getScreenPosition(xGenomeCoord);
                     g.drawLine(x, 0, x, getHeight());
                 }
                 int yGenomeCoord = 0;
-                for(int i=1; i<chromosomes.length; i++) {
+                for (int i = 1; i < chromosomes.length; i++) {
                     Chromosome c = chromosomes[i];
                     yGenomeCoord += (c.getSize() / 1000);
-                    int y= mainWindow.yContext.getScreenPosition(yGenomeCoord);
+                    int y = mainWindow.yContext.getScreenPosition(yGenomeCoord);
                     g.drawLine(0, y, getWidth(), y);
                 }
 
@@ -208,6 +208,10 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mousePressed(final MouseEvent e) {
 
+            if(mainWindow.isWholeGenome()) {
+                return;
+            }
+
             if (e.isAltDown()) {
                 dragMode = 2;
             } else {
@@ -249,7 +253,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         final public void mouseDragged(final MouseEvent e) {
 
-            if (mainWindow.zd == null) {
+            if (mainWindow.zd == null || mainWindow.isWholeGenome()) {
                 return;
             }
 
@@ -307,14 +311,37 @@ public class HeatmapPanel extends JComponent implements Serializable {
         public void mouseClicked(MouseEvent e) {
 
             if (!e.isPopupTrigger() && (e.getClickCount() > 1)) {
-                int currentZoom = mainWindow.xContext.getZoom();
-                final int newZoom = e.isAltDown()
-                        ? Math.max(currentZoom - 1, 1)
-                        : Math.min(11, currentZoom + 1);
 
-                int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
-                int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
-                mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+                if (mainWindow.isWholeGenome()) {
+                    double xGenome = mainWindow.xContext.getChromosomePosition(e.getX());
+                    double yGenome = mainWindow.yContext.getChromosomePosition(e.getY());
+
+                    Chromosome xChrom = null;
+                    Chromosome yChrom = null;
+                    int[] boundaries = mainWindow.getChromosomeBoundaries();
+                    for (int i = 0; i < boundaries.length; i++) {
+                        if (xChrom == null && boundaries[i] > xGenome) {
+                            xChrom = mainWindow.getChromosomes()[i + 1];
+                        }
+                        if (yChrom == null && boundaries[i] > yGenome) {
+                            yChrom = mainWindow.getChromosomes()[i + 1];
+                        }
+                        if (xChrom != null && yChrom != null) {
+                            mainWindow.setSelectedChromosomes(xChrom, yChrom);
+                        }
+                    }
+
+
+                } else {
+                    int currentZoom = mainWindow.xContext.getZoom();
+                    final int newZoom = e.isAltDown()
+                            ? Math.max(currentZoom - 1, 1)
+                            : Math.min(11, currentZoom + 1);
+
+                    int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
+                    int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
+                    mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+                }
 
             }
         }
@@ -323,21 +350,60 @@ public class HeatmapPanel extends JComponent implements Serializable {
         public void mouseMoved(MouseEvent e) {
             if (mainWindow.xContext != null && mainWindow.zd != null) {
 
-                int posX = (int) (mainWindow.xContext.getChromosomePosition(e.getX()));
-                int posY = (int) (mainWindow.yContext.getChromosomePosition(e.getY()));
+                if (mainWindow.isWholeGenome()) {
+                    double xGenome = mainWindow.xContext.getChromosomePosition(e.getX());
+                    double yGenome = mainWindow.yContext.getChromosomePosition(e.getY());
 
-                //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
-                //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
-                StringBuffer txt = new StringBuffer();
-                txt.append("<html>");
-                txt.append(mainWindow.xContext.getChromosome().getName());
-                txt.append(":");
-                txt.append(String.valueOf(posX));
-                txt.append("<br>");
-                txt.append(mainWindow.yContext.getChromosome().getName());
-                txt.append(":");
-                txt.append(String.valueOf(posY));
-                setToolTipText(txt.toString());
+                    Chromosome xChrom = null;
+                    Chromosome yChrom = null;
+                    int[] boundaries = mainWindow.getChromosomeBoundaries();
+                    for (int i = 0; i < boundaries.length; i++) {
+                        if (xChrom == null && boundaries[i] > xGenome) {
+                            xChrom = mainWindow.getChromosomes()[i + 1];
+                        }
+                        if (yChrom == null && boundaries[i] > yGenome) {
+                            yChrom = mainWindow.getChromosomes()[i + 1];
+                        }
+                        if (xChrom != null && yChrom != null) {
+
+                            int leftBoundaryX = xChrom.getIndex() == 1 ? 0 : boundaries[xChrom.getIndex() - 2];
+                            int leftBoundaryY = yChrom.getIndex() == 1 ? 0 : boundaries[yChrom.getIndex() - 2];
+
+                            int xChromPos = (int) ((xGenome - leftBoundaryX) * 1000);
+                            int yChromPos = (int) ((yGenome - leftBoundaryY) * 1000);
+
+                            StringBuffer txt = new StringBuffer();
+                            txt.append("<html>");
+                            txt.append(yChrom.getName());
+                            txt.append(":");
+                            txt.append(String.valueOf(yChromPos));
+                            txt.append("<br>");
+                            txt.append(xChrom.getName());
+                            txt.append(":");
+                            txt.append(String.valueOf(xChromPos));
+                            setToolTipText(txt.toString());
+                            return;
+
+                        }
+                    }
+
+                } else {
+                    int posX = (int) (mainWindow.xContext.getChromosomePosition(e.getX()));
+                    int posY = (int) (mainWindow.yContext.getChromosomePosition(e.getY()));
+
+                    //int binX = (int) ((mainWindow.xContext.getOrigin() + e.getX() * mainWindow.xContext.getScale()) / getBinWidth());
+                    //int binY = (int) ((mainWindow.yContext.getOrigin() + e.getY() * mainWindow.yContext.getScale()) / getBinWidth());
+                    StringBuffer txt = new StringBuffer();
+                    txt.append("<html>");
+                    txt.append(mainWindow.xContext.getChromosome().getName());
+                    txt.append(":");
+                    txt.append(String.valueOf(posX));
+                    txt.append("<br>");
+                    txt.append(mainWindow.yContext.getChromosome().getName());
+                    txt.append(":");
+                    txt.append(String.valueOf(posY));
+                    setToolTipText(txt.toString());
+                }
             }
         }
     }

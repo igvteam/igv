@@ -28,8 +28,6 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author jrobinso
@@ -142,7 +140,7 @@ public class HiCRulerPanel extends JPanel implements Serializable {
 
         if (chromosome.getName().equals("All")) {
             int x1 = 0;
-            Chromosome[] chromosomes = mainWindow.chromosomes;
+            Chromosome[] chromosomes = mainWindow.getChromosomes();
             // Index 0 is whole genome
             int genomeCoord = 0;
             for(int i=1; i<chromosomes.length; i++) {
