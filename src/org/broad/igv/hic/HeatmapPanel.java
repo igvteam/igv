@@ -181,7 +181,6 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
 
     public void clearTileCache() {
-        System.out.println("Clear cache");
         tileCache.clear();
     }
 
