@@ -24,7 +24,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -83,7 +83,7 @@ public class LaneCounter {
 
             try {
 
-                reader = SamQueryReaderFactory.getReader(alignmentFile, true);
+                reader = AlignmentReaderFactory.getReader(alignmentFile, true);
                 iter = reader.query(chr, intervalStart, intervalEnd, false);
                 Map<String, ReadGroupCount> counts = new HashMap();
 

@@ -30,7 +30,7 @@ import org.broad.igv.sam.AlignmentBlock;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.MergedAlignmentReader;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 import org.broad.igv.util.FileUtils;
@@ -444,7 +444,7 @@ public class CoverageCounter {
             String[] tokens = alignmentFile.split(",");
             List<AlignmentQueryReader> readers = new ArrayList(tokens.length);
             for (String f : tokens) {
-                readers.add(SamQueryReaderFactory.getReader(f, b));
+                readers.add(AlignmentReaderFactory.getReader(f, b));
             }
             return new MergedAlignmentReader(readers);
         } else {
@@ -453,12 +453,12 @@ public class CoverageCounter {
                 if (f.isDirectory()) {
                     List<AlignmentQueryReader> readers = new ArrayList();
                     for (File file : f.listFiles(new AlignmentFileFilter())) {
-                        readers.add(SamQueryReaderFactory.getReader(file.getAbsolutePath(), b));
+                        readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), b));
                     }
                     return new MergedAlignmentReader(readers);
                 }
             }
-            return SamQueryReaderFactory.getReader(alignmentFile, b);
+            return AlignmentReaderFactory.getReader(alignmentFile, b);
         }
 
     }

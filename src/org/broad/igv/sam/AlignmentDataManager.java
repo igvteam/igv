@@ -24,7 +24,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.SamListReader;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGV;
@@ -72,7 +72,7 @@ public class AlignmentDataManager {
             MultiFileWrapper mfw = MultiFileWrapper.parse(locator);
             reader = new CachingQueryReader(new SamListReader(mfw.getLocators()));
         } else {
-            reader = new CachingQueryReader(SamQueryReaderFactory.getReader(locator));
+            reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         }
         peStats = new HashMap();
         initChrMap();

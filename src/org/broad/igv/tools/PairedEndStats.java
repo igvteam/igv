@@ -23,7 +23,7 @@ import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -45,7 +45,7 @@ public class PairedEndStats {
 
     public static void main(String[] args) throws IOException {
 
-        AlignmentQueryReader reader = SamQueryReaderFactory.getReader(args[0], false);
+        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(args[0], false);
         CloseableIterator<Alignment> iter = reader.iterator();
         PairedEndStats stats = compute(iter, .1, 99.9);
         iter.close();
@@ -70,7 +70,7 @@ public class PairedEndStats {
     public static PairedEndStats compute(String bamFile) {
         AlignmentQueryReader reader = null;
         try {
-            reader = SamQueryReaderFactory.getReader(bamFile, false);
+            reader = AlignmentReaderFactory.getReader(bamFile, false);
             final CloseableIterator<Alignment> alignmentCloseableIterator = reader.iterator();
             PairedEndStats stats = compute(alignmentCloseableIterator, .1, 99.9);
             alignmentCloseableIterator.close();

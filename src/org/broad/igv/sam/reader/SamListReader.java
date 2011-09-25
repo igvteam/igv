@@ -61,7 +61,7 @@ public class SamListReader implements AlignmentQueryReader {
             // Any header will do, see if we have one
             if (readers.size() == 0) {
                 Map.Entry<String, ResourceLocator> tmp = locators.entrySet().iterator().next();
-                AlignmentQueryReader firstReader = SamQueryReaderFactory.getReader(tmp.getValue());
+                AlignmentQueryReader firstReader = AlignmentReaderFactory.getReader(tmp.getValue());
                 readers.put(tmp.getKey(), firstReader);
             }
             header = (readers.values().iterator().next()).getHeader();
@@ -102,7 +102,7 @@ public class SamListReader implements AlignmentQueryReader {
                 // TODO -- return empty iterator?
                 return null;
             }
-            reader = SamQueryReaderFactory.getReader(locator);
+            reader = AlignmentReaderFactory.getReader(locator);
         }
         return reader.query(chr, start, end, contained);
     }

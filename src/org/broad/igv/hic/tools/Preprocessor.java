@@ -1,6 +1,5 @@
 package org.broad.igv.hic.tools;
 
-import org.broad.igv.hic.AlignmentsParser;
 import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
 import org.broad.igv.hic.data.Matrix;
@@ -31,15 +30,12 @@ public class Preprocessor {
     Map<String, Long> blockIndexPositions = new LinkedHashMap();
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
 
-
     public Preprocessor(File outputFile) {
-
         this.outputFile = outputFile;
-
     }
 
 
-    public void preprocess(List<File> inputFileList, String genomeId) throws IOException {
+    public void preprocess(List<String> inputFileList, String genomeId) throws IOException {
 
 
         try {
@@ -68,25 +64,11 @@ public class Preprocessor {
 
                     if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
 
-
-                    List<InputStream> isList = new ArrayList<InputStream>();
-                    for (File inputFile : inputFileList) {
-                        InputStream fis = new FileInputStream(inputFile);
-                        if (inputFile.getName().endsWith(".gz")) {
-                            fis = new GZIPInputStream(fis);
-                        }
-                        isList.add(fis);
-                    }
-
-                    Matrix matrix = AlignmentsParser.readMatrix(isList, c1, c2);
+                    Matrix matrix = readMatrix(inputFileList, c1, c2);
 
                     if (matrix != null) {
                         System.out.println("writing matrix: " + matrix.getKey());
                         writeMatrix(matrix);
-                    }
-
-                    for (InputStream is : isList) {
-                        is.close();
                     }
                 }
             }
@@ -99,6 +81,91 @@ public class Preprocessor {
         }
 
         updateIndexPositions();
+    }
+
+    /*
+                    for (File inputFile : inputFileList) {
+                        InputStream fis = new FileInputStream(inputFile);
+                        if (inputFile.getName().endsWith(".gz")) {
+                            fis = new GZIPInputStream(fis);
+                        }
+                        isList.add(fis);
+                    }
+
+     */
+
+    public Matrix readMatrix(List<String> inputFileList, int c1, int c2) throws IOException {
+
+        boolean isWholeGenome = (c1 == 0 && c2 == 0);
+
+        Matrix matrix = null;
+
+        if (isWholeGenome) {
+            int genomeLength = HiCTools.chromosomes[0].getSize();  // <= whole genome in KB
+            int binSize = genomeLength / 500;
+            matrix = new Matrix(c1, c2, binSize);
+        } else {
+            matrix = new Matrix(c1, c2);
+        }
+
+        for (String file : inputFileList) {
+
+            PairIterator iter = file.endsWith(".bam") ?
+                    new BAMPairIterator(file) :
+                    new AsciiPairIterator(file);
+
+            while (iter.hasNext()) {
+
+                AlignmentPair pair = iter.next();
+                int pos1 = pair.getPos1();
+                int pos2 = pair.getPos2();
+                Integer chr1 = HiCTools.chromosomeOrdinals.get(pair.getChr1());
+                Integer chr2 = HiCTools.chromosomeOrdinals.get(pair.getChr2());
+                if (chr1 != null && chr2 != null) {
+
+                    if (isWholeGenome) {
+                        pos1 = getGenomicPosition(chr1, pos1);
+                        pos2 = getGenomicPosition(chr2, pos2);
+                        incrementCount(matrix, c1, pos1, c2, pos2);
+                    } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
+                        incrementCount(matrix, chr1, pos1, chr2, pos2);
+                    }
+                }
+            }
+
+            iter.close();
+
+        }
+
+
+        matrix.parsingComplete();
+        return matrix;
+    }
+
+    private static int getGenomicPosition(int chr, int pos) {
+        long len = 0;
+        for (int i = 1; i < chr; i++) {
+            len += HiCTools.chromosomes[i].getSize();
+        }
+        len += pos;
+
+        return (int) (len / 1000);
+
+    }
+
+    private static void incrementCount(Matrix matrix, int chr1, int pos1, int chr2, int pos2) {
+
+        if (chr2 > chr1) {
+            //transpose
+            int tc2 = chr2;
+            int tp2 = pos2;
+            chr2 = chr1;
+            pos2 = pos1;
+            chr1 = tc2;
+            pos1 = tp2;
+        }
+
+        matrix.incrementCount(pos1, pos2);
     }
 
 

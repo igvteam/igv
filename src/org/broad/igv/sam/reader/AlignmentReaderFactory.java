@@ -39,8 +39,8 @@ import java.util.Map;
  * @author jrobinso
  *         TODO consider renaming this class AlignmentQueryReaderFactory now that two alignment formats are supported.
  */
-public class SamQueryReaderFactory {
-    private static Logger log = Logger.getLogger(SamQueryReaderFactory.class);
+public class AlignmentReaderFactory {
+    private static Logger log = Logger.getLogger(AlignmentReaderFactory.class);
 
     static {
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
@@ -128,7 +128,7 @@ public class SamQueryReaderFactory {
                     for (Map.Entry<String, String> entry : replacements.entrySet()) {
                         f = f.replace(entry.getKey(), entry.getValue());
                     }
-                    readers.add(SamQueryReaderFactory.getReader(f, requireIndex));
+                    readers.add(AlignmentReaderFactory.getReader(f, requireIndex));
                 }
             }
             return new MergedAlignmentReader(readers);

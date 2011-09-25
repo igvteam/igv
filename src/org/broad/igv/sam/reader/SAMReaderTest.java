@@ -148,7 +148,7 @@ public class SAMReaderTest {
         int start = 50542554; //557000;  //
         int end = 50542722; //558000; //
 
-        AlignmentQueryReader reader = SamQueryReaderFactory.getReader(new ResourceLocator(path));
+        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(new ResourceLocator(path));
         //reader.setValidationStringency(ValidationStringency.SILENT);
         //chr1:16,780,602-16,780,774
         //chr1:235675392

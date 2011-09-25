@@ -16,48 +16,39 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+package org.broad.igv.hic.tools;
+
+/**
+ * @author Jim Robinson
+ * @date 9/24/11
  */
-package org.broad.igv.sam;
+public class AlignmentPair {
 
+    private String chr1;
+    private int pos1;
+    private String chr2;
+    private int pos2;
 
-public class ReadMate {
-
-    private String chr;
-    int start;
-    private boolean negativeStrand;
-    boolean mapped;
-
-    public ReadMate(String chr, int start, boolean negativeStrand,
-                    boolean isReadUnmappedFlag) {
-        this.chr = chr;
-        this.start = start;
-        this.negativeStrand = negativeStrand;
-        this.mapped = !isReadUnmappedFlag && !chr.equals("*");
+    public AlignmentPair(String chr1, int pos1, String chr2, int pos2) {
+        this.chr1 = chr1;
+        this.pos1 = pos1;
+        this.chr2 = chr2;
+        this.pos2 = pos2;
     }
 
-    public boolean isMapped() {
-        return mapped;
+    public String getChr1() {
+        return chr1;
     }
 
-    public String positionString() {
-        return chr + ":" + start + " (" + (isNegativeStrand() ? "-" : "+") + ")";
+    public int getPos1() {
+        return pos1;
     }
 
-    public int getStart() {
-        return start;
+    public String getChr2() {
+        return chr2;
     }
 
-    /**
-     * @return the negativeStrand
-     */
-    public boolean isNegativeStrand() {
-        return negativeStrand;
-    }
-
-    public String getChr() {
-        return chr;
+    public int getPos2() {
+        return pos2;
     }
 }

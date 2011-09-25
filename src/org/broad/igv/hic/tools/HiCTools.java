@@ -63,9 +63,9 @@ public class HiCTools {
             }
 
             String[] tokens = args[1].split(",");
-            List<File> files = new ArrayList(tokens.length);
+            List<String> files = new ArrayList(tokens.length);
             for (String f : tokens) {
-                files.add(new File(f));
+                files.add(f);
             }
 
             (new Preprocessor(new File(args[2]))).preprocess(files, genomeId);

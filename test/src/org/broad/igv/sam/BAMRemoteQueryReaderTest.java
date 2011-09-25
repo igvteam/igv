@@ -24,7 +24,7 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.sam.reader.SamQueryReaderFactory;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.AfterClass;
@@ -77,7 +77,7 @@ public class BAMRemoteQueryReaderTest {
         // ResourceLocator rl = new ResourceLocator(serverURL, path);
         ResourceLocator rl = new ResourceLocator(path);
 
-        AlignmentQueryReader samReader = SamQueryReaderFactory.getReader(rl);
+        AlignmentQueryReader samReader = AlignmentReaderFactory.getReader(rl);
         CloseableIterator<Alignment> result2 = samReader.query(chr, start, end, contained);
         long t1 = System.currentTimeMillis();
         int count1 = 0;
