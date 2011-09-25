@@ -2,6 +2,7 @@ package org.broad.igv.hic.data;
 
 import org.broad.igv.hic.tools.HiCTools;
 import org.broad.igv.hic.tools.Preprocessor;
+import org.broad.igv.util.LongRunningTask;
 
 import java.io.IOException;
 import java.util.*;

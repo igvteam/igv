@@ -310,7 +310,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseClicked(MouseEvent e) {
 
-            if (!e.isPopupTrigger() && (e.getClickCount() > 1)) {
+            if (!e.isPopupTrigger()) {
 
                 if (mainWindow.isWholeGenome()) {
                     double xGenome = mainWindow.xContext.getChromosomePosition(e.getX());
@@ -332,7 +332,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     }
 
 
-                } else {
+                } else if(e.getClickCount() > 1) {
                     int currentZoom = mainWindow.xContext.getZoom();
                     final int newZoom = e.isAltDown()
                             ? Math.max(currentZoom - 1, 1)

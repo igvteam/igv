@@ -18,6 +18,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.*;
 
 /**
@@ -41,6 +43,7 @@ public class MainWindow extends JFrame {
 
     ColorScale colorScale;
     private int[] chromosomeBoundaries;
+
 
     public static void main(String[] args) throws IOException {
 
@@ -76,6 +79,11 @@ public class MainWindow extends JFrame {
         colorScale.background = Color.white;
 
         initComponents();
+
+        // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
+        rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {});
+
 
         createCursors();
 
@@ -180,6 +188,8 @@ public class MainWindow extends JFrame {
 
     private void refreshChromosomes() {
 
+        getRootPane().getGlassPane().setVisible(true);
+
         SwingWorker worker = new SwingWorker() {
             @Override
             protected void done() {
@@ -189,8 +199,7 @@ public class MainWindow extends JFrame {
 
             @Override
             protected Object doInBackground() throws Exception {
-                getGlassPane().setVisible(true);
-                getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
 
                 Chromosome chr1 = (Chromosome) chrBox1.getSelectedItem();
                 Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
@@ -508,7 +517,7 @@ public class MainWindow extends JFrame {
 
     private void zoomOutButtonActionPerformed(ActionEvent e) {
         int z = xContext.getZoom();
-        int newZoom = Math.max(z-1, 0 );
+        int newZoom = Math.max(z - 1, 0);
         setZoom(newZoom);
         repaint();
     }
