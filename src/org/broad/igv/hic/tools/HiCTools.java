@@ -18,6 +18,7 @@
 
 package org.broad.igv.hic.tools;
 
+import org.broad.igv.Globals;
 import org.broad.igv.hic.data.Chromosome;
 
 import java.io.File;
@@ -39,6 +40,8 @@ public class HiCTools {
         if (args.length < 3) {
             System.out.println("Usage: hictools <command> <inputFile> <outputFile>");
         }
+
+        Globals.setHeadless(true);
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
