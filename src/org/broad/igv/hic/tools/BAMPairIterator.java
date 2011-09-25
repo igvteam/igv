@@ -37,7 +37,6 @@ public class BAMPairIterator implements PairIterator {
 
     AlignmentPair nextPair = null;
     CloseableIterator<Alignment> iterator;
-    HashSet<String> added = new HashSet(10000);
     private AlignmentQueryReader reader;
 
     public BAMPairIterator(String path) throws IOException {
@@ -52,21 +51,17 @@ public class BAMPairIterator implements PairIterator {
         while (iterator.hasNext()) {
             Alignment alignment = iterator.next();
 
-            final String readName = alignment.getReadName();
-            if (added.contains(readName)) {
-                // Second in pair, skip and remove from "added" list since we don't need to check anymore
-                added.remove(readName);
-            } else {
-
-                final ReadMate mate = alignment.getMate();
-                if (alignment.isProperPair() && alignment.isMapped() && alignment.getMappingQuality() > 0 &&
-                        mate != null && mate.isMapped()) {
-
+            final ReadMate mate = alignment.getMate();
+            if (alignment.isPaired() && alignment.isMapped() && alignment.getMappingQuality() > 0 &&
+                    mate != null && mate.isMapped()) {
+                // Skip "normal" insert sizes
+                if ((!alignment.getChr().equals(mate.getChr())) || alignment.getInferredInsertSize() > 1000) {
                     nextPair = new AlignmentPair(alignment.getChr(), alignment.getStart(), mate.getChr(),
                             mate.getStart());
-                    added.add(readName);
+                    return;
                 }
             }
+
         }
         nextPair = null;
 
