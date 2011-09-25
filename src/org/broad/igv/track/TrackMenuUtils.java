@@ -291,7 +291,7 @@ public class TrackMenuUtils {
         menu.add(getShowDataRangeItem(tracks));
 
 
-        //menu.add(getChangeKMPlotItem(tracks));
+        menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -985,7 +985,12 @@ public class TrackMenuUtils {
         item.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
-                KMPlotFrame frame = new KMPlotFrame(selectedTracks);
+
+                // If one or fewer tracks are selected assume the intent is to use all tracks.  A right-click
+                // will always result in one selected track.
+                Collection<Track> tracks = selectedTracks.size() > 1 ? selectedTracks :
+                        IGV.getInstance().getTrackManager().getAllTracks(false);
+                KMPlotFrame frame = new KMPlotFrame(tracks);
                 frame.setVisible(true);
             }
         });
