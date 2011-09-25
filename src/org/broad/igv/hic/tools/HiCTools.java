@@ -46,6 +46,9 @@ public class HiCTools {
             String genomeId = args[3];
             if (genomeId.equals("hg18")) {
                 chromosomes = hg18Chromosomes;
+            } else if (genomeId.equals("b37")) {
+                chromosomes = b37Chromosomes;
+
             } else {
                 chromosomes = dmelChromosomes;
             }
@@ -113,6 +116,35 @@ public class HiCTools {
             new Chromosome(23, "23", 154913754),
             new Chromosome(24, "24", 57772954),
             new Chromosome(25, "0", 16571),
+    };
+
+
+    public final static Chromosome[] b37Chromosomes = new Chromosome[]{
+            null,                               // Placeholder for whole genome
+            new Chromosome(1, "1", 249250621),
+            new Chromosome(2, "2", 243199373),
+            new Chromosome(3, "3", 198022430),
+            new Chromosome(4, "4", 191154276),
+            new Chromosome(5, "5", 180915260),
+            new Chromosome(6, "6", 171115067),
+            new Chromosome(7, "7", 159138663),
+            new Chromosome(8, "8", 146364022),
+            new Chromosome(9, "9", 141213431),
+            new Chromosome(10, "10", 135534747),
+            new Chromosome(11, "11", 135006516),
+            new Chromosome(12, "12", 133851895),
+            new Chromosome(13, "13", 115169878),
+            new Chromosome(14, "14", 107349540),
+            new Chromosome(15, "15", 102531392),
+            new Chromosome(16, "16", 90354753),
+            new Chromosome(17, "17", 81195210),
+            new Chromosome(18, "18", 78077248),
+            new Chromosome(19, "19", 59128983),
+            new Chromosome(20, "20", 63025520),
+            new Chromosome(21, "21", 48129895),
+            new Chromosome(22, "22", 51304566),
+            new Chromosome(23, "X", 155270560),
+            new Chromosome(24, "Y", 59373566)
     };
 
 
