@@ -151,11 +151,15 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Range</string> 
+               <string>Color Range</string> 
               </void> 
               <void method="setProperty"> 
                <string>horizontalAlignment</string> 
                <int>0</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>Range of color scale in counts per mega-base squared.</string> 
               </void> 
               <void property="name"> 
                <string>label1</string> 

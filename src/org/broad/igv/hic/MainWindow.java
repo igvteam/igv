@@ -616,8 +616,9 @@ public class MainWindow extends JFrame {
                     panel1.setLayout(new FlowLayout());
 
                     //---- label1 ----
-                    label1.setText("Range");
+                    label1.setText("Color Range");
                     label1.setHorizontalAlignment(SwingConstants.CENTER);
+                    label1.setToolTipText("Range of color scale in counts per mega-base squared.");
                     panel1.add(label1);
 
                     //---- minRange ----
