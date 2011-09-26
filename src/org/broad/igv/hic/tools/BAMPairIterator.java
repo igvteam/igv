@@ -56,8 +56,14 @@ public class BAMPairIterator implements PairIterator {
                     mate != null && mate.isMapped()) {
                 // Skip "normal" insert sizes
                 if ((!alignment.getChr().equals(mate.getChr())) || alignment.getInferredInsertSize() > 1000) {
-                    nextPair = new AlignmentPair(alignment.getChr(), alignment.getStart(), mate.getChr(),
-                            mate.getStart());
+
+                    // Each pair is represented twice in the file,  keep the record with the "leftmost" coordinate
+
+                    if ((alignment.getChr().equals(mate.getChr()) && alignment.getStart() < mate.getStart()) ||
+                            (alignment.getChr().compareTo(mate.getChr()) < 0)) {
+                        nextPair = new AlignmentPair(alignment.getChr(), alignment.getStart(), mate.getChr(),
+                                mate.getStart());
+                    }
                     return;
                 }
             }

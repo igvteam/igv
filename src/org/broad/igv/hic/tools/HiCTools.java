@@ -18,15 +18,19 @@
 
 package org.broad.igv.hic.tools;
 
+import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.hic.data.Chromosome;
+import org.broad.igv.sam.Alignment;
+import org.broad.igv.sam.ReadMate;
+import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * @author Jim Robinson
@@ -45,7 +49,7 @@ public class HiCTools {
 
         if (args[0].equals("sort")) {
             AlignmentsSorter.sort(args[1], args[2], null);
-        } else if (args[0].equals("pre")) {
+        } else if (args[0].equals("pre") || args[0].equals("bamToPairs")) {
             String genomeId = args[3];
             if (genomeId.equals("hg18")) {
                 chromosomes = hg18Chromosomes;
@@ -56,26 +60,74 @@ public class HiCTools {
                 chromosomes = dmelChromosomes;
             }
 
-            long genomeLength = 0;
-            for (Chromosome c : chromosomes) {
-                if (c != null)
-                    genomeLength += c.getSize();
-            }
-            chromosomes[0] = new Chromosome(0, "All", (int) (genomeLength / 1000));
+            if (args[0].equals("bamToPairs")) {
+                 filterBam(args[1], args[2]);
+            } else {
+                long genomeLength = 0;
+                for (Chromosome c : chromosomes) {
+                    if (c != null)
+                        genomeLength += c.getSize();
+                }
+                chromosomes[0] = new Chromosome(0, "All", (int) (genomeLength / 1000));
 
-            chromosomeOrdinals = new Hashtable();
-            for (int i = 0; i < chromosomes.length; i++) {
-                chromosomeOrdinals.put(chromosomes[i].getName(), i);
-            }
+                chromosomeOrdinals = new Hashtable();
+                for (int i = 0; i < chromosomes.length; i++) {
+                    chromosomeOrdinals.put(chromosomes[i].getName(), i);
+                }
 
-            String[] tokens = args[1].split(",");
-            List<String> files = new ArrayList(tokens.length);
-            for (String f : tokens) {
-                files.add(f);
-            }
+                String[] tokens = args[1].split(",");
+                List<String> files = new ArrayList(tokens.length);
+                for (String f : tokens) {
+                    files.add(f);
+                }
 
-            (new Preprocessor(new File(args[2]))).preprocess(files, genomeId);
+                (new Preprocessor(new File(args[2]))).preprocess(files, genomeId);
+            }
         }
+    }
+
+    public static void filterBam(String inputBam, String outputFile) throws IOException {
+
+        CloseableIterator<Alignment> iter = null;
+        AlignmentQueryReader reader = null;
+        PrintWriter pw = null;
+
+        HashSet allChroms = new HashSet(Arrays.asList(chromosomes));
+
+        try {
+            pw = new PrintWriter(new FileWriter(outputFile));
+            reader = AlignmentReaderFactory.getReader(inputBam, false);
+            iter = reader.iterator();
+            while (iter.hasNext()) {
+
+                Alignment alignment = iter.next();
+                ReadMate mate = alignment.getMate();
+
+                if (alignment.isPaired() && alignment.isMapped() && alignment.getMappingQuality() > 10 &&
+                        mate != null && mate.isMapped() && allChroms.contains(alignment.getChr()) &&
+                        allChroms.contains(mate.getChr())) {
+                    // Skip "normal" insert sizes
+                    if ((!alignment.getChr().equals(mate.getChr())) || alignment.getInferredInsertSize() > 1000) {
+
+                        // Each pair is represented twice in the file,  keep the record with the "leftmost" coordinate
+
+                        if ((alignment.getChr().equals(mate.getChr()) && alignment.getStart() < mate.getStart()) ||
+                                (alignment.getChr().compareTo(mate.getChr()) < 0)) {
+                            String strand = alignment.isNegativeStrand() ? "-" : "+";
+                            String mateStrand = mate.isNegativeStrand() ? "-" : "+";
+                            pw.println(alignment.getReadName() + "\t" + alignment.getChr() + "\t" + alignment.getStart() +
+                                    "\t" + strand + "\t.\t" + mate.getChr() + "\t" + mate.getStart() + "\t" + mateStrand);
+                        }
+                    }
+                }
+            }
+        } finally {
+            pw.close();
+            iter.close();
+            reader.close();
+        }
+
+
     }
 
     public static Chromosome[] chromosomes;
