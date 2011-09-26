@@ -103,23 +103,25 @@ public class HiCTools {
                 Alignment alignment = iter.next();
                 ReadMate mate = alignment.getMate();
 
-                if (alignment.isPaired() && alignment.isMapped() && alignment.getMappingQuality() > 10 &&
-                        mate != null && mate.isMapped() && allChroms.contains(alignment.getChr()) &&
-                        allChroms.contains(mate.getChr())) {
-                    // Skip "normal" insert sizes
-                    if ((!alignment.getChr().equals(mate.getChr())) || alignment.getInferredInsertSize() > 1000) {
+                // Filter unpaired and "normal" pairs.  Only interested in abnormals
+                if (alignment.isPaired() &&
+                        alignment.isMapped() &&
+                        alignment.getMappingQuality() > 10 &&
+                        mate != null &&
+                        mate.isMapped() &&
+                        allChroms.contains(alignment.getChr()) &&
+                        allChroms.contains(mate.getChr()) &&
+                        (!alignment.getChr().equals(mate.getChr()) || alignment.getInferredInsertSize() > 1000)) {
 
                         // Each pair is represented twice in the file,  keep the record with the "leftmost" coordinate
-
-                        if ((alignment.getChr().equals(mate.getChr()) && alignment.getStart() < mate.getStart()) ||
-                                (alignment.getChr().compareTo(mate.getChr()) < 0)) {
+                        if (alignment.getStart() < mate.getStart()) {
                             String strand = alignment.isNegativeStrand() ? "-" : "+";
                             String mateStrand = mate.isNegativeStrand() ? "-" : "+";
                             pw.println(alignment.getReadName() + "\t" + alignment.getChr() + "\t" + alignment.getStart() +
                                     "\t" + strand + "\t.\t" + mate.getChr() + "\t" + mate.getStart() + "\t" + mateStrand);
                         }
                     }
-                }
+
             }
         } finally {
             pw.close();
