@@ -36,6 +36,73 @@ public class FileUtils {
     private static Logger log = Logger.getLogger(FileUtils.class);
 
 
+    static Map<String, String> illegalChar = new HashMap();
+
+    static {
+        illegalChar.put("_qm_", "\\?");
+        illegalChar.put("_fbr_", "\\[");
+        illegalChar.put("_rbr_", "]");
+        illegalChar.put("_fsl_", "/");
+        illegalChar.put("_bsl_", "\\\\");
+        illegalChar.put("_eq_", "=");
+        illegalChar.put("_pl_", "\\+");
+        illegalChar.put("_lt_", "<");
+        illegalChar.put("_gt_", ">");
+        illegalChar.put("_co_", ":");
+        illegalChar.put("_sc_", ";");
+        illegalChar.put("_dq_", "\"");
+        illegalChar.put("_sq_", "'");
+        illegalChar.put("_st_", "\\*");
+        illegalChar.put("_pp_", "\\|");
+    }
+
+    public static void main(String [] args) throws IOException {
+        File inputDirectory = new File(args[0]);
+        File outputDirectory = new File(args[1]);
+        searchAndReplace(inputDirectory, outputDirectory, args[2], args[3]);
+    }
+
+    /**
+     * Replace all occurences of str1 with str2 in all files in inputDirectory.  Write the modified files
+     * to outputDirectory.  Note: assumption is all files are text.
+     *
+     * @param inputDirectory
+     * @param outputDirectory
+     * @param str1
+     * @param str2
+     */
+    public static void searchAndReplace(File inputDirectory, File outputDirectory,  String str1, String str2)
+            throws IOException {
+
+        for(File in : inputDirectory.listFiles()) {
+            if(!in.isDirectory() && !in.isHidden()) {
+
+                File of = new File(outputDirectory, in.getName());
+                BufferedReader reader = null;
+                PrintWriter pw = null;
+
+                try {
+                    reader = new BufferedReader(new FileReader(in));
+                    pw = new PrintWriter(new BufferedWriter(new FileWriter(of)));
+                    String nextLine;
+                    while((nextLine = reader.readLine()) != null) {
+                        nextLine = nextLine.replaceAll(str1, str2);
+                        pw.println(nextLine);
+                    }
+                }
+                finally {
+                    reader.close();
+                    pw.close();
+
+                }
+
+
+
+            }
+        }
+
+    }
+
     public static boolean resourceExists(String path) {
         try {
             boolean remoteFile = isRemote(path);
@@ -376,25 +443,6 @@ public class FileUtils {
     }
 
 
-    static Map<String, String> illegalChar = new HashMap();
-
-    static {
-        illegalChar.put("_qm_", "\\?");
-        illegalChar.put("_fbr_", "\\[");
-        illegalChar.put("_rbr_", "]");
-        illegalChar.put("_fsl_", "/");
-        illegalChar.put("_bsl_", "\\\\");
-        illegalChar.put("_eq_", "=");
-        illegalChar.put("_pl_", "\\+");
-        illegalChar.put("_lt_", "<");
-        illegalChar.put("_gt_", ">");
-        illegalChar.put("_co_", ":");
-        illegalChar.put("_sc_", ";");
-        illegalChar.put("_dq_", "\"");
-        illegalChar.put("_sq_", "'");
-        illegalChar.put("_st_", "\\*");
-        illegalChar.put("_pp_", "\\|");
-    }
 
     static public String legalFileName(String string) {
         for (Map.Entry<String, String> entry : illegalChar.entrySet()) {

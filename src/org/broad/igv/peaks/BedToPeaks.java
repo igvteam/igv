@@ -41,11 +41,11 @@ public class BedToPeaks {
 
     public static void main(String[] args) throws IOException {
 
-        File inputDir = new File("/Users/jrobinso/IGV/time_course/sorted");
-        File destDir = new File("/Users/jrobinso/IGV/time_course/peaks");
+        File inputDir = new File("/Users/jrobinso/IGV/ichip/bed/");
+        File destDir = new File("/Users/jrobinso/IGV/ichip/peaks");
 
-        downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
-        sortAll("/Users/jrobinso/IGV/time_course/sorted");
+       // downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
+       // sortAll("/Users/jrobinso/IGV/time_course/sorted");
         convertAll(inputDir, destDir);
     }
 
@@ -351,7 +351,7 @@ public class BedToPeaks {
         // <FACTOR>_0.peaks.filtered.by.fold.real.sorted.bed
 
 
-        File factorFile = new File("/Users/jrobinso/IGV/time_course/factors.txt");
+        File factorFile = new File("/Users/jrobinso/IGV/ichip/bed/factors.txt");
         int[] time = {0, 30, 60, 120};
 
         BufferedReader reader = new BufferedReader(new FileReader(factorFile));
