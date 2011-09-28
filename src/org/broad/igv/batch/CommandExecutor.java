@@ -79,7 +79,7 @@ public class CommandExecutor {
                 if (cmd.equals("echo")) {
                     result = cmd;
                 } else if (cmd.equals("goto")) {
-                    result = goto1(param1);
+                    result = goto1(args);
                 } else if (cmd.equals("snapshotdirectory")) {
                     result = setSnapshotDirectory(param1);
 
@@ -199,11 +199,14 @@ public class CommandExecutor {
         return result;
     }
 
-    private String goto1(String param1) {
-        if (param1 == null) {
+    private String goto1(List<String> args) {
+        if (args == null || args.size() < 2) {
             return "ERROR: missing locus parameter";
         }
-        String locus = param1;
+        String locus = args.get(1);
+        for(int i=2; i<args.size(); i++) {
+            locus += (" " + args.get(i));
+        }
         IGV.getFirstInstance().goToLocus(locus);
         return "OK";
     }
