@@ -93,36 +93,43 @@ public class SearchCommand implements Command {
         String[] tokens = searchString.split("\\s+");
         if (tokens.length >= 2) {
             String chr = genome.getChromosomeAlias(tokens[0].trim());
-            int start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
-            int end = start + 1;
-            if (tokens.length > 2) {
-                end = Integer.parseInt(tokens[2].trim());
+            try {
+                int start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
+                int end = start + 1;
+                if (tokens.length > 2) {
+                    end = Integer.parseInt(tokens[2].trim());
+                }
+
+                if(FrameManager.isGeneListMode()) {
+                    IGV.getInstance().getSession().setCurrentGeneList(null);
+                    IGV.getInstance().resetFrames();
+                }
+
+                if (recordHistory) {
+                    IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
+                }
+                referenceFrame.jumpTo(chr, start, end);
+                success = true;
+            } catch (NumberFormatException e) {
+                // Multiple tokens, On the fly gene list ?
+
+                List<String> loci = Arrays.asList(tokens);
+                GeneList geneList = new GeneList("", loci, false);
+                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                IGV.getInstance().resetFrames();
+                success = true;
             }
-            if (recordHistory) {
-                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-            }
-            referenceFrame.jumpTo(chr, start, end);
-            success = true;
 
         }
 
         // Feature search
 
         else {
-            // On the fly gene list
-            if (searchString.contains("|")) {
-                List<String> loci = Arrays.asList(searchString.split("\\|")) ;
-                GeneList geneList = new GeneList("", loci, false);
-                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+
+            if(FrameManager.isGeneListMode()) {
+                IGV.getInstance().getSession().setCurrentGeneList(null);
                 IGV.getInstance().resetFrames();
-                return;
-
-            } else {
-                if (FrameManager.isGeneListMode()) {
-                    IGV.getInstance().setGeneList(null);
-                }
             }
-
 
             NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
             if (feature != null) {
