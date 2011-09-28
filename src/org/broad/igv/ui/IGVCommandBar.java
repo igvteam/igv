@@ -427,14 +427,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     public void setGeneListMode(boolean geneListMode) {
 
-        genomeComboBox.setEnabled(!geneListMode);
-        locationPanel.setEnabled(!geneListMode);
+         genomeComboBox.setEnabled(!geneListMode);
+//        locationPanel.setEnabled(!geneListMode);
         chromosomeComboBox.setEnabled(!geneListMode);
-        searchTextField.setEnabled(!geneListMode);
-        goButton.setEnabled(!geneListMode);
-        zoomControl.setEnabled(!geneListMode);
-        homeButton.setEnabled(!geneListMode);
-        roiToggleButton.setEnabled(!geneListMode);
+//        searchTextField.setEnabled(!geneListMode);
+//        goButton.setEnabled(!geneListMode);
+//        zoomControl.setEnabled(!geneListMode);
+//        homeButton.setEnabled(true);
+//        roiToggleButton.setEnabled(!geneListMode);
     }
 
 
