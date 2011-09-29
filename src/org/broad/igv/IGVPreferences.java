@@ -140,9 +140,9 @@ public class IGVPreferences {
                         if (override) {
                             log.info("Overriding preference: " + key + "=" + value);
                             overrides.put(key, value);
-                        } else {
-                            cache.put(key, value);
                         }
+                        cache.put(key, value);
+
 
                     }
                 }
