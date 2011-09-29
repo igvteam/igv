@@ -23,6 +23,7 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.log4j.Logger;
+import org.broad.igv.util.IGVHttpClientUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -81,7 +82,7 @@ public class GSUtils {
             try {
                 br = new BufferedReader(new FileReader(file));
                 String token = br.readLine();
-                setAuthenticationToken(httpClient, host, token);
+                setGSAuthenticationToken(httpClient, host, token);
             } catch (IOException e) {
                 log.error("Error reading GS cookie", e);
             } finally {
@@ -94,7 +95,7 @@ public class GSUtils {
         }
     }
 
-    public static void setAuthenticationToken(DefaultHttpClient httpClient, String host, String token) {
+    public static void setGSAuthenticationToken(DefaultHttpClient httpClient, String host, String token) {
         BasicClientCookie cookie = new BasicClientCookie(AUTH_TOKEN_COOKIE_NAME, token);
         cookie.setDomain(getCookieDomainPattern(host));
         cookie.setPath(AUTH_TOKEN_COOKIE_DEFAULT_PATH);
@@ -103,6 +104,7 @@ public class GSUtils {
         cookieStore.addCookie(cookie);
         httpClient.setCookieStore(cookieStore);
     }
+
 
     private static String getCookieDomainPattern(String serverName) {
         int firstDotIdx = serverName.indexOf(".");
@@ -124,17 +126,15 @@ public class GSUtils {
 
     private static File getTokenFile() {
         File gsDir = getTokenSaveDir();
-        File f = new File(gsDir, tokenSaveFileName);
-        return f;
+        return (gsDir != null && gsDir.exists()) ? new File(gsDir, tokenSaveFileName) : null;
     }
 
     private static File getUsernameFile() {
         File gsDir = getTokenSaveDir();
-        File f = new File(gsDir, usernameSaveFileName);
-        return f;
+        return (gsDir != null && gsDir.exists()) ? new File(gsDir, usernameSaveFileName) : null;
     }
 
-    public static void saveLoginForSSO(String newToken, String username) {
+    public static void saveGSLogin(String newToken, String username) {
         BufferedWriter bw = null;
 
         File gsDir = getTokenSaveDir();
@@ -151,6 +151,21 @@ public class GSUtils {
         writeToFile(newToken, tokenFile);
         writeToFile(username, userFile);
     }
+
+    public static void logout() {
+        File userfile = getUsernameFile();
+        if (userfile.exists()) {
+            userfile.delete();
+        }
+        File tokenFile = getTokenFile();
+        if (tokenFile.exists()) {
+            tokenFile.delete();
+        }
+
+        IGVHttpClientUtils.getInstance().removeGSCookie();
+
+    }
+
 
     private static void writeToFile(String line, File aFile) {
         BufferedWriter bw = null;

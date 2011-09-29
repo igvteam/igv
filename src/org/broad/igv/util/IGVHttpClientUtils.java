@@ -24,9 +24,9 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
-import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -38,19 +38,23 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -65,8 +69,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -481,17 +484,32 @@ public class IGVHttpClientUtils extends HttpUtils {
 
         if (GSUtils.isGenomeSpace(host)) {
             // Get the genomespace token
+            HttpGet httpget = null;
             try {
-                HttpGet httpget = new HttpGet(GSUtils.identityServerUrl);
+                httpget = new HttpGet(GSUtils.identityServerUrl);
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 String responseBody = client.execute(httpget, responseHandler);
                 if (responseBody != null && responseBody.length() > 0) {
                     String[] tokens = userpass.split(":");
                     String user = tokens[0];
-                    GSUtils.saveLoginForSSO(responseBody, user);
+                    GSUtils.saveGSLogin(responseBody, user);
                 }
+            } catch (org.apache.http.client.HttpResponseException e) {
+                int code = e.getStatusCode();
+                if(code == 401) {
+                    MessageUtils.showMessage("Invalid username or password.");
+                }
+                if (httpget != null) {
+                    httpget.abort();
+                }
+                createClient();
             } catch (IOException e) {
                 log.error("Error fetching GS token", e);
+                if (httpget != null) {
+                    httpget.abort();
+                }
+                createClient();
+
             }
 
         }
@@ -499,8 +517,27 @@ public class IGVHttpClientUtils extends HttpUtils {
     }
 
     /**
+     * Remove the GenomeSpace cookie
+     */
+    public void removeGSCookie() {
+        createClient();
+//        CookieStore cookieStore = client.getCookieStore();
+//        // Copy the list
+//        java.util.List<Cookie> cookies = cookieStore.getCookies();
+//        cookieStore.clear();
+//        for (Cookie cookie : cookies) {
+//            if (!cookie.getName().equals(GSUtils.AUTH_TOKEN_COOKIE_NAME)) {
+//                cookieStore.addCookie(cookie);
+//            }
+//        }
+//
+//        client.getCredentialsProvider().clear();
+
+    }
+
+
+    /**
      * Open a modal login dialog and return
-     *
      *
      * @param owner
      * @param url
@@ -509,10 +546,9 @@ public class IGVHttpClientUtils extends HttpUtils {
     public static String getUserPass(Frame owner, URL url, boolean isGenomeSpace) {
 
 
-
         LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), false);
-       //  GSUtils.isGenomeSpace(server)
-       // public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
+        //  GSUtils.isGenomeSpace(server)
+        // public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
         dlg.setVisible(true);
         if (dlg.isCanceled()) {
             return null;
