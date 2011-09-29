@@ -47,6 +47,7 @@ public class PeakParser {
 
             // Now parse the data
             int nTimePoints = reader.readInt();
+            System.out.println("nTimePoints = " + nTimePoints);
 
             String chr;
             while (!(chr = reader.readString()).equals("EOF")) {
