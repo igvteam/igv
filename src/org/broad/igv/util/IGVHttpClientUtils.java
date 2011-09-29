@@ -399,7 +399,7 @@ public class IGVHttpClientUtils extends HttpUtils {
             if (statusCode == 401) {
                 // Try again
                 client.getCredentialsProvider().clear();
-                login(uri.getHost());
+                login(uri.toURL());
                 uploadFile(uri, file, headers);
             } else if (statusCode == 404 || statusCode == 410) {
                 put.abort();
@@ -440,7 +440,7 @@ public class IGVHttpClientUtils extends HttpUtils {
             if (statusCode == 401) {
                 // Try again
                 client.getCredentialsProvider().clear();
-                login(url.getHost());
+                login(url);
                 return execute(method, url);
             } else if (statusCode == 404 || statusCode == 410) {
                 method.abort();
@@ -460,17 +460,20 @@ public class IGVHttpClientUtils extends HttpUtils {
     }
 
 
-    private void login(String server) {
+    private void login(URL url) {
+
+        String server = url.getHost();
 
         Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        final boolean genomeSpace = GSUtils.isGenomeSpace(server);
 
-        String userpass = getUserPass(owner);
+        String userpass = getUserPass(owner, url, genomeSpace);
         if (userpass == null) {
             throw new RuntimeException("Access denied:  " + server);
         }
         UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
 
-        String host = GSUtils.isGenomeSpace(server) ? GSUtils.GENOME_SPACE_ID_SERVER : server;
+        String host = genomeSpace ? GSUtils.GENOME_SPACE_ID_SERVER : server;
 
         client.getCredentialsProvider().setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
@@ -498,12 +501,18 @@ public class IGVHttpClientUtils extends HttpUtils {
     /**
      * Open a modal login dialog and return
      *
+     *
      * @param owner
+     * @param url
      * @return the user credentials in the form of "user:password".  If the  user cancels return null.
      */
-    public static String getUserPass(Frame owner) {
+    public static String getUserPass(Frame owner, URL url, boolean isGenomeSpace) {
 
-        LoginDialog dlg = new LoginDialog(owner);
+
+
+        LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), false);
+       //  GSUtils.isGenomeSpace(server)
+       // public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
         dlg.setVisible(true);
         if (dlg.isCanceled()) {
             return null;
