@@ -36,7 +36,7 @@ public class BBFileReaderTest {
         // time the B+/R+ chromosome an zoom level tree construction
         long time = System.currentTimeMillis(), time_prev = time;
 
-        BBFileReader bbReader = new BBFileReader("/Users/jrobinso/projects/bigwig/test/data/ce6_uniqueome.coverage.base-space.25.1.bw");
+        BBFileReader bbReader = new BBFileReader(path);
 
         // get the time mark
         time = System.currentTimeMillis();
@@ -57,10 +57,8 @@ public class BBFileReaderTest {
     @Test
     public void testBigBed() throws IOException {
 
-        String path = "/Users/jrobinso/projects/bigwig/test/data/chr21.bb";
+        String path = "test/data/bb/chr21.refseq.bb";
         BBFileReader bbReader = openReader(path);
-
-        //chr21:26,490,012-42,182,827
 
         String chr = "chr21";
         int start = 26490012;
@@ -74,7 +72,7 @@ public class BBFileReaderTest {
 
 
         ///end = 100000;
-        ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(7, chr, start, chr, end, false);
+        ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(3, chr, start, chr, end, false);
 
         while (zlIter.hasNext()) {
             ZoomDataRecord rec = zlIter.next();
@@ -91,59 +89,4 @@ public class BBFileReaderTest {
 
     }
 
-    //@Test
-    public void testBigWig() throws IOException {
-
-        String path = "/Users/jrobinso/projects/bigwig/test/data/ce6_uniqueome.coverage.base-space.25.1.bw";
-        BBFileReader bbReader = openReader(path);
-
-        String chr = "chrI";
-        int start = 7517811;
-        int end = 7521491;
-
-
-        ///end = 100000;
-        ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(1, chr, start, chr, end, false);
-
-        while (zlIter.hasNext()) {
-            ZoomDataRecord rec = zlIter.next();
-            int n = rec.getBasesCovered();
-            if (n > 0) {
-                System.out.println("Base covered = " + n);
-                double mean = rec.getSumData() / n;
-                System.out.println(rec.getChromName() + "\t" + rec.getChromStart() + "\t" + rec.getChromEnd() +
-                        "\t" + mean);
-            }
-
-        }
-
-
-        Iterator<WigItem> iter = bbReader.getBigWigIterator(chr, start, chr, end, false);
-
-        double sum = 0;
-        int nb = 0;
-        int basesCovered = 0;
-        while (iter.hasNext()) {
-            WigItem wi = iter.next();
-            //System.out.println(wi.getChromosome() + "\t" + wi.getStartBase() + "\t" + wi.getEndBase()
-            //        + "\t" + wi.getWigValue());
-
-            double span = wi.getEndBase() - wi.getStartBase();
-            sum += span * wi.getWigValue();
-            nb++;
-            basesCovered += span;
-        }
-        System.out.println("mean = " + (sum / basesCovered));
-        System.out.println("nb = " + nb);
-        System.out.println("basesCovere = " + basesCovered);
-
-
-        System.out.println("Zoom levels");
-        //BBZoomLevels levels = bbReader.getZoomLevels();
-
-        for (BBZoomLevelHeader header : bbReader.getZoomLevels().getZoomLevelHeaders()) {
-            header.print();
-        }
-
-    }
 }
