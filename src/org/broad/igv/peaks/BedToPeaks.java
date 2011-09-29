@@ -23,6 +23,7 @@ import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -136,7 +137,7 @@ public class BedToPeaks {
 
 
         BufferedReader[] readers = new BufferedReader[bedFiles.size()];
-        DataOutputStream peakWriter = null;
+        LittleEndianOutputStream peakWriter = null;
         try {
 
             for (int i = 0; i < bedFiles.size(); i++) {
@@ -144,7 +145,7 @@ public class BedToPeaks {
             }
 
             File peeksFile = new File(outputDir, factor + ".peak.bin");
-            peakWriter = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(peeksFile)));
+            peakWriter = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(peeksFile)));
 
             if (peakWriter != null) {
 
@@ -175,7 +176,7 @@ public class BedToPeaks {
                     String chr = tokens[0];
 
                     if (!chr.equals(lastChr) && records.size() > 0) {
-                        peakWriter.writeUTF(lastChr);
+                        peakWriter.writeString(lastChr);
                         peakWriter.writeInt(records.size());
                         for (PeakRecord record : records) {
                             peakWriter.writeInt(record.start);
@@ -208,7 +209,7 @@ public class BedToPeaks {
 
         } finally {
             if (peakWriter != null) {
-                peakWriter.writeUTF("EOF");
+                peakWriter.writeString("EOF");
                 peakWriter.close();
             }
             for (BufferedReader reader : readers) {

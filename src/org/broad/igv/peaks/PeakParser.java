@@ -22,6 +22,7 @@ import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
@@ -39,16 +40,16 @@ public class PeakParser {
     public static List<Peak> loadPeaksBinary(InputStream stream) throws IOException {
 
         List<Peak> peaks = new ArrayList(2000);
-        DataInputStream reader = null;
+        LittleEndianInputStream reader = null;
 
         try {
-            reader = new DataInputStream(new BufferedInputStream(stream));
+            reader = new LittleEndianInputStream(new BufferedInputStream(stream));
 
             // Now parse the data
             int nTimePoints = reader.readInt();
 
             String chr;
-            while (!(chr = reader.readUTF()).equals("EOF")) {
+            while (!(chr = reader.readString()).equals("EOF")) {
                 int nRows = reader.readInt();
                 for (int r = 0; r < nRows; r++) {
                     int start = reader.readInt();
