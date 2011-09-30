@@ -141,6 +141,9 @@ public class IGVPreferences {
                             log.info("Overriding preference: " + key + "=" + value);
                             overrides.put(key, value);
                         }
+                        if(cache == null) {
+                            loadUserPreferences();
+                        }
                         cache.put(key, value);
 
 

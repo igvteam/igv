@@ -124,12 +124,12 @@ public class GSUtils {
         return gsDir;
     }
 
-    private static File getTokenFile() {
+    public static File getTokenFile() {
         File gsDir = getTokenSaveDir();
         return (gsDir != null && gsDir.exists()) ? new File(gsDir, tokenSaveFileName) : null;
     }
 
-    private static File getUsernameFile() {
+    public static File getUsernameFile() {
         File gsDir = getTokenSaveDir();
         return (gsDir != null && gsDir.exists()) ? new File(gsDir, usernameSaveFileName) : null;
     }

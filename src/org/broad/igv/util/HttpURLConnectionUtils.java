@@ -21,6 +21,7 @@ package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
@@ -111,7 +112,26 @@ public class HttpURLConnectionUtils extends HttpUtils {
      * @return
      */
     public String getContentsAsString(URL url) throws IOException {
-        return openConnection(url, null).getContent().toString();
+
+        InputStream is = null;
+        StringBuffer contents = new StringBuffer();
+        HttpURLConnection conn = openConnection(url, null);
+
+        try {
+            is = conn.getInputStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String nextLine;
+            while((nextLine = br.readLine()) != null) {
+                contents.append(nextLine);
+                contents.append("\n");
+                System.out.println(nextLine);
+            }
+
+        } finally {
+           if(is != null) is.close();
+        }
+
+        return contents.toString();
     }
 
     public InputStream openConnectionStream(URL url) throws IOException {
@@ -290,9 +310,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
             }
         } else {
             conn = (HttpURLConnection) url.openConnection();
-
         }
 
+        if (GSUtils.isGenomeSpace(url.toString())) {
+            checkForCookie(conn);
+            conn.setInstanceFollowRedirects(false);
+        }
 
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(60000);
@@ -324,10 +347,34 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         // TODO -- handle other response codes.
         if (code > 400) {
-           throw new IOException("Server returned error code " + code);
+            throw new IOException("Server returned error code " + code);
         }
 
         return conn;
+    }
+
+    public static void checkForCookie(URLConnection conn) {
+
+        File file = GSUtils.getTokenFile();
+        if (file.exists()) {
+            BufferedReader br = null;
+            try {
+                br = new BufferedReader(new FileReader(file));
+                String token = br.readLine();
+                if (token != null) {
+                    String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + token;
+                    conn.setRequestProperty("Cookie", cookie);
+                }
+            } catch (IOException e) {
+                log.error("Error reading GS cookie", e);
+            } finally {
+                if (br != null) try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
     }
 
 
@@ -349,8 +396,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
     }
 
+    /**
+     * The default authenticator
+     */
     public static class IGVAuthenticator extends Authenticator {
 
+        /**
+         * Called when password authentcation is needed.
+         *
+         * @return
+         */
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
 
@@ -377,6 +432,17 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 if (isProxyChallenge) {
                     proxySettings.user = userString;
                     proxySettings.pw = new String(userPass);
+                } else if (GSUtils.isGenomeSpace(url.getHost())) {
+                    String token = null;
+                    try {
+                        token = getInstance().getContentsAsString(new URL(GSUtils.identityServerUrl));
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                    if (token != null && token.length() > 0) {
+                        GSUtils.saveGSLogin(token, userString);
+                    }
+
                 }
 
                 return new PasswordAuthentication(userString, userPass);
