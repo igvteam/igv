@@ -57,7 +57,7 @@ public class AsciiPairIterator implements PairIterator {
                     int pos1 = Integer.parseInt(tokens[2]);
                     int pos2 = Integer.parseInt(tokens[6]);
 
-                    nextPair = new AlignmentPair(tokens[1], pos1, tokens[5], pos2);
+                    nextPair = new AlignmentPair(chrom1, pos1, chrom2, pos2);
                     return;
                 }
 

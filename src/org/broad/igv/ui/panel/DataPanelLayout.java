@@ -21,6 +21,7 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 
 /**
@@ -31,7 +32,9 @@ public class DataPanelLayout implements LayoutManager {
 
     private static Logger log = Logger.getLogger(DataPanelLayout.class);
 
-    int hgap = 5;
+    int hgap = 5;   // TODO <= make this a function of # of panels
+
+    static Border panelBorder = BorderFactory.createLineBorder(Color.gray);
 
     public void addLayoutComponent(String s, Component component) {
         // Not used
@@ -100,10 +103,10 @@ public class DataPanelLayout implements LayoutManager {
 
                     if (c instanceof JComponent) {
                         if (frame.getWidthInPixels() > 5) {
-                            ((JComponent) c).setBorder(BorderFactory.createLineBorder(Color.gray));
+                            ((JComponent) c).setBorder(panelBorder);
                         } else {
                              ((JComponent) c).setBorder(null);
-                        }
+                         }
                     }
 
                     log.debug("Layout: " + frame.name + "  x=" + frame.pixelX + "  w=" + frame.getWidthInPixels());
