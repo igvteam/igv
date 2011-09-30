@@ -23,7 +23,7 @@
 package org.broad.igv.sam.reader;
 
 import net.sf.samtools.*;
-import net.sf.samtools.util.AsciiLineReader;
+import net.sf.samtools.util.BufferedLineReader;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.LineReader;
 import org.apache.log4j.Logger;
@@ -32,6 +32,7 @@ import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -109,9 +110,9 @@ public class BAMRemoteQueryReader implements AlignmentQueryReader {
             URL url = new URL(serverURL + "?method=samHeader&samFile=" + file);
             is = HttpUtils.getInstance().openConnectionStream(url);
 
-            LineReader reader = new AsciiLineReader(is);
-            SAMTextHeaderCodec code = new SAMTextHeaderCodec();
-            header = code.decode(reader, null);
+            LineReader reader =  new BufferedLineReader(is);
+            SAMTextHeaderCodec codec = new SAMTextHeaderCodec();
+            header = codec.decode(reader, null);
 
         } catch (IOException ex) {
             log.error("Error opening file", ex);
