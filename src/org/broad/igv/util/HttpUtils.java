@@ -117,7 +117,7 @@ public abstract class HttpUtils {
    public abstract  boolean downloadFile(String url, File outputFile) throws IOException;
 
 
-    public abstract void uploadFile(URI uri, File localFile, Map<String,String> headers) throws IOException;;
+    public abstract void uploadGenomeSpaceFile(URI uri, File localFile, Map<String, String> headers) throws IOException;;
 
-    public abstract String createDirectory(URL url, String body) throws IOException;;
+    public abstract String createGenomeSpaceDirectory(URL url, String body) throws IOException;;
 }

@@ -25,6 +25,7 @@ package org.broad.igv.gs;
 import java.awt.event.*;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.gs.dm.GSDirectoryListing;
 import org.broad.igv.gs.dm.GSFileMetadata;
@@ -116,7 +117,7 @@ public class GSFileBrowser extends JDialog {
         };
         fileList.addMouseListener(mouseListener);
 
-        URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
+        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER + "defaultdirectory"));
         fetchContents(defaultURL);
     }
 

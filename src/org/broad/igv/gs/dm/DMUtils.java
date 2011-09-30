@@ -20,6 +20,7 @@ package org.broad.igv.gs.dm;
 
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.HttpUtils;
 import org.json.JSONArray;
@@ -47,7 +48,7 @@ public class DMUtils {
 
     public static GSDirectoryListing listDefaultDirectory() {
         try {
-            URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
+            URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "defaultdirectory");
             return getDirectoryListing(defaultURL);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -127,7 +128,8 @@ public class DMUtils {
         // The GenomeSpace user,  is this the correct way to get it?
         String user = GSUtils.getCachedUsernameForSSO();
 
-        String tmp = GSUtils.dmServer + "uploadurls" + gsPath + "?Content-Length=" + contentLength +
+        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "uploadurls" +
+                gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
         String uploadURL = HttpUtils.getInstance().getContentsAsString(new URL(tmp));
@@ -138,7 +140,7 @@ public class DMUtils {
         headers.put("Content-MD5", base64String);
         headers.put("x-amz-meta-md5-hash", hexString);
 
-        HttpUtils.getInstance().uploadFile(uri, localFile, headers);
+        HttpUtils.getInstance().uploadGenomeSpaceFile(uri, localFile, headers);
 
     }
 
@@ -154,7 +156,7 @@ public class DMUtils {
         }
 
         String body = "{\"isDirectory\":true}";
-        String response = HttpUtils.getInstance().createDirectory(new URL(putURL), body);
+        String response = HttpUtils.getInstance().createGenomeSpaceDirectory(new URL(putURL), body);
 
         JSONTokener tk = new JSONTokener(response);
         JSONObject obj = new JSONObject(tk);

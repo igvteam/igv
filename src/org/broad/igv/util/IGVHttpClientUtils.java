@@ -26,7 +26,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -38,14 +37,12 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
@@ -354,7 +351,7 @@ public class IGVHttpClientUtils extends HttpUtils {
      *
      * @throws IOException
      */
-    public String createDirectory(URL url, String body) throws IOException {
+    public String createGenomeSpaceDirectory(URL url, String body) throws IOException {
         HttpPut put = new HttpPut(url.toExternalForm());
         put.setHeader("Content-Type", "application/json");
         StringEntity se = new StringEntity(body);
@@ -378,12 +375,13 @@ public class IGVHttpClientUtils extends HttpUtils {
      * <p/>
      * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
      *
+     *
      * @param uri
      * @param file
      * @param headers
      * @throws IOException
      */
-    public void uploadFile(URI uri, File file, Map<String, String> headers) throws IOException {
+    public void uploadGenomeSpaceFile(URI uri, File file, Map<String, String> headers) throws IOException {
 
         HttpPut put = new HttpPut(uri);
         try {
@@ -403,7 +401,7 @@ public class IGVHttpClientUtils extends HttpUtils {
                 // Try again
                 client.getCredentialsProvider().clear();
                 login(uri.toURL());
-                uploadFile(uri, file, headers);
+                uploadGenomeSpaceFile(uri, file, headers);
             } else if (statusCode == 404 || statusCode == 410) {
                 put.abort();
                 throw new FileNotFoundException();
@@ -476,17 +474,15 @@ public class IGVHttpClientUtils extends HttpUtils {
         }
         UsernamePasswordCredentials GENOME_SPACE_CREDS = new UsernamePasswordCredentials(userpass);
 
-        String host = genomeSpace ? GSUtils.GENOME_SPACE_ID_SERVER : server;
-
         client.getCredentialsProvider().setCredentials(
                 new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM),
                 GENOME_SPACE_CREDS);
 
-        if (GSUtils.isGenomeSpace(host)) {
+        if (genomeSpace) {
             // Get the genomespace token
             HttpGet httpget = null;
             try {
-                httpget = new HttpGet(GSUtils.identityServerUrl);
+                httpget = new HttpGet(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
                 ResponseHandler<String> responseHandler = new BasicResponseHandler();
                 String responseBody = client.execute(httpget, responseHandler);
                 if (responseBody != null && responseBody.length() > 0) {

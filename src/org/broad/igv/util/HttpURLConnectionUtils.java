@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ftp.FTPClient;
 import org.broad.igv.util.ftp.FTPStream;
 import org.broad.igv.util.ftp.FTPUtils;
@@ -36,8 +35,6 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -122,14 +119,14 @@ public class HttpURLConnectionUtils extends HttpUtils {
             is = conn.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String nextLine;
-            while((nextLine = br.readLine()) != null) {
+            while ((nextLine = br.readLine()) != null) {
                 contents.append(nextLine);
                 contents.append("\n");
                 System.out.println(nextLine);
             }
 
         } finally {
-           if(is != null) is.close();
+            if (is != null) is.close();
         }
 
         return contents.toString();
@@ -266,12 +263,103 @@ public class HttpURLConnectionUtils extends HttpUtils {
     }
 
     @Override
-    public void uploadFile(URI uri, File localFile, Map<String, String> headers) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void uploadGenomeSpaceFile(URI uri, File localFile, Map<String, String> headers) throws IOException {
+
+        URLConnection urlconnection = null;
+        try {
+            File file = new File("C:/test.txt");
+            URL url = uri.toURL();
+
+            urlconnection = openConnection(url, null, "PUT");
+
+            urlconnection = url.openConnection();
+            urlconnection.setDoOutput(true);
+            urlconnection.setDoInput(true);
+
+            if (urlconnection instanceof HttpURLConnection) {
+                try {
+                    ((HttpURLConnection) urlconnection).setRequestMethod("PUT");
+                    ((HttpURLConnection) urlconnection).setRequestProperty("Content-type", "text/html");
+                    ((HttpURLConnection) urlconnection).connect();
+
+
+                } catch (ProtocolException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+
+            BufferedOutputStream bos = new BufferedOutputStream(urlconnection.getOutputStream());
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+            int i;
+            // read byte by byte until end of stream
+            while ((i = bis.read()) > 0) {
+                bos.write(i);
+            }
+            System.out.println(((HttpURLConnection) urlconnection).getResponseMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+
+            InputStream inputStream;
+            int responseCode = ((HttpURLConnection) urlconnection).getResponseCode();
+            if ((responseCode >= 200) && (responseCode <= 202)) {
+                inputStream = ((HttpURLConnection) urlconnection).getInputStream();
+                int j;
+                while ((j = inputStream.read()) > 0) {
+                    System.out.println(j);
+                }
+
+            } else {
+                inputStream = ((HttpURLConnection) urlconnection).getErrorStream();
+            }
+            ((HttpURLConnection) urlconnection).disconnect();
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+//        HttpPut put = new HttpPut(uri);
+//        try {
+//            FileEntity entity = new FileEntity(file, "text");
+//            put.setEntity(entity);
+//            if (headers != null) {
+//                for (Map.Entry<String, String> entry : headers.entrySet()) {
+//                    put.addHeader(entry.getKey(), entry.getValue());
+//                }
+//            }
+//
+//            HttpResponse response = client.execute(put);
+//            EntityUtils.consume(response.getEntity());
+//
+//            final int statusCode = response.getStatusLine().getStatusCode();
+//            if (statusCode == 401) {
+//                // Try again
+//                client.getCredentialsProvider().clear();
+//                login(uri.toURL());
+//                uploadGenomeSpaceFile(uri, file, headers);
+//            } else if (statusCode == 404 || statusCode == 410) {
+//                put.abort();
+//                throw new FileNotFoundException();
+//            } else if (statusCode >= 400) {
+//                put.abort();
+//                throw new HttpResponseException(statusCode);
+//            }
+//
+//        } catch (RuntimeException e) {
+//            // An unexpected exception  -- abort the HTTP request in order to shut down the underlying
+//            // connection immediately. THis happens automatically for an IOException
+//            if (put != null) put.abort();
+//            throw e;
+//        }
     }
 
     @Override
-    public String createDirectory(URL url, String body) {
+    public String createGenomeSpaceDirectory(URL url, String body) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -316,6 +404,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
         if (GSUtils.isGenomeSpace(url.toString())) {
             checkForCookie(conn);
             // Manually follow redirects for GS requests.  Can't recall why we do this.
+            conn.setRequestProperty("Accept", "application/json,application/text");
             conn.setInstanceFollowRedirects(false);
         }
 
@@ -450,7 +539,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 } else if (GSUtils.isGenomeSpace(url.getHost())) {
                     String token = null;
                     try {
-                        token = getInstance().getContentsAsString(new URL(GSUtils.identityServerUrl));
+                        token = getInstance().getContentsAsString(new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER)));
                     } catch (IOException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }

@@ -18,6 +18,7 @@
 
 package org.broad.igv.gs.atm;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.util.BrowserLauncher;
@@ -58,7 +59,7 @@ public class ATMUtilsTest {
 
     @Test
     public void testGetSubtoolLaunchURL() throws Exception {
-        URL defaultURL = new URL(GSUtils.dmServer + "defaultdirectory");
+        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "defaultdirectory");
         System.out.println(DMUtils.getDirectoryListing(defaultURL).getDirectory());
         String gsPath = URLEncoder.encode("/users/test/259.wgs.muc1.hist.txt", "UTF-8");
         String url = ATMUtils.getSubtoolLaunchURL("GenePattern", "ConvertLineEndings?input.filename=" + gsPath);

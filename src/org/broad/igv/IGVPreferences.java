@@ -45,34 +45,29 @@ public class IGVPreferences {
      */
     static Hashtable<String, String> sessionCache = new Hashtable();
 
-    static Hashtable<String, String> cache = null;
-
-    static Hashtable<String, String> overrides = new Hashtable();
+    static Hashtable<String, String> userPreferences = null;
 
     public void put(String key, String value) {
 
         // Remove from session only, explicitly setting this overrides
         sessionCache.remove(key);
 
-        if (cache == null) {
+        if (userPreferences == null) {
             loadUserPreferences();
         }
         if (value == null) {
-            cache.remove(key);
+            userPreferences.remove(key);
         } else {
-            cache.put(key, value);
+            userPreferences.put(key, value);
         }
         storePreferences();
     }
 
     public void putOverride(String key, String value) {
-        overrides.put(key, value);
+        sessionCache.put(key, value);
     }
 
     public String get(String key, String defaultValue) {
-        if (overrides.containsKey(key)) {
-            return overrides.get(key);
-        }
         if (sessionCache.containsKey(key)) {
             return sessionCache.get(key);
         }
@@ -81,21 +76,21 @@ public class IGVPreferences {
     }
 
 
-    public String get(String key) {
-        if (cache == null) {
+    private String get(String key) {
+        if (userPreferences == null) {
             loadUserPreferences();
         }
-        return cache.get(key);
+        return userPreferences.get(key);
     }
 
     public void remove(String key) {
         sessionCache.remove(key);
-        cache.remove(key);
+        userPreferences.remove(key);
         storePreferences();
     }
 
     public void clear() {
-        cache.clear();
+        userPreferences.clear();
         storePreferences();
 
     }
@@ -104,7 +99,7 @@ public class IGVPreferences {
      * Load user preferences.
      */
     private synchronized void loadUserPreferences() {
-        cache = new Hashtable();
+        userPreferences = new Hashtable();
         File rootDir = Globals.getIgvDirectory();
         if (!rootDir.exists()) {
             rootDir.mkdir();
@@ -139,13 +134,13 @@ public class IGVPreferences {
                     if (!value.equals("null")) {
                         if (override) {
                             log.info("Overriding preference: " + key + "=" + value);
-                            overrides.put(key, value);
+                            sessionCache.put(key, value);
+                        } else {
+                            if (userPreferences == null) {
+                                loadUserPreferences();
+                            }
+                            userPreferences.put(key, value);
                         }
-                        if(cache == null) {
-                            loadUserPreferences();
-                        }
-                        cache.put(key, value);
-
 
                     }
                 }
@@ -165,7 +160,7 @@ public class IGVPreferences {
 
     private synchronized void storePreferences() {
 
-        if (cache != null) {
+        if (userPreferences != null) {
             PrintWriter pw = null;
             try {
                 File rootDir = Globals.getIgvDirectory();
@@ -174,7 +169,7 @@ public class IGVPreferences {
                 }
                 File prefFile = new File(rootDir, "prefs.properties");
                 pw = new PrintWriter(new BufferedWriter(new FileWriter(prefFile)));
-                for (Map.Entry<String, String> entry : cache.entrySet()) {
+                for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
                     pw.print(entry.getKey());
                     pw.print("=");
                     pw.println(entry.getValue());

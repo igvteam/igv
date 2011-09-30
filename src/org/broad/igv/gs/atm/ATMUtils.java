@@ -18,7 +18,7 @@
 
 package org.broad.igv.gs.atm;
 
-import org.broad.igv.gs.GSUtils;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.util.HttpUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +48,7 @@ public class ATMUtils {
      * @throws JSONException
      */
     public static List<WebToolDescriptor> getWebTools() throws IOException, JSONException {
-        URL url = new URL(GSUtils.atmServer + "webtools");
+        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) + "webtools");
         String contents = HttpUtils.getInstance().getContentsAsString(url);
         JSONTokener tk = new JSONTokener(contents);
         JSONArray array = new JSONArray(tk);
@@ -166,13 +166,13 @@ public class ATMUtils {
     }
 
     public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
-        URL url = new URL(GSUtils.atmServer + "webtools/" + webtoolname);
+        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER + "webtools/" + webtoolname));
         return HttpUtils.getInstance().getContentsAsString(url);
     }
 
 
     public static String getSubtoolLaunchURL(String webtoolname, String subtoolname) throws IOException, JSONException {
-        URL url = new URL(GSUtils.atmServer + "webtools/"  + webtoolname + "/" + subtoolname);
+        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER + "webtools/"  + webtoolname + "/" + subtoolname));
         return HttpUtils.getInstance().getContentsAsString(url);
     }
 

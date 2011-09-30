@@ -61,18 +61,6 @@ public class GSUtils {
     private static String tokenSaveDir = ".gs";
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
-    public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
-
-
-    public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
-    public static String dmServer = "https://dmtest.genomespace.org:8444/datamanager/";
-    public static final String atmServer = "https://atmtest.genomespace.org:8443/atm/";
-
-    /*
-    public static final String identityServerUrl = "https://identitytest.genomespace.org/identityServer/basic";
-    public static String dmServer = "https://dmtest.genomespace.org/datamanager/";
-    public static final String atmServer = "https://atmtest.genomespace.org/atm";
-    */
 
     public static void checkForCookie(DefaultHttpClient httpClient, String host) {
 

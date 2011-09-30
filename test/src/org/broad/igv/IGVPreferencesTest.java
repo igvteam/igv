@@ -64,7 +64,7 @@ public class IGVPreferencesTest {
         preferences.put(key, value);
 
         System.out.println("get");
-        String result = preferences.get(key);
+        String result = preferences.get(key, null);
         assertEquals(value, result);
 
     }
