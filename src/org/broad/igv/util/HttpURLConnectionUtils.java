@@ -36,6 +36,7 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -314,6 +315,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         if (GSUtils.isGenomeSpace(url.toString())) {
             checkForCookie(conn);
+            // Manually follow redirects for GS requests.  Can't recall why we do this.
             conn.setInstanceFollowRedirects(false);
         }
 
@@ -329,12 +331,25 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         int code = conn.getResponseCode();
 
-        // Redirect
+        // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
+        // for example http -> https.
         if (code > 300 && code < 400) {
 
             if (redirectCount > MAX_REDIRECTS) {
                 throw new IOException("Too many redirects");
             }
+//
+//            Map<String, java.util.List<String>> props = conn.getRequestProperties();
+//            if (requestProperties == null) {
+//                requestProperties = new HashMap<String, String>();
+//                for (Map.Entry<String, java.util.List<String>> entry : props.entrySet()) {
+//                    String key = entry.getKey();
+//                    java.util.List<String> value = entry.getValue();
+//                    if (value.size() > 0) {
+//                        requestProperties.put(key, value.get(0));
+//                    }
+//                }
+//            }
 
             String newLocation = conn.getHeaderField("Location");
             if (newLocation != null) {

@@ -162,6 +162,7 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             signalPath = tokens[1];
+            signalPath = signalPath.replace("igvdata", "igv");
             if (signalPath != null) {
                 signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
                 signalSource.setNormalizeCounts(true, 1.0e9f);
@@ -173,6 +174,9 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             timeSignalPaths = tokens[1].split(",");
+            for(int i=0; i<timeSignalPaths.length; i++) {
+                timeSignalPaths[i] = timeSignalPaths[i].replace("igvdata", "igv");
+            }
 
             nextLine = br.readLine();
             if (!nextLine.startsWith("#index")) {
