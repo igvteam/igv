@@ -62,7 +62,6 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.ProxySelector;
-import java.net.URI;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -376,16 +375,18 @@ public class IGVHttpClientUtils extends HttpUtils {
      * Note: this method was written for, and has only been tested against, the GenomeSpace amazon server.
      *
      *
+     *
      * @param uri
      * @param file
      * @param headers
      * @throws IOException
      */
-    public void uploadGenomeSpaceFile(URI uri, File file, Map<String, String> headers) throws IOException {
+    public void uploadGenomeSpaceFile(String uri, File file, Map<String, String> headers) throws IOException {
 
         HttpPut put = new HttpPut(uri);
         try {
             FileEntity entity = new FileEntity(file, "text");
+
             put.setEntity(entity);
             if (headers != null) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -400,7 +401,7 @@ public class IGVHttpClientUtils extends HttpUtils {
             if (statusCode == 401) {
                 // Try again
                 client.getCredentialsProvider().clear();
-                login(uri.toURL());
+                login(new URL(uri));
                 uploadGenomeSpaceFile(uri, file, headers);
             } else if (statusCode == 404 || statusCode == 410) {
                 put.abort();

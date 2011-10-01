@@ -45,6 +45,7 @@ public abstract class HttpUtils {
 
         boolean genomeSpaceEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE);
         return genomeSpaceEnabled ? IGVHttpClientUtils.getInstance() : HttpURLConnectionUtils.getInstance();
+        //return HttpURLConnectionUtils.getInstance();
     }
 
     public static boolean isURL(String string) {
@@ -117,7 +118,7 @@ public abstract class HttpUtils {
    public abstract  boolean downloadFile(String url, File outputFile) throws IOException;
 
 
-    public abstract void uploadGenomeSpaceFile(URI uri, File localFile, Map<String, String> headers) throws IOException;;
+    public abstract void uploadGenomeSpaceFile(String uri, File localFile, Map<String, String> headers) throws IOException;;
 
     public abstract String createGenomeSpaceDirectory(URL url, String body) throws IOException;;
 }

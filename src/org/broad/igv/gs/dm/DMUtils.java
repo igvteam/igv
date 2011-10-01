@@ -31,6 +31,7 @@ import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.net.*;
+import java.security.Identity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -134,13 +135,15 @@ public class DMUtils {
 
         String uploadURL = HttpUtils.getInstance().getContentsAsString(new URL(tmp));
 
-        URI uri = new URI(uploadURL);
-
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-MD5", base64String);
         headers.put("x-amz-meta-md5-hash", hexString);
+        headers.put("Content-Length", String.valueOf(contentLength));
+        headers.put("Content-Type", contentType);
 
-        HttpUtils.getInstance().uploadGenomeSpaceFile(uri, localFile, headers);
+
+
+        HttpUtils.getInstance().uploadGenomeSpaceFile(uploadURL, localFile, headers);
 
     }
 

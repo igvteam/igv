@@ -193,7 +193,7 @@ public class GSUtils {
 
 
     public static boolean isGenomeSpace(String path) {
-        return path.contains("genomespace.org");
+        return path.contains("genomespace");
     }
 
     static class GSCookieStore implements CookieStore {

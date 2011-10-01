@@ -35,6 +35,7 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -263,107 +264,104 @@ public class HttpURLConnectionUtils extends HttpUtils {
     }
 
     @Override
-    public void uploadGenomeSpaceFile(URI uri, File localFile, Map<String, String> headers) throws IOException {
+    public void uploadGenomeSpaceFile(String uri, File file, Map<String, String> headers) throws IOException {
 
-        URLConnection urlconnection = null;
-        try {
-            File file = new File("C:/test.txt");
-            URL url = uri.toURL();
+        HttpURLConnection urlconnection = null;
+        OutputStream bos = null;
 
-            urlconnection = openConnection(url, null, "PUT");
+        URL url = new URL(uri);
+        urlconnection = openConnection(url, headers, "PUT");
+        urlconnection.setDoOutput(true);
+        urlconnection.setDoInput(true);
 
-            urlconnection = url.openConnection();
-            urlconnection.setDoOutput(true);
-            urlconnection.setDoInput(true);
-
-            if (urlconnection instanceof HttpURLConnection) {
-                try {
-                    ((HttpURLConnection) urlconnection).setRequestMethod("PUT");
-                    ((HttpURLConnection) urlconnection).setRequestProperty("Content-type", "text/html");
-                    ((HttpURLConnection) urlconnection).connect();
-
-
-                } catch (ProtocolException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-
-
-            BufferedOutputStream bos = new BufferedOutputStream(urlconnection.getOutputStream());
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-            int i;
-            // read byte by byte until end of stream
-            while ((i = bis.read()) > 0) {
-                bos.write(i);
-            }
-            System.out.println(((HttpURLConnection) urlconnection).getResponseMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
+        bos = new BufferedOutputStream(urlconnection.getOutputStream());
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+        int i;
+        // read byte by byte until end of stream
+        while ((i = bis.read()) > 0) {
+            bos.write(i);
         }
-        try {
+        bos.close();
+        int responseCode = urlconnection.getResponseCode();
 
-            InputStream inputStream;
-            int responseCode = ((HttpURLConnection) urlconnection).getResponseCode();
-            if ((responseCode >= 200) && (responseCode <= 202)) {
-                inputStream = ((HttpURLConnection) urlconnection).getInputStream();
-                int j;
-                while ((j = inputStream.read()) > 0) {
-                    System.out.println(j);
-                }
-
-            } else {
-                inputStream = ((HttpURLConnection) urlconnection).getErrorStream();
+        // Error messages below.
+        if (responseCode >= 400) {
+            InputStream inputStream = urlconnection.getErrorStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuffer buf = new StringBuffer();
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                buf.append(nextLine);
+                buf.append('\n');
             }
-            ((HttpURLConnection) urlconnection).disconnect();
+            inputStream.close();
 
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new IOException("Error uploading " + file.getName() + " : " + buf.toString());
         }
-
-
-//        HttpPut put = new HttpPut(uri);
-//        try {
-//            FileEntity entity = new FileEntity(file, "text");
-//            put.setEntity(entity);
-//            if (headers != null) {
-//                for (Map.Entry<String, String> entry : headers.entrySet()) {
-//                    put.addHeader(entry.getKey(), entry.getValue());
-//                }
-//            }
-//
-//            HttpResponse response = client.execute(put);
-//            EntityUtils.consume(response.getEntity());
-//
-//            final int statusCode = response.getStatusLine().getStatusCode();
-//            if (statusCode == 401) {
-//                // Try again
-//                client.getCredentialsProvider().clear();
-//                login(uri.toURL());
-//                uploadGenomeSpaceFile(uri, file, headers);
-//            } else if (statusCode == 404 || statusCode == 410) {
-//                put.abort();
-//                throw new FileNotFoundException();
-//            } else if (statusCode >= 400) {
-//                put.abort();
-//                throw new HttpResponseException(statusCode);
-//            }
-//
-//        } catch (RuntimeException e) {
-//            // An unexpected exception  -- abort the HTTP request in order to shut down the underlying
-//            // connection immediately. THis happens automatically for an IOException
-//            if (put != null) put.abort();
-//            throw e;
-//        }
     }
 
     @Override
-    public String createGenomeSpaceDirectory(URL url, String body) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String createGenomeSpaceDirectory(URL url, String body) throws IOException {
+
+        HttpURLConnection urlconnection = null;
+        OutputStream bos = null;
+
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Content-Length", String.valueOf(body.getBytes().length));
+
+        urlconnection = openConnection(url, headers, "PUT");
+        urlconnection.setDoOutput(true);
+        urlconnection.setDoInput(true);
+
+        bos = new BufferedOutputStream(urlconnection.getOutputStream());
+        bos.write(body.getBytes());
+        bos.close();
+        int responseCode = urlconnection.getResponseCode();
+
+        // Error messages below.
+        StringBuffer buf = new StringBuffer();
+        InputStream inputStream = null;
+
+        if (responseCode >= 200 && responseCode < 300) {
+            inputStream = urlconnection.getInputStream();
+        } else {
+            inputStream = urlconnection.getErrorStream();
+        }
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        String nextLine;
+        while ((nextLine = br.readLine()) != null) {
+            buf.append(nextLine);
+            buf.append('\n');
+        }
+        inputStream.close();
+
+        if (responseCode >= 200 && responseCode < 300) {
+            return buf.toString();
+        } else {
+            throw new IOException("Error creating GS directory: " + buf.toString());
+        }
     }
 
-    private static HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
+//        HttpPut put = new HttpPut(url.toExternalForm());
+//        put.setHeader("Content-Type", "application/json");
+//        StringEntity se = new StringEntity(body);
+//        put.setEntity(se);
+//
+//        HttpResponse response = execute(put, url);
+//        String responseString = EntityUtils.toString(response.getEntity());
+//
+//        int code = response.getStatusLine().getStatusCode();
+//        if (code != 200) {
+//            throw new IOException("Error creating directory: " + code);
+//        }
+//
+//        return responseString;
+//    }
+
+    private static HttpURLConnection openConnection
+            (URL
+                     url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
 
@@ -404,7 +402,9 @@ public class HttpURLConnectionUtils extends HttpUtils {
         if (GSUtils.isGenomeSpace(url.toString())) {
             checkForCookie(conn);
             // Manually follow redirects for GS requests.  Can't recall why we do this.
-            conn.setRequestProperty("Accept", "application/json,application/text");
+            if (!url.toString().contains("datamanager/uploadurls")) {
+                conn.setRequestProperty("Accept", "application/json,application/text");
+            }
             conn.setInstanceFollowRedirects(false);
         }
 
@@ -412,21 +412,25 @@ public class HttpURLConnectionUtils extends HttpUtils {
         conn.setReadTimeout(60000);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "close");
+
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
                 conn.setRequestProperty(prop.getKey(), prop.getValue());
             }
         }
 
-        int code = conn.getResponseCode();
+        if (method.equals("PUT")) {
+            return conn;
+        } else {
+            int code = conn.getResponseCode();
 
-        // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
-        // for example http -> https.
-        if (code > 300 && code < 400) {
+            // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
+            // for example http -> https.
+            if (code > 300 && code < 400) {
 
-            if (redirectCount > MAX_REDIRECTS) {
-                throw new IOException("Too many redirects");
-            }
+                if (redirectCount > MAX_REDIRECTS) {
+                    throw new IOException("Too many redirects");
+                }
 //
 //            Map<String, java.util.List<String>> props = conn.getRequestProperties();
 //            if (requestProperties == null) {
@@ -440,21 +444,22 @@ public class HttpURLConnectionUtils extends HttpUtils {
 //                }
 //            }
 
-            String newLocation = conn.getHeaderField("Location");
-            if (newLocation != null) {
-                log.debug("Redirecting to " + newLocation);
-                return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
-            } else {
-                throw new IOException("Server indicated redirect but Location header is missing");
+                String newLocation = conn.getHeaderField("Location");
+                if (newLocation != null) {
+                    log.debug("Redirecting to " + newLocation);
+                    return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
+                } else {
+                    throw new IOException("Server indicated redirect but Location header is missing");
+                }
             }
-        }
 
-        // TODO -- handle other response codes.
-        if (code > 400) {
-            throw new IOException("Server returned error code " + code);
-        }
+            // TODO -- handle other response codes.
+            if (code > 400) {
+                throw new IOException("Server returned error code " + code);
+            }
 
-        return conn;
+            return conn;
+        }
     }
 
     public static void checkForCookie(URLConnection conn) {
