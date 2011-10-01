@@ -78,7 +78,7 @@ public class IGVHttpClientUtilsTest {
         try {
             contentLength = HttpUtils.getInstance().getContentLength(testURL);
             assertEquals(3617644, contentLength);
-        } catch (org.apache.http.conn.HttpHostConnectException e) {
+        } catch (IOException e) {
             System.out.println("Proxy unreachable.  Skipping proxy test");
             return;
         }

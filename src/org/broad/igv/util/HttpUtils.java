@@ -42,10 +42,7 @@ public abstract class HttpUtils {
     public static boolean useByteRange = true;
 
     public static HttpUtils getInstance() {
-
-        boolean genomeSpaceEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.GENOME_SPACE_ENABLE);
-        return genomeSpaceEnabled ? IGVHttpClientUtils.getInstance() : HttpURLConnectionUtils.getInstance();
-        //return HttpURLConnectionUtils.getInstance();
+        return HttpURLConnectionUtils.getInstance();
     }
 
     public static boolean isURL(String string) {

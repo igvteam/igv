@@ -18,14 +18,11 @@
 
 package org.broad.igv.gs;
 
-import org.apache.http.client.CookieStore;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.cookie.BasicClientCookie;
+
 import org.apache.log4j.Logger;
-import org.broad.igv.util.IGVHttpClientUtils;
 
 import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -62,36 +59,7 @@ public class GSUtils {
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
 
-    public static void checkForCookie(DefaultHttpClient httpClient, String host) {
 
-        File file = getTokenFile();
-        if (file.exists()) {
-            BufferedReader br = null;
-            try {
-                br = new BufferedReader(new FileReader(file));
-                String token = br.readLine();
-                setGSAuthenticationToken(httpClient, host, token);
-            } catch (IOException e) {
-                log.error("Error reading GS cookie", e);
-            } finally {
-                if (br != null) try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-        }
-    }
-
-    public static void setGSAuthenticationToken(DefaultHttpClient httpClient, String host, String token) {
-        BasicClientCookie cookie = new BasicClientCookie(AUTH_TOKEN_COOKIE_NAME, token);
-        cookie.setDomain(getCookieDomainPattern(host));
-        cookie.setPath(AUTH_TOKEN_COOKIE_DEFAULT_PATH);
-
-        CookieStore cookieStore = new GSCookieStore();
-        cookieStore.addCookie(cookie);
-        httpClient.setCookieStore(cookieStore);
-    }
 
 
     private static String getCookieDomainPattern(String serverName) {
@@ -150,8 +118,6 @@ public class GSUtils {
             tokenFile.delete();
         }
 
-        IGVHttpClientUtils.getInstance().removeGSCookie();
-
     }
 
 
@@ -192,38 +158,9 @@ public class GSUtils {
     }
 
 
-    public static boolean isGenomeSpace(String path) {
-        return path.contains("genomespace");
+    public static boolean isGenomeSpace(URL url) {
+        return url.getHost().contains("genomespace");
     }
 
-    static class GSCookieStore implements CookieStore {
 
-        List<Cookie> cookieList = new ArrayList();
-
-        public void addCookie(Cookie cookie) {
-            cookieList.add(cookie);
-        }
-
-        public List<Cookie> getCookies() {
-            return cookieList;
-        }
-
-        public boolean clearExpired(Date date) {
-            boolean removed = false;
-            List<Cookie> newCookieList = new ArrayList(cookieList.size());
-            for (Cookie cookie : cookieList) {
-                if (cookie.getExpiryDate().after(date)) {
-                    newCookieList.add(cookie);
-                } else {
-                    removed = true;
-                }
-            }
-            cookieList = newCookieList;
-            return removed;
-        }
-
-        public void clear() {
-            cookieList.clear();
-        }
-    }
 }

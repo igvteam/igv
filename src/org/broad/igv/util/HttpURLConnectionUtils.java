@@ -46,12 +46,13 @@ import java.util.Map;
  */
 public class HttpURLConnectionUtils extends HttpUtils {
 
-    private static Logger log = Logger.getLogger(IGVHttpClientUtils.class);
+    private static Logger log = Logger.getLogger(HttpURLConnectionUtils.class);
 
     private static ProxySettings proxySettings = null;
 
     private static HttpURLConnectionUtils instance;
     public static final int MAX_REDIRECTS = 5;
+    static private String genomeSpaceUser;
 
     static {
         synchronized (HttpURLConnectionUtils.class) {
@@ -113,24 +114,23 @@ public class HttpURLConnectionUtils extends HttpUtils {
     public String getContentsAsString(URL url) throws IOException {
 
         InputStream is = null;
-        StringBuffer contents = new StringBuffer();
         HttpURLConnection conn = openConnection(url, null);
 
         try {
             is = conn.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                contents.append(nextLine);
-                contents.append("\n");
-                System.out.println(nextLine);
+            BufferedInputStream bis = new BufferedInputStream(is);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int b;
+            while((b = bis.read()) >= 0) {
+                bos.write(b);
             }
+            return new String(bos.toByteArray());
+
 
         } finally {
             if (is != null) is.close();
         }
 
-        return contents.toString();
     }
 
     public InputStream openConnectionStream(URL url) throws IOException {
@@ -359,14 +359,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
 //        return responseString;
 //    }
 
-    private static HttpURLConnection openConnection
-            (URL
-                     url, Map<String, String> requestProperties) throws IOException {
+    private  HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
 
 
-    private static HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
+    private  HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
         return openConnection(url, requestProperties, method, 0);
     }
 
@@ -379,7 +377,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
      * @return
      * @throws IOException
      */
-    private static HttpURLConnection openConnection(
+    private  HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
@@ -399,12 +397,13 @@ public class HttpURLConnectionUtils extends HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
-        if (GSUtils.isGenomeSpace(url.toString())) {
+        if (GSUtils.isGenomeSpace(url) &&
+                !url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
             checkForCookie(conn);
-            // Manually follow redirects for GS requests.  Can't recall why we do this.
             if (!url.toString().contains("datamanager/uploadurls")) {
                 conn.setRequestProperty("Accept", "application/json,application/text");
             }
+            // Manually follow redirects for GS requests.  Can't recall why we do this.
             conn.setInstanceFollowRedirects(false);
         }
 
@@ -462,7 +461,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
     }
 
-    public static void checkForCookie(URLConnection conn) {
+    public void checkForCookie(URLConnection conn) throws IOException {
 
         File file = GSUtils.getTokenFile();
         if (file.exists()) {
@@ -483,6 +482,15 @@ public class HttpURLConnectionUtils extends HttpUtils {
                     // Ignore
                 }
             }
+        } else {
+            URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
+            String responseBody = getContentsAsString(identityURL);
+            if (responseBody != null && responseBody.length() > 0) {
+                String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + responseBody;
+                conn.setRequestProperty("Cookie", cookie);
+                GSUtils.saveGSLogin(responseBody, genomeSpaceUser);
+            }
+
         }
     }
 
@@ -528,9 +536,11 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 }
             }
 
-
             Frame owner = IGV.hasInstance() ? IGV.getMainFrame() : null;
-            LoginDialog dlg = new LoginDialog(owner, false, url.toString(), isProxyChallenge);
+
+            boolean isGenomeSpace = GSUtils.isGenomeSpace(url);
+
+            LoginDialog dlg = new LoginDialog(owner, isGenomeSpace, url.toString(), isProxyChallenge);
             dlg.setVisible(true);
             if (dlg.isCanceled()) {
                 return null;
@@ -538,20 +548,13 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 final String userString = dlg.getUsername();
                 final char[] userPass = dlg.getPassword();
 
+                if(isGenomeSpace) {
+                    genomeSpaceUser = userString;
+                }
+
                 if (isProxyChallenge) {
                     proxySettings.user = userString;
                     proxySettings.pw = new String(userPass);
-                } else if (GSUtils.isGenomeSpace(url.getHost())) {
-                    String token = null;
-                    try {
-                        token = getInstance().getContentsAsString(new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER)));
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                    if (token != null && token.length() > 0) {
-                        GSUtils.saveGSLogin(token, userString);
-                    }
-
                 }
 
                 return new PasswordAuthentication(userString, userPass);

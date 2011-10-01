@@ -109,7 +109,7 @@ public class TrackLoader {
                 // Genome space hack -- check for explicit type converter
                 //https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
                 //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
-                if (GSUtils.isGenomeSpace(path) && path.contains("?dataformat")) {
+                if (GSUtils.isGenomeSpace(new URL(path)) && path.contains("?dataformat")) {
                     if (path.contains("dataformat/gct")) {
                         typeString = ".gct";
                     } else if (path.contains("dataformat/bed")) {

@@ -19,7 +19,6 @@
 package org.broad.igv.util.stream;
 
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.IGVHttpClientUtils;
 import org.broad.tribble.util.SeekableFileStream;
 import org.broad.tribble.util.SeekableHTTPStream;
 import org.broad.tribble.util.SeekableStream;
