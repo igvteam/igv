@@ -53,6 +53,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
     private static HttpURLConnectionUtils instance;
     public static final int MAX_REDIRECTS = 5;
     private String genomeSpaceUser;
+    private String genomeSpaceIdentityServer;
 
     static {
         synchronized (HttpURLConnectionUtils.class) {
@@ -66,6 +67,13 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
     private HttpURLConnectionUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
+
+        String gsURL = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER);
+        try {
+            genomeSpaceIdentityServer = (new URL(gsURL)).getHost();
+        } catch (Exception e) {
+            log.error("Error parsing Genome Space ID url ", e);
+        }
 
     }
 
@@ -404,9 +412,14 @@ public class HttpURLConnectionUtils extends HttpUtils {
             conn = (HttpURLConnection) url.openConnection();
         }
 
-        if (GSUtils.isGenomeSpace(url) &&
-                !url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
-            setGenomeSpaceCookie(conn);
+        if (GSUtils.isGenomeSpace(url)) {
+
+            // Manually follow GS redicts so we can grab the identity token
+            conn.setInstanceFollowRedirects(false);
+
+            if (!url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
+                checkGenomeSpaceCookie(conn);
+            }
             if (!url.toString().contains("datamanager/uploadurls")) {
                 conn.setRequestProperty("Accept", "application/json,application/text");
             }
@@ -439,6 +452,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 String newLocation = conn.getHeaderField("Location");
                 if (newLocation != null) {
                     log.debug("Redirecting to " + newLocation);
+
+                    URL redirectURL = new URL(newLocation);
+                    if (genomeSpaceIdentityServer != null && genomeSpaceIdentityServer.equals(url.getHost())) {
+                        URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
+                        String token = getContentsAsString(identityURL);
+                        if (token != null && token.length() > 0) {
+                            setGenomeSpaceCookie(conn, token);
+                        }
+                    }
+
                     return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
                 } else {
                     throw new IOException("Server indicated redirect but Location header is missing");
@@ -458,7 +481,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
     }
 
-    public void setGenomeSpaceCookie(URLConnection conn) throws IOException {
+    public void checkGenomeSpaceCookie(URLConnection conn) throws IOException {
 
         File file = GSUtils.getTokenFile();
         if (file.exists()) {
@@ -484,12 +507,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
             URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
             String responseBody = getContentsAsString(identityURL);
             if (responseBody != null && responseBody.length() > 0) {
-                String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + responseBody;
-                conn.setRequestProperty("Cookie", cookie);
-                GSUtils.saveGSLogin(responseBody, genomeSpaceUser);
+                setGenomeSpaceCookie(conn, responseBody);
             }
 
         }
+    }
+
+    private void setGenomeSpaceCookie(URLConnection conn, String responseBody) {
+        String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + responseBody;
+        conn.setRequestProperty("Cookie", cookie);
+        GSUtils.saveGSLogin(responseBody, genomeSpaceUser);
     }
 
 
