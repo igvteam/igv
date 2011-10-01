@@ -52,7 +52,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
     private static HttpURLConnectionUtils instance;
     public static final int MAX_REDIRECTS = 5;
-    static private String genomeSpaceUser;
+    private String genomeSpaceUser;
 
     static {
         synchronized (HttpURLConnectionUtils.class) {
@@ -118,19 +118,22 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         try {
             is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int b;
-            while((b = bis.read()) >= 0) {
-                bos.write(b);
-            }
-            return new String(bos.toByteArray());
-
+            return readContents(is);
 
         } finally {
             if (is != null) is.close();
         }
 
+    }
+
+    private String readContents(InputStream is) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(is);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int b;
+        while ((b = bis.read()) >= 0) {
+            bos.write(b);
+        }
+        return new String(bos.toByteArray());
     }
 
     public InputStream openConnectionStream(URL url) throws IOException {
@@ -286,18 +289,22 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         // Error messages below.
         if (responseCode >= 400) {
-            InputStream inputStream = urlconnection.getErrorStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuffer buf = new StringBuffer();
-            String nextLine;
-            while ((nextLine = br.readLine()) != null) {
-                buf.append(nextLine);
-                buf.append('\n');
-            }
-            inputStream.close();
-
-            throw new IOException("Error uploading " + file.getName() + " : " + buf.toString());
+            String message = readErrorStream(urlconnection);
+            throw new IOException("Error uploading " + file.getName() + " : " + message);
         }
+    }
+
+    private String readErrorStream(HttpURLConnection connection) throws IOException {
+        InputStream inputStream = null;
+
+        try {
+            inputStream = connection.getErrorStream();
+            return readContents(inputStream);
+        } finally {
+            if (inputStream != null) inputStream.close();
+        }
+
+
     }
 
     @Override
@@ -359,12 +366,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
 //        return responseString;
 //    }
 
-    private  HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
+    private HttpURLConnection openConnection(URL url, Map<String, String> requestProperties) throws IOException {
         return openConnection(url, requestProperties, "GET");
     }
 
 
-    private  HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
+    private HttpURLConnection openConnection(URL url, Map<String, String> requestProperties, String method) throws IOException {
         return openConnection(url, requestProperties, method, 0);
     }
 
@@ -377,7 +384,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
      * @return
      * @throws IOException
      */
-    private  HttpURLConnection openConnection(
+    private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
@@ -399,12 +406,10 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
         if (GSUtils.isGenomeSpace(url) &&
                 !url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
-            checkForCookie(conn);
+            setGenomeSpaceCookie(conn);
             if (!url.toString().contains("datamanager/uploadurls")) {
                 conn.setRequestProperty("Accept", "application/json,application/text");
             }
-            // Manually follow redirects for GS requests.  Can't recall why we do this.
-            conn.setInstanceFollowRedirects(false);
         }
 
         conn.setConnectTimeout(10000);
@@ -430,18 +435,6 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 if (redirectCount > MAX_REDIRECTS) {
                     throw new IOException("Too many redirects");
                 }
-//
-//            Map<String, java.util.List<String>> props = conn.getRequestProperties();
-//            if (requestProperties == null) {
-//                requestProperties = new HashMap<String, String>();
-//                for (Map.Entry<String, java.util.List<String>> entry : props.entrySet()) {
-//                    String key = entry.getKey();
-//                    java.util.List<String> value = entry.getValue();
-//                    if (value.size() > 0) {
-//                        requestProperties.put(key, value.get(0));
-//                    }
-//                }
-//            }
 
                 String newLocation = conn.getHeaderField("Location");
                 if (newLocation != null) {
@@ -454,14 +447,18 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
             // TODO -- handle other response codes.
             if (code > 400) {
-                throw new IOException("Server returned error code " + code);
+
+                String message = conn.getResponseMessage();
+                String details = readErrorStream(conn);
+
+                throw new IOException("Server returned error code " + details);
             }
 
             return conn;
         }
     }
 
-    public void checkForCookie(URLConnection conn) throws IOException {
+    public void setGenomeSpaceCookie(URLConnection conn) throws IOException {
 
         File file = GSUtils.getTokenFile();
         if (file.exists()) {
@@ -475,6 +472,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 }
             } catch (IOException e) {
                 log.error("Error reading GS cookie", e);
+                throw e;
             } finally {
                 if (br != null) try {
                     br.close();
@@ -516,7 +514,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
     /**
      * The default authenticator
      */
-    public static class IGVAuthenticator extends Authenticator {
+    public class IGVAuthenticator extends Authenticator {
 
         /**
          * Called when password authentcation is needed.
@@ -548,7 +546,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 final String userString = dlg.getUsername();
                 final char[] userPass = dlg.getPassword();
 
-                if(isGenomeSpace) {
+                if (isGenomeSpace) {
                     genomeSpaceUser = userString;
                 }
 
