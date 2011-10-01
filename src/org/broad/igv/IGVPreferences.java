@@ -118,6 +118,9 @@ public class IGVPreferences {
      * @param path
      */
     public void loadOverrides(String path) {
+        if (userPreferences == null) {
+            loadUserPreferences();
+        }
         load(path, true);
     }
 

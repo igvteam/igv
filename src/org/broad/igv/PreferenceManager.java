@@ -645,6 +645,7 @@ public class PreferenceManager implements PropertyManager {
 
     public void loadOverrides(String overridePropertyFilePath) {
         preferences.loadOverrides(overridePropertyFilePath);
+        clearCaches();
     }
 
     public void setShowAttributeView(boolean isShowable) {
