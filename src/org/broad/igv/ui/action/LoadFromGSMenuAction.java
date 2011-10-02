@@ -26,10 +26,12 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
+import org.json.JSONException;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -62,9 +64,9 @@ public class LoadFromGSMenuAction extends MenuAction {
                 IGV.getInstance().loadTracks(Arrays.asList(new ResourceLocator(url)));
             }
         } catch (Exception e1) {
-            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error("Error fetching directory listing on GenomeSpace server.", e1);
+            MessageUtils.showMessage("Error fetching directory listing on GenomeSpace server: " + e1.getMessage());
         }
-
 
         /*JPanel ta = new JPanel();
         ta.setPreferredSize(new Dimension(600, 20));

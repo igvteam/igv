@@ -479,7 +479,7 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 String message = conn.getResponseMessage();
                 String details = readErrorStream(conn);
 
-                throw new IOException("Server returned error code " + details);
+                throw new IOException("Server returned error code: " + code + " (" + message + ")");
             }
 
             return conn;
