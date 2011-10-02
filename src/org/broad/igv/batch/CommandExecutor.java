@@ -275,6 +275,14 @@ public class CommandExecutor {
                     log.info("Unexpected sort location argument (expected number): " + param3);
                 }
             }
+            else {
+                try {
+                    location = new Double(locusString.replace(",", ""));
+                } catch (NumberFormatException e) {
+                    log.info("Unexpected sort location argument (expected number): " + param3);
+                }
+
+            }
             if (location == null) {
                 tm.sortAlignmentTracks(getAlignmentSortOption(sortArg));
             } else {
