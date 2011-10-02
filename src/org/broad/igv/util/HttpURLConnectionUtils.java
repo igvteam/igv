@@ -413,13 +413,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-
-            // Manually follow GS redicts so we can grab the identity token
+           // Manually follow GS redicts so we can grab the identity token (cookie)
             conn.setInstanceFollowRedirects(false);
 
+            // Set the genome space cookie, unless the connection is to the identity server.
             if (!url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
                 checkGenomeSpaceCookie(conn);
             }
+
+            // The GenomeSpace server requires the Accept header below, unless doing a GET for an uploadurl.  Setting
+            // the header in that case results in a 406 error.
             if (!url.toString().contains("datamanager/uploadurls")) {
                 conn.setRequestProperty("Accept", "application/json,application/text");
             }
@@ -453,7 +456,9 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 if (newLocation != null) {
                     log.debug("Redirecting to " + newLocation);
 
-                    URL redirectURL = new URL(newLocation);
+                    // If redirected to the genome space identity server do a separate query to get the genome space
+                    // cookie.  Theoretically the cookie should be in the response of the redirected URL, but that
+                    // is not working => do it manually.
                     if (genomeSpaceIdentityServer != null && genomeSpaceIdentityServer.equals(url.getHost())) {
                         URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
                         String token = getContentsAsString(identityURL);
