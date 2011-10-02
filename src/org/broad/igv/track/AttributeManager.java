@@ -40,6 +40,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -73,8 +74,9 @@ public class AttributeManager {
     /**
      * List of attribute names.  The list
      * is kept so the keys may be fetched in the order they were added.
+     *
      */
-    LinkedHashSet<String> attributeNames = new LinkedHashSet<String>();
+    LinkedHashMap<String, String> attributeNames = new LinkedHashMap();
 
     /**
      * Column meta data (column == attributeKey).
@@ -140,7 +142,7 @@ public class AttributeManager {
      * be displayed.
      */
     public List<String> getAttributeNames() {
-        return new ArrayList(attributeNames);
+        return new ArrayList(attributeNames.values());
     }
 
     /**
@@ -156,10 +158,17 @@ public class AttributeManager {
     // TODO -- don't compute this on the fly every time its called
 
     public List<String> getVisibleAttributes() {
-        final List<String> keys = getAttributeNames();
+        final Set<String> allKeys = attributeNames.keySet();
         Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
-        return keys;
+        if(hiddenAttributes != null) {
+            allKeys.removeAll(hiddenAttributes);
+        }
+
+        ArrayList<String> visibleAttributes = new ArrayList<String>(allKeys.size());
+        for(String key : allKeys) {
+            visibleAttributes.add(attributeNames.get(key)) ;
+        }
+        return visibleAttributes;
     }
 
     public void clearAllAttributes() {
@@ -202,8 +211,9 @@ public class AttributeManager {
     }
 
     public void addAttributeName(String name) {
-        if (!attributeNames.contains(name) && !name.startsWith("#")) {
-            attributeNames.add(name);
+        String key = name.toUpperCase();
+        if (!attributeNames.containsKey(key) && !name.startsWith("#")) {
+            attributeNames.put(key, name);
         }
     }
 
