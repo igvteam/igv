@@ -58,8 +58,9 @@ public class GSUtils {
     private static String tokenSaveDir = ".gs";
     private static String tokenSaveFileName = ".gstoken";
     private static String usernameSaveFileName = ".gsusername";
-
-
+    public static String gsUser = null;
+    public static String gsToken = null;
+    public static String genomeSpaceIdentityServer;
 
 
     private static String getCookieDomainPattern(String serverName) {
@@ -90,23 +91,82 @@ public class GSUtils {
         return (gsDir != null && gsDir.exists()) ? new File(gsDir, usernameSaveFileName) : null;
     }
 
-    public static void saveGSLogin(String newToken, String username) {
-        BufferedWriter bw = null;
+    public static void setGSToken(String newToken) {
+        if (gsToken == null || !gsToken.equals(newToken)) {
+            gsToken = newToken;
+            BufferedWriter bw = null;
 
-        File gsDir = getTokenSaveDir();
-        if (!gsDir.isDirectory()) {
-            log.error("Could not store token for SSO.  File " + gsDir.getAbsolutePath() + "exists and is not a directory.");
-            return; // someone made a file with this name...
+            File gsDir = getTokenSaveDir();
+            if (!gsDir.isDirectory()) {
+                log.error("Could not store token for SSO.  File " + gsDir.getAbsolutePath() + "exists and is not a directory.");
+                return; // someone made a file with this name...
+            }
+            File tokenFile = getTokenFile();
+            if (tokenFile.exists()) tokenFile.delete();
+            writeToFile(gsToken, tokenFile);
         }
-        File tokenFile = getTokenFile();
-        if (tokenFile.exists()) tokenFile.delete();
-
-        File userFile = getUsernameFile();
-        if (userFile.exists()) userFile.delete();
-
-        writeToFile(newToken, tokenFile);
-        writeToFile(username, userFile);
     }
+
+    public static String getGSToken() {
+        if (gsToken == null) {
+            File file = GSUtils.getTokenFile();
+            if (file.exists()) {
+                BufferedReader br = null;
+                try {
+                    br = new BufferedReader(new FileReader(file));
+                    gsToken = br.readLine();
+                } catch (IOException e) {
+                    log.error("Error reading GS cookie", e);
+                } finally {
+                    if (br != null) try {
+                        br.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
+        return gsToken;
+    }
+
+
+    public static void setGSUser(String newUser) {
+        if (gsUser == null || !gsUser.equals(newUser)) {
+            gsUser = newUser;
+            BufferedWriter bw = null;
+
+            File gsDir = getTokenSaveDir();
+            if (!gsDir.isDirectory()) {
+                log.error("Could not store token for SSO.  File " + gsDir.getAbsolutePath() + "exists and is not a directory.");
+                return; // someone made a file with this name...
+            }
+            File userFile = getUsernameFile();
+            if (userFile.exists()) userFile.delete();
+            writeToFile(gsUser, userFile);
+        }
+    }
+
+
+    public static String getGSUser() throws IOException {
+        if (gsUser == null) {
+            BufferedReader br = null;
+            try {
+                File tokenFile = getUsernameFile();
+                if (tokenFile.exists()) {
+                    br = new BufferedReader(new FileReader(tokenFile));
+                    gsUser = br.readLine().trim();
+                }
+            } finally {
+                try {
+                    if (br != null) br.close();
+                } catch (Exception e) {
+                }
+            }
+            return gsUser;
+        }
+        return gsUser;
+    }
+
 
     public static void logout() {
         File userfile = getUsernameFile();
@@ -136,25 +196,6 @@ public class GSUtils {
             } catch (Exception e) {
             }
         }
-    }
-
-
-    public static String getCachedUsernameForSSO() throws IOException {
-        String user = null;
-        BufferedReader br = null;
-        try {
-            File tokenFile = getUsernameFile();
-            if (tokenFile.exists()) {
-                br = new BufferedReader(new FileReader(tokenFile));
-                user = br.readLine().trim();
-            }
-        } finally {
-            try {
-                if (br != null) br.close();
-            } catch (Exception e) {
-            }
-        }
-        return user;
     }
 
 

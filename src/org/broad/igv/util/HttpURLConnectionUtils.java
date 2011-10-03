@@ -35,8 +35,8 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.List;
 
 /**
  * Notes -- 401 => client authentication,  407 => proxy authentication,  403 => forbidden
@@ -52,12 +52,12 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
     private static HttpURLConnectionUtils instance;
     public static final int MAX_REDIRECTS = 5;
-    private String genomeSpaceUser;
-    private String genomeSpaceIdentityServer;
+
 
     static {
         synchronized (HttpURLConnectionUtils.class) {
             instance = new HttpURLConnectionUtils();
+            CookieHandler.setDefault(new CookieManager());
         }
     }
 
@@ -67,13 +67,6 @@ public class HttpURLConnectionUtils extends HttpUtils {
 
     private HttpURLConnectionUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
-
-        String gsURL = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER);
-        try {
-            genomeSpaceIdentityServer = (new URL(gsURL)).getHost();
-        } catch (Exception e) {
-            log.error("Error parsing Genome Space ID url ", e);
-        }
 
     }
 
@@ -413,19 +406,16 @@ public class HttpURLConnectionUtils extends HttpUtils {
         }
 
         if (GSUtils.isGenomeSpace(url)) {
-           // Manually follow GS redicts so we can grab the identity token (cookie)
-            conn.setInstanceFollowRedirects(false);
 
-            // Set the genome space cookie, unless the connection is to the identity server.
-            if (!url.toString().contains(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER))) {
-                checkGenomeSpaceCookie(conn);
-            }
+            String token = GSUtils.getGSToken();
+            if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
 
             // The GenomeSpace server requires the Accept header below, unless doing a GET for an uploadurl.  Setting
             // the header in that case results in a 406 error.
             if (!url.toString().contains("datamanager/uploadurls")) {
                 conn.setRequestProperty("Accept", "application/json,application/text");
             }
+
         }
 
         conn.setConnectTimeout(10000);
@@ -443,87 +433,52 @@ public class HttpURLConnectionUtils extends HttpUtils {
             return conn;
         } else {
             int code = conn.getResponseCode();
+            if (code >= 200 && code < 300) {
+                // A genome-space hack.  We want to catch redirects from the identity server to grab the cookie
+                // and write it to the .gstoken file.  This is required for the GS single-sign on model
+                if (GSUtils.isGenomeSpace(url)) {
+                    try {
+                        List<HttpCookie> cookies = ((CookieManager) CookieManager.getDefault()).getCookieStore().get(url.toURI());
+                        if (cookies != null) {
+                            for (HttpCookie cookie : cookies) {
+                                if (cookie.getName().equals("gs-token")) {
+                                    GSUtils.setGSToken(cookie.getValue());
+                                } else if (cookie.getName().equals("gs-username")) {
+                                    GSUtils.setGSUser(cookie.getValue());
+                                }
+                            }
+                        }
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                }
+            }
 
             // Redirects.  These can occur even if followRedirects == true if there is a change in protocol,
             // for example http -> https.
-            if (code > 300 && code < 400) {
+            if (code >= 300 && code < 400) {
 
                 if (redirectCount > MAX_REDIRECTS) {
                     throw new IOException("Too many redirects");
                 }
 
                 String newLocation = conn.getHeaderField("Location");
-                if (newLocation != null) {
-                    log.debug("Redirecting to " + newLocation);
+                log.debug("Redirecting to " + newLocation);
 
-                    // If redirected to the genome space identity server do a separate query to get the genome space
-                    // cookie.  Theoretically the cookie should be in the response of the redirected URL, but that
-                    // is not working => do it manually.
-                    if (genomeSpaceIdentityServer != null && genomeSpaceIdentityServer.equals(url.getHost())) {
-                        URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
-                        String token = getContentsAsString(identityURL);
-                        if (token != null && token.length() > 0) {
-                            setGenomeSpaceCookie(conn, token);
-                        }
-                    }
-
-                    return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
-                } else {
-                    throw new IOException("Server indicated redirect but Location header is missing");
-                }
+                return openConnection(new URL(newLocation), requestProperties, method, redirectCount++);
             }
 
             // TODO -- handle other response codes.
-            if (code > 400) {
+            else if (code >= 400) {
 
                 String message = conn.getResponseMessage();
                 String details = readErrorStream(conn);
 
                 throw new IOException("Server returned error code: " + code + " (" + message + ")");
             }
-
-            return conn;
         }
+        return conn;
     }
-
-    public void checkGenomeSpaceCookie(URLConnection conn) throws IOException {
-
-        File file = GSUtils.getTokenFile();
-        if (file.exists()) {
-            BufferedReader br = null;
-            try {
-                br = new BufferedReader(new FileReader(file));
-                String token = br.readLine();
-                if (token != null) {
-                    String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + token;
-                    conn.setRequestProperty("Cookie", cookie);
-                }
-            } catch (IOException e) {
-                log.error("Error reading GS cookie", e);
-                throw e;
-            } finally {
-                if (br != null) try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-        } else {
-            URL identityURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ID_SERVER));
-            String responseBody = getContentsAsString(identityURL);
-            if (responseBody != null && responseBody.length() > 0) {
-                setGenomeSpaceCookie(conn, responseBody);
-            }
-
-        }
-    }
-
-    private void setGenomeSpaceCookie(URLConnection conn, String responseBody) {
-        String cookie = GSUtils.AUTH_TOKEN_COOKIE_NAME + "=" + responseBody;
-        conn.setRequestProperty("Cookie", cookie);
-        GSUtils.saveGSLogin(responseBody, genomeSpaceUser);
-    }
-
 
     public static class ProxySettings {
         boolean auth = false;
@@ -578,10 +533,6 @@ public class HttpURLConnectionUtils extends HttpUtils {
                 final String userString = dlg.getUsername();
                 final char[] userPass = dlg.getPassword();
 
-                if (isGenomeSpace) {
-                    genomeSpaceUser = userString;
-                }
-
                 if (isProxyChallenge) {
                     proxySettings.user = userString;
                     proxySettings.pw = new String(userPass);
@@ -591,5 +542,4 @@ public class HttpURLConnectionUtils extends HttpUtils {
             }
         }
     }
-
 }

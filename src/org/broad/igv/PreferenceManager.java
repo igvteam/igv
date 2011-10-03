@@ -1005,9 +1005,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(BACKGROUND_COLOR, "250,250,250");
 
         defaultValues.put(GENOME_SPACE_ENABLE, "false");
-        defaultValues.put(GENOME_SPACE_ID_SERVER, "https://identitytest.genomespace.org:8443/identityServer/basic");
-        defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dmtest.genomespace.org:8444/datamanager/");
-        defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atmtest.genomespace.org:8443/atm/");
+        defaultValues.put(GENOME_SPACE_ID_SERVER, "https://identitytest.genomespace.org/identityServer/basic");
+        defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dmtest.genomespace.org/datamanager/");
+        defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atmtest.genomespace.org/atm/");
 
     }
 

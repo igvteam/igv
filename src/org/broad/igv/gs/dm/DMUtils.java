@@ -31,7 +31,6 @@ import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.net.*;
-import java.security.Identity;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -127,7 +126,7 @@ public class DMUtils {
         String contentType = "text";
 
         // The GenomeSpace user,  is this the correct way to get it?
-        String user = GSUtils.getCachedUsernameForSSO();
+        String user = GSUtils.getGSUser();
 
         String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "uploadurls" +
                 gsPath + "?Content-Length=" + contentLength +
