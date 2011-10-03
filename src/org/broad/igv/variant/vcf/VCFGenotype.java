@@ -22,6 +22,7 @@ package org.broad.igv.variant.vcf;
 import org.broadinstitute.sting.utils.variantcontext.Allele;
 import org.broadinstitute.sting.utils.variantcontext.Genotype;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -76,9 +77,12 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
 
     public List<org.broad.igv.variant.Allele> getAlleles() {
         if (alleles == null) {
+            alleles = new ArrayList<org.broad.igv.variant.Allele>();
             List<Allele> tmp = vcfGenotype.getAlleles();
-            for (Allele a : tmp) {
-                alleles.add(new VCFAllele(a.getBases()));
+            if (tmp != null) {
+                for (Allele a : tmp) {
+                    alleles.add(new VCFAllele(a.getBases()));
+                }
             }
         }
         return alleles;
