@@ -542,6 +542,9 @@ public class AlignmentRenderer implements FeatureRenderer {
             int end = start + read.length;
             byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
 
+            // TODO -- faster method for uppercasing
+            reference = (new String(reference)).toUpperCase().getBytes();
+
 
             // Loop through base pair coordinates
             for (int loc = start; loc < end; loc++) {
