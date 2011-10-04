@@ -151,7 +151,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         chartPanel = new JPanel();
         jPanel4 = new JPanel();
         topBorderCB = new JCheckBox();
-        label1 = new Label();
+        label1 = new JLabel();
         chartDrawTrackNameCB = new JCheckBox();
         bottomBorderCB = new JCheckBox();
         jLabel7 = new JLabel();
@@ -160,6 +160,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         autoscaleCB = new JCheckBox();
         jLabel9 = new JLabel();
         showDatarangeCB = new JCheckBox();
+        panel1 = new JPanel();
+        label13 = new JLabel();
+        showAllHeatmapFeauresCB = new JCheckBox();
+        label14 = new JLabel();
         alignmentPanel = new JPanel();
         jPanel1 = new JPanel();
         jPanel11 = new JPanel();
@@ -758,6 +762,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 //======== jPanel4 ========
                 {
+                    jPanel4.setBorder(LineBorder.createBlackLineBorder());
+                    jPanel4.setLayout(null);
 
                     //---- topBorderCB ----
                     topBorderCB.setText("Draw Top Border");
@@ -766,10 +772,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             topBorderCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(topBorderCB);
+                    topBorderCB.setBounds(new Rectangle(new Point(30, 36), topBorderCB.getPreferredSize()));
 
                     //---- label1 ----
                     label1.setFont(label1.getFont());
-                    label1.setText("Default settings for barcharts and scatterplots:");
+                    label1.setText("<html><b>Default settings for barcharts and scatterplots:");
+                    jPanel4.add(label1);
+                    label1.setBounds(10, 10, 380, 25);
 
                     //---- chartDrawTrackNameCB ----
                     chartDrawTrackNameCB.setText("Draw Track Label");
@@ -778,6 +788,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             chartDrawTrackNameCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(chartDrawTrackNameCB);
+                    chartDrawTrackNameCB.setBounds(new Rectangle(new Point(30, 126), chartDrawTrackNameCB.getPreferredSize()));
 
                     //---- bottomBorderCB ----
                     bottomBorderCB.setText("Draw Bottom Border");
@@ -786,9 +798,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             bottomBorderCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(bottomBorderCB);
+                    bottomBorderCB.setBounds(new Rectangle(new Point(30, 66), bottomBorderCB.getPreferredSize()));
 
                     //---- jLabel7 ----
-                    jLabel7.setText("<html><i>If selected charts are dynamically rescaled to the range of the data in view.");
+                    jLabel7.setText("<html><i>Dynamically rescale to the range of the data in view.");
+                    jPanel4.add(jLabel7);
+                    jLabel7.setBounds(220, 170, 371, 50);
 
                     //---- colorBordersCB ----
                     colorBordersCB.setText("Color Borders");
@@ -797,6 +813,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             colorBordersCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(colorBordersCB);
+                    colorBordersCB.setBounds(new Rectangle(new Point(30, 96), colorBordersCB.getPreferredSize()));
 
                     //---- labelYAxisCB ----
                     labelYAxisCB.setText("Label Y Axis");
@@ -805,6 +823,8 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             labelYAxisCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(labelYAxisCB);
+                    labelYAxisCB.setBounds(new Rectangle(new Point(30, 156), labelYAxisCB.getPreferredSize()));
 
                     //---- autoscaleCB ----
                     autoscaleCB.setText("Continuous Autoscale");
@@ -813,9 +833,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             autoscaleCBActionPerformed(e);
                         }
                     });
+                    jPanel4.add(autoscaleCB);
+                    autoscaleCB.setBounds(new Rectangle(new Point(30, 186), autoscaleCB.getPreferredSize()));
 
                     //---- jLabel9 ----
-                    jLabel9.setText("<html><i>Draw a label centered over the track provided<br>the track height is at least 25 pixels. ");
+                    jLabel9.setText("<html><i>Draw a label centered over the track. ");
+                    jPanel4.add(jLabel9);
+                    jLabel9.setBounds(220, 159, 355, jLabel9.getPreferredSize().height);
 
                     //---- showDatarangeCB ----
                     showDatarangeCB.setText("Show Data Range");
@@ -830,70 +854,53 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             showDatarangeCBFocusLost(e);
                         }
                     });
+                    jPanel4.add(showDatarangeCB);
+                    showDatarangeCB.setBounds(30, 216, showDatarangeCB.getPreferredSize().width, 26);
 
-                    GroupLayout jPanel4Layout = new GroupLayout(jPanel4);
-                    jPanel4.setLayout(jPanel4Layout);
-                    jPanel4Layout.setHorizontalGroup(
-                        jPanel4Layout.createParallelGroup()
-                            .add(jPanel4Layout.createParallelGroup()
-                                .add(GroupLayout.TRAILING, jPanel4Layout.createSequentialGroup()
-                                    .addContainerGap(221, Short.MAX_VALUE)
-                                    .add(jLabel9, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .add(84, 84, 84)))
-                            .add(jPanel4Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jPanel4Layout.createParallelGroup()
-                                    .add(label1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .add(jPanel4Layout.createSequentialGroup()
-                                        .add(20, 20, 20)
-                                        .add(jPanel4Layout.createParallelGroup()
-                                            .add(jPanel4Layout.createSequentialGroup()
-                                                .add(jPanel4Layout.createParallelGroup()
-                                                    .add(autoscaleCB)
-                                                    .add(showDatarangeCB))
-                                                .add(18, 18, 18)
-                                                .add(jLabel7, GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE))
-                                            .add(jPanel4Layout.createSequentialGroup()
-                                                .add(jPanel4Layout.createParallelGroup()
-                                                    .add(topBorderCB)
-                                                    .add(colorBordersCB)
-                                                    .add(bottomBorderCB)
-                                                    .add(labelYAxisCB)
-                                                    .add(chartDrawTrackNameCB))
-                                                .addPreferredGap(LayoutStyle.RELATED, 403, Short.MAX_VALUE)))))
-                                .addContainerGap())
-                    );
-                    jPanel4Layout.setVerticalGroup(
-                        jPanel4Layout.createParallelGroup()
-                            .add(jPanel4Layout.createParallelGroup()
-                                .add(jPanel4Layout.createSequentialGroup()
-                                    .add(131, 131, 131)
-                                    .add(jLabel9, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                    .addContainerGap(177, Short.MAX_VALUE)))
-                            .add(jPanel4Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(label1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(topBorderCB)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(bottomBorderCB)
-                                .add(7, 7, 7)
-                                .add(colorBordersCB)
-                                .add(18, 18, 18)
-                                .add(chartDrawTrackNameCB)
-                                .add(23, 23, 23)
-                                .add(labelYAxisCB)
-                                .add(18, 18, 18)
-                                .add(jPanel4Layout.createParallelGroup(GroupLayout.BASELINE)
-                                    .add(autoscaleCB)
-                                    .add(jLabel7, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(LayoutStyle.UNRELATED)
-                                .add(showDatarangeCB)
-                                .add(36, 36, 36))
-                    );
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < jPanel4.getComponentCount(); i++) {
+                            Rectangle bounds = jPanel4.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = jPanel4.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        jPanel4.setMinimumSize(preferredSize);
+                        jPanel4.setPreferredSize(preferredSize);
+                    }
                 }
                 chartPanel.add(jPanel4);
-                jPanel4.setBounds(20, 30, 590, 340);
+                jPanel4.setBounds(20, 20, 650, 290);
+
+                //======== panel1 ========
+                {
+                    panel1.setBorder(LineBorder.createBlackLineBorder());
+                    panel1.setLayout(null);
+
+                    //---- label13 ----
+                    label13.setText("<html><b>Default settings for heatmaps:");
+                    panel1.add(label13);
+                    label13.setBounds(10, 5, 250, 30);
+
+                    //---- showAllHeatmapFeauresCB ----
+                    showAllHeatmapFeauresCB.setText("Show all features");
+                    showAllHeatmapFeauresCB.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            showAllHeatmapFeauresCBActionPerformed(e);
+                        }
+                    });
+                    panel1.add(showAllHeatmapFeauresCB);
+                    showAllHeatmapFeauresCB.setBounds(new Rectangle(new Point(20, 45), showAllHeatmapFeauresCB.getPreferredSize()));
+
+                    //---- label14 ----
+                    label14.setText("<html><i>Paint all features/segments with a minimum width of 1 pixel.   If not checked features/segments with screen widths less than 1 pixel are not drawn.");
+                    panel1.add(label14);
+                    label14.setBounds(200, 35, 425, 60);
+                }
+                chartPanel.add(panel1);
+                panel1.setBounds(20, 340, 650, 135);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2317,6 +2324,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 String.valueOf(topBorderCB.isSelected()));
     }
 
+    private void showAllHeatmapFeauresCBActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(
+                PreferenceManager.CHART_SHOW_ALL_HEATMAP,
+                String.valueOf(showAllHeatmapFeauresCB.isSelected()));
+    }
+
+
+
     private void chooseMutationColorsButtonActionPerformed(ActionEvent e) {
         (new LegendDialog(IGV.getMainFrame(), true)).setVisible(true);
     }
@@ -2751,6 +2766,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         autoscaleCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_AUTOSCALE));
         showDatarangeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_SHOW_DATA_RANGE));
         labelYAxisCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_DRAW_Y_AXIS));
+        showAllHeatmapFeauresCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.CHART_SHOW_ALL_HEATMAP));
 
         samMaxWindowSizeField.setText(prefMgr.get(PreferenceManager.SAM_MAX_VISIBLE_RANGE));
         samMaxDepthField.setText(prefMgr.get(PreferenceManager.SAM_MAX_LEVELS));
@@ -2937,7 +2953,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JPanel chartPanel;
     private JPanel jPanel4;
     private JCheckBox topBorderCB;
-    private Label label1;
+    private JLabel label1;
     private JCheckBox chartDrawTrackNameCB;
     private JCheckBox bottomBorderCB;
     private JLabel jLabel7;
@@ -2946,6 +2962,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox autoscaleCB;
     private JLabel jLabel9;
     private JCheckBox showDatarangeCB;
+    private JPanel panel1;
+    private JLabel label13;
+    private JCheckBox showAllHeatmapFeauresCB;
+    private JLabel label14;
     private JPanel alignmentPanel;
     private JPanel jPanel1;
     private JPanel jPanel11;

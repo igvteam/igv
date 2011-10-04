@@ -1646,16 +1646,16 @@
            <object class="com.jformdesigner.model.FormContainer"> 
             <string>javax.swing.JPanel</string> 
             <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>org.jdesktop.layout.GroupLayout</class> 
-             <void method="setProperty"> 
-              <string>$horizontalGroup</string> 
-              <string>par l {seq {space :::p, par l {comp label1::l:p::p, seq l {space :p:20:p, par l {seq l {par l {comp autoscaleCB::l:p::p, comp showDatarangeCB::l:p::p}, space s:::p, comp jLabel7::::371:x}, seq {par l {comp topBorderCB::l:p::p, comp colorBordersCB::l:p::p, comp bottomBorderCB::l:p::p, comp labelYAxisCB::l:p::p, comp chartDrawTrackNameCB::l:p::p}, space ::403:x}}}}, space :::p}};par l {seq t {space ::221:x, comp jLabel9:::p::p, space :p:84:p}}</string> 
-             </void> 
-             <void method="setProperty"> 
-              <string>$verticalGroup</string> 
-              <string>par l {seq {space :::p, comp label1:::p::p, space :::p, comp topBorderCB:::p::p, space :::p, comp bottomBorderCB:::p::p, space :p:7:p, comp colorBordersCB:::p::p, space s:::p, comp chartDrawTrackNameCB:::p::p, space :p:23:p, comp labelYAxisCB:::p::p, space s:::p, par b {comp autoscaleCB::b:p::p, comp jLabel7::b:p:50:p}, space u:::p, comp showDatarangeCB:::p::p, space :p:36:p}};par l {seq l {space :p:131:p, comp jLabel9:::p::p, space ::177:x}}</string> 
-             </void> 
+             <class>com.jformdesigner.runtime.NullLayout</class> 
             </object> 
+            <void method="setProperty"> 
+             <string>border</string> 
+             <object class="javax.swing.border.LineBorder"> 
+              <object class="java.awt.Color" field="black"/> 
+              <int>1</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
             <void property="name"> 
              <string>jPanel4</string> 
             </void> 
@@ -1678,10 +1678,21 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>36</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>java.awt.Label</string> 
+              <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>font</string> 
                <object class="com.jformdesigner.model.SwingDerivedFont"> 
@@ -1693,10 +1704,29 @@
               </void> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Default settings for barcharts and scatterplots:</string> 
+               <string>&lt;html&gt;&lt;b&gt;Default settings for barcharts and scatterplots:</string> 
               </void> 
               <void property="name"> 
                <string>label1</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>380</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>25</int> 
               </void> 
              </object> 
             </void> 
@@ -1719,6 +1749,17 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>126</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
@@ -1739,16 +1780,46 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>66</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;If selected charts are dynamically rescaled to the range of the data in view.</string> 
+               <string>&lt;html&gt;&lt;i&gt;Dynamically rescale to the range of the data in view.</string> 
               </void> 
               <void property="name"> 
                <string>jLabel7</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>220</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>170</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>371</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>50</int> 
               </void> 
              </object> 
             </void> 
@@ -1771,6 +1842,17 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>96</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
@@ -1789,6 +1871,17 @@
                 <string>labelYAxisCBActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>156</int> 
               </void> 
              </object> 
             </void> 
@@ -1811,16 +1904,42 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>186</int> 
+              </void> 
+             </object> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;Draw a label centered over the track provided&lt;br&gt;the track height is at least 25 pixels. </string> 
+               <string>&lt;html&gt;&lt;i&gt;Draw a label centered over the track. </string> 
               </void> 
               <void property="name"> 
                <string>jLabel9</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>220</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>159</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>355</int> 
               </void> 
              </object> 
             </void> 
@@ -1851,6 +1970,21 @@
                </object> 
               </void> 
              </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>216</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>26</int> 
+              </void> 
+             </object> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -1861,15 +1995,150 @@
             </void> 
             <void method="setProperty"> 
              <string>y</string> 
-             <int>30</int> 
+             <int>20</int> 
             </void> 
             <void method="setProperty"> 
              <string>width</string> 
-             <int>590</int> 
+             <int>650</int> 
             </void> 
             <void method="setProperty"> 
              <string>height</string> 
+             <int>290</int> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JPanel</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>com.jformdesigner.runtime.NullLayout</class> 
+             <void method="setProperty"> 
+              <string>autoSize</string> 
+              <boolean>false</boolean> 
+             </void> 
+            </object> 
+            <void method="setProperty"> 
+             <string>border</string> 
+             <object class="javax.swing.border.LineBorder"> 
+              <object class="java.awt.Color" field="black"/> 
+              <int>1</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>panel1</string> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;b&gt;Default settings for heatmaps:</string> 
+              </void> 
+              <void property="name"> 
+               <string>label13</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>250</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>30</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>5</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Show all features</string> 
+              </void> 
+              <void property="name"> 
+               <string>showAllHeatmapFeauresCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>showAllHeatmapFeauresCBActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>20</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>45</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>&lt;html&gt;&lt;i&gt;Paint all features/segments with a minimum width of 1 pixel.   If not checked features/segments with screen widths less than 1 pixel are not drawn.</string> 
+              </void> 
+              <void property="name"> 
+               <string>label14</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>200</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>35</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>width</string> 
+               <int>425</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>60</int> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>com.jformdesigner.runtime.NullConstraints</class> 
+            <void method="setProperty"> 
+             <string>x</string> 
+             <int>20</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>y</string> 
              <int>340</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>width</string> 
+             <int>650</int> 
+            </void> 
+            <void method="setProperty"> 
+             <string>height</string> 
+             <int>135</int> 
             </void> 
            </object> 
           </void> 
@@ -3539,12 +3808,10 @@
           <void method="setProperty"> 
            <string>border</string> 
            <object class="javax.swing.border.EmptyBorder"> 
-            <object class="java.awt.Insets"> 
-             <int>1</int> 
-             <int>10</int> 
-             <int>1</int> 
-             <int>10</int> 
-            </object> 
+            <int>1</int> 
+            <int>10</int> 
+            <int>1</int> 
+            <int>10</int> 
            </object> 
           </void> 
           <void property="name"> 

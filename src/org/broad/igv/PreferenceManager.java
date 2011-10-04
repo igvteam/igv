@@ -102,6 +102,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
     final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
+    final public static String CHART_SHOW_ALL_HEATMAP="CHART.SHOW_ALL_HEATMAP";
     final public static String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
     final public static String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
     final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
@@ -927,9 +928,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(CHART_DRAW_Y_AXIS, "false");
         defaultValues.put(CHART_AUTOSCALE, "true");
         defaultValues.put(CHART_SHOW_DATA_RANGE, "true");
-
         defaultValues.put(CHART_COLOR_TRACK_NAME, "true");
         defaultValues.put(CHART_TRACK_HEIGHT_KEY, "40");
+        defaultValues.put(CHART_SHOW_ALL_HEATMAP, "false");
 
         defaultValues.put(SAM_SHOW_DUPLICATES, "false");
         defaultValues.put(SAM_SHOW_SOFT_CLIPPED, "false");

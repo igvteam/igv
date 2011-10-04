@@ -38,8 +38,6 @@ import java.util.Map;
 public class HeatmapRenderer extends DataRenderer {
 
 
-
-
     public String getDisplayName() {
         return "Heatmap";
     }
@@ -65,7 +63,7 @@ public class HeatmapRenderer extends DataRenderer {
 
         Color bgColor = colorScale.getNoDataColor();
         context.getGraphic2DForColor(bgColor).fill(rect);
-
+        boolean showAllFeatures = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.CHART_SHOW_ALL_HEATMAP);
 
         double maxX = rect.getMaxX();
         int minY = (int) rect.getMinY();
@@ -90,12 +88,13 @@ public class HeatmapRenderer extends DataRenderer {
             float fw = fEnd - fStart;
             int pStart = (int) fStart;
             int pEnd = (int) fEnd;
-            int w = Math.max(1,  pEnd - pStart); 
+
+            int w = showAllFeatures ? Math.max(1, pEnd - pStart) : (pEnd - pStart);
 
             // if the width is < 1 pixel use alpha to mix color with last color, or background
             float dataY = track.logScaleData(score.getScore());
             Color graphColor = colorScale.getColor(dataY);
-            if (fw < 1) {
+            if (showAllFeatures && fw < 1) {
                 float alpha = Math.max(0.25f, fw);
                 if(lastColor == null || pStart > lastPEnd) {
                     graphColor = ColorUtilities.getCompositeColor(graphColor.getColorComponents(buffer1), alpha);
@@ -133,32 +132,6 @@ public class HeatmapRenderer extends DataRenderer {
                         int adjustedW = pRight - pLeft;
                         g2D.fillRect(pLeft, minY, adjustedW, height);
                     }
-
-                    // Segmented copy numbers (score type "segment") can be optionally joined
-                    /*if (score instanceof Segment &&
-                            PreferenceManager.getInstance().getAsBoolean(PreferenceManager.JOIN_ADJACENT_SEGMENTS_KEY) &&
-                            lastColor != null && (pStart - lastPEnd) > 1) {
-
-                        int midPoint = (pStart + lastPEnd) / 2;
-
-                        context.getGraphic2DForColor(lastColor).fillRect(lastPEnd, minY,
-                                midPoint - lastPEnd, height);
-                        g2D.fillRect(midPoint, minY, pStart - midPoint, height);
-
-                        // Cross hatch joined area  --- don't do for whole chromosome
-                        if (!context.getChr().equals(Globals.CHR_ALL)) {
-                            if (pStart - lastPEnd > 4 && height > 2) {
-                                Color c = new Color(0.4f, 0.4f, 0.4f, 0.5f);
-                                Graphics2D gLine = context.getGraphic2DForColor(c);
-                                int midpoint = minY + height / 2;
-                                if (height > 4) {
-                                    gLine.drawLine(lastPEnd, minY + 3, lastPEnd, minY + height - 3);
-                                    gLine.drawLine(pStart, minY + 3, pStart, minY + height - 3);
-                                }
-                                gLine.drawLine(lastPEnd, minY + height / 2, pStart - 1, minY + height / 2);
-                            }
-                        }
-                    } */
                 } // End special RNAi treagment
             }
             lastPStart = pStart;
