@@ -542,9 +542,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             int end = start + read.length;
             byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
 
-            // TODO -- faster method for uppercasing
-            reference = (new String(reference)).toUpperCase().getBytes();
-
 
             // Loop through base pair coordinates
             for (int loc = start; loc < end; loc++) {
@@ -556,13 +553,15 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Is this base posA mismatch?  Note '=' means indicates posA match by definition
                 // If we do not have posA valid reference we assume posA match.  Soft clipped
                 // bases are considered mismatched by definition
+                final byte refbase = reference[idx];
+                final byte readbase = read[idx];
                 boolean misMatch =
                         isSoftClipped ||
-                                (read[idx] != '=' &&
+                                (readbase != '=' &&
                                         reference != null &&
                                         idx < reference.length &&
-                                        reference[idx] != 0 &&
-                                        reference[idx] != read[idx]);
+                                        refbase != 0 &&
+                                        !(refbase == readbase || (refbase - 32) == readbase));
 
                 if (misMatch || showAllBases) {
                     char c = (char) read[loc - start];
