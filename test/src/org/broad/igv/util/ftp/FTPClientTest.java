@@ -18,8 +18,8 @@
 
 package org.broad.igv.util.ftp;
 
-import org.broad.igv.util.ftp.FTPClient;
-import org.broad.igv.util.ftp.FTPReply;
+import org.broad.tribble.util.ftp.FTPClient;
+import org.broad.tribble.util.ftp.FTPReply;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
