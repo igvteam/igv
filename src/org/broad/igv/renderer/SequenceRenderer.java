@@ -164,7 +164,7 @@ public class SequenceRenderer {
 
                 // Loop through base pair coordinates
                 int firstVisibleNucleotideStart = start;
-                int lastVisibleNucleotideEnd = Math.min(end, seq.length);
+                int lastVisibleNucleotideEnd = Math.min(end, seq.length + start);
                 int lastPx0 = -1;
                 int scale = Math.max(1, (int) context.getScale());
                 for (int loc = firstVisibleNucleotideStart; loc < lastVisibleNucleotideEnd; loc += scale) {

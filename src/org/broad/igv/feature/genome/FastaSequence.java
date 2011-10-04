@@ -22,6 +22,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Set;
 
@@ -66,12 +67,12 @@ public class FastaSequence implements Sequence {
      * end   line = 2
      *
      * @param chr
-     * @param start
-     * @param end
+     * @param qstart
+     * @param qend
      * @return
      */
 
-    public byte[] readSequence(String chr, int start, int end) {
+    public byte[] readSequence(String chr, int qstart, int qend) {
 
         FastaSequenceIndex.FastaSequenceIndexEntry idxEntry = index.getIndexEntry(chr);
         if (idxEntry == null) {
@@ -79,6 +80,9 @@ public class FastaSequence implements Sequence {
         }
 
         try {
+
+            final int start = Math.max(0, qstart);
+            final int end = Math.min((int) idxEntry.getSize(), qend);
 
             final int bytesPerLine = idxEntry.getBytesPerLine();
             final int basesPerLine = idxEntry.getBasesPerLine();
@@ -105,28 +109,28 @@ public class FastaSequence implements Sequence {
             byte[] allBytes = readBytes(startByte, endByte);
 
             // Create the array for the sequence -- this will be "allBytes" without the endline characters.
-            byte[] seqBytes = new byte[end - start];
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(end - start);
 
             int srcPos = 0;
             int desPos = 0;
             // Copy first line
+            final int allBytesLength = allBytes.length;
             if (offset > 0) {
                 int nBases = Math.min(end - start, basesPerLine - offset);
-
-                System.arraycopy(allBytes, srcPos, seqBytes, desPos, nBases);
+                bos.write(allBytes, srcPos, nBases);
                 srcPos += (nBases + nEndBytes);
                 desPos += nBases;
             }
 
-            final int allBytesLength = allBytes.length;
             while (srcPos < allBytesLength) {
                 int nBases = Math.min(basesPerLine, allBytesLength - srcPos);
-                System.arraycopy(allBytes, srcPos, seqBytes, desPos, nBases);
+                bos.write(allBytes, srcPos, nBases);
                 srcPos += (nBases + nEndBytes);
                 desPos += nBases;
             }
 
-            return seqBytes;
+
+            return bos.toByteArray();
 
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

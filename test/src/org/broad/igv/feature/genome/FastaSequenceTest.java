@@ -32,17 +32,13 @@ import static org.junit.Assert.assertEquals;
  */
 public class FastaSequenceTest {
 
-    static String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
-    static String chr02qSeqPath = "http://www.broadinstitute.org/igvdata/test/fasta/chr02q.txt";
-    private FastaSequence sequence;
-
-    @Before
-    public void setUp() throws Exception {
-        sequence = new FastaSequence(path);
-    }
 
     @Test
     public void testReadSequence() throws Exception {
+
+        String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        String chr02qSeqPath = "http://www.broadinstitute.org/igvdata/test/fasta/chr02q.txt";
+        FastaSequence sequence = new FastaSequence(path);
 
         String chr = "chr02q";
         int start = 3531385;
@@ -51,12 +47,73 @@ public class FastaSequenceTest {
 
         // TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT;
         Sequence igvSequence = new IGVSequence(chr02qSeqPath);
-        byte [] expectedBytes = sequence.readSequence(chr, start, end);
+        byte[] expectedBytes = sequence.readSequence(chr, start, end);
         String expectedSequence = new String(expectedBytes);
 
         byte[] bytes = sequence.readSequence(chr, start, end);
         String seq = new String(bytes);
         System.out.println(seq);
         assertEquals(expectedSequence, seq);
+    }
+
+    @Test
+    public void testReadEnd() throws Exception {
+
+        String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
+        FastaSequence sequence = new FastaSequence(path);
+
+         String chr = "chr02q";
+        int chrLen = 8059593;
+        int start = chrLen - 10;
+        int end = chrLen + 10;
+        byte[] bytes = sequence.readSequence(chr, start, end);
+        assertEquals(10, bytes.length);
+
+        byte[] expectedSequence = "TTTTTCCCAG".getBytes();
+
+        for (int i = 0; i < 10; i++) {
+            assertEquals(expectedSequence[i], bytes[i]);
+        }
+    }
+
+    @Test
+    public void testPaddedReference() throws Exception {
+
+        String fasta = "test/data/fasta/ecoli_out.padded.fasta";
+        String expectedSequence = "atcaccattaccac******AAcggtgcgggctgacgcgtacaggaaacacagaaaaaag";
+        String chr = "NC_000913_bb";
+        int start = 240;
+        int end = 300;
+        FastaSequence sequence = new FastaSequence(fasta);
+
+        byte[] bytes = sequence.readSequence(chr, start, end);
+
+        assertEquals(expectedSequence, new String(bytes));
+
+    }
+
+    @Test
+    public void testPaddedReference2() throws Exception {
+
+        String fasta = "test/data/fasta/ecoli_out.padded.fasta";
+        String chr = "NC_000913_bb";
+        int start = 0;
+        int end = 5081;
+        FastaSequence sequence = new FastaSequence(fasta);
+
+
+        byte [] bytes = sequence.readSequence(chr, start, end);
+
+        for(int i=60; i<100; i++) {
+            System.out.println(i + "  "  + (char) bytes[i]);
+        }
+
+        FastaSequence s = new FastaSequence(fasta);
+        SequenceHelper sequenceHelper = new SequenceHelper(s);
+          bytes =  sequenceHelper.getSequence(chr, start, end, end);
+        for(int i=60; i<100; i++) {
+            System.out.println(i + "  "  + (char) bytes[i]);
+        }
+
     }
 }
