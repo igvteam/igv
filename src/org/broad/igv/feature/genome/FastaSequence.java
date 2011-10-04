@@ -49,23 +49,21 @@ public class FastaSequence implements Sequence {
     }
 
 
-
-
     /**
-     *
+     * Return the sequence for the query interval as a byte array.  Coordinates are "ucsc" style (0 based)
+     * <p/>
      * Example:  5 bases per line, 6 bytes per line
-     *
+     * <p/>
      * Bases    0 1 2 3 4 * | 5 6 7 8  9 * | 10 11 12 13 14 *  etc
      * Offset   0 1 2 3 4     0 1 2 3  4      0  1  2  3  4
      * Bytes    0 1 2 3 4 5 | 6 7 8 9 10   | 11 12 13 14 15 16
-     *
+     * <p/>
      * query 9 - 13
      * start line = 1
      * base0      = 1*5 = 5
      * offset     = (9 - 5) = 4
      * start byte = (1*6) + 3 = 10
      * end   line = 2
-     *
      *
      * @param chr
      * @param start
@@ -99,18 +97,20 @@ public class FastaSequence implements Sequence {
             int offset1 = end - base1;
             long endByte = Math.min(contentLength, position + endLine * bytesPerLine + offset1);
 
-            if(startByte >= endByte) {
+            if (startByte >= endByte) {
                 return null;
             }
 
+            // Read all the bytes in the range.  This will include endline characters
             byte[] allBytes = readBytes(startByte, endByte);
 
+            // Create the array for the sequence -- this will be "allBytes" without the endline characters.
             byte[] seqBytes = new byte[end - start];
 
             int srcPos = 0;
             int desPos = 0;
             // Copy first line
-            if(offset > 0) {
+            if (offset > 0) {
                 int nBases = Math.min(end - start, basesPerLine - offset);
 
                 System.arraycopy(allBytes, srcPos, seqBytes, desPos, nBases);
@@ -118,8 +118,9 @@ public class FastaSequence implements Sequence {
                 desPos += nBases;
             }
 
-            int nBases = Math.min(basesPerLine, allBytes.length - srcPos);
-            while(srcPos < allBytes.length) {
+            final int allBytesLength = allBytes.length;
+            while (srcPos < allBytesLength) {
+                int nBases = Math.min(basesPerLine, allBytesLength - srcPos);
                 System.arraycopy(allBytes, srcPos, seqBytes, desPos, nBases);
                 srcPos += (nBases + nEndBytes);
                 desPos += nBases;
@@ -141,7 +142,7 @@ public class FastaSequence implements Sequence {
         SeekableStream ss = null;
         try {
             ss = SeekableStreamFactory.getStreamFor(path);
-            int nBytes = (int)(posEnd - posStart);
+            int nBytes = (int) (posEnd - posStart);
             byte[] bytes = new byte[nBytes];
             ss.seek(posStart);
             ss.readFully(bytes);
