@@ -126,7 +126,7 @@ public class WiggleParser {
     public static boolean isWiggle(ResourceLocator file) {
         AsciiLineReader reader = null;
         try {
-            reader = ParsingUtils.openAsciiReader(file, true);
+            reader = ParsingUtils.openAsciiReader(file);
             String nextLine = null;
             int lineNo = 0;
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
@@ -157,7 +157,7 @@ public class WiggleParser {
 
         try {
 
-            reader = ParsingUtils.openAsciiReader(resourceLocator, true);
+            reader = ParsingUtils.openAsciiReader(resourceLocator);
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
 

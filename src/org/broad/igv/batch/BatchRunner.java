@@ -90,7 +90,7 @@ public class BatchRunner implements NamedRunnable {
         BufferedReader reader = null;
 
         try {
-            reader = ParsingUtils.openBufferedReader(resource, true);
+            reader = ParsingUtils.openBufferedReader(resource);
             String firstLine = reader.readLine();
             return firstLine.startsWith("#batch");
         }

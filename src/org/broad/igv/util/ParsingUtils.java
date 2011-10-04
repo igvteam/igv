@@ -41,18 +41,14 @@ public class ParsingUtils {
 
     private static Logger log = Logger.getLogger(ParsingUtils.class);
 
+
     public static BufferedReader openBufferedReader(String pathOrUrl) throws IOException {
-        return openBufferedReader(pathOrUrl, false);
-    }
 
-
-    public static BufferedReader openBufferedReader(String pathOrUrl, boolean abortOnClose)
-            throws IOException {
-        BufferedReader reader = null;
+        BufferedReader reader;
 
         if (HttpUtils.getInstance().isURL(pathOrUrl)) {
             URL url = new URL(pathOrUrl);
-            reader = new BufferedReader(new InputStreamReader(HttpUtils.getInstance().openConnectionStream(url, abortOnClose)));
+            reader = new BufferedReader(new InputStreamReader(HttpUtils.getInstance().openConnectionStream(url)));
         } else {
             File file = new File(pathOrUrl);
 
@@ -117,7 +113,7 @@ public class ParsingUtils {
                 return defaultLength;
             }
 
-            reader = openAsciiReader(new ResourceLocator(path), true);
+            reader = openAsciiReader(new ResourceLocator(path));
             String nextLine;
             int lines = 0;
             // Skip the first 10 lines (headers, etc)
@@ -152,23 +148,13 @@ public class ParsingUtils {
     }
 
     public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
-        return openAsciiReader(locator, false);
-    }
-
-    public static AsciiLineReader openAsciiReader(ResourceLocator locator, boolean abortOnClose)
-            throws IOException {
-        InputStream stream = openInputStream(locator, abortOnClose);
+        InputStream stream = openInputStream(locator);
         return new AsciiLineReader(stream);
 
     }
 
+
     public static InputStream openInputStream(ResourceLocator locator) throws IOException {
-        return openInputStream(locator, false);
-    }
-
-
-    public static InputStream openInputStream(ResourceLocator locator, boolean abortOnClose)
-            throws IOException {
 
         if (locator.getServerURL() != null) {
             URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
@@ -190,7 +176,7 @@ public class ParsingUtils {
             InputStream inputStream = null;
             if (HttpUtils.getInstance().isURL(locator.getPath())) {
                 URL url = new URL(locator.getPath());
-                inputStream = HttpUtils.getInstance().openConnectionStream(url, abortOnClose);
+                inputStream = HttpUtils.getInstance().openConnectionStream(url);
             } else {
                 String path = locator.getPath();
                 if (path.startsWith("file://")) {
@@ -606,6 +592,7 @@ public class ParsingUtils {
 
     }
 
+    // TODO -- what if this is an ftp path?
     public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||

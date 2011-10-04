@@ -19,9 +19,10 @@
 package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.util.ftp.FTPClient;
-import org.broad.igv.util.ftp.FTPReply;
-import org.broad.igv.util.ftp.FTPUtils;
+import org.broad.igv.util.UserPasswordInputImpl;
+import org.broad.tribble.util.ftp.FTPClient;
+import org.broad.tribble.util.ftp.FTPReply;
+import org.broad.tribble.util.ftp.FTPUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class SeekableFTPStreamHelper {
         this.userInfo = url.getUserInfo();
         this.host = url.getHost();
         this.path = url.getPath();
-        ftp = FTPUtils.connect(host, userInfo);
+        ftp = FTPUtils.connect(host, userInfo, new UserPasswordInputImpl());
     }
 
     public void seek(long position) {
@@ -78,7 +79,7 @@ public class SeekableFTPStreamHelper {
     public int read(byte[] buffer, int offset, int len) throws IOException {
 
         if (ftp == null) {
-            ftp = FTPUtils.connect(host, userInfo);
+            ftp = FTPUtils.connect(host, userInfo, new UserPasswordInputImpl());
         }
 
         if (offset < 0 || len < 0 || (offset + len) > buffer.length) {
@@ -141,7 +142,7 @@ public class SeekableFTPStreamHelper {
         if (ftp != null) {
             ftp.disconnect();
         }
-        ftp = FTPUtils.connect(host, userInfo);
+        ftp = FTPUtils.connect(host, userInfo, new UserPasswordInputImpl());
     }
 
 

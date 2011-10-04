@@ -99,7 +99,7 @@ public class CodecFactory {
                 reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
                         SeekableStreamFactory.getStreamFor(path))));
             } else {
-                reader = ParsingUtils.openBufferedReader(path, true);
+                reader = ParsingUtils.openBufferedReader(path);
             }
             // Look for fileformat directive.  This should be the first line, but just in case check the first 20
             int lineCount = 0;

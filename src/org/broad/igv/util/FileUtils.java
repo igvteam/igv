@@ -325,7 +325,7 @@ public class FileUtils {
         InputStream in = null;
         CharsetDecoder d = Charset.forName("US-ASCII").newDecoder();
         try {
-            in = ParsingUtils.openInputStream(loc, true);
+            in = ParsingUtils.openInputStream(loc);
 
             byte[] bytes = new byte[1024]; //do a peek
             int nBytes = in.read(bytes);
@@ -356,7 +356,7 @@ public class FileUtils {
         BufferedReader reader = null;
 
         try {
-            reader = ParsingUtils.openBufferedReader(loc.getPath(), true);
+            reader = ParsingUtils.openBufferedReader(loc.getPath());
             int nLinesTested = 0;
             String nextLine;
             while ((nextLine = reader.readLine()) != null && nLinesTested < 5) {

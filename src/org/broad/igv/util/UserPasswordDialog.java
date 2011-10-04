@@ -35,19 +35,15 @@ public class UserPasswordDialog extends JDialog {
     boolean canceled = true;
 
     public UserPasswordDialog(Frame owner, String user) {
-        this(owner);
-        userField.setText(user);
+        super(owner);
+        setModal(true);
+        initComponents();
+
+        if (user != null) {
+            userField.setText(user);
+        }
     }
 
-    public UserPasswordDialog(Frame owner) {
-        super(owner);
-        initComponents();
-    }
-
-    public UserPasswordDialog(Dialog owner) {
-        super(owner);
-        initComponents();
-    }
 
     private void okButtonActionPerformed(ActionEvent e) {
         canceled = false;
@@ -88,8 +84,8 @@ public class UserPasswordDialog extends JDialog {
             {
                 buttonBar.setBorder(new EmptyBorder(12, 0, 0, 0));
                 buttonBar.setLayout(new GridBagLayout());
-                ((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80};
-                ((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0};
+                ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80};
+                ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0};
 
                 //---- okButton ----
                 okButton.setText("OK");
@@ -99,8 +95,8 @@ public class UserPasswordDialog extends JDialog {
                     }
                 });
                 buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 5), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 5), 0, 0));
 
                 //---- cancelButton ----
                 cancelButton.setText("Cancel");
@@ -110,8 +106,8 @@ public class UserPasswordDialog extends JDialog {
                     }
                 });
                 buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-                    GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-                    new Insets(0, 0, 0, 0), 0, 0));
+                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0, 0));
             }
             dialogPane.add(buttonBar, BorderLayout.SOUTH);
 
@@ -149,7 +145,7 @@ public class UserPasswordDialog extends JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel1.getComponentCount(); i++) {
+                        for (int i = 0; i < panel1.getComponentCount(); i++) {
                             Rectangle bounds = panel1.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -171,7 +167,7 @@ public class UserPasswordDialog extends JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for(int i = 0; i < contentPanel2.getComponentCount(); i++) {
+                    for (int i = 0; i < contentPanel2.getComponentCount(); i++) {
                         Rectangle bounds = contentPanel2.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
