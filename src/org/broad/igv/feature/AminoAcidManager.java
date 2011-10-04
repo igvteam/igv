@@ -51,7 +51,6 @@ public class AminoAcidManager {
      * <p/>
      * Reading will begin from the startPosition if strand == POSITIVE, endPosition if NEGATIVE
      *
-     * 
      * @param seqBytes
      * @param startPosition
      * @param strand
@@ -89,7 +88,7 @@ public class AminoAcidManager {
         List<AminoAcid> acids = new ArrayList(readLength);
 
         for (int i = 0; i <= sequence.length() - 3; i += 3) {
-            String codon = sequence.substring(i, i + 3);
+            String codon = sequence.substring(i, i + 3).toUpperCase();
             if (direction == Strand.NEGATIVE) {
                 codon = getNucleotideComplement(codon);
             }
@@ -106,7 +105,7 @@ public class AminoAcidManager {
         if (codonTable == null) {
             initTable();
         }
-        
+
         if (codonTable == null || codon == null) {
             aa = AminoAcid.NULL_AMINO_ACID;
         } else {
@@ -125,15 +124,19 @@ public class AminoAcidManager {
             char c = sequence.charAt(i);
             switch (c) {
                 case 'T':
+                case 't':
                     complement[j] = 'A';
                     break;
                 case 'A':
+                case 'a':
                     complement[j] = 'T';
                     break;
                 case 'C':
+                case 'c':
                     complement[j] = 'G';
                     break;
                 case 'G':
+                case 'g':
                     complement[j] = 'C';
                     break;
                 default:

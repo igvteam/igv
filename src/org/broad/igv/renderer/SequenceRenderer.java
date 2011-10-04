@@ -221,6 +221,14 @@ public class SequenceRenderer {
                 return 'C';
             case 'C':
                 return 'G';
+            case 'a':
+                return 't';
+            case 't':
+                return 'a';
+            case 'g':
+                return 'c';
+            case 'c':
+                return 'g';
             default:
                 return inputChar;
         }
