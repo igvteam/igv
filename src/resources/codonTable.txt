@@ -8,11 +8,11 @@ TCA	Serine	Ser	S
 TCG	Serine	Ser	S
 TAT	Tyrosine	Tyr	Y
 TAC	Tyrosine	Tyr	Y
-TAA	Termination (ochre)	Ter	X
-TAG	Termination (amber)	Ter	X
+TAA	Termination (ochre)	Ter	*
+TAG	Termination (amber)	Ter	*
 TGT	Cysteine	Cys	C
 TGC	Cysteine	Cys	C
-TGA	Termination (opal or umber)	Ter	X
+TGA	Termination (opal or umber)	Ter	*
 TGG	Tryptophan	Trp	W
 CTT	Leucine	Leu	L
 CTC	Leucine	Leu	L

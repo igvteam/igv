@@ -507,7 +507,7 @@ public class SequenceRenderer {
             switch (acidSymbol) {
                 case 'M':
                     return METHIONINE_COLOR;
-                case 'X':
+                case '*':
                     return STOP_CODON_COLOR;
                 default:
                     return odd ? AA_COLOR_1 : AA_COLOR_2;

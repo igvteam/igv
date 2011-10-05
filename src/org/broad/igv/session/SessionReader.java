@@ -304,6 +304,7 @@ public class SessionReader {
 
         Element element = (Element) node;
 
+        // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genome = getAttribute(element, SessionAttribute.GENOME.getText());
         if (genome != null && genome.length() > 0) {
             if (IGV.getInstance().getGenomeIds().contains(genome)) {
