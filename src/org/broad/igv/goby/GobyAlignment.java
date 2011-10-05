@@ -141,7 +141,10 @@ public class GobyAlignment implements Alignment {
 
         int pos = start;
         int readInsertions = 0;
-        int endAlignmentRefPosition = alignmentEntry.getQueryAlignedLength() + start;
+        // The following min statement should not be necessary, but it appears that a version of bwa with Goby support
+        // can incorrectly set getQueryAlignedLength to values larger than the query length..
+        int matchLength = Math.min(alignmentEntry.getQueryAlignedLength(), alignmentEntry.getQueryLength());
+        int endAlignmentRefPosition = matchLength + start;
         bases.clear();
         scores.clear();
         while (pos < endAlignmentRefPosition) {
