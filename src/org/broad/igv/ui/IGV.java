@@ -419,7 +419,7 @@ public class IGV {
 
     /**
      * Repaint the header and data panels.
-     *
+     * <p/>
      * Note:  If running in Batch mode a monitor is used to force synchrnous painting.  This is neccessary as the
      * paint() command triggers loading of data.  If allowed to proceed asynchronously the "snapshot" batch command
      * might execute before the data from a previous command has loaded.
@@ -438,12 +438,12 @@ public class IGV {
                                 rootPane.paintImmediately(rootPane.getBounds());
                                 IGV.this.notify();
                             }
-                         }
+                        }
                     };
                     UIUtilities.invokeOnEventThread(r);
                     try {
                         // Wait a maximum of 5 minutes
-                        this.wait(5*60*1000);
+                        this.wait(5 * 60 * 1000);
                     } catch (InterruptedException e) {
                         // Just continue
                     }
@@ -586,15 +586,13 @@ public class IGV {
      * @return
      */
 
-    public GenomeListItem doLoadGenome(ProgressMonitor monitor) {
+    public void doLoadGenome(ProgressMonitor monitor) {
 
         ProgressBar bar = null;
-        GenomeListItem genomeListItem = null;
         File file = null;
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            File importDirectory =
-                    PreferenceManager.getInstance().getLastGenomeImportDirectory();
+            File importDirectory = PreferenceManager.getInstance().getLastGenomeImportDirectory();
             if (importDirectory == null) {
                 PreferenceManager.getInstance().setLastGenomeImportDirectory(Globals.getUserDirectory());
             }
@@ -608,24 +606,7 @@ public class IGV {
                     bar = ProgressBar.showProgressDialog(mainFrame, "Loading Genome...", monitor, false);
                 }
 
-                File directory = file.getParentFile();
-                if (directory != null) {
-                    PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
-                }
-
-                Genome genome = getGenomeManager().loadGenome(file.getAbsolutePath(), monitor);
-                final String name = genome.getDisplayName();
-                final String path = file.getAbsolutePath();
-                final String id = genome.getId();
-                genomeListItem = new GenomeListItem(name, path, id, true);
-
-                if (genomeListItem != null) {
-                    if (genomeListItem != null) {
-                        getGenomeManager().addUserDefineGenomeItem(genomeListItem);
-                    }
-                    contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
-                    contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
-                }
+                loadGenome(file.getAbsolutePath(), monitor);
 
             }
         } catch (Exception e) {
@@ -642,8 +623,26 @@ public class IGV {
             }
         }
 
+    }
 
-        return genomeListItem;
+    public void loadGenome(String path, ProgressMonitor monitor) throws IOException {
+
+        File file = new File(path);
+        if (file.exists()) {
+            File directory = file.getParentFile();
+            PreferenceManager.getInstance().setLastGenomeImportDirectory(directory);
+        }
+
+        Genome genome = getGenomeManager().loadGenome(path, monitor);
+        final String name = genome.getDisplayName();
+        final String id = genome.getId();
+
+        GenomeListItem genomeListItem = new GenomeListItem(name, path, id, true);
+        getGenomeManager().addUserDefineGenomeItem(genomeListItem);
+
+        contentPane.getCommandBar().addToUserDefinedGenomeItemList(genomeListItem);
+        contentPane.getCommandBar().selectGenomeFromListWithNoImport(genomeListItem.getId());
+
     }
 
 

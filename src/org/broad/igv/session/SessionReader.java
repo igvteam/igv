@@ -304,7 +304,19 @@ public class SessionReader {
 
         Element element = (Element) node;
 
-        IGV.getInstance().selectGenomeFromList(getAttribute(element, SessionAttribute.GENOME.getText()));
+        String genome = getAttribute(element, SessionAttribute.GENOME.getText());
+        if (genome != null && genome.length() > 0) {
+            if (IGV.getInstance().getGenomeIds().contains(genome)) {
+                IGV.getInstance().selectGenomeFromList(genome);
+            } else if (ParsingUtils.pathExists(genome)) {
+                try {
+                    IGV.getInstance().loadGenome(genome, null);
+                } catch (IOException e) {
+                    throw new RuntimeException("Error loading genome: " + genome);
+                }
+            }
+        }
+
 
         session.setLocus(getAttribute(element, SessionAttribute.LOCUS.getText()));
         session.setGroupTracksBy(getAttribute(element, SessionAttribute.GROUP_TRACKS_BY.getText()));
@@ -314,8 +326,7 @@ public class SessionReader {
             try {
                 Boolean b = Boolean.parseBoolean(removeEmptyTracks);
                 session.setRemoveEmptyPanels(b);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error parsing removeEmptyTracks string: " + removeEmptyTracks, e);
             }
         }
@@ -323,8 +334,7 @@ public class SessionReader {
         String versionString = getAttribute(element, SessionAttribute.VERSION.getText());
         try {
             version = Integer.parseInt(versionString);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             log.error("Non integer version number in session file: " + versionString);
         }
         session.setVersion(version);
@@ -800,8 +810,7 @@ public class SessionReader {
                         divs[j] = Double.parseDouble(tokens[j]);
                     }
                     session.setDividerFractions(divs);
-                }
-                catch (NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     log.error("Error parsing divider locations", e);
                 }
             }

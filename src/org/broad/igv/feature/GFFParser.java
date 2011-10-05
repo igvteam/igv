@@ -858,7 +858,12 @@ public class GFFParser implements FeatureParser {
             }
         }
 
-
+        /**
+         * Parse the column 9 attributes.  Attributes are separated by semicolons.
+         *
+         * @param description
+         * @param kvalues
+         */
         public void parseAttributes(String description, Map<String, String> kvalues) {
 
             List<String> kvPairs = StringUtils.breakQuotedString(description.trim(), ';');

@@ -592,7 +592,7 @@ public class ParsingUtils {
 
     }
 
-    // TODO -- what if this is an ftp path?
+
     public static boolean pathExists(String covPath) {
         try {
             return (new File(covPath)).exists() ||

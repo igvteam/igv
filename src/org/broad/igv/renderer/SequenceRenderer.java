@@ -206,7 +206,7 @@ public class SequenceRenderer {
     }
 
     /**
-     * complement a nucleotide. If not ATGC, return the intput char
+     * Return the complement of a nucleotide or ambiguity code
      *
      * @param inputChar
      * @return
