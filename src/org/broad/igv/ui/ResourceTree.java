@@ -142,6 +142,7 @@ public class ResourceTree {
                                     }
 
                                     // Now save a list of the open checked nodes
+                                    /*
                                     StringBuffer buffer = new StringBuffer();
                                     Iterator iterator = allCheckedLeafNodes.iterator();
                                     while (iterator.hasNext()) {
@@ -155,7 +156,8 @@ public class ResourceTree {
                                             buffer.append("\t");
                                         }
                                     }
-                                    PreferenceManager.getInstance().put(PreferenceManager.CHECKED_RESOURCES_KEY, buffer.toString());
+                                    */
+                                    //PreferenceManager.getInstance().put(PreferenceManager.CHECKED_RESOURCES_KEY, buffer.toString());
                                 }
                             }
                         }
@@ -219,13 +221,14 @@ public class ResourceTree {
 
         // Get the previously checked leaf nodes.  The nodes are stored as
 
-        String paths = PreferenceManager.getInstance().get(PreferenceManager.CHECKED_RESOURCES_KEY);
-        if (paths != null) {
+        //String paths = PreferenceManager.getInstance().get(PreferenceManager.CHECKED_RESOURCES_KEY);
+       /* if (paths != null) {
             String[] selectedPaths = paths.split("\t");
             for (String path : selectedPaths) {
                 selectedLeafNodePaths.add(path);
             }
         }
+        */
 
         // Force proper checks on startup
         recheckTree();

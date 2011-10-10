@@ -130,7 +130,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String ENABLE_LINKED_SORTING = "ENABLE_LINKED_SORTING";
     final public static String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
     final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
-    final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
+    //final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
     final public static String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
     final public static String MAF_SPECIES_KEY = "MAF_SPECIES_KEY";
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
