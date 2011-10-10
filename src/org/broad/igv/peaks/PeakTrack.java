@@ -62,7 +62,7 @@ public class PeakTrack extends AbstractTrack {
 
     private static ColorOption colorOption = ColorOption.SCORE;
     private static boolean showPeaks = true;
-    private static boolean showSignals = true;
+    private static boolean showSignals = false;
 
     int nTimePoints;
     Map<String, List<Peak>> peakMap = new HashMap();
