@@ -18,7 +18,9 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.tools.sort.Sorter;
+import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -26,10 +28,7 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A utitility class to convert a set of time-course bed files to a "peaks" file.  This is experimental.
@@ -45,8 +44,8 @@ public class BedToPeaks {
         File inputDir = new File("/Users/jrobinso/IGV/ichip/bed/");
         File destDir = new File("/Users/jrobinso/IGV/ichip/peaks");
 
-       // downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
-       // sortAll("/Users/jrobinso/IGV/time_course/sorted");
+        // downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
+        // sortAll("/Users/jrobinso/IGV/time_course/sorted");
         convertAll(inputDir, destDir);
     }
 
@@ -121,8 +120,7 @@ public class BedToPeaks {
             }
 
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
 
@@ -131,70 +129,101 @@ public class BedToPeaks {
 
 
     /**
-     * Converts a collection of peak "bed" files to a single .igv file.
+     * Converts a collection of peak "bed" files to a single binary "peak" file
      */
     public static void createBinaryPeakFile(String factor, List<File> bedFiles, File outputDir) throws IOException {
 
 
         BufferedReader[] readers = new BufferedReader[bedFiles.size()];
         LittleEndianOutputStream peakWriter = null;
+        File peeksFile = null;
+        long indexPosition = 0l;
         try {
 
             for (int i = 0; i < bedFiles.size(); i++) {
                 readers[i] = new BufferedReader(new FileReader(bedFiles.get(i)));
             }
 
-            File peeksFile = new File(outputDir, factor + ".peak.bin");
+            peeksFile = new File(outputDir, factor + ".peak.bin");
             peakWriter = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(peeksFile)));
 
             if (peakWriter != null) {
 
+                LinkedHashMap<String, Long> chrIndex = new LinkedHashMap<String, Long>();
 
                 // All input files must have the same # of lines, and be in the same order
                 String[] line = new String[readers.length];
 
                 int nTimePoints = readers.length - 1;
+
+                // Map for index
+
+
+                // Placeholder for index position
+                peakWriter.writeLong(0l);
+
+                // # of time points
                 peakWriter.writeInt(nTimePoints);
+
                 String lastChr = "";
                 List<PeakRecord> records = new ArrayList(20000);
                 while (true) {
 
-
+                    String chr = null;
+                    String[] tokens = null;
                     for (int i = 0; i < readers.length; i++) {
                         line[i] = readers[i].readLine();
                         if (line[i] == null) {
-                            return;
+                            break;
                         }
                     }
+                    if (line[0] != null) {
+                        if (line[0].startsWith("#") || line[0].startsWith("track")) {
+                            continue;
+                        }
 
-                    if (line[0].startsWith("#") || line[0].startsWith("track")) {
-                        continue;
+                        // Take locus from first file
+                        tokens = line[0].split("\t");
+                        chr = tokens[0];
                     }
 
-                    // Take locus from first file
-                    String[] tokens = line[0].split("\t");
-                    String chr = tokens[0];
+                    if (((chr == null && lastChr != null) || !chr.equals(lastChr)) && records.size() > 0) {
 
-                    if (!chr.equals(lastChr) && records.size() > 0) {
-                        peakWriter.writeString(lastChr);
-                        peakWriter.writeInt(records.size());
+                        // Record position for index
+                        chrIndex.put(lastChr, peakWriter.getWrittenCount());
+
+                        // Compress data, then write it out.
+                        BufferedByteWriter buffer = new BufferedByteWriter(100000);
+
+                        buffer.putNullTerminatedString(lastChr);
+                        buffer.putInt(records.size());
                         for (PeakRecord record : records) {
-                            peakWriter.writeInt(record.start);
-                            peakWriter.writeInt(record.end);
-                            peakWriter.writeFloat(record.score);
+                            buffer.putInt(record.start);
+                            buffer.putInt(record.end);
+                            buffer.putFloat(record.score);
                             for (int i = 0; i < record.timeScores.length; i++) {
-                                peakWriter.writeFloat(record.timeScores[i]);
+                                buffer.putFloat(record.timeScores[i]);
                             }
                         }
                         records.clear();
+
+                        byte[] bytes = buffer.getBytes();
+                        bytes = CompressionUtils.compress(bytes);
+                        peakWriter.writeInt(bytes.length);
+                        peakWriter.write(bytes);
                     }
+
+                    if (chr == null) {
+                        break;
+                    }
+
                     lastChr = chr;
 
                     int start = Integer.parseInt(tokens[1]);
                     int end = Integer.parseInt(tokens[2]);
                     float score = Float.parseFloat(tokens[4]);
-                    float [] timeScores = new float[nTimePoints];
-                    for (int i = 0; i<nTimePoints; i++) {
+                    float[] timeScores = new float[nTimePoints];
+                    for (int i = 0; i < nTimePoints; i++) {
                         tokens = line[i + 1].split("\t");
                         if (!(tokens[0].equals(chr) &&
                                 Integer.parseInt(tokens[1]) == start &&
@@ -205,12 +234,23 @@ public class BedToPeaks {
                     }
                     records.add(new PeakRecord(start, end, score, timeScores));
                 }
+
+                // Write out index
+
+                indexPosition = peakWriter.getWrittenCount();
+                peakWriter.writeInt(chrIndex.size());
+                for (Map.Entry<String, Long> entry : chrIndex.entrySet()) {
+                    peakWriter.writeString(entry.getKey());
+                    peakWriter.writeLong(entry.getValue());
+                }
+
+
             }
 
         } finally {
             if (peakWriter != null) {
-                peakWriter.writeString("EOF");
                 peakWriter.close();
+                writeIndexPosition(peeksFile, indexPosition);
             }
             for (BufferedReader reader : readers) {
                 reader.close();
@@ -229,6 +269,23 @@ public class BedToPeaks {
             this.end = end;
             this.score = score;
             this.timeScores = timeScores;
+        }
+    }
+
+    static void writeIndexPosition(File file, long indexPosition) throws IOException {
+        RandomAccessFile raf = null;
+        try {
+            raf = new RandomAccessFile(file, "rw");
+            raf.getChannel().position(0);
+            // Write as little endian
+            BufferedByteWriter buffer = new BufferedByteWriter();
+            buffer.putLong(indexPosition);
+            raf.write(buffer.getBytes());
+            raf.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (raf != null) raf.close();
         }
     }
 
@@ -409,10 +466,9 @@ public class BedToPeaks {
 
             //_0.01 rather than the segments_0.05 for chromatin (K4me3, K4me1 & K27Ac).
             String segments;
-            if(factor.equals("K4me3") || factor.equals("K4me1") || factor.equals("K27Ac")) {
-                 segments = "/segments_0.01/";
-            }
-            else {
+            if (factor.equals("K4me3") || factor.equals("K4me1") || factor.equals("K27Ac")) {
+                segments = "/segments_0.01/";
+            } else {
                 segments = "/segments_0.05/";
             }
 
@@ -420,8 +476,7 @@ public class BedToPeaks {
             if (bedFile.exists()) {
                 System.out.println("Copying " + bedFile.getName());
                 FileUtils.copyFile(bedFile, new File(destDir, bedFile.getName()));
-            }
-            else {
+            } else {
                 System.out.println("File not found: " + bedFile);
             }
 

@@ -41,6 +41,7 @@ import org.broad.tribble.util.SeekableStreamFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
@@ -70,9 +71,6 @@ public class PeakTrack extends AbstractTrack {
     Renderer renderer = new PeakRenderer();
 
 
-    Map<String, Long> index = new HashMap();
-
-
     // Path to the compressed signal (TDF) file and data source
     String signalPath;
     WrappedDataSource signalSource;
@@ -95,6 +93,8 @@ public class PeakTrack extends AbstractTrack {
     Genome genome;
     private String peaksPath;
 
+    PeakParser parser;
+
     /**
      * @param locator -- path to a peaks.cfg file
      * @param genome
@@ -105,7 +105,10 @@ public class PeakTrack extends AbstractTrack {
         this.genome = genome;
         setHeight(30);
         parse(locator.getPath());
-        loadPeaks();
+
+        String binPath = peaksPath + ".bin";
+        binPath.replace("igvdata.broadinstitute", "igv.broadinstitute");
+        parser = new PeakParser(binPath);
 
         instances.add(new SoftReference(this));
 
@@ -162,7 +165,6 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             signalPath = tokens[1];
-            signalPath = signalPath.replace("igvdata", "igv");
             if (signalPath != null) {
                 signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
                 signalSource.setNormalizeCounts(true, 1.0e9f);
@@ -176,17 +178,6 @@ public class PeakTrack extends AbstractTrack {
             timeSignalPaths = tokens[1].split(",");
             for(int i=0; i<timeSignalPaths.length; i++) {
                 timeSignalPaths[i] = timeSignalPaths[i].replace("igvdata", "igv");
-            }
-
-            nextLine = br.readLine();
-            if (!nextLine.startsWith("#index")) {
-                throw new RuntimeException("Missing index");
-            }
-            while ((nextLine = br.readLine()) != null) {
-                tokens = nextLine.split("\t");
-                String chr = tokens[0];
-                long position = Long.parseLong(tokens[1]);
-                index.put(chr, position);
             }
 
 
@@ -326,34 +317,15 @@ public class PeakTrack extends AbstractTrack {
     }
 
     private List<Peak> getAllPeaks(String chr) throws IOException {
-        if (peakMap.isEmpty()) {
-            loadPeaks();
+
+        List<Peak> peaks = peakMap.get(chr);
+        if(peaks == null) {
+            peaks = parser.loadPeaks(chr);
+            peakMap.put(chr, peaks);
         }
-        return peakMap.get(chr);
+        return peaks;
     }
 
-    private void loadPeaks() throws IOException {
-        InputStream is = null;
-        try {
-            String binPath = peaksPath + ".bin.gz";
-            is = ParsingUtils.openInputStream(new ResourceLocator(binPath));
-            List<Peak> p = PeakParser.loadPeaksBinary(is);
-
-            for (Peak peak : p) {
-                final String peakChr = peak.getChr();
-                List<Peak> peakList = peakMap.get(peakChr);
-                if (peakList == null) {
-                    peakList = new ArrayList(1000);
-                    peakMap.put(peakChr, peakList);
-                }
-                peakList.add(peak);
-            }
-
-        }
-        finally {
-            if (is != null) is.close();
-        }
-    }
 
 
     private static void clearFilteredLists() {

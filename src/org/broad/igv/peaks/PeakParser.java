@@ -18,16 +18,17 @@
 
 package org.broad.igv.peaks;
 
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.IGVFeature;
-import org.broad.igv.track.TrackProperties;
+
+import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.util.LittleEndianInputStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,21 +38,74 @@ import java.util.Map;
  */
 public class PeakParser {
 
-    public static List<Peak> loadPeaksBinary(InputStream stream) throws IOException {
+    Map<String, Long> chrIndex;
+    int nTimePoints;
+    String path;
 
-        List<Peak> peaks = new ArrayList(2000);
-        LittleEndianInputStream reader = null;
+    public PeakParser(String path) throws IOException {
+        this.path = path;
+        loadIndex();
+    }
 
+    private void loadIndex() throws IOException {
+        chrIndex = new HashMap<String, Long>();
+        SeekableStream ss = null;
         try {
-            reader = new LittleEndianInputStream(new BufferedInputStream(stream));
+            ss = SeekableStreamFactory.getStreamFor(path);
+            LittleEndianInputStream is = new LittleEndianInputStream(ss);
 
-            // Now parse the data
-            int nTimePoints = reader.readInt();
+            long indexPosition = is.readLong();
+            nTimePoints = is.readInt();
 
-            String chr;
-            while (!(chr = reader.readString()).equals("EOF")) {
-                int nRows = reader.readInt();
-                for (int r = 0; r < nRows; r++) {
+            ss.seek(indexPosition);
+            is = new LittleEndianInputStream(new BufferedInputStream(ss));
+            int nChrs = is.readInt();
+            for (int i = 0; i < nChrs; i++) {
+                String chr = is.readString();
+                long pos = is.readLong();
+                chrIndex.put(chr, pos);
+            }
+
+        } finally {
+            if (ss != null) ss.close();
+        }
+
+
+    }
+
+    public List<Peak> loadPeaks(String chr) throws IOException {
+
+
+        Long chrPos = chrIndex.get(chr);
+        if (chrPos == null) {
+            return new ArrayList<Peak>();
+        } else {
+            List<Peak> peaks = new ArrayList<Peak>(10000);
+            LittleEndianInputStream reader = null;
+            SeekableStream ss = null;
+            try {
+                ss = SeekableStreamFactory.getStreamFor(path);
+                ss.seek(chrPos);
+
+                reader = new LittleEndianInputStream(ss);
+                int nBytes = reader.readInt();
+
+                byte [] compressedBytes = new byte[nBytes];
+                ss.readFully(compressedBytes);
+
+                byte [] bytes = CompressionUtils.decompress(compressedBytes);
+
+                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+                reader = new LittleEndianInputStream(bis);
+
+                String chrRecorded = reader.readString();
+                if (!chrRecorded.equals(chr)) {
+                    throw new RuntimeException("Error paring peak file: " + path +
+                            "<br>Expected: " + chr + "  found: " + chrRecorded);
+                }
+
+                int nDataPoints = reader.readInt();
+                for (int n = 0; n < nDataPoints; n++) {
                     int start = reader.readInt();
                     int end = reader.readInt();
                     float combinedScore = reader.readFloat();
@@ -60,68 +114,16 @@ public class PeakParser {
                         timePointScores[i] = reader.readFloat();
                     }
                     peaks.add(new Peak(chr, start, end, "", combinedScore, timePointScores));
+
                 }
+                return peaks;
+
+            } finally {
+                if (ss != null) ss.close();
             }
-
-            return peaks;
-
-        }
-        finally {
-            // Don't close reader here,  close stream in calling method
-        }
-
-    }
-
-
-    public static List<Peak> loadPeaks(InputStream stream, int nTimePoints, String chr) throws IOException {
-
-        List<Peak> peaks = new ArrayList(25000);
-        BufferedReader reader = null;
-
-        try {
-            reader = new BufferedReader(new InputStreamReader(stream));
-            String nextLine;
-
-            // Skip comments and read header line.  Time points start after line
-            while ((nextLine = reader.readLine()) != null) {
-                if (nextLine.startsWith("#")) {
-                    continue;
-                }
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length < 7) {
-                    throw new RuntimeException("Not enough columns for peak file. At least 2 time points are required");
-                }
-                break;
-            }
-
-            // Now parse the data
-            while ((nextLine = reader.readLine()) != null) {
-
-                String[] tokens = nextLine.split("\t");
-                if (!tokens[0].equals(chr)) {
-                    break;
-                }
-                int start = Integer.parseInt(tokens[1]);
-                int end = Integer.parseInt(tokens[2]);
-                String name = tokens[3];
-                float combinedScore = Float.parseFloat(tokens[4]);
-                float[] timePointScores = new float[nTimePoints];
-                if (nTimePoints > tokens.length - 5) {
-                    System.out.println();
-                }
-                for (int i = 0; i < nTimePoints; i++) {
-                    timePointScores[i] = Float.parseFloat(tokens[5 + i]);
-                }
-                peaks.add(new Peak(chr, start, end, name, combinedScore, timePointScores));
-            }
-
-            return peaks;
-
-        }
-        finally {
-            // Don't close reader here,  close stream in calling method
         }
 
     }
 
 }
+

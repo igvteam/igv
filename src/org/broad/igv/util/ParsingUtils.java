@@ -602,4 +602,29 @@ public class ParsingUtils {
             return false;
         }
     }
+
+    /**
+     * Return the contents of the resource at path as a byte array
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     */
+    public static byte[] readAll(String path) throws IOException {
+        InputStream is = null;
+        try {
+            byte [] buffer = new byte[100000];
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(1000000);
+            is = openInputStream(new ResourceLocator(path));
+            int nRead;
+            while((nRead = is.read(buffer)) >= 0) {
+                bos.write(buffer, 0, nRead);
+            }
+            return bos.toByteArray();
+        } finally {
+            is.close();
+        }
+
+
+    }
 }
