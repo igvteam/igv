@@ -36,9 +36,9 @@ public class PeakParserTest {
     @Test
     public void testLoadPeaksBinary() throws Exception {
 
-        String f = "test/data/ichip/stat6.peak.bin.gz";
-        InputStream is = new BufferedInputStream(new GZIPInputStream(new FileInputStream(f)));
-        List<Peak> peaks = PeakParser.loadPeaksBinary(is);
-        assertEquals(240, peaks.size());
+        String f = "test/data/ichip/stat6.peak.bin";
+        PeakParser parser = new PeakParser(f);
+        List<Peak> peaks = parser.loadPeaks("chr1");
+        assertEquals(14, peaks.size());
     }
 }
