@@ -104,15 +104,14 @@ public class PeakTrack extends AbstractTrack {
         parse(locator.getPath());
 
         long dt = System.currentTimeMillis() - t0;
-        log.debug("Parsed " + locator.getPath() + ": " + dt);
+        log.info("Parsed " + locator.getPath() + ": " + dt);
         t0 = System.currentTimeMillis();
 
         String binPath = peaksPath + ".bin";
-        binPath.replace("igvdata.broadinstitute", "igv.broadinstitute");   // TODO -- temporary until permissions propogate
         parser = new PeakParser(binPath);
 
         dt = System.currentTimeMillis() - t0;
-        log.debug("Loaded bin: " + binPath + ": " + dt);
+        log.info("Loaded bin: " + binPath + ": " + dt);
 
         instances.add(new SoftReference(this));
 
