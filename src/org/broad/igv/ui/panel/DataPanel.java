@@ -57,8 +57,6 @@ public class DataPanel extends JComponent implements Paintable {
     private boolean isWaitingForToolTipText = false;
 
 
-
-
     // TODO move this to some central place
     final static private boolean IS_MAC = System.getProperty("os.name").toLowerCase().startsWith("mac");
 
@@ -68,6 +66,7 @@ public class DataPanel extends JComponent implements Paintable {
     private ReferenceFrame frame;
     DataPanelContainer parent;
     private DataPanelPainter painter;
+    private String tooltipText = "";
 
 
     public DataPanel(ReferenceFrame frame, DataPanelContainer parent) {
@@ -106,12 +105,12 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void paintComponent(final Graphics g) {
-        
+
         super.paintComponent(g);
-         RenderContext context = null;
+        RenderContext context = null;
         try {
             final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
-            if(mouseableRegions != null) {
+            if (mouseableRegions != null) {
                 mouseableRegions.clear();
             }
 
@@ -146,7 +145,6 @@ public class DataPanel extends JComponent implements Paintable {
             int trackHeight = getHeight();
 
             painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect, mouseableRegions);
-
 
 
             // If there is a partial ROI in progress draw it first
@@ -264,7 +262,6 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
 
-
     /**
      * Do not remove - Used for debugging only
      *
@@ -364,12 +361,18 @@ public class DataPanel extends JComponent implements Paintable {
 
         String puText = popupTextBuffer.toString().trim();
         if (puText.length() > 0) {
-            if (!puText.equals(getToolTipText())) {
+            if (!puText.equals(tooltipText)) {
                 setToolTipText("<html>" + puText);
             }
         } else {
-            setToolTipText(null);
+            setToolTipText("");
         }
+    }
+
+
+    public void setToolTipText(String text) {
+        this.tooltipText = text;
+        super.setToolTipText(text);
     }
 
     @Override
