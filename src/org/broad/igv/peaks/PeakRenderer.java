@@ -22,7 +22,6 @@ import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.Renderer;
-import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.util.ColorUtilities;
@@ -100,7 +99,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
             }
         }
 
-        if (PeakTrack.isShowSignals() && track.signalSource != null) {
+        if (PeakTrack.isShowSignals() && track.getSignalSource() != null) {
             int h = track.bandHeight;
             int signalHeight = PeakTrack.isShowPeaks() ? track.signalHeight : h;
 
@@ -122,7 +121,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     }
                 }
             } else {
-                List<LocusScore> signals = track.signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                List<LocusScore> signals = track.getSignalSource().getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
                 Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
                 chartRenderer.render(signals, context, signalRect, track);
 

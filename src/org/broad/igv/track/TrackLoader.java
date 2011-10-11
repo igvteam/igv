@@ -653,7 +653,7 @@ public class TrackLoader {
             String trackId = multiTrack ? path + "_" + heading : path;
             String trackName = multiTrack ? heading : name;
 
-            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+
             DatasetDataSource dataSource = new DatasetDataSource(trackId, ds, genome);
 
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);

@@ -20,7 +20,6 @@ package org.broad.igv.peaks;
 
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.LocusScoreUtils;
-import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -34,16 +33,10 @@ import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.List;
@@ -54,6 +47,7 @@ import java.util.List;
  */
 public class PeakTrack extends AbstractTrack {
 
+    private static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(PeakTrack.class);
 
     static List<SoftReference<PeakTrack>> instances = new ArrayList();
 
@@ -73,7 +67,7 @@ public class PeakTrack extends AbstractTrack {
 
     // Path to the compressed signal (TDF) file and data source
     String signalPath;
-    WrappedDataSource signalSource;
+    private WrappedDataSource signalSource;
 
     // Paths to the time series signal files and data sources
     String[] timeSignalPaths;
@@ -104,11 +98,21 @@ public class PeakTrack extends AbstractTrack {
         super(locator);
         this.genome = genome;
         setHeight(30);
+
+        long t0 = System.currentTimeMillis();
+
         parse(locator.getPath());
 
+        long dt = System.currentTimeMillis() - t0;
+        log.debug("Parsed " + locator.getPath() + ": " + dt);
+        t0 = System.currentTimeMillis();
+
         String binPath = peaksPath + ".bin";
-        binPath.replace("igvdata.broadinstitute", "igv.broadinstitute");
+        binPath.replace("igvdata.broadinstitute", "igv.broadinstitute");   // TODO -- temporary until permissions propogate
         parser = new PeakParser(binPath);
+
+        dt = System.currentTimeMillis() - t0;
+        log.debug("Loaded bin: " + binPath + ": " + dt);
 
         instances.add(new SoftReference(this));
 
@@ -165,10 +169,6 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             signalPath = tokens[1];
-            if (signalPath != null) {
-                signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
-                signalSource.setNormalizeCounts(true, 1.0e9f);
-            }
 
             nextLine = br.readLine();
             tokens = nextLine.split("=");
@@ -176,9 +176,6 @@ public class PeakTrack extends AbstractTrack {
                 throw new RuntimeException("Unexpected timePoints line: " + nextLine);
             }
             timeSignalPaths = tokens[1].split(",");
-            for(int i=0; i<timeSignalPaths.length; i++) {
-                timeSignalPaths[i] = timeSignalPaths[i].replace("igvdata", "igv");
-            }
 
 
         } finally {
@@ -267,8 +264,8 @@ public class PeakTrack extends AbstractTrack {
                     buf.append("<br>");
                 }
             }
-            if (showSignals && signalSource != null) {
-                List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
+            if (showSignals && getSignalSource() != null) {
+                List<LocusScore> scores = getSignalSource().getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
                 LocusScore score = getLocusScoreAt(scores, position, frame);
                 buf.append((score == null) ? "" : "Score = " + score.getScore());
             }
@@ -319,13 +316,12 @@ public class PeakTrack extends AbstractTrack {
     private List<Peak> getAllPeaks(String chr) throws IOException {
 
         List<Peak> peaks = peakMap.get(chr);
-        if(peaks == null) {
+        if (peaks == null) {
             peaks = parser.loadPeaks(chr);
             peakMap.put(chr, peaks);
         }
         return peaks;
     }
-
 
 
     private static void clearFilteredLists() {
@@ -478,6 +474,14 @@ public class PeakTrack extends AbstractTrack {
         }
 
         return timeSignalSources;
+    }
+
+    public WrappedDataSource getSignalSource() {
+        if (signalSource == null && signalPath != null) {
+            signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
+            signalSource.setNormalizeCounts(true, 1.0e9f);
+        }
+        return signalSource;
     }
 
 
