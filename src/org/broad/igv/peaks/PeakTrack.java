@@ -114,6 +114,7 @@ public class PeakTrack extends AbstractTrack {
         try {
             long t0 = System.currentTimeMillis();
             parser = new PeakParser(locator.getPath());
+            this.getAllPeaks("chr2");
             long dt = System.currentTimeMillis() - t0;
             log.info("Loaded bin: " + locator.getPath() + ": " + dt);
 
