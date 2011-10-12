@@ -38,105 +38,44 @@ import java.util.*;
  */
 public class BedToPeaks {
     private static Map<String, String> colorMap;
+    static int[] allTimes = {0, 30, 60, 120};
 
     public static void main(String[] args) throws IOException {
 
         File inputDir = new File("/Users/jrobinso/IGV/ichip/bed/");
         File destDir = new File("/Users/jrobinso/IGV/ichip/peaks");
+        String root = "http://www.broadinstitute.org/igvdata/ichip";
+
 
         // downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
         // sortAll("/Users/jrobinso/IGV/time_course/sorted");
-        convertAll(inputDir, destDir);
+        convertAll(inputDir, destDir, root);
     }
 
 
+
     /**
-     * Converts a collection of peak "bed" files to a single .igv file.
+     * Converts a collection of peak "bed" files to a single binary "peak" file
      */
-    public static void createCfgFile(String factor, File outputDir) throws IOException {
+    public static void createBinaryPeakFile(String factor, List<Integer> times,  List<File> bedFiles, File outputDir, String root) throws IOException {
 
-        int[] times = {0, 30, 60, 120};
-
-        if (colorMap == null) colorMap = loadColors("/Users/jrobinso/IGV/time_course/colors.txt");
+        if (colorMap == null) colorMap = loadColors("/Users/jrobinso/IGV/ichip/colors.txt");
         String c = colorMap.get(factor);
         if (c == null) {
             System.out.println("No color found for " + factor);
             c = "0,0,150";
         }
 
-        PrintWriter cfgWriter = null;
-        try {
-
-            File cfgFile = new File(outputDir, factor + ".peak.cfg");
-            cfgWriter = new PrintWriter(new BufferedWriter(new FileWriter(cfgFile)));
-
-            String peeksFile = factor + ".peak";
-
-            // Signals at http://iwww.broadinstitute.org/igvdata/peaks/compressed/<FACTOR>/<FACTOR>.merged.bam.tdf
-            String peaks = "http://www.broadinstitute.org/igvdata/ichip/peaks/" + peeksFile;
-            String tdf = "http://www.broadinstitute.org/igvdata/ichip/tdf/compressed/" + factor + ".merged.bam.tdf";
-            String bam = "http://www.broadinstitute.org/igvdata/ichip/compressed/" + factor + "/" + factor + ".merged.bam";
-
-            cfgWriter.println("track name=" + factor + " sample=" + factor + " viewLimits=0:100 useScore=1 color=" + c);
-            cfgWriter.println("timePoints=0,30,60,120");
-            cfgWriter.println("peaks=" + peaks);
-            cfgWriter.println("signals=" + tdf);
-            cfgWriter.print("timeSignals=");
-
-            String root = "http://www.broadinstitute.org/igvdata/ichip/tdf/timecourses/";
-            for (int t : times) {
-                cfgWriter.print(root + factor + "_" + t + "/" + factor + "_" + t + ".merged.bam.tdf,");
-            }
-            cfgWriter.println();
-            cfgWriter.println("#index");
-
-            File pf = new File(outputDir, peeksFile);
-            indexPeakFile(pf, cfgWriter);
+        String peeksFileName = factor + ".peak.bin";
+        File peeksFile = new File(outputDir, peeksFileName);
 
 
-        } finally {
-            if (cfgWriter != null) cfgWriter.close();
-        }
-    }
-
-    private static void indexPeakFile(File peeksFile, PrintWriter cfgWriter) {
-        AsciiLineReader reader = null;
-
-        try {
-            reader = ParsingUtils.openAsciiReader(new ResourceLocator(peeksFile.getAbsolutePath()));
-            String nextLine;
-            // Skip first 2 lines (track line and header line)
-            reader.readLine();
-            reader.readLine();
-            String lastChr = "";
-            long position = reader.getPosition();
-            while ((nextLine = reader.readLine()) != null) {
-                String chr = nextLine.split("\t")[0];
-                if (!chr.equals(lastChr)) {
-                    cfgWriter.println(chr + "\t" + position);
-                }
-                position = reader.getPosition();
-                lastChr = chr;
-            }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } finally {
-
-        }
-    }
-
-
-    /**
-     * Converts a collection of peak "bed" files to a single binary "peak" file
-     */
-    public static void createBinaryPeakFile(String factor, List<File> bedFiles, File outputDir) throws IOException {
+        // Signals at http://iwww.broadinstitute.org/igvdata/peaks/compressed/<FACTOR>/<FACTOR>.merged.bam.tdf
+        String tdf = root + "/tdf/compressed/" + factor + ".merged.bam.tdf";
 
 
         BufferedReader[] readers = new BufferedReader[bedFiles.size()];
         LittleEndianOutputStream peakWriter = null;
-        File peeksFile = null;
         long indexPosition = 0l;
         try {
 
@@ -144,7 +83,6 @@ public class BedToPeaks {
                 readers[i] = new BufferedReader(new FileReader(bedFiles.get(i)));
             }
 
-            peeksFile = new File(outputDir, factor + ".peak.bin");
             peakWriter = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(peeksFile)));
 
             if (peakWriter != null) {
@@ -154,16 +92,25 @@ public class BedToPeaks {
                 // All input files must have the same # of lines, and be in the same order
                 String[] line = new String[readers.length];
 
-                int nTimePoints = readers.length - 1;
 
-                // Map for index
-
+                // Header
 
                 // Placeholder for index position
                 peakWriter.writeLong(0l);
 
+                int nTimePoints = times.size();
                 // # of time points
+                peakWriter.writeString ("track name=" + factor + " sample=" + factor + " viewLimits=0:100 useScore=1 color=" + c);
                 peakWriter.writeInt(nTimePoints);
+                for(int i=0; i<times.size(); i++) {
+                    peakWriter.writeInt(times.get(i));
+                }
+
+                peakWriter.writeString(tdf);
+                for (int t : times) {
+                    peakWriter.writeString(root + "/tdf/timecourses/" + factor + "_" + t + "/" + factor + "_" + t + ".merged.bam.tdf");
+                }
+
 
                 String lastChr = "";
                 List<PeakRecord> records = new ArrayList(20000);
@@ -404,13 +351,12 @@ public class BedToPeaks {
 
     }
 
-    public static void convertAll(File rootDir, File destDir) throws IOException {
+    public static void convertAll(File rootDir, File destDir, String root) throws IOException {
         // <FACTOR>.peaks.filtered.by.fold.real.sorted.bed
         // <FACTOR>_0.peaks.filtered.by.fold.real.sorted.bed
 
 
         File factorFile = new File("/Users/jrobinso/IGV/ichip/bed/factors.txt");
-        int[] time = {0, 30, 60, 120};
 
         BufferedReader reader = new BufferedReader(new FileReader(factorFile));
         String factor;
@@ -427,19 +373,20 @@ public class BedToPeaks {
                 System.out.println("Can't find " + bedFile.getName());
             }
 
-
-            for (int i = 0; i < time.length; i++) {
-                bedFile = new File(rootDir, factor + "_" + time[i] + ".peaks.filtered.by.fold.real.sorted.bed");
+            List<Integer> times = new ArrayList<Integer>();
+            for (int i = 0; i < allTimes.length; i++) {
+                bedFile = new File(rootDir, factor + "_" + allTimes[i] + ".peaks.filtered.by.fold.real.sorted.bed");
                 if (bedFile.exists()) {
                     //System.out.println("Copying " + bedFile.getName());
                     bedFiles.add(bedFile);
+                    times.add(allTimes[i]);
                 } else {
                     System.out.println("Can't find " + bedFile.getName());
                 }
 
             }
 
-            createBinaryPeakFile(factor, bedFiles, destDir);
+            createBinaryPeakFile(factor, times, bedFiles, destDir, root);
             //createCfgFile(factor, destDir);
 
 

@@ -227,7 +227,7 @@ public class TrackLoader {
                 loadWigFile(locator, newTracks, genome);
             } else if (path.toLowerCase().contains(".maf")) {
                 loadMAFTrack(locator, newTracks);
-            } else if (path.toLowerCase().contains(".peak.cfg")) {
+            } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || GCTDatasetParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");

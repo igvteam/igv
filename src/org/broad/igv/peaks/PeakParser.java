@@ -41,21 +41,36 @@ public class PeakParser {
     Map<String, Long> chrIndex;
     int nTimePoints;
     String path;
+    String trackLine;
+    int[] times;
+    String signalsPath;
+    String[] timeSignalsPath;
 
     public PeakParser(String path) throws IOException {
         this.path = path;
-        loadIndex();
+        loadHeader();
     }
 
-    private void loadIndex() throws IOException {
-        chrIndex = new HashMap<String, Long>();
+    private void loadHeader() throws IOException {
         SeekableStream ss = null;
         try {
             ss = SeekableStreamFactory.getStreamFor(path);
-            LittleEndianInputStream is = new LittleEndianInputStream(ss);
+            LittleEndianInputStream is = new LittleEndianInputStream(new BufferedInputStream(ss));
 
             long indexPosition = is.readLong();
+            trackLine = is.readString();
             nTimePoints = is.readInt();
+            times = new int[nTimePoints];
+            for (int t = 0; t < nTimePoints; t++) {
+                times[t] = is.readInt();
+            }
+            signalsPath = is.readString();
+            timeSignalsPath = new String[nTimePoints];
+            for (int t = 0; t < nTimePoints; t++) {
+                timeSignalsPath[t] = is.readString();
+            }
+
+            chrIndex = new HashMap<String, Long>();
 
             ss.seek(indexPosition);
             is = new LittleEndianInputStream(new BufferedInputStream(ss));
@@ -70,8 +85,8 @@ public class PeakParser {
             if (ss != null) ss.close();
         }
 
-
     }
+
 
     public List<Peak> loadPeaks(String chr) throws IOException {
 
@@ -90,10 +105,10 @@ public class PeakParser {
                 reader = new LittleEndianInputStream(ss);
                 int nBytes = reader.readInt();
 
-                byte [] compressedBytes = new byte[nBytes];
+                byte[] compressedBytes = new byte[nBytes];
                 ss.readFully(compressedBytes);
 
-                byte [] bytes = CompressionUtils.decompress(compressedBytes);
+                byte[] bytes = CompressionUtils.decompress(compressedBytes);
 
                 ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
                 reader = new LittleEndianInputStream(bis);

@@ -31,6 +31,8 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
@@ -60,6 +62,8 @@ public class PeakTrack extends AbstractTrack {
     private static boolean showSignals = false;
 
     int nTimePoints;
+
+
     Map<String, List<Peak>> peakMap = new HashMap();
     Map<String, List<Peak>> filteredPeakMap = new HashMap();
     Renderer renderer = new PeakRenderer();
@@ -94,24 +98,40 @@ public class PeakTrack extends AbstractTrack {
      * @param genome
      * @throws IOException
      */
-    public PeakTrack(ResourceLocator locator, Genome genome) throws IOException {
+    public PeakTrack(final ResourceLocator locator, Genome genome) throws IOException {
         super(locator);
         this.genome = genome;
         setHeight(30);
 
-        long t0 = System.currentTimeMillis();
 
-        parse(locator.getPath());
+        NamedRunnable runnable = new NamedRunnable() {
+            public void run() {
+                try {
+                    long t0 = System.currentTimeMillis();
+                    parser = new PeakParser(locator.getPath());
+                    long dt = System.currentTimeMillis() - t0;
+                    log.info("Loaded bin: " + locator.getPath() + ": " + dt);
 
-        long dt = System.currentTimeMillis() - t0;
-        log.info("Parsed " + locator.getPath() + ": " + dt);
-        t0 = System.currentTimeMillis();
+                    TrackProperties props = new TrackProperties();
+                    ParsingUtils.parseTrackLine(parser.trackLine, props);
+                    setProperties(props);
 
-        String binPath = peaksPath + ".bin";
-        parser = new PeakParser(binPath);
+                    nTimePoints = parser.nTimePoints;
+                    signalPath = parser.signalsPath;
+                    timeSignalPaths = parser.timeSignalsPath;
 
-        dt = System.currentTimeMillis() - t0;
-        log.info("Loaded bin: " + binPath + ": " + dt);
+
+                } catch (IOException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+            public String getName() {
+                return "iChip load";
+            }
+        };
+
+        LongRunningTask.submit(runnable);
 
         instances.add(new SoftReference(this));
 
