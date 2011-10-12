@@ -93,6 +93,13 @@ public class PeakTrack extends AbstractTrack {
 
     PeakParser parser;
 
+    static synchronized boolean isCommandBarAdded() {
+        boolean retValue = commandBarAdded;
+        commandBarAdded = true;
+        return retValue;
+    }
+
+
     /**
      * @param locator -- path to a peaks.cfg file
      * @param genome
@@ -104,40 +111,31 @@ public class PeakTrack extends AbstractTrack {
         setHeight(30);
 
 
-        NamedRunnable runnable = new NamedRunnable() {
-            public void run() {
-                try {
-                    long t0 = System.currentTimeMillis();
-                    parser = new PeakParser(locator.getPath());
-                    long dt = System.currentTimeMillis() - t0;
-                    log.info("Loaded bin: " + locator.getPath() + ": " + dt);
+        try {
+            long t0 = System.currentTimeMillis();
+            parser = new PeakParser(locator.getPath());
+            long dt = System.currentTimeMillis() - t0;
+            log.info("Loaded bin: " + locator.getPath() + ": " + dt);
 
-                    TrackProperties props = new TrackProperties();
-                    ParsingUtils.parseTrackLine(parser.trackLine, props);
-                    setProperties(props);
+            TrackProperties props = new TrackProperties();
+            ParsingUtils.parseTrackLine(parser.trackLine, props);
+            setProperties(props);
 
-                    nTimePoints = parser.nTimePoints;
-                    signalPath = parser.signalsPath;
-                    timeSignalPaths = parser.timeSignalsPath;
+            nTimePoints = parser.nTimePoints;
+            signalPath = parser.signalsPath;
+            timeSignalPaths = parser.timeSignalsPath;
 
 
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
-            public String getName() {
-                return "iChip load";
-            }
-        };
-
-        LongRunningTask.submit(runnable);
 
         instances.add(new SoftReference(this));
 
-        if (!commandBarAdded) {
+        if (!isCommandBarAdded()) {
             IGV.getInstance().getContentPane().addCommandBar(new PeakCommandBar());
-            commandBarAdded = true;
+
         }
     }
 
