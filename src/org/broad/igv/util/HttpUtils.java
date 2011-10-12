@@ -454,7 +454,7 @@ public class HttpUtils {
         }
 
         conn.setConnectTimeout(10000);
-        conn.setReadTimeout(60000);
+        conn.setReadTimeout(300000);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "close");
 
