@@ -42,9 +42,10 @@ public class BedToPeaks {
 
     public static void main(String[] args) throws IOException {
 
-        File inputDir = new File("/Users/jrobinso/IGV/ichip/bed/");
-        File destDir = new File("/Users/jrobinso/IGV/ichip/peaks");
-        String root = "http://www.broadinstitute.org/igvdata/ichip";
+        File inputDir = new File(args[0] + "bed/");
+        File destDir = new File(args[0] + args[1]);
+        String root = args[2];
+        colorMap = loadColors(args[0] + "colors.txt");
 
 
         // downloadAll("/Volumes/seq_dcchip/mouse/DC/chipSeq/compressed/", inputDir);
@@ -59,7 +60,6 @@ public class BedToPeaks {
      */
     public static void createBinaryPeakFile(String factor, List<Integer> times,  List<File> bedFiles, File outputDir, String root) throws IOException {
 
-        if (colorMap == null) colorMap = loadColors("/Users/jrobinso/IGV/ichip/colors.txt");
         String c = colorMap.get(factor);
         if (c == null) {
             System.out.println("No color found for " + factor);
@@ -356,7 +356,7 @@ public class BedToPeaks {
         // <FACTOR>_0.peaks.filtered.by.fold.real.sorted.bed
 
 
-        File factorFile = new File("/Users/jrobinso/IGV/ichip/bed/factors.txt");
+        File factorFile = new File(rootDir, "factors.txt");
 
         BufferedReader reader = new BufferedReader(new FileReader(factorFile));
         String factor;
