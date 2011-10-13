@@ -473,49 +473,23 @@ public class SessionReader {
         }
         if (dataFiles.size() > 0) {
 
-            Thread[] threads = new Thread[dataFiles.size()];
+            for (ResourceLocator locator : dataFiles) {
 
-            long t0 = System.currentTimeMillis();
+                List<Track> tracks = igv.getTrackManager().load(locator);
 
-            int i = 0;
-            for (final ResourceLocator locator : dataFiles) {
+                for (Track track : tracks) {
 
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        List<Track> tracks = igv.getTrackManager().load(locator);
+                    String id = track.getId();
+                    List<Track> trackList = trackDictionary.get(id);
+                    if (trackList == null) {
+                        trackList = new ArrayList();
+                        trackDictionary.put(id, trackList);
 
-                        for (Track track : tracks) {
-
-                            String id = track.getId();
-                            List<Track> trackList = trackDictionary.get(id);
-                            if (trackList == null) {
-                                trackList = new ArrayList();
-                                trackDictionary.put(id, trackList);
-
-                            }
-                            trackList.add(track);
-                        }
                     }
-                };
-                threads[i] = new Thread(runnable);
-                threads[i].start();
-                i++;
-
-            }
-
-            for (i = 0; i < threads.length; i++) {
-
-                try {
-
-                    threads[i].join();
-
-                } catch (InterruptedException ignore) {
+                    trackList.add(track);
                 }
 
             }
-
-            long dt = System.currentTimeMillis() - t0;
-            System.out.println("Total load time = " + dt);
         }
         dataFiles = null;
     }
