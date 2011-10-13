@@ -473,49 +473,60 @@ public class SessionReader {
         }
         if (dataFiles.size() > 0) {
 
+            final List<String> errors = new ArrayList<String>();
+
+            // Load files concurrently -- TODO, put a limit on # of threads?
             Thread[] threads = new Thread[dataFiles.size()];
-
             long t0 = System.currentTimeMillis();
-
             int i = 0;
             for (final ResourceLocator locator : dataFiles) {
-
                 Runnable runnable = new Runnable() {
                     public void run() {
-                        List<Track> tracks = igv.getTrackManager().load(locator);
+                        List<Track> tracks = null;
+                        try {
+                            tracks = igv.getTrackManager().load(locator);
+                            for (Track track : tracks) {
 
-                        for (Track track : tracks) {
+                                 String id = track.getId();
+                                 List<Track> trackList = trackDictionary.get(id);
+                                 if (trackList == null) {
+                                     trackList = new ArrayList();
+                                     trackDictionary.put(id, trackList);
 
-                            String id = track.getId();
-                            List<Track> trackList = trackDictionary.get(id);
-                            if (trackList == null) {
-                                trackList = new ArrayList();
-                                trackDictionary.put(id, trackList);
-
-                            }
-                            trackList.add(track);
+                                 }
+                                 trackList.add(track);
+                             }
+                         } catch (Exception e) {
+                            String ms = "<b>" + locator.getPath() + "</b><br>&nbsp&nbsp" + e.toString() + "<br>";
+                            errors.add(ms);
                         }
                     }
                 };
                 threads[i] = new Thread(runnable);
                 threads[i].start();
                 i++;
-
             }
 
+            // Wait for all threads to complete
             for (i = 0; i < threads.length; i++) {
-
                 try {
-
                     threads[i].join();
-
                 } catch (InterruptedException ignore) {
                 }
-
             }
 
             long dt = System.currentTimeMillis() - t0;
-            System.out.println("Total load time = " + dt);
+            log.info("Total load time = " + dt);
+
+            if(errors.size() > 0) {
+                StringBuffer buf = new StringBuffer();
+                buf.append("<html>Errors were encountered loading the session:<br>");
+                for(String msg : errors) {
+                    buf.append(msg);
+                }
+                MessageUtils.showMessage(buf.toString());
+            }
+
         }
         dataFiles = null;
     }
