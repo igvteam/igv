@@ -314,65 +314,50 @@ public class TDFDataSource implements CoverageDataSource {
                             String[] features = rawTile.getNames();
                             float[] values = rawTile.getData(trackNumber);
 
+                            // Loop through and bin scores for this interval.
                             for (int i = 0; i < size; i++) {
+
+                                if (starts[i] >= endLocation) {
+                                    break;  // We're beyond the end of the requested interval
+                                }
+
+
                                 int s = Math.max(startLocation, starts[i]);
                                 int e = ends == null ? s + 1 : Math.min(endLocation, ends[i]);
-                                String probeName = features == null ? null : features[i];
                                 float v = values[i] * normalizationFactor;
 
                                 if (e < startLocation || Float.isNaN(v)) {
                                     continue;
-                                } else if (s > endLocation) {
-                                    break;
                                 }
 
+                                String probeName = features == null ? null : features[i];
+
+                                // Compute bin numbers, relative to start of this tile
                                 int endBin = (int) ((e - startLocation) / scale);
+                                int startBin = (int) ((s - startLocation) / scale);
 
-
-                                if (endBin == lastEndBin) {
-                                    // Add to previous bin
-                                    accumulator.add(e - s, v, probeName);
-                                    if (accumulatedStart < 0) accumulatedStart = s;
-                                    accumulatedEnd = e;
-                                } else {
-                                    // Previous bin is complete, start a new one.
+                                // If this feature spans multiple bins, or extends beyond last end bin, record
+                                if (endBin > lastEndBin || endBin > startBin) {
                                     if (accumulator.hasData()) {
-                                        LocusScore ls;
-                                        if (accumulator.getNpts() == 1) {
-                                            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
-                                        } else {
-                                            float value = accumulator.getValue();
-                                            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
-                                                    accumulator.getNames(), windowFunction);
-                                        }
-                                        scores.add(ls);
+                                        scores.add(getCompositeScore(accumulator, accumulatedStart, accumulatedEnd));
                                         accumulator = new Accumulator(windowFunction, 5);
                                     }
+                                }
 
-
-                                    // If the current score spans multiple bins add it now
-                                    int startBin = Math.max(0, (int) ((s - startLocation) / scale));
-                                    if ((endBin - startBin) > 1) {
-                                        scores.add(new NamedScore(s, e, v, probeName));
-                                    } else {
-                                        accumulator.add(e - s, v, probeName);
-                                        accumulatedStart = s;
-                                        accumulatedEnd = e;
-                                    }
+                                if (endBin > startBin) {
+                                    scores.add(new NamedScore(s, e, v, probeName));
+                                } else {
+                                    if (!accumulator.hasData()) accumulatedStart = s;
+                                    accumulatedEnd = e;
+                                    accumulator.add(e - s, v, probeName);
                                 }
 
                                 lastEndBin = endBin;
                             }
+
+                            // End of loop cleanup
                             if (accumulator.hasData()) {
-                                LocusScore ls;
-                                if (accumulator.getNpts() == 1) {
-                                    ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
-                                } else {
-                                    float value = accumulator.getValue();
-                                    ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
-                                            accumulator.getNames(), windowFunction);
-                                }
-                                scores.add(ls);
+                                scores.add(getCompositeScore(accumulator, accumulatedStart, accumulatedEnd));
                             }
                         }
                     }
@@ -383,14 +368,28 @@ public class TDFDataSource implements CoverageDataSource {
     }
 
 
-    /*
-     *
-    Chromosome chromosome = IGV.getInstance().getGenomeManager().getGenome().getChr(chr);
-    if(chromosome == null) {
-    return null;
+    private LocusScore getCompositeScore(Accumulator accumulator, int accumulatedStart, int accumulatedEnd) {
+        LocusScore ls;
+        if (accumulator.getNpts() == 1) {
+            ls = new NamedScore(accumulatedStart, accumulatedEnd, accumulator.getData()[0], accumulator.getNames()[0]);
+        } else {
+            float value = accumulator.getValue();
+            ls = new CompositeScore(accumulatedStart, accumulatedEnd, value, accumulator.getData(),
+                    accumulator.getNames(), windowFunction);
+        }
+        return ls;
+
     }
-    double tileWidth = chromosome.getLength() / (Math.pow(2.0, zoom));
-     */
+
+
+    /*
+    *
+   Chromosome chromosome = IGV.getInstance().getGenomeManager().getGenome().getChr(chr);
+   if(chromosome == null) {
+   return null;
+   }
+   double tileWidth = chromosome.getLength() / (Math.pow(2.0, zoom));
+    */
 
     public synchronized List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
@@ -420,7 +419,7 @@ public class TDFDataSource implements CoverageDataSource {
             if (tileWidth == 0) {
                 return null;
             }
-            
+
 
             int startTile = (int) (startLocation / tileWidth);
             int endTile = (int) (endLocation / tileWidth);
