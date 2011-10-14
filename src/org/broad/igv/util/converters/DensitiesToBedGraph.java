@@ -34,23 +34,25 @@ public class DensitiesToBedGraph {
 
     public static void main(String[] args) throws IOException {
 
-        File dir = new File(args[0]);
-        File[] files = dir.listFiles();
+        File inputDir = new File(args[1]);
+        File outputDir = new File(args[2]);
+
+        File[] files = inputDir.listFiles();
         for (File f : files) {
             if (f.getAbsolutePath().endsWith(".densities.txt.gz")) {
                 String ofile = f.getAbsolutePath().replace(".densities.txt.gz", ".bedgraph");
-                convert(f.getAbsolutePath(), ofile);
+                convert(f, new File(outputDir, ofile));
             }
         }
 
     }
 
-    public static void convert(String ifile, String ofile) throws IOException {
+    public static void convert(File ifile, File ofile) throws IOException {
 
         BufferedReader reader = null;
         PrintWriter pw = null;
 
-        reader = ParsingUtils.openBufferedReader(ifile);
+        reader = ParsingUtils.openBufferedReader(ifile.getAbsolutePath());
         pw = new PrintWriter(new BufferedWriter(new FileWriter(ofile)));
 
         String nextLine;

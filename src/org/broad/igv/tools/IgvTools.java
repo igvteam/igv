@@ -40,6 +40,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.converters.DensitiesToBedGraph;
 import org.broad.igv.variant.util.VCFtoBed;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
@@ -314,7 +315,10 @@ public class IgvTools {
                 LaneCounter.run(genome, bamFileList, queryInterval);
             } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            } else {
+            } else if(command.equals("densitytobedgraph")) {
+                DensitiesToBedGraph.main(argv);
+            }
+            else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
