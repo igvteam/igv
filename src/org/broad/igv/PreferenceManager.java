@@ -92,6 +92,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_FLAG_ZERO_QUALITY = "SAM.FLAG_ZERO_QUALITY";
     //dhmay adding 20110208
     public static final String SAM_SHOW_JUNCTION_TRACK = "SAM.SHOW_JUNCTION_TRACK";
+    public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
+    public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
 
 
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
@@ -959,8 +961,10 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_COMPUTE_ISIZES, "false");
-        defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
         defaultValues.put(SAM_FLAG_ZERO_QUALITY, "true");
+        defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
+        defaultValues.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, "0");
+        defaultValues.put(SAM_JUNCTION_MIN_COVERAGE, "1");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 

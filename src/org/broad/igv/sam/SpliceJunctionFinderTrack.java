@@ -94,6 +94,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
      * @param menu
      * @return
      */
+
     public JMenuItem addFlankingWidthTresholdItem(JPopupMenu menu) {
         JMenuItem flankingWidthItem = new JMenuItem("Set minimum read flanking width...");
 

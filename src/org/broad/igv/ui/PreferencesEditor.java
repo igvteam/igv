@@ -191,7 +191,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
         filterFailedReadsCB = new JCheckBox();
         label2 = new JLabel();
         showSoftClippedCB = new JCheckBox();
-        showJunctionTrackCB = new JCheckBox();
         showCenterLineCB = new JCheckBox();
         zeroQualityAlignmentCB = new JCheckBox();
         panel2 = new JPanel();
@@ -206,6 +205,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
         insertSizeMaxPercentileField = new JTextField();
         label8 = new JLabel();
         label9 = new JLabel();
+        panel3 = new JPanel();
+        showJunctionTrackCB = new JCheckBox();
+        junctionFlankingTextField = new JTextField();
+        label15 = new JLabel();
+        label16 = new JLabel();
+        junctionCoverageTextField = new JTextField();
         expressionPane = new JPanel();
         jPanel8 = new JPanel();
         expMapToGeneCB = new JRadioButton();
@@ -1067,7 +1072,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMinBaseQualityField);
-                        samMinBaseQualityField.setBounds(315, 137, 50, samMinBaseQualityField.getPreferredSize().height);
+                        samMinBaseQualityField.setBounds(580, 105, 50, samMinBaseQualityField.getPreferredSize().height);
 
                         //---- samShadeMismatchedBaseCB ----
                         samShadeMismatchedBaseCB.setText("Shade mismatched bases by quality. ");
@@ -1077,7 +1082,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samShadeMismatchedBaseCB);
-                        samShadeMismatchedBaseCB.setBounds(6, 138, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
+                        samShadeMismatchedBaseCB.setBounds(263, 105, 264, samShadeMismatchedBaseCB.getPreferredSize().height);
 
                         //---- samMaxBaseQualityField ----
                         samMaxBaseQualityField.setText("0");
@@ -1093,7 +1098,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(samMaxBaseQualityField);
-                        samMaxBaseQualityField.setBounds(440, 137, 50, samMaxBaseQualityField.getPreferredSize().height);
+                        samMaxBaseQualityField.setBounds(680, 105, 50, samMaxBaseQualityField.getPreferredSize().height);
 
                         //---- showCovTrackCB ----
                         showCovTrackCB.setText("Show coverage track");
@@ -1103,7 +1108,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showCovTrackCB);
-                        showCovTrackCB.setBounds(375, 10, 270, showCovTrackCB.getPreferredSize().height);
+                        showCovTrackCB.setBounds(263, 10, 270, showCovTrackCB.getPreferredSize().height);
 
                         //---- samFilterDuplicatesCB ----
                         samFilterDuplicatesCB.setText("Filter duplicate reads");
@@ -1118,7 +1123,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- jLabel19 ----
                         jLabel19.setText("Min: ");
                         jPanel12.add(jLabel19);
-                        jLabel19.setBounds(new Rectangle(new Point(275, 143), jLabel19.getPreferredSize()));
+                        jLabel19.setBounds(new Rectangle(new Point(540, 110), jLabel19.getPreferredSize()));
 
                         //---- filterCB ----
                         filterCB.setText("Filter alignments by read group");
@@ -1128,7 +1133,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterCB);
-                        filterCB.setBounds(6, 170, 244, filterCB.getPreferredSize().height);
+                        filterCB.setBounds(6, 140, 244, filterCB.getPreferredSize().height);
 
                         //---- filterURL ----
                         filterURL.setText("URL or path to filter file");
@@ -1145,7 +1150,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(filterURL);
-                        filterURL.setBounds(270, 170, 440, filterURL.getPreferredSize().height);
+                        filterURL.setBounds(270, 140, 440, filterURL.getPreferredSize().height);
 
                         //---- samFlagUnmappedPairCB ----
                         samFlagUnmappedPairCB.setText("Flag unmapped pairs");
@@ -1170,7 +1175,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         //---- label2 ----
                         label2.setText("Max:");
                         jPanel12.add(label2);
-                        label2.setBounds(new Rectangle(new Point(390, 143), label2.getPreferredSize()));
+                        label2.setBounds(new Rectangle(new Point(640, 110), label2.getPreferredSize()));
 
                         //---- showSoftClippedCB ----
                         showSoftClippedCB.setText("Show soft-clipped bases");
@@ -1180,17 +1185,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showSoftClippedCB);
-                        showSoftClippedCB.setBounds(new Rectangle(new Point(375, 74), showSoftClippedCB.getPreferredSize()));
-
-                        //---- showJunctionTrackCB ----
-                        showJunctionTrackCB.setText("Show splice junction track");
-                        showJunctionTrackCB.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                showJunctionTrackCBActionPerformed(e);
-                            }
-                        });
-                        jPanel12.add(showJunctionTrackCB);
-                        showJunctionTrackCB.setBounds(new Rectangle(new Point(375, 42), showJunctionTrackCB.getPreferredSize()));
+                        showSoftClippedCB.setBounds(new Rectangle(new Point(263, 42), showSoftClippedCB.getPreferredSize()));
 
                         //---- showCenterLineCB ----
                         showCenterLineCB.setText("Show center line");
@@ -1200,7 +1195,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(showCenterLineCB);
-                        showCenterLineCB.setBounds(6, 106, 199, showCenterLineCB.getPreferredSize().height);
+                        showCenterLineCB.setBounds(6, 105, 199, showCenterLineCB.getPreferredSize().height);
 
                         //---- zeroQualityAlignmentCB ----
                         zeroQualityAlignmentCB.setText("Flag zero-quality alignments");
@@ -1210,7 +1205,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                             }
                         });
                         jPanel12.add(zeroQualityAlignmentCB);
-                        zeroQualityAlignmentCB.setBounds(new Rectangle(new Point(375, 106), zeroQualityAlignmentCB.getPreferredSize()));
+                        zeroQualityAlignmentCB.setBounds(new Rectangle(new Point(263, 74), zeroQualityAlignmentCB.getPreferredSize()));
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
@@ -1227,7 +1222,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(jPanel12);
-                    jPanel12.setBounds(5, 145, 755, 200);
+                    jPanel12.setBounds(5, 145, 755, 180);
 
                     //======== panel2 ========
                     {
@@ -1369,7 +1364,79 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         }
                     }
                     jPanel1.add(panel2);
-                    panel2.setBounds(5, 350, 755, 145);
+                    panel2.setBounds(5, 410, 755, 145);
+
+                    //======== panel3 ========
+                    {
+                        panel3.setBorder(new TitledBorder(""));
+                        panel3.setLayout(null);
+
+                        //---- showJunctionTrackCB ----
+                        showJunctionTrackCB.setText("Show splice junction track");
+                        showJunctionTrackCB.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                showJunctionTrackCBActionPerformed(e);
+                            }
+                        });
+                        panel3.add(showJunctionTrackCB);
+                        showJunctionTrackCB.setBounds(new Rectangle(new Point(10, 15), showJunctionTrackCB.getPreferredSize()));
+
+                        //---- junctionFlankingTextField ----
+                        junctionFlankingTextField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                junctionFlankingTextFieldActionPerformed(e);
+                            }
+                        });
+                        junctionFlankingTextField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                junctionFlankingTextFieldFocusLost(e);
+                            }
+                        });
+                        panel3.add(junctionFlankingTextField);
+                        junctionFlankingTextField.setBounds(445, 12, 105, junctionFlankingTextField.getPreferredSize().height);
+
+                        //---- label15 ----
+                        label15.setText("Minimum read flanking width:");
+                        panel3.add(label15);
+                        label15.setBounds(230, 18, 205, label15.getPreferredSize().height);
+
+                        //---- label16 ----
+                        label16.setText("Minimum junction coverage:");
+                        panel3.add(label16);
+                        label16.setBounds(new Rectangle(new Point(230, 45), label16.getPreferredSize()));
+
+                        //---- junctionCoverageTextField ----
+                        junctionCoverageTextField.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                junctionCoverageTextFieldActionPerformed(e);
+                            }
+                        });
+                        junctionCoverageTextField.addFocusListener(new FocusAdapter() {
+                            @Override
+                            public void focusLost(FocusEvent e) {
+                                junctionCoverageTextFieldFocusLost(e);
+                            }
+                        });
+                        panel3.add(junctionCoverageTextField);
+                        junctionCoverageTextField.setBounds(445, 39, 105, junctionCoverageTextField.getPreferredSize().height);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for(int i = 0; i < panel3.getComponentCount(); i++) {
+                                Rectangle bounds = panel3.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel3.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel3.setMinimumSize(preferredSize);
+                            panel3.setPreferredSize(preferredSize);
+                        }
+                    }
+                    jPanel1.add(panel3);
+                    panel3.setBounds(5, 325, 755, 84);
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
@@ -1386,7 +1453,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     }
                 }
                 alignmentPanel.add(jPanel1);
-                jPanel1.setBounds(0, 0, 760, 510);
+                jPanel1.setBounds(0, 0, 760, 560);
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
@@ -2100,6 +2167,38 @@ public class PreferencesEditor extends javax.swing.JDialog {
     }
 
 
+    private void junctionFlankingTextFieldFocusLost(FocusEvent e) {
+        junctionFlankingTextFieldActionPerformed(null);
+    }
+
+    private void junctionFlankingTextFieldActionPerformed(ActionEvent e) {
+        String flankingWidth = junctionFlankingTextField.getText().trim();
+         try {
+             Integer.parseInt(flankingWidth);
+             updatedPreferenceMap.put(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH, flankingWidth);
+         } catch (NumberFormatException numberFormatException) {
+             inputValidated = false;
+             MessageUtils.showMessage("Flanking width must be in integer.");
+         }
+     }
+
+    private void junctionCoverageTextFieldActionPerformed(ActionEvent e) {
+       junctionCoverageTextFieldFocusLost(null);
+    }
+
+    private void junctionCoverageTextFieldFocusLost(FocusEvent e) {
+        String minCoverage = junctionCoverageTextField.getText().trim();
+         try {
+             Integer.parseInt(minCoverage);
+             updatedPreferenceMap.put(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE, minCoverage);
+         } catch (NumberFormatException numberFormatException) {
+             inputValidated = false;
+             MessageUtils.showMessage("Minimum junction coverage must be in integer.");
+         }
+    }
+
+
+
     private void insertSizeThresholdFieldFocusLost(java.awt.event.FocusEvent evt) {
         this.insertSizeThresholdFieldActionPerformed(null);
     }
@@ -2790,12 +2889,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
         showCovTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_COV_TRACK));
         isizeComputeCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES));
         zeroQualityAlignmentCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY));
-        //dhmay adding 20110208
-        showJunctionTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
         filterCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_FILTER_ALIGNMENTS));
         if (prefMgr.get(PreferenceManager.SAM_FILTER_URL) != null) {
             filterURL.setText(prefMgr.get(PreferenceManager.SAM_FILTER_URL));
         }
+
+        showJunctionTrackCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK));
+        junctionFlankingTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH));
+        junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
 
         genomeUpdateCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES));
 
@@ -2993,7 +3094,6 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox filterFailedReadsCB;
     private JLabel label2;
     private JCheckBox showSoftClippedCB;
-    private JCheckBox showJunctionTrackCB;
     private JCheckBox showCenterLineCB;
     private JCheckBox zeroQualityAlignmentCB;
     private JPanel panel2;
@@ -3008,6 +3108,12 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JTextField insertSizeMaxPercentileField;
     private JLabel label8;
     private JLabel label9;
+    private JPanel panel3;
+    private JCheckBox showJunctionTrackCB;
+    private JTextField junctionFlankingTextField;
+    private JLabel label15;
+    private JLabel label16;
+    private JTextField junctionCoverageTextField;
     private JPanel expressionPane;
     private JPanel jPanel8;
     private JRadioButton expMapToGeneCB;
