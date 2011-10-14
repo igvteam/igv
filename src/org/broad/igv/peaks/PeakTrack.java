@@ -496,6 +496,9 @@ public class PeakTrack extends AbstractTrack {
 
     public WrappedDataSource getSignalSource() {
         if (signalSource == null && signalPath != null) {
+            // TODO emergency hack
+            signalPath = signalPath.replace("http://igvdata.broadinstitute.org/data/ichip/tdf/compressed",
+                    "http://www.broadinstitute.org/igvdata/ichip/tdf/w10/");
             signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
             signalSource.setNormalizeCounts(true, 1.0e9f);
         }
