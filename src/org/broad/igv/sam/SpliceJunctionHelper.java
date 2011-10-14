@@ -21,6 +21,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.Strand;
@@ -31,15 +32,14 @@ import java.util.*;
 /**
  * A helper class for computing splice junctions from alignments.
  *
+ * dhmay 20111014 moving min junction coverage and min alignment flanking width references to preferences
+ *
  * @author dhmay, jrobinso
  * @date Jul 3, 2011
  */
 public class SpliceJunctionHelper {
 
     static Logger log = Logger.getLogger(SpliceJunctionHelper.class);
-
-    static int minReadFlankingWidth = 0;
-    static int minJunctionCoverage = 1;
 
 
     public static List<SpliceJunctionFeature> computeFeatures(Iterator<Alignment> iterator) throws IOException {
@@ -53,6 +53,11 @@ public class SpliceJunctionHelper {
                 new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
         Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap =
                 new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
+
+        //dhmay adding after this was moved from track level to global
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        int minJunctionCoverage = prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE);
+        int minReadFlankingWidth = prefs.getAsInt(PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH);
 
 
         while (iterator.hasNext()) {

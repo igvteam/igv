@@ -60,9 +60,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
     RenderContext context;
     Genome genome;
 
-    protected int minReadFlankingWidth = 0;
-    protected int minJunctionCoverage = 1;
-
     // The "parent" of the track (a DataPanel).  This release of IGV does not support owner-track releationships
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     DataPanel parent;
@@ -88,78 +85,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
 
 
     /**
-     * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
-     * If either the start OR the end flanking region is less than this, the read is not used
-     *
-     * @param menu
-     * @return
-     */
-
-    public JMenuItem addFlankingWidthTresholdItem(JPopupMenu menu) {
-        JMenuItem flankingWidthItem = new JMenuItem("Set minimum read flanking width...");
-
-        flankingWidthItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                String value = JOptionPane.showInputDialog("Minimum start and end flanking region width: ",
-                        Float.valueOf(minReadFlankingWidth));
-                if (value == null) {
-                    return;
-                }
-                try {
-                    int tmp = Integer.parseInt(value);
-                    minReadFlankingWidth = tmp;
-                    IGV.getInstance().repaintDataPanels();
-                }
-                catch (Exception exc) {
-                    //log
-                }
-
-            }
-        });
-        menu.add(flankingWidthItem);
-
-        return flankingWidthItem;
-    }
-
-
-    /**
-     * Add a MenuItem to control the minimum flanking width for reads used in finding junctions.
-     * If either the start OR the end flanking region is less than this, the read is not used
-     *
-     * @param menu
-     * @return
-     */
-    public JMenuItem addJunctionCoverageTresholdItem(JPopupMenu menu) {
-        JMenuItem junctionDepthItem = new JMenuItem("Set minimum junction coverage...");
-
-        junctionDepthItem.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-
-                String value = JOptionPane.showInputDialog("Minimum coverage depth for displayed junctions: ",
-                        Float.valueOf(minJunctionCoverage));
-                if (value == null) {
-                    return;
-                }
-                try {
-                    int tmp = Integer.parseInt(value);
-                    minJunctionCoverage = tmp;
-                    IGV.getInstance().repaintDataPanels();
-                }
-                catch (Exception exc) {
-                    //log
-                }
-
-            }
-        });
-        menu.add(junctionDepthItem);
-
-        return junctionDepthItem;
-    }
-
-    /**
      * Override to return a specialized popup menu
      *
      * @return
@@ -182,9 +107,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         ArrayList<Track> tmp = new ArrayList();
         tmp.add(this);
         TrackMenuUtils.addStandardItems(popupMenu, tmp, te);
-        popupMenu.addSeparator();
-        addFlankingWidthTresholdItem(popupMenu);
-        addJunctionCoverageTresholdItem(popupMenu);
         return popupMenu;
     }
 
