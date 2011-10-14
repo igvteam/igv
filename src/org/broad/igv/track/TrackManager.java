@@ -244,10 +244,14 @@ public class TrackManager {
         //Set<TrackPanel> changedPanels = new HashSet();
 
         log.info("Loading" + locators.size() + " resources.");
-        MessageCollection messages = new MessageCollection();
+        final MessageCollection messages = new MessageCollection();
 
 
-        for (ResourceLocator locator : locators) {
+        // Load files concurrently -- TODO, put a limit on # of threads?
+        List<Thread> threads = new ArrayList<Thread>(locators.size());
+
+        long t0 = System.currentTimeMillis();
+        for (final ResourceLocator locator : locators) {
 
             // If its a local file, check explicitly for existence (rather than rely on exception)
             if (locator.isLocal()) {
@@ -258,35 +262,49 @@ public class TrackManager {
                 }
             }
 
-            try {
-                List<Track> tracks = load(locator);
-                if (tracks.size() > 0) {
-                    String path = locator.getPath();
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    try {
+                        List<Track> tracks = load(locator);
+                        if (tracks.size() > 0) {
+                            String path = locator.getPath();
 
-                    // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
-                    // is greater than 10
-                    TrackPanel panel = getPanelFor(locator);
-                    if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
-                            path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
-                        Track t = tracks.get(0);
-                        if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
-                            String newPanelName = "Panel" + System.currentTimeMillis();
-                            panel = igv.addDataPanel(newPanelName).getTrackPanel();
+                            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
+                            // is greater than 10
+                            TrackPanel panel = getPanelFor(locator);
+                            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+                                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+                                Track t = tracks.get(0);
+                                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
+                                    String newPanelName = "Panel" + System.currentTimeMillis();
+                                    panel = igv.addDataPanel(newPanelName).getTrackPanel();
+                                }
+                            }
+                            panel.addTracks(tracks);
                         }
+                    } catch (Throwable e) {
+                        log.error("Error loading tracks", e);
+                        messages.append(e.getMessage());
                     }
-                    panel.addTracks(tracks);
                 }
-            } catch (Throwable e) {
-                log.error("Error loading tracks", e);
-                messages.append(e.getMessage());
+            };
+
+            Thread thread = new Thread(runnable);
+            thread.start();
+            threads.add(thread);
+        }
+
+        // Wait for all threads to complete
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ignore) {
             }
         }
 
+        System.out.println("DT = " + (System.currentTimeMillis() - t0));
         groupTracksByAttribute();
         resetOverlayTracks();
-
-        //TODO Throw the message window higher up. There should be a throw when you are using the UI,
-        // not when you are connecting through Socket
 
         if (!messages.isEmpty()) {
             for (String message : messages.getMessages()) {
@@ -687,13 +705,12 @@ public class TrackManager {
     }
 
     /**
-     *
-     * @param reader a reader for the gene (annotation) file.
+     * @param reader        a reader for the gene (annotation) file.
      * @param genome
      * @param geneFileName
      * @param geneTrackName
      */
-    public void createGeneTrack(Genome genome, AsciiLineReader reader,  String geneFileName, String geneTrackName,
+    public void createGeneTrack(Genome genome, AsciiLineReader reader, String geneFileName, String geneTrackName,
                                 String annotationURL) {
 
         FeatureDB.clearFeatures();
