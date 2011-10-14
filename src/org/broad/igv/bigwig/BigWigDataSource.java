@@ -163,10 +163,15 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
     }
 
+    private BBZoomLevelHeader getLowestResolutionLevel() {
+        final ArrayList<BBZoomLevelHeader> headers = levels.getZoomLevelHeaders();
+        return headers.get(headers.size() - 1);
+    }
+
     protected List<LocusScore> getZoomSummaryScores(String chr, int start, int end, int zoom) {
 
         Chromosome c = genome.getChromosome(chr);
-        if(c == null) return null;
+        if (c == null) return null;
 
         double nBins = Math.pow(2, zoom);
 
@@ -262,10 +267,11 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
 
         if (genome.getHomeChromosome().equals(Globals.CHR_ALL)) {
             if (wholeGenomeScores == null) {
+                double scale = genome.getLength() / screenWidth;
                 wholeGenomeScores = new ArrayList<LocusScore>();
                 for (Chromosome chr : genome.getChromosomes()) {
 
-                    double scale = chr.getLength() / screenWidth;
+
                     BBZoomLevelHeader lowestResHeader = this.getZoomLevelForScale(scale);
 
                     int lastGenomeEnd = -1;
@@ -343,7 +349,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         public Feature next() {
             BedFeature feat = bedIterator.next();
             BasicFeature feature = new BasicFeature(feat.getChromosome(), feat.getStartBase(), feat.getEndBase());
-            String [] restOfFields = feat.getRestOfFields();
+            String[] restOfFields = feat.getRestOfFields();
             if (restOfFields != null && restOfFields.length > 0) {
                 decode(feature, restOfFields);
             }
@@ -381,7 +387,7 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
     /////////// Decoder for BED features
 
 
-    private static void decode(BasicFeature feature, String [] restOfFields) {
+    private static void decode(BasicFeature feature, String[] restOfFields) {
 
         int tokenCount = restOfFields.length;
 
