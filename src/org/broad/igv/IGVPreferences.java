@@ -124,40 +124,61 @@ public class IGVPreferences {
         load(path, true);
     }
 
+    /**
+     * @param prefFileName either a comma delimited list of key-value pairs, or a path to a properties file
+     * @param override
+     */
     private void load(String prefFileName, boolean override) {
-        BufferedReader reader = null;
-        try {
-            reader = ParsingUtils.openBufferedReader(prefFileName);
-            String nextLine = null;
-            while ((nextLine = reader.readLine()) != null) {
-                int idx = nextLine.indexOf('=');
-                if (idx > 0) {
-                    String key = nextLine.substring(0, idx);
-                    String value = nextLine.substring(idx + 1);
-                    if (!value.equals("null")) {
-                        if (override) {
-                            log.info("Overriding preference: " + key + "=" + value);
-                            sessionCache.put(key, value);
-                        } else {
-                            if (userPreferences == null) {
-                                loadUserPreferences();
-                            }
-                            userPreferences.put(key, value);
-                        }
 
+        if (prefFileName.contains("=")) {
+            String [] kvPairs = prefFileName.split(",");
+            for(String kvPair : kvPairs) {
+                String [] kv = kvPair.split("=");
+                if(kv.length == 2) {
+                   override(kv[0], kv[1], override);
+                }
+            }
+
+
+        } else {
+            BufferedReader reader = null;
+            try {
+                reader = ParsingUtils.openBufferedReader(prefFileName);
+                String nextLine = null;
+                while ((nextLine = reader.readLine()) != null) {
+                    int idx = nextLine.indexOf('=');
+                    if (idx > 0) {
+                        String key = nextLine.substring(0, idx);
+                        String value = nextLine.substring(idx + 1);
+                        override(key, value, override);
                     }
                 }
-            }
-        } catch (IOException e) {
-            log.error("Error loading preferences", e);
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
+            } catch (IOException e) {
+                log.error("Error loading preferences", e);
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException ex) {
+                    log.error("Error closing preferences file", ex);
                 }
-            } catch (IOException ex) {
-                log.error("Error closing preferences file", ex);
             }
+        }
+    }
+
+    private void override( String key, String value, boolean override) {
+        if (!value.equals("null")) {
+            if (override) {
+                log.info("Overriding preference: " + key + "=" + value);
+                sessionCache.put(key, value);
+            } else {
+                if (userPreferences == null) {
+                    loadUserPreferences();
+                }
+                userPreferences.put(key, value);
+            }
+
         }
     }
 

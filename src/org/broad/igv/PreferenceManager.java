@@ -104,7 +104,7 @@ public class PreferenceManager implements PropertyManager {
     final public static String RECENT_SESSION_KEY = "IGV.Session.recent.sessions";
     final public static String TRACK_HEIGHT_KEY = "IGV.track.height";
     final public static String CHART_TRACK_HEIGHT_KEY = "IGV.chart.track.height";
-    final public static String CHART_SHOW_ALL_HEATMAP="CHART.SHOW_ALL_HEATMAP";
+    final public static String CHART_SHOW_ALL_HEATMAP = "CHART.SHOW_ALL_HEATMAP";
     final public static String SHOW_MISSING_DATA_KEY = "IGV.track.show.missing.data";
     final public static String SHOW_ATTRIBUTE_VIEWS_KEY = "IGV.track.show.attribute.views";
     final public static String SHOW_SINGLE_TRACK_PANE_KEY = "IGV.single.track.pane";
@@ -183,6 +183,11 @@ public class PreferenceManager implements PropertyManager {
     public static final String GENOME_SPACE_ID_SERVER = "GENOME_SPACE_ID_SERVER";
     public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
+
+    public static final String DB_ENABLED = "DB_ENABLED";
+    public static final String DB_HOST = "DB_HOST";
+    public static final String DB_NAME = "DB_NAME";
+    public static final String DB_PORT = "DB_PORT";
 
     /*
    public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
@@ -1013,6 +1018,12 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENOME_SPACE_ID_SERVER, "https://identitytest.genomespace.org/identityServer/basic");
         defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dmtest.genomespace.org/datamanager/");
         defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atmtest.genomespace.org/atm/");
+
+        defaultValues.put(DB_ENABLED, "false");
+        defaultValues.put(DB_HOST, "");
+        defaultValues.put(DB_NAME, "");
+        defaultValues.put(DB_PORT, "-1");
+
 
     }
 

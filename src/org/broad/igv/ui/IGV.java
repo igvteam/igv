@@ -72,6 +72,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * @author jrobinso
@@ -1545,10 +1546,11 @@ public class IGV {
                 closeWindow(progressBar);
             }
 
+            final PreferenceManager preferenceManager = PreferenceManager.getInstance();
             if (igvArgs.getGenomeId() != null) {
                 selectGenomeFromList(igvArgs.getGenomeId());
             } else if (igvArgs.getSessionFile() == null) {
-                String genomeId = PreferenceManager.getInstance().getDefaultGenome();
+                String genomeId = preferenceManager.getDefaultGenome();
                 contentPane.getCommandBar().selectGenomeFromList(genomeId);
             }
 
@@ -1603,7 +1605,7 @@ public class IGV {
                     log.error("Error loading session: " + tmp, ex);
 
                     // Session load failed, load default genome
-                    String genomeId = PreferenceManager.getInstance().getDefaultGenome();
+                    String genomeId = preferenceManager.getDefaultGenome();
                     contentPane.getCommandBar().selectGenomeFromList(genomeId);
 
                 }
@@ -1620,16 +1622,18 @@ public class IGV {
             session.recordHistory();
 
             // Start up a port listener.  Port # can be overriden with "-p" command line switch
-            boolean portEnabled = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.PORT_ENABLED);
+            boolean portEnabled = preferenceManager.getAsBoolean(PreferenceManager.PORT_ENABLED);
             String portString = igvArgs.getPort();
             if (portEnabled || portString != null) {
                 // Command listner thread
-                int port = PreferenceManager.getInstance().getAsInt(PreferenceManager.PORT_NUMBER);
+                int port = preferenceManager.getAsInt(PreferenceManager.PORT_NUMBER);
                 if (portString != null) {
                     port = Integer.parseInt(portString);
                 }
                 CommandListener.start(port);
             }
+
+
 
             startupComplete = true;
 

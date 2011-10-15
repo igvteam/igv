@@ -34,8 +34,6 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * TODO -- THIS IS NEARLY AN EXACT COPY OF SegmentedDataSource,  only the
- * dataset type is different.
  *
  * @author jrobinso
  */

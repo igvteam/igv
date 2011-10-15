@@ -166,8 +166,8 @@ public class Main {
         Main.IGVArgs igvArgs = new Main.IGVArgs(args);
 
         // Optional arguments
-        if (igvArgs.getPropertyFile() != null) {
-            PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyFile());
+        if (igvArgs.getPropertyOverrides() != null) {
+            PreferenceManager.getInstance().loadOverrides(igvArgs.getPropertyOverrides());
         }
         if (igvArgs.getDataServerURL() != null) {
             PreferenceManager.getInstance().overrideDataServerURL(igvArgs.getDataServerURL());
@@ -286,7 +286,7 @@ public class Main {
         private String sessionFile = null;
         private String dataFileString = null;
         private String locusString = null;
-        private String propertyFile = null;
+        private String propertyOverrides = null;
         private String genomeId = null;
         private String port = null;
         private String dataServerURL = null;
@@ -320,7 +320,7 @@ public class Main {
             } catch (CmdLineParser.UnknownOptionException e) {
                 e.printStackTrace();
             }
-            propertyFile = (String) parser.getOptionValue(propertyFileOption);
+            propertyOverrides = (String) parser.getOptionValue(propertyFileOption);
             batchFile = (String) parser.getOptionValue(batchFileOption);
             port = (String) parser.getOptionValue(portOption);
             genomeId = (String) parser.getOptionValue(genomeOption);
@@ -361,8 +361,8 @@ public class Main {
             return locusString;
         }
 
-        public String getPropertyFile() {
-            return propertyFile;
+        public String getPropertyOverrides() {
+            return propertyOverrides;
         }
 
         public String getGenomeId() {

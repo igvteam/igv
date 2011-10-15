@@ -116,6 +116,11 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
+            menuAction = new LoadFromDatabaseAction("Load from Database...", 0, IGV.getInstance());
+            menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+        }
+
         menuItems.add(new JSeparator());
 
         // Session menu items

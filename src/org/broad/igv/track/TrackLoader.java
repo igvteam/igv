@@ -30,10 +30,7 @@ import org.broad.igv.data.rnai.RNAIDataSource;
 import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
-import org.broad.igv.data.seg.FreqData;
-import org.broad.igv.data.seg.SegmentedAsciiDataSet;
-import org.broad.igv.data.seg.SegmentedBinaryDataSet;
-import org.broad.igv.data.seg.SegmentedDataSource;
+import org.broad.igv.data.seg.*;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
@@ -67,6 +64,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
+import org.broad.tribble.util.SeekableBufferedStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFHeader;
@@ -109,7 +107,7 @@ public class TrackLoader {
                 // Genome space hack -- check for explicit type converter
                 //https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
                 //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
-                if((path.startsWith("http://") || path.startsWith("https://")) && GSUtils.isGenomeSpace(new URL(path)) && path.contains("?dataformat")) {
+                if ((path.startsWith("http://") || path.startsWith("https://")) && GSUtils.isGenomeSpace(new URL(path)) && path.contains("?dataformat")) {
                     if (path.contains("dataformat/gct")) {
                         typeString = ".gct";
                     } else if (path.contains("dataformat/bed")) {
@@ -146,7 +144,10 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            if (typeString.endsWith(".gmt")) {
+            // TODO -- hack for testing/development of database support.  Test DB only has segmented files
+            if (locator.getServerURL().equals("DATABASE")) {
+                this.loadSegFileFromDatabase(locator, newTracks, genome);
+            } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
                 loadDASResource(locator, newTracks);
@@ -735,7 +736,7 @@ public class TrackLoader {
         String trackId = locator.getPath();
 
         String path = locator.getPath();
-        SeekableStream ss = SeekableStreamFactory.getStreamFor(path);
+        SeekableStream ss = new SeekableBufferedStream(SeekableStreamFactory.getStreamFor(path), 64000);
         BBFileReader reader = new BBFileReader(path, ss);
         BigWigDataSource bigwigSource = new BigWigDataSource(reader, genome);
 
@@ -1009,6 +1010,41 @@ public class TrackLoader {
             newTracks.add(track);
         }
     }
+
+
+    private void loadSegFileFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+
+        // TODO - -handle remote resource
+        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(genome);
+        (new SegmentedSQLReader()).load(ds);
+
+        String path = locator.getPath();
+        TrackProperties props = ds.getTrackProperties();
+
+        // The "freq" track.  TODO - make this optional
+        if (ds.getSampleNames().size() > 1) {
+            FreqData fd = new FreqData(ds, genome);
+            String freqTrackId = path;
+            String freqTrackName = (new File(path)).getName();
+            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+            newTracks.add(freqTrack);
+        }
+
+        for (String trackName : ds.getDataHeadings()) {
+            String trackId = path + "_" + trackName;
+            SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+            track.setRendererClass(HeatmapRenderer.class);
+            track.setTrackType(ds.getType());
+
+            if (props != null) {
+                track.setProperties(props);
+            }
+
+            newTracks.add(track);
+        }
+    }
+
 
     private void loadBinarySegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 

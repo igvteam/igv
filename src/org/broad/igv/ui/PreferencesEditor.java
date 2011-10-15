@@ -86,6 +86,15 @@ public class PreferencesEditor extends javax.swing.JDialog {
         initValues();
 
         tabbedPane.setSelectedIndex(lastSelectedIndex);
+
+        // Conditionally remove database panel
+        if (!prefMgr.getAsBoolean(PreferenceManager.DB_ENABLED)) {
+            int idx = tabbedPane.indexOfTab("Database");
+            if (idx > 0) {
+                tabbedPane.remove(idx);
+            }
+        }
+
         setLocationRelativeTo(parent);
     }
 
@@ -251,6 +260,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
         useProxyCB = new JCheckBox();
         label3 = new JLabel();
         clearProxySettingsButton = new JButton();
+        dbPanel = new JPanel();
+        label17 = new JLabel();
+        label18 = new JLabel();
+        label19 = new JLabel();
+        dbHostField = new JTextField();
+        dbPortField = new JTextField();
+        dbNameField = new JTextField();
+        label20 = new JLabel();
         okCancelButtonPanel = new ButtonPanel();
         okButton = new JButton();
         cancelButton = new JButton();
@@ -1780,7 +1797,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                                             .add(59, 59, 59)
                                             .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(LayoutStyle.RELATED)
-                                            .add(jLabel25)
+                                            .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
                                             .addContainerGap())
                     );
                 }
@@ -2019,6 +2036,93 @@ public class PreferencesEditor extends javax.swing.JDialog {
             }
             tabbedPane.addTab("Proxy", proxyPanel);
 
+
+            //======== dbPanel ========
+            {
+                dbPanel.setLayout(null);
+
+                //---- label17 ----
+                label17.setText("Host:");
+                dbPanel.add(label17);
+                label17.setBounds(new Rectangle(new Point(45, 76), label17.getPreferredSize()));
+
+                //---- label18 ----
+                label18.setText("Port (Optional)");
+                dbPanel.add(label18);
+                label18.setBounds(new Rectangle(new Point(45, 205), label18.getPreferredSize()));
+
+                //---- label19 ----
+                label19.setText("Name:");
+                dbPanel.add(label19);
+                label19.setBounds(new Rectangle(new Point(45, 115), label19.getPreferredSize()));
+
+                //---- dbHostField ----
+                dbHostField.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        dbHostFieldActionPerformed(e);
+                    }
+                });
+                dbHostField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        dbHostFieldFocusLost(e);
+                    }
+                });
+                dbPanel.add(dbHostField);
+                dbHostField.setBounds(110, 70, 430, dbHostField.getPreferredSize().height);
+
+                //---- dbPortField ----
+                dbPortField.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        dbPortFieldActionPerformed(e);
+                    }
+                });
+                dbPortField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        dbPortFieldFocusLost(e);
+                    }
+                });
+                dbPanel.add(dbPortField);
+                dbPortField.setBounds(155, 200, 120, 28);
+
+                //---- dbNameField ----
+                dbNameField.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        dbNameFieldActionPerformed(e);
+                    }
+                });
+                dbNameField.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        dbNameFieldFocusLost(e);
+                    }
+                });
+                dbPanel.add(dbNameField);
+                dbNameField.setBounds(110, 110, 430, 28);
+
+                //---- label20 ----
+                label20.setText("<html><b>Database configuration  <i>(experimental, subject to change)");
+                label20.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+                dbPanel.add(label20);
+                label20.setBounds(new Rectangle(new Point(50, 20), label20.getPreferredSize()));
+
+                { // compute preferred size
+                    Dimension preferredSize = new Dimension();
+                    for (int i = 0; i < dbPanel.getComponentCount(); i++) {
+                        Rectangle bounds = dbPanel.getComponent(i).getBounds();
+                        preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                        preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                    }
+                    Insets insets = dbPanel.getInsets();
+                    preferredSize.width += insets.right;
+                    preferredSize.height += insets.bottom;
+                    dbPanel.setMinimumSize(preferredSize);
+                    dbPanel.setPreferredSize(preferredSize);
+                }
+            }
+            tabbedPane.addTab("Database", dbPanel);
+
         }
         contentPane.add(tabbedPane, BorderLayout.CENTER);
 
@@ -2205,7 +2309,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         } catch (NumberFormatException numberFormatException) {
             valid = false;
         }
-        if(!valid && e != null) {
+        if (!valid && e != null) {
             junctionCoverageTextField.setText(prefMgr.get(PreferenceManager.SAM_JUNCTION_MIN_COVERAGE));
             MessageUtils.showMessage("Minimum junction coverage must be a positive integer.");
 
@@ -2645,11 +2749,11 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 PreferenceManager.SAM_FILTER_URL,
                 String.valueOf(filterURL.getText()));
 
-    }//GEN-LAST:event_filterURLActionPerformed
+    }
 
     private void filterURLFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_filterURLFocusLost
         filterURLActionPerformed(null);
-    }//GEN-LAST:event_filterURLFocusLost
+    }
 
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
         String portString = portField.getText().trim();
@@ -2660,23 +2764,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
             inputValidated = false;
             MessageUtils.showMessage("Port must be an integer.");
         }
-    }//GEN-LAST:event_portFieldActionPerformed
+    }
 
     private void portFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_portFieldFocusLost
         portFieldActionPerformed(null);
-    }//GEN-LAST:event_portFieldFocusLost
+    }
 
     private void enablePortCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enablePortCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.PORT_ENABLED, String.valueOf(enablePortCB.isSelected()));
         portField.setEnabled(enablePortCB.isSelected());
 
-    }//GEN-LAST:event_enablePortCBActionPerformed
+    }
 
     private void expandCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandCBActionPerformed
         updatedPreferenceMap.put(
                 PreferenceManager.EXPAND_FEAUTRE_TRACKS,
                 String.valueOf(expandCB.isSelected()));
-    }//GEN-LAST:event_expandCBActionPerformed
+    }
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
@@ -2687,23 +2791,23 @@ public class PreferencesEditor extends javax.swing.JDialog {
         dataServerURLTextField.setEnabled(true);
         dataServerURLTextField.setText(PreferenceManager.DEFAULT_DATA_SERVER_URL);
         updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, null);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
     private void searchZoomCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchZoomCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.SEARCH_ZOOM, String.valueOf(searchZoomCB.isSelected()));
-    }//GEN-LAST:event_searchZoomCBActionPerformed
+    }
 
     private void useByteRangeCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useByteRangeCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(useByteRangeCB.isSelected()));
-    }//GEN-LAST:event_useByteRangeCBActionPerformed
+    }
 
     private void showDatarangeCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDatarangeCBActionPerformed
         updatedPreferenceMap.put(PreferenceManager.CHART_SHOW_DATA_RANGE, String.valueOf(showDatarangeCB.isSelected()));
-    }//GEN-LAST:event_showDatarangeCBActionPerformed
+    }
 
     private void showDatarangeCBFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_showDatarangeCBFocusLost
         showDatarangeCBActionPerformed(null);
-    }//GEN-LAST:event_showDatarangeCBFocusLost
+    }
 
     private void snpThresholdFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String snpThreshold = snpThresholdField.getText().trim();
@@ -2827,13 +2931,50 @@ public class PreferencesEditor extends javax.swing.JDialog {
         inputValidated = true;
     }
 
+    private void dbHostFieldFocusLost(FocusEvent e) {
+        dbHostFieldActionPerformed(null);
+    }
+
+    private void dbHostFieldActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.DB_HOST, dbHostField.getText());
+    }
+
+    private void dbNameFieldFocusLost(FocusEvent e) {
+        dbNameFieldActionPerformed(null);
+    }
+
+    private void dbNameFieldActionPerformed(ActionEvent e) {
+        updatedPreferenceMap.put(PreferenceManager.DB_NAME, dbNameField.getText());
+    }
+
+    private void dbPortFieldActionPerformed(ActionEvent e) {
+        dbPortFieldFocusLost(null);
+    }
+
+    private void dbPortFieldFocusLost(FocusEvent e) {
+
+        String portText = dbPortField.getText().trim();
+        if (portText.length() == 0) {
+            updatedPreferenceMap.put(PreferenceManager.DB_PORT, "-1");
+        } else {
+            try {
+                Integer.parseInt(portText);
+                updatedPreferenceMap.put(PreferenceManager.DB_PORT, portText);
+            } catch (NumberFormatException e1) {
+                updatedPreferenceMap.put(PreferenceManager.DB_PORT, "-1");
+            }
+        }
+
+    }
+
+
     /*
-     *    Object selection = geneMappingFile.getSelectedItem();
-    String filename = (selection == null ? null : selection.toString().trim());
-    updatedPreferenceMap.put(
-    PreferenceManager.USER_PROBE_MAP_KEY,
-    filename);
-     * */
+   *    Object selection = geneMappingFile.getSelectedItem();
+  String filename = (selection == null ? null : selection.toString().trim());
+  updatedPreferenceMap.put(
+  PreferenceManager.USER_PROBE_MAP_KEY,
+  filename);
+   * */
 
     private void initValues() {
         combinePanelsCB.setSelected(prefMgr.getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY));
@@ -2934,6 +3075,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
         backgroundColorPanel.setBackground(
                 PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
+
+        dbHostField.setText(prefMgr.get(PreferenceManager.DB_HOST));
+        dbNameField.setText(prefMgr.get(PreferenceManager.DB_NAME));
+        String portText = prefMgr.get(PreferenceManager.DB_PORT);
+        if (!portText.equals("-1")) {
+            dbPortField.setText(portText);
+        }
 
         updateFontField();
 
@@ -3165,6 +3313,14 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private JCheckBox useProxyCB;
     private JLabel label3;
     private JButton clearProxySettingsButton;
+    private JPanel dbPanel;
+    private JLabel label17;
+    private JLabel label18;
+    private JLabel label19;
+    private JTextField dbHostField;
+    private JTextField dbPortField;
+    private JTextField dbNameField;
+    private JLabel label20;
     private ButtonPanel okCancelButtonPanel;
     private JButton okButton;
     private JButton cancelButton;

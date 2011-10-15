@@ -66,11 +66,10 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
     private TrackProperties trackProperties;
     Genome genome;
 
-    /**
-     * Constructs ...
-     *
-     * @param locator
-     */
+    public SegmentedAsciiDataSet(Genome genome) {
+        this.genome = genome;
+    }
+
     public SegmentedAsciiDataSet(ResourceLocator locator, Genome genome) {
         //parser = locator.getPath().toLowerCase().endsWith(".gbench") ?
         //        new GBenchFileParser(locator) :
