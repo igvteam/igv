@@ -145,7 +145,7 @@ public class TrackLoader {
             List<Track> newTracks = new ArrayList<Track>();
 
             // TODO -- hack for testing/development of database support.  Test DB only has segmented files
-            if (locator.getServerURL().equals("DATABASE")) {
+            if ("DATABASE".equals(locator.getServerURL())) {
                 this.loadSegFileFromDatabase(locator, newTracks, genome);
             } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
