@@ -21,7 +21,6 @@ public class SegmentedSQLReader {
     private static Logger log = Logger.getLogger(SegmentedSQLReader.class);
 
 
-
     public SegmentedAsciiDataSet load(ResourceLocator locator, Genome genome) {
 
         System.out.println("MySQL Connect Example.");
@@ -59,29 +58,16 @@ public class SegmentedSQLReader {
             ResultSet rs = st.executeQuery(query);
             while (rs.next()) {
 
-                if (table.equals("CNV")) {
-                    String sample = rs.getString("Sample");
-                    String chr = rs.getString("Chromosome");
-                    int start = Integer.parseInt(rs.getString("Start").replace(",", "")) - 1;
-                    int end = Integer.parseInt(rs.getString("Stop").replace(",", ""));
-                    float value = (float) Double.parseDouble(rs.getString("Probe Median"));
-                    String event = rs.getString("Event");
-                    String percentOverlap = rs.getString("% of CNV Overlap");
-                    String description = "<br>" + event + "<br>% CNV Overlap = " + percentOverlap;
-                    dataset.addSegment(sample, chr, start, end, value, description);
-                }
-                else {
-                    String sample = rs.getString("Sample");
-                    String chr = rs.getString("Chromosome");
-                    int start = rs.getInt("Start") - 1;
-                    int end = rs.getInt("Stop");
-                    float value = rs.getFloat("Probe Median");
-                    String event = rs.getString("Event");
-                    String percentOverlap = rs.getString("% of CNV Overlap");
-                    String description = "<br>" + event + "<br>% CNV Overlap = " + percentOverlap;
-                    dataset.addSegment(sample, chr, start, end, value, description);
+                String sample = rs.getString("Sample");
+                String chr = rs.getString("Chromosome");
+                int start = Integer.parseInt(rs.getString("Start").replace(",", "")) - 1;
+                int end = Integer.parseInt(rs.getString("Stop").replace(",", ""));
+                float value = (float) Double.parseDouble(rs.getString("Probe Median"));
+                String event = rs.getString("Event");
+                String percentOverlap = rs.getString("% of CNV Overlap");
+                String description = "<br>" + event + "<br>% CNV Overlap = " + percentOverlap;
+                dataset.addSegment(sample, chr, start, end, value, description);
 
-                }
             }
 
 

@@ -31,6 +31,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ResourceLocator;
+import sun.util.resources.CurrencyNames_vi_VN;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -77,16 +78,25 @@ public class LoadFromDatabaseAction extends MenuAction {
                 }
                 url += "/" + db;
 
+//                String table2 = "SAMPLE_INFO";
+//                ResourceLocator loc2 = new ResourceLocator(url, table2);
+//                loc2.setDescription("SELECT * FROM " + table2);
+//
+//                // CNV. Do a join for fun
                 String table1 = "CNV";
                 ResourceLocator loc1 = new ResourceLocator(url, table1);
-                loc1.setDescription("SELECT * FROM " + table1);
+
+//                String query = "SELECT  cnv.Sample, cnv.`% Heterozygous`, cnv.`% of CNV Overlap`, cnv.`Probe Median`, " +
+//                        "cnv.Chromosome, cnv.Event, cnv.length, cnv.Start, cnv.Stop FROM CNV " +
+//                        "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
+//                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";
+
+                String query = "select * from cnv";
+                loc1.setDescription(query);
                 loc1.setType(".seg");
 
-                String table2 = "SAMPLE_INFO";
-                ResourceLocator loc2 = new ResourceLocator(url, table2);
-                loc2.setDescription("SELECT * FROM " + table2);
 
-                mainFrame.loadTracks(Arrays.asList(loc1, loc2));
+                mainFrame.loadTracks(Arrays.asList(loc1)); //, loc2));
 
                 return null;
             }
