@@ -99,7 +99,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
             }
         }
 
-        if (PeakTrack.isShowSignals() && track.getSignalSource() != null) {
+        if (PeakTrack.isShowSignals() && track.getSignalPath() != null) {
             int h = track.bandHeight;
             int signalHeight = PeakTrack.isShowPeaks() ? track.signalHeight : h;
 

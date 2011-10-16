@@ -505,6 +505,10 @@ public class PeakTrack extends AbstractTrack {
         return signalSource;
     }
 
+    public String getSignalPath() {
+        return signalPath;
+    }
+
 
     enum ColorOption {
         SCORE, FOLD_CHANGE
