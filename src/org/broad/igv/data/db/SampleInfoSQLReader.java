@@ -1,54 +1,43 @@
-package org.broad.igv.data.seg;
+package org.broad.igv.data.db;
 
-import com.mysql.jdbc.Driver;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.LoginDialog;
+import org.broad.igv.util.ResourceLocator;
 
 import java.sql.*;
 
 /**
- * Experimental class to explore using a SQL database as a data store
- *
  * @author Jim Robinson
- * @date 10/14/11
+ * @date 10/15/11
  */
-public class SegmentedSQLReader {
+public class SampleInfoSQLReader {
 
-    private static Logger log = Logger.getLogger(SegmentedSQLReader.class);
+    private static Logger log  = Logger.getLogger(SampleInfoSQLReader.class);
 
-    public static void main(String[] args) {
-        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(null);
-        (new SegmentedSQLReader()).load(ds);
-    }
-
-
-    public void load(SegmentedAsciiDataSet dataset) {
-
+    public void load(ResourceLocator locator) {
 
         System.out.println("MySQL Connect Example.");
         Connection conn = null;
 
-        final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-        String host = preferenceManager.get(PreferenceManager.DB_HOST);
-        String db = preferenceManager.get(PreferenceManager.DB_NAME);
-        String port = preferenceManager.get(PreferenceManager.DB_PORT);
 
-        String url = "jdbc:mysql://" + host;
-        if (!port.equals("-1")) {
-            url += ":" + port;
-        }
-        url += "/" + db;
+        final PreferenceManager preferenceManager = PreferenceManager.getInstance();
+        String db = preferenceManager.get(PreferenceManager.DB_NAME);
+
+        String url = locator.getServerURL();
+        final String table = locator.getPath();
 
         LoginDialog dlg = new LoginDialog(IGV.getMainFrame(), false, db, false);
-        dlg.show();
+        dlg.setVisible(true);
         if (dlg.isCanceled()) {
             throw new RuntimeException("Must login to access" + db);
         }
         String userName = dlg.getUsername();
         String password = new String(dlg.getPassword());
 
+        // TODO -- look based on url, or let user provide this
         String driver = "com.mysql.jdbc.Driver";
 
         try {
@@ -56,21 +45,27 @@ public class SegmentedSQLReader {
             conn = DriverManager.getConnection(url, userName, password);
             System.out.println("Connected to the database");
 
-            String query = "SELECT * FROM CNV";
+            String query = locator.getDescription();
 
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
-            while (rs.next()) {
-                String sample = rs.getString("Sample");
-                String chr = rs.getString("Chromosome");
-                int start = Integer.parseInt(rs.getString("Start").replace(",", "")) - 1;
-                int end = Integer.parseInt(rs.getString("Stop").replace(",", ""));
-                float value = (float) Double.parseDouble(rs.getString("Probe Median"));
-                String event = rs.getString("Event");
-                String percentOverlap = rs.getString("% of CNV Overlap");
-                String description = "<br>" +event + "<br>% CNV Overlap = " + percentOverlap;
 
-                dataset.addSegment(sample, chr, start, end, value, description);
+            ResultSetMetaData metaData = rs.getMetaData();
+            int nCol = metaData.getColumnCount();
+            String [] columnNames = new String[nCol];
+            for(int i=0; i<nCol; i++) {
+                columnNames[i] = metaData.getColumnName(i+1);
+            }
+
+            while (rs.next()) {
+
+                String sample = rs.getString("Sample");
+                for(String col : columnNames) {
+                    String value = rs.getString(col);
+                    AttributeManager.getInstance().addAttribute(sample, col, value);
+                }
+
+
             }
 
 
@@ -85,6 +80,6 @@ public class SegmentedSQLReader {
                 log.error("Error closing sql connection", e);
             }
         }
-    }
 
+    }
 }

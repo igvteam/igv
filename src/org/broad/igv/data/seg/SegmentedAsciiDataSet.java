@@ -26,12 +26,10 @@ package org.broad.igv.data.seg;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.FeatureUtils;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 
 import java.util.*;
@@ -114,7 +112,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
     /**
      *
      */
-    public void addSegment(String heading, String chr, int start, int end, float value, String desc) {
+    public void addSegment(String heading, String c, int start, int end, float value, String desc) {
 
         Map<String, List<LocusScore>> chrSegments = segments.get(heading);
         if (chrSegments == null) {
@@ -123,6 +121,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
             segments.put(heading, chrSegments);
         }
 
+        String chr = genome == null ? c : genome.getChromosomeAlias(c);
         List<LocusScore> segmentList = chrSegments.get(chr);
         if (segmentList == null) {
             segmentList = new ArrayList<LocusScore>();

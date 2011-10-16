@@ -24,6 +24,8 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
+import org.broad.igv.data.db.SampleInfoSQLReader;
+import org.broad.igv.data.db.SegmentedSQLReader;
 import org.broad.igv.data.expression.GCTDataset;
 import org.broad.igv.data.expression.GCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIDataSource;
@@ -145,8 +147,9 @@ public class TrackLoader {
             List<Track> newTracks = new ArrayList<Track>();
 
             // TODO -- hack for testing/development of database support.  Test DB only has segmented files
-            if ("DATABASE".equals(locator.getServerURL())) {
-                this.loadSegFileFromDatabase(locator, newTracks, genome);
+            String serverURL = locator.getServerURL();
+            if (serverURL != null && serverURL.startsWith("jdbc:")) {
+                this.loadFromDatabase(locator, newTracks, genome);
             } else if (typeString.endsWith(".gmt")) {
                 loadGMT(locator);
             } else if (typeString.equals("das")) {
@@ -1012,36 +1015,40 @@ public class TrackLoader {
     }
 
 
-    private void loadSegFileFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
+    private void loadFromDatabase(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
-        // TODO - -handle remote resource
-        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(genome);
-        (new SegmentedSQLReader()).load(ds);
+        if (".seg".equals(locator.getType())) {
 
-        String path = locator.getPath();
-        TrackProperties props = ds.getTrackProperties();
+            SegmentedAsciiDataSet ds = (new SegmentedSQLReader()).load(locator, genome);
 
-        // The "freq" track.  TODO - make this optional
-        if (ds.getSampleNames().size() > 1) {
-            FreqData fd = new FreqData(ds, genome);
-            String freqTrackId = path;
-            String freqTrackName = (new File(path)).getName();
-            CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
-            newTracks.add(freqTrack);
-        }
+            String path = locator.getPath();
+            TrackProperties props = ds.getTrackProperties();
 
-        for (String trackName : ds.getDataHeadings()) {
-            String trackId = path + "_" + trackName;
-            SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
-            track.setRendererClass(HeatmapRenderer.class);
-            track.setTrackType(ds.getType());
-
-            if (props != null) {
-                track.setProperties(props);
+            // The "freq" track.  TODO - make this optional
+            if (ds.getSampleNames().size() > 1) {
+                FreqData fd = new FreqData(ds, genome);
+                String freqTrackId = path;
+                String freqTrackName = (new File(path)).getName();
+                CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
+                newTracks.add(freqTrack);
             }
 
-            newTracks.add(track);
+            for (String trackName : ds.getDataHeadings()) {
+                String trackId = path + "_" + trackName;
+                SegmentedDataSource dataSource = new SegmentedDataSource(trackName, ds);
+                DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+                track.setRendererClass(HeatmapRenderer.class);
+                track.setTrackType(ds.getType());
+
+                if (props != null) {
+                    track.setProperties(props);
+                }
+
+                newTracks.add(track);
+            }
+        }
+        else {
+            (new SampleInfoSQLReader()).load(locator);
         }
     }
 

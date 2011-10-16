@@ -17,6 +17,8 @@
  */
 package org.broad.igv.util;
 
+import EDU.oswego.cs.dl.util.concurrent.FJTask;
+
 import java.awt.*;
 import java.io.File;
 
@@ -27,17 +29,48 @@ import java.io.File;
  */
 public class ResourceLocator {
 
-    String serverURL; //URL for the remote data server.  Null for local files
-    String path; //The path for the file or resource.
-    String indexPath; // Option path to an associated index file
-    String name;  // Display name.  Also used as a key for the sample info file
+    /**
+     * Display name
+     */
+    String name;
+
+    /**
+     *  The path for the file or resource, either local file path, http, https, ftp, or a database URL
+     */
+    String path;
+
+    /**
+     * Optional path to an associated index file
+     */
+    String indexPath;
+
+
     String infolink; // A hyperlink to general information about the track.
     String url; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
     String description; //Descriptive text
     String type;
+
+    /**
+     * Path to an assocated density file.  This is used primarily for sequence alignments
+     */
     String coverage;
-    String trackLine;  // A UCSC style track line.  Overrides value in file, if any.
+
+    /**   A UCSC style track line.  Overrides value in file, if any.
+     *
+     */
+    String trackLine;  //
+
+    /**
+     * Color for features or data.  Somewhat redundant with trackLine.
+     */
     Color color;
+
+    /**
+     * URL to a web service that provides this resource.  This is obsolete, kept for backward compatibility.
+     * @deprecated
+     */
+    String serverURL; // URL for the remote data server.  Null for local files
+
     private String sampleId;
 
     /**
@@ -71,16 +104,11 @@ public class ResourceLocator {
 
     /**
      * Determines if the resource actually exists.
-     * <p/>
-     * TODO - Method is implemented for local file not server files yet!
      *
      * @return true if resource was found.
      */
     public boolean exists() {
-        if (isLocal()) {
-            return new File(path).exists();
-        }
-        return true;
+        return ParsingUtils.pathExists(path);
     }
 
     @Override

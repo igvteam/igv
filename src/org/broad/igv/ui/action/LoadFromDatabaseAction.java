@@ -60,23 +60,42 @@ public class LoadFromDatabaseAction extends MenuAction {
 
             @Override
             protected Object doInBackground() throws Exception {
-                String dbHost = PreferenceManager.getInstance().get(PreferenceManager.DB_HOST);
-                if (dbHost == null || dbHost.trim().length() == 0) {
+
+                String host = PreferenceManager.getInstance().get(PreferenceManager.DB_HOST);
+                if (host == null || host.trim().length() == 0) {
                     MessageUtils.showMessage("Please set database configuration in user preferences (View > Preferences)");
                     return null;
                 }
-                String name = System.currentTimeMillis() + ".seg";
-                ResourceLocator loc = new ResourceLocator("DATABASE", name);
-                mainFrame.loadTracks(Arrays.asList(loc));
+
+                final PreferenceManager preferenceManager = PreferenceManager.getInstance();
+                String db = preferenceManager.get(PreferenceManager.DB_NAME);
+                String port = preferenceManager.get(PreferenceManager.DB_PORT);
+
+                String url = "jdbc:mysql://" + host;
+                if (!port.equals("-1")) {
+                    url += ":" + port;
+                }
+                url += "/" + db;
+
+                String table1 = "CNV";
+                ResourceLocator loc1 = new ResourceLocator(url, table1);
+                loc1.setDescription("SELECT * FROM " + table1);
+                loc1.setType(".seg");
+
+                String table2 = "SAMPLE_INFO";
+                ResourceLocator loc2 = new ResourceLocator(url, table2);
+                loc2.setDescription("SELECT * FROM " + table2);
+
+                mainFrame.loadTracks(Arrays.asList(loc1, loc2));
 
                 return null;
-             }
+            }
 
             @Override
             protected void done() {
                 mainFrame.showLoadedTrackCount();
             }
-        } ;
+        };
 
         worker.execute();
 
