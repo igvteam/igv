@@ -737,7 +737,7 @@ public class TrackLoader {
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, bigwigSource, genome);
             newTracks.add(track);
         } else if (reader.isBigBedFile()) {
-            FeatureTrack track = new FeatureTrack(trackId, trackName, bigwigSource);
+            FeatureTrack track = new FeatureTrack(locator, trackId, trackName, bigwigSource);
             newTracks.add(track);
         } else {
             throw new RuntimeException("Unknown BIGWIG type: " + locator.getPath());

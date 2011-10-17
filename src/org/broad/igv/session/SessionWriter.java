@@ -295,7 +295,9 @@ public class SessionWriter {
     }
 
     private void writeResources(File outputFile, Element globalElement, Document document) {
+
         Collection<ResourceLocator> resourceLocators = getResourceLocatorSet();
+
         if ((resourceLocators != null) && !resourceLocators.isEmpty()) {
 
             Element filesElement = document.createElement(SessionElement.RESOURCES.getText());

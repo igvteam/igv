@@ -19,6 +19,7 @@ package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
@@ -104,11 +105,25 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
+    /**
+     * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
+     * "Resources" section of session files.
+     *
+     * @param id
+     * @param name
+     * @param source
+     */
     public FeatureTrack(String id, String name, FeatureSource source) {
         super(id, name);
         init(source);
         setSortable(false);
     }
+
+    public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
+        super(locator, id, name);
+        init(source);
+        setSortable(false);
+     }
 
 
     public FeatureTrack(ResourceLocator locator, FeatureSource source) {
