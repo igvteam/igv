@@ -261,7 +261,7 @@ public class PeakCommandBar extends JPanel {
             colorByPanel.add(label4);
 
             //---- colorByScoresButton ----
-            colorByScoresButton.setText("Score");
+            colorByScoresButton.setText("Factor");
             colorByScoresButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     colorByActionPeformed(e);

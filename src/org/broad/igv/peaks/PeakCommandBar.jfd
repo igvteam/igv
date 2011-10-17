@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_26" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -349,7 +349,7 @@
           <string>javax.swing.JRadioButton</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Score</string> 
+           <string>Factor</string> 
           </void> 
           <void method="setProperty"> 
            <string>$buttonGroup</string> 
