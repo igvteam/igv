@@ -561,7 +561,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                                         reference != null &&
                                         idx < reference.length &&
                                         refbase != 0 &&
-                                        !(refbase == readbase || (refbase - 32) == readbase));
+                                        !compareBases(refbase, readbase));
 
                 if (misMatch || showAllBases) {
                     char c = (char) read[loc - start];
@@ -608,6 +608,56 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
             }
+        }
+    }
+
+    /**
+     * Return true if the two bases can be considered a match.  The comparison is case-insentive, and
+     * ambiguity codes.
+     *
+     * @param refbase
+     * @param readbase
+     * @return
+     */
+    private static boolean compareBases(byte refbase, byte readbase) {
+        // Force both bases to upper case
+        if (refbase > 90) {
+            refbase = (byte) (refbase - 32);
+        }
+        if(readbase > 90) {
+            readbase = (byte) (readbase - 32);
+        }
+        if(refbase == readbase) {
+            return true;
+        }
+        switch (refbase) {
+            case 'N':
+                return true; // Everything matches 'N'
+            case 'U':
+                return readbase == 'T';
+            case 'M':
+                return readbase == 'A' || readbase == 'C';
+            case 'R':
+                return readbase == 'A' || readbase == 'G';
+            case 'W':
+                return readbase == 'A' || readbase == 'T';
+            case 'S':
+                return readbase == 'C' || readbase == 'G';
+            case 'Y':
+                return readbase == 'C' || readbase == 'T';
+            case 'K':
+                return readbase == 'G' || readbase == 'T';
+            case 'V':
+                return readbase == 'A' || readbase == 'C' || readbase == 'G';
+            case 'H':
+                return readbase == 'A' || readbase == 'C' || readbase == 'T';
+            case 'D':
+                return readbase == 'A' || readbase == 'G' || readbase == 'T';
+            case 'B':
+                return readbase == 'C' || readbase == 'G' || readbase == 'T';
+
+            default:
+                return refbase == readbase;
         }
     }
 
