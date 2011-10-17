@@ -487,16 +487,16 @@ public class SessionReader {
                             tracks = igv.getTrackManager().load(locator);
                             for (Track track : tracks) {
 
-                                 String id = track.getId();
-                                 List<Track> trackList = trackDictionary.get(id);
-                                 if (trackList == null) {
-                                     trackList = new ArrayList();
-                                     trackDictionary.put(id, trackList);
+                                String id = track.getId();
+                                List<Track> trackList = trackDictionary.get(id);
+                                if (trackList == null) {
+                                    trackList = new ArrayList();
+                                    trackDictionary.put(id, trackList);
 
-                                 }
-                                 trackList.add(track);
-                             }
-                         } catch (Exception e) {
+                                }
+                                trackList.add(track);
+                            }
+                        } catch (Exception e) {
                             String ms = "<b>" + locator.getPath() + "</b><br>&nbsp&nbsp" + e.toString() + "<br>";
                             errors.add(ms);
                         }
@@ -518,10 +518,10 @@ public class SessionReader {
             long dt = System.currentTimeMillis() - t0;
             log.info("Total load time = " + dt);
 
-            if(errors.size() > 0) {
+            if (errors.size() > 0) {
                 StringBuffer buf = new StringBuffer();
                 buf.append("<html>Errors were encountered loading the session:<br>");
-                for(String msg : errors) {
+                for (String msg : errors) {
                     buf.append(msg);
                 }
                 MessageUtils.showMessage(buf.toString());
@@ -565,12 +565,6 @@ public class SessionReader {
 
         if (resourceType != null) {
             resourceLocator.setType(resourceType);
-        }
-
-        if (resourceLocator.exists()) {
-            dataFiles.add(resourceLocator);
-        } else {
-            missingDataFiles.add(resourceLocator);
         }
 
         NodeList elements = element.getChildNodes();
@@ -652,11 +646,7 @@ public class SessionReader {
             }
         }
 
-        if (resourceLocator.exists()) {
-            dataFiles.add(resourceLocator);
-        } else {
-            missingDataFiles.add(resourceLocator);
-        }
+        dataFiles.add(resourceLocator);
 
         NodeList elements = element.getChildNodes();
         process(session, elements, additionalInformation);
