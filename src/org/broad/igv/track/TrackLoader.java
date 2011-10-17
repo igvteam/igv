@@ -37,7 +37,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.FeatureFileHeader;
+import org.broad.igv.feature.tribble.*;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.gs.GSUtils;
@@ -134,15 +134,6 @@ public class TrackLoader {
                         " load the associated gzipped file, which should have an extension of '.gz'");
             }
 
-            //TODO Why is this not inside of isIndexed?
-            //dhmay seconding this question -- this appears to be taken care of already in isIndexed()
-            // Check for index
-            boolean hasIndex = false;
-            if (locator.isLocal()) {
-                File indexFile = new File(path + ".sai");
-                hasIndex = indexFile.exists();
-            }
-
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
@@ -199,7 +190,7 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bedz") || (typeString.endsWith(".bed") && hasIndex)) {
+            } else if (typeString.endsWith(".bedz")) {
                 loadIndexdBedFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".omega")) {
                 loadOmegaTrack(locator, newTracks, genome);
@@ -300,7 +291,6 @@ public class TrackLoader {
         //Track t;
 
         if (typeString.endsWith("vcf") || typeString.endsWith("vcf.gz")) {
-
 
             VCFHeader header = (VCFHeader) src.getHeader();
 
@@ -1046,8 +1036,7 @@ public class TrackLoader {
 
                 newTracks.add(track);
             }
-        }
-        else {
+        } else {
             (new SampleInfoSQLReader()).load(locator);
         }
     }
@@ -1126,7 +1115,13 @@ public class TrackLoader {
 
 
     public static boolean isIndexed(String path) {
-        // genome space hack -- genome space files are never indexed (at least not yet)
+
+       // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
+        if(!isIndexable(path)) {
+            return false;
+        }
+
+        // genome space files are never indexed (at least not yet)
         if (path.contains("genomespace.org")) {
             return false;
         }
@@ -1135,12 +1130,7 @@ public class TrackLoader {
         String indexPath = path + indexExtension;
         try {
             if (HttpUtils.getInstance().isURL(path)) {
-                boolean exists = HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
-                if (!exists) {
-                    // Check for gzipped index
-                    exists = HttpUtils.getInstance().resourceAvailable(new URL(indexPath + ".gz"));
-                }
-                return exists;
+                return HttpUtils.getInstance().resourceAvailable(new URL(indexPath));
             } else {
                 File f = new File(path + indexExtension);
                 return f.exists();
@@ -1150,5 +1140,25 @@ public class TrackLoader {
             return false;
         }
 
+    }
+
+
+    /**
+     * Return true if a file represented by "path" is indexable.  This method is an optimization, we could just look
+     * for the index but that is expensive to do for remote resources.  All tribble indexable extensions should be
+     * listed here.
+     *
+     * @param path
+     * @return
+     */
+    private static boolean isIndexable(String path) {
+        String fn = path.toLowerCase();
+        if (fn.endsWith(".gz")) {
+            int l = fn.length() - 3;
+            fn = fn.substring(0, l);
+        }
+
+        return fn.endsWith(".vcf4") || fn.endsWith(".vcf") || fn.endsWith(".bed") || fn.endsWith(".repmask") ||
+                fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx");
     }
 }
