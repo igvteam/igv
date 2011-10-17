@@ -90,7 +90,7 @@ public class LoadFromDatabaseAction extends MenuAction {
                 // TODO -- get these mappings from a config table
                 String query = "SELECT  cnv.Sample Sample, cnv.`Probe Median` Value, " +
                         "cnv.Chromosome chr,  cnv.Start start, cnv.Stop end, " +
-                        "CONCAT(cnv.Event,'<br>% CNV Overlap = ', cnv.`% of CNV Overlap`) description " +
+                        "CONCAT('<br>Event: ', cnv.Event,'<br>% CNV Overlap = ', cnv.`% of CNV Overlap`) description " +
                         " FROM CNV";
 //                         + "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
 //                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";
