@@ -59,16 +59,15 @@ public class SegmentedSQLReader {
             while (rs.next()) {
 
                 String sample = rs.getString("Sample");
-                String chr = rs.getString("Chromosome");
-                int start = Integer.parseInt(rs.getString("Start").replace(",", "")) - 1;
-                int end = Integer.parseInt(rs.getString("Stop").replace(",", ""));
-                float value = (float) Double.parseDouble(rs.getString("Probe Median"));
-                String event = rs.getString("Event");
-                String percentOverlap = rs.getString("% of CNV Overlap");
-                String description = "<br>" + event + "<br>% CNV Overlap = " + percentOverlap;
+                String chr = rs.getString("chr");
+                int start = Integer.parseInt(rs.getString("start").replace(",", "")) - 1;
+                int end = Integer.parseInt(rs.getString("end").replace(",", ""));
+                float value = (float) Double.parseDouble(rs.getString("value"));
+                String description =  rs.getString("description");
                 dataset.addSegment(sample, chr, start, end, value, description);
 
             }
+            dataset.sortLists();
 
 
             System.out.println("Disconnected from database");

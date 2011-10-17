@@ -86,12 +86,16 @@ public class LoadFromDatabaseAction extends MenuAction {
                 String table1 = "CNV";
                 ResourceLocator loc1 = new ResourceLocator(url, table1);
 
-//                String query = "SELECT  cnv.Sample, cnv.`% Heterozygous`, cnv.`% of CNV Overlap`, cnv.`Probe Median`, " +
-//                        "cnv.Chromosome, cnv.Event, cnv.length, cnv.Start, cnv.Stop FROM CNV " +
-//                        "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
+
+                // TODO -- get these mappings from a config table
+                String query = "SELECT  cnv.Sample Sample, cnv.`Probe Median` Value, " +
+                        "cnv.Chromosome chr,  cnv.Start start, cnv.Stop end, " +
+                        "CONCAT(cnv.Event,'<br>% CNV Overlap = ', cnv.`% of CNV Overlap`) description " +
+                        " FROM CNV";
+//                         + "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
 //                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";
 
-                String query = "select * from cnv";
+//                String query = "select * from cnv";
                 loc1.setDescription(query);
                 loc1.setType(".seg");
 
