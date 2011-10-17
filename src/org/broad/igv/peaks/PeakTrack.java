@@ -517,9 +517,6 @@ public class PeakTrack extends AbstractTrack {
             signalSourceLoading = true;
             NamedRunnable runnable = new NamedRunnable() {
                 public void run() {
-                    // TODO emergency hack
-                    signalPath = signalPath.replace("http://igvdata.broadinstitute.org/data/ichip/tdf/compressed",
-                            "http://www.broadinstitute.org/igvdata/ichip/tdf/w10/");
                     signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
                     signalSource.setNormalizeCounts(true, 1.0e9f);
 
