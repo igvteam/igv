@@ -22,12 +22,10 @@
  */
 package org.broad.igv.sam.reader;
 
-import net.sf.samtools.BAMIndex;
-import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
+import net.sf.samtools.*;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
-import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.CloseableIterator;
+import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -42,6 +40,7 @@ import java.util.Set;
  */
 public class BAMQueryReader implements AlignmentQueryReader {
 
+    private static Logger log = Logger.getLogger(BAMQueryReader.class);
     SAMFileReader reader;
     BAMIndex index;
     SAMFileHeader header;
@@ -93,10 +92,45 @@ public class BAMQueryReader implements AlignmentQueryReader {
     }
 
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) {
-        return new WrappedIterator(reader.query(sequence, start, end, contained));
+        SAMRecordIterator query = null;
+        try {
+            query = reader.query(sequence, start, end, contained);
+            return new WrappedIterator(query);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.error("Error querying BAM file ", e);
+            MessageUtils.showMessage("Error reading bam file.  This usually indicates a problem with the index (bai) file." +
+                    "<br>" + e.toString() + " (" + e.getMessage() + ")");
+            return EmptyIterator.instance;
+        }
+
     }
 
     public CloseableIterator<Alignment> iterator() {
         return new WrappedIterator(reader.iterator());
+    }
+
+
+    /**
+     * Class
+     */
+    public static class EmptyIterator implements CloseableIterator<Alignment> {
+
+        public static final EmptyIterator instance = new EmptyIterator();
+
+        public void close() {
+            // Ignore
+        }
+
+        public boolean hasNext() {
+            return false;
+        }
+
+        public Alignment next() {
+            return null;
+        }
+
+        public void remove() {
+
+        }
     }
 }
