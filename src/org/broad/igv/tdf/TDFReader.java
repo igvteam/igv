@@ -31,6 +31,7 @@ import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -177,30 +178,36 @@ public class TDFReader {
 
     private void readMasterIndex(long idxPosition, int nBytes) throws IOException {
 
-        //fis.seek(idxPosition);
-        //byte[] bytes = new byte[nBytes];
-        //readFully(bytes);
-        byte[] bytes = readBytes(idxPosition, nBytes);
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        try {
+//fis.seek(idxPosition);
+            //byte[] bytes = new byte[nBytes];
+            //readFully(bytes);
+            byte[] bytes = readBytes(idxPosition, nBytes);
+            ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        int nDatasets = byteBuffer.getInt();
+            int nDatasets = byteBuffer.getInt();
 
-        datasetIndex = new LinkedHashMap(nDatasets);
-        for (int i = 0; i < nDatasets; i++) {
-            String name = StringUtils.readString(byteBuffer);
-            long fPosition = byteBuffer.getLong();
-            int n = byteBuffer.getInt();
-            datasetIndex.put(name, new IndexEntry(fPosition, n));
-        }
+            datasetIndex = new LinkedHashMap(nDatasets);
+            for (int i = 0; i < nDatasets; i++) {
+                String name = StringUtils.readString(byteBuffer);
+                long fPosition = byteBuffer.getLong();
+                int n = byteBuffer.getInt();
+                datasetIndex.put(name, new IndexEntry(fPosition, n));
+            }
 
-        int nGroups = byteBuffer.getInt();
-        groupIndex = new LinkedHashMap(nGroups);
-        for (int i = 0; i < nGroups; i++) {
-            String name = StringUtils.readString(byteBuffer);
-            long fPosition = byteBuffer.getLong();
-            int n = byteBuffer.getInt();
-            groupIndex.put(name, new IndexEntry(fPosition, n));
+            int nGroups = byteBuffer.getInt();
+            groupIndex = new LinkedHashMap(nGroups);
+            for (int i = 0; i < nGroups; i++) {
+                String name = StringUtils.readString(byteBuffer);
+                long fPosition = byteBuffer.getLong();
+                int n = byteBuffer.getInt();
+                groupIndex.put(name, new IndexEntry(fPosition, n));
+            }
+        } catch (BufferUnderflowException e) {
+            // We intermittently see this exception in this method.  Log as much info as possible
+            log.error("BufferUnderflowException.  path=" + getPath() + "  idxPosition=" + idxPosition + "  nBytes=" + nBytes);
+            throw e;
         }
     }
 
@@ -288,7 +295,7 @@ public class TDFReader {
 
     // TODO -- move to dataset class
 
-    public synchronized TDFTile readTile(TDFDataset ds, int tileNumber) {
+    public  TDFTile readTile(TDFDataset ds, int tileNumber) {
 
         try {
             if (tileNumber >= ds.tilePositions.length) {
