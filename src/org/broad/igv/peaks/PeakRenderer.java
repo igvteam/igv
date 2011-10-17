@@ -121,10 +121,12 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     }
                 }
             } else {
-                List<LocusScore> signals = track.getSignalSource().getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
-                Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
-                chartRenderer.render(signals, context, signalRect, track);
-
+                final PeakTrack.WrappedDataSource signalSource = track.getSignalSource(chr, contextStart, contextEnd, zoom);
+                if (signalSource != null) {
+                    List<LocusScore> signals = signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                    Rectangle signalRect = new Rectangle(rect.x, rect.y + 1, rect.width, signalHeight - 1);
+                    chartRenderer.render(signals, context, signalRect, track);
+                }
             }
         }
 

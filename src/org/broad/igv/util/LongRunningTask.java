@@ -39,9 +39,9 @@ public class LongRunningTask implements Callable {
 
     public static Future submit(NamedRunnable runnable) {
         if (Globals.batch || !IGV.getInstance().isStartupComplete()) {
-            log.debug("Running: " + runnable.getName());
+            log.info("Running: " + runnable.getName());
             runnable.run();
-            log.debug("Finished : " + runnable.getName());
+            log.info("Finished : " + runnable.getName());
             return null;
         } else {
 
@@ -69,7 +69,7 @@ public class LongRunningTask implements Callable {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            log.debug("Running " + runnable.getName());
+            //log.info("Running " + runnable.getName());
             long t0 = System.currentTimeMillis();
             runnable.run();
             if (log.isDebugEnabled()) {
@@ -82,6 +82,7 @@ public class LongRunningTask implements Callable {
             return null;
         }
         finally {
+            //log.info("Removing wait cursor " + runnable.getName());
             WaitCursorManager.removeWaitCursor(token);
         }
 

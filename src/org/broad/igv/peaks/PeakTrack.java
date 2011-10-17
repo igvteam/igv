@@ -282,8 +282,9 @@ public class PeakTrack extends AbstractTrack {
                     buf.append("<br>");
                 }
             }
-            if (showSignals && getSignalSource() != null) {
-                List<LocusScore> scores = getSignalSource().getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
+            final WrappedDataSource signalSource = getSignalSource();
+            if (showSignals && signalSource != null) {
+                List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
                 LocusScore score = getLocusScoreAt(scores, position, frame);
                 buf.append((score == null) ? "" : "Score = " + score.getScore());
             }
@@ -494,21 +495,50 @@ public class PeakTrack extends AbstractTrack {
         return timeSignalSources;
     }
 
+    boolean signalSourceLoading = false;
+
+
     public WrappedDataSource getSignalSource() {
-        if (signalSource == null && signalPath != null) {
-            // TODO emergency hack
-            signalPath = signalPath.replace("http://igvdata.broadinstitute.org/data/ichip/tdf/compressed",
-                    "http://www.broadinstitute.org/igvdata/ichip/tdf/w10/");
-            signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
-            signalSource.setNormalizeCounts(true, 1.0e9f);
+        return signalSource;
+    }
+
+    /**
+     * Called by Renderer.  Loads signal source, if needed, and forces load of specified data interval.  This is
+     * a bit of a hack.
+     *
+     * @param chr
+     * @param contextStart
+     * @param contextEnd
+     * @param zoom
+     * @return
+     */
+    WrappedDataSource getSignalSource(final String chr, final int contextStart, final int contextEnd, final int zoom) {
+        if (signalSource == null && signalPath != null && !signalSourceLoading) {
+            signalSourceLoading = true;
+            NamedRunnable runnable = new NamedRunnable() {
+                public void run() {
+                    // TODO emergency hack
+                    signalPath = signalPath.replace("http://igvdata.broadinstitute.org/data/ichip/tdf/compressed",
+                            "http://www.broadinstitute.org/igvdata/ichip/tdf/w10/");
+                    signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
+                    signalSource.setNormalizeCounts(true, 1.0e9f);
+
+                    signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
+                }
+
+                public String getName() {
+                    return "Load " + signalPath;
+                }
+            };
+            LongRunningTask.submit(runnable);
         }
         return signalSource;
     }
 
+
     public String getSignalPath() {
         return signalPath;
     }
-
 
     enum ColorOption {
         SCORE, FOLD_CHANGE
