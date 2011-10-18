@@ -176,7 +176,7 @@ public class CommandListener implements Runnable {
 
     private String processGet(String line, BufferedReader reader, CommandExecutor cmdExe) throws IOException {
 
-        String nextLine = URLDecoder.decode(line);
+        String nextLine = line;
         String result = "OK";
 
         String[] tokens = nextLine.split(" ");
@@ -236,7 +236,10 @@ public class CommandListener implements Runnable {
             if (kv.length == 1) {
                 params.put(kv[0], null);
             } else {
-                params.put(kv[0], kv[1]);
+                String key = kv[0];
+                // Special treatment of locus string, need to preserve encoding of spaces
+                String value = key.equals("locus") ? kv[1] : URLDecoder.decode(kv[1]);
+                params.put(kv[0], value);
             }
         }
         return params;

@@ -41,7 +41,8 @@ public class TestClient {
             socket = new Socket("127.0.0.1", 60151);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            testLoopBAM(out, in);
+            testMultiLocus(out, in);
+            //testLoopBAM(out, in);
         } catch (UnknownHostException e) {
             System.err.println("Unknown host exception: " + e.getMessage());
             System.exit(1);
@@ -56,6 +57,23 @@ public class TestClient {
         }
     }
 
+
+    private static void testMultiLocus(PrintWriter out, BufferedReader in) throws IOException {
+
+        String cmd = "load http://www.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz";
+        out.println(cmd);
+        String response = in.readLine();
+        System.out.println(cmd + " " + response);
+
+        cmd = "goto EGFR PTEN";
+        out.println(cmd);
+        response = in.readLine();
+        System.out.println(cmd + " " + response);
+
+
+        //http://localhost:60151/load?file=http://www.broadinstitute.org/igvdata/tcga/gbmsubtypes/Broad.080528.subtypes.seg.gz&genome=hg18&locus=EGFR%20PTEN
+
+    }
 
     private static void testLoopBAM(PrintWriter out, BufferedReader in) throws IOException {
 
