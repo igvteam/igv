@@ -216,11 +216,11 @@ public class TrackLoader {
                 //TODO AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
             } else if (AbstractFeatureParser.getInstanceFor(locator, genome) != null) {
                 loadFeatureFile(locator, newTracks, genome);
-            } else if (MutationParser.isMutationAnnotationFile(locator)) {
+            } else if (typeString.endsWith(".mut")) { //  MutationParser.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (path.toLowerCase().contains(".maf")) {
+            } else if (typeString.endsWith(".maf")) {
                 loadMAFTrack(locator, newTracks);
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
