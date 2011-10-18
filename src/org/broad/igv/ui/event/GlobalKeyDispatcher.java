@@ -116,6 +116,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
         KeyStroke refreshKey = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
 
+        final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
+
         final Action refreshAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -128,10 +130,17 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
 
 
         final Action toolAction = new AbstractAction() {
-
             public void actionPerformed(ActionEvent e) {
                 setEnabled(false); // stop any other events from interfering
                 IGV.getInstance().enableExtrasMenu();
+                setEnabled(true);
+            }
+        };
+
+        final Action statusWindowAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                setEnabled(false); // stop any other events from interfering
+                IGV.getInstance().openStatusWindow();
                 setEnabled(true);
             }
         };
@@ -219,6 +228,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("tools", toolAction);
         getInputMap().put(regionKey, "region");
         getActionMap().put("region", regionAction);
+        getInputMap().put(statusWindowKey, "statusWindow");
+        getActionMap().put("statusWindow", statusWindowAction);
 
         getInputMap().put(backKey1, "back");
         getInputMap().put(backKey2, "back");
@@ -358,7 +369,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                     if (!chr.equals(vc.getChrName())) {
                         // Switch chromosomes.  We have to do some tricks to maintain the same resolution scale.
                         double range = vc.getEnd() - vc.getOrigin();
-                        int newOrigin = (int) Math.max(newCenter - range/2, 0);
+                        int newOrigin = (int) Math.max(newCenter - range / 2, 0);
                         int newEnd = (int) (newOrigin + range);
                         vc.jumpTo(chr, newOrigin, newEnd);
                     } else {

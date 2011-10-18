@@ -72,7 +72,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * @author jrobinso
@@ -88,6 +87,8 @@ public class IGV {
     private JRootPane rootPane;
     private IGVContentPane contentPane;
     private IGVMenuBar menuBar;
+
+    private StatusWindow statusWindow;
 
     // Glass panes
     Component glassPane;
@@ -1492,6 +1493,19 @@ public class IGV {
     public boolean isSuppressTooltip() {
 
         return contentPane != null && contentPane.getCommandBar().isSuppressTooltip();
+    }
+
+    public void openStatusWindow() {
+        if(statusWindow == null) {
+            statusWindow = new StatusWindow();
+        }
+        statusWindow.setVisible(true);
+    }
+
+    public void setStatusWindowText(String text) {
+        if(statusWindow != null && statusWindow.isVisible()) {
+            statusWindow.updateText(text);
+        }
     }
 
     public void startUp(Main.IGVArgs igvArgs) {

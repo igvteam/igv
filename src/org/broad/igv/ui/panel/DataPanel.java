@@ -371,8 +371,8 @@ public class DataPanel extends JComponent implements Paintable {
     public void setToolTipText(String text) {
        // log.info("SetToolTipText: " + text);
         if (!tooltipText.equals(text)) {
+            IGV.getInstance().setStatusWindowText(text);
             this.tooltipText = text;
-            IGV.getInstance().setStatusBarMessage(tooltipText);
             // Fire a property change event so the tooltip manager knows something has changed.
             putClientProperty(TOOL_TIP_TEXT_KEY, text);
         }
@@ -540,7 +540,7 @@ public class DataPanel extends JComponent implements Paintable {
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
                 String position = frame.getChrName() + ":" + locationFormatter.format(location);
-                //IGV.getInstance().setStatusBarMessage(position);
+                IGV.getInstance().setStatusBarMessage(position);
             }
         }
 
