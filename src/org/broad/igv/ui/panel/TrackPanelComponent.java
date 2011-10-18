@@ -91,7 +91,7 @@ abstract public class TrackPanelComponent extends JPanel {
             IGV.getInstance().getTrackManager().clearSelections();
             t.setSelected(true);
             if (trackPanel.getScrollPane().getVerticalScrollBar().isShowing()) {
-                trackPanel.getScrollPane().getVerticalScrollBar().setValue(t.getTop());
+                trackPanel.getScrollPane().getVerticalScrollBar().setValue(t.getY());
             }
             return true;
         }

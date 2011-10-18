@@ -591,7 +591,7 @@ public abstract class AbstractTrack implements Track {
     /**
      * @return the top
      */
-    public int getTop() {
+    public int getY() {
         return top;
     }
 
@@ -602,7 +602,7 @@ public abstract class AbstractTrack implements Track {
     /**
      * @param top the top to set
      */
-    public void setTop(int top) {
+    public void setY(int top) {
         this.top = top;
     }
 

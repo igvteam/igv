@@ -106,9 +106,9 @@ public interface Track extends Persistable {
         
     public void setHeight(int preferredHeight);
 
-    public void setTop(int top);
+    public void setY(int top);
 
-    public int getTop();
+    public int getY();
 
     public void setColorScale(ContinuousColorScale colorScale);
 

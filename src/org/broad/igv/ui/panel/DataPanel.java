@@ -62,7 +62,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     private DataPanelTool defaultTool;
     private DataPanelTool currentTool;
-    private Point tooltipTextPosition;
+    // private Point tooltipTextPosition;
     private ReferenceFrame frame;
     DataPanelContainer parent;
     private DataPanelPainter painter;
@@ -355,21 +355,40 @@ public class DataPanel extends JComponent implements Paintable {
 
     }
 
+
+    @Override
+    public void setToolTipText(String text) {
+        if (!tooltipText.equals(text)) {
+            IGV.getInstance().setStatusWindowText(text);
+            this.tooltipText = text;
+            putClientProperty(TOOL_TIP_TEXT_KEY, text);
+        }
+
+    }
+
+    @Override
+    final public String getToolTipText() {
+        if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
+            return "";
+        }
+        return tooltipText;
+    }
+
+
     /**
      * Method description
      */
-    public void updateTooltipText() {
+    public void updateTooltipText(int x, int y, String positionString) {
 
-        if (tooltipTextPosition == null) return;
-
-        double location = frame.getChromosomePosition(tooltipTextPosition.x);
+        double location = frame.getChromosomePosition(x);
         double displayLocation = location + 1;
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
         StringBuffer popupTextBuffer = new StringBuffer();
+        popupTextBuffer.append("<html>");
         for (MouseableRegion mouseRegion : regions) {
-            if (mouseRegion.containsPoint(tooltipTextPosition.x, tooltipTextPosition.y)) {
+            if (mouseRegion.containsPoint(x, y)) {
                 track = mouseRegion.getTracks().iterator().next();
                 if (track != null) {
                     // First see if there is an overlay track.  If there is, give
@@ -379,54 +398,30 @@ public class DataPanel extends JComponent implements Paintable {
                     if (overlays != null) {
                         for (Track overlay : overlays) {
                             if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), displayLocation, tooltipTextPosition.y, frame) != null)) {
-                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, tooltipTextPosition.y));
+                                    frame.getChrName(), displayLocation, y, frame) != null)) {
+                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, y));
                                 popupTextBuffer.append("<br>");
                             }
                         }
                     }
-                    popupTextBuffer.append(getPopUpText(track, displayLocation, tooltipTextPosition.y));
+                    popupTextBuffer.append(getPopUpText(track, displayLocation, y));
                 }
                 break;
             }
         }
 
-        String puText = popupTextBuffer.toString().trim();
-        if (puText.length() > 0) {
+        if (popupTextBuffer.length() > 6) {   // 6 characters for <html>
+            //popupTextBuffer.append("<br>--------------------------");
+            //popupTextBuffer.append(positionString);
+            String puText = popupTextBuffer.toString().trim();
             if (!puText.equals(tooltipText)) {
-                setToolTipText("<html>" + puText);
+                setToolTipText(puText);
             }
         } else {
             setToolTipText("");
         }
     }
 
-    @Override
-    public void setToolTipText(String text) {
-        // log.info("SetToolTipText: " + text);
-        if (!tooltipText.equals(text)) {
-            IGV.getInstance().setStatusWindowText(text);
-            this.tooltipText = text;
-            // Fire a property change event so the tooltip manager knows something has changed.
-            putClientProperty(TOOL_TIP_TEXT_KEY, text);
-        }
-
-    }
-
-    @Override
-
-    final public String getToolTipText() {
-
-        //log.info("Get tooltip text");
-
-        if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
-            return "";
-        }
-
-        // updateTooltipText();
-
-        return tooltipText;
-    }
 
     /**
      * @param track
@@ -436,14 +431,13 @@ public class DataPanel extends JComponent implements Paintable {
      */
     String getPopUpText(Track track, double location, int y) {
 
-        //log.info("Enter getPopupText ");
         StringBuffer buf = new StringBuffer();
         String value = track.getValueStringAt(frame.getChrName(), location, y, frame);
         if (value != null) {
             buf.append(value);
+            buf.append("<br>");
         }
         final String s = buf.toString();
-        //log.info("Exit getPopupText: " + s);
         return s;
     }
 
@@ -533,10 +527,6 @@ public class DataPanel extends JComponent implements Paintable {
 
     }
 
-    protected void addMousableRegion(MouseableRegion region) {
-        parent.addMousableRegion(region);
-    }
-
     protected void removeMousableRegions() {
         parent.getMouseRegions().clear();
     }
@@ -569,13 +559,14 @@ public class DataPanel extends JComponent implements Paintable {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            tooltipTextPosition = e.getPoint();
-            updateTooltipText();
+            String position = null;
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
-                String position = frame.getChrName() + ":" + locationFormatter.format(location);
+                position = frame.getChrName() + ":" + locationFormatter.format(location);
                 IGV.getInstance().setStatusBarMessage(position);
             }
+            updateTooltipText(e.getX(), e.getY(), position);
+
         }
 
         /**

@@ -180,7 +180,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
         for (Track track : tmp) {
             if (track == null) continue;
-            track.setTop(regionY);
+            track.setY(regionY);
             int trackHeight = track.getHeight();
             if (track.isVisible()) {
 
