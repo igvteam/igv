@@ -44,13 +44,12 @@ public class DataPanelPainter {
 
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
-    public void paint(Collection<TrackGroup> groups,
+    public synchronized void paint(Collection<TrackGroup> groups,
                       RenderContext context,
                       int width,
                       int height,
                       Color background,
-                      Rectangle visibleRect,
-                      List<MouseableRegion> mouseableRegions) {
+                      Rectangle visibleRect) {
 
         Graphics2D graphics2D = null;
 
@@ -103,9 +102,6 @@ public class DataPanelPainter {
                         if (track.isVisible()) {
                             Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
                             draw(track, rect, context);
-                            if (mouseableRegions != null) {
-                                mouseableRegions.add(new MouseableRegion(rect, track));
-                            }
                             trackY += trackHeight;
                         }
                     }

@@ -111,10 +111,6 @@ public class DataPanel extends JComponent implements Paintable {
         super.paintComponent(g);
         RenderContext context = null;
         try {
-            final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
-            if (mouseableRegions != null) {
-                mouseableRegions.clear();
-            }
 
             Rectangle clipBounds = g.getClipBounds();
             final Rectangle damageRect = clipBounds == null ? getVisibleRect() : clipBounds.intersection(getVisibleRect());
@@ -146,7 +142,9 @@ public class DataPanel extends JComponent implements Paintable {
             int trackWidth = getWidth();
             int trackHeight = getHeight();
 
-            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect, mouseableRegions);
+
+            computeMousableRegions(groups, trackWidth);
+            painter.paint(groups, context, trackWidth, trackHeight, getBackground(), damageRect);
 
 
             // If there is a partial ROI in progress draw it first
@@ -171,6 +169,43 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
     /**
+     * TODO -- move this to a "layout" command, to layout tracks and assign positions
+     */
+    private void computeMousableRegions(Collection<TrackGroup> groups, int width) {
+
+        final List<MouseableRegion> mouseableRegions = parent.getMouseRegions();
+        mouseableRegions.clear();
+        int trackX = 0;
+        int trackY = 0;
+        for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
+            TrackGroup group = groupIter.next();
+
+
+            if (group.isVisible()) {
+                if (groups.size() > 1) {
+                    trackY += UIConstants.groupGap;
+                }
+
+                List<Track> trackList = group.getTracks();
+                for (Track track : trackList) {
+                    if (track == null) continue;
+                    int trackHeight = track.getHeight();
+
+                    if (track.isVisible()) {
+                        Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                        if (mouseableRegions != null) {
+                            mouseableRegions.add(new MouseableRegion(rect, track));
+                        }
+                        trackY += trackHeight;
+                    }
+                }
+
+            }
+        }
+
+    }
+
+    /**
      * Paint method designed to paint to an offscreen image
      *
      * @param g
@@ -188,7 +223,7 @@ public class DataPanel extends JComponent implements Paintable {
             final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
             int width = rect.width;
             int height = rect.height;
-            painter.paint(groups, context, width, height, getBackground(), rect, null);
+            painter.paint(groups, context, width, height, getBackground(), rect);
 
             drawAllRegions(g);
 
@@ -332,7 +367,6 @@ public class DataPanel extends JComponent implements Paintable {
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
-        IGV.getInstance().setStatusWindowText("Region count = " + regions.size());
         StringBuffer popupTextBuffer = new StringBuffer();
         for (MouseableRegion mouseRegion : regions) {
             if (mouseRegion.containsPoint(tooltipTextPosition.x, tooltipTextPosition.y)) {
@@ -351,7 +385,6 @@ public class DataPanel extends JComponent implements Paintable {
                             }
                         }
                     }
-                    IGV.getInstance().setStatusWindowText("Getting pu text for " + track.getName());
                     popupTextBuffer.append(getPopUpText(track, displayLocation, tooltipTextPosition.y));
                 }
                 break;
@@ -370,7 +403,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void setToolTipText(String text) {
-       // log.info("SetToolTipText: " + text);
+        // log.info("SetToolTipText: " + text);
         if (!tooltipText.equals(text)) {
             IGV.getInstance().setStatusWindowText(text);
             this.tooltipText = text;
@@ -390,7 +423,7 @@ public class DataPanel extends JComponent implements Paintable {
             return "";
         }
 
-       // updateTooltipText();
+        // updateTooltipText();
 
         return tooltipText;
     }
