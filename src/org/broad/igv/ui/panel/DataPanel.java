@@ -332,6 +332,7 @@ public class DataPanel extends JComponent implements Paintable {
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
+        IGV.getInstance().setStatusWindowText("Region count = " + regions.size());
         StringBuffer popupTextBuffer = new StringBuffer();
         for (MouseableRegion mouseRegion : regions) {
             if (mouseRegion.containsPoint(tooltipTextPosition.x, tooltipTextPosition.y)) {
@@ -350,7 +351,7 @@ public class DataPanel extends JComponent implements Paintable {
                             }
                         }
                     }
-
+                    IGV.getInstance().setStatusWindowText("Getting pu text for " + track.getName());
                     popupTextBuffer.append(getPopUpText(track, displayLocation, tooltipTextPosition.y));
                 }
                 break;
