@@ -327,6 +327,9 @@ public class DataPanel extends JComponent implements Paintable {
      * @param y
      */
     public void updateTooltipText(int x, int y) {
+
+        log.info("Enter updateToolTipText " + x + ":" + y);
+
         double location = frame.getChromosomePosition(x);
         double displayLocation = location + 1;
 
@@ -373,6 +376,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void setToolTipText(String text) {
+        log.info("SetToolTipText: " + text);
         if (!tooltipText.equals(text)) {
             this.tooltipText = text;
             // Fire a property change event so the tooltip manager knows something has changed.
@@ -382,7 +386,10 @@ public class DataPanel extends JComponent implements Paintable {
     }
 
     @Override
+
     final public String getToolTipText() {
+
+        log.info("Get tooltip text");
 
         if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
             return "";
@@ -402,12 +409,15 @@ public class DataPanel extends JComponent implements Paintable {
      */
     String getPopUpText(Track track, double location, int y) {
 
+        log.info("Enter getPopupText ");
         StringBuffer buf = new StringBuffer();
         String value = track.getValueStringAt(frame.getChrName(), location, y, frame);
         if (value != null) {
             buf.append(value);
         }
-        return buf.toString();
+        final String s = buf.toString();
+        log.info("Exit getPopupText: " + s);
+        return s;
     }
 
 
