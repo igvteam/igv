@@ -80,6 +80,8 @@ public class DataPanel extends JComponent implements Paintable {
         setToolTipText("");
         painter = new DataPanelPainter();
         setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
+
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
 
@@ -369,10 +371,14 @@ public class DataPanel extends JComponent implements Paintable {
         }
     }
 
-
+    @Override
     public void setToolTipText(String text) {
-        this.tooltipText = text;
-        super.setToolTipText(text);
+        if (!tooltipText.equals(text)) {
+            this.tooltipText = text;
+            // Fire a property change event so the tooltip manager knows something has changed.
+            putClientProperty(TOOL_TIP_TEXT_KEY, text);
+        }
+
     }
 
     @Override
@@ -382,18 +388,10 @@ public class DataPanel extends JComponent implements Paintable {
             return "";
         }
 
-        if (!isWaitingForToolTipText) {
-            try {
-                isWaitingForToolTipText = true;
-                if (tooltipTextPosition != null) {
-                    updateTooltipText(tooltipTextPosition.x, tooltipTextPosition.y);
-                }
-            } finally {
-                isWaitingForToolTipText = false;
-            }
-
+        if (tooltipTextPosition != null) {
+            updateTooltipText(tooltipTextPosition.x, tooltipTextPosition.y);
         }
-        return super.getToolTipText();
+        return tooltipText;
     }
 
     /**
