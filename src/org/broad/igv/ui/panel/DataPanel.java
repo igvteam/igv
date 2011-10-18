@@ -322,28 +322,21 @@ public class DataPanel extends JComponent implements Paintable {
 
     /**
      * Method description
-     *
-     * @param x
-     * @param y
      */
-    public void updateTooltipText(int x, int y) {
+    public void updateTooltipText() {
 
-        log.info("Enter updateToolTipText " + x + ":" + y);
+        if (tooltipTextPosition == null) return;
 
-        double location = frame.getChromosomePosition(x);
+        double location = frame.getChromosomePosition(tooltipTextPosition.x);
         double displayLocation = location + 1;
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
         StringBuffer popupTextBuffer = new StringBuffer();
         for (MouseableRegion mouseRegion : regions) {
-            if (mouseRegion.containsPoint(x, y)) {
+            if (mouseRegion.containsPoint(tooltipTextPosition.x, tooltipTextPosition.y)) {
                 track = mouseRegion.getTracks().iterator().next();
                 if (track != null) {
-
-                    // Calculate y relative to track bounds
-                    //int yRelative = y - mouseRegion.getBounds().y;
-
                     // First see if there is an overlay track.  If there is, give
                     // it first crack
                     List<Track> overlays = IGV.getInstance().getTrackManager().getOverlayTracks(track);
@@ -351,14 +344,14 @@ public class DataPanel extends JComponent implements Paintable {
                     if (overlays != null) {
                         for (Track overlay : overlays) {
                             if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), displayLocation, y, frame) != null)) {
-                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, y));
+                                    frame.getChrName(), displayLocation, tooltipTextPosition.y, frame) != null)) {
+                                popupTextBuffer.append(getPopUpText(overlay, displayLocation, tooltipTextPosition.y));
                                 popupTextBuffer.append("<br>");
                             }
                         }
                     }
 
-                    popupTextBuffer.append(getPopUpText(track, displayLocation, y));
+                    popupTextBuffer.append(getPopUpText(track, displayLocation, tooltipTextPosition.y));
                 }
                 break;
             }
@@ -376,7 +369,7 @@ public class DataPanel extends JComponent implements Paintable {
 
     @Override
     public void setToolTipText(String text) {
-        log.info("SetToolTipText: " + text);
+       // log.info("SetToolTipText: " + text);
         if (!tooltipText.equals(text)) {
             this.tooltipText = text;
             // Fire a property change event so the tooltip manager knows something has changed.
@@ -389,15 +382,14 @@ public class DataPanel extends JComponent implements Paintable {
 
     final public String getToolTipText() {
 
-        log.info("Get tooltip text");
+        //log.info("Get tooltip text");
 
         if (IGV.getInstance().isSuppressTooltip() || currentTool instanceof RegionOfInterestTool) {
             return "";
         }
 
-        if (tooltipTextPosition != null) {
-            updateTooltipText(tooltipTextPosition.x, tooltipTextPosition.y);
-        }
+       // updateTooltipText();
+
         return tooltipText;
     }
 
@@ -409,14 +401,14 @@ public class DataPanel extends JComponent implements Paintable {
      */
     String getPopUpText(Track track, double location, int y) {
 
-        log.info("Enter getPopupText ");
+        //log.info("Enter getPopupText ");
         StringBuffer buf = new StringBuffer();
         String value = track.getValueStringAt(frame.getChrName(), location, y, frame);
         if (value != null) {
             buf.append(value);
         }
         final String s = buf.toString();
-        log.info("Exit getPopupText: " + s);
+        //log.info("Exit getPopupText: " + s);
         return s;
     }
 
@@ -543,6 +535,7 @@ public class DataPanel extends JComponent implements Paintable {
         @Override
         public void mouseMoved(MouseEvent e) {
             tooltipTextPosition = e.getPoint();
+            updateTooltipText();
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
                 String position = frame.getChrName() + ":" + locationFormatter.format(location);
@@ -680,6 +673,30 @@ public class DataPanel extends JComponent implements Paintable {
 
                 }
             }
+        }
+    }
+
+    /**
+     * A utility class for sceduling single-click actions "in the future",
+     *
+     * @author jrobinso
+     * @date Dec 17, 2010
+     */
+    public class PopupTextUpdater {
+
+        private TimerTask currentClickTask;
+
+        public void cancelClickTask() {
+            if (currentClickTask != null) {
+                currentClickTask.cancel();
+                currentClickTask = null;
+            }
+        }
+
+        public void scheduleUpdateTask(TimerTask task) {
+            cancelClickTask();
+            currentClickTask = task;
+            (new java.util.Timer()).schedule(currentClickTask, UIConstants.getDoubleClickInterval());
         }
     }
 }
