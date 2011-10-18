@@ -71,7 +71,7 @@ public class SessionReader {
      * Map of track id -> track.  It is important to maintin the order in which tracks are added, thus
      * the use of LinkedHashMap.
      */
-    Map<String, List<Track>> trackDictionary = new LinkedHashMap();
+    Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
     private Track geneTrack = null;
     private Track seqTrack = null;
 
@@ -484,20 +484,23 @@ public class SessionReader {
                     public void run() {
                         List<Track> tracks = null;
                         try {
-                            tracks = igv.getTrackManager().load(locator);
+                            final TrackManager tm = igv.getTrackManager();
+                            if (tm == null) log.info("TrackManager is null!");
+                            tracks = tm.load(locator);
                             for (Track track : tracks) {
-
+                                if (track == null) log.info("Null track for resource " + locator.getPath());
                                 String id = track.getId();
+                                if (id == null) log.info("Null track id for resource " + locator.getPath());
                                 List<Track> trackList = trackDictionary.get(id);
                                 if (trackList == null) {
                                     trackList = new ArrayList();
                                     trackDictionary.put(id, trackList);
-
                                 }
                                 trackList.add(track);
                             }
                         } catch (Exception e) {
-                            String ms = "<b>" + locator.getPath() + "</b><br>&nbsp&nbsp" + e.toString() + "<br>";
+                            log.error("Error loading resource " + locator.getPath(), e);
+                            String ms = "<b>" + locator.getPath() + "</b><br>&nbs;p&nbsp;" + e.toString() + "<br>";
                             errors.add(ms);
                         }
                     }

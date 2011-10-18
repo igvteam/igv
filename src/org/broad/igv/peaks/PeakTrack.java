@@ -274,6 +274,7 @@ public class PeakTrack extends AbstractTrack {
         try {
             StringBuffer buf = new StringBuffer();
             buf.append(getName());
+            buf.append("<br>");
             if (showPeaks) {
                 List<Peak> scores = getFilteredPeaks(chr);
                 LocusScore score = getLocusScoreAt(scores, position, frame);
@@ -519,7 +520,6 @@ public class PeakTrack extends AbstractTrack {
                 public void run() {
                     signalSource = new WrappedDataSource(new TDFDataSource(TDFReader.getReader(signalPath), 0, "", genome));
                     signalSource.setNormalizeCounts(true, 1.0e9f);
-
                     signalSource.getSummaryScoresForRange(chr, contextStart, contextEnd, zoom);
                 }
 
