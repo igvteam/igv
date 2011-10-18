@@ -165,8 +165,6 @@ public class TrackLoader {
             } else if (typeString.endsWith(".cn") || typeString.endsWith(".xcn") || typeString.endsWith(".snp") ||
                     typeString.endsWith(".igv") || typeString.endsWith(".loh")) {
                 loadIGVFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".mut")) {
-                loadMutFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".cbs") || typeString.endsWith(".seg") ||
                     typeString.endsWith("glad") || typeString.endsWith("birdseye_canary_calls")) {
                 loadSegFile(locator, newTracks, genome);
@@ -221,7 +219,11 @@ public class TrackLoader {
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".maf")) {
-                loadMAFTrack(locator, newTracks);
+                if (MutationParser.isMutationAnnotationFile(locator)) {
+                    loadMutFile(locator, newTracks, genome);
+                } else {
+                    loadMAFTrack(locator, newTracks);
+                }
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
             } else if ("mage-tab".equals(locator.getType()) || GCTDatasetParser.parsableMAGE_TAB(locator)) {
@@ -1116,8 +1118,8 @@ public class TrackLoader {
 
     public static boolean isIndexed(String path) {
 
-       // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
-        if(!isIndexable(path)) {
+        // Checking for the index is expensive over HTTP.  First see if this is an indexable format by fetching the codec
+        if (!isIndexable(path)) {
             return false;
         }
 
