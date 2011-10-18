@@ -139,8 +139,7 @@ public abstract class DataTrack extends AbstractTrack {
             loadedIntervalCache.put(context.getReferenceFrame().getName(), interval);
             return inViewScores;
 
-        }
-        finally {
+        } finally {
             featuresLoading = false;
         }
 
@@ -169,15 +168,29 @@ public abstract class DataTrack extends AbstractTrack {
     }
 
 
+    /**
+     * Return a value string for the tooltip window at the given location, or null to signal there is no value
+     * at that location
+     *
+     * @param chr
+     * @param position
+     * @param y
+     * @param frame
+     * @return
+     */
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         StringBuffer buf = new StringBuffer();
+        LocusScore score = getLocusScoreAt(chr, position, frame);
+        // If there is no value here, return null to signal no popup
+        if (score == null) {
+            return null;
+        }
         buf.append(getName() + "<br>");
         if ((getDataRange() != null) && (getRenderer() instanceof XYPlotRenderer)) {
             buf.append("Data scale: " + getDataRange().getMinimum() + " - " + getDataRange().getMaximum() + "<br>");
         }
 
-        LocusScore score = getLocusScoreAt(chr, position, frame);
-        buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
+        buf.append(score.getValueString(position, getWindowFunction()));
         return buf.toString();
     }
 
@@ -262,8 +275,7 @@ public abstract class DataTrack extends AbstractTrack {
             try {
                 autoscale = Boolean.parseBoolean(as);
 
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error restoring session.  Invalid autoscale value: " + autoscale);
 
             }

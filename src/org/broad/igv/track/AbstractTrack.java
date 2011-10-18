@@ -990,11 +990,17 @@ public abstract class AbstractTrack implements Track {
         this.displayMode = mode;
     }
 
-    //----------------------------------------------------------------------------
-    // Methods below are required for the Track interface, but aren't
-    // meaningful here.  Obviously some refactoring is in order to reduce
-    // the number of required methods.
 
+    /**
+     * Return a value string for the tooltip window at the given location, or null to signal there is no value
+     * at that location
+     *
+     * @param chr
+     * @param position
+     * @param y
+     * @param frame
+     * @return
+     */
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         return null;
     }

@@ -48,15 +48,6 @@ public class Mutation implements IGVFeature {
     private Map<String, String> attributes;
 
 
-    /**
-     * Constructs ...
-     *
-     * @param runId
-     * @param chromosome
-     * @param start
-     * @param end
-     * @param type
-     */
     public Mutation(String runId, String chromosome, int start, int end, String type) {
         this.sampleId = runId;
         this.chr = chromosome;
@@ -65,11 +56,6 @@ public class Mutation implements IGVFeature {
         this.type = type;
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param mutation
-     */
     public Mutation(Mutation mutation) {
         this.sampleId = mutation.sampleId;
         this.chr = mutation.chr;
@@ -88,57 +74,27 @@ public class Mutation implements IGVFeature {
         type = name;
     }
 
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Mutation copy() {
         return new Mutation(this);
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getSampleId() {
         return sampleId;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getType() {
         return "mutation";
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
+
     public String getMutationType() {
         return type;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getName() {
         return type.toString();
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getDescription() {
         return getName();
     }
@@ -147,12 +103,17 @@ public class Mutation implements IGVFeature {
 
     public String getValueString(double position, WindowFunction ignored) {
 
-        if (valueString == null && attributes != null) {
+        if (valueString == null ) {
             StringBuffer buf = new StringBuffer();
-            buf.append("<html>Type: ");
-            buf.append(type +"<br>");
+            buf.append("Type: ");
+            buf.append(type);
+            if(attributes != null) {
             for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                buf.append(entry.getKey() + ": " + entry.getValue() + "<br>");
+                buf.append("<br>");
+                buf.append(entry.getKey());
+                buf.append(": ");
+                buf.append(entry.getValue());
+            }
             }
             valueString = buf.toString();
         }

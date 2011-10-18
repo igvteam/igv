@@ -276,7 +276,7 @@ public class FeatureTrack extends AbstractTrack {
 
             List<Feature> allFeatures = getAllFeatureAt(chr, position, y, frame);
             if (allFeatures == null) {
-                return "";
+                return null;
             }
 
             StringBuffer buf = new StringBuffer();
@@ -300,13 +300,12 @@ public class FeatureTrack extends AbstractTrack {
                 }
                 n++;
             }
-            if (!firstFeature) buf.append("<br>--------------<br>");
 
             return buf.toString();
         } else {
             int zoom = Math.max(0, frame.getZoom());
             if (source == null) {
-                return "";
+                return null;
             }
             List<LocusScore> scores = source.getCoverageScores(chr, (int) position - 10, (int) position + 10, zoom);
 
@@ -317,7 +316,7 @@ public class FeatureTrack extends AbstractTrack {
                 double bpPerPixel = frame.getScale();
                 int minWidth = (int) (2 * bpPerPixel);    /* * */
                 LocusScore score = (LocusScore) FeatureUtils.getFeatureAt(position, minWidth, scores);
-                return score == null ? "" : "Mean count: " + score.getScore();
+                return score == null ? null : "Mean count: " + score.getScore();
             }
 
         }

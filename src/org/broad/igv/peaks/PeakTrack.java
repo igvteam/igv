@@ -116,7 +116,7 @@ public class PeakTrack extends AbstractTrack {
             parser = new PeakParser(locator.getPath());
             this.getAllPeaks("chr2");
             long dt = System.currentTimeMillis() - t0;
-            log.info("Loaded bin: " + locator.getPath() + ": " + dt);
+            //log.info("Loaded bin: " + locator.getPath() + ": " + dt);
 
             TrackProperties props = new TrackProperties();
             ParsingUtils.parseTrackLine(parser.trackLine, props);
@@ -272,26 +272,32 @@ public class PeakTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
         try {
+            boolean foundValue = false;
             StringBuffer buf = new StringBuffer();
             buf.append(getName());
             buf.append("<br>");
             if (showPeaks) {
                 List<Peak> scores = getFilteredPeaks(chr);
                 LocusScore score = getLocusScoreAt(scores, position, frame);
-                buf.append((score == null) ? "" : score.getValueString(position, getWindowFunction()));
-                if (showSignals) {
-                    buf.append("<br>");
+                if (score != null) {
+                    foundValue = true;
+                    buf.append(score.getValueString(position, getWindowFunction()));
+                    if (showSignals) {
+                        buf.append("<br>");
+                    }
                 }
             }
+
             final WrappedDataSource signalSource = getSignalSource();
             if (showSignals && signalSource != null) {
                 List<LocusScore> scores = signalSource.getSummaryScoresForRange(chr, (int) frame.getOrigin(), (int) frame.getEnd(), frame.getZoom());
                 LocusScore score = getLocusScoreAt(scores, position, frame);
-                buf.append((score == null) ? "" : "Score = " + score.getScore());
+                if (score != null) {
+                    foundValue = true;
+                    buf.append( "Score = " + score.getScore());
+                }
             }
-
-
-            return buf.toString();
+            return foundValue ? buf.toString() : null;
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return "Error loading peaks: " + e.toString();

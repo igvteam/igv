@@ -71,9 +71,9 @@ public class CNFreqTrack extends AbstractTrack {
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        StringBuffer buf = new StringBuffer();
         List<LocusScore> ampScores = data.getAmpCounts(chr);
         List<LocusScore> delScores = data.getDelCounts(chr);
+        StringBuffer buf = new StringBuffer();
         int startIdx = Math.max(0, FeatureUtils.getIndexBefore(position, ampScores));
         for(int i = startIdx ;i<ampScores.size(); i++) {
             LocusScore ampScore = ampScores.get(i);
@@ -84,8 +84,7 @@ public class CNFreqTrack extends AbstractTrack {
                 buf.append(delScores.get(i).getValueString(position, null));
             }
         }
-
-        return buf.toString();
+        return buf.length() == 0 ? null : buf.toString();
     }
 
 
