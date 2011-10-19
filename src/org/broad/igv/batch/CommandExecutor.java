@@ -334,7 +334,6 @@ public class CommandExecutor {
                 }
             }
 
-            //TODO Find a better way to get the message back up to the socket.
             IGV.getFirstInstance().loadTracks(fileLocators);
 
             if (locus != null && !locus.equals("null")) {

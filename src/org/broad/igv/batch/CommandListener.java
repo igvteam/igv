@@ -228,6 +228,13 @@ public class CommandListener implements Runnable {
         return result;
     }
 
+    /**
+     * Parse the html parameter string into a set of key-value pairs.  Parameter values are
+     * url decoded with the exception of the "locus" parameter.
+     *
+     * @param parameterString
+     * @return
+     */
     private Map<String, String> parseParameters(String parameterString) {
         HashMap<String, String> params = new HashMap();
         String[] kvPairs = parameterString.split("&");

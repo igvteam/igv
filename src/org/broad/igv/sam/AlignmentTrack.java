@@ -434,12 +434,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         Alignment feature = getAlignmentAt(position, y, frame);
-
-        // TODO -- highlight mate
-
-        String tmp = (feature == null) ? null : feature.getValueString(position, getWindowFunction());
-
-        return tmp;
+        if(feature == null) {
+            return null;
+        }
+        return feature.getValueString(position, getWindowFunction());
     }
 
     private Alignment getAlignmentAt(double position, int y, ReferenceFrame frame) {

@@ -68,6 +68,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     static Map<String, Color> frOrientationColors;
     static Map<String, Color> ffOrientationColors;
     static Map<String, Color> rfOrientationColors;
+    private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     PreferenceManager prefs;
 
@@ -284,6 +285,17 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
+    /**
+     * Draw a pair of alignments as a single "template".
+     *
+     * @param pair
+     * @param rect
+     * @param context
+     * @param renderOptions
+     * @param leaveMargin
+     * @param selectedReadNames
+     * @param font
+     */
     private void drawPairedAlignment(
             PairedAlignment pair,
             Rectangle rect,
@@ -323,6 +335,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     /**
+     * Draw a (possible) gapped alignment
+     *
      * @param alignment
      * @param rect
      * @param g
@@ -346,14 +360,15 @@ public class AlignmentRenderer implements FeatureRenderer {
         double locScale = context.getScale();
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
 
+        // No blocks.  Note: SAM/BAM alignments always have at least 1 block
         if (blocks == null || blocks.length == 0) {
             drawSimpleAlignment(alignment, rect, g, context, renderOptions.flagUnmappedPairs);
             return;
         }
 
+        // Get the terminal block (last block with respect to read direction).  This will have an "arrow" attached.
         AlignmentBlock terminalBlock = alignment.isNegativeStrand() ? blocks[0] : blocks[blocks.length - 1];
 
-        Graphics2D greyGraphics = context.getGraphic2DForColor(new Color(185, 185, 185));
 
         int lastBlockEnd = Integer.MIN_VALUE;
 
@@ -369,40 +384,26 @@ public class AlignmentRenderer implements FeatureRenderer {
             int y = (int) (rect.getY()); // + (rect.getHeight() - h) / 2);
 
 
+            // Get a graphics context for outlining reads
+            Graphics2D outlineGraphics = context.getGraphic2DForColor(OUTLINE_COLOR);
+
             // Create polygon to represent the alignment.
             boolean isZeroQuality = alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments;
 
+            // If we're zoomed in and this is a large block clip a pixel off each end.  TODO - why?
             if (highZoom && w > 10) {
                 x++;
                 w -= 2;
             }
 
-            // If block is out of view skip
+            // If block is out of view skip -- this is important in the case of PacBio and other platforms with very long reads
             if (x + w >= rect.x && x <= rect.getMaxX()) {
-                if (w <= 10 || h <= 10 || aBlock != terminalBlock) {
-                    g.fillRect(x, y, w, h);
-                    if (isZeroQuality) {
-                        greyGraphics.drawRect(x, y, w - 1, h);
-                    }
 
-                    if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
-                        Graphics2D cRed = context.getGraphic2DForColor(Color.red);
-                        cRed.drawRect(x, y, w, h);
-                    }
+                Shape blockShape = null;
 
-                    if (selectedReadNames.containsKey(alignment.getReadName())) {
-                        Color c = selectedReadNames.get(alignment.getReadName());
-                        if (c == null) {
-                            c = Color.blue;
-                        }
-                        Graphics2D cBlue = context.getGraphic2DForColor(c);
-                        Stroke s = cBlue.getStroke();
-                        cBlue.setStroke(thickStroke);
-                        cBlue.drawRect(x, y, w, h);
-                        cBlue.setStroke(s);
-                    }
+                // If this is a terminal block draw the "arrow" to indicate strand position.  Otherwise draw a rectangle.
+                if ((aBlock == terminalBlock) && w > 10 && h > 10) {
 
-                } else {
                     int arrowLength = Math.min(5, w / 6);
 
                     // Don't draw off edge of clipping rect
@@ -432,30 +433,36 @@ public class AlignmentRenderer implements FeatureRenderer {
                     } else {
                         xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
                     }
-                    g.fillPolygon(xPoly, yPoly, xPoly.length);
-
-
-                    if (isZeroQuality) {
-                        greyGraphics.drawPolygon(xPoly, yPoly, xPoly.length);
-                    }
-
-                    if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
-                        Graphics2D cRed = context.getGraphic2DForColor(Color.red);
-                        cRed.drawPolygon(xPoly, yPoly, xPoly.length);
-                    }
-
-                    if (selectedReadNames.containsKey(alignment.getReadName())) {
-                        Color c = selectedReadNames.get(alignment.getReadName());
-                        if (c == null) {
-                            c = Color.blue;
-                        }
-                        Graphics2D cBlue = context.getGraphic2DForColor(c);
-                        Stroke s = cBlue.getStroke();
-                        cBlue.setStroke(thickStroke);
-                        cBlue.drawPolygon(xPoly, yPoly, xPoly.length);
-                        cBlue.setStroke(s);
-                    }
+                    blockShape = new Polygon(xPoly, yPoly, xPoly.length);
                 }
+                else {
+                    // Not a terminal block, or too small for arrow
+                    blockShape = new Rectangle(x, y, w, h);
+                }
+
+                g.fill(blockShape);
+
+                if (isZeroQuality) {
+                    outlineGraphics.draw(blockShape);
+                }
+
+                if (renderOptions.flagUnmappedPairs && alignment.isPaired() && !alignment.getMate().isMapped()) {
+                    Graphics2D cRed = context.getGraphic2DForColor(Color.red);
+                    cRed.draw(blockShape);
+                }
+
+                if (selectedReadNames.containsKey(alignment.getReadName())) {
+                    Color c = selectedReadNames.get(alignment.getReadName());
+                    if (c == null) {
+                        c = Color.blue;
+                    }
+                    Graphics2D cBlue = context.getGraphic2DForColor(c);
+                    Stroke s = cBlue.getStroke();
+                    cBlue.setStroke(thickStroke);
+                    cBlue.draw(blockShape);
+                    cBlue.setStroke(s);
+                }
+
             }
 
 
@@ -624,10 +631,10 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (refbase > 90) {
             refbase = (byte) (refbase - 32);
         }
-        if(readbase > 90) {
+        if (readbase > 90) {
             readbase = (byte) (readbase - 32);
         }
-        if(refbase == readbase) {
+        if (refbase == readbase) {
             return true;
         }
         switch (refbase) {
