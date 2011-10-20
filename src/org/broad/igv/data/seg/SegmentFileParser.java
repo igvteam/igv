@@ -113,7 +113,7 @@ public class SegmentFileParser implements SegFileParser {
                 endColumn = 3;
                 dataColumn = headings.length - 1;
             }
- 
+
             String[] tokens = new String[headings.length];
 
             while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
@@ -126,15 +126,13 @@ public class SegmentFileParser implements SegFileParser {
                     int end;
                     try {
                         start = Integer.parseInt(tokens[startColumn].trim());
-                    }
-                    catch (NumberFormatException numberFormatException) {
+                    } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (startColumn + 1) + " must contain a numeric value.",
                                 reader.getCurrentLineNumber(), nextLine);
                     }
                     try {
                         end = Integer.parseInt(tokens[endColumn].trim());
-                    }
-                    catch (NumberFormatException numberFormatException) {
+                    } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (endColumn + 1) + " must contain a numeric value.",
                                 reader.getCurrentLineNumber(), nextLine);
                     }
@@ -177,14 +175,11 @@ public class SegmentFileParser implements SegFileParser {
                 }
             }
 
-        }
-        catch (DataLoadException pe) {
+        } catch (DataLoadException pe) {
             throw pe;
-        }
-        catch (ParserException pe) {
+        } catch (ParserException pe) {
             throw pe;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
@@ -208,20 +203,23 @@ public class SegmentFileParser implements SegFileParser {
     private void parseComment(String comment, SegmentedAsciiDataSet dataset) {
 
         String tmp = comment.substring(1, comment.length());
-        String[] tokens = tmp.split("=");
-        if (tokens.length != 2) {
-            return;
-        }
-        String key = tokens[0].trim().toLowerCase();
-        if (key.equals("type")) {
+        if (tmp.startsWith("track")) {
+            ParsingUtils.parseTrackLine(tmp, dataset.getTrackProperties());
+        } else {
+            String[] tokens = tmp.split("=");
 
-            try {
-                dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
-            } catch (Exception exception) {
-
-                // Ignore
-
+            String key = tokens[0].trim().toLowerCase();
+            if (key.equals("type")) {
+                if (tokens.length != 2) {
+                    return;
+                }
+                try {
+                    dataset.setTrackType(TrackType.valueOf(tokens[1].trim().toUpperCase()));
+                } catch (Exception exception) {
+                    log.error("Unknown track type: " + tokens[1].trim().toUpperCase());
+                }
             }
+
         }
     }
 }

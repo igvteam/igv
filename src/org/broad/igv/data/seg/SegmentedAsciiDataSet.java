@@ -281,6 +281,9 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
     }
 
     public TrackProperties getTrackProperties() {
+        if(trackProperties == null) {
+            trackProperties = new TrackProperties();
+        }
         return trackProperties;
     }
 
