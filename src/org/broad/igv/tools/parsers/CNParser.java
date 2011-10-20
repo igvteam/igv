@@ -55,6 +55,7 @@ public class CNParser extends AbstractParser {
     private boolean hasEndLocations;
     private FileType type;
     Genome genome;
+    private boolean hasCalls;
 
     enum FileType {
 
@@ -78,8 +79,7 @@ public class CNParser extends AbstractParser {
         String tmp = locator.getPath().toLowerCase();
         tmp = tmp.endsWith(".txt") ? tmp.substring(0, tmp.length() - 4) : tmp;
 
-        boolean hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
-        skipColumns = hasCalls ? 2 : 1;
+        hasCalls = tmp.endsWith(".xcn") || tmp.endsWith(".snp");
 
         if (tmp.endsWith(".igv")) {
             chrColumn = 0;
@@ -106,15 +106,16 @@ public class CNParser extends AbstractParser {
             } else {
                 type = FileType.SNP;
             }
-
         }
+        skipColumns = hasCalls ? 2 : 1;
+
     }
 
     public void parseHeader(String[] tokens) {
         int nDataColumns = (tokens.length - firstDataColumn) / skipColumns;
         String[] headings = new String[nDataColumns];
-        for (int i = firstDataColumn; i < firstDataColumn + nDataColumns; i += skipColumns) {
-            int idx = (i - firstDataColumn) / skipColumns;
+        for (int i = firstDataColumn; i < tokens.length; i += skipColumns) {
+             int idx = (i - firstDataColumn) / skipColumns;
             headings[idx] = tokens[i];
         }
         setHeadings(headings);
@@ -206,6 +207,8 @@ public class CNParser extends AbstractParser {
 
             parsingComplete();
 
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             if (reader != null) {
                 reader.close();
