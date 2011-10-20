@@ -96,7 +96,7 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
      * @param timestamp
      */
     public synchronized void refreshData(long timestamp) {
-        if (timestamp > lastRefreshTime) {
+        if (parser != null && timestamp > lastRefreshTime) {
             dataMax = -Float.MAX_VALUE;
             dataMin = Float.MAX_VALUE;
             logNormalized = false;
