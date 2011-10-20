@@ -289,9 +289,10 @@ public class TrackManager {
                 }
             };
 
-            Thread thread = new Thread(runnable);
-            thread.start();
-            threads.add(thread);
+            runnable.run();
+            //Thread thread = new Thread(runnable);
+            //thread.start();
+            //threads.add(thread);
         }
 
         // Wait for all threads to complete
