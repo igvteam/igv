@@ -177,7 +177,7 @@ public class HttpUtils {
 
     public boolean resourceAvailable(URL url) {
 
-        if(url.getProtocol().toLowerCase().equals("ftp")) {
+        if (url.getProtocol().toLowerCase().equals("ftp")) {
             return FTPUtils.resourceAvailable(url);
         }
 
@@ -506,7 +506,12 @@ public class HttpUtils {
             // TODO -- handle other response codes.
             else if (code >= 400) {
 
-                String message = conn.getResponseMessage();
+                String message;
+                if (code == 404) {
+                    message = "File not found: " + url.toString();
+                } else {
+                    message = conn.getResponseMessage();
+                }
                 String details = readErrorStream(conn);
 
                 throw new IOException("Server returned error code: " + code + " (" + message + ")");
