@@ -560,15 +560,18 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // Is this base posA mismatch?  Note '=' means indicates posA match by definition
                 // If we do not have posA valid reference we assume posA match.  Soft clipped
                 // bases are considered mismatched by definition
-                final byte refbase = reference[idx];
-                final byte readbase = read[idx];
-                boolean misMatch =
-                        isSoftClipped ||
-                                (readbase != '=' &&
-                                        reference != null &&
-                                        idx < reference.length &&
-                                        refbase != 0 &&
-                                        !compareBases(refbase, readbase));
+                boolean misMatch;
+                if (isSoftClipped) {
+                    misMatch = true;  // <= by definition, any matches are coincidence
+                } else {
+                    final byte refbase = reference[idx];
+                    final byte readbase = read[idx];
+                    misMatch = readbase != '=' &&
+                            reference != null &&
+                            idx < reference.length &&
+                            refbase != 0 &&
+                            !(refbase == readbase || (refbase - 32) == readbase);
+                }
 
                 if (misMatch || showAllBases) {
                     char c = (char) read[loc - start];
