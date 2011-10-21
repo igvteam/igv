@@ -205,7 +205,7 @@ public class CommandExecutor {
             return "ERROR: missing locus parameter";
         }
         String locus = args.get(1);
-        for(int i=2; i<args.size(); i++) {
+        for (int i = 2; i < args.size(); i++) {
             locus += (" " + args.get(i));
         }
         IGV.getFirstInstance().goToLocus(locus);
@@ -275,8 +275,7 @@ public class CommandExecutor {
                 } catch (NumberFormatException e) {
                     log.info("Unexpected sort location argument (expected number): " + param3);
                 }
-            }
-            else {
+            } else {
                 try {
                     location = new Double(locusString.replace(",", ""));
                 } catch (NumberFormatException e) {
@@ -297,52 +296,33 @@ public class CommandExecutor {
     private String loadFiles(final String fileString, final String locus, final boolean merge) throws IOException {
 
         log.debug("Run load files");
-        WaitCursorManager.CursorToken token = null;
-        try {
-            token = WaitCursorManager.showWaitCursor();
 
-            String[] files = fileString.split(",");
-            List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
-            List<String> sessionPaths = new ArrayList<String>();
+        String[] files = fileString.split(",");
+        List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
+        List<String> sessionPaths = new ArrayList<String>();
 
-            if (!merge) {
-                IGV.getFirstInstance().createNewSession(null);
-            }
-
-            for (String f : files) {
-                if (f.endsWith(".xml")) {
-                    sessionPaths.add(f);
-                } else {
-                    ResourceLocator rl = new ResourceLocator(f);
-                    fileLocators.add(rl);
-                }
-            }
-
-            for (String sessionPath : sessionPaths) {
-                InputStream is = null;
-                try {
-                    is = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
-                    IGV.getFirstInstance().doRestoreSession(is, sessionPath, locus, merge);
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            log.error(e.getMessage(), e);
-                        }
-                    }
-                }
-            }
-
-            IGV.getFirstInstance().loadTracks(fileLocators);
-
-            if (locus != null && !locus.equals("null")) {
-                IGV.getFirstInstance().goToLocus(locus);
-            }
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
+        if (!merge) {
+            IGV.getFirstInstance().createNewSession(null);
         }
 
+        for (String f : files) {
+            if (f.endsWith(".xml")) {
+                sessionPaths.add(f);
+            } else {
+                ResourceLocator rl = new ResourceLocator(f);
+                fileLocators.add(rl);
+            }
+        }
+
+        for (String sessionPath : sessionPaths) {
+            IGV.getFirstInstance().doRestoreSession(sessionPath, locus, merge);
+        }
+
+        IGV.getFirstInstance().loadTracks(fileLocators);
+
+        if (locus != null && !locus.equals("null")) {
+            IGV.getFirstInstance().goToLocus(locus);
+        }
 
         return "OK";
     }

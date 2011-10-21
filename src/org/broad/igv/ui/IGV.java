@@ -666,84 +666,81 @@ public class IGV {
 
         log.debug("Run loadTracks");
 
-        CursorToken token = null;
 
-        try {
-            token = WaitCursorManager.showWaitCursor();
-            if (locators != null && !locators.isEmpty()) {
+        if (locators != null && !locators.isEmpty()) {
 
-                // get current track count per panel.  Needed to detect which panels
-                // changed.  Also record panel sizes
-                final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
-                final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
-                final Collection<TrackPanelScrollPane> scrollPanes = trackManager.getTrackPanelScrollPanes();
-                for (TrackPanelScrollPane sp : scrollPanes) {
-                    trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
-                    panelSizeMap.put(sp, sp.getDataPanel().getHeight());
-                }
+            // NOTE:  this work CANNOT be done on the dispatch thread, it will potentially cause deadlock if
+            // dialogs are opened or other Swing tasks are done.
 
-                getTrackManager().loadResources(locators);
+            NamedRunnable runnable = new NamedRunnable() {
+                public void run() {
+                    // get current track count per panel.  Needed to detect which panels
+                    // changed.  Also record panel sizes
+                    final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
+                    final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
+                    final Collection<TrackPanelScrollPane> scrollPanes = trackManager.getTrackPanelScrollPanes();
+                    for (TrackPanelScrollPane sp : scrollPanes) {
+                        trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
+                        panelSizeMap.put(sp, sp.getDataPanel().getHeight());
+                    }
 
-                double totalHeight = 0;
-                for (TrackPanelScrollPane sp : scrollPanes) {
-                    if (trackCountMap.containsKey(sp)) {
-                        int prevTrackCount = trackCountMap.get(sp).intValue();
-                        if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
-                            int scrollPosition = panelSizeMap.get(sp);
-                            if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
-                                sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
-                                sp.getVerticalScrollBar().setValue(scrollPosition);
+                    getTrackManager().loadResources(locators);
+
+                    double totalHeight = 0;
+                    for (TrackPanelScrollPane sp : scrollPanes) {
+                        if (trackCountMap.containsKey(sp)) {
+                            int prevTrackCount = trackCountMap.get(sp).intValue();
+                            if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
+                                int scrollPosition = panelSizeMap.get(sp);
+                                if (prevTrackCount != 0 && sp.getVerticalScrollBar().isShowing()) {
+                                    sp.getVerticalScrollBar().setMaximum(sp.getDataPanel().getHeight());
+                                    sp.getVerticalScrollBar().setValue(scrollPosition);
+                                }
                             }
                         }
+                        // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
+                        if (sp.getTrackPanel().getTracks().size() > 0)
+                            totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
                     }
-                    // Give a maximum "weight" of 300 pixels to each panel.  If there are no tracks, give zero
-                    if (sp.getTrackPanel().getTracks().size() > 0)
-                        totalHeight += Math.min(300, sp.getTrackPanel().getPreferredPanelHeight());
-                }
 
-                // Adjust dividers for data panel.  The data panel divider can be
-                // zero if there are no data tracks loaded.
-                final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
-                int htotal = centerSplitPane.getHeight();
-                int y = 0;
-                int i = 0;
-                for (Component c : centerSplitPane.getComponents()) {
-                    if (c instanceof TrackPanelScrollPane) {
-                        final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
-                        if (trackPanel.getTracks().size() > 0) {
-                            int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
-                            int dh = (int) ((panelWeight / totalHeight) * htotal);
-                            y += dh;
+                    // Adjust dividers for data panel.  The data panel divider can be
+                    // zero if there are no data tracks loaded.
+                    final JideSplitPane centerSplitPane = contentPane.getMainPanel().getCenterSplitPane();
+                    int htotal = centerSplitPane.getHeight();
+                    int y = 0;
+                    int i = 0;
+                    for (Component c : centerSplitPane.getComponents()) {
+                        if (c instanceof TrackPanelScrollPane) {
+                            final TrackPanel trackPanel = ((TrackPanelScrollPane) c).getTrackPanel();
+                            if (trackPanel.getTracks().size() > 0) {
+                                int panelWeight = Math.min(300, trackPanel.getPreferredPanelHeight());
+                                int dh = (int) ((panelWeight / totalHeight) * htotal);
+                                y += dh;
+                            }
+                            centerSplitPane.setDividerLocation(i, y);
+                            i++;
                         }
-                        centerSplitPane.setDividerLocation(i, y);
-                        i++;
                     }
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            contentPane.getMainPanel().doLayout();
+
+
+                        }
+                    });
+
+                    System.out.println("Exit load");
                 }
 
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        contentPane.getMainPanel().doLayout();
-
-
-                    }
-                });
-            }
-        } catch (Exception e) {
-            if (!(e instanceof ConcurrentModificationException)) {
-                if (e.getMessage() != null && e.getMessage().length() > 8) {
-                    MessageUtils.showMessage(e.getMessage());
-                } else {
-                    log.error(e);
-                    MessageUtils.showMessage("An error occurred while loading tracks. " +
-                            "Please check the logs for details.");
+                public String getName() {
+                    return "Load Tracks";
                 }
-            }
-        } finally {
-            showLoadedTrackCount();
-            if (token != null) {
-                WaitCursorManager.removeWaitCursor(token);
-            }
+            };
+
+            LongRunningTask.submit(runnable);
         }
+
         log.debug("Finish loadTracks");
 
     }
@@ -1196,7 +1193,8 @@ public class IGV {
 
         } catch (Exception e) {
             String message = "Failure while resetting preferences!";
-            MessageUtils.showAndLogErrorMessage(mainFrame, message, log, e);
+            log.error(message, e);
+            MessageUtils.showMessage(message + ": " + e.getMessage());
         }
 
     }
@@ -1269,41 +1267,14 @@ public class IGV {
     final public void doRestoreSession(final File sessionFile,
                                        final String locus) {
 
-        String filePath = "";
-        if (sessionFile != null) {
+        if (sessionFile.exists()) {
 
-            log.debug("Run doRestoreSession");
-
-            InputStream inputStream = null;
-            CursorToken token = WaitCursorManager.showWaitCursor();
-            try {
-                inputStream = new BufferedInputStream(new FileInputStream(sessionFile));
-                doRestoreSession(inputStream, sessionFile.getAbsolutePath(), locus, false);
-
-                String sessionFilePath = sessionFile.getAbsolutePath();
-                if (!getRecentSessionList().contains(sessionFilePath)) {
-                    getRecentSessionList().addFirst(sessionFilePath);
-                }
-
-            } catch (Exception e) {
-                String message = "Failed to load session! : " + sessionFile.getAbsolutePath();
-                MessageUtils.showAndLogErrorMessage(mainFrame, message, log, e);
-            } finally {
-                WaitCursorManager.removeWaitCursor(token);
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException iOException) {
-                        log.error("Error closing session stream", iOException);
-                    }
-                }
-            }
-            log.debug("Finish doRestoreSession");
-
+            doRestoreSession(sessionFile.getAbsolutePath(), locus, false);
 
         } else {
-            String message = "Session file does not exist! : " + filePath;
-            MessageUtils.showAndLogErrorMessage(mainFrame, message, log);
+            String message = "Session file does not exist! : " + sessionFile.getAbsolutePath();
+            log.error(message);
+            MessageUtils.showMessage(message);
         }
 
     }
@@ -1312,73 +1283,82 @@ public class IGV {
     final public void doRestoreSession(final URL sessionURL,
                                        final String locus) throws Exception {
 
-        log.debug("Enter doRestoreSession: " + sessionURL + " " + locus);
-
-        InputStream inputStream = null;
-        try {
-            inputStream = HttpUtils.getInstance().openConnectionStream(sessionURL);
-            doRestoreSession(inputStream, URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
-        } catch (Exception e) {
-            log.error("Error restoring session", e);
-        } finally {
-
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException iOException) {
-                    log.error("Error closing session stream", iOException);
-                }
-            }
-        }
-
-        log.debug("Exit doRestoreSession");
+        doRestoreSession(URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
 
     }
 
-    final public void doRestoreSession(final InputStream inputStream,
-                                       final String sessionPath,
+    final public void doRestoreSession(final String sessionPath,
                                        final String locus,
-                                       boolean merge) {
+                                       final boolean merge) {
 
-        try {
-            setStatusBarMessage("Opening session...");
+        NamedRunnable runnable = new NamedRunnable() {
+            public void run() {
 
-            if (!merge) {
-                createNewSession(sessionPath);
+                InputStream inputStream = null;
+                try {
+                    setStatusBarMessage("Opening session...");
+                    inputStream = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
+                    if (!merge) {
+                        createNewSession(sessionPath);
+                    }
+
+                    final SessionReader sessionReader = new SessionReader(IGV.this);
+
+                    sessionReader.loadSession(inputStream, session, sessionPath);
+
+                    String searchText = locus == null ? session.getLocus() : locus;
+
+                    // NOTE: Nothing to do if chr == all
+                    if (!FrameManager.isGeneListMode() && searchText != null &&
+                            !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
+                        goToLocus(searchText);
+                    }
+
+
+                    mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
+                    LRUCache.clearCaches();
+
+
+                    double[] dividerFractions = session.getDividerFractions();
+                    if (dividerFractions != null) {
+                        contentPane.getMainPanel().setDividerFractions(dividerFractions);
+                    }
+                    session.clearDividerLocations();
+
+                    //If there's a RegionNavigatorDialog, kill it.
+                    //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
+                    RegionNavigatorDialog.destroyActiveInstance();
+
+                    if (!getRecentSessionList().contains(sessionPath)) {
+                        getRecentSessionList().addFirst(sessionPath);
+                    }
+
+
+                    doRefresh();
+                } catch (Exception e) {
+                    String message = "Failed to load session! : " + sessionPath;
+                    log.error(message, e);
+                    MessageUtils.showMessage(message + ": " + e.getMessage());
+
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException iOException) {
+                            log.error("Error closing session stream", iOException);
+                        }
+                        resetStatusMessage();
+                    }
+                }
             }
 
-            final SessionReader sessionReader = new SessionReader(this);
-
-            sessionReader.loadSession(inputStream, session, sessionPath);
-
-            String searchText = locus == null ? session.getLocus() : locus;
-
-            // NOTE: Nothing to do if chr == all
-            if (!FrameManager.isGeneListMode() && searchText != null &&
-                    !searchText.equals(Globals.CHR_ALL) && searchText.trim().length() > 0) {
-                goToLocus(searchText);
+            public String getName() {
+                return "Restore session: " + sessionPath;
             }
+        };
 
+        LongRunningTask.submit(runnable);
 
-            mainFrame.setTitle(UIConstants.APPLICATION_NAME + " - Session: " + sessionPath);
-            LRUCache.clearCaches();
-
-
-            double[] dividerFractions = session.getDividerFractions();
-            if (dividerFractions != null) {
-                contentPane.getMainPanel().setDividerFractions(dividerFractions);
-            }
-            session.clearDividerLocations();
-
-            //If there's a RegionNavigatorDialog, kill it.
-            //this could be done through the Observer that RND uses, I suppose.  Not sure that's cleaner
-            RegionNavigatorDialog.destroyActiveInstance();
-
-            doRefresh();
-        } finally {
-
-            resetStatusMessage();
-        }
 
     }
 
@@ -1496,14 +1476,14 @@ public class IGV {
     }
 
     public void openStatusWindow() {
-        if(statusWindow == null) {
+        if (statusWindow == null) {
             statusWindow = new StatusWindow();
         }
         statusWindow.setVisible(true);
     }
 
     public void setStatusWindowText(String text) {
-        if(statusWindow != null && statusWindow.isVisible()) {
+        if (statusWindow != null && statusWindow.isVisible()) {
             statusWindow.updateText(text);
         }
     }
@@ -1646,7 +1626,6 @@ public class IGV {
                 }
                 CommandListener.start(port);
             }
-
 
 
             startupComplete = true;

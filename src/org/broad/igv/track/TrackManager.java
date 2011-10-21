@@ -250,7 +250,6 @@ public class TrackManager {
         // Load files concurrently -- TODO, put a limit on # of threads?
         List<Thread> threads = new ArrayList<Thread>(locators.size());
 
-        long t0 = System.currentTimeMillis();
         for (final ResourceLocator locator : locators) {
 
             // If its a local file, check explicitly for existence (rather than rely on exception)
@@ -289,10 +288,9 @@ public class TrackManager {
                 }
             };
 
-            runnable.run();
-            //Thread thread = new Thread(runnable);
-            //thread.start();
-            //threads.add(thread);
+            Thread thread = new Thread(runnable);
+            thread.start();
+            threads.add(thread);
         }
 
         // Wait for all threads to complete
@@ -303,7 +301,6 @@ public class TrackManager {
             }
         }
 
-        System.out.println("DT = " + (System.currentTimeMillis() - t0));
         groupTracksByAttribute();
         resetOverlayTracks();
 

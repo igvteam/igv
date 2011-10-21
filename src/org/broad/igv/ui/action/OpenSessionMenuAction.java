@@ -65,16 +65,14 @@ public class OpenSessionMenuAction extends MenuAction {
     public void actionPerformed(ActionEvent e) {
 
         //dhmay adding if statement for restore of specific session specified in menu
-        if (sessionFile == null || autoload == false)
-        {
+        if (sessionFile == null || autoload == false) {
 
             FileChooserDialog dialog = new FileChooserDialog(mainFrame.getMainFrame(), true);
             dialog.setTitle("Open Session");
             dialog.setSelectedFile(null);
             dialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-            File lastSessionDirectory =
-                    PreferenceManager.getInstance().getLastSessionDirectory();
+            File lastSessionDirectory = PreferenceManager.getInstance().getLastSessionDirectory();
             dialog.setCurrentDirectory(lastSessionDirectory);
             dialog.setVisible(true);
 
@@ -109,16 +107,7 @@ public class OpenSessionMenuAction extends MenuAction {
         }
 
         if (sessionFile != null) {
-
-            SwingWorker worker = new SwingWorker() {
-                @Override
-                protected Object doInBackground() throws Exception {
-                    mainFrame.doRestoreSession(sessionFile, null);
-                    return null;
-                }
-            };
-            worker.execute();
-
+            mainFrame.doRestoreSession(sessionFile, null);
         }
     }
 
