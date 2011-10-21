@@ -218,7 +218,7 @@ public class TrackLoader {
                 this.loadMutFile(locator, newTracks, genome);
             } else if (WiggleParser.isWiggle(locator)) {
                 loadWigFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".maf")) {
+            } else if (typeString.endsWith(".maf") || typeString.endsWith(".maf.annotated")) {
                 if (MutationParser.isMutationAnnotationFile(locator)) {
                     loadMutFile(locator, newTracks, genome);
                 } else {

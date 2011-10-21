@@ -74,7 +74,6 @@ public class AttributeManager {
     /**
      * List of attribute names.  The list
      * is kept so the keys may be fetched in the order they were added.
-     *
      */
     LinkedHashMap<String, String> attributeNames = new LinkedHashMap();
 
@@ -160,13 +159,13 @@ public class AttributeManager {
     public List<String> getVisibleAttributes() {
         final Set<String> allKeys = attributeNames.keySet();
         Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if(hiddenAttributes != null) {
+        if (hiddenAttributes != null) {
             allKeys.removeAll(hiddenAttributes);
         }
 
         ArrayList<String> visibleAttributes = new ArrayList<String>(allKeys.size());
-        for(String key : allKeys) {
-            visibleAttributes.add(attributeNames.get(key)) ;
+        for (String key : allKeys) {
+            visibleAttributes.add(attributeNames.get(key));
         }
         return visibleAttributes;
     }
@@ -461,9 +460,7 @@ public class AttributeManager {
                 String array = tokens[0];
                 String sample = tokens[1];
                 List<Attribute> attributes = sampleTable.get(sample);
-                if (attributes == null) {
-                    log.info("Warning: sample in mapping section:  " + sample + " in sample table file " + path);
-                } else {
+                if (attributes != null) {
                     for (Attribute att : attributes) {
                         addAttribute(array, att.getKey(), att.getValue());
                     }

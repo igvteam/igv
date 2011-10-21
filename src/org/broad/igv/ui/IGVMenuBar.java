@@ -32,7 +32,6 @@ import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
-import sun.security.jgss.GSSUtil;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
