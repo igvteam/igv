@@ -38,7 +38,7 @@ public class LongRunningTask implements Callable {
     NamedRunnable runnable;
 
     public static Future submit(NamedRunnable runnable) {
-        if (Globals.batch || !IGV.getInstance().isStartupComplete()) {
+        if (Globals.isBatch() || !IGV.getInstance().isStartupComplete()) {
             log.debug("Running: " + runnable.getName());
             runnable.run();
             log.debug("Finished : " + runnable.getName());

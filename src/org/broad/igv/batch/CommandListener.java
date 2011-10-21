@@ -20,7 +20,6 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.WaitCursorManager;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -31,7 +30,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.channels.ClosedByInterruptException;
-import java.text.BreakIterator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -101,12 +99,12 @@ public class CommandListener implements Runnable {
                         // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
                         // This is neccessary to avoid random "blank" screens.
                         try {
-                            Globals.batch = true;
+                            Globals.setBatch(true);
                             Globals.setSuppressMessages(true);
                             out.println(cmdExe.execute(inputLine));
                         } finally {
                             Globals.setSuppressMessages(false);
-                            Globals.batch = false;
+                            Globals.setBatch(false);
                         }
                     }
                 }
@@ -128,7 +126,7 @@ public class CommandListener implements Runnable {
         } finally {
 
             Globals.setSuppressMessages(false);
-            Globals.batch = false;
+            Globals.setBatch(false);
 
             closeSockets();
 

@@ -429,7 +429,7 @@ public class IGV {
      * @param updateCommandBar
      */
     public void repaintDataAndHeaderPanels(boolean updateCommandBar) {
-        if (Globals.batch) {
+        if (Globals.isBatch()) {
             if (SwingUtilities.isEventDispatchThread()) {
                 rootPane.paintImmediately(rootPane.getBounds());
             } else {

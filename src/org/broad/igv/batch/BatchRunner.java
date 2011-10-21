@@ -47,7 +47,7 @@ public class BatchRunner implements NamedRunnable {
         String inLine;
         CommandExecutor cmdExe = new CommandExecutor();
         Globals.setSuppressMessages(true);
-        Globals.batch = true;
+        Globals.setBatch(true);
 
         WaitCursorManager.CursorToken cursorToken = null;
         BufferedReader reader = null;
@@ -67,7 +67,7 @@ public class BatchRunner implements NamedRunnable {
             throw new DataLoadException(ioe.getMessage(), inputFile);
         } finally {
             Globals.setSuppressMessages(false);
-            Globals.batch = false;
+            Globals.setBatch(false);
             if (cursorToken != null) WaitCursorManager.removeWaitCursor(cursorToken);
             if (reader != null) {
                 try {

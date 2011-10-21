@@ -47,7 +47,7 @@ public class Globals {
     final public static String CHR_ALL = "All";
     public static boolean headless = false;
     public static boolean suppressMessages = false;
-    public static boolean batch = false;
+    private static boolean batch = false;
     /**
      * Field description
      */
@@ -316,4 +316,11 @@ public class Globals {
         return GENE_LIST_DIRECTORY;
     }
 
+    public static boolean isBatch() {
+        return batch;
+    }
+
+    public static void setBatch(boolean batch) {
+        Globals.batch = batch;
+    }
 }
