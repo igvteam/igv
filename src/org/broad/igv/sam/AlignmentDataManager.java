@@ -144,7 +144,7 @@ public class AlignmentDataManager {
         ReferenceFrame frame = context.getReferenceFrame();
         if (!loadedIntervalMap.containsKey(frame.getName())) {
             // IF in batch mode force a load of the interval if its missing
-            if (Globals.batch) {
+            if (Globals.isBatch()) {
                 int start = Math.max(0, (int) context.getOrigin() - 100);
                 int end = (int) context.getEndLocation() + 100;
                 loadAlignments(context.getChr(), start, end, context);

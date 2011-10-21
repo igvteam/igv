@@ -59,6 +59,7 @@ import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
 import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 
 import org.broad.igv.util.*;
+import org.broad.tribble.util.SeekableFileStream;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -1155,6 +1156,8 @@ public class IGV {
         menuBar.resetSessionActions();
 
         AttributeManager.getInstance().clearAllAttributes();
+
+        SeekableFileStream.closeAllInstances();
 
         session = new Session(sessionName);
 
