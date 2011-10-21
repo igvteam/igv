@@ -121,11 +121,12 @@ public class LoadFilesMenuAction extends MenuAction {
                     String path = file.getAbsolutePath();
                     if (path.endsWith(Globals.SESSION_FILE_EXTENSION)) {
                         // TODO -- a better test for session file than just the extension!
-                        MessageUtils.showAndLogErrorMessage(mainFrame.getMainFrame(),
-                                "File " + path +
-                                        " appears to be an IGV Session file - " +
-                                        "please use the Open Session menu item " +
-                                        "to load it.", log);
+                        final String msg = "File " + path +
+                                " appears to be an IGV Session file - " +
+                                "please use the Open Session menu item " +
+                                "to load it.";
+                        log.error(msg);
+                        MessageUtils.showMessage(msg);
                     } else {
                         validFileList.add(file);
                     }
@@ -135,7 +136,9 @@ public class LoadFilesMenuAction extends MenuAction {
             files = validFileList.toArray(new File[validFileList.size()]);
 
             if (!allFilesExist) {
-                MessageUtils.showAndLogErrorMessage(mainFrame.getMainFrame(), buffer.toString(), log);
+                final String msg = buffer.toString();
+                log.error(msg);
+                MessageUtils.showMessage(msg);
             }
 
             if (files.length > 0) {

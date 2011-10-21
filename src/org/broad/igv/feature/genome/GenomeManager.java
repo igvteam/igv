@@ -757,7 +757,8 @@ public class GenomeManager {
                     log.error("Error restoring genome-list file from backup");
                 }
             }
-            MessageUtils.showAndLogErrorMessage(IGV.getMainFrame(), "Error updating user-defined genome list", log, e);
+            log.error("Error updating genome property file", e);
+            MessageUtils.showMessage("Error updating user-defined genome list " + e.getMessage());
 
         } finally {
             if (writer != null) writer.close();

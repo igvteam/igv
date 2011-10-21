@@ -209,7 +209,6 @@ public class TrackPanel extends IGVPanel {
         } else {
             trackGroups.add(index, group);
         }
-        ;
     }
 
 

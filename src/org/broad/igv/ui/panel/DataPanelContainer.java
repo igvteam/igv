@@ -191,7 +191,8 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 }
 
                 if (messages != null && !messages.isEmpty()) {
-                    MessageUtils.showAndLogErrorMessage(IGV.getMainFrame(), messages.getFormattedMessage(), log);
+                    log.error(messages.getFormattedMessage());
+                    MessageUtils.showMessage(messages.getFormattedMessage());
                 }
             }
             catch (Exception e) {

@@ -256,7 +256,8 @@ public class GeneListManagerUI extends JDialog {
                 manager.importGMTFile(gmtFile);
                 initLists();
             } catch (IOException e1) {
-                MessageUtils.showAndLogErrorMessage(this, "Error importing .gmt file", log, e1);
+            log.error("Error updating genome property file", e1);
+            MessageUtils.showMessage("Error importing .gmt file: " + e1.getMessage() );
             }
         }
     }
