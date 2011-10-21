@@ -71,10 +71,6 @@ public class HeatmapRenderer extends DataRenderer {
         int lastPEnd = 0;
         int lastPStart = 0;
         int lastW = 0;
-        Color lastColor = null;
-        // These buffers are created here to be thread-safe
-        float[] buffer1 = new float[3];
-        float[] buffer2 = new float[3];
 
         for (LocusScore score : scores) {
             if (lastPStart > maxX) {
@@ -85,25 +81,21 @@ public class HeatmapRenderer extends DataRenderer {
             // otherwise could get an overflow.
             float fStart = (float) ((score.getStart() - origin) / locScale);
             float fEnd = (float) ((score.getEnd() - origin) / locScale);
-            float fw = fEnd - fStart;
+            // float fw = fEnd - fStart;
             int pStart = (int) fStart;
             int pEnd = (int) fEnd;
 
-            int w = showAllFeatures ? Math.max(1, pEnd - pStart) : (pEnd - pStart);
+            int min;
+            if(showAllFeatures) {
+                min = 1;
+            } else {
+                min = Math.min(pStart - lastPEnd, 1);
+            }
 
-            // if the width is < 1 pixel use alpha to mix color with last color, or background
+            int w = Math.max(min, pEnd - pStart);
+
             float dataY = track.logScaleData(score.getScore());
             Color graphColor = colorScale.getColor(dataY);
-            if (showAllFeatures && fw < 1) {
-                float alpha = Math.max(0.25f, fw);
-                if(lastColor == null || pStart > lastPEnd) {
-                    graphColor = ColorUtilities.getCompositeColor(graphColor.getColorComponents(buffer1), alpha);
-                }
-                else {
-                    graphColor = ColorUtilities.getCompositeColor(lastColor.getColorComponents(buffer1),
-                            graphColor.getColorComponents(buffer2), alpha);
-                }
-            } 
 
             if ((pStart + w) >= 0 && (lastPStart <= maxX)) {
 
@@ -137,7 +129,6 @@ public class HeatmapRenderer extends DataRenderer {
             lastPStart = pStart;
             lastPEnd = pStart + w;
             lastW = w;
-            lastColor = graphColor;
         }
     }
 
