@@ -28,78 +28,175 @@ import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 /**
+ * Provides thread-safe, Swing-safe, utilities for interacting with JOptionPane.  Accounts for
+ * (1) Swing is not thread safe => synchronize access
+ * (2) JOptionPane methods must be invoked on event dispatch thread
+ *
  * @author jrobinso
  */
 public class MessageUtils {
 
     private static Logger log = Logger.getLogger(MessageUtils.class);
 
-    public static void showMessage(String message) {
+    // Somewhat silly class, needed to pass values between threads
+    static class ValueHolder {
+        Object value;
+    }
 
-        if (Globals.isHeadless() || Globals.isSuppressMessages() || !IGV.hasInstance()) {
+
+    public static synchronized void showMessage(final String message) {
+
+        if (Globals.isHeadless() || Globals.isSuppressMessages()) { //|| !IGV.hasInstance()) {
             log.info(message);
         } else {
-            JOptionPane.showMessageDialog(IGV.getMainFrame(), message);
-        }
-    }
-
-
-    public static boolean confirm(String message) {
-
-        return confirm(IGV.getMainFrame(), message);
-
-    }
-
-    public static boolean confirm(Component component, String message) {
-
-        int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
-        return opt == JOptionPane.YES_OPTION;
-
-    }
-
-    /**
-     * Method description
-     *
-     * @param component
-     * @param message
-     * @param log
-     * @param e
-     */
-    public static void showAndLogErrorMessage(final Component component, final String message,
-                                              final Logger log, final Exception e) {
-        if (log != null) {
-
-            if (e != null) {
-                log.error(message, e);
+            final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+            if (SwingUtilities.isEventDispatchThread()) {
+                JOptionPane.showMessageDialog(parent, message);
             } else {
-                log.error(message);
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        JOptionPane.showMessageDialog(parent, message);
+                    }
+                };
+                try {
+                    SwingUtilities.invokeAndWait(runnable);
+                } catch (InterruptedException e) {
+                    log.error("Error in showMessage", e);
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    log.error("Error in showMessage", e);
+                    throw new RuntimeException(e.getCause());
+                }
             }
         }
-        JOptionPane.showMessageDialog(component, message);
-
     }
+
+    public static synchronized boolean confirm(final String message) {
+
+        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        return confirm(parent, message);
+    }
+
+    public static synchronized boolean confirm(final Component component, final String message) {
+
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
+            return opt == JOptionPane.YES_OPTION;
+        } else {
+            final ValueHolder returnValue = new ValueHolder();
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    int opt = JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION);
+                    returnValue.value = (opt == JOptionPane.YES_OPTION);
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e.getCause());
+            }
+
+            return (Boolean) (returnValue.value);
+
+        }
+    }
+
+    public static String showInputDialog(final String message, final String defaultValue) {
+
+        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        if (SwingUtilities.isEventDispatchThread()) {
+            String val = JOptionPane.showInputDialog(parent, message, defaultValue);
+            return val;
+        } else {
+            final ValueHolder returnValue = new ValueHolder();
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    String val = JOptionPane.showInputDialog(parent, message, defaultValue);
+                    returnValue.value = val;
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e.getCause());
+            }
+
+            return (String) (returnValue.value);
+        }
+    }
+
+    public static String showInputDialog(final String message) {
+
+        final Frame parent = IGV.hasInstance() ? IGV.getMainFrame() : null;
+        if (SwingUtilities.isEventDispatchThread()) {
+            String val = JOptionPane.showInputDialog(parent, message);
+            return val;
+        } else {
+            final ValueHolder returnValue = new ValueHolder();
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    String val = JOptionPane.showInputDialog(parent, message);
+                    returnValue.value = val;
+                }
+            };
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                log.error("Error in showMessage", e);
+                throw new RuntimeException(e.getCause());
+            }
+
+            return (String) (returnValue.value);
+        }
+    }
+
 
     /**
-     * Method description
+     * Test program - call all methods from both main and swing threads
      *
-     * @param component
-     * @param message
-     * @param log
+     * @param args
+     * @throws Exception
      */
-    public static void showAndLogErrorMessage(Component component, String message, Logger log) {
 
-        showAndLogErrorMessage(component, message, log, null);
+    public static void main(String[] args) throws Exception {
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                showMessage("showMessage");
+
+                confirm("confirm");
+
+                confirm(null, "confirm with parent");
+
+                showInputDialog("showInputDialog", "default");
+
+                showInputDialog("showInputDialog");
+            }
+        };
+
+        // Test on main thread
+        runnable.run();
+
+
+        // Test on swing thread
+        SwingUtilities.invokeLater(runnable);
+
     }
 
-    public static String showInputDialog(String message, String defaultValue) {
-        String val = JOptionPane.showInputDialog(IGV.getMainFrame(), message, defaultValue);
-        return val;
-    }
-
-    public static String showInputDialog(String message) {
-        String val = JOptionPane.showInputDialog(IGV.getMainFrame(), message);
-        return val;
-    }
 }
