@@ -1299,11 +1299,14 @@ public class IGV {
 
                 InputStream inputStream = null;
                 try {
-                    setStatusBarMessage("Opening session...");
-                    inputStream = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
+
                     if (!merge) {
+                        // Do this first, it closes all open SeekableFileStreams.
                         createNewSession(sessionPath);
                     }
+
+                    setStatusBarMessage("Opening session...");
+                    inputStream = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
 
                     final SessionReader sessionReader = new SessionReader(IGV.this);
 
