@@ -509,6 +509,7 @@ public class HttpUtils {
                 String message;
                 if (code == 404) {
                     message = "File not found: " + url.toString();
+                    throw new FileNotFoundException(message);
                 } else {
                     message = conn.getResponseMessage();
                 }
