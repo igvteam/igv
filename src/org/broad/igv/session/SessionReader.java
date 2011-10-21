@@ -18,6 +18,7 @@
 package org.broad.igv.session;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
@@ -476,7 +477,7 @@ public class SessionReader {
             final List<String> errors = new ArrayList<String>();
 
             // Load files concurrently -- TODO, put a limit on # of threads?
-            Thread[] threads = new Thread[dataFiles.size()];
+            List<Thread> threads = new ArrayList(dataFiles.size());
             long t0 = System.currentTimeMillis();
             int i = 0;
             for (final ResourceLocator locator : dataFiles) {
@@ -505,15 +506,22 @@ public class SessionReader {
                         }
                     }
                 };
-                threads[i] = new Thread(runnable);
-                threads[i].start();
+
+                // Run synchronously if in batch mode
+                if (Globals.isBatch()) {
+                    runnable.run();
+                } else {
+                    Thread t = new Thread(runnable);
+                    threads.add(t);
+                    t.start();
+                }
                 i++;
             }
 
             // Wait for all threads to complete
-            for (i = 0; i < threads.length; i++) {
+            for (Thread t : threads) {
                 try {
-                    threads[i].join();
+                    t.join();
                 } catch (InterruptedException ignore) {
                 }
             }
