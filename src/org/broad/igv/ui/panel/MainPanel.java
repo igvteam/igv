@@ -281,7 +281,7 @@ public class MainPanel extends JPanel implements Paintable {
     /**
      * Add a new data panel set
      */
-    public TrackPanelScrollPane addDataPanel(String name) {
+    public synchronized TrackPanelScrollPane addDataPanel(String name) {
 
         TrackPanel trackPanel = new TrackPanel(name, this);
         final TrackPanelScrollPane sp = new TrackPanelScrollPane();
