@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 public class TDFVaryTile implements TDFTile {
 
     int tileStart;
-    float span;
+    double span;
     int[] start;
     float[][] data;
 
@@ -39,7 +39,7 @@ public class TDFVaryTile implements TDFTile {
         this.fill(byteBuffer, nSamples);
     }
 
-    public TDFVaryTile(int tileStart, float span, int[] start, float[][] data) {
+    public TDFVaryTile(int tileStart, double span, int[] start, float[][] data) {
         this.tileStart = tileStart;
         this.span = span;
         this.start = start;
@@ -77,7 +77,7 @@ public class TDFVaryTile implements TDFTile {
         fos.putNullTerminatedString(TDFTile.Type.variableStep.toString());
 
         fos.putInt(tileStart);
-        fos.putFloat(span);
+        fos.putFloat((float) span);
 
         int nPositions = start.length;
         int nSamples = data.length;

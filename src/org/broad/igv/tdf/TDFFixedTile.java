@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
 public class TDFFixedTile implements TDFTile {
 
     int tileStart;
-    float span;
+    double span;
     int start;
     float[][] data;
 
@@ -39,7 +39,7 @@ public class TDFFixedTile implements TDFTile {
         this.fill(byteBuffer, nSamples);
     }
 
-    public TDFFixedTile(int tileStart, int start, float span, float[][] data) {
+    public TDFFixedTile(int tileStart, int start, double span, float[][] data) {
         this.tileStart = tileStart;
         this.span = span;
         this.data = data;
@@ -82,7 +82,7 @@ public class TDFFixedTile implements TDFTile {
         fos.putNullTerminatedString(TDFTile.Type.fixedStep.toString());
         fos.putInt(getSize());
         fos.putInt(start);
-        fos.putFloat(span);
+        fos.putFloat((float) span);
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[i].length; j++) {
                 fos.putFloat(data[i][j]);
