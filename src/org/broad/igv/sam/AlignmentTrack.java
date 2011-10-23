@@ -19,7 +19,6 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -382,7 +381,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 if (FrameManager.isGeneListMode()) {
                     loci = new ArrayList(FrameManager.getFrames().size());
                     for (ReferenceFrame ref : FrameManager.getFrames()) {
-                        loci.add(ref.getLocus().toString());
+                        loci.add(ref.getInitialLocus().toString());
                     }
                     loci.add(mateLocus);
                 } else {

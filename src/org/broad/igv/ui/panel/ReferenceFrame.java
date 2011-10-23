@@ -98,7 +98,7 @@ public class ReferenceFrame {
     private double minScale = 1.0 / 14;
 
     private boolean locationScaleValid = false;
-    private Locus locus;
+    private Locus initialLocus;
 
 
     public ReferenceFrame(String name) {
@@ -619,7 +619,7 @@ public class ReferenceFrame {
     }
 
     public void setInterval(Locus locus) {
-        this.locus = locus;
+        this.initialLocus = locus;
         setInterval(locus.getChr(), locus.getStart(), locus.getEnd());
     }
 
@@ -650,9 +650,10 @@ public class ReferenceFrame {
         return name;
     }
 
-    public Locus getLocus() {
-        return locus;
+    public Locus getInitialLocus() {
+        return initialLocus;
     }
+
 
     public int getMinZoom() {
         return minZoom;

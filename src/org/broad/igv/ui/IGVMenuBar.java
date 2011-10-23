@@ -20,15 +20,19 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Locus;
 import org.broad.igv.gs.GSOpenSessionMenuAction;
 import org.broad.igv.gs.GSSaveSessionMenuAction;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.lists.GeneListManagerUI;
 import org.broad.igv.lists.VariantListManager;
+import org.broad.igv.scatterplot.ScatterPlotUtils;
 import org.broad.igv.tools.IgvToolsGui;
 import org.broad.igv.ui.action.*;
 import org.broad.igv.ui.legend.LegendDialog;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.MainPanel;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.ReorderPanelsDialog;
 import org.broad.igv.ui.util.*;
 import org.broad.igv.util.BrowserLauncher;
@@ -685,6 +689,7 @@ menuAction =
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
         menuItems.add(new JSeparator());
+
         menuAction = new MenuAction("Variant list ...  *EXPERIMENTAL*") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -727,6 +732,28 @@ menuAction =
 
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+
+        menuAction = new ExportTrackNamesMenuAction("Export track names...", IGV.getInstance());
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+
+        menuAction = new MenuAction("Scatter Plot ...") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
+                String chr = defaultFrame.getChrName();
+                int  start = (int) defaultFrame.getOrigin();
+                int end = (int) defaultFrame.getEnd();
+                int zoom = defaultFrame.getZoom();
+                ScatterPlotUtils.openPlot(chr, start, end, zoom);
+            }
+        };
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
+        MenuAction extrasMenuAction = new MenuAction("Extras");
+        JMenu menu = MenuAndToolbarUtils.createMenu(menuItems, extrasMenuAction);
+
+
         //
         JMenu lfMenu = new JMenu("L&F");
         LookAndFeel lf = UIManager.getLookAndFeel();
@@ -759,13 +786,6 @@ menuAction =
             });
             lfMenu.add(cb);
         }
-
-        menuAction = new ExportTrackNamesMenuAction("Export track names...", IGV.getInstance());
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        MenuAction extrasMenuAction = new MenuAction("Extras");
-        JMenu menu = MenuAndToolbarUtils.createMenu(menuItems, extrasMenuAction);
-
         menu.add(lfMenu);
 
         menu.setVisible(false);
