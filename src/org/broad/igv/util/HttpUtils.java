@@ -56,6 +56,9 @@ public class HttpUtils {
     private final int MAX_REDIRECTS = 5;
 
 
+    /**
+     *  Create the single instance  and register the cookie manager
+     */
     static {
         synchronized (HttpUtils.class) {
             instance = new HttpUtils();
@@ -75,7 +78,6 @@ public class HttpUtils {
      */
     private HttpUtils() {
         Authenticator.setDefault(new IGVAuthenticator());
-
     }
 
 
@@ -152,6 +154,13 @@ public class HttpUtils {
 
     }
 
+    /**
+     * Open a connection stream for the URL.
+     *
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public InputStream openConnectionStream(URL url) throws IOException {
         if (url.getProtocol().toLowerCase().equals("ftp")) {
             String userInfo = url.getUserInfo();
@@ -192,8 +201,6 @@ public class HttpUtils {
 
     public String getHeaderField(URL url, String key) throws IOException {
         HttpURLConnection conn = openConnection(url, null, "HEAD");
-        int code = conn.getResponseCode();
-        // TODO -- check code
         return conn.getHeaderField(key);
     }
 
@@ -426,7 +433,7 @@ public class HttpUtils {
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
                 proxySettings.proxyPort > 0;
 
-        HttpURLConnection conn = null;
+        HttpURLConnection conn;
         if (useProxy) {
             Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.proxyHost, proxySettings.proxyPort));
             conn = (HttpURLConnection) url.openConnection(proxy);
