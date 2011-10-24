@@ -24,6 +24,7 @@ package org.broad.igv.tools.ui;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.tools.Preprocessor;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
@@ -589,8 +590,10 @@ public class CoverageGui extends JDialog {
                     Collection<WindowFunction> wfs = getWindowFunctions();
                     String probeFile = probeField.getText();
 
+                    String typeString = Preprocessor.getExtension("ifile");
+
                     runButton.setEnabled(false);
-                    igvTools.toTDF(ifile, ofile, probeFile, genomeId, maxZoomValue, wfs, null, IgvTools.MAX_RECORDS_IN_RAM);
+                    igvTools.toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfs, null, IgvTools.MAX_RECORDS_IN_RAM);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

@@ -35,7 +35,7 @@ public class TestUtils {
 
     public static Genome loadGenome(String genomeId) throws IOException {
         Globals.setHeadless(true);
-        return IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome");
+        return IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome", false);
 
     }
 }

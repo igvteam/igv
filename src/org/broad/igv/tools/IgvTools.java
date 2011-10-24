@@ -26,9 +26,13 @@ package org.broad.igv.tools;
 import jargs.gnu.CmdLineParser;
 import org.apache.log4j.*;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.AbstractFeatureParser;
+import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.graph.GeneUtils;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.ExpressionFormatter;
@@ -46,12 +50,10 @@ import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -141,6 +143,7 @@ public class IgvTools {
         CmdLineParser.Option windowFunctions = parser.addStringOption('f', "windowFunctions");
         CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
         CmdLineParser.Option maxZoomOption = parser.addIntegerOption('z', "maxZoom");
+        CmdLineParser.Option typeOption = parser.addStringOption('q', "type");
 
         // options for sort
         CmdLineParser.Option maxRecordsOption = parser.addIntegerOption('m', "maxRecords");
@@ -159,7 +162,6 @@ public class IgvTools {
 
 
         // extended options for coverage
-        //  q, t, .....
         CmdLineParser.Option coverageOptions = parser.addStringOption('a', "coverageOptions");
 
         // Trackline
@@ -208,6 +210,13 @@ public class IgvTools {
             // All remaining commands require an input file, and most need the file extension.  Do that here.
             validateArgsLength(nonOptionArgs, 2);
             String ifile = nonOptionArgs[1];
+            String typeString = (String) parser.getOptionValue(typeOption);
+            if (typeString == null) {
+                typeString = Preprocessor.getExtension(ifile).toLowerCase();
+            } else {
+                typeString = typeString.toLowerCase();
+            }
+
             boolean isList = ifile.indexOf(",") > 0;
             if (!isList && !FileUtils.resourceExists(ifile)) {
                 throw new PreprocessingException("File not found: " + ifile);
@@ -223,7 +232,7 @@ public class IgvTools {
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
                 String genomeId = nonOptionArgs[3];
-                boolean isGCT = Preprocessor.getExtension(ifile).endsWith("gct");
+                boolean isGCT = typeString.endsWith("gct") || typeString.equals("mage-tab");
                 String wfsString = (String) parser.getOptionValue(windowFunctions);
                 Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
 
@@ -243,7 +252,7 @@ public class IgvTools {
                             coverageOpt, trackLine);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                    toTDF(ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
+                    toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
                 }
             } else if (command.toLowerCase().equals("sort")) {
                 validateArgsLength(nonOptionArgs, 3);
@@ -275,7 +284,7 @@ public class IgvTools {
                     ofile = ofile + ".igv";
                 }
                 String genomeId = nonOptionArgs[3];
-                Genome genome = loadGenome(genomeId);
+                Genome genome = loadGenome(genomeId, true);
                 if (genome == null) {
                     throw new PreprocessingException("Genome could not be loaded: " + genomeId);
                 }
@@ -309,16 +318,15 @@ public class IgvTools {
                 VCFtoBed.convert(inputFile, outputFile);
             } else if (command.equals("lanecounter")) {
                 validateArgsLength(nonOptionArgs, 3);
-                Genome genome = loadGenome(nonOptionArgs[1]);
+                Genome genome = loadGenome(nonOptionArgs[1], false);
                 String bamFileList = nonOptionArgs[2];
                 String queryInterval = nonOptionArgs[3];
                 LaneCounter.run(genome, bamFileList, queryInterval);
             } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            } else if(command.equals("densitytobedgraph")) {
+            } else if (command.equals("densitytobedgraph")) {
                 DensitiesToBedGraph.main(argv);
-            }
-            else {
+            } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
         } catch (PreprocessingException e) {
@@ -342,6 +350,7 @@ public class IgvTools {
 
     private void doGCTtoIGV(String ifile, File ofile, String probefile, int maxRecords, String tmpDirName, Genome genome) throws IOException {
 
+        System.out.println("gct -> igv: " + ifile + " -> " + ofile.getAbsolutePath());
 
         File tmpDir = null;
         if (tmpDirName != null && tmpDirName.trim().length() > 0) {
@@ -356,10 +365,10 @@ public class IgvTools {
 
     }
 
-    public void toTDF(String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
+    public void toTDF(String typeString, String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
-        validateIsTilable(ifile);
+        validateIsTilable(typeString);
 
         System.out.println("Tile.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
@@ -372,7 +381,8 @@ public class IgvTools {
         }
         System.out.println();
 
-        Genome genome = loadGenome(genomeId);
+        boolean isGCT = isGCT(typeString);
+        Genome genome = loadGenome(genomeId, isGCT);
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
@@ -383,7 +393,7 @@ public class IgvTools {
 
         // Convert  gct files to igv format first
         File deleteme = null;
-        if (isGCT(ifile)) {
+        if (isGCT(typeString)) {
             File tmpDir = null;
             if (tmpDirName != null && tmpDirName.length() > 0) {
                 tmpDir = new File(tmpDirName);
@@ -435,11 +445,10 @@ public class IgvTools {
 
     }
 
-    private boolean isGCT(String iFile) {
-        String tmp = iFile;
+    private boolean isGCT(String tmp) {
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
-        return tmp.endsWith(".gct") || tmp.endsWith(".tab");
+        return tmp.endsWith(".gct") || tmp.endsWith(".tab") || tmp.equals("mage-tab");
     }
 
     /**
@@ -470,7 +479,7 @@ public class IgvTools {
         System.out.println("Ext factor = " + extFactorValue);
 
 
-        Genome genome = loadGenome(genomeId);
+        Genome genome = loadGenome(genomeId, false);
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: " + genomeId);
         }
@@ -506,17 +515,6 @@ public class IgvTools {
 
     public void doWIBtoWIG(File txtFile, File wibFile, File wigFile, String trackLine) {
         UCSCUtils.convertWIBFile(txtFile, wibFile, wigFile, trackLine);
-    }
-
-
-    /**
-     * @param argv
-     * @deprecated Convert a .seg file to a .seg.zip file
-     */
-    public void doPreprocessSeg(String[] argv, Genome genome) {
-        int nArgs = argv.length - 1;
-        String[] args = new String[nArgs];
-        System.arraycopy(argv, 1, args, EXT_FACTOR, nArgs);
     }
 
     /**
@@ -658,7 +656,7 @@ public class IgvTools {
     }
 
 
-    public static Genome loadGenome(String genomeFileOrID) throws IOException {
+    public static Genome loadGenome(String genomeFileOrID, boolean isGCT) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
@@ -693,6 +691,21 @@ public class IgvTools {
         if (genome == null) {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
+
+        // If this is a gct file load genes
+        if(isGCT && genomeFile.getAbsolutePath().endsWith(".genome")) {
+            GenomeDescriptor descriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
+            String geneFileName = descriptor.getGeneFileName();
+            if (geneFileName != null && geneFileName.trim().length() > 0) {
+                FeatureParser parser = AbstractFeatureParser.getInstanceFor(geneFileName, genome);
+                InputStream is = descriptor.getGeneStream();
+                AsciiLineReader reader = new AsciiLineReader(is);
+                parser.loadFeatures(reader);
+                is.close();
+            }
+        }
+
+
         return genome;
     }
 
@@ -700,28 +713,21 @@ public class IgvTools {
     /**
      * Test if the file type can be "tiled".
      */
-    private static void validateIsTilable(String ifile) {
-        File tmp = new File(ifile);
-        if (tmp.isDirectory()) {
-            File[] files = tmp.listFiles();
-            if (files.length == EXT_FACTOR) {
-                throw new PreprocessingException("Tile command not supported for empty directory: " + ifile);
-            }
-            ifile = files[EXT_FACTOR].getName();
-        }
-        String ext = Preprocessor.getExtension(ifile);
-        if (!(ext.equals(".cn") ||
-                ext.equals(".igv") ||
-                ext.equals(".wig") ||
-                ifile.toLowerCase().endsWith("cpg.txt") ||
-                ext.equals(".ewig") ||
-                ext.equals(".cn") ||
-                ext.equals(".snp") ||
-                ext.equals(".xcn") ||
-                ext.equals(".gct") ||
-                ext.equals(".bedgraph") ||
-                Preprocessor.isAlignmentFile(ext))) {
-            throw new PreprocessingException("Tile command not supported for files of type: " + ext);
+    private static void validateIsTilable(String typeString) {
+
+        if (!(typeString.equals(".cn") ||
+                typeString.equals(".igv") ||
+                typeString.equals(".wig") ||
+                // ifile.toLowerCase().endsWith("cpg.txt") ||
+                typeString.equals(".ewig") ||
+                typeString.equals(".cn") ||
+                typeString.equals(".snp") ||
+                typeString.equals(".xcn") ||
+                typeString.equals(".gct") ||
+                typeString.equals("mage-tab") ||
+                typeString.equals(".bedgraph") ||
+                Preprocessor.isAlignmentFile(typeString))) {
+            throw new PreprocessingException("Tile command not supported for files of type: " + typeString);
         }
     }
 

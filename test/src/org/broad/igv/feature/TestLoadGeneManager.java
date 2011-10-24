@@ -36,7 +36,7 @@ public class TestLoadGeneManager {
 
     @Test
     public static void main(String[] args) throws IOException {
-        Genome genome = IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome");
+        Genome genome = IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome", false);
 
         System.out.println(FeatureDB.getFeature("EGFR"));
     }

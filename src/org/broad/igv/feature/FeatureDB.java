@@ -45,10 +45,6 @@ public class FeatureDB {
 
     public static void addFeature(NamedFeature feature) {
 
-        if (Globals.isHeadless()) {
-            return;
-        }
-
         final String name = feature.getName();
         if (name != null && name.length() > 0) {
             put(name, feature);
@@ -86,7 +82,11 @@ public class FeatureDB {
 
         String key = name.toUpperCase();
 
-        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Genome currentGenome = null;
+        if(!Globals.isHeadless()) {
+            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        }
+
         if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
             NamedFeature currentFeature = featureMap.get(key);
             if (currentFeature == null) {

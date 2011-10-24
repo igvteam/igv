@@ -53,7 +53,7 @@ public class LaneCounter {
 
         Globals.setHeadless(true);
 
-        Genome genome = IgvTools.loadGenome(args[0]);
+        Genome genome = IgvTools.loadGenome(args[0], false);
         if (genome == null) {
             throw new PreprocessingException("Genome could not be loaded: hg18");
         }

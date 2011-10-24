@@ -299,7 +299,7 @@ public class GenomeManager {
     /**
      * Creates a genome descriptor.
      */
-    private GenomeDescriptor parseGenomeArchiveFile(File f)
+    public GenomeDescriptor parseGenomeArchiveFile(File f)
             throws IOException {
 
 

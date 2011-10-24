@@ -461,8 +461,10 @@ public class IgvToolsGui extends JDialog {
                     Collection<WindowFunction> wfs = getWindowFunctions();
                     String probeFile = probeField.getText();
 
+                    String typeString = Preprocessor.getExtension(ifile);
+
                     runButton.setEnabled(false);
-                    igvTools.toTDF(ifile, ofile, probeFile, genomeId, maxZoomValue, wfs, null, IgvTools.MAX_RECORDS_IN_RAM);
+                    igvTools.toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfs, null, IgvTools.MAX_RECORDS_IN_RAM);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

@@ -84,7 +84,7 @@ public class GCTtoIGVConverter {
                 // A gct row can map to multiple loci, normally this indicates a problem with the probe
                 DataRow row = new DataRow(nextLine);
                 String probe = row.getProbe();
-                List<Locus> loci = locusHelper.getLoci(probe, row.getDescription());
+                List<Locus> loci = locusHelper.getLoci(probe, row.getDescription(), genome.getId());
                 if (loci == null || loci.isEmpty()) {
                     System.out.println("No locus found for: " + probe + "  " + row.getDescription());
                 } else {

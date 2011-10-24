@@ -55,7 +55,7 @@ public class GeneToLocusHelper {
 
     }
 
-    public List<Locus> getLoci(String probeId, String description) {
+    public List<Locus> getLoci(String probeId, String genomeId, String description) {
 
         // Search for locus in description string.  This relies on the special
         // IGV convention for specifying loci  (e.g  |@chrX:1000-2000|
@@ -85,7 +85,7 @@ public class GeneToLocusHelper {
 
         // See if the probes can be mapped to genes
 
-        String[] genes = ProbeToLocusMap.getInstance().getLociForProbe(probeId);
+        String[] genes = ProbeToLocusMap.getInstance().getLociForProbe(probeId, genomeId);
         if (genes != null) {
             List<Locus> loci = new ArrayList(genes.length);
             for (String g : genes) {

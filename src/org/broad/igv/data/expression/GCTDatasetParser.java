@@ -58,7 +58,7 @@ import java.util.*;
 public class GCTDatasetParser {
 
     private static Logger log = Logger.getLogger(GCTDatasetParser.class);
- 
+
     enum FileType {
 
         RES, GCT, MAPPED, TAB, MET, DCHIP, MAGE_TAB
@@ -89,7 +89,7 @@ public class GCTDatasetParser {
     /**
      * Test to determine if the path referes to a GCT file.  The GCT specification requires that the first line
      * be equal to #1.2
-     * 
+     *
      * @param path
      * @return
      * @throws IOException
@@ -100,12 +100,10 @@ public class GCTDatasetParser {
             reader = ParsingUtils.openBufferedReader(path);
             String firstLine = reader.readLine();
             return firstLine != null && firstLine.trim().equals("#1.2");
-        }
-        finally {
-            if(reader != null) reader.close();
+        } finally {
+            if (reader != null) reader.close();
         }
     }
-
 
 
     public GCTDatasetParser(ResourceLocator resFile, String probeFile, Genome genome) throws IOException {
@@ -180,7 +178,7 @@ public class GCTDatasetParser {
         }
 
         //TODO genomespace hack
-        if(dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")){
+        if (dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")) {
             fn = ".gct";
         }
 
@@ -263,25 +261,21 @@ public class GCTDatasetParser {
             int skip = hasCalls ? 2 : 1;
             int nTokens = ParsingUtils.split(headerLine, tokens, '\t');
 
-            if (type == FileType.MAGE_TAB)
-            {
+            if (type == FileType.MAGE_TAB) {
                 //find column index of first sample
-                int count=1;
-                while(dataStartColumn == -1 && count < nTokens)
-                {
-                    if(tokens[count] != null && !tokens[count].trim().equals(""))
-                    {
+                int count = 1;
+                while (dataStartColumn == -1 && count < nTokens) {
+                    if (tokens[count] != null && !tokens[count].trim().equals("")) {
                         dataStartColumn = count;
                     }
                     count++;
                 }
 
-                if(dataStartColumn == -1)
-                {
+                if (dataStartColumn == -1) {
                     throw new Exception("Could not find column index of first sample.");
                 }
             }
-            
+
             int nColumns = (nTokens - dataStartColumn) / skip;
             ArrayList<String> columnHeadingsObj = new ArrayList();
             for (int i = 0; i < nColumns; i++) {
@@ -312,68 +306,48 @@ public class GCTDatasetParser {
 
                 String qCol = null;
 
-                if(headingColumns.contains("Beta_Value"))
-                {
+                if (headingColumns.contains("Beta_Value")) {
                     qCol = "Beta_Value";
-                }
-                else if(headingColumns.contains("Beta value"))
-                {
+                } else if (headingColumns.contains("Beta value")) {
                     qCol = "Beta value";
 
-                }
-                else if(headingColumns.contains("log2 Signal"))
-                {
+                } else if (headingColumns.contains("log2 Signal")) {
                     qCol = "log2 Signal";
 
-                }
-                else if(headingColumns.contains("Signal"))
-                {
+                } else if (headingColumns.contains("Signal")) {
                     qCol = "Signal";
-                }
-                else if(headingColumns.contains("signal"))
-                {
+                } else if (headingColumns.contains("signal")) {
                     qCol = "signal";
-                }
-                else
-                {
-                    Set<String> quantitations = new HashSet();               
-                    for (int i = dataStartColumn; i < nTokens; i++)
-                    {
+                } else {
+                    Set<String> quantitations = new HashSet();
+                    for (int i = dataStartColumn; i < nTokens; i++) {
                         quantitations.add(tokens[i]);
                     }
 
-                    if(quantitations == null || quantitations.size() ==0)
-                    {
+                    if (quantitations == null || quantitations.size() == 0) {
                         throw new Exception("Could not find any signal columns in the MAGE-TAB file");
                     }
 
                     ArrayList<String> qColumns = new ArrayList(quantitations);
 
-                    if(qColumns.size() > 1)
-                    {
+                    if (qColumns.size() > 1) {
                         //Need to get the quantiation column from the user
                         Collections.sort(qColumns);
 
-                        MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[])qColumns.toArray(new String[0]));
+                        MagetabSignalDialog msDialog = new MagetabSignalDialog(IGV.getMainFrame(), (String[]) qColumns.toArray(new String[0]));
                         msDialog.setVisible(true);
 
-                        if(!msDialog.isCanceled())
-                        {
+                        if (!msDialog.isCanceled()) {
                             qCol = msDialog.getQuantitationColumn();
-                        }
-                        else
-                        {
+                        } else {
                             throw new InterruptedException();
                         }
-                    }
-                    else
-                    {
+                    } else {
                         qCol = qColumns.get(0);
                     }
                 }
 
-                for (int i = dataStartColumn; i < nTokens; i++)
-                {
+                for (int i = dataStartColumn; i < nTokens; i++) {
                     String heading = tokens[i].replace('\"', ' ').trim();
 
                     //Check for tcga data column headings
@@ -381,7 +355,7 @@ public class GCTDatasetParser {
                         valuesIndices.add(i);
                     }
 
-                   /* if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
+                    /* if (heading.contains("Gene symbol") || heading.contains("Gene_Symbol")) {
                         descriptionColumn = i;
                         hasDescription = true;
                     }*/
@@ -466,8 +440,7 @@ public class GCTDatasetParser {
             } else {
                 throw new RuntimeException(e);
             }
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 reader.close();
             }
@@ -497,8 +470,8 @@ public class GCTDatasetParser {
 
 
     public void addRow(String probeId, String description, float[] values, char[] calls) {
-
-        List<Locus> loci = locusHelper.getLoci(probeId, description);
+        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
+        List<Locus> loci = locusHelper.getLoci(probeId, description, genomeId);
         if (loci != null) {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {

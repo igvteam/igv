@@ -279,9 +279,8 @@ public class ProbeToLocusMap {
         return hasLociMapping;
     }
 
-    public String[] getLociForProbe(String probeId) {
+    public String[] getLociForProbe(String probeId, String genomeId) {
 
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         Platform platform = getPlatform(probeId);
 
         if (platform == Platform.unknown) {

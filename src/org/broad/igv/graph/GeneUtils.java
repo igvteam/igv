@@ -109,7 +109,7 @@ public class GeneUtils {
         return graph;
     }
 
-    private static void loadGenes(Genome genome) throws IOException {
+    public static void loadGenes(Genome genome) throws IOException {
 
         transcripts = new HashMap();
 
