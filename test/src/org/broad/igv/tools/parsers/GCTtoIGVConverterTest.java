@@ -49,7 +49,7 @@ public class GCTtoIGVConverterTest {
         File gctFile = new File("test/data/gct/small.gct");
         File igvFile = new File("test/data/gct/small.gct.igv");
 
-        GCTtoIGVConverter.convert(gctFile, igvFile, null, 50000, null, genome);
+        GCTtoIGVConverter.convert(".gct", gctFile, igvFile, null, 50000, null, genome);
 
 
     }
@@ -60,7 +60,7 @@ public class GCTtoIGVConverterTest {
         File gctFile = new File("test/data/gct/affy_human.gct");
         File igvFile = new File("test/data/gct/affy_human.gct.igv");
 
-        GCTtoIGVConverter.convert(gctFile, igvFile, null, 50000, null, genome);
+        GCTtoIGVConverter.convert(".gct", gctFile, igvFile, null, 50000, null, genome);
 
 
     }

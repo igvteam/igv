@@ -289,7 +289,7 @@ public class IgvTools {
                     throw new PreprocessingException("Genome could not be loaded: " + genomeId);
                 }
                 String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
-                doGCTtoIGV(ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
+                doGCTtoIGV(typeString, ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
             } else if (command.equals("formatexp")) {
                 validateArgsLength(nonOptionArgs, 3);
                 File inputFile = new File(nonOptionArgs[1]);
@@ -348,7 +348,7 @@ public class IgvTools {
 
     }
 
-    private void doGCTtoIGV(String ifile, File ofile, String probefile, int maxRecords, String tmpDirName, Genome genome) throws IOException {
+    private void doGCTtoIGV(String typeString, String ifile, File ofile, String probefile, int maxRecords, String tmpDirName, Genome genome) throws IOException {
 
         System.out.println("gct -> igv: " + ifile + " -> " + ofile.getAbsolutePath());
 
@@ -361,7 +361,7 @@ public class IgvTools {
             }
         }
 
-        GCTtoIGVConverter.convert(new File(ifile), ofile, probefile, maxRecords, tmpDir, genome);
+        GCTtoIGVConverter.convert(typeString, new File(ifile), ofile, probefile, maxRecords, tmpDir, genome);
 
     }
 
@@ -410,7 +410,7 @@ public class IgvTools {
             String baseName = (new File(ifile)).getName();
             File igvFile = new File(tmpDir, baseName + ".igv");
             igvFile.deleteOnExit();
-            doGCTtoIGV(ifile, igvFile, probeFile, maxRecords, tmpDirName, genome);
+            doGCTtoIGV(typeString, ifile, igvFile, probeFile, maxRecords, tmpDirName, genome);
 
             tmp = igvFile;
             deleteme = igvFile;

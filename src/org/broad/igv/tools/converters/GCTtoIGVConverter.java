@@ -38,7 +38,12 @@ import java.util.List;
  */
 public class GCTtoIGVConverter {
 
+    enum Type {GCT, MAGETAB}
+
+    ;
+
     private static Logger log = Logger.getLogger(GCTtoIGVConverter.class);
+
 
 
     /**
@@ -46,8 +51,10 @@ public class GCTtoIGVConverter {
      *
      * @return
      */
-    public static void convert(File inputFile, File outputFile, String probeResource, 
-                               int maxRecords, File tmpDir, Genome genome) throws IOException {
+    public static void convert(String typeString, File inputFile, File outputFile, String probeResource,
+                        int maxRecords, File tmpDir, Genome genome) throws IOException {
+
+        Type type = typeString.equals("mage-tab") ? Type.MAGETAB : Type.GCT;
 
         GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
 
@@ -63,17 +70,21 @@ public class GCTtoIGVConverter {
             // Assume gene expression for now.
             writer.println("#type=GENE_EXPRESSION");
 
-            // Skip first 2 rows
-            reader.readLine();
-            reader.readLine();
+            if (type == Type.GCT) {
+                // Skip first 2 rows
+                reader.readLine();
+                reader.readLine();
+            }
 
             // Parse the header line
             String headerLine = reader.readLine();
             String[] tokens = headerLine.split("\t");
 
-            //The sample names in a GCT file start at column 2
+            //The sample names in a GCT file start at column 2,
+            int sampleStart = type == Type.GCT ? 2 : 1;
+
             writer.print("Chr\tStart\tEnd\tProbe");
-            for (int i = 2; i < tokens.length; i++) {
+            for (int i = sampleStart; i < tokens.length; i++) {
                 writer.print("\t" + tokens[i]);
             }
             writer.println();
@@ -82,7 +93,7 @@ public class GCTtoIGVConverter {
             while ((nextLine = reader.readLine()) != null) {
 
                 // A gct row can map to multiple loci, normally this indicates a problem with the probe
-                DataRow row = new DataRow(nextLine);
+                DataRow row = new DataRow(nextLine, type);
                 String probe = row.getProbe();
                 List<Locus> loci = locusHelper.getLoci(probe, row.getDescription(), genome.getId());
                 if (loci == null || loci.isEmpty()) {
@@ -104,8 +115,7 @@ public class GCTtoIGVConverter {
                 writer.println(al.getText());
 
             }
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 reader.close();
             }
@@ -163,22 +173,31 @@ public class GCTtoIGVConverter {
 
 
     /**
-     * Represents a row of data from a GCT file.  Using this class if more effecient than tokeninzing the entire line.
-     * Some GCT files have over a thousand columns and we're only interested in the first 2
+     * Represents a row of data from a GCT or mage-tab file.  Using this class if more effecient than tokeninzing
+     * the entire line.  Some GCT files have over a thousand columns and we're only interested in the first 2
      */
     static class DataRow {
+
         private String probe;
         private String description;
         private String data;
 
-        DataRow(String string) {
+        DataRow(String string, Type type) {
+
             int firstTab = string.indexOf('\t');
             int secondTab = string.indexOf('\t', firstTab + 1);
 
             // TODO -- if either of the indeces firstTab or secondTab are < 0 throw an exception
             probe = string.substring(0, firstTab);
-            description = string.substring(firstTab, secondTab);
-            data = string.substring(secondTab);
+
+            if (type == Type.GCT) {
+                description = string.substring(firstTab, secondTab);
+                data = string.substring(secondTab);
+            } else {
+                description = "";
+                data = string.substring(firstTab);
+            }
+
         }
 
         private String getProbe() {
