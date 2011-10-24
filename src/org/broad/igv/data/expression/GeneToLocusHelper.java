@@ -55,7 +55,7 @@ public class GeneToLocusHelper {
 
     }
 
-    public List<Locus> getLoci(String probeId, String genomeId, String description) {
+    public List<Locus> getLoci(String probeId, String description, String genomeId) {
 
         // Search for locus in description string.  This relies on the special
         // IGV convention for specifying loci  (e.g  |@chrX:1000-2000|
