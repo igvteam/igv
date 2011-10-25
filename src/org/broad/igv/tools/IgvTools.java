@@ -44,6 +44,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.converters.DensitiesToBedGraph;
 import org.broad.igv.variant.util.VCFtoBed;
 import org.broad.tribble.FeatureCodec;
@@ -361,7 +362,9 @@ public class IgvTools {
             }
         }
 
-        GCTtoIGVConverter.convert(typeString, new File(ifile), ofile, probefile, maxRecords, tmpDir, genome);
+        ResourceLocator locator = new ResourceLocator(ifile);
+        locator.setType(typeString);
+        GCTtoIGVConverter.convert(locator, ofile, probefile, maxRecords, tmpDir, genome);
 
     }
 

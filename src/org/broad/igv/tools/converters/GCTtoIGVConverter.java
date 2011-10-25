@@ -18,14 +18,20 @@
 
 package org.broad.igv.tools.converters;
 
+import com.sun.org.apache.xpath.internal.Expression;
+import com.sun.tools.example.debug.expr.ExpressionParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
 import org.apache.log4j.Logger;
+import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.expression.GeneToLocusHelper;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.sort.SortableRecord;
 import org.broad.igv.tools.sort.SortableRecordCodec;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.util.ParsingUtils;
 
 import java.io.*;
 import java.util.Comparator;
@@ -38,9 +44,6 @@ import java.util.List;
  */
 public class GCTtoIGVConverter {
 
-    enum Type {GCT, MAGETAB}
-
-    ;
 
     private static Logger log = Logger.getLogger(GCTtoIGVConverter.class);
 
@@ -51,41 +54,29 @@ public class GCTtoIGVConverter {
      *
      * @return
      */
-    public static void convert(String typeString, File inputFile, File outputFile, String probeResource,
+    public static void convert(ResourceLocator resourceLocator, File outputFile, String probeResource,
                         int maxRecords, File tmpDir, Genome genome) throws IOException {
 
-        Type type = typeString.equals("mage-tab") ? Type.MAGETAB : Type.GCT;
+        ExpressionFileParser.FileType type = ExpressionFileParser.determineType(resourceLocator);
 
         GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
 
 
-        BufferedReader reader = null;
+        AsciiLineReader reader = null;
         PrintWriter writer = null;
 
         SortingCollection cltn = getSortingCollection(maxRecords, tmpDir);
         try {
-            reader = new BufferedReader(new FileReader(inputFile));
+            reader = ParsingUtils.openAsciiReader(resourceLocator.getPath());
             writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
 
-            // Assume gene expression for now.
-            writer.println("#type=GENE_EXPRESSION");
+            ExpressionFileParser.FormatDescriptor formatDescriptor = ExpressionFileParser.parseHeader (reader, type, null);
+            String [] dataHeadings = formatDescriptor.getDataHeaders();
 
-            if (type == Type.GCT) {
-                // Skip first 2 rows
-                reader.readLine();
-                reader.readLine();
-            }
-
-            // Parse the header line
-            String headerLine = reader.readLine();
-            String[] tokens = headerLine.split("\t");
-
-            //The sample names in a GCT file start at column 2,
-            int sampleStart = type == Type.GCT ? 2 : 1;
 
             writer.print("Chr\tStart\tEnd\tProbe");
-            for (int i = sampleStart; i < tokens.length; i++) {
-                writer.print("\t" + tokens[i]);
+            for (String s : dataHeadings) {
+                writer.print("\t" + s);
             }
             writer.println();
 
@@ -93,7 +84,7 @@ public class GCTtoIGVConverter {
             while ((nextLine = reader.readLine()) != null) {
 
                 // A gct row can map to multiple loci, normally this indicates a problem with the probe
-                DataRow row = new DataRow(nextLine, type);
+                DataRow row = new DataRow(nextLine, formatDescriptor);
                 String probe = row.getProbe();
                 List<Locus> loci = locusHelper.getLoci(probe, row.getDescription(), genome.getId());
                 if (loci == null || loci.isEmpty()) {
@@ -182,21 +173,22 @@ public class GCTtoIGVConverter {
         private String description;
         private String data;
 
-        DataRow(String string, Type type) {
+        DataRow(String string, ExpressionFileParser.FormatDescriptor formatDescriptor) {
 
-            int firstTab = string.indexOf('\t');
-            int secondTab = string.indexOf('\t', firstTab + 1);
+            String [] tokens = string.split("\t");
+            probe = tokens[formatDescriptor.getProbeColumn()];
 
-            // TODO -- if either of the indeces firstTab or secondTab are < 0 throw an exception
-            probe = string.substring(0, firstTab);
+            int descriptionColumn = formatDescriptor.getDescriptionColumn();
+            description = descriptionColumn < 0 ? "" : tokens[descriptionColumn];
 
-            if (type == Type.GCT) {
-                description = string.substring(firstTab, secondTab);
-                data = string.substring(secondTab);
-            } else {
-                description = "";
-                data = string.substring(firstTab);
+            StringBuffer dataBuffer = new StringBuffer();
+            final int[] dataColumns = formatDescriptor.getDataColumns();
+            dataBuffer.append(tokens[dataColumns[0]]);
+            for(int i=1; i<dataColumns.length; i++) {
+                dataBuffer.append('\t');
+                dataBuffer.append(tokens[dataColumns[i]]);
             }
+            data = dataBuffer.toString();
 
         }
 

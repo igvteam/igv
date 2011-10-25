@@ -57,7 +57,7 @@ public class ExpressionFileParser {
 
     private static Logger log = Logger.getLogger(ExpressionFileParser.class);
 
-    enum FileType {
+    public enum FileType {
 
         RES, GCT, MAPPED, TAB, MET, DCHIP, MAGE_TAB
     }
@@ -149,7 +149,7 @@ public class ExpressionFileParser {
         return dataset;
     }
 
-    private FileType determineType(ResourceLocator dataFileLocator) {
+    public static FileType determineType(ResourceLocator dataFileLocator) {
         String fn = dataFileLocator.getPath().toLowerCase();
         if (fn.endsWith(".txt") || fn.endsWith(".tab") || fn.endsWith(".xls") || fn.endsWith(".gz")) {
             fn = fn.substring(0, fn.lastIndexOf("."));
@@ -158,6 +158,8 @@ public class ExpressionFileParser {
         if (dataFileLocator.getPath().contains("?") && dataFileLocator.getPath().contains("dataformat/gct")) {
             fn = ".gct";
         }
+        FileType type;
+
         if (fn.endsWith("res")) {
             type = FileType.RES;
         } else if (fn.endsWith("gct")) {
@@ -168,8 +170,7 @@ public class ExpressionFileParser {
             type = FileType.MET;
         } else if (fn.endsWith("dchip")) {
             type = FileType.DCHIP;
-        } else if (dataFileLocator.getDescription() != null &&
-                dataFileLocator.getDescription().equals("MAGE_TAB")) {
+        } else if ("mage-tab".equals(dataFileLocator.getType()) || "MAGE_TAB".equals(dataFileLocator.getDescription())){
             type = FileType.MAGE_TAB;
         } else {
             type = FileType.TAB;
@@ -197,7 +198,7 @@ public class ExpressionFileParser {
             reader = ParsingUtils.openAsciiReader(dataFileLocator);
 
             // Parse the header(s) to determine the precise format.
-            FormatDescriptor formatDescriptor = parseHeader(reader, dataset);
+            FormatDescriptor formatDescriptor = parseHeader(reader, type,  dataset);
             final int probeColumn = formatDescriptor.probeColumn;
             final int descriptionColumn = formatDescriptor.descriptionColumn;
             int nDataColumns = formatDescriptor.dataColumns.length;
@@ -397,7 +398,7 @@ public class ExpressionFileParser {
      * @param comment
      * @param dataset
      */
-    private void parseComment(String comment, ExpressionDataset dataset) {
+    private static void parseComment(String comment, ExpressionDataset dataset) {
 
         // If no dataset is supplied there is nothing to do
         if (dataset == null) return;
@@ -429,7 +430,7 @@ public class ExpressionFileParser {
         Thread.sleep(1);    // <- check for interrupted thread
     }
 
-    private FormatDescriptor parseHeader(AsciiLineReader reader, ExpressionDataset dataset) throws IOException {
+    public static  FormatDescriptor parseHeader(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
 
 
         int descriptionColumn = -1;    // Default - no description column
@@ -472,7 +473,7 @@ public class ExpressionFileParser {
         }
 
 
-        String headerLine = findHeaderLine(reader, dataset);
+        String headerLine = findHeaderLine(reader, type, dataset);
         String[] firstHeaderRowTokens = headerLine.split("\t");
 
         List<String> dataHeadingList = new ArrayList(firstHeaderRowTokens.length);
@@ -523,7 +524,7 @@ public class ExpressionFileParser {
         return new FormatDescriptor(probeColumn, descriptionColumn, dataColumns, dataHeaders, firstHeaderRowTokens.length);
     }
 
-    private String findHeaderLine(AsciiLineReader reader, ExpressionDataset dataset) throws IOException {
+    private static String findHeaderLine(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
         String nextLine;
         String headerLine;
         if (type == FileType.GCT) {
@@ -548,7 +549,7 @@ public class ExpressionFileParser {
         return headerLine;
     }
 
-    private String findSignalColumnHeading(String[] tokens) {
+    private static String findSignalColumnHeading(String[] tokens) {
 
         Set<String> columnHeaderSet = new HashSet<String>(Arrays.asList(tokens));
 
@@ -603,12 +604,12 @@ public class ExpressionFileParser {
         }
     }
 
-    class FormatDescriptor {
-        int probeColumn;
-        int descriptionColumn;
-        int[] dataColumns;
-        String[] dataHeaders;
-        int totalColumnCount;
+    public static class FormatDescriptor {
+        private int probeColumn;
+        private int descriptionColumn;
+        private int[] dataColumns;
+        private String[] dataHeaders;
+        private int totalColumnCount;
 
         FormatDescriptor(int probeColumn, int descriptionColumn, int[] dataColumns, String[] dataHeaders, int totalColumnCount) {
             this.probeColumn = probeColumn;
@@ -616,6 +617,26 @@ public class ExpressionFileParser {
             this.dataColumns = dataColumns;
             this.dataHeaders = dataHeaders;
             this.totalColumnCount = totalColumnCount;
+        }
+
+        public int getProbeColumn() {
+            return probeColumn;
+        }
+
+        public int getDescriptionColumn() {
+            return descriptionColumn;
+        }
+
+        public int[] getDataColumns() {
+            return dataColumns;
+        }
+
+        public String[] getDataHeaders() {
+            return dataHeaders;
+        }
+
+        public int getTotalColumnCount() {
+            return totalColumnCount;
         }
     }
 }

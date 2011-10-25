@@ -21,6 +21,7 @@ package org.broad.igv.tools.parsers;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,10 +47,11 @@ public class GCTtoIGVConverterTest {
 
     @Test
     public void testDescriptionMapping() throws IOException {
-        File gctFile = new File("test/data/gct/small.gct");
+        String gctFile = "test/data/gct/small.gct";
         File igvFile = new File("test/data/gct/small.gct.igv");
 
-        GCTtoIGVConverter.convert(".gct", gctFile, igvFile, null, 50000, null, genome);
+        ResourceLocator locator = new ResourceLocator(gctFile);
+        GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
 
 
     }
@@ -57,11 +59,11 @@ public class GCTtoIGVConverterTest {
 
     @Test
     public void testAffyMapping() throws IOException {
-        File gctFile = new File("test/data/gct/affy_human.gct");
+        String gctFile = "test/data/gct/affy_human.gct";
         File igvFile = new File("test/data/gct/affy_human.gct.igv");
 
-        GCTtoIGVConverter.convert(".gct", gctFile, igvFile, null, 50000, null, genome);
-
+        ResourceLocator locator = new ResourceLocator(gctFile);
+        GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
 
     }
 
