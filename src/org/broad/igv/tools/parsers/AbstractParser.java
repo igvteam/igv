@@ -55,7 +55,7 @@ public abstract class AbstractParser {
     }
 
     /**
-     * Note:  This is an exact copy of the method in GCTDatasetParser.  Refactor to merge these
+     * Note:  This is an exact copy of the method in ExpressionFileParser.  Refactor to merge these
      * two parsers, or share a common base class.
      *
      * @param comment

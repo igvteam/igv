@@ -26,8 +26,8 @@ import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
 import org.broad.igv.data.db.SampleInfoSQLReader;
 import org.broad.igv.data.db.SegmentedSQLReader;
-import org.broad.igv.data.expression.GCTDataset;
-import org.broad.igv.data.expression.GCTDatasetParser;
+import org.broad.igv.data.expression.ExpressionFileParser;
+import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.rnai.RNAIDataSource;
 import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
@@ -226,7 +226,7 @@ public class TrackLoader {
                 }
             } else if (path.toLowerCase().contains(".peak.bin")) {
                 loadPeakTrack(locator, newTracks, genome);
-            } else if ("mage-tab".equals(locator.getType()) || GCTDatasetParser.parsableMAGE_TAB(locator)) {
+            } else if ("mage-tab".equals(locator.getType()) || ExpressionFileParser.parsableMAGE_TAB(locator)) {
                 locator.setDescription("MAGE_TAB");
                 loadGctFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".logistic") || typeString.endsWith(".linear") || typeString.endsWith(".assoc") ||
@@ -495,14 +495,14 @@ public class TrackLoader {
             }
         }
 
-        GCTDatasetParser parser = null;
-        GCTDataset ds = null;
+        ExpressionFileParser parser = null;
+        ExpressionDataset ds = null;
 
         String fName = locator.getTrackName();
 
         // TODO -- handle remote resource
         try {
-            parser = new GCTDatasetParser(locator, null, igv.getGenomeManager().getCurrentGenome());
+            parser = new ExpressionFileParser(locator, null, igv.getGenomeManager().getCurrentGenome());
         } catch (IOException e) {
             log.error("Error creating GCT parser.", e);
             throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());

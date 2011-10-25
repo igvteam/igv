@@ -29,10 +29,8 @@ package org.broad.igv.data.expression;
 import org.broad.igv.Globals;
 import org.broad.igv.data.Dataset;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 
 import java.util.HashMap;
@@ -41,7 +39,7 @@ import java.util.Map;
 /**
  * @author jrobinso
  */
-public class GCTDataset implements Dataset, GCTDataConsumer {
+public class ExpressionDataset implements Dataset {
 
     private String name;
     private TrackType type = TrackType.GENE_EXPRESSION;
@@ -49,14 +47,11 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
     private String[] columnHeadings;
     private boolean normalized = false;
     private boolean logValues = false;
+
     /**
      * Map colum heading -> index for effecient reverse lookup
      */
     private Map<String, Integer> headingIndexMap = new HashMap();
-    /**
-     * Map of probe -> array of feature rowValues (i.e. a data row).  The array should
-     * be hte same size and same order as the column headings.
-     */
 
     Map<String, int[]> startLocationMap = new HashMap();
     Map<String, int[]> endLocationMap = new HashMap();
@@ -78,7 +73,7 @@ public class GCTDataset implements Dataset, GCTDataConsumer {
     /**
      * Creates a new instance of ExpressionDataset
      */
-    public GCTDataset(Genome genome) {
+    public ExpressionDataset(Genome genome) {
         this.genome = genome;
     }
 

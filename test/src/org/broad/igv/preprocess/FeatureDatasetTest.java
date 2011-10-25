@@ -22,8 +22,8 @@
  */
 package org.broad.igv.preprocess;
 
-import org.broad.igv.data.expression.GCTDataset;
-import org.broad.igv.data.expression.GCTDatasetParser;
+import org.broad.igv.data.expression.ExpressionDataset;
+import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.junit.AfterClass;
@@ -39,7 +39,7 @@ import java.io.File;
 public class FeatureDatasetTest {
 
     static String file = "/Volumes/xchip_tcga/gbm/visualization/testfiles/expression/WETime.rma.mapped";
-    static GCTDataset dataset;
+    static ExpressionDataset dataset;
     static String genomeId = "mm8";
 
     public FeatureDatasetTest() {
@@ -48,7 +48,7 @@ public class FeatureDatasetTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Genome genome =   (new GenomeManager()).loadGenome("", null);
-        GCTDatasetParser parser = new GCTDatasetParser(new File(file), null, genome);
+        ExpressionFileParser parser = new ExpressionFileParser(new File(file), null, genome);
 
         dataset = parser.createDataset();
 
@@ -60,7 +60,7 @@ public class FeatureDatasetTest {
     }
 
     /**
-     * Test of getDataHeadings method, of class GCTDataset.
+     * Test of getDataHeadings method, of class ExpressionDataset.
      */
     @Test
     public void getDataHeadings() {
@@ -71,7 +71,7 @@ public class FeatureDatasetTest {
 
 
     /**
-     * Test of getChromosomes method, of class GCTDataset.
+     * Test of getChromosomes method, of class ExpressionDataset.
      */
     @Test
     public void getChromosomes() {
@@ -81,7 +81,7 @@ public class FeatureDatasetTest {
     }
 
     /**
-     * Test of getStartLocations method, of class GCTDataset.
+     * Test of getStartLocations method, of class ExpressionDataset.
      */
     @Test
     public void getStartLocations() {
@@ -98,7 +98,7 @@ public class FeatureDatasetTest {
     }
 
     /**
-     * Test of getEndLocations method, of class GCTDataset.
+     * Test of getEndLocations method, of class ExpressionDataset.
      */
     @Test
     public void getEndLocations() {
@@ -115,7 +115,7 @@ public class FeatureDatasetTest {
     }
 
     /**
-     * Test of getData method, of class GCTDataset.
+     * Test of getData method, of class ExpressionDataset.
      */
     @Test
     public void getData() {
