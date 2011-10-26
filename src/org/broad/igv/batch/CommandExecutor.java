@@ -269,13 +269,13 @@ public class CommandExecutor {
 
         } else {
             Double location = null;
-            if (param3 != null) {
+            if (param3 != null && param3.trim().length() > 0) {
                 try {
                     location = new Double(param3.replace(",", ""));
                 } catch (NumberFormatException e) {
                     log.info("Unexpected sort location argument (expected number): " + param3);
                 }
-            } else {
+            } else if (locusString != null && locusString.trim().length() > 0) {
                 try {
                     location = new Double(locusString.replace(",", ""));
                 } catch (NumberFormatException e) {
