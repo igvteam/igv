@@ -99,7 +99,7 @@ public class GCTtoIGVConverter {
                 } else {
                     for (Locus locus : loci) {
                         String igvLine = locus.getChr() + "\t" + locus.getStart() + "\t" + locus.getEnd() + "\t" + probe +
-                                row.getData();
+                                "\t" + row.getData();
                         cltn.add(new SortableRecord(locus.getChr(), locus.getStart(), igvLine));
                     }
                 }

@@ -37,12 +37,19 @@ public class ScatterPlotUtils {
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
         LinkedHashMap<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         LinkedHashSet<TrackType> types = new LinkedHashSet<TrackType>();
+        String key = "samplename";
+
+        LinkedHashMap<String, Set<String>> uniqueAttributeValues = new LinkedHashMap<String, Set<String>>();
+        for (String att : attributeNames) {
+            uniqueAttributeValues.put(att, new HashSet<String>());
+        }
+        HashSet<String> nonSharedAttributes = new HashSet<String>();
 
         for (Track t : tracks) {
             if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
                 TrackType type = dataTrack.getTrackType();
-                     if(type == TrackType.GENE_EXPRESSION) {
+                if (type == TrackType.GENE_EXPRESSION) {
                     System.out.println();
                 }
                 if (plottableTypes.contains(type)) {
@@ -50,20 +57,33 @@ public class ScatterPlotUtils {
 
                     double regionScore = getAverageScore(chr, start, end, zoom, dataTrack);
 
-                    String key = "LINKING_ID";
                     String sample = dataTrack.getAttributeValue(key);
 
                     SampleData sampleData = sampleDataMap.get(sample);
                     if (sampleData == null) {
                         sampleData = new SampleData();
-                        for (String att : attributeNames) {
-                            sampleData.addAttributeValue(att, dataTrack.getAttributeValue(att));
-                        }
                         sampleDataMap.put(sample, sampleData);
                     }
+
+                    for (String att : attributeNames) {
+                        final String attributeValue = dataTrack.getAttributeValue(att);
+                        sampleData.addAttributeValue(att, attributeValue);
+                        uniqueAttributeValues.get(att).add(attributeValue);
+                        final String otherValue = sampleData.getAttributesMap().get(att);
+                        if (attributeValue == null) {
+                            if (otherValue != null) {
+                                nonSharedAttributes.add(att);
+                            }
+                        } else {
+                            if (!attributeValue.equals(otherValue)) {
+                                nonSharedAttributes.add(att);
+                            }
+                        }
+
+                    }
+
+
                     sampleData.addDataValue(type, regionScore);
-
-
                 }
             }
         }
@@ -72,6 +92,8 @@ public class ScatterPlotUtils {
 
         // Data
         Map<String, double[]> dataMap = new HashMap<String, double[]>(types.size());
+
+        // Loop through track (data) types
         for (TrackType type : types) {
             double[] data = new double[sampleNames.length];
             for (int i = 0; i < sampleNames.length; i++) {
@@ -82,8 +104,7 @@ public class ScatterPlotUtils {
                 DoubleArrayList valueList = sd.getData(type);
                 if (valueList == null || valueList.isEmpty()) {
                     value = Double.NaN;
-                }
-                else if (valueList.size() == 1) {
+                } else if (valueList.size() == 1) {
                     value = valueList.get(0);
                 } else {
                     double[] vs = valueList.toArray();
@@ -96,13 +117,31 @@ public class ScatterPlotUtils {
         }
 
         // Attributes
-        Map<String, String[]> attMap = new HashMap<String, String[]>(attributeNames.size());
-        for (String att : attributeNames) {
+
+        // Get list of "reasonable" attributes with respect to plot series => greater than 1 distinct value, but less
+        // than 10.
+        List<String> seriesNames = new ArrayList<String>();
+        for (Map.Entry<String, Set<String>> entry : uniqueAttributeValues.entrySet()) {
+            int cnt = entry.getValue().size();
+            String att = entry.getKey();
+            if (cnt > 1 && cnt < 10 && !nonSharedAttributes.contains(att)) {
+                seriesNames.add(att);
+            }
+        }
+
+        Map<String, String[]> attMap = new HashMap<String, String[]>(seriesNames.size());
+
+        for (String att : seriesNames) {
+            if (key.equals(att)) continue;
             String[] attributes = new String[sampleNames.length];
+
             for (int i = 0; i < sampleNames.length; i++) {
                 SampleData sd = sampleDataMap.get(sampleNames[i]);
                 // Check for null?  Should be impossible
-                attributes[i] = sd.getAttributesMap().get(att);
+
+                final String s = sd.getAttributesMap().get(att);
+                attributes[i] = s;
+
             }
             attMap.put(att, attributes);
         }
@@ -141,6 +180,7 @@ public class ScatterPlotUtils {
         Map<TrackType, DoubleArrayList> valueMap = new HashMap<TrackType, DoubleArrayList>();
         Map<String, String> attributesMap = new HashMap<String, String>();
 
+
         public void addDataValue(TrackType type, double value) {
 
             DoubleArrayList valueArray = valueMap.get(type);
@@ -162,5 +202,6 @@ public class ScatterPlotUtils {
         public Map<String, String> getAttributesMap() {
             return attributesMap;
         }
+
     }
 }
