@@ -78,9 +78,9 @@ public class LoadFromDatabaseAction extends MenuAction {
                 }
                 url += "/" + db;
 
-//                String table2 = "SAMPLE_INFO";
-//                ResourceLocator loc2 = new ResourceLocator(url, table2);
-//                loc2.setDescription("SELECT * FROM " + table2);
+                String table2 = "SAMPLE_INFO";
+                ResourceLocator loc2 = new ResourceLocator(url, table2);
+                loc2.setDescription("SELECT * FROM " + table2);
 //
 //                // CNV. Do a join for fun
                 String table1 = "CNV";
@@ -88,9 +88,9 @@ public class LoadFromDatabaseAction extends MenuAction {
 
 
                 // TODO -- get these mappings from a config table
-                String query = "SELECT  cnv.Sample Sample, cnv.`Probe Median` Value, " +
-                        "cnv.Chromosome chr,  cnv.Start start, cnv.Stop end, " +
-                        "CONCAT('<br>Event: ', cnv.Event,'<br>% CNV Overlap = ', cnv.`% of CNV Overlap`) description " +
+                String query = "SELECT  Sample as Sample, `Probe Median` as Value, " +
+                        "Chromosome as chr,  Start as start, Stop as end, " +
+                        "CONCAT('<br>Event: ', cnv.Event,'<br>% CNV Overlap = ', cnv.`% of CNV Overlap`) as description " +
                         " FROM CNV";
 //                         + "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
 //                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";
@@ -100,7 +100,7 @@ public class LoadFromDatabaseAction extends MenuAction {
                 loc1.setType(".seg");
 
 
-                mainFrame.loadTracks(Arrays.asList(loc1)); //, loc2));
+                mainFrame.loadTracks(Arrays.asList(loc1, loc2));
 
                 return null;
             }
