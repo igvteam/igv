@@ -1,8 +1,5 @@
 package org.broad.igv.charts;
 
-import com.approximatrix.charting.coordsystem.ticklocator.NumericXTickLocator;
-import com.approximatrix.charting.coordsystem.ticklocator.NumericYTickLocator;
-
 /**
  * @author Jim Robinson
  * @date 10/25/11
@@ -27,8 +24,9 @@ public class Axis {
         this.min = min;
         this.max = max;
 
-        NumericYTickLocator tickLocator = new NumericYTickLocator(max, min, 20, 40);
-        ticks = tickLocator.getTickMarkLocations();
+        //NumericYTickLocator tickLocator = new NumericYTickLocator(max, min, 20, 40);
+        //ticks = tickLocator.getTickMarkLocations();
+        ticks = new double[] {-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7};
         scale =  ((double) pixelWidth) / (max - min);
     }
 

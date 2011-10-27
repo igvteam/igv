@@ -88,7 +88,7 @@ public class ScatterPlot {
 
                     int px = xAxis.getPixelForValue(x);
                     final int bottom = bounds.y + bounds.height;
-                    int pY = bottom -  yAxis.getPixelForValue(y);
+                    int pY = bottom - yAxis.getPixelForValue(y);
                     if (px >= bounds.x && px <= bounds.x + bounds.width &&
                             pY >= bounds.y && pY <= bottom) {
                         graphics.fillRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
@@ -114,7 +114,8 @@ public class ScatterPlot {
         }
         double[] yticks = yAxis.ticks;
         for (int i = 0; i < yticks.length; i++) {
-            int py = yAxis.getPixelForValue(yticks[i]);
+            final int bottom = bounds.y + bounds.height;
+            int py = bottom - yAxis.getPixelForValue(yticks[i]);
             if (py > bounds.y && py < bounds.y + bounds.height) {
                 graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
             }
@@ -127,7 +128,8 @@ public class ScatterPlot {
         if (px > bounds.x && px < bounds.x + bounds.width) {
             graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
         }
-        int py = yAxis.getPixelForValue(0);
+        final int bottom = bounds.y + bounds.height;
+        int py = bottom - yAxis.getPixelForValue(0);
         if (py > bounds.y && py < bounds.y + bounds.height) {
             graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
         }
