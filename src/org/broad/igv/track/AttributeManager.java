@@ -65,11 +65,16 @@ public class AttributeManager {
 
 
     /**
-     * Map of data track identifiers (i.e. "array names") to its
-     * attributeMap.   The attributeMap for a track maps attribute name (for
-     * example "Cell Type"  to value (for example "ES");
+     * Sample table. Key is sample name, identifying a "row" in the table.  Value is a map of column name / value
+     * pairs.   (e.g.  {TCGA-001  ->  { (gender->male),  (treated -> true), etc}}
      */
     LinkedHashMap<String, Map<String, String>> attributeMap = new LinkedHashMap();
+
+
+    /**
+     * Map of track id -> sample name.
+     */
+    Map<String, String> trackSampleMappings = new HashMap<String, String>();
 
     /**
      * List of attribute names.  The list
@@ -282,11 +287,8 @@ public class AttributeManager {
         try {
             reader = ParsingUtils.openAsciiReader(locator);
             nextLine = reader.readLine();
-            if (nextLine.toLowerCase().startsWith("#sampletable")) {
-                loadSampleTable(reader, nextLine, locator.getPath());
-            } else {
-                loadOldSampleInfo(reader, nextLine, locator.getPath());
-            }
+            loadSampleTable(reader, nextLine, locator.getPath());
+
             loadedResources.add(locator);
 
             //createCurrentAttributeFileString(files);
@@ -306,177 +308,119 @@ public class AttributeManager {
         }
     }
 
-    private void loadOldSampleInfo(AsciiLineReader reader, String nextLine, String path) throws IOException {
-        // Parse column neadings for attribute names.
-        // Columns 1 and 2 are array and sample name (not attributes)
+    /**
+     * Load sample table, which might optionally have 3 sections
+     * #sampletable (default)
+     * #samplemappint (track id -> sample mapping table)
+     * #colors (color table)
+     */
+    private void loadSampleTable(AsciiLineReader reader, String nextLine, String path) throws IOException {
+
+        String[] colHeadings = null;
+        
+        List<String> sections = Arrays.asList("#sampletable", "#samplemapping", "#colors");
+
         boolean foundAttributes = false;
-        String[] colHeadings = nextLine.split("\t");
         int nLines = 0;
         int lineLimit = 100000;
+        String section = "#sampletable";
         while ((nextLine = reader.readLine()) != null) {
             if (nLines++ > lineLimit) {
                 break;
             }
-
-            if (nextLine.startsWith("#colors")) {
-                parseColors(reader);
-                return;
-            }
-
-            String[] values = nextLine.split("\t");
-
-            if (values.length >= 2) {
-                String arrayName = values[0].trim();
-                // Loop through attribute columns
-                for (int i = 0; i < colHeadings.length; i++) {
-                    String attributeName = colHeadings[i].trim();
-                    String attributeValue = (i < values.length ? values[i].trim() : "");
-                    addAttribute(arrayName, attributeName, attributeValue);
-                    foundAttributes = true;
+            if (nextLine.toLowerCase().startsWith("#")) {
+                String tmp =  nextLine.toLowerCase().trim();
+                if(sections.contains(tmp)) {
+                    section = tmp;
                 }
+                continue;
             }
-        }
 
+            String[] tokens = nextLine.split("\t");
 
-        if (!foundAttributes) {
-            throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
-        }
-    }
-
-    private void parseColors(AsciiLineReader reader) throws IOException {
-
-        String nextLine;
-        while ((nextLine = reader.readLine()) != null) {
-            try {
-                String[] tokens = nextLine.split("\t");
-                if (tokens.length >= 3) {
-                    String attKey = tokens[0].toUpperCase();
-                    if (isNumeric(attKey)) {
-
-                        ColumnMetaData metaData = columnMetaData.get(attKey);
-                        String rangeString = tokens[1].trim();
-                        float min = (float) metaData.min;
-                        float max = (float) metaData.max;
-                        if (!rangeString.equals("*") && rangeString.length() > 0) {
-                            String[] tmp = rangeString.split(":");
-                            if (tmp.length > 1) {
-                                try {
-                                    min = Float.parseFloat(tmp[0]);
-                                    max = Float.parseFloat(tmp[1]);
-                                } catch (NumberFormatException e) {
-                                    log.error("Error parsing range string: " + rangeString, e);
-                                }
-                            }
-                        }
-
-                        AbstractColorScale scale = null;
-                        if (tokens.length == 3) {
-                            Color baseColor = ColorUtilities.stringToColor(tokens[2]);
-                            scale = new MonocolorScale(min, max, baseColor);
-                            colorScales.put(attKey, scale);
-                        } else {
-                            Color color1 = ColorUtilities.stringToColor(tokens[2]);
-                            Color color2 = ColorUtilities.stringToColor(tokens[3]);
-                            if (min < 0) {
-                                scale = new ContinuousColorScale(min, 0, max, color1, Color.white, color2);
-                            } else {
-                                scale = new ContinuousColorScale(min, max, color1, color2);
-                            }
-                        }
-                        colorScales.put(attKey, scale);
-
+            if (section.equals("#sampletable")) {
+                if (tokens.length >= 2) {
+                    if (colHeadings == null) {
+                        colHeadings = tokens;
                     } else {
-                        String attValue = tokens[1];
-                        Color color = ColorUtilities.stringToColor(tokens[2]);
-                        String key = (attKey + "_" + attValue).toUpperCase();
-                        colorMap.put(key, color);
+                        String sampleName = tokens[0].trim();
+                        // Loop through attribute columns
+                        //List<Attribute> attributes = new ArrayList(colHeadings.length);
+                        for (int i = 0; i < colHeadings.length; i++) {
+                            String attributeName = colHeadings[i].trim();
+                            String attributeValue = (i < tokens.length ? tokens[i].trim() : "");
+                            addAttribute(sampleName, attributeName, attributeValue);
+                            foundAttributes = true;
+                        }
                     }
                 }
-            } catch (Exception e) {
-                log.error("Error parsing color line: " + nextLine, e);
-            }
-        }
-    }
-
-    /**
-     * Load attributes from an ascii file in "Sample Table" format.  This format expects
-     * a sample table section, prefaced by #sampleTable,  followed by a sample mapping
-     * section  (track -> sample) prefaced by #sampleMappings
-     */
-    private void loadSampleTable(AsciiLineReader reader, String nextLine, String path) throws IOException {
-
-        // Parse column neadings for attribute names.
-        // Columns 1 and 2 are array and sample name (not attributes)
-        nextLine = reader.readLine();
-        String[] colHeadings = nextLine.split("\t");
-
-        // Map of sample -> attribute list
-        Map<String, List<Attribute>> sampleTable = new HashMap();
-
-        boolean foundAttributes = false;
-        int nLines = 0;
-        int lineLimit = 100000;
-        while ((nextLine = reader.readLine()) != null) {
-            if (nLines++ > lineLimit || nextLine.toLowerCase().startsWith("#samplemapping")) {
-                break;
-            }
-
-            if (nextLine.toLowerCase().startsWith("#colors")) {
-                parseColors(reader);
-                break;
-            }
-
-            String[] values = nextLine.split("\t");
-
-            if (values.length >= 2) {
-                String sampleName = values[0].trim();
-                // Loop through attribute columns
-                List<Attribute> attributes = new ArrayList(colHeadings.length);
-                for (int i = 0; i < colHeadings.length; i++) {
-                    String attributeName = colHeadings[i].trim();
-                    String attributeValue = (i < values.length ? values[i].trim() : "");
-                    attributes.add(new Attribute(attributeName, attributeValue));
-                    foundAttributes = true;
-                }
-                sampleTable.put(sampleName, attributes);
-            }
-        }
-        if (!foundAttributes) {
-            throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
-        }
-
-        if (nextLine.toLowerCase().startsWith("#samplemapping")) {
-            while ((nextLine = reader.readLine()) != null) {
-
-                if (nextLine.toLowerCase().startsWith("#colors")) {
-                    parseColors(reader);
-                    break;
-                }
-
-                String[] tokens = nextLine.split("\t");
+            } else if (section.equals("#samplemapping")) {
                 if (tokens.length < 2) {
                     continue;
                 }
-                String array = tokens[0];
+                String track = tokens[0];
                 String sample = tokens[1];
-                List<Attribute> attributes = sampleTable.get(sample);
-                if (attributes != null) {
-                    for (Attribute att : attributes) {
-                        addAttribute(array, att.getKey(), att.getValue());
-                    }
-                }
+                trackSampleMappings.put(track, sample);
+
+            } else if (section.equals("#colors")) {
+                parseColors(tokens);
+
             }
-        } else {
-            // No mapping section.
-            for (Map.Entry<String, List<Attribute>> entry : sampleTable.entrySet()) {
-                String sample = entry.getKey();
-                for (Attribute att : entry.getValue()) {
-                    addAttribute(sample, att.getKey(), att.getValue());
-                }
-            }
+        }
+        if (!foundAttributes) {
+            throw new DataLoadException("Could not determine file type.  Does file have proper extension? ", path);
         }
 
 
+    }
+
+
+    private void parseColors(String[] tokens) throws IOException {
+
+        if (tokens.length >= 3) {
+            String attKey = tokens[0].toUpperCase();
+            if (isNumeric(attKey)) {
+
+                ColumnMetaData metaData = columnMetaData.get(attKey);
+                String rangeString = tokens[1].trim();
+                float min = (float) metaData.min;
+                float max = (float) metaData.max;
+                if (!rangeString.equals("*") && rangeString.length() > 0) {
+                    String[] tmp = rangeString.split(":");
+                    if (tmp.length > 1) {
+                        try {
+                            min = Float.parseFloat(tmp[0]);
+                            max = Float.parseFloat(tmp[1]);
+                        } catch (NumberFormatException e) {
+                            log.error("Error parsing range string: " + rangeString, e);
+                        }
+                    }
+                }
+
+                AbstractColorScale scale = null;
+                if (tokens.length == 3) {
+                    Color baseColor = ColorUtilities.stringToColor(tokens[2]);
+                    scale = new MonocolorScale(min, max, baseColor);
+                    colorScales.put(attKey, scale);
+                } else {
+                    Color color1 = ColorUtilities.stringToColor(tokens[2]);
+                    Color color2 = ColorUtilities.stringToColor(tokens[3]);
+                    if (min < 0) {
+                        scale = new ContinuousColorScale(min, 0, max, color1, Color.white, color2);
+                    } else {
+                        scale = new ContinuousColorScale(min, max, color1, color2);
+                    }
+                }
+                colorScales.put(attKey, scale);
+
+            } else {
+                String attValue = tokens[1];
+                Color color = ColorUtilities.stringToColor(tokens[2]);
+                String key = (attKey + "_" + attValue).toUpperCase();
+                colorMap.put(key, color);
+            }
+
+        }
     }
 
 
@@ -501,6 +445,10 @@ public class AttributeManager {
      */
     public Set<ResourceLocator> getLoadedResources() {
         return loadedResources;
+    }
+
+    public String getSampleFor(String track) {
+        return trackSampleMappings.get(track);
     }
 
     /**

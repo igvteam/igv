@@ -39,13 +39,11 @@ import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 
 /**
@@ -374,27 +372,34 @@ public class TrackManager {
         overlaidTracks.clear();
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS)) {
+
+            // Old option to allow overlaying based on an arbitrary attribute.
             String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
-            if (overlayAttribute != null) {
-                for (Track track : getAllTracks(false)) {
-                    if (track != null) {  // <= this should not be neccessary
-                        if (track.getTrackType() == TrackType.MUTATION) {
-                            String value = track.getAttributeValue(overlayAttribute);
 
-                            if (value != null) {
-                                List<Track> trackList = overlayTracksMap.get(value);
+            for (Track track : getAllTracks(false)) {
+                if (track != null && track.getTrackType() == TrackType.MUTATION) {
 
-                                if (trackList == null) {
-                                    trackList = new ArrayList();
-                                    overlayTracksMap.put(value, trackList);
-                                }
+                    String sample;
+                    if (overlayAttribute != null && overlayAttribute.length() > 0) {
+                        sample = track.getAttributeValue(overlayAttribute);
+                    } else {
+                        sample = track.getSample();
+                    }
 
-                                trackList.add(track);
-                            }
+                    if (sample != null) {
+                        List<Track> trackList = overlayTracksMap.get(sample);
+
+                        if (trackList == null) {
+                            trackList = new ArrayList();
+                            overlayTracksMap.put(sample, trackList);
                         }
+
+                        trackList.add(track);
                     }
                 }
+
             }
+            // }
             for (Track track : getAllTracks(false)) {
                 if (track != null) {  // <= this should not be neccessary
                     if (track.getTrackType() != TrackType.MUTATION) {
@@ -698,8 +703,14 @@ public class TrackManager {
      */
     public List<Track> getOverlayTracks(Track track) {
         String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
-        String value = track.getAttributeValue(overlayAttribute);
-        return overlayTracksMap.get(value);
+        String sample;
+        if (overlayAttribute != null && overlayAttribute.length() > 0) {
+            sample = track.getAttributeValue(overlayAttribute);
+        } else {
+            sample = track.getSample();
+        }
+
+        return overlayTracksMap.get(sample);
 
     }
 

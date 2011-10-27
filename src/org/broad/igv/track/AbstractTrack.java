@@ -311,13 +311,17 @@ public abstract class AbstractTrack implements Track {
         String key = attributeName.toUpperCase();
         String value = attributes.get(key);
         if (value == null) {
-            value = AttributeManager.getInstance().getAttribute(getSampleKey(), key);
+            value = AttributeManager.getInstance().getAttribute(getSample(), key);
         }
         return value;
     }
 
-    private String getSampleKey() {
-        return sampleId != null ? sampleId : getName();
+    public String getSample() {
+        if(sampleId != null) {
+            return sampleId;
+        }
+        String key = AttributeManager.getInstance().getSampleFor(getName());
+        return key != null ? key : getName();
     }
 
 

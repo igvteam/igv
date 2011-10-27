@@ -88,6 +88,8 @@ public interface Track extends Persistable {
 
     public String getName();
 
+    String getSample();
+
     public void setUrl(String url);
 
     public ResourceLocator getResourceLocator();
