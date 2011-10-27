@@ -18,7 +18,9 @@
 
 package org.broad.igv.graph;
 
+import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
@@ -35,7 +37,8 @@ public class MainWindow extends JFrame {
 
     public MainWindow() throws IOException {
 
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        Globals.setHeadless(true);
+        Genome genome = (new GenomeManager()).loadGenome("/Users/jrobinso/projects/genomes/hg18.genome", null);
 
         // Create a test graph and graph panel
         //Graph graph =  GeneUtils.getGraphFor("ARF1"); // createGraph();

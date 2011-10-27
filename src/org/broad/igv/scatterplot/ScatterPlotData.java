@@ -1,6 +1,8 @@
 package org.broad.igv.scatterplot;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 
@@ -33,7 +35,7 @@ public class ScatterPlotData {
 
 
     private int sampleCount;
-    private boolean igvDataOK;     // sample count matches map entries
+
     // Cached map key lists
     private ArrayList<String> dataTypes;   // list of names used for data map keys
     private ArrayList<String> symbolNames;   // list of names used for symbol map keys
@@ -78,6 +80,10 @@ public class ScatterPlotData {
     * */
     public String[] getSampleNames() {
         return sampleNames;
+    }
+
+    public List<String> getCategories() {
+        return symbolNames;
     }
 
     /*

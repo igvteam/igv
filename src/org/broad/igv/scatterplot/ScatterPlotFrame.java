@@ -149,7 +149,7 @@ public class ScatterPlotFrame extends JFrame {
         igvYFrameDimension = wndSize.height / 2;
         super.setBounds(igvXFrameStart, igvYFrameStart,   // Position
                 igvXFrameDimension, igvYFrameDimension);  // Size
-        super.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        super.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         igvBorderLayout = new BorderLayout();           // Create a layout manager
         igvFrameContent = super.getContentPane();        // Get the igvFrameContent pane

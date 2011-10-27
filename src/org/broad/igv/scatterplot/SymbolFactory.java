@@ -26,7 +26,7 @@ import java.util.ArrayList;
 
     // default colors assigned per series, starting with systemColor[1] (red);
     // systemColors[0] (black) is reserved for outlining shapes
-     private Color [] IGVDefaultColor = {Color.black, Color.red,  Color.green, Color.blue, Color.yellow, 
+     private Color [] defaultColor = {Color.black, Color.red,  Color.green, Color.blue, Color.yellow,
         Color.magenta, Color.cyan, Color.orange, Color.pink, Color.gray, Color.darkGray,
         Color.lightGray, Color.white};
 
@@ -327,9 +327,10 @@ import java.util.ArrayList;
          else {
              IGVSymbolShape[] shapes = IGVSymbolShape.values();
 
+
              for(int series = 0; series < nSeries; ++series){
-                 igvSymbolShapeList.add(createSymbolShape(shapes[series+1], igvShapeWidth,
-                         igvShapeHeight));
+                 int shapesIndex = Math.min(series+1, shapes.length - 1);
+                 igvSymbolShapeList.add(createSymbolShape(shapes[shapesIndex], igvShapeWidth, igvShapeHeight));
              }
          }
 
@@ -347,7 +348,8 @@ import java.util.ArrayList;
         igvSymbolColorList = new ArrayList<Color>();
 
         for(int series = 0; series < nSeries; ++series){
-            igvSymbolColorList.add(IGVDefaultColor[series + 1]);
+            int colorIndex = Math.min(series, defaultColor.length - 1);
+            igvSymbolColorList.add(defaultColor[colorIndex]);
         }
     }
 

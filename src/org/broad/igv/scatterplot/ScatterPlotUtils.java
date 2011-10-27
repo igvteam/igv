@@ -4,6 +4,7 @@ import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.collections.DoubleArrayList;
 
@@ -32,6 +33,17 @@ public class ScatterPlotUtils {
 
     public static void openPlot(String chr, int start, int end, int zoom) {
 
+        ScatterPlotData spData = getScatterPlotData(chr, start, end, zoom);
+        final org.broad.igv.charts.ScatterPlotFrame igvPlotFrame = new org.broad.igv.charts.ScatterPlotFrame(spData);
+        UIUtilities.invokeOnEventThread(new Runnable() {
+            public void run() {
+                igvPlotFrame.setVisible(true);
+            }
+        });
+
+    }
+
+    private static ScatterPlotData getScatterPlotData(String chr, int start, int end, int zoom) {
         List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
 
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
@@ -43,15 +55,14 @@ public class ScatterPlotUtils {
         for (String att : attributeNames) {
             uniqueAttributeValues.put(att, new HashSet<String>());
         }
+        uniqueAttributeValues.put("Mut Count" , new HashSet<String>());
         HashSet<String> nonSharedAttributes = new HashSet<String>();
 
         for (Track t : tracks) {
             if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
                 TrackType type = dataTrack.getTrackType();
-                if (type == TrackType.GENE_EXPRESSION) {
-                    System.out.println();
-                }
+
                 if (plottableTypes.contains(type)) {
                     types.add(type);
 
@@ -74,6 +85,10 @@ public class ScatterPlotUtils {
                             if (otherValue != null) {
                                 nonSharedAttributes.add(att);
                             }
+                        } else if (otherValue == null) {
+                            if (attributeValue != null) {
+                                nonSharedAttributes.add(att);
+                            }
                         } else {
                             if (!attributeValue.equals(otherValue)) {
                                 nonSharedAttributes.add(att);
@@ -85,6 +100,19 @@ public class ScatterPlotUtils {
 
                     sampleData.addDataValue(type, regionScore);
                 }
+
+            } else if (t.getTrackType() == TrackType.MUTATION) {
+                // Classify sample by mutation count
+                String sample = t.getAttributeValue(key);
+                SampleData sampleData = sampleDataMap.get(sample);
+                if (sampleData != null) {
+                    int mutCount = getMutationCount(chr, start, end, zoom, t);
+                    String mutCountString = mutCount < 5 ? String.valueOf(mutCount) : "> 5";
+                    sampleData.addAttributeValue("Mut Count", mutCountString);
+                    uniqueAttributeValues.get("Mut Count").add(mutCountString);
+
+                }
+
             }
         }
 
@@ -146,16 +174,11 @@ public class ScatterPlotUtils {
             attMap.put(att, attributes);
         }
 
-        ScatterPlotData spData = new ScatterPlotData(sampleNames, attMap, dataMap);
-        final ScatterPlotFrame igvPlotFrame = new ScatterPlotFrame(" ", spData);
-        UIUtilities.invokeOnEventThread(new Runnable() {
-            public void run() {
-                igvPlotFrame.setVisible(true);
-            }
-        });
-
+        return new ScatterPlotData(sampleNames, attMap, dataMap);
     }
 
+
+    //TODO -- move this to track ?
     private static double getAverageScore(String chr, int start, int end, int zoom, DataTrack dataTrack) {
         double regionScore = 0;
         int intervalSum = 0;
@@ -172,6 +195,11 @@ public class ScatterPlotUtils {
             regionScore /= intervalSum;
         }
         return regionScore;
+    }
+
+    private static int getMutationCount(String chr, int start, int end, int zoom, Track track) {
+
+        return (int) track.getRegionScore(chr, start, end, zoom, RegionScoreType.MUTATION_COUNT, FrameManager.getDefaultFrame());
     }
 
 
