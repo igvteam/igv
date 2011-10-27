@@ -36,6 +36,7 @@ import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,7 +101,7 @@ public class SearchCommand implements Command {
                     end = Integer.parseInt(tokens[2].trim());
                 }
 
-                if(FrameManager.isGeneListMode()) {
+                if (FrameManager.isGeneListMode()) {
                     IGV.getInstance().getSession().setCurrentGeneList(null);
                     IGV.getInstance().resetFrames();
                 }
@@ -113,11 +114,31 @@ public class SearchCommand implements Command {
             } catch (NumberFormatException e) {
                 // Multiple tokens, On the fly gene list ?
 
-                List<String> loci = Arrays.asList(tokens);
-                GeneList geneList = new GeneList("", loci, false);
-                IGV.getInstance().getSession().setCurrentGeneList(geneList);
-                IGV.getInstance().resetFrames();
-                success = true;
+                List<String> loci = new ArrayList<String>(tokens.length);
+                for (String t : tokens) {
+                    Locus l = new Locus(t);
+                    if (l.isValid()) {
+                        loci.add(t);
+                    } else if (FeatureDB.getFeature(t) != null) {
+                        loci.add(t);
+                    }
+                }
+
+                if (loci.size() <= 1) {
+                    //MessageUtils.showMessage("Invalid search string: " + searchString);
+                    success = false;
+                } else {
+                    if (loci.size() != tokens.length) {
+                        MessageUtils.showMessage("Not all portions of the search string are recognized as genes or loci.");
+                    }
+                    GeneList geneList = new GeneList("", loci, false);
+                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                    IGV.getInstance().resetFrames();
+                    success = true;
+
+                }
+
+
             }
 
         }
@@ -126,7 +147,7 @@ public class SearchCommand implements Command {
 
         else {
 
-            if(FrameManager.isGeneListMode()) {
+            if (FrameManager.isGeneListMode()) {
                 IGV.getInstance().getSession().setCurrentGeneList(null);
                 IGV.getInstance().resetFrames();
             }
