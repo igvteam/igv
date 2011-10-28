@@ -49,16 +49,25 @@ public class ScatterPlotUtils {
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
         LinkedHashMap<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         LinkedHashSet<TrackType> types = new LinkedHashSet<TrackType>();
-        String key = "samplename";
+
 
         LinkedHashMap<String, Set<String>> uniqueAttributeValues = new LinkedHashMap<String, Set<String>>();
         for (String att : attributeNames) {
             uniqueAttributeValues.put(att, new HashSet<String>());
         }
-        uniqueAttributeValues.put("Mut Count" , new HashSet<String>());
+        uniqueAttributeValues.put("Mut Count", new HashSet<String>());
         HashSet<String> nonSharedAttributes = new HashSet<String>();
 
+        String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
         for (Track t : tracks) {
+
+            String sample;
+            if (overlayAttribute != null && overlayAttribute.length() > 0) {
+                sample = t.getAttributeValue(overlayAttribute);
+            } else {
+                sample = t.getSample();
+            }
+
             if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
                 TrackType type = dataTrack.getTrackType();
@@ -68,7 +77,6 @@ public class ScatterPlotUtils {
 
                     double regionScore = getAverageScore(chr, start, end, zoom, dataTrack);
 
-                    String sample = dataTrack.getAttributeValue(key);
 
                     SampleData sampleData = sampleDataMap.get(sample);
                     if (sampleData == null) {
@@ -103,7 +111,6 @@ public class ScatterPlotUtils {
 
             } else if (t.getTrackType() == TrackType.MUTATION) {
                 // Classify sample by mutation count
-                String sample = t.getAttributeValue(key);
                 SampleData sampleData = sampleDataMap.get(sample);
                 if (sampleData != null) {
                     int mutCount = getMutationCount(chr, start, end, zoom, t);
@@ -160,7 +167,7 @@ public class ScatterPlotUtils {
         Map<String, String[]> attMap = new HashMap<String, String[]>(seriesNames.size());
 
         for (String att : seriesNames) {
-            if (key.equals(att)) continue;
+
             String[] attributes = new String[sampleNames.length];
 
             for (int i = 0; i < sampleNames.length; i++) {

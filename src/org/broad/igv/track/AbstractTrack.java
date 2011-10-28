@@ -317,6 +317,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public String getSample() {
+
         if(sampleId != null) {
             return sampleId;
         }
