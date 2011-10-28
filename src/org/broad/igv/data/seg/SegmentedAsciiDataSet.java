@@ -99,7 +99,6 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         if (parser != null && timestamp > lastRefreshTime) {
             dataMax = -Float.MAX_VALUE;
             dataMin = Float.MAX_VALUE;
-            logNormalized = false;
             segments = new HashMap();
             headings = new ArrayList();
             wholeGenomeScoresCache.clear();
