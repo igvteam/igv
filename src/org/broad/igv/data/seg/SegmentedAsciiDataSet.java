@@ -90,23 +90,6 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param timestamp
-     */
-    public synchronized void refreshData(long timestamp) {
-        if (parser != null && timestamp > lastRefreshTime) {
-            dataMax = -Float.MAX_VALUE;
-            dataMin = Float.MAX_VALUE;
-            segments = new HashMap();
-            headings = new ArrayList();
-            wholeGenomeScoresCache.clear();
-            parser.loadSegments(this, genome);
-            lastRefreshTime = timestamp;
-        }
-
-    }
 
     /**
      *

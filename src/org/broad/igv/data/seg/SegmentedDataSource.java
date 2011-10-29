@@ -56,12 +56,6 @@ public class SegmentedDataSource implements DataSource {
         this.dataset = dataset;
     }
 
-
-    public void refreshData(long timestamp) {
-        dataset.refreshData(timestamp);
-    }
-
-
     public TrackType getTrackType() {
         return dataset.getType();
     }

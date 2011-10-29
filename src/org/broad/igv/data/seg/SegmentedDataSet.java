@@ -47,6 +47,4 @@ public interface SegmentedDataSet {
 
     boolean isLogNormalized();
 
-    void refreshData(long timestamp);
-
 }

@@ -51,8 +51,6 @@ public interface DataSource {
 
     boolean isLogNormalized();
 
-    void refreshData(long timestamp);
-
     public WindowFunction getWindowFunction();
 
     public Collection<WindowFunction> getAvailableWindowFunctions();

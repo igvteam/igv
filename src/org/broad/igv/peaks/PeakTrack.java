@@ -617,10 +617,6 @@ public class PeakTrack extends AbstractTrack {
             return source.isLogNormalized();
         }
 
-        public void refreshData(long timestamp) {
-            source.refreshData(timestamp);
-        }
-
         public WindowFunction getWindowFunction() {
             return source.getWindowFunction();
         }
