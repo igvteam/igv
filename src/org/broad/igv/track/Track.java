@@ -154,8 +154,6 @@ public interface Track extends Persistable {
 
     public float getRegionScore(String chr, int start, int end, int zoom, RegionScoreType type, ReferenceFrame frame);
 
-    public void refreshData(long timestamp);
-
     public void setFontSize(int h);
 
     public int getFontSize();

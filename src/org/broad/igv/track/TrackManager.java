@@ -24,7 +24,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.IGVFeatureRenderer;
@@ -40,8 +39,7 @@ import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.List;
 
@@ -83,6 +81,12 @@ public class TrackManager {
 
     public static final String DATA_PANEL_NAME = "DataPanel";
     public static final String FEATURE_PANEL_NAME = "FeaturePanel";
+
+    /**
+     *
+     */
+    Collection<SoftReference<TrackGroupEventListener>> groupListeners =
+            Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
 
 
     public TrackManager(IGV igv) {
@@ -136,9 +140,8 @@ public class TrackManager {
     public void setGroupByAttribute(String attributeName) {
         groupByAttribute = attributeName;
         groupTracksByAttribute();
-        // propagate change so VCFTracks and others can reoder their samples internally according to
-        // groupByAttribute as well:
-        refreshData();
+        // Some tracks need to respond to changes in grouping, fire notification event
+        notifyGroupEvent();
     }
 
     public void reset() {
@@ -147,6 +150,7 @@ public class TrackManager {
         if (tsp != null) {
             tsp.getTrackPanel().reset();
         }
+        groupListeners.clear();
     }
 
 
@@ -155,11 +159,6 @@ public class TrackManager {
             TrackPanel trackPanel = tsp.getTrackPanel();
             trackPanel.groupTracksByAttribute(groupByAttribute);
         }
-        //TODO We should go through all current panels not just the data panel
-        //TrackPanelScrollPane tsp = trackPanelScrollPanes.get(DATA_PANEL_NAME);
-        //if (tsp != null) {
-        //    tsp.getTrackPanel().groupTracksByAttribute(groupByAttribute);
-        //}
     }
 
     /**
@@ -172,7 +171,7 @@ public class TrackManager {
                 ((AlignmentTrack) t).clearCaches();
             }
         }
-        IGV.getInstance().repaintDataPanels();
+        igv.repaintDataPanels();
     }
 
 
@@ -358,7 +357,7 @@ public class TrackManager {
         ResourceLocator locator = new ResourceLocator(file.getAbsolutePath());
         List<Track> tracks = load(locator);
         panel.addTracks(tracks);
-        IGV.getInstance().doRefresh();
+        igv.doRefresh();
     }
 
     /**
@@ -374,7 +373,7 @@ public class TrackManager {
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS)) {
 
             // Old option to allow overlaying based on an arbitrary attribute.
-            String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
+            String overlayAttribute = igv.getSession().getOverlayAttribute();
 
             for (Track track : getAllTracks(false)) {
                 if (track != null && track.getTrackType() == TrackType.MUTATION) {
@@ -409,7 +408,7 @@ public class TrackManager {
                 }
             }
 
-            boolean displayOverlays = IGV.getInstance().getSession().getOverlayMutationTracks();
+            boolean displayOverlays = igv.getSession().getOverlayMutationTracks();
             for (Track track : getAllTracks(false)) {
                 if (track != null) {
                     if (track.getTrackType() == TrackType.MUTATION) {
@@ -513,7 +512,7 @@ public class TrackManager {
     }
 
     /**
-     * Return the complete set of unique DataResourcLocators currently loaded
+     * Return the complete set of unique DataResourceLocators currently loaded
      *
      * @return
      */
@@ -532,11 +531,7 @@ public class TrackManager {
 
     }
 
-    /**
-     * Method description
-     *
-     * @param newHeight
-     */
+
     public void setAllTrackHeights(int newHeight) {
         for (Track track : this.getAllTracks(false)) {
             track.setHeight(newHeight);
@@ -544,11 +539,7 @@ public class TrackManager {
 
     }
 
-    /**
-     * Method description
-     *
-     * @param tracksToRemove
-     */
+
     public void removeTracks(Collection<Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
@@ -566,21 +557,12 @@ public class TrackManager {
             if (t instanceof DragListener) {
                 DragEventManager.getInstance().removeDragListener((DragListener) t);
             }
-
+            if (t instanceof TrackGroupEventListener) {
+                removeGroupEventListener((TrackGroupEventListener) t);
+            }
         }
     }
 
-    /**
-     * Refresh the data in all tracks that respond to this message (note: most do not,  it was added early
-     * on for copy number data and is kept for backward compatibility).
-     */
-    public void refreshData() {
-
-        long t0 = System.currentTimeMillis();
-        for (Track track : getAllTracks(false)) {
-            track.refreshData(t0);
-        }
-    }
 
     /**
      * Sort all groups (data and feature) by attribute value(s).  Tracks are
@@ -702,7 +684,7 @@ public class TrackManager {
      * @return
      */
     public List<Track> getOverlayTracks(Track track) {
-        String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
+        String overlayAttribute = igv.getSession().getOverlayAttribute();
         String sample;
         if (overlayAttribute != null && overlayAttribute.length() > 0) {
             sample = track.getAttributeValue(overlayAttribute);
@@ -804,21 +786,27 @@ public class TrackManager {
     }
 
 
-    public static AsciiLineReader getGeneReader(GenomeDescriptor genomeDescriptor) {
+    public synchronized void addGroupEventListener(TrackGroupEventListener l) {
+        groupListeners.add(new SoftReference<TrackGroupEventListener>(l));
+    }
 
-        try {
+    public synchronized void removeGroupEventListener(TrackGroupEventListener l) {
 
-            InputStream inputStream = genomeDescriptor.getGeneStream();
-            if (inputStream == null) {
-                return null;
+        for (Iterator<SoftReference<TrackGroupEventListener>> it = groupListeners.iterator(); it.hasNext(); ) {
+            TrackGroupEventListener listener = it.next().get();
+            if (listener != null && listener == l) {
+                it.remove();
+                break;
             }
-            AsciiLineReader reader = new AsciiLineReader(inputStream);
-            return reader;
-        } catch (IOException ex) {
-            log.warn("Error loading the genome!", ex);
-            return null;
         }
+    }
 
+    public void notifyGroupEvent() {
+        TrackGroupEvent e = new TrackGroupEvent(this);
+        for (SoftReference<TrackGroupEventListener> ref : groupListeners) {
+            TrackGroupEventListener l = ref.get();
+            l.onTrackGroupEvent(e);
+        }
     }
 
 

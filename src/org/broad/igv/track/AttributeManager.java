@@ -283,11 +283,10 @@ public class AttributeManager {
      */
     public void loadSampleInfo(ResourceLocator locator) {
         AsciiLineReader reader = null;
-        String nextLine = null;
         try {
             reader = ParsingUtils.openAsciiReader(locator);
-            nextLine = reader.readLine();
-            loadSampleTable(reader, nextLine, locator.getPath());
+
+            loadSampleTable(reader, locator.getPath());
 
             loadedResources.add(locator);
 
@@ -314,7 +313,7 @@ public class AttributeManager {
      * #samplemappint (track id -> sample mapping table)
      * #colors (color table)
      */
-    private void loadSampleTable(AsciiLineReader reader, String nextLine, String path) throws IOException {
+    private void loadSampleTable(AsciiLineReader reader, String path) throws IOException {
 
         String[] colHeadings = null;
         
@@ -323,6 +322,7 @@ public class AttributeManager {
         boolean foundAttributes = false;
         int nLines = 0;
         int lineLimit = 100000;
+        String nextLine;
         String section = "#sampletable";
         while ((nextLine = reader.readLine()) != null) {
             if (nLines++ > lineLimit) {

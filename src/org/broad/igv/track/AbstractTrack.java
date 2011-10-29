@@ -472,15 +472,6 @@ public abstract class AbstractTrack implements Track {
     }
 
 
-    /**
-     * Refresh the underlying data for the track.  Default implementation does nothing.
-     * Subclasses can override
-     *
-     * @param timestamp
-     */
-    public void refreshData(long timestamp) {
-    }
-
     public Collection<WindowFunction> getAvailableWindowFunctions() {
         return new ArrayList();
 

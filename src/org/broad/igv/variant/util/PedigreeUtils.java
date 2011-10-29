@@ -67,7 +67,8 @@ public class PedigreeUtils {
                     familyNumber++;
                 }
             }
-            IGV.getInstance().getTrackManager().refreshData();
+
+            IGV.getInstance().getTrackManager().notifyGroupEvent();
         } finally {
             if (reader != null) reader.close();
         }

@@ -104,10 +104,6 @@ public class TrackGroup {
         tracks.remove(track);
     }
 
-    public void clear() {
-        tracks.clear();
-    }
-
     /**
      * Return a composite score for the entire group.  For now use the maximum track
      * score.   Note that scores for tracks not appropriate to the score type will

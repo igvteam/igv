@@ -79,14 +79,6 @@ public class SegmentedBinaryDataSet implements SegmentedDataSet {
 
     }
 
-    public synchronized void refreshData(long timestamp) {
-        if (timestamp > lastRefreshTime) {
-            logNormalized = false;
-            segmentsCache = new HashMap();
-            lastRefreshTime = timestamp;
-        }
-
-    }
 
     // TODO -- the synchronized keyword can be removed with the async whole genome load
 

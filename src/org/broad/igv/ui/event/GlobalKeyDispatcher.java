@@ -114,20 +114,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
         KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
 
-        KeyStroke refreshKey = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-
         final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
-
-        final Action refreshAction = new AbstractAction() {
-
-            public void actionPerformed(ActionEvent e) {
-                setEnabled(false); // stop any other events from interfering
-                IGV.getInstance().getTrackManager().refreshData();
-                IGV.getInstance().repaintDataPanels();
-                setEnabled(true);
-            }
-        };
-
 
         final Action toolAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -237,9 +224,6 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getInputMap().put(forwardKey1, "forward");
         getInputMap().put(forwardKey2, "forward");
         getActionMap().put("forward", forwardAction);
-
-        getInputMap().put(refreshKey, "refresh");
-        getActionMap().put("refresh", refreshAction);
 
     }
 

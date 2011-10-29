@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * @author Jesse Whitworth, Jim Robinson, Fabien Campagne
  */
-public class VariantTrack extends FeatureTrack {
+public class VariantTrack extends FeatureTrack implements TrackGroupEventListener {
 
     private static Logger log = Logger.getLogger(VariantTrack.class);
 
@@ -165,6 +165,8 @@ public class VariantTrack extends FeatureTrack {
         int visWindow = (int) Math.min(500000, (beta / p) * 1000);
         setVisibilityWindow(visWindow);
 
+        // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
+        IGV.getInstance().getTrackManager().addGroupEventListener(this);
 
     }
 
@@ -891,6 +893,10 @@ public class VariantTrack extends FeatureTrack {
         this.squishedHeight = squishedHeight;
     }
 
+    public void onTrackGroupEvent(TrackGroupEvent e) {
+        setupGroupsFromAttributes();
+    }
+
     public static enum ColorMode {
         GENOTYPE, METHYLATION_RATE, ALLELE
     }
@@ -1033,12 +1039,6 @@ public class VariantTrack extends FeatureTrack {
             }
         }
         return new VariantMenu(this, selectedVariant);
-    }
-
-    @Override
-    public void refreshData(long timestamp) {
-        super.refreshData(timestamp);
-        setupGroupsFromAttributes();
     }
 
 

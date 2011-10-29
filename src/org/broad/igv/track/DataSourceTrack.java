@@ -82,12 +82,6 @@ public class DataSourceTrack extends DataTrack {
     }
 
 
-    @Override
-    public void refreshData(long timestamp) {
-        dataSource.refreshData(timestamp);
-    }
-
-
     public WindowFunction getWindowFunction() {
         return dataSource.getWindowFunction();
     }
