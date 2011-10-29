@@ -1,9 +1,10 @@
 package org.broad.igv.charts;
 
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 
 /**
+ * Renders a scatterplot
+ *
  * @author Jim Robinson
  * @date 10/25/11
  */
@@ -19,18 +20,12 @@ public class ScatterPlot {
     int offsetX = pointShape.getBounds().width / 2;
     int offsetY = pointShape.getBounds().height / 2;
 
-
-    public ScatterPlot(XYDataModel model) {
-
-        setDataModel(model);
-    }
-
     public ScatterPlot() {
 
     }
 
 
-    public void setDataModel(XYDataModel dataModel) {
+    public void setModel(XYDataModel dataModel) {
         this.dataModel = dataModel;
 
         double minX = Double.MAX_VALUE;

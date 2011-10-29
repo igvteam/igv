@@ -6,15 +6,11 @@ package org.broad.igv.charts;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import com.jidesoft.swing.*;
 import org.broad.igv.scatterplot.ScatterPlotData;
-import org.broad.igv.scatterplot.SymbolSettings;
-import org.broadinstitute.sting.utils.exceptions.StingException;
 
 /**
  * @author Stan Diamond
@@ -22,16 +18,35 @@ import org.broadinstitute.sting.utils.exceptions.StingException;
 public class ScatterPlotFrame extends JFrame {
 
 
+    ScatterPlotData scatterPlotData;
+
     public ScatterPlotFrame() {
         initComponents();
     }
 
     public ScatterPlotFrame(ScatterPlotData scatterPlotData) {
+
+        this.scatterPlotData = scatterPlotData;
+
         initComponents();
 
-        ScatterPlot plot = createChart("", scatterPlotData);
-        chart.setScatterPlotModel(plot);
+        List<String> categoryList = scatterPlotData.getCategories();
+        if (categoryList.size() > 0) {
+            String[] categories = categoryList.toArray(new String[categoryList.size()]);
+            classifyComboBox.setModel(new DefaultComboBoxModel(categories));
+        } else {
+            classifyComboBox.setEnabled(false);
+        }
 
+        List<String> dataTypeList = scatterPlotData.getDataNames();
+        String[] dataTypes = dataTypeList.toArray(new String[dataTypeList.size()]);
+        xAxisComboBox.setModel(new DefaultComboBoxModel(dataTypes));
+        yAxisComboBox.setModel(new DefaultComboBoxModel(dataTypes));
+
+        classifyComboBox.setSelectedIndex(0);
+        xAxisComboBox.setSelectedIndex(0);
+        yAxisComboBox.setSelectedIndex(dataTypes.length > 1 ? 1 : 0);
+        updateModel();
     }
 
 
@@ -40,11 +55,11 @@ public class ScatterPlotFrame extends JFrame {
     }
 
     private void axisChanged(ActionEvent e) {
-        // TODO add your code here
+       updateModel();
     }
 
     private void attributeChanged(ActionEvent e) {
-        // TODO add your code here
+       updateModel();
     }
 
     /*
@@ -65,47 +80,41 @@ public class ScatterPlotFrame extends JFrame {
     *       Scatterplot chart
     *
     * */
-    private ScatterPlot createChart(String title,
-                                    ScatterPlotData igvData) {
-        //String xAxisName,
-        //String yAxisName,
-        //String attribute,
-        //SymbolSettings[] symbolSettings) {
 
-        // Selection of X and Y axis choices define data to be displayed
-        java.util.List<String> dataNames = igvData.getDataNames();
-        String xAxisName = dataNames.get(0);
-        String yAxisName = dataNames.get(1);
 
-        double[] xValues = igvData.getDataValues(xAxisName);
-        double[] yValues = igvData.getDataValues(yAxisName);
+    private void updateModel() {
+
+        String xAxisName = (String) xAxisComboBox.getSelectedItem();
+        String yAxisName = (String) yAxisComboBox.getSelectedItem();
+
+        double[] xValues = scatterPlotData.getDataValues(xAxisName);
+        double[] yValues = scatterPlotData.getDataValues(yAxisName);
 
         // check for valid data and axis selection - and if error, return null
         if (yValues == null | xValues == null | yValues.length != xValues.length)
-            return null;
+            return;
 
         // Note: Currently only one attribute can be selected for scatter plot,
         // therefore using the 1st series (key = index 0) to identify the attribute
 
-        java.util.List<String> categories = igvData.getCategories();
-        String selectedCategory = categories.get(0);
-        String[] seriesNames = igvData.getAttributeCategories(selectedCategory);
+        String selectedCategory = (String) classifyComboBox.getSelectedItem();
+        String[] seriesNames = scatterPlotData.getAttributeCategories(selectedCategory);
 
         // extract sample categories for the selected attribute name
-        String[] attributeValues = igvData.getSymbolValues(selectedCategory);
+        String[] attributeValues = scatterPlotData.getSymbolValues(selectedCategory);
 
         // create series collection to hold xy series datasets for JFreeChart
         XYDataModel model = new XYDataModel();
 
         for (String series : seriesNames) {
-
-            // allocate series x,y dataset
             XYSeries xySeries = new XYSeries(series);
 
             // create plot series
             for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
                 // if attribute value is same as category - assign data point to the series
-                final String attributeValue = attributeValues[dataIndex];
+                String attributeValue = attributeValues[dataIndex];
+                if(attributeValue == null) attributeValue = "";
+
                 if (series.equals(attributeValue)) {
                     // get tooltips and assign data point to series
                     String tooltips = ""; //igvPlotData.getSampleDescription(dataIndex, isHTML);
@@ -117,8 +126,9 @@ public class ScatterPlotFrame extends JFrame {
             model.addSeries(xySeries);
         }
 
-        return new ScatterPlot(model);
-
+        ScatterPlot scatterPlot = new ScatterPlot();
+        scatterPlot.setModel(model);
+        chartPanel.setScatterPlotModel(scatterPlot);
     }
 
 
@@ -144,7 +154,7 @@ public class ScatterPlotFrame extends JFrame {
         panel5 = new JPanel();
         locusTextField = new JTextField();
         goButton = new JButton();
-        chart = new ChartPanel();
+        chartPanel = new ChartPanel();
         documentationField = new JTextField();
 
         //======== this ========
@@ -261,7 +271,7 @@ public class ScatterPlotFrame extends JFrame {
             commandBar.add(panel5);
         }
         contentPane.add(commandBar, BorderLayout.NORTH);
-        contentPane.add(chart, BorderLayout.CENTER);
+        contentPane.add(chartPanel, BorderLayout.CENTER);
 
         //---- documentationField ----
         documentationField.setEditable(false);
@@ -292,7 +302,7 @@ public class ScatterPlotFrame extends JFrame {
     private JPanel panel5;
     private JTextField locusTextField;
     private JButton goButton;
-    private ChartPanel chart;
+    private ChartPanel chartPanel;
     private JTextField documentationField;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

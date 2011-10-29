@@ -71,7 +71,7 @@ public class KMPlotFrame extends JFrame {
         }
 
         censurColumnControl.setSelectedItem("CENSURED");
-        sampleColumnControl.setSelectedItem("LINKING_ID");
+        sampleColumnControl.setSelectedItem(null);
         survivalColumnControl.setSelectedItem("SURVIVAL (DAYS)");
         groupByControl.setSelectedItem("SUBTYPE");
 

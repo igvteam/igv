@@ -41,7 +41,7 @@ public class ScatterPlotData {
     private ArrayList<String> symbolNames;   // list of names used for symbol map keys
 
 
-   /*
+    /*
    *    Constructor for containing IGV scatterplot data.
    *
    *    Parameters:
@@ -202,10 +202,14 @@ public class ScatterPlotData {
         String[] symbolValues = getSymbolValues(attribute);
         ArrayList<String> uniqueVals = new ArrayList<String>();
 
+        // the "no-value" value
+        uniqueVals.add("");
+
         // find all unique symbol values for attribute key
         for (String x : symbolValues) {
-            if (x != null && !uniqueVals.contains(x))
+            if (x != null && !uniqueVals.contains(x)) {
                 uniqueVals.add(x);
+            }
         }
 
         int nCategories = uniqueVals.size();
