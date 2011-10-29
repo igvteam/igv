@@ -1,5 +1,6 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
@@ -14,21 +15,17 @@ import java.util.Map;
  */
 public class XYDataModel {
 
-    static Color [] color = {Color.blue, Color.green, Color.yellow};
 
     Map<String, XYSeries> seriesMap = new HashMap();
-    Map<String, Color> seriesColorMap = new HashMap<String, Color>();
-
-    public XYDataModel() {
-        //To change body of created methods use File | Settings | File Templates.
+    String categoryName;
+    
+    public XYDataModel(String categoryName) {
+      this.categoryName = categoryName;
     }
 
     public void addSeries(XYSeries xySeries) {
 
         int idx = seriesMap.size();
-        Color c = idx >= color.length ? ColorUtilities.randomColor(idx) : color[idx];
-        seriesColorMap.put(xySeries.getName(), c);
-
         seriesMap.put(xySeries.getName(), xySeries);
     }
 
@@ -47,11 +44,11 @@ public class XYDataModel {
         return series == null ? null : series.getY();
     }
 
-    public Color getColor(String seriesName) {
-        return seriesColorMap.get(seriesName);
+     public Collection<String> getSeriesNames() {
+        return seriesMap.keySet();
     }
 
-    public Collection<String> getSeriesNames() {
-        return seriesMap.keySet();
+    public String getCategoryName() {
+        return categoryName;
     }
 }

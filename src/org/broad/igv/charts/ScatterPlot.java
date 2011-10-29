@@ -1,5 +1,7 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.track.AttributeManager;
+
 import java.awt.*;
 
 /**
@@ -68,9 +70,17 @@ public class ScatterPlot {
         graphics.setColor(c);
         graphics.setStroke(s);
 
+        String categoryName = dataModel.getCategoryName();
+
         for (String sn : dataModel.getSeriesNames()) {
 
-            graphics.setColor(dataModel.getColor(sn));
+            Color color = categoryName.equals("") ? Color.blue :
+                    AttributeManager.getInstance().getColor(categoryName, sn);
+
+            // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
+            if (color == Color.white) color = Color.black;
+
+            graphics.setColor(color);
 
             double[] xdata = dataModel.getX(sn);
             double[] ydata = dataModel.getY(sn);
@@ -101,30 +111,36 @@ public class ScatterPlot {
         graphics.setColor(VERY_LIGHT_GRAY);
         graphics.setStroke(ChartPanel.DOT1);
         double[] xticks = xAxis.ticks;
-        for (int i = 0; i < xticks.length; i++) {
-            int px = xAxis.getPixelForValue(xticks[i]);
+        double xtick = xticks[0];
+        int px = 0;
+         while (px < bounds.x + bounds.width) {
+            px = xAxis.getPixelForValue(xtick);
             if (px > bounds.x && px < bounds.x + bounds.width) {
                 graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
             }
+            xtick += xticks[1];
         }
         double[] yticks = yAxis.ticks;
-        for (int i = 0; i < yticks.length; i++) {
+        double ytick = yticks[0];
+        int py = bounds.y + bounds.height;
+        while (py > bounds.y) {
             final int bottom = bounds.y + bounds.height;
-            int py = bottom - yAxis.getPixelForValue(yticks[i]);
+            py = bottom - yAxis.getPixelForValue(ytick);
             if (py > bounds.y && py < bounds.y + bounds.height) {
                 graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
             }
+            ytick += yticks[1];
         }
 
         // Emphasize zero
         graphics.setColor(Color.blue.darker());
         graphics.setStroke(ChartPanel.DOT2);
-        int px = xAxis.getPixelForValue(0);
+         px = xAxis.getPixelForValue(0);
         if (px > bounds.x && px < bounds.x + bounds.width) {
             graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
         }
         final int bottom = bounds.y + bounds.height;
-        int py = bottom - yAxis.getPixelForValue(0);
+         py = bottom - yAxis.getPixelForValue(0);
         if (py > bounds.y && py < bounds.y + bounds.height) {
             graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
         }
