@@ -476,7 +476,7 @@ public class GFFParser implements FeatureParser {
 
         BufferedReader br = new BufferedReader(new FileReader(gffFile));
         String nextLine;
-        String ext = gffFile.substring(gffFile.length() - 4);
+        String ext = "." + gffFile.substring(gffFile.length() - 4);
 
         Map<String, PrintWriter> writers = new HashMap();
         String [] tokens = new String[20];
@@ -493,8 +493,7 @@ public class GFFParser implements FeatureParser {
                 }
                 if (!writers.containsKey(type)) {
                     writers.put(type,
-                            new PrintWriter(new FileWriter(new File(outputDirectory,
-                                    type + ext))));
+                            new PrintWriter(new FileWriter(new File(outputDirectory, type + ext))));
                 }
             }
         }
