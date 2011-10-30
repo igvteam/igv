@@ -1,9 +1,11 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.ui.FontManager;
+
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 
 /**
  * @author Jim Robinson
@@ -11,43 +13,54 @@ import java.io.Serializable;
  */
 public class ChartPanel extends JPanel implements Serializable {
 
-    ScatterPlot scatterPlot;
+    ScatterPlotRenderer scatterPlotRenderer;
 
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
     private static final float[][] dash = {null, {1.0f, 1.0f}, {3.0f, 1.0f}, {4.0f, 4.0f}, {4.0f, 4.0f, 2.0f, 4.0f}};
     public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[1], 0.0f);
     public static final BasicStroke DOT2 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[2], 0.0f);
 
+    PlotPanel plotPanel;
+    AxisPanel xAxisPanel;
+    AxisPanel yAxisPanel;
+    LegendPanel legendPanel;
 
     public ChartPanel() {
         init();
     }
 
     public void init() {
-        this.setLayout(new BorderLayout());
+        this.setLayout(new ChartLayout());
 
-        PlotPanel plotPanel = new PlotPanel();
+        plotPanel = new PlotPanel();
         plotPanel.setBackground(Color.lightGray);
         plotPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-        this.add(plotPanel, BorderLayout.CENTER);
+        this.add(plotPanel, ChartLayout.CHART);
 
-        AxisPanel xAxisPanel = new AxisPanel(AxisPanel.Orientation.HORIZONTAL);
-        xAxisPanel.setPreferredSize(new Dimension(1000, 20));
-        xAxisPanel.setBackground(Color.BLUE);
-        this.add(xAxisPanel, BorderLayout.SOUTH);
+        xAxisPanel = new AxisPanel(AxisPanel.Orientation.HORIZONTAL);
+        xAxisPanel.setPreferredSize(new Dimension(1000, 60));
+        xAxisPanel.setFont(FontManager.getDefaultFont());
+        this.add(xAxisPanel, ChartLayout.XAXIS);
 
-        AxisPanel yAxisPanel = new AxisPanel(AxisPanel.Orientation.VERTICAL);
-        yAxisPanel.setPreferredSize(new Dimension(20, 1000));
-        yAxisPanel.setBackground(Color.GREEN);
-        add(yAxisPanel, BorderLayout.WEST);
+        xAxisPanel.setBorder(BorderFactory.createLineBorder(Color.green));
 
-        LegendPanel legendPanel = new LegendPanel();
+        yAxisPanel = new AxisPanel(AxisPanel.Orientation.VERTICAL);
+        yAxisPanel.setPreferredSize(new Dimension(60, 1000));
+        yAxisPanel.setFont(FontManager.getDefaultFont());
+        add(yAxisPanel, ChartLayout.YAXIS);
+
+        yAxisPanel.setBorder(BorderFactory.createLineBorder(Color.cyan));
+
+        legendPanel = new LegendPanel();
         legendPanel.setPreferredSize(new Dimension(100, 1000));
         legendPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        add(legendPanel, BorderLayout.EAST);
+        add(legendPanel, ChartLayout.LEGEND);
     }
 
-    public void setScatterPlotModel(ScatterPlot scatterPlot) {
-        this.scatterPlot = scatterPlot;
+    public void setScatterPlotModel(ScatterPlotRenderer scatterPlotRenderer) {
+        this.scatterPlotRenderer = scatterPlotRenderer;
+        xAxisPanel.setAxisModel(scatterPlotRenderer.xAxis);
+        yAxisPanel.setAxisModel(scatterPlotRenderer.yAxis);
         repaint();
     }
 
@@ -57,24 +70,25 @@ public class ChartPanel extends JPanel implements Serializable {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            if (scatterPlot != null) {
+            if (scatterPlotRenderer != null) {
 
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
 
                 //       getVisibleRect();
                 // todo -- use damager rectangle
-                scatterPlot.draw((Graphics2D) g, r);
+                scatterPlotRenderer.draw((Graphics2D) g, r);
             }
         }
     }
 
     static class AxisPanel extends JComponent {
+
+        private static final int TICK_SIZE = 4;
+        private static final int TICK_GAP = 2;
+
         enum Orientation {HORIZONTAL, VERTICAL}
 
-        ;
-
         Orientation orientation;
-
         Axis axis;
 
         AxisPanel(Orientation orientation) {
@@ -86,10 +100,68 @@ public class ChartPanel extends JPanel implements Serializable {
             this.axis = axis;
         }
 
+
+        @Override
+        public void setBounds(int x, int y, int w, int h) {
+            super.setBounds(x, y, w, h);
+            updateAxisDimension(w, h);
+        }
+
+        private void updateAxisDimension(int w, int h) {
+
+            if (orientation == Orientation.HORIZONTAL) {
+                 axis.setPanelSize(w);
+             } else {
+                 axis.setPanelSize(h);
+             }
+         }
+
         @Override
         protected void paintComponent(Graphics g) {
-            g.setColor(getBackground());
-            g.fillRect(0, 0, getWidth(), getHeight());
+
+
+            final FontMetrics fontMetrics = g.getFontMetrics();
+            int minusStrWidth = fontMetrics.stringWidth("-") / 2;
+            int strHeight = fontMetrics.getHeight();
+            int bottom = getHeight();
+
+            if (orientation == Orientation.HORIZONTAL) {
+                double[] xticks = axis.ticks;
+                double xtick = xticks[0];
+                int px = 0;
+                final int width = getWidth();
+                final int tickLabelY = TICK_SIZE + 2 * TICK_GAP + strHeight;
+                while (px < width) {
+                    px = axis.getPixelForValue(xtick);
+                    if (px > 0 && px < width) {
+                        g.drawLine(px, TICK_GAP, px, TICK_GAP + TICK_SIZE);
+
+                        String label = DECIMAL_FORMAT.format(xtick);
+                        int strWidth = fontMetrics.stringWidth(label);
+                        if (px > strWidth && (px + strWidth) < width) {
+                            int strPosition = px - strWidth / 2;
+                            if (xtick < 0) {
+                                strPosition -= minusStrWidth;
+                            }
+                            g.drawString(label, strPosition, tickLabelY);
+                        }
+
+                    }
+                    xtick += xticks[1];
+                }
+
+                // If there is room draw the label
+                if (bottom - strHeight - 5 > tickLabelY) {
+                    String label = axis.getLabel();
+                    if (label != null) {
+                        int strWidth = fontMetrics.stringWidth(label);
+                        int strX = (getWidth() - strWidth) / 2;
+                        g.drawString(label, strX, bottom - 5);
+                    }
+                }
+
+
+            }
         }
     }
 

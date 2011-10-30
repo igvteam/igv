@@ -104,7 +104,7 @@ public class ScatterPlotFrame extends JFrame {
         String[] attributeValues = scatterPlotData.getSymbolValues(selectedCategory);
 
         // create series collection to hold xy series datasets for JFreeChart
-        XYDataModel model = new XYDataModel(selectedCategory);
+        XYDataModel model = new XYDataModel(selectedCategory, xAxisName, yAxisName);
 
         for (String series : seriesNames) {
             XYSeries xySeries = new XYSeries(series);
@@ -126,9 +126,9 @@ public class ScatterPlotFrame extends JFrame {
             model.addSeries(xySeries);
         }
 
-        ScatterPlot scatterPlot = new ScatterPlot();
-        scatterPlot.setModel(model);
-        chartPanel.setScatterPlotModel(scatterPlot);
+        ScatterPlotRenderer scatterPlotRenderer = new ScatterPlotRenderer();
+        scatterPlotRenderer.setModel(model);
+        chartPanel.setScatterPlotModel(scatterPlotRenderer);
     }
 
 

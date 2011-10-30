@@ -1,13 +1,4 @@
-/* ---------------------
- * IGVScatterPlotDemo.java
- * ---------------------
- * (C) Copyright 2002-2009, by Object Refinery Limited.
- *
- */
-
 package org.broad.igv.charts;
-
-//import demo.SampleXYDataset2;
 
 
 import org.broad.igv.scatterplot.ScatterPlotData;

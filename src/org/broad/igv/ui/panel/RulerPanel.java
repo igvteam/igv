@@ -63,6 +63,8 @@ public class RulerPanel extends JPanel {
 
     private static Logger log = Logger.getLogger(RulerPanel.class);
 
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
+
     // TODO -- get from preferences
     boolean drawSpan = true;
     boolean drawEllipsis = false;
@@ -290,8 +292,7 @@ public class RulerPanel extends JPanel {
     public static String formatNumber(double position) {
 
         //NumberFormatter f = new NumberFormatter();
-        DecimalFormat formatter = new DecimalFormat();
-        return formatter.format((int) position);
+        return DECIMAL_FORMAT.format((int) position);
         //return f.valueToString(position);
 
     }

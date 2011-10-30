@@ -10,7 +10,7 @@ import java.awt.*;
  * @author Jim Robinson
  * @date 10/25/11
  */
-public class ScatterPlot {
+public class ScatterPlotRenderer {
 
 
     public static final Color VERY_LIGHT_GRAY = new Color(250, 250, 250);
@@ -21,11 +21,6 @@ public class ScatterPlot {
     Rectangle pointShape = new Rectangle(5, 5);
     int offsetX = pointShape.getBounds().width / 2;
     int offsetY = pointShape.getBounds().height / 2;
-
-    public ScatterPlot() {
-
-    }
-
 
     public void setModel(XYDataModel dataModel) {
         this.dataModel = dataModel;
@@ -52,6 +47,8 @@ public class ScatterPlot {
         }
         xAxis.setRange(minX, maxX);
         yAxis.setRange(minY, maxY);
+        xAxis.setLabel(dataModel.getxLabel());
+        yAxis.setLabel(dataModel.getyLabel());
 
 
     }

@@ -13,25 +13,45 @@ public class Axis {
     double[] ticks;
     double scale;   // Scale in value units per pixel
 
-    int pixelWidth = 500;
+    int panelSize = 500;
+    private String label;
 
-    private static final int STOP_TICK_RECURSIONS = 80;
 
     public int getPixelForValue(double value) {
-
         return pixelOrigin + (int) ((value - min) * scale);
     }
 
     public void setRange(double min, double max) {
-        this.min = min;
-        this.max = max;
-
-        //NumericYTickLocator tickLocator = new NumericYTickLocator(max, min, 20, 40);
-        //ticks = tickLocator.getTickMarkLocations();
         ticks = computeTicks(min, max, 10);
-        scale = ((double) pixelWidth) / (max - min);
+        this.min = ticks[0];
+
+        // Scale between min & max tick marks
+        int maxTickNumber = (int) (max / ticks[1]) + 1;
+        if(max > 0) maxTickNumber++;
+        this.max = maxTickNumber * ticks[1];
+
+        rescale();
     }
 
+    private void rescale() {
+        scale = ((double) panelSize) / (max - min);
+    }
+
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setPanelSize(int panelSize) {
+        if (panelSize != this.panelSize) {
+            this.panelSize = panelSize;
+            rescale();
+        }
+    }
 
     /**
      * Computes the tick mark start location and increment for an axis.  The start tick is the first tick to the left
@@ -40,10 +60,11 @@ public class Axis {
      * @param min
      * @param max
      * @param targetTickCount approximate number of ticks desired between min and max
-     *
      * @return tuple -- {firstTick, tickIncrement}
      */
     public static double[] computeTicks(double min, double max, int targetTickCount) {
+
+        // TODO -- take into account the panel size
 
         if (max == min) {
             return new double[]{max};
