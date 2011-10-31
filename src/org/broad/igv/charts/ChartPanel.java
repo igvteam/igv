@@ -15,7 +15,6 @@ public class ChartPanel extends JPanel implements Serializable {
 
     ScatterPlotRenderer scatterPlotRenderer;
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
     private static final float[][] dash = {null, {1.0f, 1.0f}, {3.0f, 1.0f}, {4.0f, 4.0f}, {4.0f, 4.0f, 2.0f, 4.0f}};
     public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[1], 0.0f);
     public static final BasicStroke DOT2 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[2], 0.0f);
@@ -77,90 +76,6 @@ public class ChartPanel extends JPanel implements Serializable {
                 //       getVisibleRect();
                 // todo -- use damager rectangle
                 scatterPlotRenderer.draw((Graphics2D) g, r);
-            }
-        }
-    }
-
-    static class AxisPanel extends JComponent {
-
-        private static final int TICK_SIZE = 4;
-        private static final int TICK_GAP = 2;
-
-        enum Orientation {HORIZONTAL, VERTICAL}
-
-        Orientation orientation;
-        Axis axis;
-
-        AxisPanel(Orientation orientation) {
-            this.orientation = orientation;
-
-        }
-
-        public void setAxisModel(Axis axis) {
-            this.axis = axis;
-        }
-
-
-        @Override
-        public void setBounds(int x, int y, int w, int h) {
-            super.setBounds(x, y, w, h);
-            updateAxisDimension(w, h);
-        }
-
-        private void updateAxisDimension(int w, int h) {
-
-            if (orientation == Orientation.HORIZONTAL) {
-                 axis.setPanelSize(w);
-             } else {
-                 axis.setPanelSize(h);
-             }
-         }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-
-
-            final FontMetrics fontMetrics = g.getFontMetrics();
-            int minusStrWidth = fontMetrics.stringWidth("-") / 2;
-            int strHeight = fontMetrics.getHeight();
-            int bottom = getHeight();
-
-            if (orientation == Orientation.HORIZONTAL) {
-                double[] xticks = axis.ticks;
-                double xtick = xticks[0];
-                int px = 0;
-                final int width = getWidth();
-                final int tickLabelY = TICK_SIZE + 2 * TICK_GAP + strHeight;
-                while (px < width) {
-                    px = axis.getPixelForValue(xtick);
-                    if (px > 0 && px < width) {
-                        g.drawLine(px, TICK_GAP, px, TICK_GAP + TICK_SIZE);
-
-                        String label = DECIMAL_FORMAT.format(xtick);
-                        int strWidth = fontMetrics.stringWidth(label);
-                        if (px > strWidth && (px + strWidth) < width) {
-                            int strPosition = px - strWidth / 2;
-                            if (xtick < 0) {
-                                strPosition -= minusStrWidth;
-                            }
-                            g.drawString(label, strPosition, tickLabelY);
-                        }
-
-                    }
-                    xtick += xticks[1];
-                }
-
-                // If there is room draw the label
-                if (bottom - strHeight - 5 > tickLabelY) {
-                    String label = axis.getLabel();
-                    if (label != null) {
-                        int strWidth = fontMetrics.stringWidth(label);
-                        int strX = (getWidth() - strWidth) / 2;
-                        g.drawString(label, strX, bottom - 5);
-                    }
-                }
-
-
             }
         }
     }
