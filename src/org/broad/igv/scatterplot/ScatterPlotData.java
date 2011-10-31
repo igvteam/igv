@@ -225,9 +225,10 @@ public class ScatterPlotData {
     }
 
     /*
+     * @deprecated
     *   Returns a sample description String for a particular
     *   data sample built from all sample point information.
-    * */
+    **/
     public String getSampleDescription(int sampleIndex, boolean isHTML) {
         String description = "<html>" + sampleNames[sampleIndex] + ": <br>";
         String keyName;

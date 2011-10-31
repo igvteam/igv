@@ -113,54 +113,74 @@ public class ScatterPlotFrame extends JFrame {
         // therefore using the 1st series (key = index 0) to identify the attribute
 
         String selectedCategory = (String) classifyComboBox.getSelectedItem();
-        String[] seriesNames;
-        if (selectedCategory != null) {
-            seriesNames = scatterPlotData.getAttributeCategories(selectedCategory);
-        } else {
-            seriesNames = new String[]{""};
-        }
 
-        // extract sample categories for the selected attribute name
-        String[] attributeValues = scatterPlotData.getSymbolValues(selectedCategory);
-
-        // create series collection to hold xy series datasets for JFreeChart
         XYDataModel model = new XYDataModel(selectedCategory, xAxisName, yAxisName);
 
-        for (String series : seriesNames) {
-            XYSeries xySeries = new XYSeries(series);
-
-            // create plot series
+        if (selectedCategory == null) {
+            XYSeries xySeries = new XYSeries("");
             for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
-                // if attribute value is same as category - assign data point to the series
-                String attributeValue = attributeValues == null ? null : attributeValues[dataIndex];
-                if (attributeValue == null) attributeValue = "";
-
-                if (series.equals("") || series.equals(attributeValue)) {
-                    // get tooltips and assign data point to series
-                    StringBuffer tooltip = new StringBuffer("<html>");
-                    tooltip.append(sampleNames[dataIndex]);
-                    tooltip.append("<br>");
-                    if (selectedCategory != null && !selectedCategory.equals("")) {
-                        tooltip.append(selectedCategory);
-                        tooltip.append("=");
-                        tooltip.append(series);
-                        tooltip.append("<br>");
-                    }
-                    tooltip.append(xAxisName);
-                    tooltip.append("=");
-                    tooltip.append(xValues[dataIndex]);
-                    tooltip.append("<br>");
-                    tooltip.append(yAxisName);
-                    tooltip.append("=");
-                    tooltip.append(yValues[dataIndex]);
-                    tooltip.append("<br>");
-                    xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
-                }
+                // get tooltips and assign data point to series
+                StringBuffer tooltip = new StringBuffer("<html>");
+                tooltip.append(sampleNames[dataIndex]);
+                tooltip.append("<br>");
+                tooltip.append(xAxisName);
+                tooltip.append("=");
+                tooltip.append(xValues[dataIndex]);
+                tooltip.append("<br>");
+                tooltip.append(yAxisName);
+                tooltip.append("=");
+                tooltip.append(yValues[dataIndex]);
+                tooltip.append("<br>");
+                xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
             }
-
-            // add series  dataset to series collection
             model.addSeries(xySeries);
+
+        } else {
+            String[] seriesNames = scatterPlotData.getAttributeCategories(selectedCategory);
+
+            // extract sample categories for the selected attribute name
+            String[] attributeValues = scatterPlotData.getSymbolValues(selectedCategory);
+
+            // create series collection to hold xy series datasets for JFreeChart
+
+            for (String series : seriesNames) {
+                XYSeries xySeries = new XYSeries(series);
+                // create plot series
+                for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
+                    // if attribute value is same as category - assign data point to the series
+                    String attributeValue = attributeValues[dataIndex];
+                    if (attributeValue == null) attributeValue = "";
+
+                    if (series.equals(attributeValue)) {
+
+                        // get tooltips and assign data point to series
+                        StringBuffer tooltip = new StringBuffer("<html>");
+                        tooltip.append(sampleNames[dataIndex]);
+                        tooltip.append("<br>");
+                        if (selectedCategory != null && !selectedCategory.equals("")) {
+                            tooltip.append(selectedCategory);
+                            tooltip.append("=");
+                            tooltip.append(series);
+                            tooltip.append("<br>");
+                        }
+                        tooltip.append(xAxisName);
+                        tooltip.append("=");
+                        tooltip.append(xValues[dataIndex]);
+                        tooltip.append("<br>");
+                        tooltip.append(yAxisName);
+                        tooltip.append("=");
+                        tooltip.append(yValues[dataIndex]);
+                        tooltip.append("<br>");
+                        xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
+                    }
+                    model.addSeries(xySeries);
+                }
+
+                // add series  dataset to series collection
+            }
         }
+
+
 
         ScatterPlot scatterPlot = new ScatterPlot();
         scatterPlot.setModel(model);
