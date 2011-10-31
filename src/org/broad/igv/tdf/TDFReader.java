@@ -23,6 +23,7 @@
 package org.broad.igv.tdf;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.data.Dataset;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -69,7 +70,7 @@ public class TDFReader {
     }
 
     public static TDFReader getReader(ResourceLocator locator) {
-       return new TDFReader(locator);
+        return new TDFReader(locator);
     }
 
     public TDFReader(ResourceLocator locator) {
@@ -134,8 +135,7 @@ public class TDFReader {
                 String wfName = StringUtils.readString(byteBuffer);
                 try {
                     windowFunctions.add(WindowFunction.valueOf(wfName));
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     log.error("Error creating window function: " + wfName, e);
                 }
             }
@@ -295,7 +295,7 @@ public class TDFReader {
 
     // TODO -- move to dataset class
 
-    public  TDFTile readTile(TDFDataset ds, int tileNumber) {
+    public TDFTile readTile(TDFDataset ds, int tileNumber) {
 
         try {
             if (tileNumber >= ds.tilePositions.length) {
@@ -403,7 +403,7 @@ public class TDFReader {
     }
 
 
-    public byte[] readBytes(long position, int nBytes) throws IOException {
+    public synchronized byte[] readBytes(long position, int nBytes) throws IOException {
         seekableStream.seek(position);
         byte[] buffer = new byte[nBytes];
         seekableStream.read(buffer, 0, nBytes);
@@ -420,17 +420,18 @@ public class TDFReader {
     /**
      * Return a list of all chromosome names represented in this dataset
      * TODO -- record this explicitly in the TDF file
+     *
      * @return
      */
 
     public Set<String> getChromosomeNames() {
-        if(chrNames == null) {
+        if (chrNames == null) {
             ///DatasetIndex chr1/z0/mean=org.broad.igv.tdf.TDFReader$IndexEntry@6a493b65
             chrNames = new HashSet();
-            String [] tokens = new String[2];
-            for(String key : datasetIndex.keySet()) {
+            String[] tokens = new String[2];
+            for (String key : datasetIndex.keySet()) {
                 int nTokens = ParsingUtils.split(key, tokens, '/');
-                if(nTokens > 0) {
+                if (nTokens > 0) {
                     chrNames.add(tokens[0]);
                 }
             }
@@ -447,5 +448,28 @@ public class TDFReader {
             this.position = position;
             this.nBytes = nBytes;
         }
+    }
+
+
+    /**
+     * Print index entries (for debugging)
+     */
+    public void dumpIndex() {
+
+        for (Map.Entry<String, IndexEntry> entry : datasetIndex.entrySet()) {
+
+            String dsName = entry.getKey();
+
+            TDFDataset ds = getDataset(dsName);
+
+            int size = 0;
+            for (int sz : ds.tileSizes) {
+                size += sz;
+            }
+            System.out.println(dsName + "\t" + size);
+
+            datasetCache.clear();
+        }
+
     }
 }
