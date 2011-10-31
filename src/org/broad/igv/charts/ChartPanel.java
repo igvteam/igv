@@ -77,7 +77,6 @@ public class ChartPanel extends JPanel implements Serializable {
                             String description = dp.getDescription();
                             if (description != null) {
                                 PlotPanel.this.setToolTipText(description);
-                                System.out.println(description);
                             }
                         } else {
                             PlotPanel.this.setToolTipText("");
