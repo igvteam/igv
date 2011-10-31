@@ -889,8 +889,6 @@ public class IGV {
             }
             PreferenceManager.getInstance().remove(PreferenceManager.RECENT_SESSION_KEY);
             PreferenceManager.getInstance().setRecentSessions(recentSessions);
-            HttpUtils.getInstance().shutdown();
-            CommandListener.halt();
         }
 
 

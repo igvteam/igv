@@ -176,12 +176,6 @@ public class GFFParser implements FeatureParser {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param reader
-     * @return
-     */
 
 
     public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {

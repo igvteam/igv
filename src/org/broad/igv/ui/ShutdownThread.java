@@ -21,6 +21,8 @@ package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.batch.CommandListener;
+import org.broad.igv.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
 
 import java.io.File;
@@ -53,12 +55,14 @@ public class ShutdownThread extends Thread {
             }
         }
 
+        DBManager.shutdown();
+        CommandListener.halt();
         IGV.getInstance().doExitApplication();
     }
 
 
-    /**
-     * Cleanup extra jnlp files.  This method is written specifcally for Mac os.
+      /**
+     * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
      */
     public static void cleanupJnlpFiles(File desktop) {
 

@@ -128,9 +128,6 @@ public class HttpUtils {
         return useByteRange;
     }
 
-    public void shutdown() {
-        // Do any cleanup required here
-    }
 
     /**
      * Return the contents of the url as a String.  This method should only be used for queries expected to return
