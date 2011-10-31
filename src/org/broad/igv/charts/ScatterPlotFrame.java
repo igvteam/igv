@@ -17,6 +17,7 @@ import org.broad.igv.scatterplot.ScatterPlotData;
  */
 public class ScatterPlotFrame extends JFrame {
 
+    static String lastClassifySelection = null;
 
     ScatterPlotData scatterPlotData;
 
@@ -28,6 +29,8 @@ public class ScatterPlotFrame extends JFrame {
 
         this.scatterPlotData = scatterPlotData;
 
+        this.setTitle(scatterPlotData.getTitle());
+
         initComponents();
 
         List<String> categoryList = scatterPlotData.getCategories();
@@ -38,12 +41,20 @@ public class ScatterPlotFrame extends JFrame {
             classifyComboBox.setEnabled(false);
         }
 
+
         List<String> dataTypeList = scatterPlotData.getDataNames();
         String[] dataTypes = dataTypeList.toArray(new String[dataTypeList.size()]);
         xAxisComboBox.setModel(new DefaultComboBoxModel(dataTypes));
         yAxisComboBox.setModel(new DefaultComboBoxModel(dataTypes));
 
-        classifyComboBox.setSelectedIndex(0);
+        if (classifyComboBox.getItemCount() > 0) {
+            if (lastClassifySelection != null) {
+                classifyComboBox.setSelectedItem(lastClassifySelection);
+            } else {
+                classifyComboBox.setSelectedIndex(0);
+            }
+        }
+
         xAxisComboBox.setSelectedIndex(0);
         yAxisComboBox.setSelectedIndex(dataTypes.length > 1 ? 1 : 0);
         updateModel();
@@ -55,11 +66,12 @@ public class ScatterPlotFrame extends JFrame {
     }
 
     private void axisChanged(ActionEvent e) {
-       updateModel();
+        updateModel();
     }
 
     private void attributeChanged(ActionEvent e) {
-       updateModel();
+        lastClassifySelection = (String) classifyComboBox.getSelectedItem();
+        updateModel();
     }
 
     /*
@@ -87,6 +99,7 @@ public class ScatterPlotFrame extends JFrame {
         String xAxisName = (String) xAxisComboBox.getSelectedItem();
         String yAxisName = (String) yAxisComboBox.getSelectedItem();
 
+        String[] sampleNames = scatterPlotData.getSampleNames();
         double[] xValues = scatterPlotData.getDataValues(xAxisName);
         double[] yValues = scatterPlotData.getDataValues(yAxisName);
 
@@ -94,11 +107,18 @@ public class ScatterPlotFrame extends JFrame {
         if (yValues == null | xValues == null | yValues.length != xValues.length)
             return;
 
+        //classifyComboBox.setVisible(scatterPlotData.getCategories().size() > 0);
+
         // Note: Currently only one attribute can be selected for scatter plot,
         // therefore using the 1st series (key = index 0) to identify the attribute
 
         String selectedCategory = (String) classifyComboBox.getSelectedItem();
-        String[] seriesNames = scatterPlotData.getAttributeCategories(selectedCategory);
+        String[] seriesNames;
+        if (selectedCategory != null) {
+            seriesNames = scatterPlotData.getAttributeCategories(selectedCategory);
+        } else {
+            seriesNames = new String[]{""};
+        }
 
         // extract sample categories for the selected attribute name
         String[] attributeValues = scatterPlotData.getSymbolValues(selectedCategory);
@@ -112,13 +132,29 @@ public class ScatterPlotFrame extends JFrame {
             // create plot series
             for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
                 // if attribute value is same as category - assign data point to the series
-                String attributeValue = attributeValues[dataIndex];
-                if(attributeValue == null) attributeValue = "";
+                String attributeValue = attributeValues == null ? null : attributeValues[dataIndex];
+                if (attributeValue == null) attributeValue = "";
 
-                if (series.equals(attributeValue)) {
+                if (series.equals("") || series.equals(attributeValue)) {
                     // get tooltips and assign data point to series
-                    String tooltips = ""; //igvPlotData.getSampleDescription(dataIndex, isHTML);
-                    xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltips);
+                    StringBuffer tooltip = new StringBuffer("<html>");
+                    tooltip.append(sampleNames[dataIndex]);
+                    tooltip.append("<br>");
+                    if (selectedCategory != null && !selectedCategory.equals("")) {
+                        tooltip.append(selectedCategory);
+                        tooltip.append("=");
+                        tooltip.append(series);
+                        tooltip.append("<br>");
+                    }
+                    tooltip.append(xAxisName);
+                    tooltip.append("=");
+                    tooltip.append(xValues[dataIndex]);
+                    tooltip.append("<br>");
+                    tooltip.append(yAxisName);
+                    tooltip.append("=");
+                    tooltip.append(yValues[dataIndex]);
+                    tooltip.append("<br>");
+                    xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
                 }
             }
 
@@ -150,10 +186,6 @@ public class ScatterPlotFrame extends JFrame {
         panel4 = new JPanel();
         label3 = new JLabel();
         classifyComboBox = new JComboBox();
-        hSpacer3 = new JPanel(null);
-        panel5 = new JPanel();
-        locusTextField = new JTextField();
-        goButton = new JButton();
         chartPanel = new ChartPanel();
         documentationField = new JTextField();
 
@@ -186,12 +218,14 @@ public class ScatterPlotFrame extends JFrame {
         //======== commandBar ========
         {
             commandBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
-            commandBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+            commandBar.setPreferredSize(new Dimension(420, 45));
+            commandBar.setLayout(new BoxLayout(commandBar, BoxLayout.X_AXIS));
 
             //======== panel2 ========
             {
                 panel2.setBorder(new EtchedBorder());
-                panel2.setLayout(new FlowLayout());
+                panel2.setPreferredSize(new Dimension(225, 41));
+                panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
                 //---- label1 ----
                 label1.setText("X:");
@@ -200,6 +234,7 @@ public class ScatterPlotFrame extends JFrame {
                 //---- xAxisComboBox ----
                 xAxisComboBox.setBorder(null);
                 xAxisComboBox.setPreferredSize(new Dimension(150, 27));
+                xAxisComboBox.setToolTipText("Set data type for X axis");
                 xAxisComboBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         axisChanged(e);
@@ -213,7 +248,8 @@ public class ScatterPlotFrame extends JFrame {
             //======== panel3 ========
             {
                 panel3.setBorder(new EtchedBorder());
-                panel3.setLayout(new FlowLayout());
+                panel3.setPreferredSize(new Dimension(225, 41));
+                panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
 
                 //---- label2 ----
                 label2.setText("Y:");
@@ -234,7 +270,7 @@ public class ScatterPlotFrame extends JFrame {
             //======== panel4 ========
             {
                 panel4.setBorder(new EtchedBorder());
-                panel4.setLayout(new FlowLayout());
+                panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
 
                 //---- label3 ----
                 label3.setText("Classify By:");
@@ -250,25 +286,6 @@ public class ScatterPlotFrame extends JFrame {
                 panel4.add(classifyComboBox);
             }
             commandBar.add(panel4);
-            commandBar.add(hSpacer3);
-
-            //======== panel5 ========
-            {
-                panel5.setBorder(new EtchedBorder());
-                panel5.setLayout(new FlowLayout());
-
-                //---- locusTextField ----
-                locusTextField.setPreferredSize(new Dimension(150, 28));
-                panel5.add(locusTextField);
-
-                //---- goButton ----
-                goButton.setText("Go");
-                goButton.setPreferredSize(new Dimension(50, 29));
-                goButton.setMinimumSize(new Dimension(50, 29));
-                goButton.setMaximumSize(new Dimension(50, 29));
-                panel5.add(goButton);
-            }
-            commandBar.add(panel5);
         }
         contentPane.add(commandBar, BorderLayout.NORTH);
         contentPane.add(chartPanel, BorderLayout.CENTER);
@@ -276,7 +293,7 @@ public class ScatterPlotFrame extends JFrame {
         //---- documentationField ----
         documentationField.setEditable(false);
         contentPane.add(documentationField, BorderLayout.SOUTH);
-        setSize(935, 660);
+        setSize(755, 660);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -298,10 +315,6 @@ public class ScatterPlotFrame extends JFrame {
     private JPanel panel4;
     private JLabel label3;
     private JComboBox classifyComboBox;
-    private JPanel hSpacer3;
-    private JPanel panel5;
-    private JTextField locusTextField;
-    private JButton goButton;
     private ChartPanel chartPanel;
     private JTextField documentationField;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

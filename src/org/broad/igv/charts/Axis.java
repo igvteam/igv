@@ -6,8 +6,11 @@ package org.broad.igv.charts;
  */
 public class Axis {
 
-    int pixelOrigin = 0;
+    enum Orientation {HORIZONTAL, VERTICAL}
 
+    ;
+
+    Orientation orientation;
     double min;
     double max;
     double[] ticks;
@@ -17,8 +20,24 @@ public class Axis {
     private String label;
 
 
+    public Axis(Orientation orientation) {
+        this.orientation = orientation;
+    }
+
+    public Orientation getOrientation() {
+        return orientation;
+    }
+
     public int getPixelForValue(double value) {
-        return pixelOrigin + (int) ((value - min) * scale);
+
+        int p = (int) ((value - min) * scale);
+        return (orientation == Orientation.HORIZONTAL) ? p : panelSize - p;
+    }
+
+    public double getDataValueForPixel(int pixel) {
+
+        int p = (orientation == Orientation.HORIZONTAL ? pixel : panelSize - pixel);
+        return min + p / scale;
     }
 
     public void setRange(double min, double max) {
@@ -27,7 +46,7 @@ public class Axis {
 
         // Scale between min & max tick marks
         int maxTickNumber = (int) (max / ticks[1]) + 1;
-        if(max > 0) maxTickNumber++;
+        if (max > 0) maxTickNumber++;
         this.max = maxTickNumber * ticks[1];
 
         rescale();
@@ -95,4 +114,7 @@ public class Axis {
     }
 
 
+    public double getScale() {
+        return scale;
+    }
 }

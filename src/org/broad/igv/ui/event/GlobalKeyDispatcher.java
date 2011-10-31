@@ -22,6 +22,8 @@
  */
 package org.broad.igv.ui.event;
 
+import org.broad.igv.charts.ScatterPlot;
+import org.broad.igv.charts.ScatterPlotUtils;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.RegionOfInterest;
@@ -109,12 +111,13 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         final KeyStroke prevExonKey = KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK + KeyEvent.SHIFT_MASK, false);
 
 
-        KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);
-        KeyStroke backKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK, false);
-        KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
-        KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
+        final KeyStroke backKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_CLOSE_BRACKET, KeyEvent.META_DOWN_MASK, false);
+        final KeyStroke backKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK, false);
+        final KeyStroke forwardKey1 = KeyStroke.getKeyStroke(KeyEvent.VK_OPEN_BRACKET, KeyEvent.META_DOWN_MASK, false);
+        final KeyStroke forwardKey2 = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK, false);
 
-        final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
+        final KeyStroke statusWindowKey = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK, false);
+        final KeyStroke scatterplotKey = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_MASK, false);
 
         final Action toolAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -181,7 +184,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                 currentRange.getStart(),
                                 currentRange.getEnd(),
                                 null);
-                // TODO -- get this ugly reference out of here
+                // TODO -- get this ugly reference to IGV out of here
                 IGV.getInstance().addRegionOfInterest(regionOfInterest);
                 setEnabled(true);
             }
@@ -193,10 +196,25 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                 IGV.getInstance().getSession().getHistory().back();
             }
         };
+
         final Action forwardAction = new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
                 IGV.getInstance().getSession().getHistory().forward();
+            }
+        };
+
+        final Action scatterplotAction = new AbstractAction() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (ScatterPlotUtils.hasPlottableTracks()) {
+                    ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
+                    String chr = defaultFrame.getChrName();
+                    int  start = (int) defaultFrame.getOrigin();
+                    int end = (int) defaultFrame.getEnd();
+                    int zoom = defaultFrame.getZoom();
+                    ScatterPlotUtils.openPlot(chr, start, end, zoom);
+                }
             }
         };
 
@@ -217,6 +235,8 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         getActionMap().put("region", regionAction);
         getInputMap().put(statusWindowKey, "statusWindow");
         getActionMap().put("statusWindow", statusWindowAction);
+        getInputMap().put(scatterplotKey, "statusWindow");
+        getActionMap().put("statusWindow", scatterplotAction);
 
         getInputMap().put(backKey1, "back");
         getInputMap().put(backKey2, "back");

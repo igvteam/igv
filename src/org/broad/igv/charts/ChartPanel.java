@@ -5,6 +5,8 @@ import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
 
 /**
@@ -36,13 +38,13 @@ public class ChartPanel extends JPanel implements Serializable {
         plotPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         this.add(plotPanel, ChartLayout.CHART);
 
-        xAxisPanel = new AxisPanel(AxisPanel.Orientation.HORIZONTAL);
+        xAxisPanel = new AxisPanel();
         xAxisPanel.setPreferredSize(new Dimension(1000, 60));
         xAxisPanel.setFont(FontManager.getDefaultFont());
         this.add(xAxisPanel, ChartLayout.XAXIS);
 
 
-        yAxisPanel = new AxisPanel(AxisPanel.Orientation.VERTICAL);
+        yAxisPanel = new AxisPanel();
         yAxisPanel.setPreferredSize(new Dimension(60, 1000));
         yAxisPanel.setFont(FontManager.getDefaultFont());
         add(yAxisPanel, ChartLayout.YAXIS);
@@ -62,6 +64,30 @@ public class ChartPanel extends JPanel implements Serializable {
 
     class PlotPanel extends JPanel {
 
+        PlotPanel() {
+
+            setToolTipText("Plot panel");
+
+            this.addMouseMotionListener(new MouseAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent mouseEvent) {
+                    if (scatterPlot != null) {
+                        XYDataPoint dp = scatterPlot.getDataPointAtPixel(mouseEvent.getX(), mouseEvent.getY());
+                        if (dp != null) {
+                            String description = dp.getDescription();
+                            if (description != null) {
+                                PlotPanel.this.setToolTipText(description);
+                                System.out.println(description);
+                            }
+                        } else {
+                            PlotPanel.this.setToolTipText("");
+                        }
+
+                    }
+                }
+            });
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -75,6 +101,8 @@ public class ChartPanel extends JPanel implements Serializable {
                 scatterPlot.draw((Graphics2D) g, r);
             }
         }
+
+
     }
 
     class LegendPanel extends JComponent {
@@ -103,7 +131,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 Rectangle pointShape = scatterPlot.pointShape;
 
                 String categoryName = scatterPlot.dataModel.categoryName;
-                if(categoryName == null || categoryName.equals("")) {
+                if (categoryName == null || categoryName.equals("")) {
                     return;
                 }
 
@@ -112,14 +140,14 @@ public class ChartPanel extends JPanel implements Serializable {
 
                 g2D.setFont(labelFont);
                 int y = topMargin + 20;
-                for(String sn : scatterPlot.dataModel.getSeriesNames()) {
+                for (String sn : scatterPlot.dataModel.getSeriesNames()) {
                     Color c = ScatterPlot.getColor(categoryName, sn);
                     g2D.setColor(c);
                     g2D.fillRect(leftMargin + 5, y, pointShape.width, pointShape.height);
 
                     String displayString = sn.equals("") ? "Unknown" : sn;
                     g2D.setColor(Color.black);
-                    g2D.drawString(displayString, leftMargin + 20, y+5);
+                    g2D.drawString(displayString, leftMargin + 20, y + 5);
 
                     y += 20;
 

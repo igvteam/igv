@@ -3,6 +3,8 @@ package org.broad.igv.charts;
 import org.broad.igv.track.AttributeManager;
 
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * Renders a scatterplot
@@ -14,11 +16,11 @@ public class ScatterPlot {
 
 
     public static final Color VERY_LIGHT_GRAY = new Color(250, 250, 250);
-    Axis xAxis = new Axis();
-    Axis yAxis = new Axis();
+    Axis xAxis = new Axis(Axis.Orientation.HORIZONTAL);
+    Axis yAxis = new Axis(Axis.Orientation.VERTICAL);
     XYDataModel dataModel;
 
-    Rectangle pointShape = new Rectangle(5, 5);
+    Rectangle pointShape = new Rectangle(7, 7);
     int offsetX = pointShape.getBounds().width / 2;
     int offsetY = pointShape.getBounds().height / 2;
 
@@ -31,12 +33,10 @@ public class ScatterPlot {
         double maxY = maxX;
 
         for (String sn : dataModel.getSeriesNames()) {
-            double[] xdata = dataModel.getX(sn);
-            double[] ydata = dataModel.getY(sn);
-            int numPoints = dataModel.numPoints(sn);
-            for (int n = 0; n < numPoints; n++) {
-                double x = xdata[n];
-                double y = ydata[n];
+            List<XYDataPoint> dataPoints = dataModel.getDataPoints(sn);
+            for (XYDataPoint dataPoint : dataPoints) {
+                double x = dataPoint.getX();
+                double y = dataPoint.getY();
                 if (!Double.isNaN(x) && !Double.isNaN(y)) {
                     minX = Math.min(minX, x);
                     maxX = Math.max(maxX, x);
@@ -49,8 +49,6 @@ public class ScatterPlot {
         yAxis.setRange(minY, maxY);
         xAxis.setLabel(dataModel.getxLabel());
         yAxis.setLabel(dataModel.getyLabel());
-
-
     }
 
     public void draw(Graphics2D graphics, Rectangle bounds) {
@@ -75,32 +73,38 @@ public class ScatterPlot {
 
             graphics.setColor(color);
 
-            double[] xdata = dataModel.getX(sn);
-            double[] ydata = dataModel.getY(sn);
-            int numPoints = dataModel.numPoints(sn);
+            List<XYDataPoint> dataPoints = dataModel.getDataPoints(sn);
 
-            for (int n = 0; n < numPoints; n++) {
-                double x = xdata[n];
-                double y = ydata[n];
+            for (XYDataPoint dataPoint : dataPoints) {
+                double x = dataPoint.getX();
+                double y = dataPoint.getY();
                 if (!Double.isNaN(x) && !Double.isNaN(y)) {
 
                     int px = xAxis.getPixelForValue(x);
                     final int bottom = bounds.y + bounds.height;
-                    int pY = bottom - yAxis.getPixelForValue(y);
+                    int pY = yAxis.getPixelForValue(y);
                     if (px >= bounds.x && px <= bounds.x + bounds.width &&
                             pY >= bounds.y && pY <= bottom) {
                         graphics.fillRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
-
                     }
                 }
-
             }
         }
-
     }
 
+
+    public XYDataPoint getDataPointAtPixel(int px, int py) {
+
+        double x = xAxis.getDataValueForPixel(px);
+        double y = yAxis.getDataValueForPixel(py);
+        double toleranceX = ((pointShape.width + 1) / xAxis.getScale()) / 2;
+        double toleranceY = ((pointShape.height + 1) / yAxis.getScale()) / 2;
+        return dataModel.getDataPointAtPixel(x, y, toleranceX, toleranceY);
+    }
+
+
     public static Color getColor(String categoryName, String sn) {
-        Color color = categoryName.equals("") ? Color.blue :
+        Color color = (categoryName == null || categoryName.equals("")) ? Color.blue :
                 AttributeManager.getInstance().getColor(categoryName, sn);
 
         // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
@@ -115,7 +119,7 @@ public class ScatterPlot {
         double[] xticks = xAxis.ticks;
         double xtick = xticks[0];
         int px = 0;
-         while (px < bounds.x + bounds.width) {
+        while (px < bounds.x + bounds.width) {
             px = xAxis.getPixelForValue(xtick);
             if (px > bounds.x && px < bounds.x + bounds.width) {
                 graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
@@ -126,8 +130,7 @@ public class ScatterPlot {
         double ytick = yticks[0];
         int py = bounds.y + bounds.height;
         while (py > bounds.y) {
-            final int bottom = bounds.y + bounds.height;
-            py = bottom - yAxis.getPixelForValue(ytick);
+            py = yAxis.getPixelForValue(ytick);
             if (py > bounds.y && py < bounds.y + bounds.height) {
                 graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
             }
@@ -137,12 +140,11 @@ public class ScatterPlot {
         // Emphasize zero
         graphics.setColor(Color.blue.darker());
         graphics.setStroke(ChartPanel.DOT2);
-         px = xAxis.getPixelForValue(0);
+        px = xAxis.getPixelForValue(0);
         if (px > bounds.x && px < bounds.x + bounds.width) {
             graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
         }
-        final int bottom = bounds.y + bounds.height;
-         py = bottom - yAxis.getPixelForValue(0);
+        py = yAxis.getPixelForValue(0);
         if (py > bounds.y && py < bounds.y + bounds.height) {
             graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
         }

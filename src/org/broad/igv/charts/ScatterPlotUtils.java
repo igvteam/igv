@@ -1,7 +1,8 @@
-package org.broad.igv.scatterplot;
+package org.broad.igv.charts;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.scatterplot.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -34,13 +35,22 @@ public class ScatterPlotUtils {
     public static void openPlot(String chr, int start, int end, int zoom) {
 
         ScatterPlotData spData = getScatterPlotData(chr, start, end, zoom);
-        final org.broad.igv.charts.ScatterPlotFrame igvPlotFrame = new org.broad.igv.charts.ScatterPlotFrame(spData);
+        final ScatterPlotFrame igvPlotFrame = new ScatterPlotFrame(spData);
         UIUtilities.invokeOnEventThread(new Runnable() {
             public void run() {
                 igvPlotFrame.setVisible(true);
             }
         });
+    }
 
+    public static boolean hasPlottableTracks() {
+        List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
+        for(Track t : tracks) {
+            if(plottableTypes.contains(t.getTrackType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static ScatterPlotData getScatterPlotData(String chr, int start, int end, int zoom) {
@@ -181,7 +191,8 @@ public class ScatterPlotUtils {
             attMap.put(att, attributes);
         }
 
-        return new ScatterPlotData(sampleNames, attMap, dataMap);
+        String title = chr + ":" + start + "-" + end;
+        return new ScatterPlotData(title,sampleNames, attMap, dataMap);
     }
 
 

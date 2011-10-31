@@ -11,20 +11,15 @@ import java.text.DecimalFormat;
  */
 class AxisPanel extends JComponent {
 
-    enum Orientation {HORIZONTAL, VERTICAL}
+    //
 
     private static final int TICK_SIZE = 4;
     private static final int TICK_GAP = 2;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
 
-    Orientation orientation;
     Axis axis;
 
-    AxisPanel(Orientation orientation) {
-        this.orientation = orientation;
-
-    }
 
     public void setAxisModel(Axis axis) {
         this.axis = axis;
@@ -39,7 +34,9 @@ class AxisPanel extends JComponent {
 
     private void updateAxisDimension(int w, int h) {
 
-        if (orientation == Orientation.HORIZONTAL) {
+        if(axis == null) return;
+
+        if (axis.getOrientation() == Axis.Orientation.HORIZONTAL) {
             axis.setPanelSize(w);
         } else {
             axis.setPanelSize(h);
@@ -48,6 +45,9 @@ class AxisPanel extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if(axis == null) return;
 
         final Graphics2D g2D = (Graphics2D) g;
         final FontMetrics fontMetrics = g.getFontMetrics();
@@ -65,7 +65,7 @@ class AxisPanel extends JComponent {
         final double tmp3 = tickIncrement % tmp2;
         final double labelStep = tmp3 == 0 ? tickIncrement : Math.floor(Math.pow(10, tmp2));
 
-        if (orientation == Orientation.HORIZONTAL) {
+        if (axis.getOrientation() == Axis.Orientation.HORIZONTAL) {
             int px;
             final int tickLabelY = TICK_SIZE + 2 * TICK_GAP + strHeight;
             double xtick = tickStart;
@@ -101,7 +101,7 @@ class AxisPanel extends JComponent {
             double ytick = tickStart;
             int py;
             do {
-                py = bottom - axis.getPixelForValue(ytick);
+                py = axis.getPixelForValue(ytick);
                 if (py > top && py < bottom) {
                     g.drawLine(width - (TICK_GAP + TICK_SIZE), py, width - TICK_GAP, py);
 

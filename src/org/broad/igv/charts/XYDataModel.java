@@ -39,14 +39,9 @@ public class XYDataModel {
 
     }
 
-    public double[] getX(String seriesName) {
+    public List<XYDataPoint> getDataPoints(String seriesName) {
         XYSeries series = seriesMap.get(seriesName);
-        return series == null ? null : series.getX();
-    }
-
-    public double[] getY(String seriesName) {
-        XYSeries series = seriesMap.get(seriesName);
-        return series == null ? null : series.getY();
+        return series == null ? null : series.getDataPoints();
     }
 
     public Collection<String> getSeriesNames() {
@@ -63,5 +58,27 @@ public class XYDataModel {
 
     public String getyLabel() {
         return yLabel;
+    }
+
+    /**
+     * Return the first data point found that contains the given point.
+     * TODO -- impose z-order, last-one-drawn, or some other tie-breaker?
+     *
+     * @param x
+     * @param y
+     * @param toleranceX
+     * @param toleranceY
+     * @return
+     */
+    public XYDataPoint getDataPointAtPixel(double x, double y, double toleranceX, double toleranceY) {
+
+        for (XYSeries series : seriesMap.values()) {
+            XYDataPoint dp = series.getDataPoint(x, y, toleranceX, toleranceY);
+            if (dp != null) {
+                return dp;
+            }
+        }
+
+        return null;
     }
 }

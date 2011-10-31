@@ -12,39 +12,38 @@ import java.util.List;
 public class XYSeries {
 
     String name;
-    DoubleArrayList xData;
-    DoubleArrayList yData;
-    List<String> description;
+    List<XYDataPoint> dataPoints;
 
     public XYSeries(String name) {
         this.name = name;
-        xData = new DoubleArrayList(500);
-        yData = new DoubleArrayList(500);
-        description = new ArrayList<String>(500);
+        dataPoints = new ArrayList<XYDataPoint>(500);
     }
 
     public void add(double x, double y, String description) {
-        xData.add(x);
-        yData.add(y);
-        this.description.add(description);
+        dataPoints.add(new XYDataPoint(x, y, description));
     }
 
     public int getSize() {
-        return xData.size();
+        return dataPoints.size();
     }
 
     public String getName() {
         return name;
     }
 
-    double [] getX() {
-        return xData.toArray();
+    public List<XYDataPoint> getDataPoints() {
+        return dataPoints;
     }
 
-    double [] getY() {
-        return yData.toArray();
-    }
+    public XYDataPoint getDataPoint(double x, double y, double toleranceX, double toleranceY) {
 
+        for (XYDataPoint dp : dataPoints) {
+            if (dp.contains(x, y, toleranceX, toleranceY)) {
+                return dp;
+            }
+        }
+        return null;
+    }
 }
 
 

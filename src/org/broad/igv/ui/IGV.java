@@ -187,25 +187,29 @@ public class IGV {
 
             @Override
             public void windowLostFocus(WindowEvent windowEvent) {
+                // Start & stop tooltip manager to force any tooltip windows to close.
                 ToolTipManager.sharedInstance().setEnabled(false);
+                ToolTipManager.sharedInstance().setEnabled(true);
                 IGVPopupMenu.closeAll();
             }
 
 
             @Override
             public void windowDeactivated(WindowEvent windowEvent) {
+                // Start & stop tooltip manager to force any tooltip windows to close.
                 ToolTipManager.sharedInstance().setEnabled(false);
-                IGVPopupMenu.closeAll();
+                ToolTipManager.sharedInstance().setEnabled(true);
+                 IGVPopupMenu.closeAll();
             }
 
             @Override
             public void windowActivated(WindowEvent windowEvent) {
-                ToolTipManager.sharedInstance().setEnabled(true);
+
             }
 
             @Override
             public void windowGainedFocus(WindowEvent windowEvent) {
-                ToolTipManager.sharedInstance().setEnabled(true);
+
             }
         });
 

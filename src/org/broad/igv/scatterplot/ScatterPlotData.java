@@ -17,6 +17,7 @@ import java.util.Map;
 * */
 public class ScatterPlotData {
 
+    String title;
 
     /**
      * Array of sample names
@@ -54,8 +55,8 @@ public class ScatterPlotData {
    *            Each data map has an array of N data entries.
    *
    * */
-    public ScatterPlotData(String[] sampleNames, Map<String, String[]> symbolMap, Map<String, double[]> dataMap) {
-
+    public ScatterPlotData(String title, String[] sampleNames, Map<String, String[]> symbolMap, Map<String, double[]> dataMap) {
+        this.title = title;
         this.sampleNames = sampleNames;
         sampleCount = sampleNames.length;
         this.symbolValueMap = symbolMap;
@@ -68,9 +69,13 @@ public class ScatterPlotData {
     }
 
 
+    public String getTitle() {
+        return title;
+    }
+
     /*
-    *   Returns the number of  data samples
-    * */
+   *   Returns the number of  data samples
+   * */
     public int getSampleCount() {
         return sampleCount;
     }

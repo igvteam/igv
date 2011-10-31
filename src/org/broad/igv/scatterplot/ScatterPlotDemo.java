@@ -102,7 +102,7 @@ public class ScatterPlotDemo /*extends ApplicationFrame*/ {
         symbolMap.put("Cluster Type", cluster);
 
         // load the base class ScatterPlotData
-        return new ScatterPlotData( samples,  symbolMap, dataMap);
+        return new ScatterPlotData( "Test", samples,  symbolMap, dataMap);
 
     }
 
