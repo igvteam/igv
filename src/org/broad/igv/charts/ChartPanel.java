@@ -1,11 +1,11 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import java.text.DecimalFormat;
 
 /**
  * @author Jim Robinson
@@ -13,7 +13,7 @@ import java.text.DecimalFormat;
  */
 public class ChartPanel extends JPanel implements Serializable {
 
-    ScatterPlotRenderer scatterPlotRenderer;
+    ScatterPlot scatterPlot;
 
     private static final float[][] dash = {null, {1.0f, 1.0f}, {3.0f, 1.0f}, {4.0f, 4.0f}, {4.0f, 4.0f, 2.0f, 4.0f}};
     public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[1], 0.0f);
@@ -41,25 +41,22 @@ public class ChartPanel extends JPanel implements Serializable {
         xAxisPanel.setFont(FontManager.getDefaultFont());
         this.add(xAxisPanel, ChartLayout.XAXIS);
 
-        xAxisPanel.setBorder(BorderFactory.createLineBorder(Color.green));
 
         yAxisPanel = new AxisPanel(AxisPanel.Orientation.VERTICAL);
         yAxisPanel.setPreferredSize(new Dimension(60, 1000));
         yAxisPanel.setFont(FontManager.getDefaultFont());
         add(yAxisPanel, ChartLayout.YAXIS);
 
-        yAxisPanel.setBorder(BorderFactory.createLineBorder(Color.cyan));
-
         legendPanel = new LegendPanel();
-        legendPanel.setPreferredSize(new Dimension(100, 1000));
+        legendPanel.setPreferredSize(new Dimension(150, 1000));
         legendPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         add(legendPanel, ChartLayout.LEGEND);
     }
 
-    public void setScatterPlotModel(ScatterPlotRenderer scatterPlotRenderer) {
-        this.scatterPlotRenderer = scatterPlotRenderer;
-        xAxisPanel.setAxisModel(scatterPlotRenderer.xAxis);
-        yAxisPanel.setAxisModel(scatterPlotRenderer.yAxis);
+    public void setScatterPlotModel(ScatterPlot scatterPlot) {
+        this.scatterPlot = scatterPlot;
+        xAxisPanel.setAxisModel(scatterPlot.xAxis);
+        yAxisPanel.setAxisModel(scatterPlot.yAxis);
         repaint();
     }
 
@@ -69,18 +66,74 @@ public class ChartPanel extends JPanel implements Serializable {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            if (scatterPlotRenderer != null) {
+            if (scatterPlot != null) {
 
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
 
                 //       getVisibleRect();
-                // todo -- use damager rectangle
-                scatterPlotRenderer.draw((Graphics2D) g, r);
+                // todo -- use damage rectangle
+                scatterPlot.draw((Graphics2D) g, r);
             }
         }
     }
 
-    static class LegendPanel extends JComponent {
+    class LegendPanel extends JComponent {
+
+        int leftMargin = 10;
+        int topMargin = 30;
+        private Font labelFont;
+        private Font headerFont;
+
+        LegendPanel() {
+            Font defaultFont = FontManager.getDefaultFont();
+            labelFont = defaultFont.deriveFont(12);
+            headerFont = defaultFont.deriveFont(14);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Graphics2D g2D = (Graphics2D) g;
+
+            if (scatterPlot != null) {
+                Color color = g.getColor();
+                Font font = g.getFont();
+
+                Rectangle pointShape = scatterPlot.pointShape;
+
+                String categoryName = scatterPlot.dataModel.categoryName;
+                if(categoryName == null || categoryName.equals("")) {
+                    return;
+                }
+
+                g2D.setFont(headerFont);
+                g2D.drawString(categoryName, leftMargin, topMargin);
+
+                g2D.setFont(labelFont);
+                int y = topMargin + 20;
+                for(String sn : scatterPlot.dataModel.getSeriesNames()) {
+                    Color c = ScatterPlot.getColor(categoryName, sn);
+                    g2D.setColor(c);
+                    g2D.fillRect(leftMargin + 5, y, pointShape.width, pointShape.height);
+
+                    String displayString = sn.equals("") ? "Unknown" : sn;
+                    g2D.setColor(Color.black);
+                    g2D.drawString(displayString, leftMargin + 20, y+5);
+
+                    y += 20;
+
+                }
+
+
+                g2D.setColor(color);
+                g2D.setFont(font);
+
+
+            }
+
+
+        }
 
     }
 }

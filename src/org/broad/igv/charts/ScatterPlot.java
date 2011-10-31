@@ -10,7 +10,7 @@ import java.awt.*;
  * @author Jim Robinson
  * @date 10/25/11
  */
-public class ScatterPlotRenderer {
+public class ScatterPlot {
 
 
     public static final Color VERY_LIGHT_GRAY = new Color(250, 250, 250);
@@ -71,11 +71,7 @@ public class ScatterPlotRenderer {
 
         for (String sn : dataModel.getSeriesNames()) {
 
-            Color color = categoryName.equals("") ? Color.blue :
-                    AttributeManager.getInstance().getColor(categoryName, sn);
-
-            // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
-            if (color == Color.white) color = Color.black;
+            Color color = getColor(categoryName, sn);
 
             graphics.setColor(color);
 
@@ -101,6 +97,15 @@ public class ScatterPlotRenderer {
             }
         }
 
+    }
+
+    public static Color getColor(String categoryName, String sn) {
+        Color color = categoryName.equals("") ? Color.blue :
+                AttributeManager.getInstance().getColor(categoryName, sn);
+
+        // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
+        if (color == Color.white) color = Color.black;
+        return color;
     }
 
     private void drawGrid(Graphics2D graphics, Rectangle bounds) {

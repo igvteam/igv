@@ -126,9 +126,9 @@ public class ScatterPlotFrame extends JFrame {
             model.addSeries(xySeries);
         }
 
-        ScatterPlotRenderer scatterPlotRenderer = new ScatterPlotRenderer();
-        scatterPlotRenderer.setModel(model);
-        chartPanel.setScatterPlotModel(scatterPlotRenderer);
+        ScatterPlot scatterPlot = new ScatterPlot();
+        scatterPlot.setModel(model);
+        chartPanel.setScatterPlotModel(scatterPlot);
     }
 
 
