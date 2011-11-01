@@ -3,6 +3,7 @@ package org.broad.igv.charts;
 import org.broad.igv.track.AttributeManager;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
 import java.util.*;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class ScatterPlot {
     Axis xAxis = new Axis(Axis.Orientation.HORIZONTAL);
     Axis yAxis = new Axis(Axis.Orientation.VERTICAL);
     XYDataModel dataModel;
+    Set<XYDataPoint> selectedPoints;
 
     Rectangle pointShape = new Rectangle(7, 7);
     int offsetX = pointShape.getBounds().width / 2;
@@ -51,7 +53,7 @@ public class ScatterPlot {
         yAxis.setLabel(dataModel.getyLabel());
     }
 
-    public void draw(Graphics2D graphics, Rectangle bounds) {
+    public void draw(Graphics2D graphics, Rectangle bounds, Rectangle clipRect) {
 
         if (dataModel == null) return;
 
@@ -60,7 +62,7 @@ public class ScatterPlot {
         Color c = graphics.getColor();
         Stroke s = graphics.getStroke();
 
-        drawGrid(graphics, bounds);
+        drawGrid(graphics, bounds, clipRect);
 
         graphics.setColor(c);
         graphics.setStroke(s);
@@ -79,15 +81,29 @@ public class ScatterPlot {
                 double x = dataPoint.getX();
                 double y = dataPoint.getY();
                 if (!Double.isNaN(x) && !Double.isNaN(y)) {
-
                     int px = xAxis.getPixelForValue(x);
-                    final int bottom = bounds.y + bounds.height;
                     int pY = yAxis.getPixelForValue(y);
-                    if (px >= bounds.x && px <= bounds.x + bounds.width &&
-                            pY >= bounds.y && pY <= bottom) {
+                    if(clipRect.contains(px, pY)) {
                         graphics.fillRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
                     }
                 }
+            }
+        }
+
+        // Outline selected points
+        graphics.setColor(Color.ORANGE);
+        if(selectedPoints != null) {
+            for(XYDataPoint dataPoint : selectedPoints) {
+                double x = dataPoint.getX();
+                double y = dataPoint.getY();
+                if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                    int px = xAxis.getPixelForValue(x);
+                    int pY = yAxis.getPixelForValue(y);
+                    if(clipRect.contains(px, pY)) {
+                        graphics.drawRect(px - offsetX - 1, pY - offsetY - 1, pointShape.width + 2, pointShape.height + 2);
+                    }
+                }
+
             }
         }
     }
@@ -103,6 +119,7 @@ public class ScatterPlot {
     }
 
 
+
     public static Color getColor(String categoryName, String sn) {
         Color color = (categoryName == null || categoryName.equals("")) ? Color.blue :
                 AttributeManager.getInstance().getColor(categoryName, sn);
@@ -112,7 +129,7 @@ public class ScatterPlot {
         return color;
     }
 
-    private void drawGrid(Graphics2D graphics, Rectangle bounds) {
+    private void drawGrid(Graphics2D graphics, Rectangle bounds, Rectangle clipRect) {
 
         graphics.setColor(VERY_LIGHT_GRAY);
         graphics.setStroke(ChartPanel.DOT1);
@@ -141,16 +158,25 @@ public class ScatterPlot {
         graphics.setColor(Color.blue.darker());
         graphics.setStroke(ChartPanel.DOT2);
         px = xAxis.getPixelForValue(0);
-        if (px > bounds.x && px < bounds.x + bounds.width) {
-            graphics.drawLine(px, bounds.y, px, bounds.y + bounds.height);
+        if (px > clipRect.x && px < clipRect.x + clipRect.width) {
+            graphics.drawLine(px, clipRect.y, px, clipRect.y + clipRect.height);
         }
         py = yAxis.getPixelForValue(0);
-        if (py > bounds.y && py < bounds.y + bounds.height) {
-            graphics.drawLine(bounds.x, py, bounds.x + bounds.width, py);
+        if (py > clipRect.y && py < clipRect.y + clipRect.height) {
+            graphics.drawLine(clipRect.x, py, clipRect.x + clipRect.width, py);
         }
 
 
     }
 
 
+    public void selectPointsInPath(Path2D path) {
+        if(dataModel != null) {
+            selectedPoints = dataModel.getDataPointsIn(path);
+        }
+    }
+
+    public void clearSelections() {
+        selectedPoints = null;
+    }
 }

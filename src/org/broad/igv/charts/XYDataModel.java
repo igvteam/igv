@@ -4,10 +4,9 @@ import org.broad.igv.track.AttributeManager;
 import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
-import java.util.Collection;
-import java.util.HashMap;
+import java.awt.geom.Path2D;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jim Robinson
@@ -81,4 +80,21 @@ public class XYDataModel {
 
         return null;
     }
+
+    public Set<XYDataPoint> getDataPointsIn(Path2D path) {
+
+        HashSet<XYDataPoint> points = new HashSet<XYDataPoint>();
+        for (XYSeries series : seriesMap.values()) {
+            Collection<XYDataPoint> dataPoints = series.getDataPoints();
+            for(XYDataPoint dataPoint : dataPoints) {
+                if(path.contains(dataPoint.getX(), dataPoint.getY())) {
+                    points.add(dataPoint);
+                }
+            }
+        }
+        return points;
+
+
+    }
+
 }

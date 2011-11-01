@@ -1,13 +1,17 @@
 package org.broad.igv.charts;
 
-import org.broad.igv.track.AttributeManager;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Path2D;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * @author Jim Robinson
@@ -25,6 +29,10 @@ public class ChartPanel extends JPanel implements Serializable {
     AxisPanel xAxisPanel;
     AxisPanel yAxisPanel;
     LegendPanel legendPanel;
+    ToolBar toolPanel;
+
+    boolean lassoInProgress = false;
+    SelectionPath lassoPath = null;
 
     public ChartPanel() {
         init();
@@ -32,6 +40,11 @@ public class ChartPanel extends JPanel implements Serializable {
 
     public void init() {
         this.setLayout(new ChartLayout());
+
+
+        toolPanel = new ToolBar();
+        toolPanel.setPreferredSize(new Dimension(1000, 20));
+        this.add(toolPanel, ChartLayout.TITLE);
 
         plotPanel = new PlotPanel();
         plotPanel.setBackground(Color.lightGray);
@@ -62,29 +75,123 @@ public class ChartPanel extends JPanel implements Serializable {
         repaint();
     }
 
+    class ToolBar extends JPanel {
+
+        ToolBar() {
+            init();
+        }
+
+        void init() {
+
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+            final JButton lassoButton = new JButton("Lasso");
+
+            lassoButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    if (lassoInProgress == false) {
+                        lassoInProgress = true;
+                        lassoPath = new SelectionPath();
+                    } else {
+                        lassoInProgress = false;
+                        lassoPath = null;
+                    }
+                }
+            });
+            add(lassoButton);
+
+
+        }
+
+    }
+
     class PlotPanel extends JPanel {
 
         PlotPanel() {
 
             setToolTipText("Plot panel");
 
-            this.addMouseMotionListener(new MouseAdapter() {
+            final MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent mouseEvent) {
                     if (scatterPlot != null) {
-                        XYDataPoint dp = scatterPlot.getDataPointAtPixel(mouseEvent.getX(), mouseEvent.getY());
-                        if (dp != null) {
-                            String description = dp.getDescription();
-                            if (description != null) {
-                                PlotPanel.this.setToolTipText(description);
-                            }
+                        if (lassoInProgress) {
+                            // Ignore
                         } else {
-                            PlotPanel.this.setToolTipText("");
+                            XYDataPoint dp = scatterPlot.getDataPointAtPixel(mouseEvent.getX(), mouseEvent.getY());
+                            if (dp != null) {
+                                String description = dp.getDescription();
+                                if (description != null) {
+                                    PlotPanel.this.setToolTipText(description);
+                                }
+                            } else {
+                                PlotPanel.this.setToolTipText("");
+                            }
                         }
 
                     }
                 }
-            });
+
+                @Override
+                public void mouseDragged(MouseEvent mouseEvent) {
+                    if (lassoInProgress) {
+                        lassoPath.addPoint(mouseEvent.getPoint());
+                        repaint(lassoPath.getBounds());
+                    }
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+                    if (lassoInProgress) {
+                        lassoInProgress = false;
+                        if (lassoPath.size() > 2) {
+
+                            Axis xAxis = scatterPlot.xAxis;
+                            Axis yAxis = scatterPlot.yAxis;
+
+                            Path2D path = new Path2D.Double(java.awt.geom.Path2D.WIND_NON_ZERO, lassoPath.size());
+                            Iterator<Point> iter = lassoPath.getPoints().iterator();
+                            Point p = iter.next();
+                            double x = xAxis.getDataValueForPixel(p.x);
+                            double y = yAxis.getDataValueForPixel(p.y);
+                            path.moveTo(x, y);
+                            while (iter.hasNext()) {
+                                p = iter.next();
+                                x = xAxis.getDataValueForPixel(p.x);
+                                y = yAxis.getDataValueForPixel(p.y);
+                                path.lineTo(x, y);
+                            }
+                            path.closePath();
+                            scatterPlot.selectPointsInPath(path);
+                            Rectangle damageRect = lassoPath.getBounds();
+                            lassoPath = null;
+                            repaint(damageRect);
+
+
+
+                        }
+
+                    }
+                }
+
+                @Override
+                public void mouseClicked(MouseEvent mouseEvent) {
+
+                    if (lassoInProgress) {
+                        lassoPath.addPoint(mouseEvent.getPoint());
+                    }
+                    else {
+                        // TODO -- usual click options, if unmodified and on a point select that, if modifier key
+                        // TODO -- add the point, etc
+                        scatterPlot.clearSelections();
+                        repaint();
+                    }
+
+                }
+            };
+
+            this.addMouseListener(mouseAdapter);
+            this.addMouseMotionListener(mouseAdapter);
         }
 
         @Override
@@ -94,10 +201,19 @@ public class ChartPanel extends JPanel implements Serializable {
             if (scatterPlot != null) {
 
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
+                scatterPlot.draw((Graphics2D) g, r, g.getClipRect());
+            }
 
-                //       getVisibleRect();
-                // todo -- use damage rectangle
-                scatterPlot.draw((Graphics2D) g, r);
+            if (lassoPath != null && lassoPath.size() > 1) {
+                Iterator<Point> iter = lassoPath.getPoints().iterator();
+                Point lastPoint = iter.next();
+                g.setColor(Color.cyan);
+                while (iter.hasNext()) {
+                    Point point = iter.next();
+                    g.drawLine(lastPoint.x, lastPoint.y, point.x, point.y);
+                    lastPoint = point;
+                }
+
             }
         }
 
@@ -158,8 +274,6 @@ public class ChartPanel extends JPanel implements Serializable {
 
 
             }
-
-
         }
 
     }

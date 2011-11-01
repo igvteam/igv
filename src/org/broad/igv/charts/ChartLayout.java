@@ -118,7 +118,7 @@ public class ChartLayout implements LayoutManager2,
             }
             if (title != null) {
                 Dimension d = title.getMinimumSize();
-                dim.width = Math.max(d.width, dim.width);
+                //dim.width = Math.max(d.width, dim.width);
                 dim.height += d.height + vgap;
             }
             if (yAxis != null) {
@@ -172,7 +172,7 @@ public class ChartLayout implements LayoutManager2,
             }
             if (title != null) {
                 Dimension d = title.getPreferredSize();
-                dim.width = Math.max(d.width, dim.width);
+                //dim.width = Math.max(d.width, dim.width);
                 dim.height += d.height + vgap;
             }
             if (yAxis != null) {
@@ -253,7 +253,7 @@ public class ChartLayout implements LayoutManager2,
             int left = insets.left;
             int right = target.getWidth() - insets.right;
 
-            int titleHeight = title == null ? 0 : title.getPreferredSize().width;
+            int titleHeight = title == null ? 0 : title.getPreferredSize().height;
             int xAxisHeight = xAxis == null ? 0 : xAxis.getPreferredSize().height;
 
             int yAxisWidth = yAxis == null ? 0 : yAxis.getPreferredSize().width;

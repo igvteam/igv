@@ -83,8 +83,6 @@
             <pathelement path="${lib.dir}concurrent.jar" />
             <pathelement path="${lib.dir}goby-io-igv.jar" />
             <pathelement path="${lib.dir}jargs.jar" />
-            <pathelement path="${lib.dir}jhdf5.jar" />
-            <pathelement path="${lib.dir}jhdf.jar" />
             <pathelement path="${lib.dir}jide-action.jar" />
             <pathelement path="${lib.dir}jide-common.jar" />
             <pathelement path="${lib.dir}jide-components.jar" />
