@@ -45,8 +45,8 @@ public class ScatterPlotUtils {
 
     public static boolean hasPlottableTracks() {
         List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
-        for(Track t : tracks) {
-            if(plottableTypes.contains(t.getTrackType())) {
+        for (Track t : tracks) {
+            if (plottableTypes.contains(t.getTrackType())) {
                 return true;
             }
         }
@@ -54,13 +54,13 @@ public class ScatterPlotUtils {
     }
 
     private static ScatterPlotData getScatterPlotData(String chr, int start, int end, int zoom) {
-        List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
 
+        List<Track> tracks = IGV.getInstance().getTrackManager().getAllTracks(false);
         List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
         LinkedHashMap<String, SampleData> sampleDataMap = new LinkedHashMap<String, SampleData>();
         LinkedHashSet<TrackType> types = new LinkedHashSet<TrackType>();
 
-
+        // Create a map to keep track of the set of all attribute values for each attribute category.
         LinkedHashMap<String, Set<String>> uniqueAttributeValues = new LinkedHashMap<String, Set<String>>();
         for (String att : attributeNames) {
             uniqueAttributeValues.put(att, new HashSet<String>());
@@ -68,19 +68,25 @@ public class ScatterPlotUtils {
         uniqueAttributeValues.put("Mut Count", new HashSet<String>());
         HashSet<String> nonSharedAttributes = new HashSet<String>();
 
-        String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
+        //String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
         for (Track t : tracks) {
 
-            String sample;
-            if (overlayAttribute != null && overlayAttribute.length() > 0) {
-                sample = t.getAttributeValue(overlayAttribute);
-            } else {
-                sample = t.getSample();
-            }
+            String sample = t.getSample();
+            TrackType type = t.getTrackType();
 
-            if (t instanceof DataTrack) {
+            if (type == TrackType.MUTATION) {
+                // Classify sample by mutation count
+                SampleData sampleData = sampleDataMap.get(sample);
+                if (sampleData != null) {
+                    int mutCount = getMutationCount(chr, start, end, zoom, t);
+                    String mutCountString = mutCount < 5 ? String.valueOf(mutCount) : "> 5";
+                    sampleData.addAttributeValue("Mut Count", mutCountString);
+                    uniqueAttributeValues.get("Mut Count").add(mutCountString);
+
+                }
+
+            } else if (t instanceof DataTrack) {
                 DataTrack dataTrack = (DataTrack) t;
-                TrackType type = dataTrack.getTrackType();
 
                 if (plottableTypes.contains(type)) {
                     types.add(type);
@@ -117,17 +123,6 @@ public class ScatterPlotUtils {
 
 
                     sampleData.addDataValue(type, regionScore);
-                }
-
-            } else if (t.getTrackType() == TrackType.MUTATION) {
-                // Classify sample by mutation count
-                SampleData sampleData = sampleDataMap.get(sample);
-                if (sampleData != null) {
-                    int mutCount = getMutationCount(chr, start, end, zoom, t);
-                    String mutCountString = mutCount < 5 ? String.valueOf(mutCount) : "> 5";
-                    sampleData.addAttributeValue("Mut Count", mutCountString);
-                    uniqueAttributeValues.get("Mut Count").add(mutCountString);
-
                 }
 
             }
@@ -192,7 +187,7 @@ public class ScatterPlotUtils {
         }
 
         String title = chr + ":" + start + "-" + end;
-        return new ScatterPlotData(title,sampleNames, attMap, dataMap);
+        return new ScatterPlotData(title, sampleNames, attMap, dataMap);
     }
 
 

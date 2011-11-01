@@ -20,6 +20,7 @@ public class ScatterPlotFrame extends JFrame {
     static String lastClassifySelection = null;
 
     ScatterPlotData scatterPlotData;
+    private boolean deferUpdate;
 
     public ScatterPlotFrame() {
         initComponents();
@@ -27,9 +28,11 @@ public class ScatterPlotFrame extends JFrame {
 
     public ScatterPlotFrame(ScatterPlotData scatterPlotData) {
 
+        deferUpdate = true;
+
         this.scatterPlotData = scatterPlotData;
 
-        this.setTitle(scatterPlotData.getTitle());
+        setTitle(scatterPlotData.getTitle());
 
         initComponents();
 
@@ -57,6 +60,8 @@ public class ScatterPlotFrame extends JFrame {
 
         xAxisComboBox.setSelectedIndex(0);
         yAxisComboBox.setSelectedIndex(dataTypes.length > 1 ? 1 : 0);
+
+        deferUpdate = false;
         updateModel();
     }
 
@@ -95,6 +100,8 @@ public class ScatterPlotFrame extends JFrame {
 
 
     private void updateModel() {
+
+        if(deferUpdate) return;
 
         String xAxisName = (String) xAxisComboBox.getSelectedItem();
         String yAxisName = (String) yAxisComboBox.getSelectedItem();

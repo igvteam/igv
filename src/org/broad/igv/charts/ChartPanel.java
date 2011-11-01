@@ -136,7 +136,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 public void mouseDragged(MouseEvent mouseEvent) {
                     if (lassoInProgress) {
                         lassoPath.addPoint(mouseEvent.getPoint());
-                        repaint(lassoPath.getBounds());
+                        paintImmediately(new Rectangle(0, 0, getWidth(), getHeight())); //lassoPath.getBounds());
                     }
                 }
 

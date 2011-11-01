@@ -40,11 +40,14 @@ public class Axis {
         return min + p / scale;
     }
 
-    public void setRange(double min, double max) {
+    public void  setRange(double min, double max) {
         ticks = computeTicks(min, max, 10);
         this.min = ticks[0];
 
         // Scale between min & max tick marks
+        if(ticks.length < 2) {
+            System.out.println();
+        }
         int maxTickNumber = (int) (max / ticks[1]) + 1;
         if (max > 0) maxTickNumber++;
         this.max = maxTickNumber * ticks[1];
@@ -86,7 +89,7 @@ public class Axis {
         // TODO -- take into account the panel size
 
         if (max == min) {
-            return new double[]{max};
+            return new double[]{max, 1};
         }
 
         final double v = max - min;

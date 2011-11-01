@@ -26,7 +26,7 @@ public class ScatterPlot {
     int offsetX = pointShape.getBounds().width / 2;
     int offsetY = pointShape.getBounds().height / 2;
 
-    public void setModel(XYDataModel dataModel) {
+    public synchronized void setModel(XYDataModel dataModel) {
         this.dataModel = dataModel;
 
         double minX = Double.MAX_VALUE;
@@ -83,7 +83,7 @@ public class ScatterPlot {
                 if (!Double.isNaN(x) && !Double.isNaN(y)) {
                     int px = xAxis.getPixelForValue(x);
                     int pY = yAxis.getPixelForValue(y);
-                    if(clipRect.contains(px, pY)) {
+                    if (clipRect.contains(px, pY)) {
                         graphics.fillRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
                     }
                 }
@@ -92,14 +92,14 @@ public class ScatterPlot {
 
         // Outline selected points
         graphics.setColor(Color.ORANGE);
-        if(selectedPoints != null) {
-            for(XYDataPoint dataPoint : selectedPoints) {
+        if (selectedPoints != null) {
+            for (XYDataPoint dataPoint : selectedPoints) {
                 double x = dataPoint.getX();
                 double y = dataPoint.getY();
                 if (!Double.isNaN(x) && !Double.isNaN(y)) {
                     int px = xAxis.getPixelForValue(x);
                     int pY = yAxis.getPixelForValue(y);
-                    if(clipRect.contains(px, pY)) {
+                    if (clipRect.contains(px, pY)) {
                         graphics.drawRect(px - offsetX - 1, pY - offsetY - 1, pointShape.width + 2, pointShape.height + 2);
                     }
                 }
@@ -119,13 +119,31 @@ public class ScatterPlot {
     }
 
 
-
     public static Color getColor(String categoryName, String sn) {
-        Color color = (categoryName == null || categoryName.equals("")) ? Color.blue :
-                AttributeManager.getInstance().getColor(categoryName, sn);
+        Color color;
+        if (categoryName == null || categoryName.equals("")) {
+            color = Color.blue;
+        } else if (categoryName.equals("Mut Count")) {
+            if(sn == null || sn.equals("") || sn.equals("Unknown")) {
+               color = Color.darkGray;
+            }
+            else if(sn.equals("0")) {
+                color = Color.green.darker();
+            }else if(sn.equals("1")) {
+                color = Color.blue;
+            }
+            else if(sn.equals("2")) {
+                color = Color.orange;
+            }
+            else {
+                color = Color.red;
+            }
+        } else{
+            color = AttributeManager.getInstance().getColor(categoryName, sn);
+        }
 
         // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
-        if (color == Color.white) color = Color.black;
+        if (color == Color.white) color = Color.darkGray;
         return color;
     }
 
@@ -171,7 +189,7 @@ public class ScatterPlot {
 
 
     public void selectPointsInPath(Path2D path) {
-        if(dataModel != null) {
+        if (dataModel != null) {
             selectedPoints = dataModel.getDataPointsIn(path);
         }
     }
