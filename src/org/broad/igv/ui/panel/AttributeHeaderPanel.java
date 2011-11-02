@@ -137,12 +137,16 @@ public class AttributeHeaderPanel extends JPanel {
             }
 
             @Override
-            public void mouseExited(MouseEvent e) {
+            public void mouseMoved(MouseEvent e) {
+                String attKey = getAttributeHeading(e.getX());
+                if (attKey == null) {
+                    setToolTipText("Click attribute heading to sort");
+                } else {
+                    setToolTipText("<html>" + attKey + "<br>Click to sort");
+                }
+
             }
 
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
         };
         addMouseMotionListener(listener);
         addMouseListener(listener);
