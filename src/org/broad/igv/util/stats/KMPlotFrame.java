@@ -77,7 +77,7 @@ public class KMPlotFrame extends JFrame {
             groupByControl.addItem(key);
 
             String tmp = key.toLowerCase();
-            if(tmp.contains("survival") || tmp.contains("daystodeath") survivalColumn = key;
+            if(tmp.contains("survival") || tmp.contains("daystodeath")) survivalColumn = key;
             if(tmp.contains("censure")) censureColumn = key;
             if(tmp.contains("sample")) sampleColumn = key;
           }
