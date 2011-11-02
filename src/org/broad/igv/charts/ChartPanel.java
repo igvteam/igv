@@ -3,6 +3,8 @@ package org.broad.igv.charts;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,8 +12,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Jim Robinson
@@ -47,7 +49,7 @@ public class ChartPanel extends JPanel implements Serializable {
         this.add(toolPanel, ChartLayout.TITLE);
 
         plotPanel = new PlotPanel();
-        plotPanel.setBackground(Color.lightGray);
+        plotPanel.setBackground(new Color(225, 225, 225));
         plotPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         this.add(plotPanel, ChartLayout.CHART);
 
@@ -63,8 +65,11 @@ public class ChartPanel extends JPanel implements Serializable {
         add(yAxisPanel, ChartLayout.YAXIS);
 
         legendPanel = new LegendPanel();
-        legendPanel.setPreferredSize(new Dimension(150, 1000));
-        legendPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        legendPanel.setPreferredSize(new Dimension(200, 1000));
+
+        final Border lineBorder = BorderFactory.createLineBorder(Color.BLACK);
+
+        legendPanel.setBorder(lineBorder);
         add(legendPanel, ChartLayout.LEGEND);
     }
 
@@ -72,6 +77,7 @@ public class ChartPanel extends JPanel implements Serializable {
         this.scatterPlot = scatterPlot;
         xAxisPanel.setAxisModel(scatterPlot.xAxis);
         yAxisPanel.setAxisModel(scatterPlot.yAxis);
+        legendPanel.rebuild();
         repaint();
     }
 
@@ -98,6 +104,8 @@ public class ChartPanel extends JPanel implements Serializable {
                     }
                 }
             });
+
+            add(new JPanel(null));  // Spacer
             add(lassoButton);
 
 
@@ -168,7 +176,6 @@ public class ChartPanel extends JPanel implements Serializable {
                             repaint(damageRect);
 
 
-
                         }
 
                     }
@@ -179,8 +186,7 @@ public class ChartPanel extends JPanel implements Serializable {
 
                     if (lassoInProgress) {
                         lassoPath.addPoint(mouseEvent.getPoint());
-                    }
-                    else {
+                    } else {
                         // TODO -- usual click options, if unmodified and on a point select that, if modifier key
                         // TODO -- add the point, etc
                         scatterPlot.clearSelections();
@@ -231,50 +237,185 @@ public class ChartPanel extends JPanel implements Serializable {
             Font defaultFont = FontManager.getDefaultFont();
             labelFont = defaultFont.deriveFont(12);
             headerFont = defaultFont.deriveFont(14);
+
+            final BoxLayout boxLayout = new BoxLayout(this, BoxLayout.Y_AXIS);
+
+            setLayout(boxLayout);
+
+
+            rebuild();
+
         }
 
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
+        void rebuild() {
+            if (scatterPlot == null || scatterPlot.dataModel == null) return;
 
-            Graphics2D g2D = (Graphics2D) g;
-
-            if (scatterPlot != null) {
-                Color color = g.getColor();
-                Font font = g.getFont();
-
-                Rectangle pointShape = scatterPlot.pointShape;
-
-                String categoryName = scatterPlot.dataModel.categoryName;
-                if (categoryName == null || categoryName.equals("")) {
-                    return;
-                }
-
-                g2D.setFont(headerFont);
-                g2D.drawString(categoryName, leftMargin, topMargin);
-
-                g2D.setFont(labelFont);
-                int y = topMargin + 20;
-                for (String sn : scatterPlot.dataModel.getSeriesNames()) {
-                    Color c = ScatterPlot.getColor(categoryName, sn);
-                    g2D.setColor(c);
-                    g2D.fillRect(leftMargin + 5, y, pointShape.width, pointShape.height);
-
-                    String displayString = sn.equals("") ? "Unknown" : sn;
-                    g2D.setColor(Color.black);
-                    g2D.drawString(displayString, leftMargin + 20, y + 5);
-
-                    y += 20;
-
-                }
+            removeAll();
 
 
-                g2D.setColor(color);
-                g2D.setFont(font);
-
-
+            String categoryName = scatterPlot.dataModel.categoryName;
+            if (categoryName == null || categoryName.equals("")) {
+                return;
             }
+
+            //add(Box.createVerticalStrut(topMargin));
+
+            JLabel catLabel = new JLabel(categoryName);
+            catLabel.setAlignmentX(LEFT_ALIGNMENT);
+            //add(catLabel);
+
+            add(Box.createVerticalStrut(topMargin));
+
+            Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
+
+            // Sort series names
+            java.util.List<String> seriesNames = new ArrayList<String> (scatterPlot.dataModel.getSeriesNames());
+
+            sortSeriesNames(seriesNames);
+
+            for (final String sn : seriesNames) {
+                Color c = ScatterPlot.getColor(categoryName, sn);
+                LegendIcon icon = new LegendIcon(pointShape, c);
+
+                String labelString =  (sn.trim()).equals("") ? "Unknown" : sn;
+
+                JLabel label = new JLabel(labelString, icon, SwingConstants.LEFT);
+                label.setFont(labelFont);
+
+                final JCheckBox cb = new JCheckBox();
+                cb.setSelected(true);
+                cb.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        if(cb.isSelected()) {
+                            scatterPlot.removeSeriesFilter(sn);
+                        }
+                        else {
+                            scatterPlot.addSeriesFilter(sn);
+                        }
+                        plotPanel.repaint();
+                    }
+                });
+
+                JPanel panel = new JPanel();
+                panel.setAlignmentX(LEFT_ALIGNMENT);
+                panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+
+                panel.add(cb);
+                panel.add(label);
+                add(panel);
+            }
+            revalidate();
+
         }
 
+        /**
+         * Sort the list of series names so that
+         * (1) numbers come before letters
+         * (2) numbers are in ascending numeric order
+         * (3) "blank" (empty string) comes last
+         *
+         * @param seriesNames
+         */
+        private void sortSeriesNames(List<String> seriesNames) {
+            Collections.sort(seriesNames, new Comparator<String>() {
+                public int compare(String s1, String s2) {
+                    // Try numeric sort first
+                    double d1;
+                    try {
+                        d1 = Double.parseDouble(s1);
+                    } catch (NumberFormatException e) {
+                        d1 = Double.MAX_VALUE;
+                    }
+                    double d2;
+                    try {
+                        d2 = Double.parseDouble(s2);
+                    } catch (NumberFormatException e) {
+                        d2 = Double.MAX_VALUE;
+                    }
+                    if (d1 == d2) {
+                        // do standard comapre, but put blanks at end
+                        if (s1.equals("")) s1 = "ZZZ";
+                        if (s2.equals("")) s2 = "ZZZ";
+                        return s1.compareTo(s2);
+                    } else {
+                        return (int) (d1 - d2);
+                    }
+                }
+            });
+        }
+
+//        @Override
+//        protected void paintComponent(Graphics g) {
+//            super.paintComponent(g);
+//
+//            Graphics2D g2D = (Graphics2D) g;
+//
+//            if (scatterPlot != null) {
+//
+//                g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+//                        RenderingHints.VALUE_ANTIALIAS_ON);
+//
+//                Color color = g.getColor();
+//                Font font = g.getFont();
+//
+//                Rectangle pointShape = scatterPlot.pointShape;
+//
+//                String categoryName = scatterPlot.dataModel.categoryName;
+//                if (categoryName == null || categoryName.equals("")) {
+//                    return;
+//                }
+//
+//                g2D.setFont(headerFont);
+//                g2D.drawString(categoryName, leftMargin, topMargin);
+//
+//                g2D.setFont(labelFont);
+//                int y = topMargin + 20;
+//                for (String sn : scatterPlot.dataModel.getSeriesNames()) {
+//                    Color c = ScatterPlot.getColor(categoryName, sn);
+//                    g2D.setColor(c);
+//                    g2D.fillOval(leftMargin + 5, y, pointShape.width, pointShape.height);
+//
+//                    String displayString = sn.equals("") ? "Unknown" : sn;
+//                    g2D.setColor(Color.black);
+//                    g2D.drawString(displayString, leftMargin + 20, y + 5);
+//
+//                    y += 20;
+//
+//                }
+//
+//
+//                g2D.setColor(color);
+//                g2D.setFont(font);
+//
+//
+//            }
+//        }
+
+    }
+
+    static class LegendIcon implements Icon {
+
+        Rectangle shape;
+        Color color;
+
+        LegendIcon(Rectangle shape, Color color) {
+            this.shape = shape;
+            this.color = color;
+        }
+
+        public void paintIcon(Component component, Graphics graphics, int x, int y) {
+            Color c = graphics.getColor();
+            graphics.setColor(color);
+            graphics.fillOval(x, y, shape.width, shape.height);
+            graphics.setColor(c);
+        }
+
+        public int getIconWidth() {
+            return shape.width;
+        }
+
+        public int getIconHeight() {
+            return shape.height;
+        }
     }
 }

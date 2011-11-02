@@ -192,6 +192,7 @@ public class ScatterPlotFrame extends JFrame {
         ScatterPlot scatterPlot = new ScatterPlot();
         scatterPlot.setModel(model);
         chartPanel.setScatterPlotModel(scatterPlot);
+
     }
 
 
@@ -202,6 +203,7 @@ public class ScatterPlotFrame extends JFrame {
         fileMenu = new JMenu();
         closeMenuItem = new JMenuItem();
         commandBar = new JPanel();
+        hSpacer3 = new JPanel(null);
         panel2 = new JPanel();
         label1 = new JLabel();
         xAxisComboBox = new JComboBox();
@@ -213,8 +215,8 @@ public class ScatterPlotFrame extends JFrame {
         panel4 = new JPanel();
         label3 = new JLabel();
         classifyComboBox = new JComboBox();
+        hSpacer4 = new JPanel(null);
         chartPanel = new ChartPanel();
-        documentationField = new JTextField();
 
         //======== this ========
         setFocusTraversalPolicyProvider(true);
@@ -247,20 +249,21 @@ public class ScatterPlotFrame extends JFrame {
             commandBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
             commandBar.setPreferredSize(new Dimension(420, 45));
             commandBar.setLayout(new BoxLayout(commandBar, BoxLayout.X_AXIS));
+            commandBar.add(hSpacer3);
 
             //======== panel2 ========
             {
-                panel2.setBorder(new EtchedBorder());
-                panel2.setPreferredSize(new Dimension(225, 41));
+                panel2.setBorder(null);
+                panel2.setPreferredSize(new Dimension(180, 41));
                 panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
                 //---- label1 ----
-                label1.setText("X:");
+                label1.setText("X: ");
                 panel2.add(label1);
 
                 //---- xAxisComboBox ----
                 xAxisComboBox.setBorder(null);
-                xAxisComboBox.setPreferredSize(new Dimension(150, 27));
+                xAxisComboBox.setPreferredSize(new Dimension(120, 27));
                 xAxisComboBox.setToolTipText("Set data type for X axis");
                 xAxisComboBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -274,8 +277,8 @@ public class ScatterPlotFrame extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setBorder(new EtchedBorder());
-                panel3.setPreferredSize(new Dimension(225, 41));
+                panel3.setBorder(null);
+                panel3.setPreferredSize(new Dimension(180, 41));
                 panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
 
                 //---- label2 ----
@@ -283,7 +286,7 @@ public class ScatterPlotFrame extends JFrame {
                 panel3.add(label2);
 
                 //---- yAxisComboBox ----
-                yAxisComboBox.setPreferredSize(new Dimension(150, 27));
+                yAxisComboBox.setPreferredSize(new Dimension(120, 27));
                 yAxisComboBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         axisChanged(e);
@@ -296,7 +299,8 @@ public class ScatterPlotFrame extends JFrame {
 
             //======== panel4 ========
             {
-                panel4.setBorder(new EtchedBorder());
+                panel4.setBorder(null);
+                panel4.setPreferredSize(new Dimension(250, 27));
                 panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
 
                 //---- label3 ----
@@ -313,14 +317,11 @@ public class ScatterPlotFrame extends JFrame {
                 panel4.add(classifyComboBox);
             }
             commandBar.add(panel4);
+            commandBar.add(hSpacer4);
         }
         contentPane.add(commandBar, BorderLayout.NORTH);
         contentPane.add(chartPanel, BorderLayout.CENTER);
-
-        //---- documentationField ----
-        documentationField.setEditable(false);
-        contentPane.add(documentationField, BorderLayout.SOUTH);
-        setSize(755, 660);
+        setSize(815, 660);
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
@@ -331,6 +332,7 @@ public class ScatterPlotFrame extends JFrame {
     private JMenu fileMenu;
     private JMenuItem closeMenuItem;
     private JPanel commandBar;
+    private JPanel hSpacer3;
     private JPanel panel2;
     private JLabel label1;
     private JComboBox xAxisComboBox;
@@ -342,7 +344,7 @@ public class ScatterPlotFrame extends JFrame {
     private JPanel panel4;
     private JLabel label3;
     private JComboBox classifyComboBox;
+    private JPanel hSpacer4;
     private ChartPanel chartPanel;
-    private JTextField documentationField;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

@@ -51,6 +51,14 @@
          <string>commandBar</string> 
         </void> 
         <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+          <void property="name"> 
+           <string>hSpacer3</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
@@ -58,16 +66,12 @@
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
-           <object class="javax.swing.border.EtchedBorder"> 
-            <int>1</int> 
-            <null/> 
-            <null/> 
-           </object> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
           </void> 
           <void method="setProperty"> 
            <string>preferredSize</string> 
            <object class="java.awt.Dimension"> 
-            <int>225</int> 
+            <int>180</int> 
             <int>41</int> 
            </object> 
           </void> 
@@ -79,7 +83,7 @@
             <string>javax.swing.JLabel</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>X:</string> 
+             <string>X: </string> 
             </void> 
             <void property="name"> 
              <string>label1</string> 
@@ -96,7 +100,7 @@
             <void method="setProperty"> 
              <string>preferredSize</string> 
              <object class="java.awt.Dimension"> 
-              <int>150</int> 
+              <int>120</int> 
               <int>27</int> 
              </object> 
             </void> 
@@ -135,16 +139,12 @@
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
-           <object class="javax.swing.border.EtchedBorder"> 
-            <int>1</int> 
-            <null/> 
-            <null/> 
-           </object> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
           </void> 
           <void method="setProperty"> 
            <string>preferredSize</string> 
            <object class="java.awt.Dimension"> 
-            <int>225</int> 
+            <int>180</int> 
             <int>41</int> 
            </object> 
           </void> 
@@ -169,7 +169,7 @@
             <void method="setProperty"> 
              <string>preferredSize</string> 
              <object class="java.awt.Dimension"> 
-              <int>150</int> 
+              <int>120</int> 
               <int>27</int> 
              </object> 
             </void> 
@@ -204,10 +204,13 @@
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
-           <object class="javax.swing.border.EtchedBorder"> 
-            <int>1</int> 
-            <null/> 
-            <null/> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>250</int> 
+            <int>27</int> 
            </object> 
           </void> 
           <void property="name"> 
@@ -250,6 +253,14 @@
           </void> 
          </object> 
         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+          <void property="name"> 
+           <string>hSpacer4</string> 
+          </void> 
+         </object> 
+        </void> 
        </object> 
        <object class="com.jformdesigner.model.FormLayoutConstraints"> 
         <class>java.lang.String</class> 
@@ -271,25 +282,6 @@
         <void method="setProperty"> 
          <string>value</string> 
          <string>Center</string> 
-        </void> 
-       </object> 
-      </void> 
-      <void method="add"> 
-       <object class="com.jformdesigner.model.FormComponent"> 
-        <string>javax.swing.JTextField</string> 
-        <void method="setProperty"> 
-         <string>editable</string> 
-         <boolean>false</boolean> 
-        </void> 
-        <void property="name"> 
-         <string>documentationField</string> 
-        </void> 
-       </object> 
-       <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-        <class>java.lang.String</class> 
-        <void method="setProperty"> 
-         <string>value</string> 
-         <string>South</string> 
         </void> 
        </object> 
       </void> 
@@ -355,7 +347,7 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>755</int> 
+        <int>815</int> 
         <int>660</int> 
        </object> 
       </void> 

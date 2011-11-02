@@ -164,7 +164,8 @@ public class ScatterPlotUtils {
         for (Map.Entry<String, Set<String>> entry : uniqueAttributeValues.entrySet()) {
             int cnt = entry.getValue().size();
             String att = entry.getKey();
-            if (cnt > 1 && cnt < 10 && !nonSharedAttributes.contains(att)) {
+            if (cnt > 1 && cnt < 10 && !nonSharedAttributes.contains(att) &&
+                    !att.equalsIgnoreCase("DATA FILE") && !(att.equalsIgnoreCase("DATA TYPE"))) {
                 seriesNames.add(att);
             }
         }

@@ -25,6 +25,7 @@ package org.broad.igv.util.stats;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -63,18 +64,33 @@ public class KMPlotFrame extends JFrame {
         sampleColumnControl.addItem("");
         survivalColumnControl.addItem("");
         groupByControl.addItem("");
-        for (String key : AttributeManager.getInstance().getAttributeNames()) {
+        final List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
+
+        // Populate pulldowns, and make guesses for column names.
+        String survivalColumn  = null;
+        String censureColumn = null;
+        String sampleColumn = null;
+        for (String key : attributeNames) {
             censurColumnControl.addItem(key);
             sampleColumnControl.addItem(key);
             survivalColumnControl.addItem(key);
             groupByControl.addItem(key);
+
+            String tmp = key.toLowerCase();
+            if(tmp.contains("survival") || tmp.contains("daystodeath") survivalColumn = key;
+            if(tmp.contains("censure")) censureColumn = key;
+            if(tmp.contains("sample")) sampleColumn = key;
+          }
+
+        if(survivalColumn != null) {
+           survivalColumnControl.setSelectedItem(survivalColumn);
         }
-
-        censurColumnControl.setSelectedItem("CENSURED");
-        sampleColumnControl.setSelectedItem(null);
-        survivalColumnControl.setSelectedItem("SURVIVAL (DAYS)");
-        groupByControl.setSelectedItem("SUBTYPE");
-
+        if(censureColumn != null) {
+            censurColumnControl.setSelectedItem(censureColumn);
+        }
+        if(sampleColumn != null) {
+            sampleColumnControl.setSelectedItem(sampleColumn);
+        }
 
         XYDataset dataset = updateDataset();
         JFreeChart chart = ChartFactory.createXYLineChart(
@@ -107,24 +123,27 @@ public class KMPlotFrame extends JFrame {
         for (Track t : tracks) {
             try {
                 // Get the participant (sample) attribute value for this track
-                String participant = t.getAttributeValue(sampleColumnControl.getSelectedItem().toString());
+                final Object selectedItem = sampleColumnControl.getSelectedItem();
+                if (selectedItem != null) {
+                    String participant = t.getAttributeValue(selectedItem.toString());
 
-                if (!participants.contains(participant)) {   // Don't add same participant twice.
-                    participants.add(participant);
+                    if (!participants.contains(participant)) {   // Don't add same participant twice.
+                        participants.add(participant);
 
-                    // Get the survival time.  TODO -- we need to know the units,  just assuming days for now.
-                    String survivalString = t.getAttributeValue(survivalColumnControl.getSelectedItem().toString());
-                    int survivalDays = Integer.parseInt(survivalString);
-                    int survival = survivalDays;
+                        // Get the survival time.  TODO -- we need to know the units,  just assuming days for now.
+                        String survivalString = t.getAttributeValue(survivalColumnControl.getSelectedItem().toString());
+                        int survivalDays = Integer.parseInt(survivalString);
+                        int survival = survivalDays;
 
-                    // Is the patient censured at the end of the survival period?
-                    String censureString = t.getAttributeValue(censurColumnControl.getSelectedItem().toString());
-                    boolean censured = censureString != null && censureString.equals("1");
+                        // Is the patient censured at the end of the survival period?
+                        String censureString = t.getAttributeValue(censurColumnControl.getSelectedItem().toString());
+                        boolean censured = censureString != null && censureString.equals("1");
 
-                    String group = t.getAttributeValue(groupByControl.getSelectedItem().toString());
-                    dataPoints.add(new DataPoint(participant, survival, censured, group));
-                } else {
-                    // TODO -- check consistency of participant data
+                        String group = t.getAttributeValue(groupByControl.getSelectedItem().toString());
+                        dataPoints.add(new DataPoint(participant, survival, censured, group));
+                    } else {
+                        // TODO -- check consistency of participant data
+                    }
                 }
             } catch (NumberFormatException e) {
                 // Just skip
@@ -154,17 +173,17 @@ public class KMPlotFrame extends JFrame {
             int[] time = new int[pts.size()];
             boolean[] censured = new boolean[pts.size()];
             for (int i = 0; i < pts.size(); i++) {
-                int months = Math.max(1, pts.get(i).time / 30);
+                int months = Math.max(1, pts.get(i).time / 30);  // <=  TODO -- HARDCODED MONTH DATE
                 time[i] = months;
                 censured[i] = pts.get(i).censured;
             }
 
             java.util.List<KaplanMeierEstimator.Interval> controlIntervals = KaplanMeierEstimator.compute(time, censured);
 
-
+            // TODO -- HANDLE CASE OF NO CATEGORIZATION
             XYSeries series1 = new XYSeries(entry.getKey());
             for (KaplanMeierEstimator.Interval interval : controlIntervals) {
-                if (interval.getEnd() < 60)
+                if (interval.getEnd() < 60)  // <= TODO -- WHATS THIS MAGIC NUMBER 60 ?
                     series1.add(interval.getEnd(), interval.getCumulativeSurvival());
             }
             dataset.addSeries(series1);

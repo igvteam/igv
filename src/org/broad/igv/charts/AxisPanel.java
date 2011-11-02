@@ -34,7 +34,7 @@ class AxisPanel extends JComponent {
 
     private void updateAxisDimension(int w, int h) {
 
-        if(axis == null) return;
+        if (axis == null) return;
 
         if (axis.getOrientation() == Axis.Orientation.HORIZONTAL) {
             axis.setPanelSize(w);
@@ -47,7 +47,7 @@ class AxisPanel extends JComponent {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if(axis == null) return;
+        if (axis == null) return;
 
         final Graphics2D g2D = (Graphics2D) g;
         final FontMetrics fontMetrics = g.getFontMetrics();
@@ -60,10 +60,8 @@ class AxisPanel extends JComponent {
         final double tickStart = ticks[0];
         final double tickIncrement = ticks[1];
 
-        final double tmp = Math.floor(Math.log10(tickIncrement));
-        final double tmp2 = Math.pow(10, tmp);
-        final double tmp3 = tickIncrement % tmp2;
-        final double labelStep = tmp3 == 0 ? tickIncrement : Math.floor(Math.pow(10, tmp2));
+        double labelStep = 1;
+
 
         if (axis.getOrientation() == Axis.Orientation.HORIZONTAL) {
             int px;
@@ -74,17 +72,18 @@ class AxisPanel extends JComponent {
                 if (px > 0 && px < width) {
                     g.drawLine(px, TICK_GAP, px, TICK_GAP + TICK_SIZE);
 
-                    if (xtick % labelStep == 0) {
-                        String label = DECIMAL_FORMAT.format(xtick);
-                        int strWidth = fontMetrics.stringWidth(label);
-                        if (px > strWidth && (px + strWidth) < width) {
-                            int strPosition = px - strWidth / 2 + 1;
-                            if (xtick < 0) {
-                                strPosition -= minusStrWidth;
-                            }
-                            g.drawString(label, strPosition, tickLabelY);
+                    //if (xtick % labelStep == 0) {
+                    String label = DECIMAL_FORMAT.format(xtick);
+                    if (label.equals("-0")) label = "0";
+                    int strWidth = fontMetrics.stringWidth(label);
+                    if (px > strWidth && (px + strWidth) < width) {
+                        int strPosition = px - strWidth / 2 + 1;
+                        if (xtick < 0) {
+                            strPosition -= minusStrWidth;
                         }
+                        g.drawString(label, strPosition, tickLabelY);
                     }
+                    //}
 
                 }
                 xtick += tickIncrement;
@@ -102,16 +101,17 @@ class AxisPanel extends JComponent {
             int py;
             do {
                 py = axis.getPixelForValue(ytick);
-                if (py > top && py < bottom) {
+                if (py - strHeight > top && py < bottom) {
                     g.drawLine(width - (TICK_GAP + TICK_SIZE), py, width - TICK_GAP, py);
 
-                    if (ytick % labelStep == 0) {
-                        String label = DECIMAL_FORMAT.format(ytick);
-                        int strWidth = fontMetrics.stringWidth(label);
-                        int strPosition = width - (TICK_GAP + TICK_SIZE) - 2 * TICK_GAP - strWidth;
-                        int tickLabelY = py + strHeight / 2 - 3;
-                        g.drawString(label, strPosition, tickLabelY);
-                    }
+                    //if (ytick % labelStep == 0) {
+                    String label = DECIMAL_FORMAT.format(ytick);
+                    if (label.equals("-0")) label = "0";
+                    int strWidth = fontMetrics.stringWidth(label);
+                    int strPosition = width - (TICK_GAP + TICK_SIZE) - 2 * TICK_GAP - strWidth;
+                    int tickLabelY = py + strHeight / 2 - 3;
+                    g.drawString(label, strPosition, tickLabelY);
+                    //}
 
 
                 }

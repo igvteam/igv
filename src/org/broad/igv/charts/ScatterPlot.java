@@ -26,6 +26,9 @@ public class ScatterPlot {
     int offsetX = pointShape.getBounds().width / 2;
     int offsetY = pointShape.getBounds().height / 2;
 
+    HashSet<String> filteredSeries = new HashSet<String>();
+
+
     public synchronized void setModel(XYDataModel dataModel) {
         this.dataModel = dataModel;
 
@@ -64,12 +67,17 @@ public class ScatterPlot {
 
         drawGrid(graphics, bounds, clipRect);
 
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
         graphics.setColor(c);
         graphics.setStroke(s);
 
         String categoryName = dataModel.getCategoryName();
 
         for (String sn : dataModel.getSeriesNames()) {
+
+            if (filteredSeries.contains(sn)) continue;
 
             Color color = getColor(categoryName, sn);
 
@@ -84,28 +92,47 @@ public class ScatterPlot {
                     int px = xAxis.getPixelForValue(x);
                     int pY = yAxis.getPixelForValue(y);
                     if (clipRect.contains(px, pY)) {
-                        graphics.fillRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
+                        graphics.fillOval(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
+                    }
+                }
+            }
+
+            // Outline selected points.  this is done here, inside the "series" loop, so that series filtering is
+            // respected.  I would be more effecient to do it outside
+            if (selectedPoints != null) {
+                graphics.setColor(Color.ORANGE);
+                for (XYDataPoint dataPoint : dataPoints) {
+                    if (selectedPoints.contains(dataPoint)) {
+                        double x = dataPoint.getX();
+                        double y = dataPoint.getY();
+                        if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                            int px = xAxis.getPixelForValue(x);
+                            int pY = yAxis.getPixelForValue(y);
+                            if (clipRect.contains(px, pY)) {
+                                graphics.drawRect(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
+                            }
+                        }
                     }
                 }
             }
         }
 
         // Outline selected points
-        graphics.setColor(Color.ORANGE);
-        if (selectedPoints != null) {
-            for (XYDataPoint dataPoint : selectedPoints) {
-                double x = dataPoint.getX();
-                double y = dataPoint.getY();
-                if (!Double.isNaN(x) && !Double.isNaN(y)) {
-                    int px = xAxis.getPixelForValue(x);
-                    int pY = yAxis.getPixelForValue(y);
-                    if (clipRect.contains(px, pY)) {
-                        graphics.drawRect(px - offsetX - 1, pY - offsetY - 1, pointShape.width + 2, pointShape.height + 2);
-                    }
-                }
-
-            }
-        }
+//        graphics.setColor(Color.ORANGE);
+//        if (selectedPoints != null) {
+//            for (XYDataPoint dataPoint : selectedPoints) {
+//                double x = dataPoint.getX();
+//                double y = dataPoint.getY();
+//                if (!Double.isNaN(x) && !Double.isNaN(y)) {
+//                    int px = xAxis.getPixelForValue(x);
+//                    int pY = yAxis.getPixelForValue(y);
+//                    if (clipRect.contains(px, pY)) {
+//                        graphics.drawRect(px - offsetX - 1, pY - offsetY - 1, pointShape.width + 2, pointShape.height + 2);
+//                    }
+//                }
+//
+//            }
+//        }
     }
 
 
@@ -124,21 +151,18 @@ public class ScatterPlot {
         if (categoryName == null || categoryName.equals("")) {
             color = Color.blue;
         } else if (categoryName.equals("Mut Count")) {
-            if(sn == null || sn.equals("") || sn.equals("Unknown")) {
-               color = Color.darkGray;
-            }
-            else if(sn.equals("0")) {
+            if (sn == null || sn.equals("") || sn.equals("Unknown")) {
+                color = Color.darkGray;
+            } else if (sn.equals("0")) {
                 color = Color.green.darker();
-            }else if(sn.equals("1")) {
+            } else if (sn.equals("1")) {
                 color = Color.blue;
-            }
-            else if(sn.equals("2")) {
+            } else if (sn.equals("2")) {
                 color = Color.orange;
-            }
-            else {
+            } else {
                 color = Color.red;
             }
-        } else{
+        } else {
             color = AttributeManager.getInstance().getColor(categoryName, sn);
         }
 
@@ -196,5 +220,13 @@ public class ScatterPlot {
 
     public void clearSelections() {
         selectedPoints = null;
+    }
+
+    public void addSeriesFilter(String sn) {
+        filteredSeries.add(sn);
+    }
+
+    public void removeSeriesFilter(String sn) {
+        filteredSeries.remove(sn);
     }
 }
