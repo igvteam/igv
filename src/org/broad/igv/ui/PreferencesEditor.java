@@ -25,11 +25,11 @@ import com.jidesoft.dialog.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FontChooser;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 

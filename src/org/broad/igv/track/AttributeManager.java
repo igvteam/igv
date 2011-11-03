@@ -29,19 +29,16 @@ import org.broad.igv.renderer.AbstractColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.MonocolorScale;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
-import java.awt.font.NumericShaper;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
 

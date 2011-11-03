@@ -30,7 +30,7 @@ import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.ArrayList;

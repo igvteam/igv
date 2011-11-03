@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.FontManager;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.*;

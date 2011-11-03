@@ -18,7 +18,6 @@
 
 package org.broad.igv.gwas;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
@@ -28,12 +27,11 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ChromosomeColors;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;

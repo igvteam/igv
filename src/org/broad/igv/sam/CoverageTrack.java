@@ -22,15 +22,14 @@
  */
 package org.broad.igv.sam;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;

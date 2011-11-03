@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 

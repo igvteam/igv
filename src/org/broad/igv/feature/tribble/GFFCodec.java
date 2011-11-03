@@ -23,7 +23,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.track.TrackProperties;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
 import org.broad.tribble.*;

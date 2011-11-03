@@ -30,6 +30,7 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;

@@ -19,10 +19,9 @@
 package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.LinkCheckBox;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import static org.broad.igv.util.ResourceLocator.AttributeType.*;

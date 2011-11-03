@@ -29,6 +29,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.ColorTable;
 import org.broad.igv.ui.util.PropertyDialog;
 import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
@@ -36,7 +37,6 @@ import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
 import static org.broad.igv.ui.util.PropertyDialog.PreferenceType.COLOR;
 
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.ColorUtilities;
 
 import javax.swing.*;
 import java.awt.*;

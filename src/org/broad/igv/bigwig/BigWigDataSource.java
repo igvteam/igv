@@ -26,13 +26,11 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.FeatureSource;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.tribble.Feature;
-import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.IOException;
 import java.util.*;

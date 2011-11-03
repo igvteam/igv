@@ -1,9 +1,5 @@
 package org.broad.igv.charts;
 
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.util.ColorUtilities;
-
-import java.awt.*;
 import java.awt.geom.Path2D;
 import java.util.*;
 import java.util.List;

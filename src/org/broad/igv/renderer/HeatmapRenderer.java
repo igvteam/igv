@@ -17,15 +17,11 @@
  */
 package org.broad.igv.renderer;
 
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.data.seg.Segment;
 import org.broad.igv.data.rnai.RNAIGeneScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackType;
-import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
 import java.util.Hashtable;

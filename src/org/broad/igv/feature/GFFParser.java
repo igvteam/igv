@@ -27,6 +27,7 @@ import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 

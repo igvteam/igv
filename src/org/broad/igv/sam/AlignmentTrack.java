@@ -35,11 +35,11 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;

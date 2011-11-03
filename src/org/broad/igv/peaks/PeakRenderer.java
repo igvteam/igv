@@ -24,7 +24,7 @@ import org.broad.igv.renderer.BarChartRenderer;
 import org.broad.igv.renderer.Renderer;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.util.List;
@@ -88,13 +88,31 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     float[] timeScores = peak.getTimeScores();
                     for (int i = 0; i < timeScores.length; i++) {
                         score = timeScores[i];
-                        drawScore(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.ColorOption.SCORE);
+                        drawPeak(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
                         top += h;
-
                     }
                 } else {
-                    drawScore(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+                    drawPeak(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
+                    float[] timeScores = peak.getTimeScores();
+                    if (dX > 10 && timeScores.length > 1) {
+                        Graphics2D gLine = context.getGraphic2DForColor(Color.black);
+                        gLine.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+                        double deltaX = ((double) dX / (timeScores.length - 1));
+                        double scaleY = peakHeight / 200.0;
+                        int bottomY = top + peakHeight;
+                        int lastX = pX;
+                        int lastY = (bottomY - (int) (scaleY * timeScores[0]));
+                        for (int i = 1; i < timeScores.length; i++) {
+                            score = timeScores[i];
+                            int x = pX + (int) (i * deltaX);
+                            int y = Math.max(top + 2, (int) (bottomY - (int) (scaleY * timeScores[i])));
+                            gLine.drawLine(lastX, lastY, x, y);
+                            lastX = x;
+                            lastY = y;
+
+                        }
+                    }
                 }
             }
         }
@@ -141,11 +159,12 @@ public class PeakRenderer implements Renderer<LocusScore> {
     static float[] blueComps = Color.blue.getColorComponents(null);
     static float[] redComps = Color.red.getColorComponents(null);
 
-    private void drawScore(RenderContext context, float[] fgColorComps,
-                           int pX, int dX, int top, int h, float score, PeakTrack.ColorOption option) {
+    private void drawPeak(RenderContext context, float[] fgColorComps,
+                          int pX, int dX, int top, int h, float score, PeakTrack.ColorOption option) {
         Color c = getColor(fgColorComps, score, option);
         Graphics2D g = context.getGraphic2DForColor(c);
         g.fillRect(pX, top + 1, dX, h - 2);
+
     }
 
     private Color getColor(float[] fgColorComps, float score, PeakTrack.ColorOption option) {

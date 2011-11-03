@@ -29,9 +29,9 @@ import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.ui.util.ColorTable;
-import org.broad.igv.util.ColorUtilities;
 import org.broad.igv.util.HttpUtils;
 
 import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;

@@ -17,6 +17,8 @@
  */
 package org.broad.igv.util;
 
+import org.broad.igv.ui.color.ColorUtilities;
+
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;

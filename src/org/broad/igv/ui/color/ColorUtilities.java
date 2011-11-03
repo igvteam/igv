@@ -17,12 +17,17 @@
  */
 
 
-package org.broad.igv.util;
+package org.broad.igv.ui.color;
 
 
 import org.apache.log4j.Logger;
 
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -43,6 +48,7 @@ public class ColorUtilities {
 
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
+
     static {
         colorSymbols.put("white", "FFFFFF");
         colorSymbols.put("silver", "C0C0C0");
@@ -156,10 +162,10 @@ public class ColorUtilities {
                 } else if (string.startsWith("#")) {
                     c = hexToColor(string.substring(1));
                 } else {
-                     String hexString = colorSymbols.get(string.toLowerCase());
-                     if(hexString != null) {
-                         c = hexToColor(hexString);
-                     }
+                    String hexString = colorSymbols.get(string.toLowerCase());
+                    if (hexString != null) {
+                        c = hexToColor(hexString);
+                    }
                 }
 
 
@@ -187,7 +193,6 @@ public class ColorUtilities {
         }
 
     }
-
 
 
     /**
@@ -227,5 +232,29 @@ public class ColorUtilities {
      */
     public static Color getCompositeColor(float[] source, float alpha) {
         return getCompositeColor(whiteComponents, source, alpha);
+    }
+
+
+    public static Map<String, java.util.List<Color>> loadPalettes() throws IOException {
+
+        InputStream is = ColorUtilities.class.getResourceAsStream("resources/colorPalettes.txt");
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String nextLine;
+
+        Map<String, java.util.List<Color>> palette = new HashMap();
+        java.util.List<Color> colors = null;
+
+        while ((nextLine = br.readLine()) != null) {
+            System.out.println(nextLine);
+            if (nextLine.startsWith("#")) {
+                colors = new ArrayList();
+                palette.put(nextLine, colors);
+            } else {
+                Color c = ColorUtilities.stringToColor(nextLine);
+                colors.add(c);
+            }
+
+        }
+        return palette;
     }
 }

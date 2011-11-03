@@ -18,7 +18,7 @@
 
 package org.broad.igv.ui.svg;
 
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import javax.swing.*;
 import java.awt.*;

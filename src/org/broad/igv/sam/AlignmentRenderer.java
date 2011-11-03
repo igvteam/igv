@@ -25,8 +25,8 @@ import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ChromosomeColors;
-import org.broad.igv.util.ColorUtilities;
 
 import java.awt.*;
 import java.util.HashMap;

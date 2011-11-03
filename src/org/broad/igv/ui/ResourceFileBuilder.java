@@ -26,7 +26,7 @@ package org.broad.igv.ui;
 //~--- non-JDK imports --------------------------------------------------------
 
 
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

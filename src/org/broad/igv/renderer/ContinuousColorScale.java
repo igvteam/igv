@@ -26,7 +26,7 @@ package org.broad.igv.renderer;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.util.ColorUtilities;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
