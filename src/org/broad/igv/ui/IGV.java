@@ -199,7 +199,7 @@ public class IGV {
                 // Start & stop tooltip manager to force any tooltip windows to close.
                 ToolTipManager.sharedInstance().setEnabled(false);
                 ToolTipManager.sharedInstance().setEnabled(true);
-                 IGVPopupMenu.closeAll();
+                IGVPopupMenu.closeAll();
             }
 
             @Override
@@ -734,8 +734,7 @@ public class IGV {
 
                         }
                     });
-
-                    System.out.println("Exit load");
+                    IGV.getInstance().showLoadedTrackCount();
                 }
 
                 public String getName() {
