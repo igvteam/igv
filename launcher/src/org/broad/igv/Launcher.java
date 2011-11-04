@@ -19,30 +19,27 @@ public class Launcher {
         String memory = null;
         String index = null;
 
-        if (args.length > 0) {
-            file = args[0];
-        }
-        if (args.length > 1) {
-            for (int i = 1; i < args.length; i++) {
-                String a = args[i];
-                String tokens[] = a.split("=");
-                if (tokens.length == 2) {
-                    String key = tokens[0].toLowerCase();
-                    if (key.equals("locus")) {
-                        locus = tokens[1];
-                    } else if (key.equals("genome")) {
-                        genome = tokens[1];
-                    } else if (key.equals("user")) {
-                        user = tokens[1];
-                    } else if (key.equals("maxheapsize")) {
-                        memory = tokens[1];
-                    } else if (key.equals("index")) {
-                        index = tokens[1];
-                    }
+
+        for (String a : args) {
+            String tokens[] = a.split("=");
+            if (tokens.length == 2) {
+                String key = tokens[0].toLowerCase();
+                if (key.equals("file")) {
+                    file = tokens[1];
+                } else if (key.equals("locus")) {
+                    locus = tokens[1];
+                } else if (key.equals("genome")) {
+                    genome = tokens[1];
+                } else if (key.equals("user")) {
+                    user = tokens[1];
+                } else if (key.equals("maxheapsize")) {
+                    memory = tokens[1];
+                } else if (key.equals("index")) {
+                    index = tokens[1];
                 }
             }
-
         }
+
 
         // TODO -- read port from igv preferences
         int port = 60151;
