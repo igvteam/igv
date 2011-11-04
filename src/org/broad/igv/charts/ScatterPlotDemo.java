@@ -1,7 +1,6 @@
 package org.broad.igv.charts;
 
 
-import org.broad.igv.scatterplot.ScatterPlotData;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.util.LinkedHashMap;

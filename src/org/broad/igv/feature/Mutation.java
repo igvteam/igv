@@ -21,7 +21,7 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.util.ColorTable;
+import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;

@@ -348,8 +348,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         int w = DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
         for (String chromosomeName : tmp) {
-            Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName,
-                    graphics2D);
+            Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName,graphics2D);
             if (textBounds != null) {
                 int width = textBounds.getBounds().width + 50;
 

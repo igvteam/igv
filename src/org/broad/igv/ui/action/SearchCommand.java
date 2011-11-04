@@ -181,13 +181,13 @@ public class SearchCommand implements Command {
             else if (!searchString.contains("\"")) {
                 String chr = null;
                 int[] startEnd = null;
-                int colon = searchString.indexOf(":");
+                int colonIdx = searchString.lastIndexOf(":");
 
-                if (colon > 0) {
+                if (colonIdx > 0) {
 
                     // The chromosome is that portion of the search string up to the colon.
-                    chr = genome.getChromosomeAlias(searchString.substring(0, colon));
-                    String posString = searchString.substring(colon).replace(":", "");
+                    chr = genome.getChromosomeAlias(searchString.substring(0, colonIdx));
+                    String posString = searchString.substring(colonIdx).replace(":", "");
                     startEnd = getStartEnd(posString);
 
                     if (startEnd != null) {

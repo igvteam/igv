@@ -16,7 +16,7 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.igv.ui.util;
+package org.broad.igv.ui.color;
 
 import org.broad.igv.ui.color.ColorUtilities;
 

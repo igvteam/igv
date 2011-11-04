@@ -2,7 +2,6 @@ package org.broad.igv.charts;
 
 import org.apache.commons.math.stat.StatUtils;
 import org.broad.igv.feature.LocusScore;
-import org.broad.igv.scatterplot.*;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -89,40 +88,39 @@ public class ScatterPlotUtils {
                 DataTrack dataTrack = (DataTrack) t;
 
                 if (plottableTypes.contains(type)) {
-                    types.add(type);
-
                     double regionScore = getAverageScore(chr, start, end, zoom, dataTrack);
+                    if (!Double.isNaN(regionScore)) {
 
+                        types.add(type);
 
-                    SampleData sampleData = sampleDataMap.get(sample);
-                    if (sampleData == null) {
-                        sampleData = new SampleData();
-                        sampleDataMap.put(sample, sampleData);
-                    }
-
-                    for (String att : attributeNames) {
-                        final String attributeValue = dataTrack.getAttributeValue(att);
-                        sampleData.addAttributeValue(att, attributeValue);
-                        uniqueAttributeValues.get(att).add(attributeValue);
-                        final String otherValue = sampleData.getAttributesMap().get(att);
-                        if (attributeValue == null) {
-                            if (otherValue != null) {
-                                nonSharedAttributes.add(att);
-                            }
-                        } else if (otherValue == null) {
-                            if (attributeValue != null) {
-                                nonSharedAttributes.add(att);
-                            }
-                        } else {
-                            if (!attributeValue.equals(otherValue)) {
-                                nonSharedAttributes.add(att);
-                            }
+                        SampleData sampleData = sampleDataMap.get(sample);
+                        if (sampleData == null) {
+                            sampleData = new SampleData();
+                            sampleDataMap.put(sample, sampleData);
                         }
 
+                        for (String att : attributeNames) {
+                            final String attributeValue = dataTrack.getAttributeValue(att);
+                            sampleData.addAttributeValue(att, attributeValue);
+                            uniqueAttributeValues.get(att).add(attributeValue);
+                            final String otherValue = sampleData.getAttributesMap().get(att);
+                            if (attributeValue == null) {
+                                if (otherValue != null) {
+                                    nonSharedAttributes.add(att);
+                                }
+                            } else if (otherValue == null) {
+                                if (attributeValue != null) {
+                                    nonSharedAttributes.add(att);
+                                }
+                            } else {
+                                if (!attributeValue.equals(otherValue)) {
+                                    nonSharedAttributes.add(att);
+                                }
+                            }
+
+                        }
+                        sampleData.addDataValue(type, regionScore);
                     }
-
-
-                    sampleData.addDataValue(type, regionScore);
                 }
 
             }
@@ -134,6 +132,8 @@ public class ScatterPlotUtils {
         Map<String, double[]> dataMap = new HashMap<String, double[]>(types.size());
 
         // Loop through track (data) types
+        Map<TrackType, Integer> typeCounts = new HashMap<TrackType, Integer>();
+
         for (TrackType type : types) {
             double[] data = new double[sampleNames.length];
             for (int i = 0; i < sampleNames.length; i++) {
@@ -145,8 +145,16 @@ public class ScatterPlotUtils {
                 if (valueList == null || valueList.isEmpty()) {
                     value = Double.NaN;
                 } else if (valueList.size() == 1) {
+
+                    int cnt = typeCounts.get(type) == null ? 1 : typeCounts.get(type) + 1;
+                    typeCounts.put(type, cnt);
+
                     value = valueList.get(0);
                 } else {
+
+                    int cnt = typeCounts.get(type) == null ? valueList.size(): typeCounts.get(type) + valueList.size();
+                    typeCounts.put(type, cnt);
+
                     double[] vs = valueList.toArray();
                     value = StatUtils.mean(vs);
                 }

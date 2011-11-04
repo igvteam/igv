@@ -27,10 +27,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 
 /**
@@ -241,7 +238,7 @@ public class ColorUtilities {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         String nextLine;
 
-        Map<String, java.util.List<Color>> palette = new HashMap();
+        Map<String, java.util.List<Color>> palette = new LinkedHashMap();
         java.util.List<Color> colors = null;
 
         while ((nextLine = br.readLine()) != null) {

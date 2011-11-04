@@ -29,8 +29,8 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.ui.util.ColorTable;
 import org.broad.igv.ui.util.PropertyDialog;
 import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
 
