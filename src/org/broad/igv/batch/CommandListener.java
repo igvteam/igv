@@ -65,50 +65,29 @@ public class CommandListener implements Runnable {
         listenerThread = new Thread(this);
     }
 
+    /**
+     * Loop forever, processing client requests synchronously.  The server is single threaded, because in most cases
+     * we would not know how to process commands ssychronously
+     */
     public void run() {
 
         CommandExecutor cmdExe = new CommandExecutor();
 
-        PrintWriter out = null;
-        BufferedReader in = null;
         try {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
 
-            clientSocket = serverSocket.accept();
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            String inputLine;
-            while (!halt) {
-                while (!halt && (inputLine = in.readLine()) != null) {
-
-                    String cmd = inputLine;
-                    if (cmd.startsWith("GET")) {
-                        String result = processGet(cmd, in, cmdExe);
-                        sendHTTPResponse(out, result);
-
-                        out.close();
-                        in.close();
+            while (true) {
+                clientSocket = serverSocket.accept();
+                processClientSession(cmdExe);
+                if (clientSocket != null) {
+                    try {
                         clientSocket.close();
-                        clientSocket = serverSocket.accept();
-                        out = new PrintWriter(clientSocket.getOutputStream(), true);
-                        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-                    } else {
-                        // From port interface -- switch to Batch mode, which forces most operations to execute synchronously.
-                        // This is neccessary to avoid random "blank" screens.
-                        try {
-                            Globals.setBatch(true);
-                            Globals.setSuppressMessages(true);
-                            out.println(cmdExe.execute(inputLine));
-                        } finally {
-                            Globals.setSuppressMessages(false);
-                            Globals.setBatch(false);
-                        }
+                        clientSocket = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
-                closeSockets();
             }
 
 
@@ -121,15 +100,43 @@ public class CommandListener implements Runnable {
             if (!halt) {
                 log.error("IO Error on port socket ", e);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
+        }
+    }
 
+    /**
+     * Process a client session.  Loop continuously until client sends the "halt" message, or closes the connection.
+     *
+     * @param cmdExe
+     * @throws IOException
+     */
+    private void processClientSession(CommandExecutor cmdExe) throws IOException {
+        PrintWriter out = null;
+        BufferedReader in = null;
+
+        try {
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String inputLine;
+
+            while (!halt && (inputLine = in.readLine()) != null) {
+
+                String cmd = inputLine;
+                if (cmd.startsWith("GET")) {
+                    String result = processGet(cmd, in, cmdExe);
+                    sendHTTPResponse(out, result);
+                } else {
+                    Globals.setBatch(true);
+                    Globals.setSuppressMessages(true);
+                    out.println(cmdExe.execute(inputLine));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } finally {
             Globals.setSuppressMessages(false);
             Globals.setBatch(false);
-
-            closeSockets();
-
+            if (out != null) out.close();
+            if (in != null) in.close();
         }
     }
 
