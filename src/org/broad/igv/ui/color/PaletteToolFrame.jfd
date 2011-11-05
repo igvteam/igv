@@ -92,10 +92,10 @@
           <string>javax.swing.JCheckBox</string> 
           <void method="setProperty"> 
            <string>text</string> 
-           <string>Show grayscale</string> 
+           <string>De-saturate</string> 
           </void> 
           <void property="name"> 
-           <string>showGrayScale</string> 
+           <string>desaturateCheckbox</string> 
           </void> 
           <void method="addEvent"> 
            <object class="com.jformdesigner.model.FormEvent"> 

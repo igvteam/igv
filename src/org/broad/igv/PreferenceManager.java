@@ -30,6 +30,7 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorTable;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.util.HttpUtils;
@@ -829,7 +830,7 @@ public class PreferenceManager implements PropertyManager {
      * Combined: Indel, Missense, Nonsesne, Splice_site, Synonymous, Targetd_Region, Unknown, Truncating,
      * Non-coding_Transcript, Other_AA_changing, Other_likely_neutral
      */
-    public ColorTable getMutationColorScheme() {
+    public PaletteColorTable getMutationColorScheme() {
 
         String indelColor = get(MUTATION_INDEL_COLOR_KEY);
         String missenseColor = get(MUTATION_MISSENSE_COLOR_KEY);
@@ -839,7 +840,7 @@ public class PreferenceManager implements PropertyManager {
         String targetedRegionColor = get(MUTATION_TARGETED_REGION_COLOR_KEY);
         String unknownColor = get(MUTATION_UNKNOWN_COLOR_KEY);
 
-        ColorTable colorTable = new ColorTable();
+        PaletteColorTable colorTable = new PaletteColorTable();
         if ((indelColor != null) && (missenseColor != null) && (nonsenseColor != null) &&
                 (spliceSiteColor != null) &&
                 (synonymousColor != null) &&

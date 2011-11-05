@@ -1,12 +1,9 @@
 package org.broad.igv.ui.color;
 
-import org.jfree.ui.RectangleEdge;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -20,11 +17,13 @@ import java.util.List;
  */
 public class ColorPanel extends JPanel implements Serializable {
 
-    Map<String, java.util.List<Color>> colorPalette;
+    Map<String, ColorPalette> paletteMap;
     List<Palette> paletteList = new ArrayList<Palette>();
     boolean showGrayScale = false;
 
     public ColorPanel() {
+
+        setBackground(Color.white); //PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -91,13 +90,17 @@ public class ColorPanel extends JPanel implements Serializable {
                 g.fillRect(swatch.bounds.x, swatch.bounds.y, swatch.bounds.width, swatch.bounds.height);
 
                 if (showGrayScale) {
-                    BufferedImage image = new BufferedImage(swatch.bounds.width, swatch.bounds.height, BufferedImage.TYPE_BYTE_GRAY);
-                    Graphics gi = image.getGraphics();
-                    gi.setColor(swatch.color);
-                    gi.fillRect(0, 0, swatch.bounds.width, swatch.bounds.height);
-                    gi.dispose();
+                    Color gs = ColorUtilities.adjustHSB(swatch.color, 1.0f, 0.0f, 1.0f);
+                    g.setColor(gs);
+                    g.fillRect(swatch.bounds.x, swatch.bounds.y, swatch.bounds.width, swatch.bounds.height);
 
-                    g.drawImage(image, swatch.bounds.x + 20, swatch.bounds.y, null);
+//                    BufferedImage image = new BufferedImage(swatch.bounds.width, swatch.bounds.height, BufferedImage.TYPE_BYTE_GRAY);
+//                    Graphics gi = image.getGraphics();
+//                    gi.setColor(swatch.color);
+//                    gi.fillRect(0, 0, swatch.bounds.width, swatch.bounds.height);
+//                    gi.dispose();
+//
+//                    g.drawImage(image, swatch.bounds.x + 20, swatch.bounds.y, null);
                 }
             }
 
@@ -106,9 +109,10 @@ public class ColorPanel extends JPanel implements Serializable {
 
     @Override
     public void doLayout() {
-        if (colorPalette == null) {
+
+        if (paletteMap == null) {
             try {
-                colorPalette = ColorUtilities.loadPalettes();
+                paletteMap = ColorUtilities.loadPalettes();
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -123,7 +127,7 @@ public class ColorPanel extends JPanel implements Serializable {
 
         int dx = showGrayScale ? 35 : 65;
 
-        for (Map.Entry<String, List<Color>> entry : colorPalette.entrySet()) {
+        for (Map.Entry<String, ColorPalette> entry : paletteMap.entrySet()) {
 
             x += dx;
             int y = ybase;
@@ -137,7 +141,7 @@ public class ColorPanel extends JPanel implements Serializable {
 
             y += 10;
 
-            for (Color c : entry.getValue()) {
+            for (Color c : entry.getValue().getColors()) {
                 y += 20;
                 Rectangle r = new Rectangle(x, y, 18, 18);
                 palette.swatches.add(new Swatch(r, c));

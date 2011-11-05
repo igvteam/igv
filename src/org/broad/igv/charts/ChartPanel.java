@@ -1,5 +1,6 @@
 package org.broad.igv.charts;
 
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
@@ -48,8 +49,9 @@ public class ChartPanel extends JPanel implements Serializable {
         toolPanel.setPreferredSize(new Dimension(1000, 20));
         this.add(toolPanel, ChartLayout.TITLE);
 
+
         plotPanel = new PlotPanel();
-        plotPanel.setBackground(new Color(225, 225, 225));
+        plotPanel.setBackground(PreferenceManager.getInstance().getAsColor(PreferenceManager.BACKGROUND_COLOR));
         plotPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
         this.add(plotPanel, ChartLayout.CHART);
 
@@ -269,7 +271,7 @@ public class ChartPanel extends JPanel implements Serializable {
             Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
 
             // Sort series names
-            java.util.List<String> seriesNames = new ArrayList<String> (scatterPlot.dataModel.getSeriesNames());
+            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.dataModel.getSeriesNames());
 
             sortSeriesNames(seriesNames);
 
@@ -277,7 +279,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 Color c = ScatterPlot.getColor(categoryName, sn);
                 LegendIcon icon = new LegendIcon(pointShape, c);
 
-                String labelString =  (sn.trim()).equals("") ? "Unknown" : sn;
+                String labelString = (sn.trim()).equals("") ? "Unknown" : sn;
 
                 JLabel label = new JLabel(labelString, icon, SwingConstants.LEFT);
                 label.setFont(labelFont);
@@ -286,10 +288,9 @@ public class ChartPanel extends JPanel implements Serializable {
                 cb.setSelected(true);
                 cb.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent actionEvent) {
-                        if(cb.isSelected()) {
+                        if (cb.isSelected()) {
                             scatterPlot.removeSeriesFilter(sn);
-                        }
-                        else {
+                        } else {
                             scatterPlot.addSeriesFilter(sn);
                         }
                         plotPanel.repaint();

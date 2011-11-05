@@ -142,7 +142,17 @@ public class AttributeHeaderPanel extends JPanel {
                 if (attKey == null) {
                     setToolTipText("Click attribute heading to sort");
                 } else {
-                    setToolTipText("<html>" + attKey + "<br>Click to sort");
+                    AttributeManager.ColumnMetaData md = AttributeManager.getInstance().getColumnMetaData(attKey);
+                    StringBuffer buf = new StringBuffer("<html>" + attKey + "<br>Click to sort");
+                    buf.append("<br>Is numeric = " + md.isNumeric() + "<br>");
+                    buf.append("Is diverging = " + md.isDiverging() + "<br>");
+                    buf.append("getUniqueCount = " + md.getUniqueCount() + "<br>");
+                    buf.append("getTotalCount = " + md.getTotalCount() + "<br>");
+                    buf.append("getUniqueRatio = " + md.getUniqueRatio() + "<br>");
+                   // buf.append("# unique = " + md.uniqueValues.size() + "<br>");
+                   // buf.append("# total = " + md.totalCount + "<br>");
+                   // buf.append("# numeric = " + md.numericCount + "<br>");
+                    setToolTipText(buf.toString());
                 }
 
             }

@@ -17,7 +17,7 @@ import javax.swing.*;
 public class PaletteToolFrame extends JFrame {
     public PaletteToolFrame() {
         initComponents();
-        showGrayScale.setSelected(colorPanel.showGrayScale);
+        desaturateCheckbox.setSelected(colorPanel.showGrayScale);
     }
 
     private void saveItemActionPerformed(ActionEvent e) {
@@ -45,7 +45,7 @@ public class PaletteToolFrame extends JFrame {
     }
 
     private void showGrayScaleActionPerformed(ActionEvent e) {
-        colorPanel.showGrayScale = showGrayScale.isSelected();
+        colorPanel.showGrayScale = desaturateCheckbox.isSelected();
         colorPanel.repaint();;
     }
 
@@ -56,7 +56,7 @@ public class PaletteToolFrame extends JFrame {
         menu1 = new JMenu();
         saveItem = new JMenuItem();
         hSpacer1 = new JPanel(null);
-        showGrayScale = new JCheckBox();
+        desaturateCheckbox = new JCheckBox();
         colorPanel = new ColorPanel();
 
         //======== this ========
@@ -83,14 +83,14 @@ public class PaletteToolFrame extends JFrame {
             menuBar1.add(menu1);
             menuBar1.add(hSpacer1);
 
-            //---- showGrayScale ----
-            showGrayScale.setText("Show grayscale");
-            showGrayScale.addActionListener(new ActionListener() {
+            //---- desaturateCheckbox ----
+            desaturateCheckbox.setText("De-saturate");
+            desaturateCheckbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     showGrayScaleActionPerformed(e);
                 }
             });
-            menuBar1.add(showGrayScale);
+            menuBar1.add(desaturateCheckbox);
         }
         setJMenuBar(menuBar1);
         contentPane.add(colorPanel, BorderLayout.CENTER);
@@ -105,7 +105,7 @@ public class PaletteToolFrame extends JFrame {
     private JMenu menu1;
     private JMenuItem saveItem;
     private JPanel hSpacer1;
-    private JCheckBox showGrayScale;
+    private JCheckBox desaturateCheckbox;
     private ColorPanel colorPanel;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 

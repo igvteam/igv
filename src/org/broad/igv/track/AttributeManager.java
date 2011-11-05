@@ -29,6 +29,9 @@ import org.broad.igv.renderer.AbstractColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.MonocolorScale;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorTable;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
@@ -101,8 +104,9 @@ public class AttributeManager {
      */
     Map<String, AbstractColorScale> colorScales = new HashMap();
 
-    Map<String, Integer> colorCounter = new HashMap();
+    Map<String, ColorTable> colorTables = new HashMap<String, ColorTable>();
 
+    Map<String, Integer> colorCounter = new HashMap();
 
     private AttributeManager() {
         propertyChangeSupport = new PropertyChangeSupport(this);
@@ -154,6 +158,8 @@ public class AttributeManager {
         ColumnMetaData metaData = columnMetaData.get(key);
         return metaData != null && metaData.isNumeric();
     }
+
+
 
 
     // TODO -- don't compute this on the fly every time its called
@@ -231,19 +237,11 @@ public class AttributeManager {
         String key = attributeName.toUpperCase();
         ColumnMetaData metaData = columnMetaData.get(key);
         if (metaData == null) {
-            metaData = new ColumnMetaData();
+            metaData = new ColumnMetaData(key);
             columnMetaData.put(key, metaData);
         }
 
-        // Test if data is numeric.  Skip null and blank values
-        if (attributeValue != null && attributeValue.length() > 0 && metaData.isNumeric()) {
-            try {
-                double val = Double.parseDouble(attributeValue);
-                metaData.updateRange(val);
-            } catch (NumberFormatException e) {
-                metaData.markNonNumeric();
-            }
-        }
+        metaData.updateMetrics(attributeValue);
 
 
     }
@@ -313,7 +311,7 @@ public class AttributeManager {
     private void loadSampleTable(AsciiLineReader reader, String path) throws IOException {
 
         String[] colHeadings = null;
-        
+
         List<String> sections = Arrays.asList("#sampletable", "#samplemapping", "#colors");
 
         boolean foundAttributes = false;
@@ -326,8 +324,8 @@ public class AttributeManager {
                 break;
             }
             if (nextLine.toLowerCase().startsWith("#")) {
-                String tmp =  nextLine.toLowerCase().trim();
-                if(sections.contains(tmp)) {
+                String tmp = nextLine.toLowerCase().trim();
+                if (sections.contains(tmp)) {
                     section = tmp;
                 }
                 continue;
@@ -476,88 +474,156 @@ public class AttributeManager {
     public Color getColor(String attKey, String attValue) {
 
         if (attValue == null || attValue.length() == 0) {
-            return Color.white;
+            return Color.lightGray;
         }
 
-        if (isNumeric(attKey)) {
+        final ColumnMetaData metaData = columnMetaData.get(attKey.toUpperCase());
+        if (metaData == null) {
+            return Color.lightGray;
+        }
+        if (metaData.isNumeric()) {
             AbstractColorScale cs = colorScales.get(attKey);
             {
-                if (cs != null) {
-                    try {
-                        float x = Float.parseFloat(attValue);
-                        return cs.getColor(x);
-                    } catch (NumberFormatException e) {
-                        return Color.white;
+                if (cs == null) {
+                    // Create color scale based loosely on Brewer diverging / sequential palletes
+                    // TODO -- use actual brewer palletes if # of values < 8
+                    if (metaData.isDiverging()) {
+                        // reg-blue diverging
+                        Color minColor = new Color(198, 219, 239);
+                        Color midColor = Color.white;
+                        Color maxColor = new Color(33, 102, 172);
+                        cs = new ContinuousColorScale(metaData.getMin(), 0, metaData.getMax(), minColor, midColor, maxColor);
+                        colorScales.put(attKey, cs);
+
+                    } else {
+                        // Blues scale
+                        Color minColor = new Color(198, 219, 239);
+                        Color maxColor = new Color(8, 69, 148);
+                        cs = new ContinuousColorScale(metaData.getMin(), metaData.getMax(), minColor, maxColor);
+                        colorScales.put(attKey, cs);
                     }
                 }
+                try {
+                    float x = Float.parseFloat(attValue);
+                    return cs.getColor(x);
+                } catch (NumberFormatException e) {
+                    return Color.lightGray;
+                }
+
 
             }
         }
 
+        // Look for color in pre-loaded color map
         String key = (attKey + "_" + attValue).toUpperCase();
         Color c = colorMap.get(key);
         if (c == null) {
             key = ("*_" + attValue).toUpperCase();
             c = colorMap.get(key);
-
             if (c == null) {
-
                 key = (attValue + "_*").toUpperCase();
                 c = colorMap.get(key);
+            }
+        }
 
-                if (c == null) {
+        // Get color from palette
+        if (c == null) {
 
-                    Integer cnt = colorCounter.get(attKey);
-                    if (cnt == null) {
-                        cnt = 0;
-                    }
-                    cnt++;
-                    colorCounter.put(attKey, cnt);
-                    c = randomColor(cnt);
+            // Measure of "information content" added by using color, very crude
+            boolean useColor = metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() < 0.2;
+
+            if (useColor) {
+                ColorTable ct = colorTables.get(attKey);
+                if (ct == null) {
+                    ColorPalette palette = ColorUtilities.getPalette("Set 3");
+                    ct = new PaletteColorTable(palette);
+                    colorTables.put(attKey, ct);
                 }
-
+                c = ct.get(attValue);
+            }
+            else {
+                c = ColorUtilities.randomDesaturatedColor(0.5f);
                 colorMap.put(key, c);
             }
         }
+
         return c;
     }
 
 
-    static class ColumnMetaData {
-        // Assume meta data is true until proven otherwise
-        boolean numeric = true;
-        double min = Double.MAX_VALUE;
-        double max = -min;
+    public ColumnMetaData getColumnMetaData(String key) {
+        return columnMetaData.get(key.toUpperCase());
+    }
 
-        void updateRange(double value) {
-            min = Math.min(min, value);
-            max = Math.max(max, value);
+    public static class ColumnMetaData {
+
+        String name;
+        private double min = Double.MAX_VALUE;
+        private double max = -min;
+
+        int totalCount = 0;
+        public HashSet<String> uniqueAlphaValues = new HashSet<String>();
+        public HashSet<String> uniqueNumericValues = new HashSet<String>();
+
+        ColumnMetaData(String name) {
+            this.name = name;
         }
 
-        // Allow up to 1 non-numeric field
+        public void updateMetrics(String attributeValue) {
 
+            totalCount++;
+
+            // Test if data is numeric.  Skip null and blank values
+            if (attributeValue != null && attributeValue.length() > 0) {
+                try {
+                    double value = Double.parseDouble(attributeValue);
+                    uniqueNumericValues.add(attributeValue);
+                    min = Math.min(min, value);
+                    max = Math.max(max, value);
+
+                } catch (NumberFormatException e) {
+                    uniqueAlphaValues.add(attributeValue);
+                }
+            }
+        }
+
+        /**
+         * A column is considered numeric if it has at least 2 numeric values, and
+         * no more than 1 non-numeric value.
+         *
+         * @return
+         */
         public boolean isNumeric() {
-            return numeric;
+            return uniqueNumericValues.size() > 1 && uniqueAlphaValues.size() < 2;
         }
 
+        public boolean isDiverging() {
+            return min < 0;
+        }
 
-        public void markNonNumeric() {
-            numeric = false;
+        public double getMin() {
+            return min;
+        }
+
+        public double getMax() {
+            return max;
+        }
+
+        public double getUniqueRatio() {
+
+            double totalUnique = uniqueAlphaValues.size() + uniqueNumericValues.size();
+            return totalUnique / totalCount;
+
+        }
+
+        public int getUniqueCount() {
+            return uniqueAlphaValues.size() + uniqueNumericValues.size();
+        }
+
+        public int getTotalCount() {
+            return totalCount;
         }
     }
 
-    static class Range {
-        double min;
-        double max;
-        Color color;
-    }
-
-
-    public static Color randomColor(int idx) {
-        float hue = (float) Math.random();
-        float sat = (float) (0.8 * Math.random());
-        float bri = (float) (0.6 + 0.4 * Math.random());
-        return Color.getHSBColor(hue, sat, bri);
-    }
 
 }

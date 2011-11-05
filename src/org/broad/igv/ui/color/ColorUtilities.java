@@ -45,6 +45,7 @@ public class ColorUtilities {
 
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
+    private static Map<String, ColorPalette> palettes;
 
     static {
         colorSymbols.put("white", "FFFFFF");
@@ -115,8 +116,16 @@ public class ColorUtilities {
         return new Color(col1, col2, col3);
     }
 
+    public static Color randomDesaturatedColor(float alpha) {
+        float hue = (float) Math.random();
+        float brightenss = (float) (Math.random() * 0.7);
+        Color base = Color.getHSBColor(hue, 0, brightenss);
+        if (alpha >= 1) return base;
+        else return new Color(base.getRed(), base.getGreen(), base.getBlue(), (int) (alpha * 255));
 
-    private static float[] hsbvals = new float[3];
+
+    }
+
 
     /**
      * Method description
@@ -128,9 +137,9 @@ public class ColorUtilities {
      * @return
      */
     public static Color adjustHSB(Color inputColor, float hue, float saturation, float brightness) {
+        float[] hsbvals = new float[3];
         Color.RGBtoHSB(inputColor.getRed(), inputColor.getGreen(), inputColor.getBlue(), hsbvals);
-        return Color.getHSBColor(hue * hsbvals[0], saturation * hsbvals[1],
-                brightness * hsbvals[2]);
+        return Color.getHSBColor(hue * hsbvals[0], saturation * hsbvals[1], brightness * hsbvals[2]);
     }
 
 
@@ -232,26 +241,53 @@ public class ColorUtilities {
     }
 
 
-    public static Map<String, java.util.List<Color>> loadPalettes() throws IOException {
+    public static Map<String, ColorPalette> loadPalettes() throws IOException {
 
         InputStream is = ColorUtilities.class.getResourceAsStream("resources/colorPalettes.txt");
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         String nextLine;
 
-        Map<String, java.util.List<Color>> palette = new LinkedHashMap();
-        java.util.List<Color> colors = null;
+        palettes = new LinkedHashMap<String, ColorPalette>();
 
+        String currentPalletName = null;
+        java.util.List<Color> currentColorList = new ArrayList();
         while ((nextLine = br.readLine()) != null) {
-            System.out.println(nextLine);
+            nextLine = nextLine.trim();
+            if (nextLine.length() == 0) continue;
             if (nextLine.startsWith("#")) {
-                colors = new ArrayList();
-                palette.put(nextLine, colors);
+                if (currentPalletName != null) {
+                    ColorPalette palette = new ColorPalette(currentPalletName, currentColorList.toArray(new Color[currentColorList.size()]));
+                    palettes.put(currentPalletName, palette);
+                    currentColorList.clear();
+                }
+                currentPalletName = nextLine.substring(1);
             } else {
-                Color c = ColorUtilities.stringToColor(nextLine);
-                colors.add(c);
+                String[] tokens = nextLine.split(";");
+                for (String s : tokens) {
+                    // Remove white space
+                    s = s.replaceAll(" ", "");
+                    Color c = ColorUtilities.stringToColor(s);
+                    currentColorList.add(c);
+                }
             }
 
         }
-        return palette;
+
+        if (!currentColorList.isEmpty()) {
+            ColorPalette palette = new ColorPalette(currentPalletName, currentColorList.toArray(new Color[currentColorList.size()]));
+            palettes.put(currentPalletName, palette);
+        }
+
+        return palettes;
+    }
+
+    public static ColorPalette getPalette(String s) {
+        try {
+            if (palettes == null) loadPalettes();
+            return palettes.get(s);
+        } catch (IOException e) {
+            log.error(e);
+            return null;
+        }
     }
 }

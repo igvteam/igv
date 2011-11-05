@@ -57,6 +57,7 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
      */
     public AttributePanel(TrackPanel trackPanel) {
         super(trackPanel);
+        setBackground(Color.lightGray);
         setBorder(javax.swing.BorderFactory.createLineBorder(Color.black));
         init();
     }

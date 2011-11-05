@@ -29,7 +29,7 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.color.ColorTable;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.util.PropertyDialog;
 import org.broad.igv.ui.util.PropertyDialog.PreferenceDescriptor;
@@ -51,15 +51,15 @@ import java.util.Map;
  */
 public class MutationLegendPanel extends LegendPanel {
 
-    ColorTable colorTable;
+    PaletteColorTable colorTable;
 
     public MutationLegendPanel() {
         init();
     }
 
     private void init() {
-        ColorTable prefTable = PreferenceManager.getInstance().getMutationColorScheme();
-        colorTable = new ColorTable();
+        PaletteColorTable prefTable = PreferenceManager.getInstance().getMutationColorScheme();
+        colorTable = new PaletteColorTable();
         for (String key : prefTable.getKeys()) {
             colorTable.put(key, prefTable.get(key));
         }
