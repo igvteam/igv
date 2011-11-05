@@ -56,18 +56,21 @@ public class MutationParser {
             if (reader == null) {
                 return false;
             }
-            String nextLine = reader.readLine();
-            if (nextLine == null) {
-                return false;
+
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null && nextLine.startsWith("#")) {
+                if (nextLine.startsWith("#version 2.")) {
+                    return true;
+                }
             }
+            if (nextLine == null) return false;
+
             String[] tokens = nextLine.split("\t");
             return tokens.length > 15 && tokens[0].equalsIgnoreCase("Hugo_Symbol");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("", e);
             throw new DataLoadException("Error checking for MAF file type: " + e.toString(), locator.getPath());
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 reader.close();
             }
@@ -108,20 +111,26 @@ public class MutationParser {
 
         try {
 
-
-              reader = ParsingUtils.openAsciiReader(locator);
-
-            // first line
-            String[] headers = reader.readLine().split("\t");
-            boolean isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
-            setColumns(headers, isMAF);
-
             Map<String, List<org.broad.tribble.Feature>> mutationMap = new LinkedHashMap();
+
+            reader = ParsingUtils.openAsciiReader(locator);
+
+            String[] headers = null;
             int lineNumber = 1;
-            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
+            boolean isMAF = false;
+            while ((nextLine = reader.readLine()) != null) {
                 lineNumber++;
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 4) {
+
+                    if (headers == null) {
+                        headers = tokens;
+                        isMAF = headers.length > 15 && headers[0].equalsIgnoreCase("Hugo_Symbol");
+                        setColumns(headers, isMAF);
+                        continue;
+                    }
+
+
                     String chr = genome.getChromosomeAlias(tokens[chrColumn].trim());
 
                     int start;
@@ -168,9 +177,7 @@ public class MutationParser {
             }
 
             return mutationMap;
-        }
-
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("", e);
             throw new DataLoadException("IO Exception: " + e.toString(), locator.getPath());
         } finally {
