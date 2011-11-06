@@ -276,7 +276,7 @@ public class ChartPanel extends JPanel implements Serializable {
             sortSeriesNames(seriesNames);
 
             for (final String sn : seriesNames) {
-                Color c = ScatterPlot.getColor(categoryName, sn);
+                Color c = scatterPlot.getColor(categoryName, sn);
                 LegendIcon icon = new LegendIcon(pointShape, c);
 
                 String labelString = (sn.trim()).equals("") ? "Unknown" : sn;

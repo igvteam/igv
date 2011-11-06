@@ -248,6 +248,7 @@ public class ColorUtilities {
         String nextLine;
 
         palettes = new LinkedHashMap<String, ColorPalette>();
+        palleteNames = new ArrayList();
 
         String currentPalletName = null;
         java.util.List<Color> currentColorList = new ArrayList();
@@ -258,6 +259,7 @@ public class ColorUtilities {
                 if (currentPalletName != null) {
                     ColorPalette palette = new ColorPalette(currentPalletName, currentColorList.toArray(new Color[currentColorList.size()]));
                     palettes.put(currentPalletName, palette);
+                    palleteNames.add(currentPalletName);
                     currentColorList.clear();
                 }
                 currentPalletName = nextLine.substring(1);
@@ -276,9 +278,29 @@ public class ColorUtilities {
         if (!currentColorList.isEmpty()) {
             ColorPalette palette = new ColorPalette(currentPalletName, currentColorList.toArray(new Color[currentColorList.size()]));
             palettes.put(currentPalletName, palette);
+            palleteNames.add(currentPalletName);
         }
 
         return palettes;
+    }
+
+    static int nextPaletteIdx = 0;
+    static ArrayList<String> palleteNames = new ArrayList();
+
+    public static ColorPalette getNextPalette() {
+        try {
+            if (palettes == null) loadPalettes();
+            ColorPalette pallete = palettes.get(palleteNames.get(nextPaletteIdx));
+            nextPaletteIdx++;
+            if (nextPaletteIdx >= palleteNames.size()) {
+                nextPaletteIdx = 0;
+            }
+            return pallete;
+        } catch (IOException e) {
+            log.error(e);
+            return null;
+        }
+
     }
 
     public static ColorPalette getPalette(String s) {

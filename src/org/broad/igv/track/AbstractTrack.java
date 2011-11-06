@@ -237,7 +237,6 @@ public abstract class AbstractTrack implements Track {
         int x = trackRectangle.x;
 
         for (String name : names) {
-
             String key = name.toUpperCase();
             String attributeValue = getAttributeValue(key);
             if (attributeValue != null) {
@@ -246,8 +245,15 @@ public abstract class AbstractTrack implements Track {
                 graphics.setColor(AttributeManager.getInstance().getColor(key, attributeValue));
                 graphics.fill(rect);
                 mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
+
+                // Border
+                graphics.setColor(Color.lightGray);
+                graphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, trackRectangle.y,
+                        AttributeHeaderPanel.COLUMN_BORDER_WIDTH, trackRectangle.height);
+
             }
             x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+
         }
     }
 
@@ -303,7 +309,7 @@ public abstract class AbstractTrack implements Track {
     public void setAttributeValue(String name, String value) {
         String key = name.toUpperCase();
         attributes.put(key, value);
-        AttributeManager.getInstance().addAttributeName(name);
+        AttributeManager.getInstance().addAttribute(getSample(), name, value);
     }
 
 
@@ -318,7 +324,7 @@ public abstract class AbstractTrack implements Track {
 
     public String getSample() {
 
-        if(sampleId != null) {
+        if (sampleId != null) {
             return sampleId;
         }
         String key = AttributeManager.getInstance().getSampleFor(getName());
@@ -438,7 +444,7 @@ public abstract class AbstractTrack implements Track {
     }
 
     public boolean hasDataRange() {
-        return  dataRange != null;
+        return dataRange != null;
     }
 
     public DataRange getDataRange() {
@@ -489,7 +495,7 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Set some properties of this track,  usually from a "track line" specification.
-     *
+     * <p/>
      * TODO -- keep the properties object, rather than copy all the values.
      *
      * @param properties
@@ -642,7 +648,7 @@ public abstract class AbstractTrack implements Track {
 
     /**
      * Return the current state of this object as map of key-value pairs.  Used to store session state.
-     *
+     * <p/>
      * // TODO -- this whole scheme could probably be more elegantly handled with annotations.
      *
      * @return
@@ -812,7 +818,7 @@ public abstract class AbstractTrack implements Track {
                 int red = Integer.parseInt(rgb[0]);
                 int green = Integer.parseInt(rgb[1]);
                 int blue = Integer.parseInt(rgb[2]);
-                altColor=  new Color(red, green, blue);
+                altColor = new Color(red, green, blue);
             } catch (NumberFormatException e) {
                 log.error("Error restoring color: " + colorString);
             }
@@ -846,8 +852,7 @@ public abstract class AbstractTrack implements Track {
         if (displayModeText != null) {
             try {
                 setDisplayMode(Track.DisplayMode.valueOf(displayModeText));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error interpreting display mode: " + displayModeText);
             }
         } else {

@@ -1,6 +1,9 @@
 package org.broad.igv.charts;
 
 import org.broad.igv.track.AttributeManager;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.PaletteColorTable;
+import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
@@ -17,6 +20,9 @@ public class ScatterPlot {
 
 
     public static final Color VERY_LIGHT_GRAY = new Color(250, 250, 250);
+
+    PaletteColorTable colorTable;
+
     Axis xAxis = new Axis(Axis.Orientation.HORIZONTAL);
     Axis yAxis = new Axis(Axis.Orientation.VERTICAL);
     XYDataModel dataModel;
@@ -30,8 +36,10 @@ public class ScatterPlot {
 
 
     public synchronized void setModel(XYDataModel dataModel) {
+
         this.dataModel = dataModel;
 
+        colorTable = new PaletteColorTable(ColorUtilities.getPalette("Set 1"));
         double minX = Double.MAX_VALUE;
         double maxX = -minX;
         double minY = minX;
@@ -146,29 +154,32 @@ public class ScatterPlot {
     }
 
 
-    public static Color getColor(String categoryName, String sn) {
-        Color color;
-        if (categoryName == null || categoryName.equals("")) {
-            color = Color.blue;
-        } else if (categoryName.equals("Mut Count")) {
-            if (sn == null || sn.equals("") || sn.equals("Unknown")) {
-                color = Color.darkGray;
-            } else if (sn.equals("0")) {
-                color = Color.green.darker();
-            } else if (sn.equals("1")) {
-                color = Color.blue;
-            } else if (sn.equals("2")) {
-                color = Color.orange;
-            } else {
-                color = Color.red;
-            }
-        } else {
-            color = AttributeManager.getInstance().getColor(categoryName, sn);
-        }
+    public Color getColor(String categoryName, String sn) {
 
-        // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
-        if (color == Color.white) color = Color.darkGray;
-        return color;
+        return colorTable.get(sn);
+
+//        Color color;
+//        if (categoryName == null || categoryName.equals("")) {
+//            color = Color.blue;
+//        } else if (categoryName.equals("Mut Count")) {
+//            if (sn == null || sn.equals("") || sn.equals("Unknown")) {
+//                color = Color.darkGray;
+//            } else if (sn.equals("0")) {
+//                color = Color.green.darker();
+//            } else if (sn.equals("1")) {
+//                color = Color.blue;
+//            } else if (sn.equals("2")) {
+//                color = Color.orange;
+//            } else {
+//                color = Color.red;
+//            }
+//        } else {
+//            color = AttributeManager.getInstance().getColor(categoryName, sn);
+//        }
+//
+//        // White is the "no-value" color in the attribute panel, but it doesn't work well on the plot. Switch to black
+//        if (color == Color.white) color = Color.darkGray;
+//        return color;
     }
 
     private void drawGrid(Graphics2D graphics, Rectangle bounds, Rectangle clipRect) {
