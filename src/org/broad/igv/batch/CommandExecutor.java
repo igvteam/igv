@@ -41,7 +41,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CommandExecutor {
 
@@ -305,7 +307,15 @@ public class CommandExecutor {
             IGV.getFirstInstance().createNewSession(null);
         }
 
+        Set<String> loadedFiles = new HashSet<String>();
+        for(ResourceLocator rl :  IGV.getFirstInstance().getTrackManager().getDataResourceLocators()) {
+            loadedFiles.add(rl.getPath());
+        }
+
         for (String f : files) {
+            // Skip already loaded files TODO -- make this optional?  Check for change?
+            if(loadedFiles.contains(f)) continue;
+
             if (f.endsWith(".xml")) {
                 sessionPaths.add(f);
             } else {
