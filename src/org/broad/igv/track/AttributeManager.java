@@ -24,6 +24,7 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.renderer.AbstractColorScale;
 import org.broad.igv.renderer.ContinuousColorScale;
@@ -137,9 +138,17 @@ public class AttributeManager {
      * Return the attribute value for the given track (trackName) and key.
      */
     public String getAttribute(String trackName, String attributeName) {
-        Map attributes = attributeMap.get(trackName);
+        Map<String, String> attributes = attributeMap.get(trackName);
         String key = attributeName.toUpperCase();
-        return (attributes == null ? null : (String) attributes.get(key));
+        String value = attributes == null ? null : attributes.get(key);
+        if (value == null && trackSampleMappings.containsKey(trackName)) {
+            final String sample = trackSampleMappings.get(trackName);
+            attributes = attributeMap.get(sample);
+            if (attributes != null) {
+                value = attributes.get(key);
+            }
+        }
+        return value;
     }
 
     /**
@@ -147,7 +156,8 @@ public class AttributeManager {
      * be displayed.
      */
     public List<String> getAttributeNames() {
-        return new ArrayList(attributeNames.values());
+        ArrayList<String> attNames = new ArrayList<String>(attributeNames.values());
+        return attNames;
     }
 
     /**
@@ -160,12 +170,12 @@ public class AttributeManager {
     }
 
 
-
-
     // TODO -- don't compute this on the fly every time its called
 
     public List<String> getVisibleAttributes() {
-        final Set<String> allKeys = attributeNames.keySet();
+        final Set<String> allKeys = new HashSet<String>();
+        allKeys.addAll(attributeNames.keySet());
+
         Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
         if (hiddenAttributes != null) {
             allKeys.removeAll(hiddenAttributes);
@@ -173,7 +183,7 @@ public class AttributeManager {
 
         ArrayList<String> visibleAttributes = new ArrayList<String>(allKeys.size());
         for (String key : allKeys) {
-            visibleAttributes.add(attributeNames.get(key));
+                visibleAttributes.add(attributeNames.get(key));
         }
         return visibleAttributes;
     }
@@ -187,16 +197,20 @@ public class AttributeManager {
     }
 
     /**
-     * Set the attribute value for the given track or sample id and key.
+     * Set an attribute value
+     *
+     * @param rowId          -- track or sample identifier
+     * @param attributeName
+     * @param attributeValue
      */
-    public void addAttribute(String trackIdentifier, String name, String attributeValue) {
+    public void addAttribute(String rowId, String attributeName, String attributeValue) {
 
         if (attributeValue.equals("")) {
             return;
         }
 
-        String key = name.toUpperCase();
-        addAttributeName(name);
+        String key = attributeName.toUpperCase();
+        addAttributeName(attributeName);
 
         Set<String> uniqueSet = uniqueAttributeValues.get(key);
         if (uniqueSet == null) {
@@ -205,10 +219,10 @@ public class AttributeManager {
         }
         uniqueSet.add(attributeValue);
 
-        Map attributes = attributeMap.get(trackIdentifier);
+        Map attributes = attributeMap.get(rowId);
         if (attributes == null) {
             attributes = new LinkedHashMap();
-            attributeMap.put(trackIdentifier, attributes);
+            attributeMap.put(rowId, attributes);
         }
 
         // attributeKey = column header, attributeValue = value for header
@@ -217,12 +231,13 @@ public class AttributeManager {
         updateMetaData(key, attributeValue);
     }
 
-    public void addAttributeName(String name) {
+    private void addAttributeName(String name) {
         String key = name.toUpperCase();
         if (!attributeNames.containsKey(key) && !name.startsWith("#")) {
             attributeNames.put(key, name);
         }
     }
+
 
     /**
      * Update the column meta data associated with the attribute key.
@@ -443,43 +458,27 @@ public class AttributeManager {
     }
 
     public String getSampleFor(String track) {
-        return trackSampleMappings.get(track);
-    }
 
-    /**
-     * Represents a specific attribute instance.
-     *
-     * @author jrobinso
-     */
-    private static class Attribute {
-        private String key;
-        private String value;
+        //return trackSampleMappings.get(track);
 
-        public Attribute(String key, String value) {
-            this.key = key;
-            this.value = value;
+        if (trackSampleMappings.containsKey(track)) {
+            return trackSampleMappings.get(track);
+        } else {
+            String key = PreferenceManager.getInstance().get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY);
+            return key == null ? null : getAttribute(track, key);
         }
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
     }
 
 
     public Color getColor(String attKey, String attValue) {
 
         if (attValue == null || attValue.length() == 0) {
-            return Color.lightGray;
+            return Color.gray;
         }
 
         final ColumnMetaData metaData = columnMetaData.get(attKey.toUpperCase());
         if (metaData == null) {
-            return Color.lightGray;
+            return Color.gray;
         }
         if (metaData.isNumeric()) {
             AbstractColorScale cs = colorScales.get(attKey);
@@ -530,7 +529,8 @@ public class AttributeManager {
         if (c == null) {
 
             // Measure of "information content" added by using color, very crude
-            boolean useColor = metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() <= 0.5;
+            boolean useColor = (metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() <= 0.5) &&
+                    !(attKey.equals("NAME") || attKey.equals("DATA FILE") || attKey.equals("DATA TYPE"));
 
             if (useColor) {
                 ColorTable ct = colorTables.get(attKey);
@@ -540,8 +540,7 @@ public class AttributeManager {
                     colorTables.put(attKey, ct);
                 }
                 c = ct.get(attValue);
-            }
-            else {
+            } else {
                 c = ColorUtilities.randomDesaturatedColor(0.5f);
                 colorMap.put(key, c);
             }

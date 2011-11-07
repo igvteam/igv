@@ -81,9 +81,17 @@ public class AttributeHeaderPanel extends JPanel {
 
         super.paintComponent(graphics);
 
-        final List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
+        List<String> keys = AttributeManager.getInstance().getAttributeNames();
+
+        if (keys == null) {
+            return;
+        }
+
+        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
 
         if (keys.size() > 0) {
+
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
 
             // Divide the remaining space to get column widths
@@ -139,20 +147,22 @@ public class AttributeHeaderPanel extends JPanel {
             @Override
             public void mouseMoved(MouseEvent e) {
                 String attKey = getAttributeHeading(e.getX());
-                if (attKey == null) {
-                    setToolTipText("Click attribute heading to sort");
-                } else {
+                if (attKey != null) {
                     AttributeManager.ColumnMetaData md = AttributeManager.getInstance().getColumnMetaData(attKey);
-                    StringBuffer buf = new StringBuffer("<html>" + attKey + "<br>Click to sort");
-                    buf.append("<br>Is numeric = " + md.isNumeric() + "<br>");
-                    buf.append("Is diverging = " + md.isDiverging() + "<br>");
-                    buf.append("getUniqueCount = " + md.getUniqueCount() + "<br>");
-                    buf.append("getTotalCount = " + md.getTotalCount() + "<br>");
-                    buf.append("getUniqueRatio = " + md.getUniqueRatio() + "<br>");
-                   // buf.append("# unique = " + md.uniqueValues.size() + "<br>");
-                   // buf.append("# total = " + md.totalCount + "<br>");
-                   // buf.append("# numeric = " + md.numericCount + "<br>");
-                    setToolTipText(buf.toString());
+                    if (md != null) {
+                        StringBuffer buf = new StringBuffer("<html>" + attKey + "<br>Click to sort");
+                        buf.append("<br>Is numeric = " + md.isNumeric() + "<br>");
+                        buf.append("Is diverging = " + md.isDiverging() + "<br>");
+                        buf.append("getUniqueCount = " + md.getUniqueCount() + "<br>");
+                        buf.append("getTotalCount = " + md.getTotalCount() + "<br>");
+                        buf.append("getUniqueRatio = " + md.getUniqueRatio() + "<br>");
+                        // buf.append("# unique = " + md.uniqueValues.size() + "<br>");
+                        // buf.append("# total = " + md.totalCount + "<br>");
+                        // buf.append("# numeric = " + md.numericCount + "<br>");
+                        setToolTipText(buf.toString());
+                        return;
+                    }
+                    setToolTipText("Click attribute heading to sort");
                 }
 
             }

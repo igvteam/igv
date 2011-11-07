@@ -8,11 +8,13 @@ public class XYDataPoint {
 
     double x;
     double y;
+    int mutationCount;   // <= TODO make this some generic attribute, we've lost the generality of this class
     String description;
 
-    public XYDataPoint(double x, double y, String description) {
+    public XYDataPoint(double x, double y, int mutationCount, String description) {
         this.x = x;
         this.y = y;
+        this.mutationCount = mutationCount;
         this.description = description;
     }
 
@@ -23,6 +25,10 @@ public class XYDataPoint {
 
     public double getY() {
         return y;
+    }
+
+    public int getMutationCount() {
+        return mutationCount;
     }
 
     public String getDescription() {

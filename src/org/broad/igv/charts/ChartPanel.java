@@ -24,9 +24,10 @@ public class ChartPanel extends JPanel implements Serializable {
 
     ScatterPlot scatterPlot;
 
-    private static final float[][] dash = {null, {1.0f, 1.0f}, {3.0f, 1.0f}, {4.0f, 4.0f}, {4.0f, 4.0f, 2.0f, 4.0f}};
-    public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[1], 0.0f);
-    public static final BasicStroke DOT2 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash[2], 0.0f);
+    public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+            10.0f, new float[] {1.0f, 1.0f}, 0.0f);
+    public static final BasicStroke DOT2 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+            10.0f, new float[] {3.0f, 1.0f}, 0.0f);
 
     PlotPanel plotPanel;
     AxisPanel xAxisPanel;

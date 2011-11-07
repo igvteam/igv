@@ -981,7 +981,7 @@ public class PreferenceManager implements PropertyManager {
 
 
         defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
-        defaultValues.put(OVERLAY_ATTRIBUTE_KEY, null);
+        defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
         defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
         defaultValues.put(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
 
@@ -989,8 +989,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(PROXY_AUTHENTICATE, "false");
         defaultValues.put(PORT_NUMBER, "60151");
         defaultValues.put(TRACK_HEIGHT_KEY, "15");
-        defaultValues.put(OVERLAY_ATTRIBUTE_KEY, null);
-
         defaultValues.put(FLANKING_REGION, "2000");
 
         defaultValues.put(SHOW_SEQUENCE_TRANSLATION, "false");

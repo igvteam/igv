@@ -34,6 +34,8 @@ public class ScatterPlotData {
      */
     private Map<String, String[]> symbolValueMap; // Attribute keyname, symbol map
 
+    private int [] mutationCount;
+
 
     private int sampleCount;
 
@@ -55,14 +57,19 @@ public class ScatterPlotData {
    *            Each data map has an array of N data entries.
    *
    * */
-    public ScatterPlotData(String title, String[] sampleNames, Map<String, String[]> symbolMap, Map<String, double[]> dataMap) {
+    public ScatterPlotData(String title,
+                           String[] sampleNames,
+                           Map<String, String[]> symbolMap,
+                           Map<String, double[]> dataMap,
+                           int [] mutationCount) {
         this.title = title;
         this.sampleNames = sampleNames;
-        sampleCount = sampleNames.length;
+        this.sampleCount = sampleNames.length;
         this.symbolValueMap = symbolMap;
-        symbolNames = new ArrayList<String>(symbolValueMap.keySet());
+        this.symbolNames = new ArrayList<String>(symbolValueMap.keySet());
         this.dataMap = dataMap;
-        dataTypes = new ArrayList<String>(this.dataMap.keySet());
+        this.dataTypes = new ArrayList<String>(this.dataMap.keySet());
+        this.mutationCount = mutationCount;
 
         // TODO -- validation
 
@@ -269,4 +276,10 @@ public class ScatterPlotData {
         return description;
     }
 
+    /**
+     * Marker for mutated samples
+     */
+    public int[] getMutationCount() {
+        return mutationCount;
+    }
 }

@@ -59,7 +59,7 @@ public class MutationParser {
 
             String nextLine;
             while ((nextLine = reader.readLine()) != null && nextLine.startsWith("#")) {
-                if (nextLine.startsWith("#version 2.")) {
+                if (nextLine.startsWith("#version")) {
                     return true;
                 }
             }
@@ -120,6 +120,9 @@ public class MutationParser {
             boolean isMAF = false;
             while ((nextLine = reader.readLine()) != null) {
                 lineNumber++;
+
+                if(nextLine.startsWith("#")) continue;
+
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 4) {
 

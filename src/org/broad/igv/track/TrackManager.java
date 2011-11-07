@@ -370,57 +370,64 @@ public class TrackManager {
         overlayTracksMap.clear();
         overlaidTracks.clear();
 
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.OVERLAY_MUTATION_TRACKS)) {
 
-            // Old option to allow overlaying based on an arbitrary attribute.
-            String overlayAttribute = igv.getSession().getOverlayAttribute();
+        // Old option to allow overlaying based on an arbitrary attribute.
+        // String overlayAttribute = igv.getSession().getOverlayAttribute();
 
-            for (Track track : getAllTracks(false)) {
-                if (track != null && track.getTrackType() == TrackType.MUTATION) {
+        for (Track track : getAllTracks(false)) {
+            if (track != null && track.getTrackType() == TrackType.MUTATION) {
 
-                    String sample;
-                    if (overlayAttribute != null && overlayAttribute.length() > 0) {
-                        sample = track.getAttributeValue(overlayAttribute);
-                    } else {
-                        sample = track.getSample();
+                String sample = track.getSample();
+
+                if (sample != null) {
+                    List<Track> trackList = overlayTracksMap.get(sample);
+
+                    if (trackList == null) {
+                        trackList = new ArrayList();
+                        overlayTracksMap.put(sample, trackList);
                     }
 
+                    trackList.add(track);
+                }
+            }
+
+        }
+
+        for (Track track : getAllTracks(false)) {
+            if (track != null) {  // <= this should not be neccessary
+                if (track.getTrackType() != TrackType.MUTATION) {
+                    String sample = track.getSample();
                     if (sample != null) {
                         List<Track> trackList = overlayTracksMap.get(sample);
-
-                        if (trackList == null) {
-                            trackList = new ArrayList();
-                            overlayTracksMap.put(sample, trackList);
-                        }
-
-                        trackList.add(track);
-                    }
-                }
-
-            }
-            // }
-            for (Track track : getAllTracks(false)) {
-                if (track != null) {  // <= this should not be neccessary
-                    if (track.getTrackType() != TrackType.MUTATION) {
-                        List<Track> trackList = getOverlayTracks(track);
                         if (trackList != null) overlaidTracks.addAll(trackList);
                     }
                 }
             }
+        }
 
-            boolean displayOverlays = igv.getSession().getOverlayMutationTracks();
-            for (Track track : getAllTracks(false)) {
-                if (track != null) {
-                    if (track.getTrackType() == TrackType.MUTATION) {
-                        track.setOverlayed(displayOverlays && overlaidTracks.contains(track));
-                    }
+        boolean displayOverlays = igv.getSession().getOverlayMutationTracks();
+        for (Track track : getAllTracks(false)) {
+            if (track != null) {
+                if (track.getTrackType() == TrackType.MUTATION) {
+                    track.setOverlayed(displayOverlays && overlaidTracks.contains(track));
                 }
             }
         }
     }
 
-    public Set<Track> getOverlaidTracks() {
-        return overlaidTracks;
+
+    /**
+     * Return tracks overlaid on "track"
+     * // TODO -- why aren't overlaid tracks stored in a track member?  This seems unnecessarily complex
+     * @param track
+     * @return
+     */
+    public List<Track> getOverlayTracks(Track track) {
+        String sample = track.getSample();
+        if (sample != null) {
+            return overlayTracksMap.get(sample);
+        }
+        return null;
     }
 
     /**
@@ -678,25 +685,6 @@ public class TrackManager {
 
 
     /**
-     * Method description
-     *
-     * @param track
-     * @return
-     */
-    public List<Track> getOverlayTracks(Track track) {
-        String overlayAttribute = igv.getSession().getOverlayAttribute();
-        String sample;
-        if (overlayAttribute != null && overlayAttribute.length() > 0) {
-            sample = track.getAttributeValue(overlayAttribute);
-        } else {
-            sample = track.getSample();
-        }
-
-        return overlayTracksMap.get(sample);
-
-    }
-
-    /**
      * @param reader        a reader for the gene (annotation) file.
      * @param genome
      * @param geneFileName
@@ -925,5 +913,6 @@ public class TrackManager {
     pw.close();
     }
     }     * */
+
 
 }

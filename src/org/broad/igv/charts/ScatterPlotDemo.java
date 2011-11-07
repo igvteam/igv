@@ -94,8 +94,13 @@ public class ScatterPlotDemo /*extends ApplicationFrame*/ {
         symbolMap.put("Hyper mutated", hyperMutated);
         symbolMap.put("Cluster Type", cluster);
 
+        int [] mutationCount = new int[sampleCount];
+         for(int i=0; i<sampleCount; i++) {
+             mutationCount[i] = (int) (2 * Math.random());
+         }
+
         // load the base class ScatterPlotData
-        return new ScatterPlotData("Test", samples,  symbolMap, dataMap);
+        return new ScatterPlotData("Test", samples,  symbolMap, dataMap, mutationCount);
 
     }
 

@@ -24,6 +24,7 @@ public class ScatterPlotUtils {
      * ALLELE_FREQUENCY, COVERAGE, REPMASK, EXPR
      */
     static HashSet<TrackType> plottableTypes = new HashSet();
+    private static final String MUTATION_COUNT = "Mutation Count";
 
     static {
         plottableTypes.add(TrackType.COPY_NUMBER);
@@ -64,7 +65,7 @@ public class ScatterPlotUtils {
         for (String att : attributeNames) {
             uniqueAttributeValues.put(att, new HashSet<String>());
         }
-        uniqueAttributeValues.put("Mut Count", new HashSet<String>());
+        uniqueAttributeValues.put(MUTATION_COUNT, new HashSet<String>());
         HashSet<String> nonSharedAttributes = new HashSet<String>();
 
         //String overlayAttribute = IGV.getInstance().getSession().getOverlayAttribute();
@@ -77,10 +78,14 @@ public class ScatterPlotUtils {
                 // Classify sample by mutation count
                 SampleData sampleData = sampleDataMap.get(sample);
                 if (sampleData != null) {
+                    if(sample.equals("TCGA-02-0003")) {
+                        System.out.println();
+                    }
                     int mutCount = getMutationCount(chr, start, end, zoom, t);
                     String mutCountString = mutCount < 5 ? String.valueOf(mutCount) : "> 5";
-                    sampleData.addAttributeValue("Mut Count", mutCountString);
-                    uniqueAttributeValues.get("Mut Count").add(mutCountString);
+                    sampleData.addAttributeValue(MUTATION_COUNT, mutCountString);
+                    uniqueAttributeValues.get(MUTATION_COUNT).add(mutCountString);
+                    sampleData.setMutationCount(mutCount);
 
                 }
 
@@ -152,7 +157,7 @@ public class ScatterPlotUtils {
                     value = valueList.get(0);
                 } else {
 
-                    int cnt = typeCounts.get(type) == null ? valueList.size(): typeCounts.get(type) + valueList.size();
+                    int cnt = typeCounts.get(type) == null ? valueList.size() : typeCounts.get(type) + valueList.size();
                     typeCounts.put(type, cnt);
 
                     double[] vs = valueList.toArray();
@@ -180,23 +185,28 @@ public class ScatterPlotUtils {
 
         Map<String, String[]> attMap = new HashMap<String, String[]>(seriesNames.size());
 
+        // Loop through attribute types
         for (String att : seriesNames) {
-
             String[] attributes = new String[sampleNames.length];
-
             for (int i = 0; i < sampleNames.length; i++) {
                 SampleData sd = sampleDataMap.get(sampleNames[i]);
                 // Check for null?  Should be impossible
-
                 final String s = sd.getAttributesMap().get(att);
                 attributes[i] = s;
-
             }
             attMap.put(att, attributes);
         }
 
+        // Collect mutation counts
+        int[] mutationCounts = new int[sampleNames.length];
+        for (int i = 0; i < sampleNames.length; i++) {
+            SampleData sd = sampleDataMap.get(sampleNames[i]);
+            // Check for null?  Should be impossible
+            mutationCounts[i] = sd.getMutationCount();
+        }
+
         String title = chr + ":" + start + "-" + end;
-        return new ScatterPlotData(title, sampleNames, attMap, dataMap);
+        return new ScatterPlotData(title, sampleNames, attMap, dataMap, mutationCounts);
     }
 
 
@@ -225,11 +235,14 @@ public class ScatterPlotUtils {
     }
 
 
+    /**
+     * Container for all data and attributes for a single sample
+     */
     static class SampleData {
 
         Map<TrackType, DoubleArrayList> valueMap = new HashMap<TrackType, DoubleArrayList>();
         Map<String, String> attributesMap = new HashMap<String, String>();
-
+        int mutationCount;
 
         public void addDataValue(TrackType type, double value) {
 
@@ -253,5 +266,12 @@ public class ScatterPlotUtils {
             return attributesMap;
         }
 
+        public void setMutationCount(int mutationCount) {
+            this.mutationCount = mutationCount;
+        }
+
+        public int getMutationCount() {
+            return mutationCount;
+        }
     }
 }

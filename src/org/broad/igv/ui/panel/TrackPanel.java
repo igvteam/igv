@@ -62,7 +62,7 @@ public class TrackPanel extends IGVPanel {
         this.name = name;
         TrackGroup nullGroup = new TrackGroup();
         nullGroup.setDrawBorder(false);
-        trackGroups = new LinkedList();
+        trackGroups = Collections.synchronizedList(new LinkedList<TrackGroup>());
         trackGroups.add(nullGroup);
         init();
     }

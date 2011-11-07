@@ -180,8 +180,6 @@ public abstract class AbstractTrack implements Track {
 
     public void setName(String name) {
         this.name = name;
-        setAttributeValue("NAME", name);
-
     }
 
     public String getName() {
@@ -317,7 +315,7 @@ public abstract class AbstractTrack implements Track {
         String key = attributeName.toUpperCase();
         String value = attributes.get(key);
         if (value == null) {
-            value = AttributeManager.getInstance().getAttribute(getSample(), key);
+            value = AttributeManager.getInstance().getAttribute(getName(), key);
         }
         return value;
     }
@@ -327,8 +325,12 @@ public abstract class AbstractTrack implements Track {
         if (sampleId != null) {
             return sampleId;
         }
+//        String sample = AttributeManager.getInstance().getSampleFor(getName());
+//        return sample != null ? sample : getName();
+
         String key = AttributeManager.getInstance().getSampleFor(getName());
         return key != null ? key : getName();
+
     }
 
 

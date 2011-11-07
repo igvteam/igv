@@ -61,7 +61,7 @@ public class TrackGroup {
 
     public TrackGroup(String name) {
         this.name = name;
-        tracks = new ArrayList<Track>();
+        tracks =  Collections.synchronizedList(new ArrayList<Track>());
     }
 
 
@@ -303,7 +303,7 @@ public class TrackGroup {
         sortByRegionScore(tracksWithScore, region, type, frame);
         List<String> sortedAttributes = new ArrayList();
         for (Track t : tracksWithScore) {
-            String att = t.getAttributeValue(linkingAtt);
+            String att = t.getSample(); //t.getAttributeValue(linkingAtt);
             if (att != null) {
                 sortedAttributes.add(att);
             }
@@ -393,8 +393,8 @@ public class TrackGroup {
             Comparator<Track> c = new Comparator<Track>() {
 
                 public int compare(Track t1, Track t2) {
-                    String a1 = t1.getAttributeValue(attributeId);
-                    String a2 = t2.getAttributeValue(attributeId);
+                    String a1 = t1.getSample(); //t1.getAttributeValue(attributeId);
+                    String a2 = t2.getSample(); //t2.getAttributeValue(attributeId);
                     Integer r1 = ((a1 == null) ? null : rankMap.get(a1));
                     Integer r2 = ((a2 == null) ? null : rankMap.get(a2));
                     if ((r1 == null) && (r2 == null)) {

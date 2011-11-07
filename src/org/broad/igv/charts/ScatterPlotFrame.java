@@ -107,6 +107,7 @@ public class ScatterPlotFrame extends JFrame {
         String[] sampleNames = scatterPlotData.getSampleNames();
         double[] xValues = scatterPlotData.getDataValues(xAxisName);
         double[] yValues = scatterPlotData.getDataValues(yAxisName);
+        int [] mutationCount = scatterPlotData.getMutationCount();
 
         // check for valid data and axis selection - and if error, return null
         if (yValues == null | xValues == null | yValues.length != xValues.length)
@@ -123,20 +124,23 @@ public class ScatterPlotFrame extends JFrame {
 
         if (selectedCategory == null) {
             XYSeries xySeries = new XYSeries("");
-            for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
+            for (int idx = 0; idx < xValues.length; ++idx) {
                 // get tooltips and assign data point to series
                 StringBuffer tooltip = new StringBuffer("<html>");
-                tooltip.append(sampleNames[dataIndex]);
+                tooltip.append(sampleNames[idx]);
                 tooltip.append("<br>");
                 tooltip.append(xAxisName);
                 tooltip.append("=");
-                tooltip.append(xValues[dataIndex]);
+                tooltip.append(xValues[idx]);
                 tooltip.append("<br>");
                 tooltip.append(yAxisName);
                 tooltip.append("=");
-                tooltip.append(yValues[dataIndex]);
+                tooltip.append(yValues[idx]);
                 tooltip.append("<br>");
-                xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
+                tooltip.append("Mutation count=");
+                tooltip.append(String.valueOf(mutationCount[idx]));
+
+                xySeries.add(xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
             }
             model.addSeries(xySeries);
 
@@ -151,16 +155,16 @@ public class ScatterPlotFrame extends JFrame {
             for (String series : seriesNames) {
                 XYSeries xySeries = new XYSeries(series);
                 // create plot series
-                for (int dataIndex = 0; dataIndex < xValues.length; ++dataIndex) {
+                for (int idx = 0; idx < xValues.length; ++idx) {
                     // if attribute value is same as category - assign data point to the series
-                    String attributeValue = attributeValues[dataIndex];
+                    String attributeValue = attributeValues[idx];
                     if (attributeValue == null) attributeValue = "";
 
                     if (series.equals(attributeValue)) {
 
                         // get tooltips and assign data point to series
                         StringBuffer tooltip = new StringBuffer("<html>");
-                        tooltip.append(sampleNames[dataIndex]);
+                        tooltip.append(sampleNames[idx]);
                         tooltip.append("<br>");
                         if (selectedCategory != null && !selectedCategory.equals("")) {
                             tooltip.append(selectedCategory);
@@ -170,13 +174,16 @@ public class ScatterPlotFrame extends JFrame {
                         }
                         tooltip.append(xAxisName);
                         tooltip.append("=");
-                        tooltip.append(xValues[dataIndex]);
+                        tooltip.append(xValues[idx]);
                         tooltip.append("<br>");
                         tooltip.append(yAxisName);
                         tooltip.append("=");
-                        tooltip.append(yValues[dataIndex]);
+                        tooltip.append(yValues[idx]);
                         tooltip.append("<br>");
-                        xySeries.add(xValues[dataIndex], yValues[dataIndex], tooltip.toString());
+                        tooltip.append("Mutation count=");
+                        tooltip.append(String.valueOf(mutationCount[idx]));
+
+                        xySeries.add(xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
                     }
                     model.addSeries(xySeries);
                 }

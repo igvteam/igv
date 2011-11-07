@@ -123,7 +123,7 @@ public class DataPanel extends JComponent implements Paintable {
                 this.applyMacPerformanceHints((Graphics2D) g);
             }
 
-            final Collection<TrackGroup> groups = new ArrayList(parent.getTrackGroups());
+            final Collection<TrackGroup> groups = parent.getTrackGroups();
 
             // If there are no tracks to paint, just exit
             boolean hasTracks = false;

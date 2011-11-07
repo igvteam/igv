@@ -75,8 +75,7 @@ public class ScatterPlot {
 
         drawGrid(graphics, bounds, clipRect);
 
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         graphics.setColor(c);
         graphics.setStroke(s);
@@ -105,6 +104,23 @@ public class ScatterPlot {
                 }
             }
 
+            // Mutations
+            Stroke stroke = graphics.getStroke();
+            BasicStroke thickLine = new BasicStroke(2);
+            graphics.setStroke(thickLine);
+            graphics.setColor(Color.black);
+            for (XYDataPoint dataPoint : dataPoints) {
+                double x = dataPoint.getX();
+                double y = dataPoint.getY();
+                if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                    int px = xAxis.getPixelForValue(x);
+                    int pY = yAxis.getPixelForValue(y);
+                    if (clipRect.contains(px, pY) && dataPoint.getMutationCount() > 0) {
+                        graphics.drawOval(px - offsetX - 1, pY - offsetY - 1, pointShape.width + 1, pointShape.height + 1);
+                    }
+                }
+            }
+            graphics.setStroke(stroke);
             // Outline selected points.  this is done here, inside the "series" loop, so that series filtering is
             // respected.  I would be more effecient to do it outside
             if (selectedPoints != null) {
@@ -184,7 +200,7 @@ public class ScatterPlot {
 
     private void drawGrid(Graphics2D graphics, Rectangle bounds, Rectangle clipRect) {
 
-        graphics.setColor(VERY_LIGHT_GRAY);
+        graphics.setColor(new Color(161, 196, 214));
         graphics.setStroke(ChartPanel.DOT1);
         double[] xticks = xAxis.ticks;
         double xtick = xticks[0];
