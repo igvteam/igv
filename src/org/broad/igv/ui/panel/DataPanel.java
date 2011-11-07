@@ -632,6 +632,11 @@ public class DataPanel extends JComponent implements Paintable {
         @Override
         public void mouseClicked(final MouseEvent e) {
 
+            // ctrl-mouse down is the mac popup trigger, but you will also get a clck even.  Ignore the click.
+            if(Globals.IS_MAC && e.isControlDown()) {
+                return;
+            }
+
             if (currentTool instanceof RegionOfInterestTool) {
                 currentTool.mouseClicked(e);
                 return;
