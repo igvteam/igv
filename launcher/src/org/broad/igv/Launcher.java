@@ -205,12 +205,13 @@ public class Launcher {
             File[] jnlpFiles = dir.listFiles(new FileFilter() {
 
                 public boolean accept(File arg0) {
-                    return arg0.getName().startsWith("igvLauncher") && arg0.getName().endsWith(".jnlp");
+                    return arg0.getName().startsWith("igvLaunch") && arg0.getName().endsWith(".jnlp");
                 }
             });
 
             // Delete all but the highest version (newest) jnlp file
             for (File f : jnlpFiles) {
+                System.out.println("Delete " + f.getAbsolutePath());
                 f.delete();
             }
 
