@@ -38,7 +38,7 @@ public class Launcher {
                     memory = tokens[1];
                 } else if (key.equals("index")) {
                     index = tokens[1];
-                } else if(key.equals("newsession")) {
+                } else if (key.equals("newsession")) {
                     newSession = tokens[1].equals("true");
                 }
             }
@@ -96,16 +96,15 @@ public class Launcher {
         }
 
         // Cleanup jnlp files
-        if (Globals.IS_MAC) {
-            File desktop = new File(System.getProperty("user.home") + "/Desktop");
-            if (desktop.exists() && desktop.isDirectory()) {
-                cleanupJnlpFiles(desktop);
-            }
-            File downloads = new File(System.getProperty("user.home") + "/Downloads");
-            if (downloads.exists() && downloads.isDirectory()) {
-                cleanupJnlpFiles(downloads);
-            }
+        File desktop = new File(System.getProperty("user.home") + "/Desktop");
+        if (desktop.exists() && desktop.isDirectory()) {
+            cleanupJnlpFiles(desktop);
         }
+        File downloads = new File(System.getProperty("user.home") + "/Downloads");
+        if (downloads.exists() && downloads.isDirectory()) {
+            cleanupJnlpFiles(downloads);
+        }
+
 
         System.exit(1);
     }
@@ -121,7 +120,7 @@ public class Launcher {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            if(newSession) {
+            if (newSession) {
                 out.println("new");
                 String response = in.readLine();
             }
@@ -189,7 +188,7 @@ public class Launcher {
     }
 
 
-         /**
+    /**
      * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
      */
     public static void cleanupJnlpFiles(File dir) {
