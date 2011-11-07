@@ -84,6 +84,14 @@ public class Launcher {
                 buf.append(user);
                 firstArg = false;
             }
+            if(newSession) {
+                String delim = firstArg ? "?" : "&";
+                buf.append(delim);
+                buf.append("newsession=true");
+                buf.append(user);
+                firstArg = false;
+
+            }
 
             File jnlpFile = createJNLP(file, locus, genome, memory, index);
             System.out.println(jnlpFile.getAbsolutePath());
