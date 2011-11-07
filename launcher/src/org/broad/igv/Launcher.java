@@ -3,6 +3,8 @@ package org.broad.igv;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * @author Jim Robinson
@@ -18,7 +20,7 @@ public class Launcher {
         String user = null;
         String memory = null;
         String index = null;
-
+        boolean newSession = false;
 
         for (String a : args) {
             String tokens[] = a.split("=");
@@ -36,6 +38,8 @@ public class Launcher {
                     memory = tokens[1];
                 } else if (key.equals("index")) {
                     index = tokens[1];
+                } else if(key.equals("newsession")) {
+                    newSession = tokens[1].equals("true");
                 }
             }
         }
@@ -43,10 +47,10 @@ public class Launcher {
 
         // TODO -- read port from igv preferences
         int port = 60151;
-        boolean igvIsRunning = loadDirectly(port, file, locus, genome);
+        boolean igvIsRunning = loadDirectly(port, file, locus, genome, newSession);
 
         if (!igvIsRunning) {
-            StringBuffer buf = new StringBuffer("http://www.broadinstitute.org/igv/projects/current/igv.php");
+            StringBuffer buf = new StringBuffer("http://www.broadinstitute.org/igv/projects/dev/igv.php");
 
             boolean firstArg = true;
             if (file != null) {
@@ -87,12 +91,27 @@ public class Launcher {
             ProcessBuilder pb = new ProcessBuilder("javaws", jnlpFile.getAbsolutePath());
             Process p = pb.start();
             // TODO -- read from stderr and report any errors to user
+
+
         }
+
+        // Cleanup jnlp files
+        if (Globals.IS_MAC) {
+            File desktop = new File(System.getProperty("user.home") + "/Desktop");
+            if (desktop.exists() && desktop.isDirectory()) {
+                cleanupJnlpFiles(desktop);
+            }
+            File downloads = new File(System.getProperty("user.home") + "/Downloads");
+            if (downloads.exists() && downloads.isDirectory()) {
+                cleanupJnlpFiles(downloads);
+            }
+        }
+
         System.exit(1);
     }
 
 
-    private static boolean loadDirectly(int port, String file, String locus, String genome) throws IOException {
+    private static boolean loadDirectly(int port, String file, String locus, String genome, boolean newSession) throws IOException {
         boolean success;
         Socket socket = null;
         PrintWriter out = null;
@@ -101,6 +120,11 @@ public class Launcher {
             socket = new Socket("127.0.0.1", port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            if(newSession) {
+                out.println("new");
+                String response = in.readLine();
+            }
 
             if (genome != null) {
                 out.println("genome " + genome);
@@ -162,5 +186,28 @@ public class Launcher {
         }
 
         return f;
+    }
+
+
+         /**
+     * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
+     */
+    public static void cleanupJnlpFiles(File dir) {
+
+        if (dir.exists() && dir.isDirectory()) {
+            File[] jnlpFiles = dir.listFiles(new FileFilter() {
+
+                public boolean accept(File arg0) {
+                    return arg0.getName().startsWith("igvLauncher") && arg0.getName().endsWith(".jnlp");
+                }
+            });
+
+            // Delete all but the highest version (newest) jnlp file
+            for (File f : jnlpFiles) {
+                f.delete();
+            }
+
+
+        }
     }
 }
