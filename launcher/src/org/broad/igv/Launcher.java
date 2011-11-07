@@ -50,6 +50,9 @@ public class Launcher {
         boolean igvIsRunning = loadDirectly(port, file, locus, genome, newSession);
 
         if (!igvIsRunning) {
+
+            // Launch a new IGV
+
             StringBuffer buf = new StringBuffer("http://www.broadinstitute.org/igv/projects/dev/igv.php");
 
             boolean firstArg = true;
@@ -83,14 +86,6 @@ public class Launcher {
                 buf.append("user=");
                 buf.append(user);
                 firstArg = false;
-            }
-            if(newSession) {
-                String delim = firstArg ? "?" : "&";
-                buf.append(delim);
-                buf.append("newsession=true");
-                buf.append(user);
-                firstArg = false;
-
             }
 
             File jnlpFile = createJNLP(file, locus, genome, memory, index);
@@ -128,17 +123,14 @@ public class Launcher {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-            if (newSession) {
-                out.println("new");
-                String response = in.readLine();
-            }
-
             if (genome != null) {
                 out.println("genome " + genome);
                 String response = in.readLine();
             }
             if (file != null) {
-                out.println("load " + file);
+                String cmd = "load " + file;
+                if(newSession) cmd += " clearSession";
+                out.println(cmd);
                 String response = in.readLine();
             }
             if (locus != null) {

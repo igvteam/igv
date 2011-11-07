@@ -30,15 +30,12 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
 
-import java.awt.image.renderable.RenderableImageOp;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,7 +47,12 @@ public class CommandExecutor {
     private static Logger log = Logger.getLogger(CommandExecutor.class);
 
     private File snapshotDirectory;
+    private IGV mainFrame;
 
+
+    public CommandExecutor() {
+        mainFrame = IGV.getFirstInstance();
+    }
 
     private List<String> getArgs(String[] tokens) {
         List<String> args = new ArrayList(tokens.length);
@@ -67,7 +69,7 @@ public class CommandExecutor {
         List<String> args = getArgs(StringUtils.breakQuotedString(command, ' ').toArray(new String[]{}));
 
         String result = "OK";
-        final IGV mainFrame = IGV.getFirstInstance();
+
 
         System.out.println();
         log.debug("Executing: " + command);
@@ -91,7 +93,7 @@ public class CommandExecutor {
                     createSnapshot(filename);
 
                 } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
-                    result = load(param1);
+                    result = load(param1, param2);
                 } else if (cmd.equals("hget") && args.size() > 3) {
                     result = hget(param1, param2, param3);
                 } else if (cmd.equals("genome") && args.size() > 1) {
@@ -167,16 +169,16 @@ public class CommandExecutor {
         String locusString = URLDecoder.decode(param2);
         String mergeValue = param3;
         boolean merge = mergeValue != null && mergeValue.equalsIgnoreCase("true");
-        result = loadFiles(fileString, locusString, merge);
+        result = loadFiles(fileString, locusString, merge, param2);
         return result;
     }
 
-    private String load(String param1) throws IOException {
+    private String load(String param1, String param2) throws IOException {
         if (param1 == null) {
             return "ERROR: missing path parameter";
         }
         String fileString = param1.replace("\"", "").replace("'", "");
-        return loadFiles(fileString, null, true);
+        return loadFiles(fileString, null, true, param2);
     }
 
     private String setSnapshotDirectory(String param1) {
@@ -295,7 +297,7 @@ public class CommandExecutor {
         IGV.getFirstInstance().repaintDataPanels();
     }
 
-    private String loadFiles(final String fileString, final String locus, final boolean merge) throws IOException {
+    private String loadFiles(final String fileString, final String locus, final boolean merge, String param2) throws IOException {
 
         log.debug("Run load files");
 
@@ -307,14 +309,20 @@ public class CommandExecutor {
             IGV.getFirstInstance().createNewSession(null);
         }
 
+        // Create set of loaded files
         Set<String> loadedFiles = new HashSet<String>();
         for(ResourceLocator rl :  IGV.getFirstInstance().getTrackManager().getDataResourceLocators()) {
             loadedFiles.add(rl.getPath());
         }
 
+        // Loop through files
         for (String f : files) {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if(loadedFiles.contains(f)) continue;
+
+            if(param2.toLowerCase().equals("newsession")) {
+                 mainFrame.createNewSession(null);
+            }
 
             if (f.endsWith(".xml")) {
                 sessionPaths.add(f);
