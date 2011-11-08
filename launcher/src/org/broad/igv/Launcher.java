@@ -129,7 +129,7 @@ public class Launcher {
             }
             if (file != null) {
                 String cmd = "load " + file;
-                if(newSession) cmd += " clearSession";
+                if(newSession) cmd += " newSession";
                 out.println(cmd);
                 String response = in.readLine();
             }
