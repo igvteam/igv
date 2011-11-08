@@ -95,7 +95,7 @@ public class FeatureTrack extends AbstractTrack {
     private boolean alternateExonColor = false;
 
     /**
-     * Does not initialize with the featuresource
+     * Construct with no feature source.  Currently this is only used for the SpliceJunctionFinderTrack subclass.
      *
      * @param id
      * @param name
@@ -107,7 +107,7 @@ public class FeatureTrack extends AbstractTrack {
 
     /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
-     * "Resources" section of session files.
+     * "Resources" section of session files.   Currently only used for the default gene track.
      *
      * @param id
      * @param name
@@ -119,6 +119,14 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
+
+    /**
+     * Constructor specifically for BigWig data source
+     * @param locator
+     * @param id
+     * @param name
+     * @param source
+     */
     public FeatureTrack(ResourceLocator locator, String id, String name, FeatureSource source) {
         super(locator, id, name);
         init(source);
@@ -133,11 +141,10 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
+
     public FeatureTrack(ResourceLocator locator, String id, FeatureSource source) {
         super(locator, id);
         init(source);
-        this.getMinimumHeight();
-        setSortable(false);
     }
 
     protected void init(FeatureSource source) {

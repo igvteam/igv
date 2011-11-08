@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.track.WindowFunction;
+import org.broadinstitute.sting.utils.exceptions.StingException;
 
 import java.awt.*;
 import java.util.List;
@@ -45,7 +46,10 @@ public class Mutation implements IGVFeature {
     private int end;
     private String type;
     private Color color;
+    String refAllele;
+    String altAllele;
     private Map<String, String> attributes;
+    private String valueString;
 
 
     public Mutation(String runId, String chromosome, int start, int end, String type) {
@@ -63,6 +67,17 @@ public class Mutation implements IGVFeature {
         this.end = mutation.end;
         this.type = mutation.type;
         this.color = mutation.color;
+    }
+
+
+    // TODO -- experimental, note this only works for hg18
+    public String getOMAUrl() {
+        if (refAllele == null || altAllele == null) return null;
+        String omaChr = chr.replace("chr", "");
+        String url = "http://mutationassessor.org/?cm=var&var=" + omaChr + "," +
+                (start + 1) + "," + refAllele + "," + altAllele;
+        return url;
+
     }
 
 
@@ -99,21 +114,19 @@ public class Mutation implements IGVFeature {
         return getName();
     }
 
-    private String valueString;
-
     public String getValueString(double position, WindowFunction ignored) {
 
-        if (valueString == null ) {
+        if (valueString == null) {
             StringBuffer buf = new StringBuffer();
             buf.append("Type: ");
             buf.append(type);
-            if(attributes != null) {
-            for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                buf.append("<br>");
-                buf.append(entry.getKey());
-                buf.append(": ");
-                buf.append(entry.getValue());
-            }
+            if (attributes != null) {
+                for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                    buf.append("<br>");
+                    buf.append(entry.getKey());
+                    buf.append(": ");
+                    buf.append(entry.getValue());
+                }
             }
             valueString = buf.toString();
         }
@@ -142,7 +155,7 @@ public class Mutation implements IGVFeature {
     }
 
     public Color getColor() {
-        ColorTable colorTable = PreferenceManager.getInstance().getMutationColorScheme() ;
+        ColorTable colorTable = PreferenceManager.getInstance().getMutationColorScheme();
         Color c = colorTable.get(getMutationType());
         return c;
     }
@@ -228,5 +241,13 @@ public class Mutation implements IGVFeature {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    public void setRefAllele(String refAllele) {
+        this.refAllele = refAllele;
+    }
+
+    public void setAltAllele(String altAllele) {
+        this.altAllele = altAllele;
     }
 }

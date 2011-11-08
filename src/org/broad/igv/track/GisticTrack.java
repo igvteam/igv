@@ -412,18 +412,6 @@ public class GisticTrack extends AbstractTrack {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Method description
-     *
-     * @param x
-     * @param y
-     */
-    public boolean handleClick(int x, int y) {
-
-        // Ignore
-        return false;
-    }
-
 
     public Color getColor() {
         return null;

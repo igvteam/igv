@@ -23,6 +23,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
+import org.broad.igv.track.MutationTrack;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -48,6 +49,8 @@ public class MutationParser {
     private int endColumn;
     private int sampleColumn;
     private int typeColumn;
+    private int refAlleleColumn;
+    private int tumorAlleleColumn;
 
     public static boolean isMutationAnnotationFile(ResourceLocator locator) throws IOException {
         AsciiLineReader reader = null;
@@ -85,7 +88,7 @@ public class MutationParser {
         Map<String, List<org.broad.tribble.Feature>> features = loadMutations(locator, genome);
         for (String sampleId : features.keySet()) {
             String id = locator.getPath() + "_" + sampleId;
-            FeatureTrack track = new FeatureTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
+            MutationTrack track = new MutationTrack(locator, id, new FeatureCollectionSource(features.get(sampleId), genome));
             track.setSquishedRowHeight(5);
             track.setExpandedRowHeight(15);
             track.setHeight(15);
@@ -165,8 +168,18 @@ public class MutationParser {
                             attributes.put(key, value);
                         }
                     }
+
+
+
                     Mutation mut = new Mutation(sampleId, chr, start, end, type);
                     mut.setAttributes(attributes);
+
+                    if(refAlleleColumn > 0) {
+                        mut.setRefAllele(tokens[refAlleleColumn].trim());
+                    }
+                    if(tumorAlleleColumn > 0) {
+                        mut.setAltAllele(tokens[tumorAlleleColumn].trim());
+                    }
 
                     List<org.broad.tribble.Feature> features = mutationMap.get(sampleId);
                     if (features == null) {
@@ -196,12 +209,16 @@ public class MutationParser {
             endColumn = 6;
             sampleColumn = 15;
             typeColumn = 8;
+            refAlleleColumn = 10;
+            tumorAlleleColumn = 11;
         } else {
             chrColumn = 0;
             startColumn = 1;
             endColumn = 2;
             sampleColumn = 3;
             typeColumn = 4;
+            refAlleleColumn = -1;
+            tumorAlleleColumn = -1;
         }
     }
 }

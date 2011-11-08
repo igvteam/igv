@@ -1,10 +1,15 @@
 package org.broad.igv.ui;
 
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.HttpUtils;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -16,20 +21,70 @@ import javax.swing.event.HyperlinkListener;
 public class TooltipTextFrame extends JFrame {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
+        //test1();
+       omaTest();
+
+    }
+
+    private static void test1() {
         StringBuffer text = new StringBuffer("<html><b><i>Hello Word</b></i><br> " +
-                "<a href=\"http://www.google.com\">Google</a><br>");
+                "<a href=\"http://www.google.com\">Google</a><br>\n");
         for (int i = 0; i < 100; i++) {
             for (int j = 0; j < 40; j++) {
                 text.append("blah ");
             }
             text.append(".....");
-            text.append("<br>");
+            text.append("<br>\n");
         }
         text.append("</html>");
 
         TooltipTextFrame frame = new TooltipTextFrame(text.toString());
+        frame.setVisible(true);
+    }
+
+    public static void omaTest() throws IOException {
+        String url = "http://mutationassessor.org/?cm=var&var=7,55178574,G,A&frm=txt";
+        String result = HttpUtils.getInstance().getContentsAsString(new URL(url));
+
+        BufferedReader br = new BufferedReader(new StringReader(result));
+        String[] headers = br.readLine().split("\t");
+        String[] values = br.readLine().split("\t");
+
+        StringBuffer buf = new StringBuffer();
+        buf.append("<html>");
+
+        buf.append("<table>");
+        int n = Math.min(headers.length, values.length);
+        for (int i = 0; i < n; i++) {
+            buf.append("<tr>");
+            buf.append("<td>");
+            final String header = headers[i];
+            buf.append(header);
+            buf.append("</td>");
+
+            if (header.equals("MSA") || header.equals("PDB")) {
+                buf.append("<a href=\"http://" + values[i] + "\">");
+                buf.append(header);
+                buf.append("</a>");
+            } else if (header.equals("Uniprot")) {
+                buf.append("<a href=\"http://www.uniprot.org/uniprot/" + values[i] + "\">");
+                buf.append(values[i]);
+                buf.append("</a>");
+            } else if (header.equals("Refseq")) {
+                buf.append("<a href=\"http://www.ncbi.nlm.nih.gov/sites/entrez?db=protein&cmd=search&term=" + values[i] + "\">");
+                buf.append(values[i]);
+                buf.append("</a>");
+            } else {
+                buf.append(values[i]);
+            }
+            buf.append("</td></tr>");
+        }
+        buf.append("</table>");
+
+
+        TooltipTextFrame frame = new TooltipTextFrame(buf.toString());
         frame.setVisible(true);
 
     }
@@ -40,23 +95,11 @@ public class TooltipTextFrame extends JFrame {
 
     void init(String text) {
 
-        setUndecorated(true);
+        //setUndecorated(true);
         setAlwaysOnTop(true);
 
-        JButton button = new JButton("Close Me");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-
         setSize(300, 300);
-        setLocation(200, 200);
         setLayout(new BorderLayout());
-
-        getContentPane().add(button, BorderLayout.NORTH);
-
 
         JEditorPane pane = new JEditorPane("text/html", text);
         pane.setEditable(false);
