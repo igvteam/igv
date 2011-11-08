@@ -24,6 +24,7 @@
 package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
@@ -31,6 +32,7 @@ import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
 
@@ -311,18 +313,24 @@ public class CommandExecutor {
 
         // Create set of loaded files
         Set<String> loadedFiles = new HashSet<String>();
-        for(ResourceLocator rl :  IGV.getFirstInstance().getTrackManager().getDataResourceLocators()) {
+        for (ResourceLocator rl : IGV.getFirstInstance().getTrackManager().getDataResourceLocators()) {
             loadedFiles.add(rl.getPath());
         }
 
         // Loop through files
+        boolean unload = param2.toLowerCase().equals("newsession");
         for (String f : files) {
             // Skip already loaded files TODO -- make this optional?  Check for change?
-            if(loadedFiles.contains(f)) continue;
+            if (loadedFiles.contains(f)) continue;
 
-            if(param2.toLowerCase().equals("newsession")) {
-                 mainFrame.createNewSession(null);
+            if (unload && !Globals.isHeadless()) {
+                unload = MessageUtils.confirm("Unload current dataset?");
             }
+            if (unload) {
+                mainFrame.createNewSession(null);
+                unload = false; // <= only onload one time
+            }
+
 
             if (f.endsWith(".xml")) {
                 sessionPaths.add(f);
