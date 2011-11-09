@@ -117,10 +117,10 @@ public class MutationTrack extends FeatureTrack {
             buf.append("</b><br><br>");
 
             buf.append("<table>");
-            buf.append("<tr><td>Type</td><td>" + mut.getMutationType() + "</td></tr>");
-            buf.append("<tr><td>OMA</td><td><a href=\"");
+            buf.append("<tr><td>Data from</td><td><a href=\"");
             buf.append(url);
-            buf.append("\">OMA</a>");
+            buf.append("\">Mutation Assessor</a>");
+            buf.append("<tr><td>Type</td><td>" + mut.getMutationType() + "</td></tr>");
 
             int n = Math.min(headers.length, values.length);
             for (int i = 0; i < n; i++) {
@@ -148,7 +148,7 @@ public class MutationTrack extends FeatureTrack {
                     buf.append("</a>");
                 } else if (header.toLowerCase().contains("impact")) {
                     if (value.toLowerCase().equals("high") || value.toLowerCase().equals("medium")) {
-                        String color = value.toLowerCase().equals("high") ? "red" : "#8A4B08";
+                        String color = value.toLowerCase().equals("high") ? "red" : "#0033FF";
                         buf.append("<div style=\"color:" + color + "\"><b>");
                         buf.append(value);
                         buf.append("</b></div>");
