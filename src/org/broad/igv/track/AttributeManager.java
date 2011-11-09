@@ -173,18 +173,17 @@ public class AttributeManager {
     // TODO -- don't compute this on the fly every time its called
 
     public List<String> getVisibleAttributes() {
-        final Set<String> allKeys = new HashSet<String>();
-        allKeys.addAll(attributeNames.keySet());
 
-        Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) {
-            allKeys.removeAll(hiddenAttributes);
+        List<String> visibleAttributes = AttributeManager.getInstance().getAttributeNames();
+
+        if (visibleAttributes == null) {
+            Collections.emptyList();
         }
 
-        ArrayList<String> visibleAttributes = new ArrayList<String>(allKeys.size());
-        for (String key : allKeys) {
-                visibleAttributes.add(attributeNames.get(key));
-        }
+        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
+        if (hiddenAttributes != null) visibleAttributes.removeAll(hiddenAttributes);
+
+
         return visibleAttributes;
     }
 
