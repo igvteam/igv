@@ -23,8 +23,20 @@ public class TooltipTextFrame extends JFrame {
 
     public static void main(String[] args) throws IOException {
 
-        //test1();
-       omaTest();
+        test3();
+        //omaTest();
+
+    }
+
+    private static void test3() {
+
+        JFrame frame = new JFrame();
+        frame.setSize(300, 300);
+        JLabel label = new JLabel("Hello");
+        label.setToolTipText("<html><b><i>Hello Word</b></i><br> " +
+                "<a href=\"http://www.google.com\">Google</a><br>\n");
+        frame.add(label);
+        frame.setVisible(true);
 
     }
 
@@ -35,17 +47,18 @@ public class TooltipTextFrame extends JFrame {
             for (int j = 0; j < 40; j++) {
                 text.append("blah ");
             }
-            text.append(".....");
+            text.append("<div style=\"color:red\"> .....</div>");
             text.append("<br>\n");
         }
         text.append("</html>");
 
         TooltipTextFrame frame = new TooltipTextFrame(text.toString());
         frame.setVisible(true);
+
     }
 
     public static void omaTest() throws IOException {
-        String url = "http://mutationassessor.org/?cm=var&var=7,55178574,G,A&frm=txt";
+        String url = "http://mutationassessor.org/v1/?cm=var&var=hg18,7,55178574,G,A&frm=txt";
         String result = HttpUtils.getInstance().getContentsAsString(new URL(url));
 
         BufferedReader br = new BufferedReader(new StringReader(result));

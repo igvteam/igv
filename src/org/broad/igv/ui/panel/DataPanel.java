@@ -410,14 +410,16 @@ public class DataPanel extends JComponent implements Paintable {
                             }
                         }
                     }
-                    String valueString = track.getValueStringAt(frame.getChrName(), displayLocation, y, frame);
-                    if (valueString != null) {
-                        if(foundOverlaidFeature) {
-                            popupTextBuffer.append("---------------------<br>");
+                    if (!foundOverlaidFeature) {
+                        String valueString = track.getValueStringAt(frame.getChrName(), displayLocation, y, frame);
+                        if (valueString != null) {
+                            if (foundOverlaidFeature) {
+                                popupTextBuffer.append("---------------------<br>");
+                            }
+                            popupTextBuffer.append(valueString);
+                            popupTextBuffer.append("<br>");
+                            break;
                         }
-                        popupTextBuffer.append(valueString);
-                        popupTextBuffer.append("<br>");
-                        break;
                     }
                 }
             }
@@ -633,7 +635,7 @@ public class DataPanel extends JComponent implements Paintable {
         public void mouseClicked(final MouseEvent e) {
 
             // ctrl-mouse down is the mac popup trigger, but you will also get a clck even.  Ignore the click.
-            if(Globals.IS_MAC && e.isControlDown()) {
+            if (Globals.IS_MAC && e.isControlDown()) {
                 return;
             }
 
@@ -659,7 +661,9 @@ public class DataPanel extends JComponent implements Paintable {
                     frame.zoomBy(-1, locationClicked);
                 } else if ((e.isMetaDown() || e.isControlDown()) && track != null) {
                     TrackClickEvent te = new TrackClickEvent(e, frame);
+
                     track.handleDataClick(te);
+
                 } else {
 
                     // No modifier, left-click.  Defer processing with a timer until we are sure this is not the
@@ -682,7 +686,22 @@ public class DataPanel extends JComponent implements Paintable {
 
                                     if (track != null) {
                                         TrackClickEvent te = new TrackClickEvent(e, frame);
-                                        if (track.handleDataClick(te)) {
+                                        List<Track> overlays = IGV.getInstance().getTrackManager().getOverlayTracks(track);
+                                        boolean handled = false;
+                                        if (overlays != null) {
+                                            for (Track overlay : overlays) {
+                                                if (overlay.getFeatureAtMousePosition(te) != null) {
+                                                    overlay.handleDataClick(te);
+                                                    handled = true;
+                                                }
+                                            }
+                                        }
+                                        if (!handled) {
+                                            handled = track.handleDataClick(te);
+                                        }
+
+
+                                        if (handled) {
                                             return;
                                         } else {
                                             if (currentTool != null)

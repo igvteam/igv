@@ -21,11 +21,12 @@ package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.track.WindowFunction;
-import org.broadinstitute.sting.utils.exceptions.StingException;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +45,13 @@ public class Mutation implements IGVFeature {
     private String chr;
     private int start;
     private int end;
-    private String type;
+    private String name;
+    private String omaName;
+    private String mutationType;
     private Color color;
     String refAllele;
-    String altAllele;
+    String altAllele1;
+    String altAllele2;
     private Map<String, String> attributes;
     private String valueString;
 
@@ -57,7 +61,7 @@ public class Mutation implements IGVFeature {
         this.chr = chromosome;
         this.start = start;
         this.end = end;
-        this.type = type;
+        this.mutationType = type;
     }
 
     public Mutation(Mutation mutation) {
@@ -65,17 +69,29 @@ public class Mutation implements IGVFeature {
         this.chr = mutation.chr;
         this.start = mutation.start;
         this.end = mutation.end;
-        this.type = mutation.type;
+        this.mutationType = mutation.mutationType;
         this.color = mutation.color;
+        this.name = mutation.getName();
+        this.omaName = mutation.getOMAName();
+    }
+
+    private String getOMAName() {
+        if (omaName == null) {
+            String altAllele = altAllele1;
+            if (refAllele.equals(altAllele1)) {
+                altAllele = altAllele2;
+            }
+            String omaChr = chr.replace("chr", "");
+            omaName = omaChr + "," + (start + 1) + "," + refAllele + "," + altAllele;
+        }
+        return omaName;
     }
 
 
-    // TODO -- experimental, note this only works for hg18
+    // TODO -- experimental, note this only works for hg18 FIX
     public String getOMAUrl() {
-        if (refAllele == null || altAllele == null) return null;
-        String omaChr = chr.replace("chr", "");
-        String url = "http://mutationassessor.org/?cm=var&var=" + omaChr + "," +
-                (start + 1) + "," + refAllele + "," + altAllele;
+        String genome = IGV.getFirstInstance().getGenomeManager().getGenomeId();
+        String url = "http://mutationassessor.org/v1/?cm=var&var=" + genome + "," + getOMAName();
         return url;
 
     }
@@ -86,8 +102,9 @@ public class Mutation implements IGVFeature {
     }
 
     public void setName(String name) {
-        type = name;
+        this.name = name;
     }
+
 
     public Mutation copy() {
         return new Mutation(this);
@@ -103,23 +120,44 @@ public class Mutation implements IGVFeature {
 
 
     public String getMutationType() {
-        return type;
+        return mutationType;
     }
 
     public String getName() {
-        return type.toString();
+        if (name == null) {
+            StringBuffer buffer = new StringBuffer();
+            DecimalFormat format = new DecimalFormat();
+            String posString = format.format(start + 1);
+            buffer.append(chr + ":" + posString);
+            if (end > start + 1) {
+                buffer.append("-" + end);
+            }
+            if (refAllele != null && altAllele1 != null) {
+                if (!altAllele1.equals(refAllele)) {
+                    buffer.append(" " + refAllele + ">" + altAllele1);
+                }
+                if (!altAllele1.equals(altAllele2) && !refAllele.equals(altAllele2)) {
+                    buffer.append(" " + refAllele + ">" + altAllele2);
+                }
+            }
+            name = buffer.toString();
+        }
+        return name;
     }
 
     public String getDescription() {
-        return getName();
+        StringBuffer desc = new StringBuffer();
+        desc.append(getName());
+        desc.append("<br>");
+        desc.append(mutationType);
+        return desc.toString();
     }
 
-    public String getValueString(double position, WindowFunction ignored) {
-
+    public String getFullDescription() {
         if (valueString == null) {
             StringBuffer buf = new StringBuffer();
             buf.append("Type: ");
-            buf.append(type);
+            buf.append(mutationType);
             if (attributes != null) {
                 for (Map.Entry<String, String> entry : attributes.entrySet()) {
                     buf.append("<br>");
@@ -131,6 +169,15 @@ public class Mutation implements IGVFeature {
             valueString = buf.toString();
         }
         return valueString;
+
+    }
+
+    public String getValueString(double position, WindowFunction ignored) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(getDescription());
+        buffer.append("<br>");
+        buffer.append("<i><b>Click for more...</b></i>");
+        return buffer.toString();
     }
 
     public boolean hasScore() {
@@ -247,7 +294,12 @@ public class Mutation implements IGVFeature {
         this.refAllele = refAllele;
     }
 
-    public void setAltAllele(String altAllele) {
-        this.altAllele = altAllele;
+    public void setAltAllele1(String altAllele1) {
+        this.altAllele1 = altAllele1;
     }
+
+    public void setAltAllele2(String altAllele2) {
+        this.altAllele2 = altAllele2;
+    }
+
 }

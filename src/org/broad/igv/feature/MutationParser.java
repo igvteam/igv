@@ -20,12 +20,9 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.MutationTrack;
-import org.broad.igv.track.Track;
-import org.broad.igv.ui.IGV;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -50,7 +47,8 @@ public class MutationParser {
     private int sampleColumn;
     private int typeColumn;
     private int refAlleleColumn;
-    private int tumorAlleleColumn;
+    private int tumorAllele1Column;
+    private int tumorAllele2Column;
 
     public static boolean isMutationAnnotationFile(ResourceLocator locator) throws IOException {
         AsciiLineReader reader = null;
@@ -124,7 +122,7 @@ public class MutationParser {
             while ((nextLine = reader.readLine()) != null) {
                 lineNumber++;
 
-                if(nextLine.startsWith("#")) continue;
+                if (nextLine.startsWith("#")) continue;
 
                 String[] tokens = nextLine.split("\t");
                 if (tokens.length > 4) {
@@ -170,15 +168,17 @@ public class MutationParser {
                     }
 
 
-
                     Mutation mut = new Mutation(sampleId, chr, start, end, type);
                     mut.setAttributes(attributes);
 
-                    if(refAlleleColumn > 0) {
+                    if (refAlleleColumn > 0) {
                         mut.setRefAllele(tokens[refAlleleColumn].trim());
                     }
-                    if(tumorAlleleColumn > 0) {
-                        mut.setAltAllele(tokens[tumorAlleleColumn].trim());
+                    if (tumorAllele1Column > 0) {
+                        mut.setAltAllele1(tokens[tumorAllele1Column].trim());
+                    }
+                    if (tumorAllele2Column > 0) {
+                        mut.setAltAllele2(tokens[tumorAllele2Column].trim());
                     }
 
                     List<org.broad.tribble.Feature> features = mutationMap.get(sampleId);
@@ -210,7 +210,8 @@ public class MutationParser {
             sampleColumn = 15;
             typeColumn = 8;
             refAlleleColumn = 10;
-            tumorAlleleColumn = 11;
+            tumorAllele1Column = 11;
+            tumorAllele2Column = 12;
         } else {
             chrColumn = 0;
             startColumn = 1;
@@ -218,7 +219,8 @@ public class MutationParser {
             sampleColumn = 3;
             typeColumn = 4;
             refAlleleColumn = -1;
-            tumorAlleleColumn = -1;
+            tumorAllele1Column = -1;
+            tumorAllele2Column = -1;
         }
     }
 }

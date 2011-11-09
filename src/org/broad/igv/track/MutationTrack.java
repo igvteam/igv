@@ -1,7 +1,6 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.feature.Mutation;
 import org.broad.igv.ui.TooltipTextFrame;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -53,35 +52,46 @@ public class MutationTrack extends FeatureTrack {
         Feature f = getFeatureAtMousePosition(te);
         if (f != null && f instanceof Mutation) {
 
-            Mutation mut = (Mutation) f;
-            final String omaURL = mut.getOMAUrl();
-            if (omaURL != null) {
-                final MouseEvent me = te.getMouseEvent();
-                LongRunningTask.submit(new NamedRunnable() {
-                    public String getName() {
-                        return "Call OMA: " + omaURL;
-                    }
-                    public void run() {
-                        String omaText = getOMAText(omaURL);
+            final Mutation mut = (Mutation) f;
+            final MouseEvent me = te.getMouseEvent();
+            System.out.println("Submitting");
+            LongRunningTask.submit(new NamedRunnable() {
+                public String getName() {
+                    return "Call OMA";
+                }
+
+                public void run() {
+
+                    StringBuffer buf = new StringBuffer();
+
+                    final String omaURL = mut.getOMAUrl();
+                    if (omaURL != null) {
+                        System.out.println("Running");
+                        String omaText = getOMAText(mut, omaURL);
                         if (omaText != null) {
-                            final TooltipTextFrame tf = new TooltipTextFrame(omaText);
-                            tf.setSize(300, 300);
-
-                            Point p = me.getComponent().getLocationOnScreen();
-                            tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
-
-                            UIUtilities.invokeOnEventThread(new Runnable() {
-                                public void run() {
-                                    tf.setVisible(true);
-                                }
-                            });
+                            buf.append(omaText);
+                            buf.append("<p>----------------------------------</p>");
                         }
                     }
-                });
 
-            } else {
-                MessageUtils.showMessage("No OMA results available for this mutation.");
-            }
+                    buf.append(mut.getFullDescription());
+
+
+                    final TooltipTextFrame tf = new TooltipTextFrame(buf.toString());
+                    tf.setSize(350, 500);
+
+                    Point p = me.getComponent().getLocationOnScreen();
+                    tf.setLocation(Math.max(0, p.x + me.getX() - 150), Math.max(0, p.y + me.getY() - 150));
+
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+                        public void run() {
+                            tf.setVisible(true);
+                        }
+                    });
+
+
+                }
+            });
 
 
             return true;
@@ -90,9 +100,9 @@ public class MutationTrack extends FeatureTrack {
     }
 
 
-    private String getOMAText(String url) {
+    private String getOMAText(Mutation mut, String url) {
         try {
-            String omaWebService = url + "&frm=txt";
+            String omaWebService = url + "&frm=txt&fts=all";
 
             String result = HttpUtils.getInstance().getContentsAsString(new URL(omaWebService));
 
@@ -102,9 +112,12 @@ public class MutationTrack extends FeatureTrack {
 
             StringBuffer buf = new StringBuffer();
             buf.append("<html>");
+            buf.append("<p style=\"font-size:medium;\"><b>");
+            buf.append(mut.getDescription());
+            buf.append("</b><br><br>");
 
             buf.append("<table>");
-
+            buf.append("<tr><td>Type</td><td>" + mut.getMutationType() + "</td></tr>");
             buf.append("<tr><td>OMA</td><td><a href=\"");
             buf.append(url);
             buf.append("\">OMA</a>");
@@ -114,7 +127,7 @@ public class MutationTrack extends FeatureTrack {
                 final String header = headers[i].trim();
                 final String value = values[i].trim();
 
-                if (header.length() == 0 || value.length() == 0) continue;
+                if (header.length() == 0 || value.length() == 0 || header.equals("Mutation") || header.equals("Type")) continue;
 
                 buf.append("<tr>");
                 buf.append("<td>");
@@ -122,7 +135,7 @@ public class MutationTrack extends FeatureTrack {
                 buf.append("</td>");
 
                 if (header.equals("MSA") || header.equals("PDB")) {
-                    buf.append("<a href=\"http://" + value + "\">");
+                    buf.append("<a href=\"" + value + "\">");
                     buf.append(header);
                     buf.append("</a>");
                 } else if (header.equals("Uniprot")) {
@@ -133,12 +146,21 @@ public class MutationTrack extends FeatureTrack {
                     buf.append("<a href=\"http://www.ncbi.nlm.nih.gov/sites/entrez?db=protein&cmd=search&term=" + value + "\">");
                     buf.append(value);
                     buf.append("</a>");
+                } else if (header.toLowerCase().contains("impact")) {
+                    if (value.toLowerCase().equals("high") || value.toLowerCase().equals("medium")) {
+                        String color = value.toLowerCase().equals("high") ? "red" : "#8A4B08";
+                        buf.append("<div style=\"color:" + color + "\"><b>");
+                        buf.append(value);
+                        buf.append("</b></div>");
+                    } else {
+                        buf.append(value);
+                    }
                 } else {
                     buf.append(value);
                 }
                 buf.append("</td></tr>");
             }
-            buf.append("</table>");
+            buf.append("</table></p>");
 
             return buf.toString();
         } catch (IOException e) {
