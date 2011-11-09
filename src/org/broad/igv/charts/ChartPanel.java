@@ -239,7 +239,7 @@ public class ChartPanel extends JPanel implements Serializable {
         LegendPanel() {
             Font defaultFont = FontManager.getDefaultFont();
             labelFont = defaultFont.deriveFont(12);
-            headerFont = defaultFont.deriveFont(14);
+            headerFont = defaultFont.deriveFont(Font.BOLD, 16);
 
             final BoxLayout boxLayout = new BoxLayout(this, BoxLayout.Y_AXIS);
 
@@ -261,13 +261,13 @@ public class ChartPanel extends JPanel implements Serializable {
                 return;
             }
 
-            //add(Box.createVerticalStrut(topMargin));
-
-            JLabel catLabel = new JLabel(categoryName);
-            catLabel.setAlignmentX(LEFT_ALIGNMENT);
-            //add(catLabel);
-
             add(Box.createVerticalStrut(topMargin));
+
+            JLabel catLabel = new JLabel(" " + categoryName);
+            catLabel.setFont(headerFont);
+            add(catLabel);
+            add(new JLabel(" "));    // Spacer
+
 
             Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
 
