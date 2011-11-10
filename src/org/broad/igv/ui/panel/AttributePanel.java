@@ -76,12 +76,6 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        paintImpl(g, rect);
-        super.paintBorder(g);
-    }
-
-    public void paintImpl(Graphics2D g, Rectangle visibleRect) {
-
         List<String> names = AttributeManager.getInstance().getAttributeNames();
 
         if (names == null) {
@@ -108,9 +102,12 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                 final Graphics2D greyGraphics = (Graphics2D) g.create();
                 greyGraphics.setColor(UIConstants.ZOOMED_OUT_COLOR);
 
+                final Graphics2D borderGraphics = (Graphics2D) g.create();
+                borderGraphics.setColor(Color.lightGray);
+
                 final int left = AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
                 int regionY = 0;
-                final int bottom = visibleRect.y + visibleRect.height;
+                final int bottom = rect.y + rect.height;
 
                 for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
                     TrackGroup group = groupIter.next();
@@ -139,9 +136,9 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
                             }
 
                             if (track.isVisible()) {
-                                if (regionY + trackHeight >= visibleRect.y) {
+                                if (regionY + trackHeight >= rect.y) {
                                     Rectangle trackRectangle = new Rectangle(left, regionY, getWidth(), trackHeight);
-                                    track.renderAttributes(graphics2D, trackRectangle, visibleRect, names, mouseRegions);
+                                    track.renderAttributes(graphics2D, trackRectangle, rect, names, mouseRegions);
                                     //regionY = draw(names, track, regionX, regionY, attributeColumnWidth, track.getHeight(), graphics2D);
                                 }
                                 regionY += trackHeight;
@@ -156,14 +153,22 @@ public class AttributePanel extends TrackPanelComponent implements Packable, Pai
 
                 // Border
 
-//                final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
-//                for (int x = 1; x < visibleRect.x + visibleRect.width; x += colWidth) {
-//                    g.setColor(Color.lightGray);
-//                    g.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, visibleRect.y,
-//                            AttributeHeaderPanel.COLUMN_BORDER_WIDTH, visibleRect.height);
-//                }
+                final int colWidth = AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;
+                for (int x = 1; x < rect.x + rect.width; x += colWidth) {
+                    borderGraphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, rect.y,
+                            AttributeHeaderPanel.COLUMN_BORDER_WIDTH, rect.height);
+                }
+
+                graphics2D.dispose();
+                greyGraphics.dispose();
+                borderGraphics.dispose();
+
             }
+
         }
+        super.paintBorder(g);
+
+
     }
 
 

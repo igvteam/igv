@@ -472,6 +472,7 @@ public class AttributeManager {
             return trackSampleMappings.get(track);
         } else if(isTCGAName(track)) {
             String sample = track.substring(0, 12);
+            addAttribute(track, "Sample", sample);
             trackSampleMappings.put(track, sample);
             return sample;
         }  else {
@@ -481,7 +482,7 @@ public class AttributeManager {
     }
 
     // TCGA identifers have the form TCGA-00-0000
-    private boolean isTCGAName(String name) {
+    public static boolean isTCGAName(String name) {
         return name.length() >= 12 && name.toUpperCase().startsWith("TCGA-") &&
                 name.charAt(7) == '-';
 

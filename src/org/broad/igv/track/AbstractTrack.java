@@ -245,9 +245,9 @@ public abstract class AbstractTrack implements Track {
                 mouseRegions.add(new MouseableRegion(rect, key, attributeValue));
 
                 // Border
-                graphics.setColor(Color.lightGray);
-                graphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, trackRectangle.y,
-                        AttributeHeaderPanel.COLUMN_BORDER_WIDTH, trackRectangle.height);
+//                graphics.setColor(Color.lightGray);
+//                graphics.fillRect(x + AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH, trackRectangle.y,
+//                        AttributeHeaderPanel.COLUMN_BORDER_WIDTH, trackRectangle.height);
 
             }
             x += AttributeHeaderPanel.ATTRIBUTE_COLUMN_WIDTH + AttributeHeaderPanel.COLUMN_BORDER_WIDTH;

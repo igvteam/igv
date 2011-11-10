@@ -330,8 +330,6 @@ public class TrackManager {
                     track.setAttributeValue("NAME", track.getName());
                     track.setAttributeValue("DATA FILE", fn);
                     track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
-
-
                 }
             }
             return newTracks;
