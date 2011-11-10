@@ -23,7 +23,6 @@
  */
 package org.broad.igv.track;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
