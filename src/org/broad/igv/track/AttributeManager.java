@@ -23,6 +23,7 @@
  */
 package org.broad.igv.track;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
@@ -208,9 +209,16 @@ public class AttributeManager {
             return;
         }
 
-        String key = attributeName.toUpperCase();
+        // Add the 3 "special" attributes to ensure they are the first columns
+        if(attributeNames.isEmpty()) {
+            addAttributeName("NAME");
+            addAttributeName("DATA TYPE");
+            addAttributeName("DATA FILE");
+        }
+
         addAttributeName(attributeName);
 
+        String key = attributeName.toUpperCase();
         Set<String> uniqueSet = uniqueAttributeValues.get(key);
         if (uniqueSet == null) {
             uniqueSet = new HashSet<String>();
@@ -353,6 +361,7 @@ public class AttributeManager {
                         colHeadings = tokens;
                     } else {
                         String sampleName = tokens[0].trim();
+
                         // Loop through attribute columns
                         //List<Attribute> attributes = new ArrayList(colHeadings.length);
                         for (int i = 0; i < colHeadings.length; i++) {
@@ -462,12 +471,22 @@ public class AttributeManager {
 
         if (trackSampleMappings.containsKey(track)) {
             return trackSampleMappings.get(track);
-        } else {
+        } else if(isTCGAName(track)) {
+            String sample = track.substring(0, 12);
+            trackSampleMappings.put(track, sample);
+            return sample;
+        }  else {
             String key = PreferenceManager.getInstance().get(PreferenceManager.OVERLAY_ATTRIBUTE_KEY);
             return key == null ? null : getAttribute(track, key);
         }
     }
 
+    // TCGA identifers have the form TCGA-00-0000
+    private boolean isTCGAName(String name) {
+        return name.length() >= 12 && name.toUpperCase().startsWith("TCGA-") &&
+                name.charAt(7) == '-';
+
+    }
 
     public Color getColor(String attKey, String attValue) {
 

@@ -81,16 +81,9 @@ public class AttributeHeaderPanel extends JPanel {
 
         super.paintComponent(graphics);
 
-        List<String> keys = AttributeManager.getInstance().getAttributeNames();
+        List<String> keys = AttributeManager.getInstance().getVisibleAttributes();
 
-        if (keys == null) {
-            return;
-        }
-
-        final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
-        if (hiddenAttributes != null) keys.removeAll(hiddenAttributes);
-
-        if (keys.size() > 0) {
+        if (keys != null && keys.size() > 0) {
 
             final Graphics2D graphics2 = (Graphics2D) graphics.create();
 
