@@ -855,22 +855,6 @@ public class GenomeManager {
         }
     }
 
-
-    public GenomeDescriptor getDefaultGenomeDescriptor() {
-        if (DEFAULT_GENOME == null) {
-            DEFAULT_GENOME = new GenomeResourceDescriptor("Human hg18", 0, "hg18",
-                    "/resources/hg18_cytoBand.txt", null, null, null,
-                    "http://www.broadinstitute.org/igv/sequence/hg18", false);
-        }
-        return DEFAULT_GENOME;
-    }
-
-    public GenomeListItem getDefaultGenomeListItem() {
-        GenomeDescriptor desc = getDefaultGenomeDescriptor();
-        return new GenomeListItem(desc.getName(), null, desc.getId(), false);
-    }
-
-
     public String getGenomeId() {
         return currentGenome == null ? null : currentGenome.getId();
     }

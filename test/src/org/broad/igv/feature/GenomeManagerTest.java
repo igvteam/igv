@@ -75,12 +75,4 @@ public class GenomeManagerTest {
         }
     }
 
-    @Test
-    public void testGetDefaultGenomeDescriptor() {
-        GenomeDescriptor gd =  genomeManager.getDefaultGenomeDescriptor();
-        assertEquals("hg18", gd.getId());
-       
-    }
-
-
 }

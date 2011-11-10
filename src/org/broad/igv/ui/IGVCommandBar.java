@@ -231,6 +231,8 @@ public class IGVCommandBar extends javax.swing.JPanel {
                                 excludedArchivesUrls.add(genomeListItem.getLocation());
                                 rebuildGenomeItemList(excludedArchivesUrls);
                             }
+                        } catch (Exception e) {
+                            log.error("Error initializing genome");
                         } finally {
                             if (bar != null) {
                                 bar.close();
@@ -348,7 +350,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
         int w = DEFAULT_CHROMOSOME_DROPDOWN_WIDTH;
         for (String chromosomeName : tmp) {
-            Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName,graphics2D);
+            Rectangle2D textBounds = fontMetrics.getStringBounds(chromosomeName, graphics2D);
             if (textBounds != null) {
                 int width = textBounds.getBounds().width + 50;
 
@@ -426,7 +428,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     public void setGeneListMode(boolean geneListMode) {
 
-         genomeComboBox.setEnabled(!geneListMode);
+        genomeComboBox.setEnabled(!geneListMode);
 //        locationPanel.setEnabled(!geneListMode);
         chromosomeComboBox.setEnabled(!geneListMode);
 //        searchTextField.setEnabled(!geneListMode);
@@ -689,10 +691,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
 
             list.add(UIConstants.GENOME_LIST_SEPARATOR);
-        }
-
-        if (list.isEmpty()) {
-            list.add(IGV.getInstance().getGenomeManager().getDefaultGenomeListItem());
         }
 
         return new DefaultComboBoxModel(list.toArray());
