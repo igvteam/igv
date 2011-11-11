@@ -321,17 +321,25 @@ public class AlignmentCounts {
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
         if (blocks != null) {
             int lastBlockEnd = -1;
+            int gapIdx = 0;
+            char[] gapTypes = alignment.getGapTypes();
+
             for (AlignmentBlock b : blocks) {
+                if(b.getEnd() < start) continue;
+                if(b.getStart() > end) break;
                 // Don't count softclips
                 if (!b.isSoftClipped()) {
                     incCounts(b, alignment.isNegativeStrand());
 
                     // Count deletions
-                    if (lastBlockEnd >= 0) {
+                    if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&
+                            gapTypes[gapIdx] == SamAlignment.DELETION) {
                         for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
                             int offset = pos - start;
-                            del[offset] = del[offset] + 1;
+                            if (offset >= 0 && offset < del.length)
+                                del[offset] = del[offset] + 1;
                         }
+                        gapIdx++;
                     }
                     lastBlockEnd = b.getEnd();
                 }
@@ -340,13 +348,18 @@ public class AlignmentCounts {
             final AlignmentBlock[] insertions = alignment.getInsertions();
             if (insertions != null) {
                 for (AlignmentBlock insBlock : insertions) {
+                    if(insBlock.getEnd() < start) continue;
+                    if(insBlock.getStart() > end) break;
+
                     int pos = insBlock.getStart();
                     int offset = pos - start;
                     // Insertions are between bases.  increment count on either side
-                    ins[offset] = ins[offset]+1;
-                    offset--;
-                    if(offset >= 0) {
+                    if (offset >= 0 && offset < ins.length) {
                         ins[offset] = ins[offset] + 1;
+                        offset--;
+                        if (offset >= 0) {
+                            ins[offset] = ins[offset] + 1;
+                        }
                     }
                 }
             }
