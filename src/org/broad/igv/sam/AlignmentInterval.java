@@ -219,6 +219,24 @@ public class AlignmentInterval extends Locus {
         return 0;
     }
 
+    public int getDelCount(int pos) {
+        for (AlignmentCounts c : counts) {
+            if (pos >= c.getStart() && pos < c.getEnd()) {
+                return c.getDelCount(pos);
+            }
+        }
+        return 0;
+    }
+
+    public int getInsCount(int pos) {
+        for (AlignmentCounts c : counts) {
+            if (pos >= c.getStart() && pos < c.getEnd()) {
+                return c.getInsCount(pos);
+            }
+        }
+        return 0;
+    }
+
     public Iterator<Alignment> getAlignmentIterator() {
         return new AlignmentIterator();
     }

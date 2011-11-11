@@ -253,6 +253,16 @@ public class CoverageTrack extends AbstractTrack {
                         buf.append("  (" + percent + "%,     " + posCount + "+,   " + negCount + "- )<br>");
                     }
                 }
+
+                int delCount = interval.getDelCount(pos);
+                if(delCount > 0) {
+                    buf.append("DEL: " + delCount);
+                }
+                int insCount = interval.getInsCount(pos);
+                if(insCount > 0) {
+                    buf.append("INS: " + insCount);
+                }
+
                 return buf.toString();
             }
         } else {

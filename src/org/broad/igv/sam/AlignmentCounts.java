@@ -23,13 +23,13 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 
 /**
-* @author jrobinso
-* @date Feb 23, 2011
-*/
+ * @author jrobinso
+ * @date Feb 23, 2011
+ */
 public class AlignmentCounts {
 
     private static Logger log = Logger.getLogger(AlignmentCounts.class);
-    
+
     String genomeId;
     //String chr;
     int start;
@@ -53,6 +53,8 @@ public class AlignmentCounts {
     int[] qN;
     int[] posTotal;
     int[] negTotal;
+    int[] del;
+    int[] ins;
     private int[] totalQ;
     private int maxCount = 0;
 
@@ -83,6 +85,8 @@ public class AlignmentCounts {
         qC = new int[nPts];
         qG = new int[nPts];
         qN = new int[nPts];
+        del = new int[nPts];
+        ins = new int[nPts];
         totalQ = new int[nPts];
     }
 
@@ -248,6 +252,29 @@ public class AlignmentCounts {
         }
     }
 
+    public int getDelCount(int pos) {
+        int offset = pos - start;
+        if (offset < 0 || offset >= posA.length) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        }
+        return del[offset];
+    }
+
+
+    public int getInsCount(int pos) {
+        int offset = pos - start;
+        if (offset < 0 || offset >= posA.length) {
+            if (log.isDebugEnabled()) {
+                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
+            }
+            return 0;
+        }
+        return ins[offset];
+    }
+
     public int getQuality(int pos, byte b) {
         int offset = pos - start;
         if (offset < 0 || offset >= posA.length) {
@@ -282,21 +309,50 @@ public class AlignmentCounts {
     }
 
 
-    // For alignments without blocks -- TODO refactor, this is ugly
-
+    /**
+     * Increment the counts for this alignment.   Does not consider softclips.
+     *
+     * @param alignment
+     */
     void incCounts(Alignment alignment) {
-        int start = alignment.getAlignmentStart();
-        int end = alignment.getAlignmentEnd();
+        int alignmentStart = alignment.getAlignmentStart();
+        int alignmentEnd = alignment.getAlignmentEnd();
 
         AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
         if (blocks != null) {
+            int lastBlockEnd = -1;
             for (AlignmentBlock b : blocks) {
                 // Don't count softclips
-                if (!b.isSoftClipped())
+                if (!b.isSoftClipped()) {
                     incCounts(b, alignment.isNegativeStrand());
+
+                    // Count deletions
+                    if (lastBlockEnd >= 0) {
+                        for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
+                            int offset = pos - start;
+                            del[offset] = del[offset] + 1;
+                        }
+                    }
+                    lastBlockEnd = b.getEnd();
+                }
+            }
+            // Count insertions
+            final AlignmentBlock[] insertions = alignment.getInsertions();
+            if (insertions != null) {
+                for (AlignmentBlock insBlock : insertions) {
+                    int pos = insBlock.getStart();
+                    int offset = pos - start;
+                    // Insertions are between bases.  increment count on either side
+                    ins[offset] = ins[offset]+1;
+                    offset--;
+                    if(offset >= 0) {
+                        ins[offset] = ins[offset] + 1;
+                    }
+                }
             }
         } else {
-            for (int pos = start; pos < end; pos++) {
+            // No alignment blocks => no bases (e.g. .aln or .aligned files).  Just do total count.
+            for (int pos = alignmentStart; pos < alignmentEnd; pos++) {
                 byte q = 0;
                 incCount(pos, (byte) 'n', q, alignment.isNegativeStrand());
             }
@@ -312,7 +368,7 @@ public class AlignmentCounts {
                 int pos = start + i;
                 // NOTE:  the direct access block.qualities is intentional,  profiling reveals this to be a critical bottleneck
                 byte q = block.qualities[i];
-                // TODO -- handle "="
+                // TODO -- handle "=" in cigar string with no read bases
                 byte n = bases[i];
                 incCount(pos, n, q, isNegativeStrand);
             }
@@ -360,8 +416,8 @@ public class AlignmentCounts {
                     }
                     qG[offset] = qG[offset] + q;
                     break;
-                case 'n':
-                case 'N':
+                // Everything else is counted as "N".  This might be an actual "N",  or an ambiguity code
+                default:
                     if (isNegativeStrand) {
                         negN[offset] = negN[offset] + 1;
                     } else {
