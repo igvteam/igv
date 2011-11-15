@@ -63,6 +63,7 @@ public class HiCTools {
             if (args[0].equals("bamToPairs")) {
                  filterBam(args[1], args[2]);
             } else {
+                // Preprocess
                 long genomeLength = 0;
                 for (Chromosome c : chromosomes) {
                     if (c != null)

@@ -6,12 +6,14 @@ package org.broad.igv.charts;
  */
 public class XYDataPoint {
 
-    double x;
-    double y;
-    int mutationCount;   // <= TODO make this some generic attribute, we've lost the generality of this class
-    String description;
+    private int idx;
+    private double x;
+    private double y;
+    private int mutationCount;   // <= TODO make this some generic attribute, we've lost the generality of this class
+    private String description;
 
-    public XYDataPoint(double x, double y, int mutationCount, String description) {
+    public XYDataPoint(int idx, double x, double y, int mutationCount, String description) {
+        this.idx = idx;
         this.x = x;
         this.y = y;
         this.mutationCount = mutationCount;
@@ -49,5 +51,9 @@ public class XYDataPoint {
 
         return px > x - toleranceX && px < x + toleranceX && py > y - toleranceY && py < y + toleranceY;
 
+    }
+
+    public int getIdx() {
+        return idx;
     }
 }

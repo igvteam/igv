@@ -1,7 +1,9 @@
 package org.broad.igv.charts;
 
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.PreferenceManager;
+import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
 
@@ -23,9 +25,10 @@ public class ScatterPlot {
 
     PaletteColorTable colorTable;
 
+    ScatterPlotData spData;
     Axis xAxis = new Axis(Axis.Orientation.HORIZONTAL);
     Axis yAxis = new Axis(Axis.Orientation.VERTICAL);
-    XYDataModel dataModel;
+    private XYDataModel dataModel;
     Set<XYDataPoint> selectedPoints;
 
     Rectangle pointShape = new Rectangle(7, 7);
@@ -34,6 +37,17 @@ public class ScatterPlot {
 
     HashSet<String> filteredSeries = new HashSet<String>();
 
+    public static boolean isDataCategory(String selectedCategory) {
+        return selectedCategory.equals(TrackType.COPY_NUMBER.toString()) ||
+                selectedCategory.equals(TrackType.GENE_EXPRESSION.toString()) ||
+                selectedCategory.equals(TrackType.DNA_METHYLATION.toString());
+    }
+
+
+    public ScatterPlot(ScatterPlotData spData) {
+        this.spData = spData;
+
+    }
 
     public synchronized void setModel(XYDataModel dataModel) {
 
@@ -60,8 +74,8 @@ public class ScatterPlot {
         }
         xAxis.setRange(minX, maxX);
         yAxis.setRange(minY, maxY);
-        xAxis.setLabel(dataModel.getxLabel());
-        yAxis.setLabel(dataModel.getyLabel());
+        xAxis.setLabel(dataModel.getXLabel());
+        yAxis.setLabel(dataModel.getYLabel());
     }
 
     public void draw(Graphics2D graphics, Rectangle bounds, Rectangle clipRect) {
@@ -86,9 +100,16 @@ public class ScatterPlot {
 
             if (filteredSeries.contains(sn)) continue;
 
-            Color color = getColor(categoryName, sn);
+            Color color = null;
+            double[] categoryValues = null;
 
-            graphics.setColor(color);
+            if (isDataCategory(categoryName)) {
+                categoryValues = spData.getDataValues(categoryName);
+            } else {
+                color = getColor(categoryName, sn);
+                graphics.setColor(color);
+            }
+
 
             List<XYDataPoint> dataPoints = dataModel.getDataPoints(sn);
 
@@ -99,6 +120,12 @@ public class ScatterPlot {
                     int px = xAxis.getPixelForValue(x);
                     int pY = yAxis.getPixelForValue(y);
                     if (clipRect.contains(px, pY)) {
+
+                        if (isDataCategory(categoryName)) {
+                            color = getDataColor(categoryName, categoryValues[dataPoint.getIdx()]);
+                            graphics.setColor(color);
+                        }
+
                         graphics.fillOval(px - offsetX, pY - offsetY, pointShape.width, pointShape.height);
                     }
                 }
@@ -159,6 +186,18 @@ public class ScatterPlot {
 //        }
     }
 
+
+    Map<TrackType, ContinuousColorScale> colorScales = new HashMap<TrackType, ContinuousColorScale>();
+
+    private Color getDataColor(String categoryName, double categoryValue) {
+        TrackType tt = TrackType.valueOf(categoryName);
+        ContinuousColorScale scale = colorScales.get(tt);
+        if (scale == null) {
+            scale = PreferenceManager.getInstance().getColorScale(tt);// IGV.getInstance().getSession().getColorScale(tt);
+        }
+        return scale.getColor((float) categoryValue);
+
+    }
 
     public XYDataPoint getDataPointAtPixel(int px, int py) {
 
@@ -255,5 +294,9 @@ public class ScatterPlot {
 
     public void removeSeriesFilter(String sn) {
         filteredSeries.remove(sn);
+    }
+
+    public XYDataModel getDataModel() {
+        return dataModel;
     }
 }

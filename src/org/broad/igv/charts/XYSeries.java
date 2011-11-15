@@ -19,8 +19,8 @@ public class XYSeries {
         dataPoints = new ArrayList<XYDataPoint>(500);
     }
 
-    public void add(double x, double y, int mutationCount, String description) {
-        dataPoints.add(new XYDataPoint(x, y, mutationCount, description));
+    public void add(int idx, double x, double y, int mutationCount, String description) {
+        dataPoints.add(new XYDataPoint(idx, x, y, mutationCount, description));
     }
 
     public int getSize() {

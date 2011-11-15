@@ -4,6 +4,8 @@
 
 package org.broad.igv.charts;
 
+import org.broad.igv.track.TrackType;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
@@ -35,6 +37,12 @@ public class ScatterPlotFrame extends JFrame {
         initComponents();
 
         List<String> categoryList = scatterPlotData.getCategories();
+
+        // Add data names (e.g. copy #, expression)
+        for (String dn : scatterPlotData.getDataNames()) {
+            categoryList.add(dn);
+        }
+
         if (categoryList.size() > 0) {
             String[] categories = categoryList.toArray(new String[categoryList.size()]);
             classifyComboBox.setModel(new DefaultComboBoxModel(categories));
@@ -99,7 +107,7 @@ public class ScatterPlotFrame extends JFrame {
 
     private void updateModel() {
 
-        if(deferUpdate) return;
+        if (deferUpdate) return;
 
         String xAxisName = (String) xAxisComboBox.getSelectedItem();
         String yAxisName = (String) yAxisComboBox.getSelectedItem();
@@ -107,7 +115,11 @@ public class ScatterPlotFrame extends JFrame {
         String[] sampleNames = scatterPlotData.getSampleNames();
         double[] xValues = scatterPlotData.getDataValues(xAxisName);
         double[] yValues = scatterPlotData.getDataValues(yAxisName);
-        int [] mutationCount = scatterPlotData.getMutationCount();
+        int[] mutationCount = scatterPlotData.getMutationCount();
+
+        double[] methylation = scatterPlotData.getDataValues(TrackType.DNA_METHYLATION.toString());
+        double[] expression = scatterPlotData.getDataValues(TrackType.GENE_EXPRESSION.toString());
+        double[] copyNumber = scatterPlotData.getDataValues(TrackType.COPY_NUMBER.toString());
 
         // check for valid data and axis selection - and if error, return null
         if (yValues == null | xValues == null | yValues.length != xValues.length)
@@ -120,9 +132,10 @@ public class ScatterPlotFrame extends JFrame {
 
         String selectedCategory = (String) classifyComboBox.getSelectedItem();
 
-        XYDataModel model = new XYDataModel(selectedCategory, xAxisName, yAxisName);
 
-        if (selectedCategory == null) {
+        XYDataModel model = new XYDataModel(selectedCategory, xAxisName, yAxisName, scatterPlotData);
+
+        if (selectedCategory == null || ScatterPlot.isDataCategory(selectedCategory)) {
             XYSeries xySeries = new XYSeries("");
             for (int idx = 0; idx < xValues.length; ++idx) {
                 // get tooltips and assign data point to series
@@ -140,7 +153,7 @@ public class ScatterPlotFrame extends JFrame {
                 tooltip.append("Mutation count=");
                 tooltip.append(String.valueOf(mutationCount[idx]));
 
-                xySeries.add(xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
+                xySeries.add(idx, xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
             }
             model.addSeries(xySeries);
 
@@ -183,7 +196,7 @@ public class ScatterPlotFrame extends JFrame {
                         tooltip.append("Mutation count=");
                         tooltip.append(String.valueOf(mutationCount[idx]));
 
-                        xySeries.add(xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
+                        xySeries.add(idx, xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
                     }
                     model.addSeries(xySeries);
                 }
@@ -193,8 +206,7 @@ public class ScatterPlotFrame extends JFrame {
         }
 
 
-
-        ScatterPlot scatterPlot = new ScatterPlot();
+        ScatterPlot scatterPlot = new ScatterPlot(scatterPlotData);
         scatterPlot.setModel(model);
         chartPanel.setScatterPlotModel(scatterPlot);
 

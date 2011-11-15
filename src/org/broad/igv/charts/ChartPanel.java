@@ -5,7 +5,6 @@ import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,15 +24,15 @@ public class ChartPanel extends JPanel implements Serializable {
     ScatterPlot scatterPlot;
 
     public static final BasicStroke DOT1 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-            10.0f, new float[] {1.0f, 1.0f}, 0.0f);
+            10.0f, new float[]{1.0f, 1.0f}, 0.0f);
     public static final BasicStroke DOT2 = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-            10.0f, new float[] {3.0f, 1.0f}, 0.0f);
+            10.0f, new float[]{3.0f, 1.0f}, 0.0f);
 
     PlotPanel plotPanel;
     AxisPanel xAxisPanel;
     AxisPanel yAxisPanel;
     LegendPanel legendPanel;
-    ToolBar toolPanel;
+//    ToolBar toolPanel;
 
     boolean lassoInProgress = false;
     SelectionPath lassoPath = null;
@@ -46,9 +45,9 @@ public class ChartPanel extends JPanel implements Serializable {
         this.setLayout(new ChartLayout());
 
 
-        toolPanel = new ToolBar();
-        toolPanel.setPreferredSize(new Dimension(1000, 20));
-        this.add(toolPanel, ChartLayout.TITLE);
+//        toolPanel = new ToolBar();
+//        toolPanel.setPreferredSize(new Dimension(1000, 20));
+//        this.add(toolPanel, ChartLayout.TITLE);
 
 
         plotPanel = new PlotPanel();
@@ -82,38 +81,6 @@ public class ChartPanel extends JPanel implements Serializable {
         yAxisPanel.setAxisModel(scatterPlot.yAxis);
         legendPanel.rebuild();
         repaint();
-    }
-
-    class ToolBar extends JPanel {
-
-        ToolBar() {
-            init();
-        }
-
-        void init() {
-
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-            final JButton lassoButton = new JButton("Lasso");
-
-            lassoButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent actionEvent) {
-                    if (lassoInProgress == false) {
-                        lassoInProgress = true;
-                        lassoPath = new SelectionPath();
-                    } else {
-                        lassoInProgress = false;
-                        lassoPath = null;
-                    }
-                }
-            });
-
-            add(new JPanel(null));  // Spacer
-            add(lassoButton);
-
-
-        }
-
     }
 
     class PlotPanel extends JPanel {
@@ -208,22 +175,20 @@ public class ChartPanel extends JPanel implements Serializable {
             super.paintComponent(g);
 
             if (scatterPlot != null) {
-
                 Rectangle r = new Rectangle(0, 0, getWidth(), getHeight());
                 scatterPlot.draw((Graphics2D) g, r, g.getClipRect());
             }
 
-            if (lassoPath != null && lassoPath.size() > 1) {
-                Iterator<Point> iter = lassoPath.getPoints().iterator();
-                Point lastPoint = iter.next();
-                g.setColor(Color.cyan);
-                while (iter.hasNext()) {
-                    Point point = iter.next();
-                    g.drawLine(lastPoint.x, lastPoint.y, point.x, point.y);
-                    lastPoint = point;
-                }
-
-            }
+//            if (lassoPath != null && lassoPath.size() > 1) {
+//                Iterator<Point> iter = lassoPath.getPoints().iterator();
+//                Point lastPoint = iter.next();
+//                g.setColor(Color.cyan);
+//                while (iter.hasNext()) {
+//                    Point point = iter.next();
+//                    g.drawLine(lastPoint.x, lastPoint.y, point.x, point.y);
+//                    lastPoint = point;
+//                }
+//            }
         }
 
 
@@ -251,12 +216,12 @@ public class ChartPanel extends JPanel implements Serializable {
         }
 
         void rebuild() {
-            if (scatterPlot == null || scatterPlot.dataModel == null) return;
+            if (scatterPlot == null || scatterPlot.getDataModel() == null) return;
 
             removeAll();
 
 
-            String categoryName = scatterPlot.dataModel.categoryName;
+            String categoryName = scatterPlot.getDataModel().getCategoryName();
             if (categoryName == null || categoryName.equals("")) {
                 return;
             }
@@ -271,8 +236,8 @@ public class ChartPanel extends JPanel implements Serializable {
 
             Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
 
-            // Sort series names
-            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.dataModel.getSeriesNames());
+            // Rebuild the "series" checkboxes
+            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.getDataModel().getSeriesNames());
 
             sortSeriesNames(seriesNames);
 
@@ -280,7 +245,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 Color c = scatterPlot.getColor(categoryName, sn);
                 LegendIcon icon = new LegendIcon(pointShape, c);
 
-                String labelString = (sn.trim()).equals("") ? "Unknown" : sn;
+                String labelString = (sn.trim()).equals("") ? "<No Value>" : sn;
 
                 JLabel label = new JLabel(labelString, icon, SwingConstants.LEFT);
                 label.setFont(labelFont);
@@ -420,4 +385,33 @@ public class ChartPanel extends JPanel implements Serializable {
             return shape.height;
         }
     }
+
+
+//    class ToolBar extends JPanel {
+//
+//        ToolBar() {
+//            init();
+//        }
+//
+//        void init() {
+//
+//            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+//            final JButton lassoButton = new JButton("Lasso");
+//            lassoButton.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent actionEvent) {
+//                    if (lassoInProgress == false) {
+//                        lassoInProgress = true;
+//                        lassoPath = new SelectionPath();
+//                    } else {
+//                        lassoInProgress = false;
+//                        lassoPath = null;
+//                    }
+//                }
+//            });
+//            add(new JPanel(null));  // Spacer
+//            add(lassoButton);
+//
+//        }
+//    }
+
 }

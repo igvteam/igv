@@ -11,16 +11,20 @@ import java.util.List;
 public class XYDataModel {
 
 
-    Map<String, XYSeries> seriesMap = new HashMap();
-    String categoryName;
-    String xLabel;
-    String yLabel;
+   private Map<String, XYSeries> seriesMap = new HashMap();
+    private String categoryName;
+    private String xLabel;
+    private String yLabel;
+    ScatterPlotData scatterPlotData;
 
-    public XYDataModel(String categoryName, String xLabel, String yLabel) {
+
+    public XYDataModel(String categoryName, String xLabel, String yLabel, ScatterPlotData scatterPlotData) {
         this.categoryName = categoryName;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
+        this.scatterPlotData = scatterPlotData;
     }
+
 
     public void addSeries(XYSeries xySeries) {
 
@@ -47,11 +51,11 @@ public class XYDataModel {
         return categoryName;
     }
 
-    public String getxLabel() {
+    public String getXLabel() {
         return xLabel;
     }
 
-    public String getyLabel() {
+    public String getYLabel() {
         return yLabel;
     }
 
