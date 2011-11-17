@@ -8,6 +8,7 @@ import org.broad.igv.track.TrackType;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.text.DecimalFormat;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -117,6 +118,7 @@ public class ScatterPlotFrame extends JFrame {
         double[] yValues = scatterPlotData.getDataValues(yAxisName);
         int[] mutationCount = scatterPlotData.getMutationCount();
 
+
         double[] methylation = scatterPlotData.getDataValues(TrackType.DNA_METHYLATION.toString());
         double[] expression = scatterPlotData.getDataValues(TrackType.GENE_EXPRESSION.toString());
         double[] copyNumber = scatterPlotData.getDataValues(TrackType.COPY_NUMBER.toString());
@@ -131,7 +133,7 @@ public class ScatterPlotFrame extends JFrame {
         // therefore using the 1st series (key = index 0) to identify the attribute
 
         String selectedCategory = (String) classifyComboBox.getSelectedItem();
-
+        DecimalFormat formatter = new DecimalFormat("0.00");
 
         XYDataModel model = new XYDataModel(selectedCategory, xAxisName, yAxisName, scatterPlotData);
 
@@ -142,16 +144,19 @@ public class ScatterPlotFrame extends JFrame {
                 StringBuffer tooltip = new StringBuffer("<html>");
                 tooltip.append(sampleNames[idx]);
                 tooltip.append("<br>");
-                tooltip.append(xAxisName);
-                tooltip.append("=");
-                tooltip.append(xValues[idx]);
-                tooltip.append("<br>");
-                tooltip.append(yAxisName);
-                tooltip.append("=");
-                tooltip.append(yValues[idx]);
-                tooltip.append("<br>");
+
+                for (String dn : scatterPlotData.getDataNames()) {
+                    double value = scatterPlotData.getDataKeyValue(dn, idx);
+                    if (!Double.isNaN(value)) {
+                        tooltip.append(dn);
+                        tooltip.append("=");
+                        tooltip.append(formatter.format(value));
+                        tooltip.append("<br>");
+                    }
+                }
                 tooltip.append("Mutation count=");
                 tooltip.append(String.valueOf(mutationCount[idx]));
+
 
                 xySeries.add(idx, xValues[idx], yValues[idx], mutationCount[idx], tooltip.toString());
             }
@@ -185,14 +190,15 @@ public class ScatterPlotFrame extends JFrame {
                             tooltip.append(series);
                             tooltip.append("<br>");
                         }
-                        tooltip.append(xAxisName);
-                        tooltip.append("=");
-                        tooltip.append(xValues[idx]);
-                        tooltip.append("<br>");
-                        tooltip.append(yAxisName);
-                        tooltip.append("=");
-                        tooltip.append(yValues[idx]);
-                        tooltip.append("<br>");
+                        for (String dn : scatterPlotData.getDataNames()) {
+                            double value = scatterPlotData.getDataKeyValue(dn, idx);
+                            if (!Double.isNaN(value)) {
+                                tooltip.append(dn);
+                                tooltip.append("=");
+                                tooltip.append(formatter.format(value));
+                                tooltip.append("<br>");
+                            }
+                        }
                         tooltip.append("Mutation count=");
                         tooltip.append(String.valueOf(mutationCount[idx]));
 

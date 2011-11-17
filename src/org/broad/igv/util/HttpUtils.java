@@ -112,7 +112,7 @@ public class HttpUtils {
             }
             return true;
         } catch (IOException e) {
-            log.error("Error while testing byte range ", e);
+            log.error("Error while testing byte range " + e.getMessage());
             // We could not reach the test server, so we can't know if this client can do byte-range tests or
             // not.  Take the "optimistic" view.
             return true;

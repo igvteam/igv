@@ -291,10 +291,10 @@ public class TrackPanel extends IGVPanel {
         for (TrackGroup group : trackGroups) {
             // If there is a non-null linking attribute
             // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
-            if (linkingAtt != null && !useLinkedSorting) {
-                group.sortByRegionScore(region, type, frame);
+            if (useLinkedSorting) {
+                group.sortGroup(region, type, frame);
             } else {
-                group.sortGroup(region, linkingAtt, type, frame);
+                group.sortByRegionScore(region, type, frame);
             }
 
         }
@@ -405,7 +405,7 @@ public class TrackPanel extends IGVPanel {
 
         synchronized (groups) {
 
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
+            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
                 TrackGroup group = groupIter.next();
                 if (group != null && group.isVisible()) {
                     if (groups.size() > 1) {

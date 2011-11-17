@@ -60,37 +60,6 @@ public class KMPlotFrame extends JFrame {
 
         initComponents();
 
-        censurColumnControl.addItem("");
-        sampleColumnControl.addItem("");
-        survivalColumnControl.addItem("");
-        groupByControl.addItem("");
-        final List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
-
-        // Populate pulldowns, and make guesses for column names.
-        String survivalColumn  = null;
-        String censureColumn = null;
-        String sampleColumn = null;
-        for (String key : attributeNames) {
-            censurColumnControl.addItem(key);
-            sampleColumnControl.addItem(key);
-            survivalColumnControl.addItem(key);
-            groupByControl.addItem(key);
-
-            String tmp = key.toLowerCase();
-            if(tmp.contains("survival") || tmp.contains("daystodeath")) survivalColumn = key;
-            if(tmp.contains("censure")) censureColumn = key;
-            if(tmp.contains("sample")) sampleColumn = key;
-          }
-
-        if(survivalColumn != null) {
-           survivalColumnControl.setSelectedItem(survivalColumn);
-        }
-        if(censureColumn != null) {
-            censurColumnControl.setSelectedItem(censureColumn);
-        }
-        if(sampleColumn != null) {
-            sampleColumnControl.setSelectedItem(sampleColumn);
-        }
 
         XYDataset dataset = updateDataset();
         JFreeChart chart = ChartFactory.createXYLineChart(
@@ -109,6 +78,45 @@ public class KMPlotFrame extends JFrame {
         ChartPanel plotPanel = new ChartPanel(chart);
         contentPanel.add(plotPanel, BorderLayout.CENTER);
 
+
+        censurColumnControl.addItem("");
+        //sampleColumnControl.addItem("");
+        survivalColumnControl.addItem("");
+        groupByControl.addItem("");
+
+        final List<String> allAttributes = AttributeManager.getInstance().getAttributeNames();
+        final List<String> groupableAttributes = AttributeManager.getInstance().getGroupableAttributes();
+
+        // Populate pulldowns, and make guesses for column names.
+        String survivalColumn = null;
+        String censureColumn = null;
+        String sampleColumn = null;
+        for (String key : allAttributes) {
+            censurColumnControl.addItem(key);
+            //sampleColumnControl.addItem(key);
+            survivalColumnControl.addItem(key);
+
+            String tmp = key.toLowerCase();
+            if (tmp.contains("survival") || tmp.contains("daystodeath")) survivalColumn = key;
+            if (tmp.contains("censure")) censureColumn = key;
+            if (tmp.contains("sample")) sampleColumn = key;
+        }
+        for (String key : groupableAttributes) {
+            groupByControl.addItem(key);
+        }
+
+
+        if (survivalColumn != null) {
+            survivalColumnControl.setSelectedItem(survivalColumn);
+        }
+        if (censureColumn != null) {
+            censurColumnControl.setSelectedItem(censureColumn);
+        }
+        if (sampleColumn != null) {
+            //sampleColumnControl.setSelectedItem(sampleColumn);
+        }
+
+
     }
 
 
@@ -118,82 +126,89 @@ public class KMPlotFrame extends JFrame {
 
     public XYDataset updateDataset() {
 
-        ArrayList<DataPoint> dataPoints = new ArrayList(tracks.size());
-        HashSet<String> participants = new HashSet();
-        for (Track t : tracks) {
-            try {
-                // Get the participant (sample) attribute value for this track
-                final Object selectedItem = sampleColumnControl.getSelectedItem();
-                if (selectedItem != null) {
-                    String participant = t.getAttributeValue(selectedItem.toString());
+        XYSeriesCollection dataset = new XYSeriesCollection();
+
+        final String survivalColumn = (String) survivalColumnControl.getSelectedItem();
+        final String censureColumn = (String) censurColumnControl.getSelectedItem();
+        final String groupByColumn = (String) groupByControl.getSelectedItem();
+        if (survivalColumn != null) {
+            ArrayList<DataPoint> dataPoints = new ArrayList(tracks.size());
+            HashSet<String> participants = new HashSet();
+            for (Track t : tracks) {
+                try {
+                    // Get the participant (sample) attribute value for this track
+                    //final Object selectedItem = sampleColumnControl.getSelectedItem();
+                    //if (selectedItem != null) {
+                    String participant = t.getSample(); // t.getAttributeValue(selectedItem.toString());
+
 
                     if (!participants.contains(participant)) {   // Don't add same participant twice.
                         participants.add(participant);
 
                         // Get the survival time.  TODO -- we need to know the units,  just assuming days for now.
-                        String survivalString = t.getAttributeValue(survivalColumnControl.getSelectedItem().toString());
+                        String survivalString = t.getAttributeValue(survivalColumn);
                         int survivalDays = Integer.parseInt(survivalString);
                         int survival = survivalDays;
 
                         // Is the patient censured at the end of the survival period?
-                        String censureString = t.getAttributeValue(censurColumnControl.getSelectedItem().toString());
+                        String censureString = censureColumn == null ? null : t.getAttributeValue(censureColumn);
                         boolean censured = censureString != null && censureString.equals("1");
 
-                        String group = t.getAttributeValue(groupByControl.getSelectedItem().toString());
+                        String group = groupByColumn == null ? null : t.getAttributeValue(groupByColumn);
+                        if (group == null) group = "<No value>";
                         dataPoints.add(new DataPoint(participant, survival, censured, group));
                     } else {
                         // TODO -- check consistency of participant data
                     }
+                    // }
+                } catch (NumberFormatException e) {
+                    // Just skip
                 }
-            } catch (NumberFormatException e) {
-                // Just skip
+            }
+
+            // Segregate by group
+            Map<String, ArrayList<DataPoint>> map = new HashMap();
+            for (DataPoint dp : dataPoints) {
+                String g = dp.getGroup();
+                ArrayList<DataPoint> pts = map.get(g);
+                if (pts == null) {
+                    pts = new ArrayList();
+                    map.put(g, pts);
+                }
+                pts.add(dp);
+            }
+
+
+            //XYSeries series1;
+            for (Map.Entry<String, ArrayList<DataPoint>> entry : map.entrySet()) {
+
+                java.util.List<DataPoint> pts = entry.getValue();
+                Collections.sort(pts);
+
+                int[] time = new int[pts.size()];
+                boolean[] censured = new boolean[pts.size()];
+                for (int i = 0; i < pts.size(); i++) {
+                    int months = Math.max(1, pts.get(i).time / 30);  // <=  TODO -- HARDCODED MONTH DATE
+                    time[i] = months;
+                    censured[i] = pts.get(i).censured;
+                }
+
+                java.util.List<KaplanMeierEstimator.Interval> controlIntervals = KaplanMeierEstimator.compute(time, censured);
+
+                // TODO -- HANDLE CASE OF NO CATEGORIZATION
+                XYSeries series1 = new XYSeries(entry.getKey());
+                for (KaplanMeierEstimator.Interval interval : controlIntervals) {
+                    if (interval.getEnd() < 60)  // <= TODO -- WHATS THIS MAGIC NUMBER 60 ?
+                        series1.add(interval.getEnd(), interval.getCumulativeSurvival());
+                }
+                dataset.addSeries(series1);
             }
         }
-
-        // Segregate by group
-        Map<String, ArrayList<DataPoint>> map = new HashMap();
-        for (DataPoint dp : dataPoints) {
-            String g = dp.group;
-            ArrayList<DataPoint> pts = map.get(g);
-            if (pts == null) {
-                pts = new ArrayList();
-                map.put(g, pts);
-            }
-            pts.add(dp);
-        }
-
-
-        //XYSeries series1;
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        for (Map.Entry<String, ArrayList<DataPoint>> entry : map.entrySet()) {
-
-            java.util.List<DataPoint> pts = entry.getValue();
-            Collections.sort(pts);
-
-            int[] time = new int[pts.size()];
-            boolean[] censured = new boolean[pts.size()];
-            for (int i = 0; i < pts.size(); i++) {
-                int months = Math.max(1, pts.get(i).time / 30);  // <=  TODO -- HARDCODED MONTH DATE
-                time[i] = months;
-                censured[i] = pts.get(i).censured;
-            }
-
-            java.util.List<KaplanMeierEstimator.Interval> controlIntervals = KaplanMeierEstimator.compute(time, censured);
-
-            // TODO -- HANDLE CASE OF NO CATEGORIZATION
-            XYSeries series1 = new XYSeries(entry.getKey());
-            for (KaplanMeierEstimator.Interval interval : controlIntervals) {
-                if (interval.getEnd() < 60)  // <= TODO -- WHATS THIS MAGIC NUMBER 60 ?
-                    series1.add(interval.getEnd(), interval.getCumulativeSurvival());
-            }
-            dataset.addSeries(series1);
-        }
-
         return dataset;
 
     }
 
-    private void updateButtonActionPerformed(ActionEvent e) {
+    private void survivalColumnControlActionPerformed(ActionEvent e) {
         XYDataset dataset = updateDataset();
         plot.setDataset(dataset);
         repaint();
@@ -204,7 +219,7 @@ public class KMPlotFrame extends JFrame {
         String participant;
         int time;
         boolean censured;
-        String group;
+        private String group;
 
         DataPoint(String participant, int time, boolean censured, String group) {
             this.censured = censured;
@@ -216,8 +231,12 @@ public class KMPlotFrame extends JFrame {
         public int compareTo(DataPoint dataPoint) {
             return time - dataPoint.time;
         }
-    }
 
+        public String getGroup() {
+            return group;
+        }
+
+    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -225,15 +244,15 @@ public class KMPlotFrame extends JFrame {
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         panel1 = new JPanel();
-        censurColumnControl = new JComboBox();
-        sampleColumnControl = new JComboBox();
-        survivalColumnControl = new JComboBox();
-        groupByControl = new JComboBox();
-        label1 = new JLabel();
+        panel2 = new JPanel();
         label2 = new JLabel();
+        survivalColumnControl = new JComboBox();
+        panel3 = new JPanel();
         label3 = new JLabel();
+        censurColumnControl = new JComboBox();
+        panel4 = new JPanel();
         label4 = new JLabel();
-        updateButton = new JButton();
+        groupByControl = new JComboBox();
 
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -252,59 +271,113 @@ public class KMPlotFrame extends JFrame {
 
                 //======== panel1 ========
                 {
-                    panel1.setLayout(null);
-                    panel1.add(censurColumnControl);
-                    censurColumnControl.setBounds(145, 62, 215, censurColumnControl.getPreferredSize().height);
-                    panel1.add(sampleColumnControl);
-                    sampleColumnControl.setBounds(145, 0, 215, sampleColumnControl.getPreferredSize().height);
-                    panel1.add(survivalColumnControl);
-                    survivalColumnControl.setBounds(145, 31, 215, survivalColumnControl.getPreferredSize().height);
-                    panel1.add(groupByControl);
-                    groupByControl.setBounds(145, 93, 215, groupByControl.getPreferredSize().height);
+                    panel1.setAlignmentX(0.0F);
+                    panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
 
-                    //---- label1 ----
-                    label1.setText("Sample column");
-                    panel1.add(label1);
-                    label1.setBounds(5, 5, 115, label1.getPreferredSize().height);
+                    //======== panel2 ========
+                    {
+                        panel2.setAlignmentX(1.0F);
+                        panel2.setLayout(null);
 
-                    //---- label2 ----
-                    label2.setText("Survival column");
-                    panel1.add(label2);
-                    label2.setBounds(5, 36, 115, 16);
+                        //---- label2 ----
+                        label2.setText("Survival column");
+                        panel2.add(label2);
+                        label2.setBounds(new Rectangle(new Point(5, 10), label2.getPreferredSize()));
 
-                    //---- label3 ----
-                    label3.setText("Censure column");
-                    panel1.add(label3);
-                    label3.setBounds(5, 67, 115, 16);
+                        //---- survivalColumnControl ----
+                        survivalColumnControl.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                survivalColumnControlActionPerformed(e);
+                            }
+                        });
+                        panel2.add(survivalColumnControl);
+                        survivalColumnControl.setBounds(120, 5, 235, survivalColumnControl.getPreferredSize().height);
 
-                    //---- label4 ----
-                    label4.setText("Group by");
-                    panel1.add(label4);
-                    label4.setBounds(5, 98, 115, 16);
-
-                    //---- updateButton ----
-                    updateButton.setText("Update Plot");
-                    updateButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            updateButtonActionPerformed(e);
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for (int i = 0; i < panel2.getComponentCount(); i++) {
+                                Rectangle bounds = panel2.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel2.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel2.setMinimumSize(preferredSize);
+                            panel2.setPreferredSize(preferredSize);
                         }
-                    });
-                    panel1.add(updateButton);
-                    updateButton.setBounds(385, 90, 145, updateButton.getPreferredSize().height);
-
-                    { // compute preferred size
-                        Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel1.getComponentCount(); i++) {
-                            Rectangle bounds = panel1.getComponent(i).getBounds();
-                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
-                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
-                        }
-                        Insets insets = panel1.getInsets();
-                        preferredSize.width += insets.right;
-                        preferredSize.height += insets.bottom;
-                        panel1.setMinimumSize(preferredSize);
-                        panel1.setPreferredSize(preferredSize);
                     }
+                    panel1.add(panel2);
+
+                    //======== panel3 ========
+                    {
+                        panel3.setAlignmentX(1.0F);
+                        panel3.setLayout(null);
+
+                        //---- label3 ----
+                        label3.setText("Censure column");
+                        panel3.add(label3);
+                        label3.setBounds(new Rectangle(new Point(5, 10), label3.getPreferredSize()));
+
+                        //---- censurColumnControl ----
+                        censurColumnControl.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                survivalColumnControlActionPerformed(e);
+                            }
+                        });
+                        panel3.add(censurColumnControl);
+                        censurColumnControl.setBounds(120, 5, 235, censurColumnControl.getPreferredSize().height);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for (int i = 0; i < panel3.getComponentCount(); i++) {
+                                Rectangle bounds = panel3.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel3.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel3.setMinimumSize(preferredSize);
+                            panel3.setPreferredSize(preferredSize);
+                        }
+                    }
+                    panel1.add(panel3);
+
+                    //======== panel4 ========
+                    {
+                        panel4.setAlignmentX(1.0F);
+                        panel4.setLayout(null);
+
+                        //---- label4 ----
+                        label4.setText("Group by");
+                        panel4.add(label4);
+                        label4.setBounds(new Rectangle(new Point(5, 10), label4.getPreferredSize()));
+
+                        //---- groupByControl ----
+                        groupByControl.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                survivalColumnControlActionPerformed(e);
+                            }
+                        });
+                        panel4.add(groupByControl);
+                        groupByControl.setBounds(120, 5, 235, groupByControl.getPreferredSize().height);
+
+                        { // compute preferred size
+                            Dimension preferredSize = new Dimension();
+                            for (int i = 0; i < panel4.getComponentCount(); i++) {
+                                Rectangle bounds = panel4.getComponent(i).getBounds();
+                                preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                                preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                            }
+                            Insets insets = panel4.getInsets();
+                            preferredSize.width += insets.right;
+                            preferredSize.height += insets.bottom;
+                            panel4.setMinimumSize(preferredSize);
+                            panel4.setPreferredSize(preferredSize);
+                        }
+                    }
+                    panel1.add(panel4);
                 }
                 contentPanel.add(panel1, BorderLayout.NORTH);
             }
@@ -321,15 +394,15 @@ public class KMPlotFrame extends JFrame {
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JPanel panel1;
-    private JComboBox censurColumnControl;
-    private JComboBox sampleColumnControl;
-    private JComboBox survivalColumnControl;
-    private JComboBox groupByControl;
-    private JLabel label1;
+    private JPanel panel2;
     private JLabel label2;
+    private JComboBox survivalColumnControl;
+    private JPanel panel3;
     private JLabel label3;
+    private JComboBox censurColumnControl;
+    private JPanel panel4;
     private JLabel label4;
-    private JButton updateButton;
+    private JComboBox groupByControl;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 

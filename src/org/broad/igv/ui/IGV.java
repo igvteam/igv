@@ -1593,6 +1593,9 @@ public class IGV {
                                 p = URLDecoder.decode(p);
                             }
                             ResourceLocator rl = new ResourceLocator(p);
+                            if(igvArgs.getName() != null) {
+                                rl.setName(igvArgs.getName());
+                            }
                             rl.setIndexPath(indexFile);
                             locators.add(rl);
                         }

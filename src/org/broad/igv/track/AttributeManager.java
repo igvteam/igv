@@ -170,19 +170,19 @@ public class AttributeManager {
     }
 
 
-    // TODO -- don't compute this on the fly every time its called
-
+    /**
+     * Return all attributes, except those that have been "hidden" in the attribute panel
+     * TODO -- don't compute this every time (or at least profile to see if this is a problem).
+      * @return
+     */
     public List<String> getVisibleAttributes() {
 
-        List<String> visibleAttributes = AttributeManager.getInstance().getAttributeNames();
-
+        List<String> visibleAttributes = getAttributeNames();
         if (visibleAttributes == null) {
             Collections.emptyList();
         }
-
         final Set<String> hiddenAttributes = IGV.getInstance().getSession().getHiddenAttributes();
         if (hiddenAttributes != null) visibleAttributes.removeAll(hiddenAttributes);
-
 
         return visibleAttributes;
     }
@@ -321,6 +321,23 @@ public class AttributeManager {
             }
             firePropertyChange(this, ATTRIBUTES_LOADED_PROPERTY, null, null);
         }
+    }
+
+
+    static Set<String> nonGroupable = new HashSet<String>(Arrays.asList("DATA FILE", "DATA TYPE",
+            "VITALSTATUS", "VITAL STATUS", "KARNSCORE", "CENSURED"));
+    public List<String> getGroupableAttributes() {
+        List<String> seriesNames = new ArrayList<String>();
+         for (Map.Entry<String, Set<String>> entry : uniqueAttributeValues.entrySet()) {
+             int cnt = entry.getValue().size();
+             String att = entry.getKey();
+             if (cnt > 1 && cnt < 10 && !nonGroupable.contains(att)) {
+                 seriesNames.add(att);
+             }
+         }
+
+         return seriesNames;
+
     }
 
     /**

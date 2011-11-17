@@ -1,6 +1,7 @@
 package org.broad.igv.charts;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.ui.FontManager;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Path2D;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
@@ -226,6 +228,7 @@ public class ChartPanel extends JPanel implements Serializable {
                 return;
             }
 
+
             add(Box.createVerticalStrut(topMargin));
 
             JLabel catLabel = new JLabel(" " + categoryName);
@@ -234,44 +237,49 @@ public class ChartPanel extends JPanel implements Serializable {
             add(new JLabel(" "));    // Spacer
 
 
-            Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
+            if (ScatterPlot.isDataCategory(categoryName)) {
 
-            // Rebuild the "series" checkboxes
-            java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.getDataModel().getSeriesNames());
 
-            sortSeriesNames(seriesNames);
+            } else {
+                Rectangle pointShape = new Rectangle(10, 10); //scatterPlot.pointShape;
 
-            for (final String sn : seriesNames) {
-                Color c = scatterPlot.getColor(categoryName, sn);
-                LegendIcon icon = new LegendIcon(pointShape, c);
+                // Rebuild the "series" checkboxes
+                java.util.List<String> seriesNames = new ArrayList<String>(scatterPlot.getDataModel().getSeriesNames());
 
-                String labelString = (sn.trim()).equals("") ? "<No Value>" : sn;
+                sortSeriesNames(seriesNames);
 
-                JLabel label = new JLabel(labelString, icon, SwingConstants.LEFT);
-                label.setFont(labelFont);
+                for (final String sn : seriesNames) {
+                    Color c = scatterPlot.getColor(categoryName, sn);
+                    LegendIcon icon = new LegendIcon(pointShape, c);
 
-                final JCheckBox cb = new JCheckBox();
-                cb.setSelected(true);
-                cb.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent actionEvent) {
-                        if (cb.isSelected()) {
-                            scatterPlot.removeSeriesFilter(sn);
-                        } else {
-                            scatterPlot.addSeriesFilter(sn);
+                    String labelString = (sn.trim()).equals("") ? "<No Value>" : sn;
+
+                    JLabel label = new JLabel(labelString, icon, SwingConstants.LEFT);
+                    label.setFont(labelFont);
+
+                    final JCheckBox cb = new JCheckBox();
+                    cb.setSelected(true);
+                    cb.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent actionEvent) {
+                            if (cb.isSelected()) {
+                                scatterPlot.removeSeriesFilter(sn);
+                            } else {
+                                scatterPlot.addSeriesFilter(sn);
+                            }
+                            plotPanel.repaint();
                         }
-                        plotPanel.repaint();
-                    }
-                });
+                    });
 
-                JPanel panel = new JPanel();
-                panel.setAlignmentX(LEFT_ALIGNMENT);
-                panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+                    JPanel panel = new JPanel();
+                    panel.setAlignmentX(LEFT_ALIGNMENT);
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
 
-                panel.add(cb);
-                panel.add(label);
-                add(panel);
+                    panel.add(cb);
+                    panel.add(label);
+                    add(panel);
+                }
+                revalidate();
             }
-            revalidate();
 
         }
 
@@ -357,6 +365,7 @@ public class ChartPanel extends JPanel implements Serializable {
 //
 //            }
 //        }
+
 
     }
 

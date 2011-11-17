@@ -292,6 +292,7 @@ public class Main {
         private String dataServerURL = null;
         private String genomeServerURL = null;
         private String indexFile = null;
+        private String name = null;
 
         IGVArgs(String[] args) {
             if (args != null) {
@@ -312,6 +313,7 @@ public class Main {
             CmdLineParser.Option dataServerOption = parser.addStringOption('d', "dataServerURL");
             CmdLineParser.Option genomeServerOption = parser.addStringOption('u', "genomeServerURL");
             CmdLineParser.Option indexFileOption = parser.addStringOption('i', "indexFileURL");
+            CmdLineParser.Option nameOption = parser.addStringOption('n', "name");
 
             try {
                 parser.parse(args);
@@ -327,6 +329,7 @@ public class Main {
             dataServerURL = (String) parser.getOptionValue(dataServerOption);
             genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
             indexFile = (String) parser.getOptionValue(indexFileOption);
+            name = (String) parser.getOptionValue(indexFileOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
@@ -383,6 +386,10 @@ public class Main {
 
         public String getIndexFile() {
             return indexFile;
+        }
+
+        public String getName() {
+            return name;
         }
     }
 

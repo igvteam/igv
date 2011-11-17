@@ -61,7 +61,7 @@ public class TrackGroup {
 
     public TrackGroup(String name) {
         this.name = name;
-        tracks =  Collections.synchronizedList(new ArrayList<Track>());
+        tracks = Collections.synchronizedList(new ArrayList<Track>());
     }
 
 
@@ -217,15 +217,13 @@ public class TrackGroup {
                                 double d1;
                                 try {
                                     d1 = Double.parseDouble(value1);
-                                }
-                                catch (NumberFormatException e) {
+                                } catch (NumberFormatException e) {
                                     d1 = Double.MIN_VALUE;
                                 }
                                 double d2;
                                 try {
                                     d2 = Double.parseDouble(value2);
-                                }
-                                catch (NumberFormatException e) {
+                                } catch (NumberFormatException e) {
                                     d2 = Double.MIN_VALUE;
                                 }
                                 if (d2 > d1) c = 1;
@@ -274,8 +272,14 @@ public class TrackGroup {
     }
 
 
+    /**
+     * Sorts the entire group, including tracks for the given score type as well as other tracks.
+     *
+     * @param region
+     * @param type
+     * @param frame
+     */
     public void sortGroup(final RegionOfInterest region,
-                          String linkingAtt,
                           final RegionScoreType type,
                           final ReferenceFrame frame) {
         // Step 1,  remove non-sortable tracks and remember position
@@ -301,15 +305,17 @@ public class TrackGroup {
         }
 
         sortByRegionScore(tracksWithScore, region, type, frame);
-        List<String> sortedAttributes = new ArrayList();
+
+        // Now get sample order from sorted tracks, use to sort (tracks which do not implement the selected "sort by" score)
+        List<String> sortedSamples = new ArrayList();
         for (Track t : tracksWithScore) {
             String att = t.getSample(); //t.getAttributeValue(linkingAtt);
             if (att != null) {
-                sortedAttributes.add(att);
+                sortedSamples.add(att);
             }
 
         }
-        sortByAttributeOrder(otherTracks, sortedAttributes, linkingAtt);
+        sortBySampleOrder(otherTracks, sortedSamples);
 
         tracks.clear();
         tracks.addAll(tracksWithScore);
@@ -374,20 +380,16 @@ public class TrackGroup {
     }
 
     /**
-     * @param sortedAttributes
-     * @param attributeId
+     * @param sortedSamples
      */
-    private void sortByAttributeOrder(List<Track> tracks,
-                                      List<String> sortedAttributes,
-                                      final String attributeId) {
-        if ((tracks != null) && (sortedAttributes != null) && !tracks.isEmpty()) {
+    private void sortBySampleOrder(List<Track> tracks,
+                                   List<String> sortedSamples) {
+        if ((tracks != null) && (sortedSamples != null) && !tracks.isEmpty()) {
 
             // Create a rank hash.  Loop backwards so that the lowest index for an attribute
-            final HashMap<String, Integer> rankMap = new HashMap(
-                    sortedAttributes.size() * 2);
-            for (int i = sortedAttributes.size() - 1; i >=
-                    0; i--) {
-                rankMap.put(sortedAttributes.get(i), i);
+            final HashMap<String, Integer> rankMap = new HashMap(sortedSamples.size() * 2);
+            for (int i = sortedSamples.size() - 1; i >=0; i--) {
+                rankMap.put(sortedSamples.get(i), i);
             }
             // Comparator for sorting in ascending order
             Comparator<Track> c = new Comparator<Track>() {

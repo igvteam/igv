@@ -53,11 +53,6 @@ public abstract class AbstractColorScale implements ColorScale {
 
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public Color getNoDataColor() {
         return noDataColor;
     }
