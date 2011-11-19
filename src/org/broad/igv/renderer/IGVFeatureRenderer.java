@@ -544,7 +544,7 @@ public class IGVFeatureRenderer extends FeatureRenderer {
                                 (aaSeqStartPosition == exon.getCdStart())) || ((gene.getStrand() == Strand.NEGATIVE) &&
                                 (aaSeqStartPosition == exon.getCdEnd() - 3))))) {
                             bgGraphics = context.getGraphic2DForColor(Color.green);
-                        } else if (acid.getSymbol() == 'X') {
+                        } else if (acid.getSymbol() == '*') {
                             bgGraphics = context.getGraphic2DForColor(Color.RED);
                         }
 
