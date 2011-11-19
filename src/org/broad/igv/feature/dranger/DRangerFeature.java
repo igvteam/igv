@@ -149,20 +149,20 @@ public class DRangerFeature extends AbstractFeature {
     }
 
 
-    float[] defaultColor = Color.blue.getComponents(null);
-    static Map<String, float[]> colorMap;
+    Color defaultColor = Color.blue;
+    static Map<String, Color> colorMap;
     static {
         colorMap = new HashMap();
-        colorMap.put("deletion", Color.red.getComponents(null));
-        colorMap.put("inter_chr", Color.blue.getComponents(null));
-        colorMap.put("inversion", Color.green.getComponents(null));
-        colorMap.put("long_range", Color.MAGENTA.getComponents(null));
-        colorMap.put("tandem_dup", Color.cyan.getComponents(null));
+        colorMap.put("deletion", Color.red);
+        colorMap.put("inter_chr", Color.blue);
+        colorMap.put("inversion", Color.green);
+        colorMap.put("long_range", Color.MAGENTA);
+        colorMap.put("tandem_dup", Color.cyan);
     }
 
     @Override
     public Color getColor() {
-        float [] baseColor = defaultColor;
+        Color baseColor = defaultColor;
         if(featureClass != null  && colorMap.containsKey(featureClass)) {
             baseColor = colorMap.get(featureClass);
         }

@@ -492,9 +492,6 @@ public class GenotypeRenderer extends FeatureRenderer {
         return "Basic Feature";
     }
 
-    // Declare this for efficiency.  Note: this makes getFeatureColor(...) not thread safe.
-    private float[] colorComps = new float[3];
-
     protected Color getFeatureColor(IGVFeature feature, Track track) {
         // Set color used to draw the feature
 
@@ -520,8 +517,7 @@ public class GenotypeRenderer extends FeatureRenderer {
 
             float score = feature.getScore();
             float alpha = Float.isNaN(score) ? 1 : getAlpha(min, max, feature.getScore());
-            color.getColorComponents(colorComps);
-            color = ColorUtilities.getCompositeColor(colorComps, alpha);
+            color = ColorUtilities.getCompositeColor(color, alpha);
         }
 
         return color;

@@ -66,7 +66,6 @@ public class CoverageTrack extends AbstractTrack {
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
-    private float[] bgColorComps = new float[3];
     private static final boolean DEFAULT_AUTOSCALE = true;
     private static final boolean DEFAULT_SHOW_REFERENCE = false;
 
@@ -93,7 +92,6 @@ public class CoverageTrack extends AbstractTrack {
         intervalRenderer = new IntervalRenderer();
 
         setColor(AlignmentRenderer.grey1);
-        AlignmentRenderer.grey1.getColorComponents(bgColorComps);
 
         prefs = PreferenceManager.getInstance();
         snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
@@ -587,7 +585,7 @@ public class CoverageTrack extends AbstractTrack {
 
             if (showAllSnps) {
                 int q = interval.getAvgQuality(pos, (byte) nucleotide);
-                c = getShadedColor(q, c);
+                c = getShadedColor(q, AlignmentRenderer.grey1, c);
             }
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
@@ -657,7 +655,7 @@ public class CoverageTrack extends AbstractTrack {
 
     static float[] colorComps = new float[3];
 
-    private Color getShadedColor(int qual, Color color) {
+    private Color getShadedColor(int qual, Color backgroundColor, Color color) {
         float alpha = 0;
         int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
         ColorUtilities.getRGBColorComponents(color);
@@ -667,11 +665,14 @@ public class CoverageTrack extends AbstractTrack {
             int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
             alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
         }
-
         // Round alpha to nearest 0.1, for effeciency;
         alpha = ((int) (alpha * 10 + 0.5f)) / 10.0f;
-        color = ColorUtilities.getCompositeColor(bgColorComps, colorComps, alpha);
-        return color;
+
+        if (alpha >= 1) {
+            return color;
+        } else {
+            return ColorUtilities.getCompositeColor(backgroundColor, color, alpha);
+        }
     }
 
 

@@ -202,16 +202,29 @@ public class ColorUtilities {
     }
 
 
+    public static float[] getRGBColorComponents(Color color) {
+        float[] comps = componentsCache.get(color);
+        if (comps == null) {
+            comps = color.getRGBColorComponents(null);
+            componentsCache.put(color, comps);
+        }
+        return comps;
+
+    }
+
+
     /**
      * Return  alphas shaded color.  This method is used, rather than the Color constructor, so that
      * the alpha is not lost in postscript output.
      *
-     * @param dest
-     * @param source
      * @param alpha
      * @return
      */
-    public static Color getCompositeColor(float[] dest, float[] source, float alpha) {
+    public static Color getCompositeColor(Color backgroundColor, Color foregroundColor, float alpha) {
+
+        float[] dest = getRGBColorComponents(backgroundColor);
+        float[] source = getRGBColorComponents(foregroundColor);
+
         int r = (int) ((alpha * source[0] + (1 - alpha) * dest[0]) * 255 + 0.5);
         int g = (int) ((alpha * source[1] + (1 - alpha) * dest[1]) * 255 + 0.5);
         int b = (int) ((alpha * source[2] + (1 - alpha) * dest[2]) * 255 + 0.5);
@@ -237,8 +250,8 @@ public class ColorUtilities {
      * @param alpha
      * @return
      */
-    public static Color getCompositeColor(float[] source, float alpha) {
-        return getCompositeColor(whiteComponents, source, alpha);
+    public static Color getCompositeColor(Color source, float alpha) {
+        return getCompositeColor(Color.white, source, alpha);
     }
 
 
@@ -314,13 +327,4 @@ public class ColorUtilities {
         }
     }
 
-    public static float[] getRGBColorComponents(Color color) {
-        float[] comps = componentsCache.get(color);
-        if (comps == null) {
-            comps = color.getRGBColorComponents(null);
-            componentsCache.put(color, comps);
-        }
-        return comps;
-
-    }
 }

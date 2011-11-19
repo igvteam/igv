@@ -684,9 +684,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (alpha >= 1) {
             return foregroundColor;
         }
-        float[] foregroundComponents = ColorUtilities.getRGBColorComponents(foregroundColor);
-        float[] backgroundComponents = ColorUtilities.getRGBColorComponents(backgroundColor);
-        Color color = ColorUtilities.getCompositeColor(backgroundComponents, foregroundComponents, alpha);
+        Color color = ColorUtilities.getCompositeColor(backgroundColor, foregroundColor, alpha);
         return color;
     }
 
@@ -839,9 +837,8 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
             float alpha = 0.15f;
-            float[] colorComponents = c.getColorComponents(null);
             // Assuming white background TODO -- this should probably be passed in
-            return ColorUtilities.getCompositeColor(whiteComponents, colorComponents, alpha);
+            return ColorUtilities.getCompositeColor(Color.white, c, alpha);
         }
 
         return c;

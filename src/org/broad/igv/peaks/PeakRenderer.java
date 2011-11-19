@@ -50,7 +50,7 @@ public class PeakRenderer implements Renderer<LocusScore> {
         double pXMin = rect.getMinX();
         double pXMax = rect.getMaxX();
 
-        float[] fgColorComps = track.getColor().getColorComponents(null);
+        Color fgColor = track.getColor();
         Graphics2D borderGraphics = context.getGraphic2DForColor(Color.black);
 
         String chr = context.getChr();
@@ -88,11 +88,11 @@ public class PeakRenderer implements Renderer<LocusScore> {
                     float[] timeScores = peak.getTimeScores();
                     for (int i = 0; i < timeScores.length; i++) {
                         score = timeScores[i];
-                        drawPeak(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+                        drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
                         top += h;
                     }
                 } else {
-                    drawPeak(context, fgColorComps, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
+                    drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
                     float[] timeScores = peak.getTimeScores();
                     if (dX > 10 && timeScores.length > 1) {
@@ -156,18 +156,16 @@ public class PeakRenderer implements Renderer<LocusScore> {
     }
 
 
-    static float[] blueComps = Color.blue.getColorComponents(null);
-    static float[] redComps = Color.red.getColorComponents(null);
 
-    private void drawPeak(RenderContext context, float[] fgColorComps,
+    private void drawPeak(RenderContext context, Color fgColor,
                           int pX, int dX, int top, int h, float score, PeakTrack.ColorOption option) {
-        Color c = getColor(fgColorComps, score, option);
+        Color c = getColor(fgColor, score, option);
         Graphics2D g = context.getGraphic2DForColor(c);
         g.fillRect(pX, top + 1, dX, h - 2);
 
     }
 
-    private Color getColor(float[] fgColorComps, float score, PeakTrack.ColorOption option) {
+    private Color getColor(Color fgColor, float score, PeakTrack.ColorOption option) {
         Color c = null;
         float alpha = 1.0f;
         if (option == PeakTrack.ColorOption.SCORE) {
@@ -180,16 +178,16 @@ public class PeakRenderer implements Renderer<LocusScore> {
             // Scale is 1.58 -> 3.3 log2
             if (Math.abs(score) < 1.58) {
                 alpha = 1f;
-                fgColorComps = Color.gray.getColorComponents(null);
+                fgColor = Color.gray;
             } else {
                 // vary alpha from .3 -> 1 over range 3.3 -> 1.58 in steps of 10
                 int shadeStep = (int) ((Math.abs(score) - 1.58) / (3.3 - 1.58) * 10);
                 alpha = Math.max(0.3f, (Math.min(1f, 0.3f + shadeStep * 0.1f)));
-                fgColorComps = (score < 0 ? blueComps : redComps);
+                fgColor = (score < 0 ? Color.blue : Color.red);
             }
         }
 
-        c = ColorUtilities.getCompositeColor(fgColorComps, alpha);
+        c = ColorUtilities.getCompositeColor(fgColor, alpha);
         //}
         return c;
     }
