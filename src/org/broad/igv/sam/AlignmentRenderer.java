@@ -39,17 +39,12 @@ import java.util.Map;
 public class AlignmentRenderer implements FeatureRenderer {
 
     private static Map<Character, Color> nucleotideColors;
-    // Static because all alignment tracks are in color space, or none are
-    public static boolean colorSpace;
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
-    private static float[] rbgBuffer = new float[3];
-    private static float[] colorComps = new float[3];
-    private static float[] alignComps = new float[3];
     private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
     private static Color grey2 = new Color(165, 165, 165);
     public static Color grey1 = new Color(200, 200, 200);
@@ -434,8 +429,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         xPoly = new int[]{x, x + w, x + w + arrowLength, x + w, x};
                     }
                     blockShape = new Polygon(xPoly, yPoly, xPoly.length);
-                }
-                else {
+                } else {
                     // Not a terminal block, or too small for arrow
                     blockShape = new Rectangle(x, y, w, h);
                 }
@@ -507,11 +501,17 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
+
     /**
-     * Draw the bases for an alignment block.
+     * Draw bases for an alignment block.  The bases are "overlaid" on the block with a transparency value (alpha)
+     * that is proportional to the base quality score.
      *
      * @param context
      * @param rect
+     * @param block
+     * @param alignmentColor
+     * @param shadeBases
+     * @param showAllBases
      */
     private void drawBases(RenderContext context,
                            Rectangle rect,
@@ -519,8 +519,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Color alignmentColor,
                            boolean shadeBases,
                            boolean showAllBases) {
-
-        alignmentColor.getRGBColorComponents(alignComps);
 
         double locScale = context.getScale();
         double origin = context.getOrigin();
@@ -584,7 +582,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                     if (shadeBases) {
                         byte qual = block.qualities[loc - start];
-                        color = getShadedColor(qual, color, prefs);
+                        color = getShadedColor(qual, color, alignmentColor, prefs);
                     }
 
 
@@ -671,20 +669,24 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    private Color getShadedColor(byte qual, Color color, PreferenceManager prefs) {
+    private Color getShadedColor(byte qual, Color foregroundColor, Color backgroundColor, PreferenceManager prefs) {
         float alpha = 0;
         int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
-        color.getRGBColorComponents(colorComps);
         if (qual < minQ) {
             alpha = 0.1f;
         } else {
             int maxQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MAX);
             alpha = Math.max(0.1f, Math.min(1.0f, 0.1f + 0.9f * (qual - minQ) / (maxQ - minQ)));
         }
-
-        // Round alpha to nearest 0.1, for effeciency;
+        // Round alpha to nearest 0.1
         alpha = ((int) (alpha * 10 + 0.5f)) / 10.0f;
-        color = ColorUtilities.getCompositeColor(alignComps, colorComps, alpha);
+
+        if (alpha >= 1) {
+            return foregroundColor;
+        }
+        float[] foregroundComponents = ColorUtilities.getRGBColorComponents(foregroundColor);
+        float[] backgroundComponents = ColorUtilities.getRGBColorComponents(backgroundColor);
+        Color color = ColorUtilities.getCompositeColor(backgroundComponents, foregroundComponents, alpha);
         return color;
     }
 
@@ -837,9 +839,9 @@ public class AlignmentRenderer implements FeatureRenderer {
         if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
             float alpha = 0.15f;
-            c.getColorComponents(rbgBuffer);
+            float[] colorComponents = c.getColorComponents(null);
             // Assuming white background TODO -- this should probably be passed in
-            return ColorUtilities.getCompositeColor(whiteComponents, rbgBuffer, alpha);
+            return ColorUtilities.getCompositeColor(whiteComponents, colorComponents, alpha);
         }
 
         return c;

@@ -46,6 +46,7 @@ public class ColorUtilities {
     // HTML 4.1 color table,  + orange and magenta
     static Map<String, String> colorSymbols = new HashMap();
     private static Map<String, ColorPalette> palettes;
+    public static Map<Color, float[]> componentsCache = Collections.synchronizedMap(new HashMap<Color, float[]>());
 
     static {
         colorSymbols.put("white", "FFFFFF");
@@ -311,5 +312,15 @@ public class ColorUtilities {
             log.error(e);
             return null;
         }
+    }
+
+    public static float[] getRGBColorComponents(Color color) {
+        float[] comps = componentsCache.get(color);
+        if (comps == null) {
+            comps = color.getRGBColorComponents(null);
+            componentsCache.put(color, comps);
+        }
+        return comps;
+
     }
 }

@@ -255,11 +255,11 @@ public class CoverageTrack extends AbstractTrack {
                 }
 
                 int delCount = interval.getDelCount(pos);
-                if(delCount > 0) {
+                if (delCount > 0) {
                     buf.append("DEL: " + delCount);
                 }
                 int insCount = interval.getInsCount(pos);
-                if(insCount > 0) {
+                if (insCount > 0) {
                     buf.append("INS: " + insCount);
                 }
 
@@ -426,7 +426,7 @@ public class CoverageTrack extends AbstractTrack {
             int lastpX = -1;
             final double rectX = rect.getX();
             final double rectMaxX = rect.getMaxX();
-            final double rectY = rect.getY();            
+            final double rectY = rect.getY();
             final double rectMaxY = rect.getMaxY();
             final double rectHeight = rect.getHeight();
             final double origin = context.getOrigin();
@@ -660,7 +660,7 @@ public class CoverageTrack extends AbstractTrack {
     private Color getShadedColor(int qual, Color color) {
         float alpha = 0;
         int minQ = prefs.getAsInt(PreferenceManager.SAM_BASE_QUALITY_MIN);
-        color.getRGBColorComponents(colorComps);
+        ColorUtilities.getRGBColorComponents(color);
         if (qual < minQ) {
             alpha = 0.1f;
         } else {
@@ -844,8 +844,7 @@ public class CoverageTrack extends AbstractTrack {
                     float tmp = Float.parseFloat(value);
                     snpThreshold = tmp;
                     IGV.getInstance().repaintDataPanels();
-                }
-                catch (Exception exc) {
+                } catch (Exception exc) {
                     //log
                 }
 
