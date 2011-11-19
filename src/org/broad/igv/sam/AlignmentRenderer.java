@@ -570,7 +570,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             reference != null &&
                             idx < reference.length &&
                             refbase != 0 &&
-                            !(refbase == readbase || (refbase - 32) == readbase);
+                            !compareBases(refbase, readbase);
                 }
 
                 if (misMatch || showAllBases) {
