@@ -349,15 +349,7 @@ public class Session {
     }
 
     public void setHiddenAttributes(Set<String> attributes) {
-        // Interpret null to mean the empty set
-        if (attributes == null) {
-            hiddenAttributes.clear();
-        } else {
-            hiddenAttributes = new HashSet<String>();
-        }
-        for (String att : attributes) {
-            hiddenAttributes.add(att.toUpperCase());
-        }
+        this.hiddenAttributes = attributes;
 
     }
 

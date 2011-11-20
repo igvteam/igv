@@ -112,7 +112,9 @@ public class SessionReader {
         PROPERTY("Property"),
         GENE_LIST("GeneList"),
         HIDDEN_ATTRIBUTES("HiddenAttributes"),
+        VISIBLE_ATTRIBUTES("VisibleAttributes"),
         ATTRIBUTE("Attribute"),
+        VISIBLE_ATTRIBUTE("VisibleAttribute"),
         FRAME("Frame");
 
         private String name;
@@ -426,6 +428,8 @@ public class SessionReader {
             processPanelLayout(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES.getText())) {
             processHiddenAttributes(session, (Element) element, additionalInformation);
+        }  else if (nodeName.equalsIgnoreCase(SessionElement.VISIBLE_ATTRIBUTES.getText())) {
+            processVisibleAttributes(session, (Element) element, additionalInformation);
         }
 
     }
@@ -657,6 +661,35 @@ public class SessionReader {
                 }
             }
             session.setHiddenAttributes(attributes);
+        }
+    }
+
+
+    /**
+     * For backward compatibility
+     *
+     * @param session
+     * @param element
+     * @param additionalInformation
+     */
+        private void processVisibleAttributes(Session session, Element element, HashMap additionalInformation) {
+
+//        session.clearRegionsOfInterest();
+        NodeList elements = element.getChildNodes();
+        if (elements.getLength() > 0) {
+            Set<String> visibleAttributes = new HashSet();
+            for (int i = 0; i < elements.getLength(); i++) {
+                Node childNode = elements.item(i);
+                if (childNode.getNodeName().equals(SessionReader.SessionElement.VISIBLE_ATTRIBUTE.getText())) {
+                    visibleAttributes.add(((Element) childNode).getAttribute(SessionReader.SessionAttribute.NAME.getText()));
+                }
+            }
+
+            final List<String> attributeNames = AttributeManager.getInstance().getAttributeNames();
+            Set<String> hiddenAttributes = new HashSet<String>(attributeNames);
+            hiddenAttributes.removeAll(visibleAttributes);
+            session.setHiddenAttributes(hiddenAttributes);
+
         }
     }
 
