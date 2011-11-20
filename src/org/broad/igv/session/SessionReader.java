@@ -396,13 +396,11 @@ public class SessionReader {
 
         String nodeName = element.getNodeName();
 
-        if (nodeName.equalsIgnoreCase(SessionElement.FILES.getText())) {
-            processFiles(session, (Element) element, additionalInformation);
-        } else if (nodeName.equalsIgnoreCase(SessionElement.DATA_FILE.getText())) {
-            processDataFile(session, (Element) element, additionalInformation);
-        } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES.getText())) {
+        if (nodeName.equalsIgnoreCase(SessionElement.RESOURCES.getText()) ||
+                nodeName.equalsIgnoreCase(SessionElement.FILES.getText())) {
             processResources(session, (Element) element, additionalInformation);
-        } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE.getText())) {
+        } else if (nodeName.equalsIgnoreCase(SessionElement.RESOURCE.getText()) ||
+                nodeName.equalsIgnoreCase(SessionElement.DATA_FILE.getText())) {
             processResource(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.REGIONS.getText())) {
             processRegions(session, (Element) element, additionalInformation);
@@ -432,18 +430,7 @@ public class SessionReader {
 
     }
 
-
-    /**
-     * Process the Files element.
-     * <p/>
-     * The RELATIVE_PATH attribute specifies whether file paths are relative
-     * or absolute.
-     *
-     * @param session
-     * @param element
-     */
-    private void processFiles(Session session, Element element, HashMap additionalInformation) {
-
+    private void processResources(Session session, Element element, HashMap additionalInformation) {
         dataFiles = new ArrayList();
         missingDataFiles = new ArrayList();
         NodeList elements = element.getChildNodes();
@@ -543,51 +530,10 @@ public class SessionReader {
         dataFiles = null;
     }
 
-    /**
-     * //TODO -- I think this method can be removed
-     *
-     * @param session
-     * @param element
-     * @Deprecated
-     * @Deprectated -- user processResource
-     * Process the data file element.  If relativePaths == true treat the
-     * file path as relative to the session file path.  If false
-     */
-
-    private void processDataFile(Session session, Element element, HashMap additionalInformation) {
-
-        ResourceLocator resourceLocator = null;
-        String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
-        String filePath = getAttribute(element, SessionAttribute.NAME.getText());
-
-        // e.g. DAS
-        String resourceType = getAttribute(element, SessionAttribute.RESOURCE_TYPE.getText());
-
-        // If file is local
-        if ((serverURL == null || serverURL.trim().equals("")) &&
-                !(HttpUtils.getInstance().isURL(filePath.toLowerCase()))) {
-            String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
-            boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
-            File parent = (relativePaths ? new File(session.getPath()).getParentFile() : null);
-            File file = new File(parent, filePath);
-            resourceLocator = new ResourceLocator(file.getAbsolutePath());
-        } else {    // ...else must be from Server
-            resourceLocator = new ResourceLocator(serverURL, filePath);
-        }
-
-        if (resourceType != null) {
-            resourceLocator.setType(resourceType);
-        }
-
-        NodeList elements = element.getChildNodes();
-        process(session, elements, additionalInformation);
-    }
-
-    private void processResources(Session session, Element element, HashMap additionalInformation) {
-        processFiles(session, element, additionalInformation);
-    }
-
     private void processResource(Session session, Element element, HashMap additionalInformation) {
+
+        String nodeName = element.getNodeName();
+        boolean oldSession = nodeName.equals(SessionElement.DATA_FILE.getText());
 
         String label = getAttribute(element, SessionAttribute.LABEL.getText());
         String name = getAttribute(element, SessionAttribute.NAME.getText());
@@ -601,7 +547,18 @@ public class SessionReader {
         String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
         boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
+
+        // Older sessions used the "name" attribute for the path.
         String path = getAttribute(element, SessionAttribute.PATH.getText());
+
+        if(oldSession && name != null) {
+            path = name;
+            int idx = name.lastIndexOf("/");
+            if(idx > 0 && idx + 1 < name.length()) {
+                name = name.substring(idx + 1);
+            }
+        }
+
 
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, path);
         if (relativePaths) {
