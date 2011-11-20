@@ -555,8 +555,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // the start of this block
                 int idx = loc - start;
 
-                // Is this base posA mismatch?  Note '=' means indicates posA match by definition
-                // If we do not have posA valid reference we assume posA match.  Soft clipped
+                // Is this base a mismatch?  Note '=' means indicates a match by definition
+                // If we do not have a valid reference we assume a match.  Soft clipped
                 // bases are considered mismatched by definition
                 boolean misMatch;
                 if (isSoftClipped) {
@@ -573,7 +573,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 if (misMatch || showAllBases) {
                     char c = (char) read[loc - start];
-
 
                     Color color = nucleotideColors.get(c);
                     if (color == null) {
