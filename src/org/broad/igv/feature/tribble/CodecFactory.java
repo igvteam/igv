@@ -20,6 +20,7 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.FeatureCodec;
@@ -46,7 +47,13 @@ public class CodecFactory {
      *
      * @param path the path (file or URL) to the feature rile.
      */
+
     public static FeatureCodec getCodec(String path) {
+        return getCodec(path, null);
+    }
+
+
+    public static FeatureCodec getCodec(String path, Genome genome) {
 
         String fn = path.toLowerCase();
         if (fn.endsWith(".gz")) {
@@ -60,7 +67,13 @@ public class CodecFactory {
             return new VCFWrapperCodec(getVCFCodec(path));
         } else if (fn.endsWith(".bed")) {
             return new BEDCodec();
-        } else if (fn.endsWith(".repmask")) {
+        } else if (fn.contains("refflat")) {
+            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.REFFLAT);
+        } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
+            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.GENEPRED);
+        } else if (fn.contains("ucscgene")) {
+            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.UCSCGENE);
+        }else if (fn.endsWith(".repmask")) {
             return new REPMaskCodec();
         } else if (fn.endsWith(".gff3")) {
             return new GFFCodec(GFFCodec.Version.GFF3);
