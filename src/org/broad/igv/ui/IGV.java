@@ -730,8 +730,7 @@ public class IGV {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             contentPane.getMainPanel().doLayout();
-
-
+                            contentPane.getStatusBar().setMessage("");
                         }
                     });
                     IGV.getInstance().showLoadedTrackCount();
@@ -1593,7 +1592,7 @@ public class IGV {
                                 p = URLDecoder.decode(p);
                             }
                             ResourceLocator rl = new ResourceLocator(p);
-                            if(igvArgs.getName() != null) {
+                            if (igvArgs.getName() != null) {
                                 rl.setName(igvArgs.getName());
                             }
                             rl.setIndexPath(indexFile);

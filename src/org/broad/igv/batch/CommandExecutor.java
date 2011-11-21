@@ -168,7 +168,7 @@ public class CommandExecutor {
     private String hget(String param1, String param2, String param3) throws IOException {
         String result;
         String fileString = param1;
-        String locusString = URLDecoder.decode(param2);
+        String locusString = (param2 == null || param2.equals("null")) ? null : URLDecoder.decode(param2);
         String mergeValue = param3;
         boolean merge = mergeValue != null && mergeValue.equalsIgnoreCase("true");
         result = loadFiles(fileString, locusString, merge, param2);
