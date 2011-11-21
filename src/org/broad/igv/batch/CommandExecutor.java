@@ -318,7 +318,7 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        boolean unload = param2.toLowerCase().equals("newsession");
+        boolean unload = param2 != null && param2.toLowerCase().equals("newsession");
         for (String f : files) {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
