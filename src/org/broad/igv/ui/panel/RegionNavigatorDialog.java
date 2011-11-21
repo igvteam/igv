@@ -557,15 +557,20 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         public void actionPerformed(ActionEvent e) {
             String chr = FrameManager.getDefaultFrame().getChrName();
-            if (chr == null || chr.isEmpty())
+            if (FrameManager.isGeneListMode()) {
+                JOptionPane.showMessageDialog(IGV.getMainFrame(),
+                        "Regions cannot be created in gene list or split-screen views.",
+                        "Error", JOptionPane.INFORMATION_MESSAGE);
+
+            } else if (chr == null || chr.isEmpty()) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "No chromosome is specified. Can't create a region without a chromosome.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
-            else if (chr.equalsIgnoreCase("All"))
+            } else if (chr.equalsIgnoreCase("All")) {
                 JOptionPane.showMessageDialog(IGV.getMainFrame(),
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
-            else {
+            } else {
                 ReferenceFrame.Range r = FrameManager.getDefaultFrame().getCurrentRange();
                 RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
                 IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
