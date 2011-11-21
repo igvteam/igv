@@ -264,21 +264,22 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
             if (firstRow > regions.size() - 1)
                 return;
             //update all rows affected
-            for (int i=firstRow; i<=Math.max(firstRow, Math.min(regionTable.getRowCount(), e.getLastRow())); i++)
+            for (int i = firstRow; i <= Math.max(firstRow, Math.min(regionTable.getRowCount(), e.getLastRow())); i++)
                 updateROIFromRegionTable(i);
         }
     }
-    
+
     /**
      * Updates all ROIs with the values currently stored in the region table
      */
     public void updateROIsFromRegionTable() {
-        for (int i=0; i<regionTable.getRowSorter().getModelRowCount(); i++)
+        for (int i = 0; i < regionTable.getRowSorter().getModelRowCount(); i++)
             updateROIFromRegionTable(i);
     }
 
     /**
      * Updates a single ROI with the values currently stored in the region table
+     *
      * @param tableRow: the viewable index of the table row
      */
     public void updateROIFromRegionTable(int tableRow) {
@@ -292,8 +293,7 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
         try {
             rowIdx = regionTable.getRowSorter().convertRowIndexToModel(tableRow);
-        }
-        catch (ArrayIndexOutOfBoundsException x) {
+        } catch (ArrayIndexOutOfBoundsException x) {
             return;
         }
 
@@ -409,23 +409,25 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
 
                     //---- regionTable ----
                     regionTable.setModel(new DefaultTableModel(
-                        new Object[][] {
-                            {null, null, null, null},
-                        },
-                        new String[] {
-                            "Chr", "Start", "End", "Description"
-                        }
+                            new Object[][]{
+                                    {null, null, null, null},
+                            },
+                            new String[]{
+                                    "Chr", "Start", "End", "Description"
+                            }
                     ) {
-                        Class<?>[] columnTypes = new Class<?>[] {
-                            String.class, Integer.class, Integer.class, Object.class
+                        Class<?>[] columnTypes = new Class<?>[]{
+                                String.class, Integer.class, Integer.class, Object.class
                         };
-                        boolean[] columnEditable = new boolean[] {
-                            false, true, true, true
+                        boolean[] columnEditable = new boolean[]{
+                                false, true, true, true
                         };
+
                         @Override
                         public Class<?> getColumnClass(int columnIndex) {
                             return columnTypes[columnIndex];
                         }
+
                         @Override
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
                             return columnEditable[columnIndex];
@@ -564,8 +566,8 @@ public class RegionNavigatorDialog extends JDialog implements Observer {
                         "Regions cannot be created in the All Chromosomes view.",
                         "Error", JOptionPane.INFORMATION_MESSAGE);
             else {
-                RegionOfInterest newRegion = new RegionOfInterest(FrameManager.getDefaultFrame().getChrName(),
-                        1, 100, "");
+                ReferenceFrame.Range r = FrameManager.getDefaultFrame().getCurrentRange();
+                RegionOfInterest newRegion = new RegionOfInterest(r.getChr(), r.getStart(), r.getEnd(), "");
                 IGV.getInstance().getSession().addRegionOfInterestWithNoListeners(newRegion);
             }
         }
