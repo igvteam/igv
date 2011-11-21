@@ -451,7 +451,7 @@ public class CoverageTrack extends AbstractTrack {
                     if (pX + dX >= 0) {
 
                         // Test to see if any single nucleotide mismatch  (nucleotide other than the reference)
-                        // has posA quality weight > 20% of the total
+                        // has a quality weight > 20% of the total
                         // Skip this test if the position is in the list of known snps
                         char ref = Character.toLowerCase((char) alignmentCounts.getReference(pos));
                         boolean mismatch = false;

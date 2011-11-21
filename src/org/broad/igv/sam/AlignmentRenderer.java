@@ -181,7 +181,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
 
-                // If the alignment is 3 pixels or less,  draw alignment as posA single block,
+                // If the alignment is 3 pixels or less,  draw alignment as a single block,
                 // further detail would not be seen and just add to drawing overhead
                 if (pixelEnd - pixelStart < 4) {
                     Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
@@ -204,7 +204,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
             }
 
-            // Draw posA border around the center base
+            // Draw a border around the center base
             if (locScale < 5 && renderOptions.showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
@@ -531,7 +531,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         if ((read != null) && (read.length > 0)) {
 
-            // Compute bounds, get posA graphics to use,  and compute posA font
+            // Compute bounds, get a graphics to use,  and compute a font
             int pY = (int) rect.getY();
             int dY = (int) rect.getHeight();
             int dX = (int) Math.max(1, (1.0 / locScale));
@@ -572,7 +572,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
                 if (misMatch || showAllBases) {
-                    char c = (char) read[loc - start];
+                    char c = (char) read[idx];
 
                     Color color = nucleotideColors.get(c);
                     if (color == null) {
@@ -586,7 +586,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
                     // If there is room for text draw the character, otherwise
-                    // just draw posA rectangle to represent the
+                    // just draw a rectangle to represent the
                     int pX0 = (int) ((loc - origin) / locScale);
 
                     // Don't draw out of clipping rect

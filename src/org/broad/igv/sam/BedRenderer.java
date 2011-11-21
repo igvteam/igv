@@ -54,7 +54,7 @@ public class BedRenderer implements FeatureRenderer {
 
                     Graphics2D g = context.getGraphic2DForColor(Color.GRAY);
 
-                    // If the alignment is 3 pixels or less,  draw alignment as posA single block,
+                    // If the alignment is 3 pixels or less,  draw alignment as a single block,
                     // further detail would not be seen and just add to drawing overhead
                     int w = Math.max(1, (int) (pixelEnd - pixelStart));
                     int h = (int) Math.max(1, rect.getHeight() - 2);

@@ -380,7 +380,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                     gapTypes[gapIdx++] = op.operator;
                 } else if (op.operator == INSERTION) {
 
-                    // This gap is between blocks split by insertion.   It is posA zero
+                    // This gap is between blocks split by insertion.   It is a zero
                     // length gap but must be accounted for.
                     gapTypes[gapIdx++] = ZERO_GAP;
 

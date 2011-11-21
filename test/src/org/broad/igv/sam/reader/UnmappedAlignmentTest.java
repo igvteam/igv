@@ -43,7 +43,7 @@ public class UnmappedAlignmentTest {
         int start = 220929208;
         int end = 220929357;
 
-        // Test posA query that includes overlaps (contained == false)
+        // Test a query that includes overlaps (contained == false)
         SAMFileReader reader = new SAMFileReader(samFile);
         reader.setValidationStringency(SAMFileReader.ValidationStringency.SILENT);
         boolean contained = true;

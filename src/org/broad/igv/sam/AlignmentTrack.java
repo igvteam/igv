@@ -416,7 +416,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         // ignored
     }
 
-    // SamTracks use posA custom renderer, not derived from Renderer
+    // SamTracks use a custom renderer, not derived from Renderer
 
     public Renderer getRenderer() {
         return null;
@@ -463,7 +463,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     public void dragStopped(DragEvent evt) {
-        // Disabled.  Not sure why we ever thought this was posA good idea
+        // Disabled.  Not sure why we ever thought this was a good idea
         //if (PreferenceManager.getInstance().getSAMPreferences().isAutosort() &&
         //        ReferenceFrame.getInstance().getScale() < 1) {
         //    sortRows(SortOption.START);

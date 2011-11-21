@@ -58,7 +58,7 @@ public class DASFeatureSource implements FeatureSource {
     private String serverURL;
     private boolean isValid = true;
     private CachingFeatureReader reader;
-    private int featureWindowSize = 250000;
+    private int featureWindowSize = 1000000;   // 1 mbase window for loading features.  TODO -- need some dynamic way to set this
     private String type;
     private String[] parameters;
     Map<String, BasicFeature> groupFeatureCache = new HashMap(10000);
@@ -140,7 +140,7 @@ public class DASFeatureSource implements FeatureSource {
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
                     groupFeatureCache.clear();
-                    List<Feature> features = gatherFeatures(chr, dasStart, dasEnd);
+                    List<Feature> features = readFeatures(chr, dasStart, dasEnd);
                     if (features.size() < 1) {
                         return EMPTY__ITERATOR;
                     }
@@ -170,7 +170,7 @@ public class DASFeatureSource implements FeatureSource {
          * @param end
          * @return
          */
-        private List<Feature> gatherFeatures(String chr, int start, int end) {
+        private List<Feature> readFeatures(String chr, int start, int end) {
             
             List<Feature> features = new ArrayList<Feature>();
             try {
