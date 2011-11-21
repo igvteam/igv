@@ -20,15 +20,27 @@ public class Launcher {
         String user = null;
         String memory = null;
         String index = null;
-        boolean newSession = false;
 
+        // First get file
         for (String a : args) {
             String tokens[] = a.split("=");
             if (tokens.length == 2) {
                 String key = tokens[0].toLowerCase();
                 if (key.equals("file")) {
                     file = tokens[1];
-                } else if (key.equals("locus")) {
+                }
+            }
+        }
+
+        // Default "newSession" value depends on type -- true for sessions, false for files
+        boolean fileIsSession = (file != null && (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")));
+        boolean newSession = !fileIsSession;
+
+        for (String a : args) {
+             String tokens[] = a.split("=");
+             if (tokens.length == 2) {
+                 String key = tokens[0].toLowerCase();
+                  if (key.equals("locus")) {
                     locus = tokens[1];
                 } else if (key.equals("genome")) {
                     genome = tokens[1];
@@ -122,6 +134,8 @@ public class Launcher {
             socket = new Socket("127.0.0.1", port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+
 
             if (genome != null) {
                 out.println("genome " + genome);
