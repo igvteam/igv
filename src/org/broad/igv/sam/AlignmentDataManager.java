@@ -278,7 +278,6 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
-            log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
             loadAlignments(chr, start, end, context);
         }
 
@@ -296,7 +295,7 @@ public class AlignmentDataManager {
         loadedIntervalMap.clear();
     }
 
-    public void loadAlignments(final String chr, final int start, final int end, final RenderContext context) {
+    public synchronized void loadAlignments(final String chr, final int start, final int end, final RenderContext context) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
@@ -312,11 +311,13 @@ public class AlignmentDataManager {
 
             public void run() {
 
+                log.info("Loading alignments: " + this + "  " + chr + ":" + start + "-" + end);
+
                 // Expand start and end to facilitate panning, but by no more than
-                // 1 screen or 8kb, whichever is less
+                // 1 tile size or 8kb  a tile size, whichever is less
                 // DON'T expand mitochondria
 
-                int expandLength = reader.getTileSize(chr) / 2;
+                int expandLength = Math.min(8000, reader.getTileSize(chr) / 2);
                 int intervalStart = start - expandLength;
                 int intervalEnd = end + expandLength;
 
@@ -348,7 +349,8 @@ public class AlignmentDataManager {
 
                     //TODO -- this has to be done after every load in every panel.  Centralize this somewhere?  Have
                     //TODO --  a "DataLoadRunnable"?
-                    IGV.getInstance().layoutMainPanel();
+                    //IGV.getInstance().layoutMainPanel();
+
 
 
                 } catch (Exception exception) {

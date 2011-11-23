@@ -40,8 +40,7 @@ public class AlignmentInterval extends Locus {
 
     private static Logger log = Logger.getLogger(AlignmentInterval.class);
 
-    //private String genomeId;
-    private byte[] reference;
+    Genome genome;
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
     private List<AlignmentInterval.Row> alignmentRows;
@@ -50,8 +49,8 @@ public class AlignmentInterval extends Locus {
     public AlignmentInterval(String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
         super(chr, start, end);
         this.alignmentRows = rows;
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        reference = genome.getSequence(chr, start, end);
+        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
@@ -154,18 +153,10 @@ public class AlignmentInterval extends Locus {
 
 
     public byte getReference(int pos) {
-        if (reference == null) {
+        if (genome == null) {
             return 0;
         }
-        int offset = pos - start;
-        if (offset < 0 || offset >= reference.length) {
-            if (log.isDebugEnabled()) {
-                log.debug("Position out of range: " + pos + " (valid range - " + start + "-" + end);
-            }
-            return 0;
-        } else {
-            return reference[offset];
-        }
+        return genome.getReference(getChr(), pos);
     }
 
     public List<AlignmentCounts> getCounts() {
@@ -271,6 +262,8 @@ public class AlignmentInterval extends Locus {
         }
 
         public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
+
+            if(true ) return;
 
             int adjustedCenter = (int) center;
             Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);

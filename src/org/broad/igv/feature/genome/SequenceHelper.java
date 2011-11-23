@@ -105,13 +105,33 @@ public class SequenceHelper {
         return -1;
     }
 
+    public byte getBase(String chr, int position) {
+        if (cacheSequences) {
+            int tileNo = position / tileSize;
+
+            // Get first chunk
+            SequenceTile tile = getSequenceTile(chr, tileNo, Integer.MAX_VALUE);
+            int offset = position - tile.getStart();
+            byte[] bytes = tile.bytes;
+            if (offset > 0 && offset < bytes.length) {
+                return bytes[offset];
+            } else {
+                return 0;
+            }
+
+        } else {
+            // TODO -- implement or disable
+            return 0;
+        }
+    }
+
     /**
      * Return the reference dna sequence for the exact interval specified.
      *
      * @param chr
      * @param start
      * @param end
-     * @param max -- end of the sequence or contig.  Used to constrain last time end
+     * @param max   -- end of the sequence or contig.  Used to constrain last time end
      * @return
      */
     public byte[] getSequence(String chr, int start, int end, int max) {
@@ -122,7 +142,7 @@ public class SequenceHelper {
 
             // Get first chunk
             SequenceTile tile = getSequenceTile(chr, startTile, max);
-            if(tile == null) {
+            if (tile == null) {
                 return null;
             }
 
@@ -151,7 +171,7 @@ public class SequenceHelper {
             // If multiple chunks ...
             for (int t = startTile + 1; t <= endTile; t++) {
                 tile = getSequenceTile(chr, t, max);
-                if(tile == null) {
+                if (tile == null) {
                     break;
                 }
 
@@ -176,7 +196,7 @@ public class SequenceHelper {
             int start = tileNo * tileSize;
             int end = Math.min(start + tileSize, maxEnd); // <=  UCSC coordinate conventions (end base not inclusive)
 
-            if(end <= start) {
+            if (end <= start) {
                 return null;
             }
 

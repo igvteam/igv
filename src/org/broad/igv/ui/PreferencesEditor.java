@@ -25,6 +25,7 @@ import com.jidesoft.dialog.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FontChooser;
@@ -2160,7 +2161,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         canceled = true;
         setVisible(false);
-    }//GEN-LAST:event_cancelButtonActionPerformed
+    }
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 
@@ -3103,24 +3104,31 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
     }
 
+    /**
+     * Scan preference updates for changes affecting alignment tracks.  If any force reload of all alignment tracks.
+     */
     private void checkForSAMChanges() {
-        WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
-        try {
-            boolean reloadSAM = false;
-            for (String key : SAM_PREFERENCE_KEYS) {
-                if (updatedPreferenceMap.containsKey(key)) {
-                    reloadSAM = true;
-                    break;
-                }
-            }
-            if (reloadSAM) {
-                IGV.getInstance().getTrackManager().reloadSAMTracks();
-            }
-        } catch (NumberFormatException numberFormatException) {
-        } finally {
-            WaitCursorManager.removeWaitCursor(token);
-        }
-    }
+          WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
+          try {
+              boolean reloadSAM = false;
+              for (String key : SAM_PREFERENCE_KEYS) {
+                  if (updatedPreferenceMap.containsKey(key)) {
+                      reloadSAM = true;
+                      break;
+                  }
+              }
+              if (reloadSAM) {
+                  IGV.getInstance().getTrackManager().reloadSAMTracks();
+                  if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
+                      CachingQueryReader.visibilityWindowChanged();
+                  }
+              }
+          } catch (NumberFormatException numberFormatException) {
+          } finally {
+              WaitCursorManager.removeWaitCursor(token);
+          }
+      }
+
 
     private void checkForProbeChanges() {
         if (updatedPreferenceMap.containsKey(PreferenceManager.PROBE_MAPPING_KEY)) {

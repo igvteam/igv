@@ -25,6 +25,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.AlignmentInterval.Row;
 
+import javax.sound.midi.SysexMessage;
 import java.util.*;
 
 /**
@@ -162,10 +163,19 @@ public class AlignmentPacker {
 
         // Create buckets.  We use priority queues to keep the buckets sorted by alignment length.  However this
         // is probably a neeedless complication,  any collection type would do.
-        PriorityQueue[] bucketArray = new PriorityQueue[bucketCount];
         PriorityQueue firstBucket = new PriorityQueue(5, lengthComparator);
-        bucketArray[0] = firstBucket;
         firstBucket.add(firstAlignment);
+
+        // Use dense buckets for < 50,000, sparse otherwise
+
+        BucketCollection buckets;
+        if (bucketCount < 50000) {
+            buckets = new DenseBucketCollection(bucketCount);
+        } else {
+            buckets = new SparseBucketCollection();
+        }
+        buckets.set(0, firstBucket);
+
         int totalCount = 1;
 
         //  Allocate alignments to buckets based on position
@@ -201,10 +211,10 @@ public class AlignmentPacker {
                 // sorted.  Throw all alignments < start in the first bucket.
                 int bucketNumber = Math.max(0, alignment.getStart() - start);
                 if (bucketNumber < bucketCount) {
-                    PriorityQueue bucket = bucketArray[bucketNumber];
+                    PriorityQueue bucket = buckets.get(bucketNumber);
                     if (bucket == null) {
                         bucket = new PriorityQueue<Alignment>(5, lengthComparator);
-                        bucketArray[bucketNumber] = bucket;
+                        buckets.set(bucketNumber, bucket);
                     }
                     bucket.add(alignment);
                     totalCount++;
@@ -216,6 +226,7 @@ public class AlignmentPacker {
             }
         }
 
+        buckets.finishedAdding();
 
         // Allocate alignments to rows
         long t0 = System.currentTimeMillis();
@@ -226,27 +237,22 @@ public class AlignmentPacker {
 
             // Loop through alignments until we reach the end of the interval
             while (nextStart <= end) {
-                PriorityQueue<Alignment> bucket = null;
+                PriorityQueue<Alignment> bucket;
 
                 // Advance to next occupied bucket
-                while (bucket == null && nextStart <= end) {
-                    int bucketNumber = nextStart - start;
-                    bucket = bucketArray[bucketNumber];
-                    if (bucket == null) {
-                        nextStart++;
-                    }
-                }
+                int bucketNumber = nextStart - start;
+                bucket = buckets.getNextBucket(bucketNumber);
 
                 // Pull the next alignment out of the bucket and add to the current row
-                if (bucket != null) {
+                if (bucket == null) {
+                    break;
+                } else {
                     Alignment alignment = bucket.remove();
-                    if (bucket.isEmpty()) {
-                        bucketArray[nextStart - start] = null;
-                    }
                     currentRow.addAlignment(alignment);
                     nextStart = currentRow.getLastEnd() + MIN_ALIGNMENT_SPACING;
                     allocatedCount++;
                 }
+
             }
 
             // We've reached the end of the interval,  start a new row
@@ -272,6 +278,172 @@ public class AlignmentPacker {
             alignmentRows.add(currentRow);
         }
 
+    }
+
+
+    static interface BucketCollection {
+
+        void set(int idx, PriorityQueue<Alignment> bucket);
+
+        PriorityQueue<Alignment> get(int idx);
+
+        PriorityQueue<Alignment> getNextBucket(int bucketNumber);
+
+        void finishedAdding();
+
+    }
+
+
+    static class DenseBucketCollection implements BucketCollection {
+
+        int lastBucketNumber = -1;
+
+        PriorityQueue<Alignment>[] bucketArray;
+
+        DenseBucketCollection(int bucketCount) {
+            bucketArray = new PriorityQueue[bucketCount];
+        }
+
+        public void set(int idx, PriorityQueue<Alignment> bucket) {
+            bucketArray[idx] = bucket;
+        }
+
+        public PriorityQueue<Alignment> get(int idx) {
+            return bucketArray[idx];
+        }
+
+
+        /**
+         * Return the next occupied bucket after bucketNumber
+         *
+         * @param bucketNumber
+         * @return
+         */
+        public PriorityQueue<Alignment> getNextBucket(int bucketNumber) {
+
+            if (bucketNumber == lastBucketNumber) {
+                // TODO -- detect inf loop here
+            }
+
+            PriorityQueue<Alignment> bucket = null;
+            while (bucketNumber < bucketArray.length) {
+                bucket = bucketArray[bucketNumber];
+                if (bucket != null) {
+                    if (bucket.isEmpty()) {
+                        bucketArray[bucketNumber] = null;
+                    } else {
+                        return bucket;
+                    }
+                }
+                bucketNumber++;
+            }
+            return bucket;
+        }
+
+        public void finishedAdding() {
+            // nothing to do
+        }
+    }
+
+
+    static class SparseBucketCollection implements BucketCollection {
+
+        boolean finished = false;
+        List<Integer> keys;
+        HashMap<Integer, PriorityQueue<Alignment>> buckets;
+
+        SparseBucketCollection() {
+            buckets = new HashMap(1000);
+        }
+
+        public void set(int idx, PriorityQueue<Alignment> bucket) {
+            if (finished) {
+                System.err.println("Error: bucket added after finishAdding() called");
+            }
+            buckets.put(idx, bucket);
+        }
+
+        public PriorityQueue<Alignment> get(int idx) {
+            return buckets.get(idx);
+        }
+
+        /**
+         * Return the next occupied bucket after bucketNumber
+         *
+         * @param bucketNumber
+         * @return
+         */
+        public PriorityQueue<Alignment> getNextBucket(int bucketNumber) {
+
+
+            int min = 0;
+            int max = keys.size() - 1;
+            int minBucket = keys.get(0);
+            int maxBucket = keys.get(max);
+            if (bucketNumber < minBucket) {
+                buckets.get(minBucket);
+            }
+            if (bucketNumber > maxBucket) {
+                return null;
+            }
+
+            int emptyCount = 0;
+            while ((max - min) > 5) {
+                int mid = (max + min) / 2;
+                int key = keys.get(mid);
+
+                // Skip empty buckets
+                PriorityQueue<Alignment> bucket = buckets.get(key);
+                if (bucket.isEmpty()) {
+                    emptyCount++;
+                    max--;
+                } else {
+                    if (key == bucketNumber) {
+                        return bucket;
+                    }
+                    if (key > bucketNumber) {
+                        max = mid;
+                    } else {
+                        min = mid;
+                    }
+                }
+            }
+
+            // Now march from min to max until we cross bucketNumber
+            for (int i = min; i <buckets.size(); i++) {
+                int key = keys.get(i);
+                PriorityQueue<Alignment> bucket = buckets.get(key);
+                if (bucket.isEmpty()) continue;
+
+                // System.out.println("    key = " + key);
+                if (key >= bucketNumber) {
+                    //   System.out.println("        RETURN " + key);
+                    //   System.out.println();
+                    return buckets.get(key);
+                }
+            }
+
+            // Cleanup if we have too many empty buckets
+            if ((((double) emptyCount) / buckets.size()) > 0.3) {
+                HashMap<Integer, PriorityQueue<Alignment>> newBuckets = new HashMap<Integer, PriorityQueue<Alignment>>(buckets.size());
+                for (Map.Entry<Integer, PriorityQueue<Alignment>> entry : buckets.entrySet()) {
+                    final PriorityQueue<Alignment> b = entry.getValue();
+                    if (!b.isEmpty()) {
+                        newBuckets.put(entry.getKey(), b);
+                    }
+                }
+                buckets = newBuckets;
+                finishedAdding();
+            }
+
+            return buckets.get(max);
+        }
+
+        public void finishedAdding() {
+            finished = true;
+            keys = new ArrayList<Integer>(buckets.keySet());
+            Collections.sort(keys);
+        }
     }
 
 }

@@ -50,8 +50,7 @@ public class CachingQueryReader {
     //private static final int LOW_MEMORY_THRESHOLD = 150000000;
     private static final int KB = 1000;
     private static final int MITOCHONDRIA_TILE_SIZE = 1000;
-    private static int DEFAULT_TILE_SIZE = 16 * KB;
-    private static int MAX_TILE_COUNT = 2;
+    private static int MAX_TILE_COUNT = 10;
     private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
 
     // Map of read group -> paired end stats
@@ -70,8 +69,9 @@ public class CachingQueryReader {
     }
 
 
+    private float visibilityWindow = 16;    // Visibility window,  in KB
     private String cachedChr = "";
-    private int tileSize = DEFAULT_TILE_SIZE;
+    private int tileSize;
     private AlignmentQueryReader reader;
     private boolean cancel = false;
     private LRUCache<Integer, AlignmentTile> cache;
@@ -80,9 +80,30 @@ public class CachingQueryReader {
 
     public CachingQueryReader(AlignmentQueryReader reader) {
         this.reader = reader;
-        cache = new LRUCache(this, MAX_TILE_COUNT);
+        activeReaders.add(new WeakReference<CachingQueryReader>(this));
+        updateCache();
+    }
+
+    public static void visibilityWindowChanged() {
+        for (WeakReference<CachingQueryReader> readerRef : activeReaders) {
+            CachingQueryReader reader = readerRef.get();
+            if (reader != null) {
+                reader.updateCache();
+            }
+        }
+    }
+
+    private void updateCache() {
         float fvw = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        tileSize = Math.min(DEFAULT_TILE_SIZE, (int) (fvw * KB));
+
+        // If the visibility window has changed by more than a factor of 2 change cache tile size
+        float ratio = fvw / visibilityWindow;
+        if (cache == null || (ratio < 0.5 || ratio > 2)) {
+            // Set tile size to  the visibility window
+            tileSize = (int) (fvw * KB);
+            cache = new LRUCache(this, MAX_TILE_COUNT);
+            visibilityWindow = fvw;
+        }
     }
 
     public AlignmentQueryReader getWrappedReader() {
@@ -339,9 +360,7 @@ public class CachingQueryReader {
 
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
-        }
-
-        finally {
+        } finally {
             // reset cancel flag.  It doesn't matter how we got here,  the read is complete and this flag is reset
             // for the next time
             cancel = false;
@@ -491,7 +510,13 @@ public class CachingQueryReader {
             this.end = end;
             containedRecords = new ArrayList(16000);
             overlappingRecords = new ArrayList();
-            this.counts = new AlignmentCounts(chr, start, end);
+
+            // Use a sparse array for large regions
+            if ((end - start) > 100000) {
+                this.counts = new SparseAlignmentCounts(start, end);
+            } else {
+                this.counts = new DenseAlignmentCounts(start, end);
+            }
 
             this.maxDepth = maxDepth;
             e1 = -1;

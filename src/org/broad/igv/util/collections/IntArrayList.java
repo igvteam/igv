@@ -115,4 +115,12 @@ public class IntArrayList {
             elements = tmp;
         }
     }
+
+    public void set(int idx, int i) {
+        while(idx >= elements.length) {
+            grow();
+        }
+        elements[idx] = i;
+        size = Math.max(size, idx + 1);
+    }
 }

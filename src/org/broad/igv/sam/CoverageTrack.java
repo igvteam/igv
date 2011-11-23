@@ -435,7 +435,15 @@ public class CoverageTrack extends AbstractTrack {
 
                 final int intervalEnd = alignmentCounts.getEnd();
                 final int intervalStart = alignmentCounts.getStart();
-                for (int pos = intervalStart; pos < intervalEnd; pos++) {
+                byte[] refBases = null;
+
+                if ((intervalEnd - intervalStart) < 50000) {
+                    refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
+                }
+
+                int pos;
+                AlignmentCounts.PositionIterator posIter = alignmentCounts.getPositionIterator();
+                while ((pos = posIter.nextPosition()) >= 0) {
 
                     int pX = (int) (rectX + (pos - origin) / scale);
                     int dX = Math.max(1,
@@ -452,18 +460,25 @@ public class CoverageTrack extends AbstractTrack {
 
                         // Test to see if any single nucleotide mismatch  (nucleotide other than the reference)
                         // has a quality weight > 20% of the total
-                        // Skip this test if the position is in the list of known snps
-                        char ref = Character.toLowerCase((char) alignmentCounts.getReference(pos));
+                        // Skip this test if the position is in the list of known snps or if the reference is unknown
                         boolean mismatch = false;
+                        char ref = 0;
 
-                        Set<Integer> snps = knownSnps == null ? null : knownSnps.get(context.getChr());
-                        if (snps == null || !snps.contains(pos + 1)) {
-                            float threshold = snpThreshold * alignmentCounts.getTotalQuality(pos);
-                            if (ref > 0) {
-                                for (char c : nucleotides) {
-                                    if (c != ref && c != 'n' && alignmentCounts.getQuality(pos, (byte) c) > threshold) {
-                                        mismatch = true;
-                                        break;
+                        if (refBases != null) {
+                            int idx = pos - intervalStart;
+                            if (idx >= 0 && idx < refBases.length) {
+                                ref = Character.toLowerCase((char) refBases[idx]);
+
+                                Set<Integer> snps = knownSnps == null ? null : knownSnps.get(context.getChr());
+                                if (snps == null || !snps.contains(pos + 1)) {
+                                    float threshold = snpThreshold * alignmentCounts.getTotalQuality(pos);
+                                    if (ref > 0) {
+                                        for (char c : nucleotides) {
+                                            if (c != ref && c != 'n' && alignmentCounts.getQuality(pos, (byte) c) > threshold) {
+                                                mismatch = true;
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             }

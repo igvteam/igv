@@ -326,6 +326,10 @@ public class Genome {
         return displayName;
     }
 
+    public byte getReference(String chr, int pos) {
+       return sequenceHelper.getBase(chr, pos);
+    }
+
     public static class ChromosomeCoordinate {
         private String chr;
         private int coordinate;
