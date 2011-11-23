@@ -169,7 +169,7 @@ public class AlignmentPacker {
         // Use dense buckets for < 50,000, sparse otherwise
 
         BucketCollection buckets;
-        if (bucketCount < 50000) {
+        if (bucketCount < 120000) {
             buckets = new DenseBucketCollection(bucketCount);
         } else {
             buckets = new SparseBucketCollection();
@@ -375,17 +375,9 @@ public class AlignmentPacker {
          */
         public PriorityQueue<Alignment> getNextBucket(int bucketNumber) {
 
-
+            PriorityQueue<Alignment> bucket = null;
             int min = 0;
             int max = keys.size() - 1;
-            int minBucket = keys.get(0);
-            int maxBucket = keys.get(max);
-            if (bucketNumber < minBucket) {
-                buckets.get(minBucket);
-            }
-            if (bucketNumber > maxBucket) {
-                return null;
-            }
 
             int emptyCount = 0;
             while ((max - min) > 5) {
@@ -393,14 +385,11 @@ public class AlignmentPacker {
                 int key = keys.get(mid);
 
                 // Skip empty buckets
-                PriorityQueue<Alignment> bucket = buckets.get(key);
+                bucket = buckets.get(key);
                 if (bucket.isEmpty()) {
                     emptyCount++;
                     max--;
                 } else {
-                    if (key == bucketNumber) {
-                        return bucket;
-                    }
                     if (key > bucketNumber) {
                         max = mid;
                     } else {
@@ -412,15 +401,20 @@ public class AlignmentPacker {
             // Now march from min to max until we cross bucketNumber
             for (int i = min; i <buckets.size(); i++) {
                 int key = keys.get(i);
-                PriorityQueue<Alignment> bucket = buckets.get(key);
-                if (bucket.isEmpty()) continue;
-
-                // System.out.println("    key = " + key);
-                if (key >= bucketNumber) {
-                    //   System.out.println("        RETURN " + key);
-                    //   System.out.println();
-                    return buckets.get(key);
+                bucket = buckets.get(key);
+                if (bucket.isEmpty()) {
+                    emptyCount++;
+                    continue;
                 }
+                if (key >= bucketNumber) {
+                     bucket = buckets.get(key);
+                    break;
+                }
+            }
+
+            if(bucket .isEmpty()) {
+                bucket = null;
+                emptyCount++;
             }
 
             // Cleanup if we have too many empty buckets
@@ -436,7 +430,8 @@ public class AlignmentPacker {
                 finishedAdding();
             }
 
-            return buckets.get(max);
+            return bucket;
+
         }
 
         public void finishedAdding() {
