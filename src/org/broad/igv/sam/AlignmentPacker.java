@@ -169,7 +169,7 @@ public class AlignmentPacker {
         // Use dense buckets for < 50,000, sparse otherwise
 
         BucketCollection buckets;
-        if (bucketCount < 120000) {
+        if (bucketCount < 50000) {
             buckets = new DenseBucketCollection(bucketCount);
         } else {
             buckets = new SparseBucketCollection();
@@ -233,6 +233,7 @@ public class AlignmentPacker {
         int allocatedCount = 0;
         int nextStart = start;
         Row currentRow = new Row();
+        List<Integer> emptyBuckets = new ArrayList<Integer>(100);
         while (allocatedCount < totalCount) { // && alignmentRows.size() < maxLevels) {
 
             // Loop through alignments until we reach the end of the interval
@@ -241,7 +242,7 @@ public class AlignmentPacker {
 
                 // Advance to next occupied bucket
                 int bucketNumber = nextStart - start;
-                bucket = buckets.getNextBucket(bucketNumber);
+                bucket = buckets.getNextBucket(bucketNumber, emptyBuckets);
 
                 // Pull the next alignment out of the bucket and add to the current row
                 if (bucket == null) {
@@ -259,6 +260,11 @@ public class AlignmentPacker {
             if (currentRow.alignments.size() > 0) {
                 alignmentRows.add(currentRow);
             }
+
+            // If we have more than 20 empty buckets remove them.  This has no affect on the "dense" implementation,
+            // they are removed on the fly, but is needed for the sparse implementation
+            buckets.removeBuckets(emptyBuckets);
+            emptyBuckets.clear();
 
             //if (alignmentRows.size() >= maxLevels) {
             //    currentRow = null;
@@ -287,13 +293,18 @@ public class AlignmentPacker {
 
         PriorityQueue<Alignment> get(int idx);
 
-        PriorityQueue<Alignment> getNextBucket(int bucketNumber);
+        PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets);
+
+        void removeBuckets(Collection<Integer> emptyBuckets);
 
         void finishedAdding();
 
     }
 
-
+    /**
+     * Dense array implementation of BucketCollection.  Assumption is all or nearly all the genome region is covered
+     * with reads.
+     */
     static class DenseBucketCollection implements BucketCollection {
 
         int lastBucketNumber = -1;
@@ -317,9 +328,10 @@ public class AlignmentPacker {
          * Return the next occupied bucket after bucketNumber
          *
          * @param bucketNumber
+         * @param emptyBuckets ignored
          * @return
          */
-        public PriorityQueue<Alignment> getNextBucket(int bucketNumber) {
+        public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {
 
             if (bucketNumber == lastBucketNumber) {
                 // TODO -- detect inf loop here
@@ -340,12 +352,20 @@ public class AlignmentPacker {
             return bucket;
         }
 
+        public void removeBuckets(Collection<Integer> emptyBuckets) {
+            // Nothing to do, empty buckets are removed "on the fly"
+        }
+
         public void finishedAdding() {
             // nothing to do
         }
     }
 
 
+    /**
+     * "Sparse" implementation of an alignment BucketCollection.  Assumption is there are small cluseters of alignments
+     * along the genome, with mostly "white space".
+     */
     static class SparseBucketCollection implements BucketCollection {
 
         boolean finished = false;
@@ -368,70 +388,53 @@ public class AlignmentPacker {
         }
 
         /**
-         * Return the next occupied bucket after bucketNumber
+         * Return the next occupied bucket at or after after bucketNumber
          *
          * @param bucketNumber
          * @return
          */
-        public PriorityQueue<Alignment> getNextBucket(int bucketNumber) {
+        public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {
 
             PriorityQueue<Alignment> bucket = null;
             int min = 0;
             int max = keys.size() - 1;
 
-            int emptyCount = 0;
+            // Get close to the right index, rather than scan from the beginning
             while ((max - min) > 5) {
                 int mid = (max + min) / 2;
-                int key = keys.get(mid);
-
-                // Skip empty buckets
-                bucket = buckets.get(key);
-                if (bucket.isEmpty()) {
-                    emptyCount++;
-                    max--;
+                Integer key = keys.get(mid);
+                if (key > bucketNumber) {
+                    max = mid;
                 } else {
-                    if (key > bucketNumber) {
-                        max = mid;
-                    } else {
-                        min = mid;
-                    }
+                    min = mid;
                 }
             }
 
             // Now march from min to max until we cross bucketNumber
-            for (int i = min; i <buckets.size(); i++) {
-                int key = keys.get(i);
+            for (int i = min; i < keys.size(); i++) {
+                Integer key = keys.get(i);
                 bucket = buckets.get(key);
                 if (bucket.isEmpty()) {
-                    emptyCount++;
-                    continue;
-                }
-                if (key >= bucketNumber) {
-                     bucket = buckets.get(key);
+                    emptyBuckets.add(key);
+                    bucket = null;
+                } else {
                     break;
                 }
             }
-
-            if(bucket .isEmpty()) {
-                bucket = null;
-                emptyCount++;
-            }
-
-            // Cleanup if we have too many empty buckets
-            if ((((double) emptyCount) / buckets.size()) > 0.3) {
-                HashMap<Integer, PriorityQueue<Alignment>> newBuckets = new HashMap<Integer, PriorityQueue<Alignment>>(buckets.size());
-                for (Map.Entry<Integer, PriorityQueue<Alignment>> entry : buckets.entrySet()) {
-                    final PriorityQueue<Alignment> b = entry.getValue();
-                    if (!b.isEmpty()) {
-                        newBuckets.put(entry.getKey(), b);
-                    }
-                }
-                buckets = newBuckets;
-                finishedAdding();
-            }
-
             return bucket;
+        }
 
+        public void removeBuckets(Collection<Integer> emptyBuckets) {
+
+            if (emptyBuckets.isEmpty()) {
+                return;
+            }
+
+            for (Integer i : emptyBuckets) {
+                buckets.remove(i);
+            }
+            keys = new ArrayList<Integer>(buckets.keySet());
+            Collections.sort(keys);
         }
 
         public void finishedAdding() {
