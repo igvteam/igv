@@ -311,7 +311,7 @@ public class AlignmentDataManager {
 
             public void run() {
 
-                log.info("Loading alignments: " + this + "  " + chr + ":" + start + "-" + end);
+                log.debug("Loading alignments: " + chr + ":" + start + "-" + end);
 
                 // Expand start and end to facilitate panning, but by no more than
                 // 1 tile size or 8kb  a tile size, whichever is less
@@ -346,12 +346,6 @@ public class AlignmentDataManager {
 
                     // TODO --- we need to force a repaint of the coverageTrack, which might not be in the same panel
                     if (context.getPanel() != null) context.getPanel().repaint();
-
-                    //TODO -- this has to be done after every load in every panel.  Centralize this somewhere?  Have
-                    //TODO --  a "DataLoadRunnable"?
-                    //IGV.getInstance().layoutMainPanel();
-
-
 
                 } catch (Exception exception) {
                     log.error("Error loading alignments", exception);

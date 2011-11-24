@@ -59,6 +59,7 @@ import java.util.List;
  */
 public class AlignmentTrack extends AbstractTrack implements DragListener {
 
+
     public enum SortOption {
         START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE
     }
@@ -137,6 +138,16 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         }
     }
+
+    /**
+     * The visibility window has changed.  This should be some kind of "event".
+     */
+    public void visibilityWindowChanged() {
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        minVisibleScale = (maxRange * 1000) / 700;
+     }
+
 
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {

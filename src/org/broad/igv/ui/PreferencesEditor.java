@@ -25,7 +25,10 @@ import com.jidesoft.dialog.*;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.expression.ProbeToLocusMap;
 import org.broad.igv.batch.CommandListener;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CachingQueryReader;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FontChooser;
@@ -2471,14 +2474,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
 
     private void samMaxWindowSizeFieldFocusLost(java.awt.event.FocusEvent evt) {
-        String maxSAMWindowSize = samMaxWindowSizeField.getText().trim();
-        try {
-            Float.parseFloat(maxSAMWindowSize);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_VISIBLE_RANGE, maxSAMWindowSize);
-        } catch (NumberFormatException numberFormatException) {
-            inputValidated = false;
-            MessageUtils.showMessage("Visibility range must be a number.");
-        }
+        samMaxWindowSizeFieldActionPerformed(null);
     }
 
     private void samMaxWindowSizeFieldActionPerformed(java.awt.event.ActionEvent evt) {
@@ -3118,10 +3114,17 @@ public class PreferencesEditor extends javax.swing.JDialog {
                   }
               }
               if (reloadSAM) {
-                  IGV.getInstance().getTrackManager().reloadSAMTracks();
-                  if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
+                  final TrackManager trackManager = IGV.getInstance().getTrackManager();
+                   if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
                       CachingQueryReader.visibilityWindowChanged();
+                      for (Track t : trackManager.getAllTracks(false)) {
+                          if (t instanceof AlignmentTrack) {
+                              ((AlignmentTrack) t).visibilityWindowChanged();
+                          }
+                      }
                   }
+                  trackManager.reloadSAMTracks();
+
               }
           } catch (NumberFormatException numberFormatException) {
           } finally {
