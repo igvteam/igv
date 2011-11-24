@@ -121,6 +121,7 @@ public class IntArrayList {
             grow();
         }
         elements[idx] = i;
-        size = Math.max(size, idx + 1);
+        idx++;
+        if(idx > size) size = idx;  // Tried Math.max here, it showed up in cpu profiles!
     }
 }
