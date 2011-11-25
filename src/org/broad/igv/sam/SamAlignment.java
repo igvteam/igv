@@ -594,12 +594,39 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         if (attributes != null && !attributes.isEmpty()) {
 
             for (SAMRecord.SAMTagAndValue tag : attributes) {
-                String tagValue = tag.value.toString();
-                if(tagValue.length() > 50 && truncate) {
-                   tagValue = tagValue.substring(0, 50) + "...";
+                buf.append("<br>" + tag.tag + " = ");
+
+                // Break tag
+                final String tagValue = tag.value.toString();
+                final int maxLength = 70;
+                if (tagValue.length() > maxLength && truncate) {
+                    String[] tokens = tagValue.split("<br>");
+                    for (String token : tokens) {
+                        if (token.length() > maxLength) {
+                            // Insert line breaks
+                            String remainder = token;
+                            while (remainder.length() > maxLength) {
+                                String tmp = remainder.substring(0, maxLength);
+                                int spaceIndex = tmp.lastIndexOf(' ');
+                                int idx = spaceIndex > 30 ? spaceIndex : maxLength;
+                                final String substring = remainder.substring(0, idx);
+                                System.out.println(substring);
+                                buf.append(substring);
+                                buf.append("<br>");
+                                remainder = remainder.substring(idx);
+                            }
+                            buf.append(remainder);
+                            buf.append("<br>");
+
+                        } else {
+                            buf.append(token);
+                            buf.append("<br>");
+                        }
+                    }
+                } else {
+                    buf.append(tagValue);
                 }
 
-                buf.append("<br>" + tag.tag + " = " + tagValue);
             }
             buf.append("<br>-------------------");
         }
