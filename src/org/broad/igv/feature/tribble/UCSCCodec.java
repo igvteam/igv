@@ -37,7 +37,9 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec  {
 
     protected String[] tokens = new String[50];
     protected int startBase = 0;
+    protected boolean gffTags = false;
     FeatureFileHeader header;
+
 
     public Object readHeader(LineReader reader) {
         String nextLine;
@@ -62,6 +64,7 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec  {
                     TrackProperties tp = new TrackProperties();
                     ParsingUtils.parseTrackLine(nextLine, tp);
                     header.setTrackProperties(tp);
+                    gffTags = tp.isGffTags();
                 }
             }
             return header;

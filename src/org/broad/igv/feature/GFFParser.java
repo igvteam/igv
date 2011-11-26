@@ -399,7 +399,7 @@ public class GFFParser implements FeatureParser {
         return features;
     }
 
-    static String getDescription(Map<String, String> attributes) {
+    public static String getDescription(Map<String, String> attributes) {
         return getDescription(attributes, null);
     }
 
@@ -831,7 +831,7 @@ public class GFFParser implements FeatureParser {
 
         private String[] nameFields;
 
-        GFF3Helper() {
+        public GFF3Helper() {
             this(DEFAULT_NAME_FIELDS);
         }
 

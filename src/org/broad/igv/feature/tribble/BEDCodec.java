@@ -18,12 +18,12 @@
 
 package org.broad.igv.feature.tribble;
 
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.*;
 import org.broad.igv.util.ParsingUtils;
 
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -35,7 +35,7 @@ import java.awt.*;
  */
 public class BEDCodec extends UCSCCodec {
 
-    // Declare a static array once, to be reused.
+    GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
 
     public BasicFeature decode(String nextLine) {
 
@@ -67,10 +67,45 @@ public class BEDCodec extends UCSCCodec {
         // a non-expected value
 
         // Name
+        // Name
         if (tokenCount > 3) {
-            String name = tokens[3].replaceAll("\"", "");
-            feature.setName(name);
-            feature.setIdentifier(name);
+            if (gffTags) {
+                Map<String, String> atts = new LinkedHashMap();
+                tagHelper.parseAttributes(tokens[3], atts);
+                String name = tagHelper.getName(atts);
+                //if (name == null) {
+                //    name = tokens[3];
+                //}
+                feature.setName(name);
+
+                String id = atts.get("ID");
+                if (id != null) {
+                    FeatureDB.put(id.toUpperCase(), feature);
+                    feature.setIdentifier(id);
+                } else {
+                    feature.setIdentifier(name);
+                }
+                String alias = atts.get("Alias");
+                if (alias != null) {
+                    FeatureDB.put(alias.toUpperCase(), feature);
+                }
+                String geneSymbols = atts.get("Symbol");
+                if(geneSymbols != null) {
+                    String [] symbols = geneSymbols.split(",");
+                    for(String sym : symbols) {
+                        FeatureDB.put(sym.trim().toUpperCase(), feature);
+                    }
+                }
+
+                String description = GFFParser.getDescription(atts);
+                feature.setDescription(description);
+
+
+            } else {
+                String name = tokens[3].replaceAll("\"", "");
+                feature.setName(name);
+                feature.setIdentifier(name);
+            }
         }
 
         // Score
