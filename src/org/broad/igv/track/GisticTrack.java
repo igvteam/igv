@@ -68,13 +68,8 @@ public class GisticTrack extends AbstractTrack {
     Map<String, List<GisticScore>> delScoreMap;
 
     GisticTrackRenderer renderer;
-    ColorScale colorScale;
 
-    /**
-     * Creates a new instance of GisticScoreList
-     *
-     * @param locator
-     */
+
     public GisticTrack(ResourceLocator locator) {
         super(locator);
         ampScoreMap = new HashMap<String, List<GisticScore>>();
@@ -82,6 +77,8 @@ public class GisticTrack extends AbstractTrack {
         renderer = new GisticTrackRenderer();
         setHeight(DEFAULT_HEIGHT);
         renderer = new GisticTrackRenderer();
+        setSortable(false);
+
     }
 
     @Override
