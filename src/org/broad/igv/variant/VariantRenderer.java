@@ -174,18 +174,24 @@ public class VariantRenderer { //extends FeatureRenderer {
                 case METHYLATION_RATE:
 
                     final Double goodBaseCount = genotype.getAttributeAsDouble("GB");
-
+                    b1Color = colorNoCall;
+                    b2Color = b1Color;
                     final Double value = genotype.getAttributeAsDouble("MR");
-                    if (goodBaseCount < 10 || value == null) {
-                        b1Color = colorNoCall;
-                        b2Color = b1Color;
+                    if (goodBaseCount != null && value != null) {
+                        if (goodBaseCount < 10 || value == null) {
+                            b1Color = colorNoCall;
+                            b2Color = b1Color;
 
+                        } else {
+                            float mr = (float) value.doubleValue();
+
+                            //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
+                            mr /= 100f;
+                            b1Color = convertMethylationRateToColor(mr);
+                            b2Color = b1Color;
+                        }
                     } else {
-                        float mr = (float) value.doubleValue();
-                        //   System.out.printf("position %d methylation-rate: %f%n", variant.getStart(), mr);
-                        mr /= 100f;
-                        b1Color = convertMethylationRateToColor(mr);
-                        b2Color = b1Color;
+                        log.error("GB and MR fields must be defined for all records in a VCF methylation file.");
                     }
                     break;
 
@@ -199,6 +205,7 @@ public class VariantRenderer { //extends FeatureRenderer {
             int h = Math.max(1, track.getDisplayMode() == Track.DisplayMode.EXPANDED ? dY - 2 : dY);
 
             if (coloring == VariantTrack.ColorMode.GENOTYPE) {
+
                 g.setColor(b1Color);
                 g.fillRect(pX0, y0, dX, h);
             } else {
@@ -207,6 +214,7 @@ public class VariantRenderer { //extends FeatureRenderer {
                 g.fillRect(pX0, y0, (dX / 2), h);
                 g.setColor(b2Color);
                 g.fillRect(pX0 + (dX / 2), y0, (dX / 2), h);
+
             }
 
 
@@ -220,20 +228,21 @@ public class VariantRenderer { //extends FeatureRenderer {
                 drawCenteredText(g, new char[]{b2}, pX0, pY + (dY / 2) - bOffset, dX, dY);
             }
         }
-//        g.dispose();
+        g.dispose();
     }
 
     private Color convertMethylationRateToColor(float mr) {
         Color color;
-
+        /*
         if (mr >= .25) {
             return Color.getHSBColor((mr - .25f) * (1f / 0.75f), 1, 1);
         } else {
             // use a light grey between 0 and 0.25 brightness to indicate moderate methylation at the site.
             return new Color(1f - mr, 1f - mr, 1f - mr);
         }
-
-
+          */
+        float v = 1.5f + (mr / 2); //add one to have a floor. getHSBColor removes the floor to yield a fraction betweeen 0 and 1.
+        return Color.getHSBColor(v, .75f, 1);
     }
 
     public char getFirstBase(Allele allele) {

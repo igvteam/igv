@@ -104,9 +104,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Map of group -> samples.  Each entry defines a group, the key is the group name and the value the list of
-     * samles in the group.
+     * samples in the group.
      */
-    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap();
+    LinkedHashMap<String, List<String>> samplesByGroups = new LinkedHashMap<String, List<String>>();
 
 
     /**
@@ -134,12 +134,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * select correct sample for popup text.  We use a list and linear lookup for now, some sort of tree structure
      * would be faster.
      */
-    private List<SampleBounds> sampleBounds = new ArrayList();
+    private List<SampleBounds> sampleBounds = new ArrayList<SampleBounds>();
 //    private ZygosityCount zygosityCount;
 
 
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
-                    boolean enableMethylationRateSupport) {
+                        boolean enableMethylationRateSupport) {
         super(locator, source);
 
         this.enableMethylationRateSupport = enableMethylationRateSupport;
@@ -203,7 +203,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
             List<String> sampleList = samplesByGroups.get(sampleGroup);
             if (sampleList == null) {
-                sampleList = new ArrayList();
+                sampleList = new ArrayList<String>();
                 samplesByGroups.put(sampleGroup, sampleList);
             }
             sampleList.add(sample);
@@ -548,20 +548,20 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
 
         // Bottom border
-         int bottomY = trackRectangle.y + trackRectangle.height;
-         if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
-             g2D.setColor(borderGray);
-             g2D.drawLine(left, bottomY, right, bottomY);
-         }
+        int bottomY = trackRectangle.y + trackRectangle.height;
+        if (bottomY >= visibleRectangle.y && bottomY <= visibleRectangle.getMaxY()) {
+            g2D.setColor(borderGray);
+            g2D.drawLine(left, bottomY, right, bottomY);
+        }
 
-         // Variant / Genotype border
-         if (allSamples.size() > 0) {
-             int variantBandY = trackRectangle.y + variantBandHeight;
-             if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
-                 g2D.setColor(Color.black);
-                 g2D.drawLine(left, variantBandY, right, variantBandY);
-             }
-         }
+        // Variant / Genotype border
+        if (allSamples.size() > 0) {
+            int variantBandY = trackRectangle.y + variantBandHeight;
+            if (variantBandY >= visibleRectangle.y && variantBandY <= visibleRectangle.getMaxY()) {
+                g2D.setColor(Color.black);
+                g2D.drawLine(left, variantBandY, right, variantBandY);
+            }
+        }
 
     }
 
@@ -735,10 +735,23 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         try {
             Variant variant = (Variant) getFeatureClosest(position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
             if (variant != null) {
-
-                // If more than ~ 10 pixels distance reject
-                double pixelDist = Math.abs((position - variant.getStart()) / frame.getScale());
-                if (pixelDist > 10) return null;
+                boolean fullyContained = false;
+                int pos=(int)position;
+                if (pos >= variant.getStart() && pos <= variant.getEnd()) {
+                    log.debug("cursor is fully contained in closest element "+variant);
+                    fullyContained = true;
+                }
+                if (!fullyContained) {
+                    long pixelDist = Math.round(Math.abs((Math.min(position - variant.getStart(),
+                            position - variant.getEnd())) / frame.getScale()));
+                    //log.info(String.format("distance to closest element [variant=%d-%d] is %d %n", variant.getStart(),
+                    //        variant.getEnd(), pixelDist));
+                    if (pixelDist > 10) {
+                        // the feature is more than 10 pixels away from the closest feature. Don't show a tooltip since
+                        // this can be misleading.
+                        return null;
+                    }
+                }
 
                 if (y < top + variantBandHeight) {
                     return getVariantToolTip(variant);
@@ -929,6 +942,9 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
 
     private String getSampleToolTip(String sample, Variant variant) {
+        if (isEnableMethylationRateSupport() && variant.getGenotype(sample).getAttributeAsDouble("GB") < 10) {
+            return sample;
+        }
         String id = variant.getID();
         StringBuffer toolTip = new StringBuffer();
         toolTip = toolTip.append("Chr:" + variant.getChr());
@@ -1079,8 +1095,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (colorModeText != null) {
             try {
                 setColorMode(ColorMode.valueOf(colorModeText));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error interpreting display mode: " + colorModeText);
             }
         }
@@ -1089,8 +1104,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         if (squishedHeightText != null) {
             try {
                 squishedHeight = Integer.parseInt(squishedHeightText);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error restoring squished height: " + squishedHeightText);
             }
         }
