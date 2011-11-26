@@ -33,7 +33,7 @@ import java.io.IOException;
  * @author jrobinso
  * @date Aug 5, 2010
  */
-public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec  {
+public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
     protected String[] tokens = new String[50];
     protected int startBase = 0;
@@ -65,11 +65,12 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec  {
                     ParsingUtils.parseTrackLine(nextLine, tp);
                     header.setTrackProperties(tp);
                     gffTags = tp.isGffTags();
+                } else if (nextLine.startsWith("#gffTags")) {
+                    gffTags = true;
                 }
             }
             return header;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
     }
