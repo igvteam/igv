@@ -67,7 +67,10 @@ public class Genome {
         this.displayName = displayName;
         chrAliasTable = new HashMap();
 
-        if (!fasta) {
+        if(sequencePath == null) {
+            sequenceHelper = null;
+        }
+        else if (!fasta) {
             sequenceHelper = new SequenceHelper(sequencePath);
 
         } else {
@@ -310,6 +313,10 @@ public class Genome {
     }
 
     public byte[] getSequence(String chr, int start, int end) {
+
+        if(sequenceHelper == null) {
+            return null;
+        }
 
         Chromosome c = getChromosome(chr);
         if(c == null) {

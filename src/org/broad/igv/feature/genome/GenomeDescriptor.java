@@ -70,10 +70,10 @@ public abstract class GenomeDescriptor {
         this.chromosomesAreOrdered = chromosomesAreOrdered;
 
         // Fix for legacy .genome files
-        if(sequenceLocation.startsWith("/")) {
-            if(!(new File(sequenceLocation)).exists()) {
+        if (sequenceLocation != null && sequenceLocation.startsWith("/")) {
+            if (!(new File(sequenceLocation)).exists()) {
                 String tryThis = sequenceLocation.replaceFirst("/", "");
-                if((new File(tryThis)).exists()) {
+                if ((new File(tryThis)).exists()) {
                     this.sequenceLocation = tryThis;
                 }
             }
