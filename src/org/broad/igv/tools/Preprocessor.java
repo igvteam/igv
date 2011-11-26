@@ -179,7 +179,8 @@ public class Preprocessor implements DataConsumer {
         // Is this data in range for the chromosome?
         int chrLength = genome.getChromosome(chr).getLength();
         if (start > chrLength) {
-            log.debug("Ignoring data from non-existent locus.  Probe = " + name + "  Locus = " + chr + ":" + start + "-" + end + ". " + chr + " length = " + chrLength);
+            log.debug("Ignoring data from non-existent locus.  Probe = " + name +
+                    "  Locus = " + chr + ":" + start + "-" + end + ". " + chr + " length = " + chrLength);
             return;
         }
 
@@ -754,6 +755,9 @@ public class Preprocessor implements DataConsumer {
         } else if (tmp.endsWith(".cn") || tmp.endsWith(".xcn") || tmp.endsWith(".igv") || tmp.endsWith(".snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
+        } else if (tmp.endsWith(".ts") || tmp.endsWith(".ts.csv")) {
+            TSParser tsParser = new TSParser(iFile.getAbsolutePath(), this);
+            tsParser.parse();
         } else {
             String extension = getExtension(iFile.getAbsolutePath());
             out.println("Error: cannot 'tile' files of type " + extension);

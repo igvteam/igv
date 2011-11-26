@@ -74,7 +74,8 @@ public class IgvTools {
             "sort    sort an alignment file by start position",
             "index   index an alignment file",
             "toTDF    convert an input file (cn, gct, wig) to tiled data format (tdf)",
-            "count   compute coverage density for an alignment file"
+            "count   compute coverage density for an alignment file" ,
+            "formatExp  center, scale, and log2 normalize an expression file"
     };
     public static final int MAX_RECORDS_IN_RAM = 500000;
     public static final int MAX_ZOOM = 7;
@@ -371,7 +372,8 @@ public class IgvTools {
     public void toTDF(String typeString, String ifile, String ofile, String probeFile, String genomeId, int maxZoomValue,
                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
-        validateIsTilable(typeString);
+
+        if(!ifile.endsWith(".ts.csv"))  validateIsTilable(typeString);
 
         System.out.println("Tile.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
