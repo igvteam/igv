@@ -448,25 +448,11 @@ public class FeatureTrack extends AbstractTrack {
         }
 
         Feature feature = null;
-        // Determine the level number (for expanded tracks.
-        int levelNumber = 0;
-        if (levelRects != null) {
-            for (int i = 0; i < levelRects.size(); i++) {
-                Rectangle r = levelRects.get(i);
-                if ((y >= r.y) && (y <= r.getMaxY())) {
-                    levelNumber = i;
-                    break;
-                }
-            }
-        }
 
-        int nLevels = this.getNumberOfFeatureLevels();
-        List<IGVFeature> features = null;
-        if ((nLevels > 1) && (levelNumber < nLevels)) {
-            features = packedFeatures.getRows().get(levelNumber).getFeatures();
-        } else {
-            features = packedFeatures.getFeatures();
-        }
+        // Note that we use the full features to search here because (1) we expect to retrieve one element at most
+        // (2) searching packed features would miss the features we are looking for despite them being in the full set.
+        List<IGVFeature> features = packedFeatures.getFeatures();
+
         if (features != null) {
             feature = FeatureUtils.getFeatureClosest(position, features);
         }
