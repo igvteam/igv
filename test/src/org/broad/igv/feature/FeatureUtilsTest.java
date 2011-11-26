@@ -22,19 +22,24 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.iterators.CloseableTribbleIterator;
+import org.broad.tribble.source.BasicFeatureSource;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.*;
+
 /**
- *
  * Please create tests!!
  *
  * @author jrobinso
@@ -51,8 +56,8 @@ public class FeatureUtilsTest {
 
         features = new ArrayList();
 
-        for(int i=0; i<1000; i++) {
-            features.add(new TestFeature(i, i+5));
+        for (int i = 0; i < 1000; i++) {
+            features.add(new TestFeature(i, i + 5));
         }
 
     }
@@ -67,6 +72,31 @@ public class FeatureUtilsTest {
 
     @After
     public void tearDown() {
+    }
+
+    @Test
+    public void testFeatureLookupInSmallVCF() throws IOException {
+        String vcfFile = "test/data/vcf/example4-last-gsnap-2.vcf.gz";
+        FeatureCodec codec = CodecFactory.getCodec(vcfFile);
+        boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
+        BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);
+        CloseableTribbleIterator it = basicReader.iterator();
+        List<VCFVariant> features = new ArrayList<VCFVariant>();
+        System.out.println("Showing all variants:");
+        while (it.hasNext()) {
+            VCFVariant next = (VCFVariant) it.next();
+            features.add(next);
+            System.out.println(next);
+        }
+        System.out.println("Now looking up closest to..");
+        VCFVariant a_6321739 = (VCFVariant) FeatureUtils.getFeatureClosest(6321739d, features);
+        VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740d, features);
+        System.out.println(a_6321739);
+        System.out.println(a_6321739);
+        assertEquals("variant closest to 6321739 must be found with position=6321739", 6321739, a_6321739.getStart());
+        assertEquals("variant closest to 6321740 must be found with position=6321740", 6321740, a_6321740.getStart());
+
+
     }
 
     /**
@@ -128,18 +158,18 @@ public class FeatureUtilsTest {
 
     /**
      * Test of getAllFeaturesAt method, of class FeatureUtils.
-     *
+     * <p/>
      * Queries the test list for features at position 500.
      */
     @Test
     public void testGetAllFeaturesAt() {
         System.out.println("getFeatureAt");
-        double position = 500.0;
-        double maxLength = 100;
+        int position = 500;
+        int maxLength = 100;
 
-        List<Feature> result =   FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features, false);
+        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features, false);
         assertEquals(6, result.size());
-        for(Feature f : result) {
+        for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());
         }
 
@@ -161,7 +191,7 @@ public class FeatureUtilsTest {
 
 
         int expResult = 99;
-        int result = FeatureUtils.getIndexBefore(499.0, features);
+        int result = FeatureUtils.getIndexBefore(499, features);
         assertEquals(expResult, result);
 
     }
