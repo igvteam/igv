@@ -138,7 +138,7 @@ public class FeatureUtils {
 
             if (position >= effectiveStart - buffer) {
 
- 
+
                 if (position <= effectiveEnd + buffer) {
                     return features.get(idx);
                 } else {
@@ -214,7 +214,12 @@ public class FeatureUtils {
     }
 
     public static Feature getFeatureClosest(double position, List<? extends org.broad.tribble.Feature> features) {
-
+        // look for exact match at position:
+        org.broad.tribble.Feature f0 = getFeatureAt(position, features);
+        if (f0 != null) {
+            return f0;
+        }
+        // otherwise look for features on either side and return the closest:
         org.broad.tribble.Feature f1 = getFeatureBefore(position, features);
         org.broad.tribble.Feature f2 = getFeatureAfter(position, features);
 
@@ -225,10 +230,33 @@ public class FeatureUtils {
 
     }
 
+    /**
+     * Return a feature whose position is exactly 'position'.
+     * @param position Query position.
+     * @param features List of features.
+     * @return The feature whose start overlaps with position, or null.
+     */
+    private static Feature getFeatureAt(double position, List<? extends Feature> features) {
+        Feature key = new BasicFeature("", (int) position, (int) position);
+        int r = Collections.binarySearch(features, key, new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
+                Feature f1 = (Feature) o1;
+                Feature f2 = (Feature) o2;
+                return f1.getEnd() - f2.getEnd();
+            }
+        });
+
+        if (r > 0) {
+            return features.get(r);
+        } else {
+            return null;
+        }
+    }
+
 
     /**
      * Return the index to the last feature in the list with a start < the given position
-     * 
+     *
      * @param position
      * @param features
      * @return
@@ -299,13 +327,13 @@ public class FeatureUtils {
         int startIdx = Math.max(0, getIndexBefore(adjustedPosition, features));
         for (int idx = startIdx; idx < features.size(); idx++) {
             Feature feature = features.get(idx);
-            int start = feature.getStart() - (int) (minWidth/2);
+            int start = feature.getStart() - (int) (minWidth / 2);
 
             if (start > position) {
                 break;
             }
 
-            int end = feature.getEnd() + (int) (minWidth/2);
+            int end = feature.getEnd() + (int) (minWidth / 2);
             if (oneBased) {
                 end += 1;
             }
