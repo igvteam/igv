@@ -158,6 +158,11 @@ public class VCFVariant implements Variant {
         return variantContext.getEnd();
     }
 
+    @Override
+    public String toString() {
+        return String.format("VCFVariant[%s:%d-%d]",getChr(),getStart(),getEnd());
+    }
+
     /**
 * @author Jim Robinson
 * @date Aug 1, 2011
