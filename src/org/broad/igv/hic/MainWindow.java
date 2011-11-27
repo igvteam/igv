@@ -73,17 +73,18 @@ public class MainWindow extends JFrame {
 
     public MainWindow() throws IOException {
 
-        int initialMaxCount = 50000;
+        int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
         colorScale = new ColorScale();
         colorScale.maxCount = initialMaxCount;
         colorScale.background = Color.white;
 
         initComponents();
-       // setLayout(new HiCLayout());
+        // setLayout(new HiCLayout());
 
         // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
         rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {});
+        rootPane.getGlassPane().addMouseListener(new MouseAdapter() {
+        });
 
 
         createCursors();
@@ -92,26 +93,7 @@ public class MainWindow extends JFrame {
         minRange.setText(String.valueOf(colorScale.minCount));
 
         thumbnailPanel.setMainWindow(this);
-
-        getHeatmapPanel().setSize(500, 500);
-
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
-
-        //2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000
-        // TODO -- these should be read from the data file  (zd.binSize)
-        ZoomLabel[] zooms = new ZoomLabel[]{
-                new ZoomLabel("2.5 mb", 0),
-                new ZoomLabel("1   mb", 1),
-                new ZoomLabel("500 kb", 2),
-                new ZoomLabel("250 kb", 3),
-                new ZoomLabel("100 kb", 4),
-                new ZoomLabel("50  kb", 5),
-                new ZoomLabel("25  kb", 6),
-                new ZoomLabel("10  kb", 7),
-                new ZoomLabel("5   kb", 8),
-                new ZoomLabel("2.5 kb", 9),
-                new ZoomLabel("1   kb", 10)};
-       // zoomComboBox.setModel(new DefaultComboBoxModel(zooms));
 
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -143,7 +125,7 @@ public class MainWindow extends JFrame {
         for (int i = 1; i < chromosomes.length; i++) {
             Chromosome c = chromosomes[i];
             bound += (c.getSize() / 1000);
-            getChromosomeBoundaries()[i-1] = (int) bound;
+            getChromosomeBoundaries()[i - 1] = (int) bound;
         }
     }
 
@@ -219,10 +201,10 @@ public class MainWindow extends JFrame {
                 }
 
                 getHeatmapPanel().clearTileCache();
-                if ((xContext != null && xContext.getChromosome().getIndex() == chr2.getIndex()) &&
-                        (yContext != null && yContext.getChromosome().getIndex() == chr1.getIndex())) {
-                    repaint();
-                } else {
+                //if ((xContext != null && xContext.getChromosome().getIndex() == chr2.getIndex()) &&
+                //        (yContext != null && yContext.getChromosome().getIndex() == chr1.getIndex())) {
+                //    repaint();
+                //} else {
 
                     xContext = new Context(chr2);
                     yContext = new Context(chr1);
@@ -238,7 +220,7 @@ public class MainWindow extends JFrame {
 
                     Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
                     thumbnailPanel.setImage(thumbnail);
-                }
+                //}
 
                 return null;
             }
@@ -502,14 +484,14 @@ public class MainWindow extends JFrame {
     }
 
     private void chrBox1ActionPerformed(ActionEvent e) {
-        if(chrBox1.getSelectedIndex() == 0) {
+        if (chrBox1.getSelectedIndex() == 0) {
             chrBox2.setSelectedIndex(0);
             refreshChromosomes();
         }
     }
 
     private void chrBox2ActionPerformed(ActionEvent e) {
-        if(chrBox2.getSelectedIndex() == 0) {
+        if (chrBox2.getSelectedIndex() == 0) {
             chrBox1.setSelectedIndex(0);
             refreshChromosomes();
         }
@@ -525,9 +507,13 @@ public class MainWindow extends JFrame {
 
     private void zoomInButtonActionPerformed(ActionEvent e) {
         int z = xContext.getZoom();
-        int newZoom = Math.min(z+1, MAX_ZOOM );
+        int newZoom = Math.min(z + 1, MAX_ZOOM);
         setZoom(newZoom);
         repaint();
+    }
+
+    private void mainWindowResized(ComponentEvent e) {
+        // TODO add your code here
     }
 
     private void initComponents() {
@@ -567,6 +553,12 @@ public class MainWindow extends JFrame {
         exit = new JMenuItem();
 
         //======== this ========
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                mainWindowResized(e);
+            }
+        });
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 

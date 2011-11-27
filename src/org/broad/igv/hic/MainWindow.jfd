@@ -16,6 +16,14 @@
        <string>$sizePolicy</string> 
        <int>2</int> 
       </void> 
+      <void method="addEvent"> 
+       <object class="com.jformdesigner.model.FormEvent"> 
+        <string>java.awt.event.ComponentListener</string> 
+        <string>componentResized</string> 
+        <string>mainWindowResized</string> 
+        <boolean>true</boolean> 
+       </object> 
+      </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JPanel</string> 
