@@ -97,11 +97,13 @@
 
         <echo message="Resource ${resource.dir}"/>
         <echo message="Version ${version}"/>
+        <!--
         <replace file="${resource.dir}about.properties" token="@VERSION" value="${version}"/>
         <replace file="${resource.dir}about.properties" token="@BUILD" value="${build-number}"/>
         <replace file="${resource.dir}about.properties" token="@TIMESTAMP" value="${timestamp}"/>
         <replace file="${resource.dir}about.properties" token="@DEFAULT_MASTER_RESOURCE_URL"
                  value="${data-server-url}"/>
+                 -->
 
     </target>
 
