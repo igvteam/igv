@@ -254,6 +254,18 @@
               </void> 
              </object> 
             </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JLabel</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>counts / mb^2</string> 
+              </void> 
+              <void property="name"> 
+               <string>label4</string> 
+              </void> 
+             </object> 
+            </void> 
            </object> 
           </void> 
           <void method="add"> 
@@ -306,7 +318,7 @@
               <void method="setProperty"> 
                <string>preferredSize</string> 
                <object class="java.awt.Dimension"> 
-                <int>29</int> 
+                <int>35</int> 
                 <int>29</int> 
                </object> 
               </void> 
@@ -333,7 +345,7 @@
               <void method="setProperty"> 
                <string>preferredSize</string> 
                <object class="java.awt.Dimension"> 
-                <int>25</int> 
+                <int>35</int> 
                 <int>29</int> 
                </object> 
               </void> 
@@ -378,145 +390,41 @@
            <string>panel3</string> 
           </void> 
           <void method="add"> 
-           <object class="com.jformdesigner.model.FormContainer"> 
-            <string>javax.swing.JPanel</string> 
-            <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>java.awt.BorderLayout</class> 
-            </object> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>org.broad.igv.hic.HiCRulerPanel</string> 
+            <void method="setProperty"> 
+             <string>maximumSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>4000</int> 
+              <int>50</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>minimumSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>1</int> 
+              <int>50</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>preferredSize</string> 
+             <object class="java.awt.Dimension"> 
+              <int>1</int> 
+              <int>50</int> 
+             </object> 
+            </void> 
+            <void method="setProperty"> 
+             <string>border</string> 
+             <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
+            </void> 
             <void property="name"> 
-             <string>panel5</string> 
+             <string>rulerPanel2</string> 
             </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormContainer"> 
-              <string>javax.swing.JPanel</string> 
-              <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>com.jformdesigner.runtime.NullLayout</class> 
-               <void method="setProperty"> 
-                <string>autoSize</string> 
-                <boolean>false</boolean> 
-               </void> 
-              </object> 
-              <void method="setProperty"> 
-               <string>maximumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>preferredSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>50</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void property="name"> 
-               <string>spacerLeft</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>West</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>org.broad.igv.hic.HiCRulerPanel</string> 
-              <void method="setProperty"> 
-               <string>maximumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>4000</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>1</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>preferredSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>1</int> 
-                <int>50</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>border</string> 
-               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-              </void> 
-              <void property="name"> 
-               <string>rulerPanel2</string> 
-              </void> 
-              <void method="auxiliary"> 
-               <void method="setProperty"> 
-                <string>JavaCodeGenerator.customCreateCode</string> 
-                <string>new HiCRulerPanel(this);</string> 
-               </void> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>Center</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormContainer"> 
-              <string>javax.swing.JPanel</string> 
-              <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>com.jformdesigner.runtime.NullLayout</class> 
-               <void method="setProperty"> 
-                <string>autoSize</string> 
-                <boolean>false</boolean> 
-               </void> 
-              </object> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>120</int> 
-                <int>0</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>preferredSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>120</int> 
-                <int>0</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>maximumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>120</int> 
-                <int>32767</int> 
-               </object> 
-              </void> 
-              <void property="name"> 
-               <string>spacerRight</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>East</string> 
-              </void> 
-             </object> 
+            <void method="auxiliary"> 
+             <void method="setProperty"> 
+              <string>JavaCodeGenerator.customCreateCode</string> 
+              <string>new HiCRulerPanel(this);</string> 
+             </void> 
             </void> 
            </object> 
            <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -635,7 +543,7 @@
            <object class="com.jformdesigner.model.FormContainer"> 
             <string>javax.swing.JPanel</string> 
             <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>java.awt.FlowLayout</class> 
+             <class>com.jformdesigner.runtime.NullLayout</class> 
             </object> 
             <void method="setProperty"> 
              <string>maximumSize</string> 
@@ -647,12 +555,10 @@
             <void method="setProperty"> 
              <string>border</string> 
              <object class="javax.swing.border.EmptyBorder"> 
-              <object class="java.awt.Insets"> 
-               <int>0</int> 
-               <int>10</int> 
-               <int>0</int> 
-               <int>0</int> 
-              </object> 
+              <int>0</int> 
+              <int>10</int> 
+              <int>0</int> 
+              <int>0</int> 
              </object> 
             </void> 
             <void property="name"> 
@@ -698,6 +604,91 @@
                 <string>JavaCodeGenerator.variableModifiers</string> 
                 <int>0</int> 
                </void> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>20</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>0</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>com.jformdesigner.runtime.NullLayout</class> 
+               <void method="setProperty"> 
+                <string>autoSize</string> 
+                <boolean>false</boolean> 
+               </void> 
+              </object> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>250</int> 
+                <int>100</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>xPlotPanel</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>100</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>228</int> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>com.jformdesigner.runtime.NullLayout</class> 
+               <void method="setProperty"> 
+                <string>autoSize</string> 
+                <boolean>false</boolean> 
+               </void> 
+              </object> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>250</int> 
+                <int>100</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>yPlotPanel</string> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>com.jformdesigner.runtime.NullConstraints</class> 
+              <void method="setProperty"> 
+               <string>x</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>y</string> 
+               <int>328</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>height</string> 
+               <int>228</int> 
               </void> 
              </object> 
             </void> 

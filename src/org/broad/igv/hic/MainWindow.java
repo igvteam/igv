@@ -49,7 +49,7 @@ public class MainWindow extends JFrame {
 
         final MainWindow mainWindow = new MainWindow();
         mainWindow.setVisible(true);
-        mainWindow.setSize(870, 870);
+        mainWindow.setSize(870, 700);
 
 
     }
@@ -79,6 +79,7 @@ public class MainWindow extends JFrame {
         colorScale.background = Color.white;
 
         initComponents();
+       // setLayout(new HiCLayout());
 
         // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
         rootPane.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -543,19 +544,19 @@ public class MainWindow extends JFrame {
         minRange = new JTextField();
         label3 = new JLabel();
         maxRange = new JTextField();
+        label4 = new JLabel();
         panel7 = new JPanel();
         label2 = new JLabel();
         zoomOutButton = new JButton();
         zoomInButton = new JButton();
         panel3 = new JPanel();
-        panel5 = new JPanel();
-        spacerLeft = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
-        spacerRight = new JPanel();
         heatmapPanel = new HeatmapPanel(this);
         rulerPanel1 = new HiCRulerPanel(this);
         panel8 = new JPanel();
         thumbnailPanel = new ThumbnailPanel();
+        xPlotPanel = new JPanel();
+        yPlotPanel = new JPanel();
         menuBar1 = new JMenuBar();
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
@@ -612,7 +613,7 @@ public class MainWindow extends JFrame {
 
                 //======== panel1 ========
                 {
-                    panel1.setBorder(new LineBorder(Color.black));
+                    panel1.setBorder(LineBorder.createBlackLineBorder());
                     panel1.setLayout(new FlowLayout());
 
                     //---- label1 ----
@@ -656,6 +657,10 @@ public class MainWindow extends JFrame {
                         }
                     });
                     panel1.add(maxRange);
+
+                    //---- label4 ----
+                    label4.setText("counts / mb^2");
+                    panel1.add(label4);
                 }
                 panel4.add(panel1);
 
@@ -671,7 +676,7 @@ public class MainWindow extends JFrame {
                     //---- zoomOutButton ----
                     zoomOutButton.setText("-");
                     zoomOutButton.setMinimumSize(new Dimension(5, 5));
-                    zoomOutButton.setPreferredSize(new Dimension(29, 29));
+                    zoomOutButton.setPreferredSize(new Dimension(35, 29));
                     zoomOutButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             zoomOutButtonActionPerformed(e);
@@ -681,7 +686,7 @@ public class MainWindow extends JFrame {
 
                     //---- zoomInButton ----
                     zoomInButton.setText("+");
-                    zoomInButton.setPreferredSize(new Dimension(25, 29));
+                    zoomInButton.setPreferredSize(new Dimension(35, 29));
                     zoomInButton.setMinimumSize(new Dimension(5, 29));
                     zoomInButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
@@ -696,38 +701,14 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new BorderLayout());
+                panel3.setLayout(new HiCLayout());
 
-                //======== panel5 ========
-                {
-                    panel5.setLayout(new BorderLayout());
-
-                    //======== spacerLeft ========
-                    {
-                        spacerLeft.setMaximumSize(new Dimension(50, 50));
-                        spacerLeft.setMinimumSize(new Dimension(50, 50));
-                        spacerLeft.setPreferredSize(new Dimension(50, 50));
-                        spacerLeft.setLayout(null);
-                    }
-                    panel5.add(spacerLeft, BorderLayout.WEST);
-
-                    //---- rulerPanel2 ----
-                    rulerPanel2.setMaximumSize(new Dimension(4000, 50));
-                    rulerPanel2.setMinimumSize(new Dimension(1, 50));
-                    rulerPanel2.setPreferredSize(new Dimension(1, 50));
-                    rulerPanel2.setBorder(null);
-                    panel5.add(rulerPanel2, BorderLayout.CENTER);
-
-                    //======== spacerRight ========
-                    {
-                        spacerRight.setMinimumSize(new Dimension(120, 0));
-                        spacerRight.setPreferredSize(new Dimension(120, 0));
-                        spacerRight.setMaximumSize(new Dimension(120, 32767));
-                        spacerRight.setLayout(null);
-                    }
-                    panel5.add(spacerRight, BorderLayout.EAST);
-                }
-                panel3.add(panel5, BorderLayout.NORTH);
+                //---- rulerPanel2 ----
+                rulerPanel2.setMaximumSize(new Dimension(4000, 50));
+                rulerPanel2.setMinimumSize(new Dimension(1, 50));
+                rulerPanel2.setPreferredSize(new Dimension(1, 50));
+                rulerPanel2.setBorder(null);
+                panel3.add(rulerPanel2, BorderLayout.NORTH);
 
                 //---- heatmapPanel ----
                 heatmapPanel.setBorder(LineBorder.createBlackLineBorder());
@@ -753,7 +734,7 @@ public class MainWindow extends JFrame {
                 {
                     panel8.setMaximumSize(new Dimension(120, 100));
                     panel8.setBorder(new EmptyBorder(0, 10, 0, 0));
-                    panel8.setLayout(new FlowLayout());
+                    panel8.setLayout(null);
 
                     //---- thumbnailPanel ----
                     thumbnailPanel.setMaximumSize(new Dimension(100, 100));
@@ -761,6 +742,37 @@ public class MainWindow extends JFrame {
                     thumbnailPanel.setPreferredSize(new Dimension(100, 100));
                     thumbnailPanel.setBorder(LineBorder.createBlackLineBorder());
                     panel8.add(thumbnailPanel);
+                    thumbnailPanel.setBounds(new Rectangle(new Point(20, 0), thumbnailPanel.getPreferredSize()));
+
+                    //======== xPlotPanel ========
+                    {
+                        xPlotPanel.setPreferredSize(new Dimension(250, 100));
+                        xPlotPanel.setLayout(null);
+                    }
+                    panel8.add(xPlotPanel);
+                    xPlotPanel.setBounds(10, 100, xPlotPanel.getPreferredSize().width, 228);
+
+                    //======== yPlotPanel ========
+                    {
+                        yPlotPanel.setPreferredSize(new Dimension(250, 100));
+                        yPlotPanel.setLayout(null);
+                    }
+                    panel8.add(yPlotPanel);
+                    yPlotPanel.setBounds(10, 328, yPlotPanel.getPreferredSize().width, 228);
+
+                    { // compute preferred size
+                        Dimension preferredSize = new Dimension();
+                        for(int i = 0; i < panel8.getComponentCount(); i++) {
+                            Rectangle bounds = panel8.getComponent(i).getBounds();
+                            preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
+                            preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
+                        }
+                        Insets insets = panel8.getInsets();
+                        preferredSize.width += insets.right;
+                        preferredSize.height += insets.bottom;
+                        panel8.setMinimumSize(preferredSize);
+                        panel8.setPreferredSize(preferredSize);
+                    }
                 }
                 panel3.add(panel8, BorderLayout.EAST);
             }
@@ -852,19 +864,19 @@ public class MainWindow extends JFrame {
     private JTextField minRange;
     private JLabel label3;
     private JTextField maxRange;
+    private JLabel label4;
     private JPanel panel7;
     private JLabel label2;
     private JButton zoomOutButton;
     private JButton zoomInButton;
     private JPanel panel3;
-    private JPanel panel5;
-    private JPanel spacerLeft;
     private HiCRulerPanel rulerPanel2;
-    private JPanel spacerRight;
     private HeatmapPanel heatmapPanel;
     private HiCRulerPanel rulerPanel1;
     private JPanel panel8;
     ThumbnailPanel thumbnailPanel;
+    private JPanel xPlotPanel;
+    private JPanel yPlotPanel;
     private JMenuBar menuBar1;
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
