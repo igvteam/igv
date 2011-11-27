@@ -22,6 +22,8 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
@@ -733,7 +735,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         try {
-            Variant variant = (Variant) getFeatureClosest(position, y, frame); //getVariantAtPosition(chr, (int) position, frame);
+            Variant variant = getFeatureClosest(position, frame); //getVariantAtPosition(chr, (int) position, frame);
             if (variant != null) {
                 boolean fullyContained = false;
                 int pos=(int)position;
@@ -795,6 +797,33 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return null;
         }
+    }
+
+    /**
+     * Return the variant closest to the genomic position in the given reference frame
+     *
+     * @param position
+     * @param frame
+     * @return
+     */
+    protected Variant getFeatureClosest(double position, ReferenceFrame frame) {
+
+        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
+
+        if (packedFeatures == null) {
+            return null;
+        }
+
+        Feature feature = null;
+
+        // Note that we use the full features to search here because (1) we expect to retrieve one element at most
+        // (2) searching packed features would miss the features we are looking for despite them being in the full set.
+        List<IGVFeature> features = packedFeatures.getFeatures();
+
+        if (features != null) {
+            feature = FeatureUtils.getFeatureClosest(position, features);
+        }
+        return (Variant) feature;     // TODO -- don't like this cast
     }
 
 
@@ -1044,7 +1073,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         selectedVariant = null;
         if (referenceFrame != null && referenceFrame.getName() != null) {
             final double position = te.getChromosomePosition();
-            Variant f = (Variant) getFeatureClosest(position, te.getMouseEvent().getY(), referenceFrame);
+            Variant f = getFeatureClosest(position,  referenceFrame);
             // If more than ~ 20 pixels distance reject
             if (f != null) {
                 double pixelDist = Math.abs((position - f.getStart()) / referenceFrame.getScale());

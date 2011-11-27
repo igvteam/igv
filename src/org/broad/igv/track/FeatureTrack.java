@@ -439,25 +439,6 @@ public class FeatureTrack extends AbstractTrack {
         return feature;
     }
 
-    protected Feature getFeatureClosest(double position, int y, ReferenceFrame frame) {
-
-        PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
-
-        if (packedFeatures == null) {
-            return null;
-        }
-
-        Feature feature = null;
-
-        // Note that we use the full features to search here because (1) we expect to retrieve one element at most
-        // (2) searching packed features would miss the features we are looking for despite them being in the full set.
-        List<IGVFeature> features = packedFeatures.getFeatures();
-
-        if (features != null) {
-            feature = FeatureUtils.getFeatureClosest(position, features);
-        }
-        return feature;
-    }
 
     public WindowFunction getWindowFunction() {
         return WindowFunction.count;
