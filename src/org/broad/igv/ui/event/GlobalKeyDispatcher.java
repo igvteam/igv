@@ -285,8 +285,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
                                     "feature row is selected.");
                     return;
                 }
-                Feature feature = ft.getFeatureAtPositionInFeatureRow(vc.getChrName(), center,
-                        ft.getSelectedFeatureRowIndex(), vc);
+                Feature feature = ft.getFeatureAtPositionInFeatureRow(center, ft.getSelectedFeatureRowIndex(), vc);
 
                 if (feature == null)
                     return;

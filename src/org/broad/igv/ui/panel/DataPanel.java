@@ -376,17 +376,21 @@ public class DataPanel extends JComponent implements Paintable {
 
 
     /**
-     * Method description
+     * Update tooltip text for the current mouse position (x, y)
+     *
+     * @param x Mouse x position in pixels
+     * @param y Mouse y position in pixels
      */
-    public void updateTooltipText(int x, int y, String positionString) {
+    public void updateTooltipText(int x, int y) {
 
-        double location = frame.getChromosomePosition(x);
-        double displayLocation = location + 1;
+        double position = frame.getChromosomePosition(x);
+        //double displayLocation = location + 1;
 
         Track track = null;
         List<MouseableRegion> regions = parent.getMouseRegions();
         StringBuffer popupTextBuffer = new StringBuffer();
         popupTextBuffer.append("<html>");
+
         for (MouseableRegion mouseRegion : regions) {
             if (mouseRegion.containsPoint(x, y)) {
                 track = mouseRegion.getTracks().iterator().next();
@@ -399,8 +403,8 @@ public class DataPanel extends JComponent implements Paintable {
                     if (overlays != null) {
                         for (Track overlay : overlays) {
                             if ((overlay != track) && (overlay.getValueStringAt(
-                                    frame.getChrName(), displayLocation, y, frame) != null)) {
-                                String valueString = overlay.getValueStringAt(frame.getChrName(), displayLocation, y, frame);
+                                    frame.getChrName(), position, y, frame) != null)) {
+                                String valueString = overlay.getValueStringAt(frame.getChrName(), position, y, frame);
                                 if (valueString != null) {
                                     popupTextBuffer.append(valueString);
                                     popupTextBuffer.append("<br>");
@@ -411,7 +415,7 @@ public class DataPanel extends JComponent implements Paintable {
                         }
                     }
                     if (!foundOverlaidFeature) {
-                        String valueString = track.getValueStringAt(frame.getChrName(), displayLocation, y, frame);
+                        String valueString = track.getValueStringAt(frame.getChrName(), position, y, frame);
                         if (valueString != null) {
                             if (foundOverlaidFeature) {
                                 popupTextBuffer.append("---------------------<br>");
@@ -561,7 +565,7 @@ public class DataPanel extends JComponent implements Paintable {
                 position = frame.getChrName() + ":" + locationFormatter.format(location);
                 IGV.getInstance().setStatusBarMessage(position);
             }
-            updateTooltipText(e.getX(), e.getY(), position);
+            updateTooltipText(e.getX(), e.getY());
 
         }
 

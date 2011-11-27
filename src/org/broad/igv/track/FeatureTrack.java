@@ -281,7 +281,7 @@ public class FeatureTrack extends AbstractTrack {
 
         if (showFeatures) {
 
-            List<Feature> allFeatures = getAllFeatureAt(chr, position, y, frame);
+            List<Feature> allFeatures = getAllFeatureAt(position, y, frame);
             if (allFeatures == null) {
                 return null;
             }
@@ -335,7 +335,7 @@ public class FeatureTrack extends AbstractTrack {
      * @param frame
      * @return
      */
-    protected List<Feature> getAllFeatureAt(String chr, double position, int y, ReferenceFrame frame) {
+    private List<Feature> getAllFeatureAt(double position, int y, ReferenceFrame frame) {
 
         PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
@@ -372,7 +372,7 @@ public class FeatureTrack extends AbstractTrack {
             // The maximum length of all features in this collection. Used to insure we consider all features that
             // might overlap the position (feature are sorted by start position, but length is variable)
             int maxFeatureLength = packedFeatures.getMaxFeatureLength();
-            feature = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, features, true);
+            feature = FeatureUtils.getAllFeaturesAt(position, maxFeatureLength, minWidth, features);
         }
         return feature;
     }
@@ -398,21 +398,19 @@ public class FeatureTrack extends AbstractTrack {
                 }
             }
         }
-        return getFeatureAtPositionInFeatureRow(chr, position, featureRow, frame);
+        return getFeatureAtPositionInFeatureRow(position, featureRow, frame);
     }
 
     /**
      * Knowing the feature row, figure out which feature is at position position. If not expanded,
      * featureRow is ignored
      *
-     * @param chr
      * @param position
      * @param featureRow
      * @param frame
      * @return
      */
-    public Feature getFeatureAtPositionInFeatureRow(String chr, double position, int featureRow,
-                                                    ReferenceFrame frame) {
+    public Feature getFeatureAtPositionInFeatureRow(double position, int featureRow, ReferenceFrame frame) {
 
         PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
@@ -434,7 +432,7 @@ public class FeatureTrack extends AbstractTrack {
             // give a +/- 2 pixel window, otherwise very narrow features will be missed.
             double bpPerPixel = frame.getScale();
             int minWidth = (int) (2 * bpPerPixel);
-            feature = FeatureUtils.getFeatureAt(position, minWidth, features, true);
+            feature = FeatureUtils.getFeatureAt(position, minWidth, features);
         }
         return feature;
     }

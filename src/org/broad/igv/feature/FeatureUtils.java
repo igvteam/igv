@@ -101,24 +101,15 @@ public class FeatureUtils {
         });
     }
 
-    public static Feature getFeatureAt(double position, int buffer,
-                                       List<? extends Feature> features) {
-        return getFeatureAt(position, buffer, features, false);
-
-    }
-
     /**
      * Return a feature from the supplied list at the given position.
      *
      * @param position
      * @param buffer
      * @param features
-     * @param oneBased
      * @return
      */
-    public static Feature getFeatureAt(double position, int buffer,
-                                       List<? extends Feature> features,
-                                       boolean oneBased) {
+    public static Feature getFeatureAt(double position, int buffer, List<? extends Feature> features) {
 
         position--;
 
@@ -132,9 +123,6 @@ public class FeatureUtils {
 
             int effectiveStart = feature.getStart();
             int effectiveEnd = feature.getEnd();
-            if (oneBased) {
-                effectiveEnd += 1;
-            }
 
             if (position >= effectiveStart - buffer) {
 
@@ -312,14 +300,12 @@ public class FeatureUtils {
      * @param position
      * @param maxLength
      * @param features
-     * @param oneBased
      * @return
      */
     public static List<Feature> getAllFeaturesAt(double position,
                                                  double maxLength,
                                                  double minWidth,
-                                                 List<? extends org.broad.tribble.Feature> features,
-                                                 boolean oneBased) {
+                                                 List<? extends org.broad.tribble.Feature> features) {
 
         List<Feature> returnList = null;
 
@@ -334,9 +320,6 @@ public class FeatureUtils {
             }
 
             int end = feature.getEnd() + (int) (minWidth / 2);
-            if (oneBased) {
-                end += 1;
-            }
 
             if (position >= start && position <= end) {
                 if (returnList == null) returnList = new ArrayList();

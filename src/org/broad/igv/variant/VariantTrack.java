@@ -727,12 +727,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return popup text for the given position
      *
      * @param chr
-     * @param position in genomic coordinates
+     * @param zeroBasePosition - position in UCSC "0 based"  genomic coordinates
      * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
      * @param frame
      * @return
      */
-    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
+    public String getValueStringAt(String chr, double zeroBasePosition, int y, ReferenceFrame frame) {
+
+
+        // VariantContext is in 1-based coordinates,  IGV is 0-based (UCSC style).
+        double position = zeroBasePosition + 1;
 
         try {
             Variant variant = getFeatureClosest(position, frame); //getVariantAtPosition(chr, (int) position, frame);
