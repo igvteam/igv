@@ -343,6 +343,7 @@ public class AlignmentPacker {
                 if (bucket != null) {
                     if (bucket.isEmpty()) {
                         bucketArray[bucketNumber] = null;
+                        bucket = null;
                     } else {
                         return bucket;
                     }
