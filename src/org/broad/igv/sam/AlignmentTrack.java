@@ -66,29 +66,32 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
     public enum BisulfiteContext {
-    	CG, CHH, CHG, HCG, GCH, WCG
+        CG, CHH, CHG, HCG, GCH, WCG
     }
+
     protected static final Map<BisulfiteContext, String> bisulfiteContextToPubString = new HashMap<BisulfiteContext, String>();
+
     static {
-    	bisulfiteContextToPubString.put(BisulfiteContext.CG, "CG");
-    	bisulfiteContextToPubString.put(BisulfiteContext.CHH, "CHH");
-    	bisulfiteContextToPubString.put(BisulfiteContext.CHG, "CHG");
-    	bisulfiteContextToPubString.put(BisulfiteContext.HCG, "HCG");
-    	bisulfiteContextToPubString.put(BisulfiteContext.GCH, "GCH");
-    	bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
+        bisulfiteContextToPubString.put(BisulfiteContext.CG, "CG");
+        bisulfiteContextToPubString.put(BisulfiteContext.CHH, "CHH");
+        bisulfiteContextToPubString.put(BisulfiteContext.CHG, "CHG");
+        bisulfiteContextToPubString.put(BisulfiteContext.HCG, "HCG");
+        bisulfiteContextToPubString.put(BisulfiteContext.GCH, "GCH");
+        bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
     }
-    protected static final Map<BisulfiteContext, Pair<String,String>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<String,String>>();
+
+    protected static final Map<BisulfiteContext, Pair<String, String>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<String, String>>();
+
     static {
-    	bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<String,String>("","G"));
-    	bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<String,String>("","HH"));
-    	bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<String,String>("","HG"));
-    	bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<String,String>("H","G"));
-    	bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<String,String>("G","H"));
-    	bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<String,String>("W","G"));
+        bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<String, String>("", "G"));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<String, String>("", "HH"));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<String, String>("", "HG"));
+        bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<String, String>("H", "G"));
+        bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<String, String>("G", "H"));
+        bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<String, String>("W", "G"));
     }
 
 
-    
     public enum ColorOption {
         INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE;
     }
@@ -156,29 +159,27 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             } else {
                 try {
                     colorByOption = ColorOption.valueOf(colorByString);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     log.error("Error setting color option", e);
                     colorByOption = DEFAULT_COLOR_OPTION;
 
                 }
             }
         }
-        
-        if (bisulfiteContext == null) {
-        	String str = PreferenceManager.getInstance().get(PreferenceManager.SAM_BISULFITE_CONTEXT);
-        	if (str == null) {
-        		bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
-        	} else {
-        		try {
-        			bisulfiteContext = BisulfiteContext.valueOf(str);
-        		}
-        		catch (Exception e) {
-        			log.error("Error setting bisulfite option", e);
-        			bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
 
-        		}
-        	}
+        if (bisulfiteContext == null) {
+            String str = PreferenceManager.getInstance().get(PreferenceManager.SAM_BISULFITE_CONTEXT);
+            if (str == null) {
+                bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+            } else {
+                try {
+                    bisulfiteContext = BisulfiteContext.valueOf(str);
+                } catch (Exception e) {
+                    log.error("Error setting bisulfite option", e);
+                    bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+
+                }
+            }
         }
 
     }
@@ -190,8 +191,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         PreferenceManager prefs = PreferenceManager.getInstance();
         float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         minVisibleScale = (maxRange * 1000) / 700;
-     }
-
+    }
 
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
@@ -489,7 +489,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         Alignment feature = getAlignmentAt(position, y, frame);
-        if(feature == null) {
+        if (feature == null) {
             return null;
         }
         return feature.getValueString(position, getWindowFunction());
@@ -607,21 +607,21 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     }
 
 
-	public static String getBisulfiteContextPubStr(BisulfiteContext item) {
-		return bisulfiteContextToPubString.get(item);
-	}
-    
-	public static String getBisulfiteContextPreContext(BisulfiteContext item) {
-		Pair<String,String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-		return pair.fst;
-	}
+    public static String getBisulfiteContextPubStr(BisulfiteContext item) {
+        return bisulfiteContextToPubString.get(item);
+    }
 
-	public static String getBisulfiteContextPostContext(BisulfiteContext item) {
-		Pair<String,String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-		return pair.snd;
-	}
+    public static String getBisulfiteContextPreContext(BisulfiteContext item) {
+        Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+        return pair.fst;
+    }
 
-	@Override
+    public static String getBisulfiteContextPostContext(BisulfiteContext item) {
+        Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+        return pair.snd;
+    }
+
+    @Override
     public Map<String, String> getPersistentState() {
         Map<String, String> attrs = super.getPersistentState();
         attrs.putAll(renderOptions.getPersistentState());
@@ -758,7 +758,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
             value = attributes.get("bisulfiteContextRenderOption");
             if (value != null) {
-            	bisulfiteContextRenderOption = BisulfiteContext.valueOf(value);
+                bisulfiteContextRenderOption = BisulfiteContext.valueOf(value);
                 bisulfiteContext = bisulfiteContextRenderOption;
             }
         }
@@ -840,9 +840,9 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             addSeparator();
             addColorByMenuItem();
-            addBisulfiteContextMenuItem();
             addShadeBaseMenuItem();
             addShowAllBasesMenuItem();
+            addBisulfiteContextMenuItem();
 
             addSeparator();
             addViewAsPairsMenuItem();
@@ -873,28 +873,26 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             ButtonGroup group = new ButtonGroup();
 
-            for (final BisulfiteContext item : BisulfiteContext.values())
-            {
-            	
-            	String optionStr = getBisulfiteContextPubStr(item); 
+            for (final BisulfiteContext item : BisulfiteContext.values()) {
 
-            	JRadioButtonMenuItem m1= new JRadioButtonMenuItem(optionStr);
-            	m1.setSelected(bisulfiteContext == item);
-            	m1.addActionListener(new ActionListener() {
-            		public void actionPerformed(ActionEvent aEvt) {
-            			setBisulfiteContext(item);
-            			refresh();
-            		}
-            	});
-            	bisulfiteContextMenu.add(m1);
-            	group.add(m1);
+                String optionStr = getBisulfiteContextPubStr(item);
+
+                JRadioButtonMenuItem m1 = new JRadioButtonMenuItem(optionStr);
+                m1.setSelected(bisulfiteContext == item);
+                m1.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        setBisulfiteContext(item);
+                        refresh();
+                    }
+                });
+                bisulfiteContextMenu.add(m1);
+                group.add(m1);
             }
 
 
-            
             add(bisulfiteContextMenu);
 
-		}
+        }
 
         public void addSelecteByNameItem() {
             // Change track height by attribute
@@ -1007,12 +1005,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
 
 
-    	
-    	private void setBisulfiteContext(BisulfiteContext option) {
-        	bisulfiteContext = option;
+        private void setBisulfiteContext(BisulfiteContext option) {
+            bisulfiteContext = option;
             PreferenceManager.getInstance().put(PreferenceManager.SAM_BISULFITE_CONTEXT, option.toString());
         }
-        
+
         private void setColorOption(ColorOption option) {
             colorByOption = option;
             PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY, option.toString());
@@ -1093,7 +1090,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             colorMenu.add(m6);
             group.add(m6);
 
-            
+
             add(colorMenu);
 
         }
@@ -1255,8 +1252,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                             //dataManager.reload();
                             refresh();
                         }
-                    }
-                    catch (NumberFormatException ex) {
+                    } catch (NumberFormatException ex) {
                         MessageUtils.showMessage("Insert size must be an integer value: " + val);
                     }
 
@@ -1362,12 +1358,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
-                                } else if ( path.endsWith(".counts"))  {
-                                       DataSource ds = new GobyCountArchiveDataSource(file
-                                       );
+                                } else if (path.endsWith(".counts")) {
+                                    DataSource ds = new GobyCountArchiveDataSource(file
+                                    );
                                     getCoverageTrack().setDataSource(ds);
 
-                                } else{
+                                } else {
                                     MessageUtils.showMessage("Coverage data must be in .tdf format");
                                 }
                             }
@@ -1380,10 +1376,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         }
 
     }
-
-
-
-
 
 
 }
