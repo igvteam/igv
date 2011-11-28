@@ -156,9 +156,6 @@ public class CNParser extends AbstractParser {
 
             setTrackParameters();
 
-            // The DataConsumer interface takes an array of data per position, however wig
-            // files contain a single data point.  Create an "array" once that can
-            // be resused
             float[] dataArray = new float[getHeadings().length];
 
 

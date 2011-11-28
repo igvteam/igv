@@ -167,7 +167,7 @@ public class FeatureUtilsTest {
         int position = 500;
         int maxLength = 100;
 
-        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features, false);
+        List<Feature> result = FeatureUtils.getAllFeaturesAt(position, maxLength, 0, features);
         assertEquals(6, result.size());
         for (Feature f : result) {
             assertTrue(position >= f.getStart() && position <= f.getEnd());

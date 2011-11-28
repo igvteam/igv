@@ -128,12 +128,10 @@ public class TDFBedTile implements TDFTile {
         end = new int[nPositions];
         for (int i = 0; i < nPositions; i++) {
             end[i] = byteBuffer.getInt();
-            ;
         }
 
         int nS = byteBuffer.getInt();
-        ;
-        assert (nS == nSamples);
+        //assert (nS == nSamples);
 
         data = new float[nS][nPositions];
         for (int row = 0; row < nS; row++) {

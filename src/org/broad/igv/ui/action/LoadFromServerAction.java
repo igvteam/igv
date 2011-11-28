@@ -41,10 +41,6 @@ import javax.swing.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.event.ActionEvent;
 import java.io.*;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -79,56 +75,44 @@ public class LoadFromServerAction extends MenuAction {
         String genomeURL = urlString.replaceAll("\\$\\$", genomeId);
         try {
             InputStream is = null;
-            LinkedHashSet<String> urls = null;
+            LinkedHashSet<String> nodeURLs = null;
             try {
                 is = ParsingUtils.openInputStream(new ResourceLocator(genomeURL));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-                urls = getResourceUrls(bufferedReader);
+                nodeURLs = getResourceUrls(bufferedReader);
             } catch (IOException e) {
-                MessageUtils.showMessage("Error loading the genome registry file: "  + e.getMessage());
+                MessageUtils.showMessage("Error loading the data registry file: " + e.toString());
                 log.error("Error loading genome registry file", e);
                 return;
 
-            }
-            finally {
-                if (is != null) is.close();
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        log.error("Error closing input stream", e);
+                    }
+                }
             }
 
-            if (urls == null || urls.isEmpty()) {
-                JOptionPane.showMessageDialog(mainFrame.getMainFrame(),
-                        "No datasets are available for the current genome (" + genomeId + ").");
+            if (nodeURLs == null || nodeURLs.isEmpty()) {
+                MessageUtils.showMessage("No datasets are available for the current genome (" + genomeId + ").");
             } else {
 
-                List<ResourceLocator> locators = selectResources(urls);
+                List<ResourceLocator> locators = loadNodes(nodeURLs);
                 if (locators != null) {
                     mainFrame.loadTracks(locators);
                 }
             }
 
 
-        } catch (UnknownHostException e) {
-            String msg = "The application could not contact the server: Unknown Host Failure\nHost: " + e.getMessage();
-            log.error(msg);
-            MessageUtils.showMessage(msg);
-
-        } catch (ConnectException e) {
-            String msg = "The application could not contact the server: Connection Failure!\n" + e.getMessage();
-            log.error(msg);
-            MessageUtils.showMessage(msg);
-        }
-
-        catch (Exception e) {
-            String msg = "Could not load information from server!\n" + e.getMessage();
-            log.error(msg);
-            MessageUtils.showMessage(msg);
-
-        } finally {
+        }  finally {
             mainFrame.showLoadedTrackCount();
         }
 
     }
 
-    public List<ResourceLocator> selectResources(final LinkedHashSet<String> xmlUrls) {
+    public List<ResourceLocator> loadNodes(final LinkedHashSet<String> xmlUrls) {
 
         if ((xmlUrls == null) || xmlUrls.isEmpty()) {
             log.error("No datasets are available from this server for the current genome (");
@@ -163,13 +147,11 @@ public class LoadFromServerAction extends MenuAction {
                     try {
                         is = ParsingUtils.openInputStream(new ResourceLocator(url));
                         xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
-                    }
-                    catch (java.net.SocketTimeoutException e) {
+                    } catch (java.net.SocketTimeoutException e) {
                         xmlParsingError = true;
                         buffer.append("Error. Connection time out reading: " + url.toString());
                         continue;
-                    }
-                    catch (SAXParseException e) {
+                    } catch (SAXParseException e) {
                         log.error("Invalid XML resource: " + url, e);
 
                         xmlParsingError = true;
@@ -193,14 +175,12 @@ public class LoadFromServerAction extends MenuAction {
                         buffer.append(e.getMessage());
                         buffer.append("]\n");
                         continue;
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         String msg = "Error accessing dataset list: " + e.toString();
 
                         MessageUtils.showMessage(msg);
                         log.error("Error accessing URL: " + url, e);
-                    }
-                    finally {
+                    } finally {
                         if (is != null) is.close();
                     }
 
