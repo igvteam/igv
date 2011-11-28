@@ -32,6 +32,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 /**
+ * @deprecated -- use FileDialogUtils
+ *
  * @author eflakes
  */
 public class FileChooserDialog extends javax.swing.JDialog {

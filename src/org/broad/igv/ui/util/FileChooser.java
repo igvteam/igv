@@ -27,6 +27,8 @@ import javax.swing.*;
 import java.io.File;
 
 /**
+ * @deprecated  -- use FileDialogUtils
+ *
  * @author eflakes
  */
 public class FileChooser extends JFileChooser {

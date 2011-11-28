@@ -46,12 +46,12 @@ public class FileDialogUtils {
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {
 
-        if(initialDirectory == null && initialFile != null) {
+        if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
         }
 
         // Strip off parent directory
-        if(initialFile != null) initialFile = new File(initialFile.getName());
+        if (initialFile != null) initialFile = new File(initialFile.getName());
 
         if (Globals.IS_MAC) {
             return chooseNative(title, initialDirectory, initialFile, false, mode);
@@ -86,12 +86,38 @@ public class FileDialogUtils {
         String file = fd.getFile();
         String directory = fd.getDirectory();
         if (file != null && directory != null) {
+            // Ugly MAC hack -- bug in their native file dialog
+            if (Globals.IS_MAC && initialFile != null) {
+                file = fixMacExtension(initialFile, file);
+            }
             return new File(directory, file);
         } else {
             return null;
         }
     }
 
+    /**
+     * Fix for bug in MacOS "native" dialog.  If hide extension is on the extension is stripped from the dialog,
+     * so far so good, but it is not added in the file returned.  So, if we know the extension expected from
+     * initialFile add it back.  If not too bad.
+     *
+     * @param initialFile
+     * @param fname
+     */
+    private static String fixMacExtension(File initialFile, String fname) {
+        if (fname.contains(".")) {
+            return fname;   // Has some sort of extension.  Should we compare to expected extension?
+        }
+        String initialName = initialFile.getName();
+        int idx = initialName.lastIndexOf(".");
+        if (idx > 0) {
+            String ext = initialName.substring(idx);
+            return fname + ext;
+        }
+        return fname;
+
+
+    }
 
     private static File chooseSwing(String title, File initialDirectory, File initialFile, boolean directories, int mode) {
 
@@ -100,7 +126,7 @@ public class FileDialogUtils {
         if (initialDirectory != null) {
             fileChooser.setCurrentDirectory(initialDirectory);
         }
-         if (initialFile != null) {
+        if (initialFile != null) {
             fileChooser.setSelectedFile(initialFile);
         }
         fileChooser.setDialogTitle(title);
