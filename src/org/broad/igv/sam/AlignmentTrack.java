@@ -19,7 +19,6 @@ package org.broad.igv.sam;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.sun.tools.javac.util.Pair;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -38,10 +37,10 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.*;
-import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
+import org.broad.igv.util.Pair;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -614,12 +613,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     public static String getBisulfiteContextPreContext(BisulfiteContext item) {
         Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.fst;
+        return pair.getFirst();
     }
 
     public static String getBisulfiteContextPostContext(BisulfiteContext item) {
         Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
-        return pair.snd;
+        return pair.getSecond();
     }
 
     @Override
