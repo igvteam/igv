@@ -27,9 +27,11 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.CoverageDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
@@ -878,17 +880,19 @@ public class CoverageTrack extends AbstractTrack {
 
             public void actionPerformed(ActionEvent e) {
 
-
-                FileChooserDialog trackFileDialog = IGV.getInstance().getTrackFileChooser();
-                trackFileDialog.setMultiSelectionEnabled(false);
-                trackFileDialog.setVisible(true);
-                if (!trackFileDialog.isCanceled()) {
-                    File file = trackFileDialog.getSelectedFile();
+                final PreferenceManager prefs = PreferenceManager.getInstance();
+                File initDirectory = prefs.getLastTrackDirectory();
+                File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
+                if (file != null) {
+                    prefs.setLastTrackDirectory(file.getParentFile());
                     String path = file.getAbsolutePath();
                     if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-
                         TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                         TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
+                        setDataSource(ds);
+                        IGV.getInstance().repaintDataPanels();
+                    } else if (path.endsWith(".counts")) {
+                        DataSource ds = new GobyCountArchiveDataSource(file);
                         setDataSource(ds);
                         IGV.getInstance().repaintDataPanels();
                     } else {
@@ -899,7 +903,9 @@ public class CoverageTrack extends AbstractTrack {
         });
 
         menu.add(item);
+
     }
+
 
     public void addAutoscaleItem(JPopupMenu menu) {
         // Change track height by attribute

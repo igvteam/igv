@@ -33,13 +33,19 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.ui.svg.SVGGraphics;
+import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.LinkedHashMap;
 
@@ -187,35 +193,11 @@ public class SnapshotUtilities {
         public String getExtension() {
             return type.getExtension();
         }
-    }
 
-    /**
-     * Genome Archive file filter
-     */
-    public static class GenomeArchiveFileFilter extends FileFilter {
-
-        public GenomeArchiveFileFilter() {
-        }
-
-        public boolean accept(File file) {
-
-            if (file.isDirectory()) {
-                return true;
-            }
-
-            return file.getName().toLowerCase().endsWith(
-                    Globals.GENOME_FILE_EXTENSION);
-        }
-
-        public String getDescription() {
-            return "Genome Archive File";
-        }
-
-        public String getExtension() {
-            return Globals.GENOME_FILE_EXTENSION;
+        public boolean accept(File file, String name) {
+            return name.toLowerCase().endsWith(type.getExtension());
         }
     }
-
 
     public static void doComponentSnapshot(Component component, File file, SnapshotFileType type) {
 
@@ -385,4 +367,112 @@ public class SnapshotUtilities {
         }
     }
 
+
+    public static class SnapshotFileChooser extends JFileChooser {
+
+        boolean accepted = false;
+        File previousFile;
+
+        public SnapshotFileChooser(File directory, File selectedFile) {
+            super(directory);
+            setPreviousFile(selectedFile);
+            init();
+        }
+
+
+        public void approveSelection() {
+            accepted = true;
+            super.approveSelection();
+        }
+
+        public void setPreviousFile(File file) {
+            this.previousFile = file;
+            setSelectedFile(previousFile);
+        }
+
+        public File getPreviousFile() {
+            return previousFile;
+        }
+
+        @Override
+        public void cancelSelection() {
+            setSelectedFile(null);
+            super.cancelSelection();
+        }
+
+
+        @Override
+        protected JDialog createDialog(Component parent) throws HeadlessException {
+            JDialog dialog = super.createDialog(parent);
+            dialog.setLocation(300, 200);
+            dialog.setResizable(false);
+            dialog.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    if (!accepted) {
+                        setSelectedFile(null);
+                    }
+                }
+            });
+            return dialog;
+        }
+
+        private void init() {
+
+            FileFilter[] fileFilters = SnapshotUtilities.getAllSnapshotFileFilters();
+            // Setup FileFilters
+            if (fileFilters != null) {
+                for (FileFilter fileFilter : fileFilters) {
+                    addChoosableFileFilter(fileFilter);
+                }
+            }
+
+            addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+
+
+                    File oldFile = null;
+                    String property = e.getPropertyName();
+                    if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(property)) {
+                        oldFile = (File) e.getOldValue();
+                    } else if (JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(property)) {
+
+                        if (e.getOldValue() instanceof SnapshotFileFilter &&
+                                e.getNewValue() instanceof SnapshotFileFilter) {
+
+                            SnapshotFileFilter newFilter = (SnapshotFileFilter) e.getNewValue();
+
+                            File currentDirectory = getCurrentDirectory();
+                            File previousFile = getPreviousFile();
+                            if (previousFile != null) {
+
+                                File file = null;
+                                if (currentDirectory != null) {
+                                    file = new File(currentDirectory, previousFile.getName());
+                                } else {
+                                    file = previousFile;
+                                }
+
+                                final File selectedFile = Utilities.changeFileExtension(
+                                        file, newFilter.getExtension());
+
+                                UIUtilities.invokeOnEventThread(new Runnable() {
+
+                                    public void run() {
+                                        setPreviousFile(selectedFile);
+                                        validate();
+                                    }
+                                });
+                            }
+
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
 }
+

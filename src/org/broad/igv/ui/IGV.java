@@ -46,7 +46,6 @@ import org.broad.igv.track.TrackManager;
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 import org.broad.igv.ui.dnd.GhostGlassPane;
-import org.broad.igv.ui.filefilters.CoverageFileFilter;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 
@@ -54,9 +53,6 @@ import static org.broad.igv.ui.util.SnapshotUtilities.*;
 
 import org.broad.igv.ui.util.ProgressMonitor;
 
-import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
-
-import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 
 import org.broad.igv.util.*;
 import org.broad.tribble.util.SeekableFileStream;
@@ -109,8 +105,8 @@ public class IGV {
     private GenomeManager genomeManager;
 
     // FileChooser Dialogs
-    private FileChooserDialog trackFileChooser;
-    private FileChooser snapshotFileChooser;
+    // private FileChooserDialog trackFileChooser;
+    // private FileChooser snapshotFileChooser;
 
 
     // Misc state
@@ -246,10 +242,6 @@ public class IGV {
 
         mainFrame.pack();
 
-        // TODO -- refactor to eliminate these
-        initializeSnapshot();
-        initializeDialogs();
-
         // Set the application's previous location and size
         Dimension screenBounds = Toolkit.getDefaultToolkit().getScreenSize();
         Rectangle applicationBounds = PreferenceManager.getInstance().getApplicationFrameBounds();
@@ -295,84 +287,6 @@ public class IGV {
         return UIConstants.preferredSize;
     }
 
-
-    // TODO -- eliminate this shared file chooser,  and all "shared" dialogs like this.
-
-    private void initializeDialogs() {
-
-        // Create Track Chooser
-        //  Note --  why are these reused ? (JTR)
-        trackFileChooser = new FileChooserDialog(mainFrame, true);
-        trackFileChooser.addChoosableFileFilter(new AlignmentFileFilter());
-        trackFileChooser.addChoosableFileFilter(new CoverageFileFilter());
-
-        // This hack is ugly, but I can't see any other way to set the default file filter to "All"
-        trackFileChooser.setFileFilter(trackFileChooser.getChoosableFileFilters()[0]);
-
-
-    }
-
-    public FileChooserDialog getTrackFileChooser() {
-        return trackFileChooser;
-    }
-
-    private void initializeSnapshot() {
-
-        File snapshotDirectory = PreferenceManager.getInstance().getLastSnapshotDirectory();
-
-
-        // File Filters
-        FileFilter[] fileFilters = SnapshotUtilities.getAllSnapshotFileFilters();
-
-        snapshotFileChooser = getFileChooser(snapshotDirectory, null, fileFilters);
-        snapshotFileChooser.setDialogTitle("Snapshot File");
-
-        snapshotFileChooser.addPropertyChangeListener(
-                new PropertyChangeListener() {
-
-                    public void propertyChange(PropertyChangeEvent e) {
-
-                        File oldFile = null;
-                        String property = e.getPropertyName();
-                        if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(property)) {
-                            oldFile = (File) e.getOldValue();
-                            snapshotFileChooser.setPreviousFile(oldFile);
-                        } else if (JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(property)) {
-
-                            if (e.getOldValue() instanceof SnapshotFileFilter &&
-                                    e.getNewValue() instanceof SnapshotFileFilter) {
-
-                                SnapshotFileFilter newFilter =
-                                        (SnapshotFileFilter) e.getNewValue();
-
-                                File currentDirectory = snapshotFileChooser.getCurrentDirectory();
-                                File previousFile = snapshotFileChooser.getPreviousFile();
-                                if (previousFile != null) {
-
-                                    File file = null;
-                                    if (currentDirectory != null) {
-                                        file = new File(currentDirectory, previousFile.getName());
-                                    } else {
-                                        file = previousFile;
-                                    }
-
-                                    final File selectedFile = Utilities.changeFileExtension(
-                                            file, newFilter.getExtension());
-
-                                    UIUtilities.invokeOnEventThread(new Runnable() {
-
-                                        public void run() {
-                                            snapshotFileChooser.setSelectedFile(selectedFile);
-                                            snapshotFileChooser.validate();
-                                        }
-                                    });
-                                }
-
-                            }
-                        }
-                    }
-                });
-    }
 
     public void addRegionOfInterest(RegionOfInterest roi) {
         session.addRegionOfInterestWithNoListeners(roi);
@@ -997,21 +911,6 @@ public class IGV {
 
         String extension = SnapshotUtilities.getFileExtension(file.getAbsolutePath());
 
-        // Use default extension if file has none
-        if (extension == null) {
-
-            FileFilter filter = snapshotFileChooser.getFileFilter();
-
-            // Figure out the proper extension
-            if (!(filter instanceof SnapshotFileFilter)) {
-                extension = SnapshotFileType.PNG.getExtension();
-            } else {
-                extension = ((SnapshotFileFilter) filter).getExtension();
-            }
-
-            file = new File((file.getAbsolutePath() + extension));
-        }
-
         SnapshotFileType type = SnapshotUtilities.getSnapshotFileType(extension);
 
         // If valid extension
@@ -1030,34 +929,19 @@ public class IGV {
         log.debug("Finished creating snapshot: " + file.getName());
     }
 
-    public File selectSnapshotFile(
-            File defaultFile) {
+    public File selectSnapshotFile(File defaultFile) {
 
-        SnapshotFileFilter snapshotFileFilter = null;
-        if (defaultFile != null) {
+        File snapshotDirectory = PreferenceManager.getInstance().getLastSnapshotDirectory();
 
-            String fileExtension = SnapshotUtilities.getFileExtension(defaultFile.getAbsolutePath());
-            snapshotFileFilter = SnapshotUtilities.getSnapshotFileFilterForType(
-                    SnapshotUtilities.getSnapshotFileType(fileExtension));
-        }
-
-        snapshotFileChooser.setFileFilter(snapshotFileFilter);
-        snapshotFileChooser.setSelectedFile(defaultFile);
-
-        // Display the dialog
-        snapshotFileChooser.showSaveDialog(mainFrame);
-
-        resetStatusMessage();
-
-        File file = snapshotFileChooser.getSelectedFile();
+        JFileChooser fc = new SnapshotFileChooser(snapshotDirectory, defaultFile);
+        fc.showSaveDialog(mainFrame);
+        File file = fc.getSelectedFile();
 
         // If a file selection was made
         if (file != null) {
-
-            File directory = snapshotFileChooser.getCurrentDirectory();
+            File directory = file.getParentFile();
             if (directory != null) {
-                PreferenceManager.getInstance().setLastSnapshotDirectory(
-                        directory);
+                PreferenceManager.getInstance().setLastSnapshotDirectory(directory);
             }
 
         }

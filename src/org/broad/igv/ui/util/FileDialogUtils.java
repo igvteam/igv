@@ -22,8 +22,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * @author jrobinso
@@ -45,6 +47,10 @@ public class FileDialogUtils {
     }
 
     public static File chooseFile(String title, File initialDirectory, File initialFile, int mode) {
+        return chooseFile(title, initialDirectory, initialFile, null, mode);
+    }
+
+    public static File chooseFile(String title, File initialDirectory, File initialFile, FilenameFilter filter, int mode) {
 
         if (initialDirectory == null && initialFile != null) {
             initialDirectory = initialFile.getParentFile();
@@ -53,23 +59,36 @@ public class FileDialogUtils {
         // Strip off parent directory
         if (initialFile != null) initialFile = new File(initialFile.getName());
 
+        // TODO -- use native dialogs for windows as well?
         if (Globals.IS_MAC) {
-            return chooseNative(title, initialDirectory, initialFile, false, mode);
+            return chooseNative(title, initialDirectory, initialFile, filter, false, mode);
         } else {
-            return chooseSwing(title, initialDirectory, initialFile, false, mode);
+            return chooseSwing(title, initialDirectory, initialFile, filter, false, mode);
         }
+    }
+
+    public static File[] chooseMultiple(String title, File initialDirectory, final FilenameFilter filter) {
+        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, null, filter, false);
+        fileChooser.setMultiSelectionEnabled(true);
+        boolean approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+        if (approve) {
+            return fileChooser.getSelectedFiles();
+        } else {
+            return null;
+        }
+
     }
 
     public static File chooseDirectory(String title, File initialDirectory) {
-
         if (Globals.IS_MAC) {
-            return chooseNative(title, initialDirectory, null, true, LOAD);
+            return chooseNative(title, initialDirectory, null, null, true, LOAD);
         } else {
-            return chooseSwing(title, initialDirectory, null, true, LOAD);
+            return chooseSwing(title, initialDirectory, null, null, true, LOAD);
         }
     }
 
-    private static File chooseNative(String title, File initialDirectory, File initialFile, boolean directories, int mode) {
+    private static File chooseNative(String title, File initialDirectory, File initialFile, FilenameFilter filter,
+                                     boolean directories, int mode) {
 
         System.setProperty("apple.awt.fileDialogForDirectories", String.valueOf(directories));
         FileDialog fd = new FileDialog(IGV.getMainFrame(), title);
@@ -78,6 +97,9 @@ public class FileDialogUtils {
         }
         if (initialFile != null) {
             fd.setFile(initialFile.getName());
+        }
+        if (filter != null) {
+            fd.setFilenameFilter(filter);
         }
         fd.setModal(true);
         fd.setMode(mode);
@@ -95,6 +117,58 @@ public class FileDialogUtils {
             return null;
         }
     }
+
+
+    private static File chooseSwing(String title, File initialDirectory, File initialFile, final FilenameFilter filter,
+                                    boolean directories, int mode) {
+
+
+        JFileChooser fileChooser = getJFileChooser(title, initialDirectory, initialFile, filter, directories);
+
+        boolean approve;
+        if (mode == LOAD) {
+            approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+        } else {
+            approve = fileChooser.showSaveDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
+        }
+
+        if (approve) {
+            return fileChooser.getSelectedFile();
+        } else {
+            return null;
+        }
+
+    }
+
+
+    private static JFileChooser getJFileChooser(String title, File initialDirectory, File initialFile,
+                                                final FilenameFilter filter, boolean directories) {
+        JFileChooser fileChooser = new JFileChooser();
+        if (initialDirectory != null) {
+            fileChooser.setCurrentDirectory(initialDirectory);
+        }
+        if (initialFile != null) {
+            fileChooser.setSelectedFile(initialFile);
+        }
+        if (filter != null) {
+            fileChooser.setFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return filter.accept(file.getParentFile(), file.getName());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "";
+                }
+            });
+        }
+
+        fileChooser.setDialogTitle(title);
+        fileChooser.setFileSelectionMode(directories ? JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_ONLY);
+        return fileChooser;
+    }
+
 
     /**
      * Fix for bug in MacOS "native" dialog.  If hide extension is on the extension is stripped from the dialog,
@@ -115,36 +189,6 @@ public class FileDialogUtils {
             return fname + ext;
         }
         return fname;
-
-
-    }
-
-    private static File chooseSwing(String title, File initialDirectory, File initialFile, boolean directories, int mode) {
-
-
-        JFileChooser fileChooser = new JFileChooser();
-        if (initialDirectory != null) {
-            fileChooser.setCurrentDirectory(initialDirectory);
-        }
-        if (initialFile != null) {
-            fileChooser.setSelectedFile(initialFile);
-        }
-        fileChooser.setDialogTitle(title);
-        fileChooser.setFileSelectionMode(directories ? JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_ONLY);
-
-        boolean approve = false;
-        if (mode == LOAD) {
-            approve = fileChooser.showOpenDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
-        } else {
-            approve = fileChooser.showSaveDialog(IGV.getMainFrame()) == JFileChooser.APPROVE_OPTION;
-        }
-
-        if (approve) {
-            return fileChooser.getSelectedFile();
-        } else {
-            return null;
-        }
-
     }
 
 }

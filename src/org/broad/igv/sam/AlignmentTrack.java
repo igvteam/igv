@@ -39,6 +39,7 @@ import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileChooserDialog;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
@@ -1346,23 +1347,21 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                         public void run() {
 
-                            FileChooserDialog trackFileDialog = IGV.getInstance().getTrackFileChooser();
-                            trackFileDialog.setMultiSelectionEnabled(false);
-                            trackFileDialog.setVisible(true);
-                            if (!trackFileDialog.isCanceled()) {
-                                File file = trackFileDialog.getSelectedFile();
+                            final PreferenceManager prefs = PreferenceManager.getInstance();
+                            File initDirectory = prefs.getLastTrackDirectory();
+                            File file = FileDialogUtils.chooseFile("Select coverage file", initDirectory, FileDialog.LOAD);
+                            if (file != null) {
+                                prefs.setLastTrackDirectory(file.getParentFile());
                                 String path = file.getAbsolutePath();
                                 if (path.endsWith(".tdf") || path.endsWith(".tdf")) {
-
                                     TDFReader reader = TDFReader.getReader(file.getAbsolutePath());
                                     TDFDataSource ds = new TDFDataSource(reader, 0, getName() + " coverage", genome);
                                     getCoverageTrack().setDataSource(ds);
                                     refresh();
                                 } else if (path.endsWith(".counts")) {
-                                    DataSource ds = new GobyCountArchiveDataSource(file
-                                    );
+                                    DataSource ds = new GobyCountArchiveDataSource(file);
                                     getCoverageTrack().setDataSource(ds);
-
+                                    refresh();
                                 } else {
                                     MessageUtils.showMessage("Coverage data must be in .tdf format");
                                 }

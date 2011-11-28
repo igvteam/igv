@@ -28,11 +28,13 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
+import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -69,36 +71,21 @@ public class LoadFilesMenuAction extends MenuAction {
                 PreferenceManager.getInstance().getLastTrackDirectory();
 
         // Get Track Files
-        FileChooserDialog trackFileDialog = mainFrame.getTrackFileChooser();
-        trackFileDialog.setLocationRelativeTo(mainFrame.getMainFrame());
-        trackFileDialog.setTitle("Select Files");
-        trackFileDialog.setMultiSelectionEnabled(true);
-        trackFileDialog.setSelectedFile(null);
-        trackFileDialog.setCurrentDirectory(lastDirectoryFile);
-        trackFileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-
-        trackFileDialog.setVisible(true);
+        final PreferenceManager prefs = PreferenceManager.getInstance();
+        File initDirectory = prefs.getLastTrackDirectory();
 
         // Tracks.  Simulates multi-file select
-        File[] trackFiles = null;
+        File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, null);
 
-        if (!trackFileDialog.isCanceled()) {
+        if (trackFiles != null && trackFiles.length > 0) {
 
-            File lastFile = trackFileDialog.getSelectedFile();
+            File lastFile = trackFiles[0];
             if (lastFile != null && !lastFile.isDirectory()) {
                 lastFile = lastFile.getParentFile();
-
-                // Store the last accessed file location
-                PreferenceManager.getInstance().setLastTrackDirectory(lastFile);
+                PreferenceManager.getInstance().setLastTrackDirectory(lastFile.getParentFile());
             }
-
-            trackFiles = trackFileDialog.getSelectedFiles();
-            trackFileDialog.setSelectedFile(null);
         }
-
         mainFrame.resetStatusMessage();
-
         return trackFiles;
     }
 

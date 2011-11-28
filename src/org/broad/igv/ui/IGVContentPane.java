@@ -27,9 +27,7 @@ import org.broad.igv.ui.util.*;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
-import java.util.*;
 
-import static org.broad.igv.ui.util.UIUtilities.getFileChooser;
 
 /**
  * @author jrobinso

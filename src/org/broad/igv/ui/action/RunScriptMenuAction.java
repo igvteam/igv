@@ -24,8 +24,10 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
+import org.broad.igv.ui.util.FileDialogUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
@@ -66,33 +68,12 @@ public class RunScriptMenuAction extends MenuAction {
 
     private File chooseScriptFile() {
 
-        File lastDirectoryFile =
-                PreferenceManager.getInstance().getLastTrackDirectory();
-        File scriptFile = null;
+        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
+        File scriptFile = FileDialogUtils.chooseFile("Select Script", lastDirectoryFile, FileDialog.LOAD);
 
-        // Get Track Files
-        FileChooserDialog trackFileDialog = mainFrame.getTrackFileChooser();
-        trackFileDialog.setLocationRelativeTo(mainFrame.getMainFrame());
-        trackFileDialog.setTitle("Select Script");
-        trackFileDialog.setMultiSelectionEnabled(true);
-        trackFileDialog.setSelectedFile(null);
-        trackFileDialog.setCurrentDirectory(lastDirectoryFile);
-        trackFileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-        trackFileDialog.setVisible(true);
-
-        if (!trackFileDialog.isCanceled()) {
-
-            File lastFile = trackFileDialog.getSelectedFile();
-            if (lastFile != null && !lastFile.isDirectory()) {
-                lastFile = lastFile.getParentFile();
-
-                // Store the last accessed file location
-                PreferenceManager.getInstance().setLastTrackDirectory(lastFile);
-            }
-
-            scriptFile = trackFileDialog.getSelectedFile();
-            trackFileDialog.setSelectedFile(null);
+        if (scriptFile != null) {
+            // Store the last accessed file location
+            PreferenceManager.getInstance().setLastTrackDirectory(scriptFile.getParentFile());
         }
 
         mainFrame.resetStatusMessage();
