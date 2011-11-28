@@ -22,6 +22,9 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
+import org.broad.igv.sam.AlignmentTrack.ColorOption;
+import org.broad.igv.sam.AlignmentTrack.RenderOptions;
+import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -64,6 +67,10 @@ public class AlignmentRenderer implements FeatureRenderer {
     static Map<String, Color> ffOrientationColors;
     static Map<String, Color> rfOrientationColors;
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
+
+    // Bisulfite constants
+    private static final Color bisulfiteColorFw = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorRev = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
 
     PreferenceManager prefs;
 
@@ -460,8 +467,9 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
 
 
-            if (locScale < 5) {
-                drawBases(context, rect, aBlock, alignmentColor, renderOptions.shadeBases, renderOptions.showAllBases);
+            if ((locScale < 5) || (renderOptions.colorOption.equals(ColorOption.BISULFITE) && (locScale < 30)))
+            {
+                drawBases(context, rect, aBlock, alignmentColor, renderOptions);
             }
 
             // Draw connecting lines between blocks, if in view
@@ -517,9 +525,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Rectangle rect,
                            AlignmentBlock block,
                            Color alignmentColor,
-                           boolean shadeBases,
-                           boolean showAllBases) {
+                           RenderOptions renderOptions)
+    {
 
+    	boolean shadeBases = renderOptions.shadeBases;
+    	boolean showAllBases = renderOptions.showAllBases;
+    	
         double locScale = context.getScale();
         double origin = context.getOrigin();
         String chr = context.getChr();
@@ -547,7 +558,13 @@ public class AlignmentRenderer implements FeatureRenderer {
             int end = start + read.length;
             byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
 
-
+            BisulfiteBaseInfo bisinfo = null;
+            boolean bisulfiteMode = (renderOptions.colorOption == AlignmentTrack.ColorOption.BISULFITE);
+            if (bisulfiteMode)
+            {
+            	bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContextRenderOption);
+            }
+            		
             // Loop through base pair coordinates
             for (int loc = start; loc < end; loc++) {
 
@@ -571,10 +588,13 @@ public class AlignmentRenderer implements FeatureRenderer {
                             !compareBases(refbase, readbase);
                 }
 
-                if (misMatch || showAllBases) {
+                
+                if ( showAllBases || (!bisulfiteMode && misMatch) || 
+                		(bisulfiteMode && (!bisinfo.getDisplayStatus(idx).equals(DisplayStatus.NOTHING))) ) {
                     char c = (char) read[idx];
 
                     Color color = nucleotideColors.get(c);
+                    if (bisulfiteMode) color = bisinfo.getDisplayColor(idx);
                     if (color == null) {
                         color = Color.black;
                     }
@@ -584,10 +604,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                         color = getShadedColor(qual, color, alignmentColor, prefs);
                     }
 
+                    double bisulfiteXaxisShift = (bisulfiteMode) ? bisinfo.getXaxisShift(idx) : 0;
 
                     // If there is room for text draw the character, otherwise
                     // just draw a rectangle to represent the
-                    int pX0 = (int) ((loc - origin) / locScale);
+                    int pX0 = (int) (((double)loc + bisulfiteXaxisShift - (double)origin) / (double)locScale);
 
                     // Don't draw out of clipping rect
                     if (pX0 > rect.getMaxX()) {
@@ -596,19 +617,34 @@ public class AlignmentRenderer implements FeatureRenderer {
                         continue;
                     }
 
-                    if ((dX >= 8) && (dY >= 12)) {
+                    
+                    if ( ((dY>=12) && (dX >= 8)) && ( !bisulfiteMode || (bisulfiteMode && bisinfo.getDisplayStatus(idx).equals(DisplayStatus.CHARACTER))) ) 
+                    {
                         g.setColor(color);
                         drawCenteredText(g, new char[]{c}, pX0, pY + 1, dX, dY - 2);
                     } else {
 
-                        int dW = (dX > 4 ? dX - 1 : dX);
+                        int pX0i = pX0, dXi = dX;
+
+                        // If bisulfite mode, we expand the rectangle to make it more visible
+                    	if (bisulfiteMode)
+                    	{
+                           	if (dXi<8)
+                        	{
+                        		int expansion = dXi;
+                        		pX0i -= expansion;
+                        		dXi += (2*expansion);
+                        	}
+                    	}
+                    	
+                        int dW = (dXi > 4 ? dXi - 1 : dXi);
 
                         if (color != null) {
                             g.setColor(color);
                             if (dY < 10) {
-                                g.fillRect(pX0, pY, dX, dY);
+                                g.fillRect(pX0i, pY, dXi, dY);
                             } else {
-                                g.fillRect(pX0, pY + 1, dW, dY - 3);
+                                g.fillRect(pX0i, pY + 1, dW, dY - 3);
                             }
                         }
                     }
@@ -626,7 +662,7 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param readbase
      * @return
      */
-    private static boolean compareBases(byte refbase, byte readbase) {
+    public static boolean compareBases(byte refbase, byte readbase) {
         // Force both bases to upper case
         if (refbase > 90) {
             refbase = (byte) (refbase - 32);
@@ -752,7 +788,19 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
-            case INSERT_SIZE:
+        	case BISULFITE:
+        		// Just a simple forward/reverse strand color scheme that won't clash with the 
+        		// methylation rectangles.
+                if (alignment.isNegativeStrand()) {
+                    c = bisulfiteColorFw;
+                } else {
+                    c = bisulfiteColorRev;
+                }
+                //c = getOrientationColor(alignment, peStats);
+               
+                break;
+            
+        	case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
                     boolean sameChr = isPairedAlignment ||

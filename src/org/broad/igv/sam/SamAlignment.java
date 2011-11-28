@@ -264,7 +264,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
         if (cigarString.equals("*")) {
             alignmentBlocks = new AlignmentBlock[1];
-            alignmentBlocks[0] = new AlignmentBlock(getStart(), readBases, readBaseQualities);
+            alignmentBlocks[0] = new AlignmentBlock(getStart(), readBases, readBaseQualities, this);
             return;
         }
 
@@ -362,7 +362,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
 
-                    AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities);
+                    AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities,this);
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
                     }
@@ -399,7 +399,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
 
-                    insertions[insertionIdx++] = new AlignmentBlock(blockStart, blockBases, blockQualities);
+                    insertions[insertionIdx++] = new AlignmentBlock(blockStart, blockBases, blockQualities, this);
 
 
                     fromIdx += op.nBases;
@@ -452,7 +452,14 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return properPairFlag;
     }
 
-
+    public boolean isFirstOfPair() {
+    	return this.firstRead;
+    }
+    
+    public boolean isSecondOfPair() {
+    	return this.secondRead;
+    }
+    
     /**
      * TODO
      *

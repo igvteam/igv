@@ -231,4 +231,15 @@ public class DotAlignedAlignment implements Alignment {
     public char[] getGapTypes() {
         return null;
     }
+    
+	@Override
+	public boolean isFirstOfPair() {
+		return false;
+	}
+
+
+	@Override
+	public boolean isSecondOfPair() {
+		return false;
+	}    
 }

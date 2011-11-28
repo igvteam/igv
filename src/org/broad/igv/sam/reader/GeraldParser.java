@@ -286,4 +286,18 @@ public class GeraldParser implements AlignmentParser {
             bases[i] = complement(bases[i]);
         }
     }
+    
+    /**
+     * Reverses and complements a copy of the original array
+     */
+    public static byte[] reverseComplementCopy(final byte[] bases) {
+    	final int lastIndex = bases.length - 1;
+    	byte[] out = new byte[bases.length];
+    	int i;
+    	for (i=0; i <= lastIndex; i++)
+    	{
+    		out[lastIndex-i] = complement(bases[i]);
+    	}
+        return out;
+    }
 }

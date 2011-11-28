@@ -65,6 +65,9 @@ public interface Alignment extends LocusScore {
     boolean isMapped();
 
     boolean isPaired();
+   
+    boolean isFirstOfPair(); // Ben Berman
+    boolean isSecondOfPair(); // Ben Berman
 
     public boolean isNegativeStrand();
 

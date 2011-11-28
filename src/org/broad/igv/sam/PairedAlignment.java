@@ -290,4 +290,15 @@ public class PairedAlignment implements Alignment {
     public Alignment getSecondAlignment() {
         return secondAlignment;
     }
+
+    @Override
+	public boolean isFirstOfPair() {
+		return false;
+	}
+
+	@Override
+	public boolean isSecondOfPair() {
+		return false;
+	}
+	
 }

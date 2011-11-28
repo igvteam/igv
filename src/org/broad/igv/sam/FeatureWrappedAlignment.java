@@ -58,7 +58,7 @@ public class FeatureWrappedAlignment implements Alignment {
             for (Exon exon : f.getExons()) {
                 int length = exon.getLength();
                 byte[] seq = new byte[length];
-                blocks[i] = new AlignmentBlock(exon.getStart(), seq, seq);
+                blocks[i] = new AlignmentBlock(exon.getStart(), seq, seq, this);
                 i++;
             }
         }
@@ -231,4 +231,15 @@ public class FeatureWrappedAlignment implements Alignment {
     public char[] getGapTypes() {
         return null;
     }
+    
+	@Override
+	public boolean isFirstOfPair() {
+		return false;
+	}
+
+
+	@Override
+	public boolean isSecondOfPair() {
+		return false;
+	}    
 }

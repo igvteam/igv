@@ -350,7 +350,7 @@ public class AlignmentPacker {
                 }
                 bucketNumber++;
             }
-            return bucket;
+            return null;
         }
 
         public void removeBuckets(Collection<Integer> emptyBuckets) {

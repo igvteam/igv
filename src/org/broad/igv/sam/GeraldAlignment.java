@@ -48,7 +48,7 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         this.chr = chr;
         this.insertions = new AlignmentBlock[0];
         this.alignmentBlocks = new AlignmentBlock[1];
-        this.alignmentBlocks[0] = new AlignmentBlock(start, reads, qualities);
+        this.alignmentBlocks[0] = new AlignmentBlock(start, reads, qualities, this);
         this.start = start;
         this.end = start + reads.length;
     }
@@ -144,4 +144,15 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         return Strand.NONE;
     }
 
+	@Override
+	public boolean isFirstOfPair() {
+		return false;
+	}
+
+
+	@Override
+	public boolean isSecondOfPair() {
+		return false;
+	}   
+    
 }

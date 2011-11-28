@@ -30,10 +30,12 @@ public class AlignmentBlock {
     private byte[] bases;
     public byte[] qualities;
     private boolean softClipped = false;
+    private Alignment baseAlignment = null;
 
-    public AlignmentBlock(int start, byte[] bases, byte[] qualities) {
+    public AlignmentBlock(int start, byte[] bases, byte[] qualities, Alignment baseAlignment) {
         this.start = start;
         this.bases = bases;
+        this.baseAlignment = baseAlignment;
         if (qualities == null || qualities.length < bases.length) {
             this.qualities = new byte[bases.length];
             Arrays.fill(qualities, (byte) 126);
@@ -42,7 +44,11 @@ public class AlignmentBlock {
         }
     }
 
-    public boolean contains(int position) {
+    public Alignment getBaseAlignment() {
+		return baseAlignment;
+	}
+
+	public boolean contains(int position) {
         int offset = position - start;
         return offset >= 0 && offset < bases.length;
     }

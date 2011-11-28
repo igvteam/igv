@@ -251,12 +251,14 @@ public class GobyAlignment implements Alignment {
 
                     AlignmentBlock left = new AlignmentBlock(block.getStart(),
                             leftBases.toByteArray(new byte[leftBases.size()]),
-                            leftScores.toByteArray(new byte[leftScores.size()]));
+                            leftScores.toByteArray(new byte[leftScores.size()]),
+                            this);
 
                     AlignmentBlock right = new AlignmentBlock(block.getStart() + leftBases.size()
                             + var.getFrom().length(),
                             rightBases.toByteArray(new byte[rightBases.size()]),
-                            rightScores.toByteArray(new byte[rightScores.size()]));
+                            rightScores.toByteArray(new byte[rightScores.size()]),
+                            this);
 
                     blocks.remove(block);
                     newBlocks.add(left);
@@ -279,7 +281,8 @@ public class GobyAlignment implements Alignment {
 
         blocks.add(new AlignmentBlock(start,
                 bases.toByteArray(new byte[bases.size()]),
-                scores.toByteArray(new byte[scores.size()])));
+                scores.toByteArray(new byte[scores.size()]),
+                this));
         start += bases.size();
         bases.clear();
         scores.clear();
@@ -635,4 +638,15 @@ return 0;
         }
         return 0;
     }
+
+
+	public boolean isFirstOfPair() {
+		return false;
+	}
+
+
+	
+	public boolean isSecondOfPair() {
+		return false;
+	}
 }
