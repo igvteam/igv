@@ -1086,11 +1086,13 @@ public class TrackLoader {
         FeatureTrack track = new FeatureTrack(locator, featureSource);
 
         // Try to create a sensible name from the path
-        String name = locator.getPath();
-        if (locator.getPath().contains("genome.ucsc.edu")) {
-            name = featureSource.getType();
-        } else {
-            name = featureSource.getPath().replace("/das/", "").replace("/features", "");
+        String name = locator.getName();
+        if (name == null || name.length() == 0) {
+            if (locator.getPath().contains("genome.ucsc.edu")) {
+                name = featureSource.getType();
+            } else {
+                name = featureSource.getPath().replace("/das/", "").replace("/features", "");
+            }
         }
         track.setName(name);
 
