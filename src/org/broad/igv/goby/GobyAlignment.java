@@ -640,13 +640,18 @@ return 0;
     }
 
 
+    /**
+     * Return true if this alignment is marked "first in pair".  Added to suppor bisulfite sequencing mode.
+     */
 	public boolean isFirstOfPair() {
-		return false;
+		return EntryFlagHelper.isFirstInPair(entry);
 	}
 
 
-	
+	/**
+     * Return true if this alignment is marked "second in pair".  Added to suppor bisulfite sequencing mode.
+	 */
 	public boolean isSecondOfPair() {
-		return false;
+       return EntryFlagHelper.isSecondInPair(entry);
 	}
 }
