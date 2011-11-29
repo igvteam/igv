@@ -668,9 +668,9 @@ public class MainWindow extends JFrame {
                     panel7.add(label2);
 
                     //---- zoomOutButton ----
-                    zoomOutButton.setText("-");
-                    zoomOutButton.setMinimumSize(new Dimension(5, 5));
-                    zoomOutButton.setPreferredSize(new Dimension(35, 29));
+                    zoomOutButton.setText("Zoom Out");
+                    //zoomOutButton.setMinimumSize(new Dimension(35, 30));
+                    //zoomOutButton.setPreferredSize(new Dimension(35, 30));
                     zoomOutButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             zoomOutButtonActionPerformed(e);
@@ -679,9 +679,9 @@ public class MainWindow extends JFrame {
                     panel7.add(zoomOutButton);
 
                     //---- zoomInButton ----
-                    zoomInButton.setText("+");
-                    zoomInButton.setPreferredSize(new Dimension(35, 29));
-                    zoomInButton.setMinimumSize(new Dimension(5, 29));
+                    zoomInButton.setText("Zoom In");
+                    //zoomInButton.setPreferredSize(new Dimension(35, 30));
+                    //zoomInButton.setMinimumSize(new Dimension(35, 30));
                     zoomInButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             zoomInButtonActionPerformed(e);

@@ -1,10 +1,6 @@
 package org.broad.igv.sam;
 
-import com.sun.tools.javac.util.Position;
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.sam.AlignmentCounts;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;

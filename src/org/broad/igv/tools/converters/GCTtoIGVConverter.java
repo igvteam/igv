@@ -18,8 +18,6 @@
 
 package org.broad.igv.tools.converters;
 
-import com.sun.org.apache.xpath.internal.Expression;
-import com.sun.tools.example.debug.expr.ExpressionParser;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
 import org.apache.log4j.Logger;
