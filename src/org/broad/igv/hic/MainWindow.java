@@ -206,20 +206,20 @@ public class MainWindow extends JFrame {
                 //    repaint();
                 //} else {
 
-                    xContext = new Context(chr2);
-                    yContext = new Context(chr1);
-                    rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
-                    rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
+                xContext = new Context(chr2);
+                yContext = new Context(chr1);
+                rulerPanel2.setFrame(xContext, HiCRulerPanel.Orientation.HORIZONTAL);
+                rulerPanel1.setFrame(yContext, HiCRulerPanel.Orientation.VERTICAL);
 
-                    Matrix m = dataset.getMatrix(chr1, chr2);
-                    if (m == null) {
-                    } else {
-                        setInitialZoom();
-                    }
+                Matrix m = dataset.getMatrix(chr1, chr2);
+                if (m == null) {
+                } else {
+                    setInitialZoom();
+                }
 
 
-                    Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
-                    thumbnailPanel.setImage(thumbnail);
+                Image thumbnail = getHeatmapPanel().getThumbnailImage(zd, thumbnailPanel.getWidth(), thumbnailPanel.getHeight());
+                thumbnailPanel.setImage(thumbnail);
                 //}
 
                 return null;
@@ -257,11 +257,15 @@ public class MainWindow extends JFrame {
 
     /**
      * Change zoom level while staying centered on current location.
+     * <p/>
+     * Centering is relative to the bounds of the data, which might not be the bounds of the window in the case
+     * of
      *
      * @param newZoom
      */
     public void setZoom(int newZoom) {
         newZoom = Math.max(0, Math.min(newZoom, MAX_ZOOM));
+
         int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
         int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
         setZoom(newZoom, centerLocationX, centerLocationY);
@@ -292,7 +296,7 @@ public class MainWindow extends JFrame {
 
         double xScaleMax = (double) xContext.getChrLength() / getHeatmapPanel().getWidth();
         double yScaleMax = (double) yContext.getChrLength() / getHeatmapPanel().getWidth();
-        double scaleMax = Math.min(xScaleMax, yScaleMax);
+        double scaleMax = Math.max(xScaleMax, yScaleMax);
 
         scale = Math.min(scale, scaleMax);
 
@@ -340,31 +344,29 @@ public class MainWindow extends JFrame {
 
     public void center(int centerLocationX, int centerLocationY) {
 
-        if (centerLocationX < 0) {
-            xContext.setOrigin(0);
-        } else {
-            int binSize = zd.getBinSize();
-            double w = (getHeatmapPanel().getWidth() * xContext.getScale());
-            xContext.setOrigin((int) (centerLocationX - w / 2));
-        }
-        if (centerLocationY < 0) {
-            yContext.setOrigin(0);
-        } else {
-            int binSize = zd.getBinSize();
-            double h = (getHeatmapPanel().getHeight() * yContext.getScale());
-            yContext.setOrigin((int) (centerLocationY - h / 2));
-        }
-        repaint();
+
+        double w = (getHeatmapPanel().getWidth() * xContext.getScale());
+        int newX = (int) (centerLocationX - w / 2);
+        double h = (getHeatmapPanel().getHeight() * yContext.getScale());
+        int newY = (int) (centerLocationY - h / 2);
+        moveTo(newX, newY);
     }
 
 
     public void moveBy(int dx, int dy) {
 
+        final int newX = xContext.getOrigin() + dx;
+        final int newY = yContext.getOrigin() + dy;
+
+        moveTo(newX, newY);
+    }
+
+    private void moveTo(int newX, int newY) {
         int maxX = (int) (xContext.getChrLength() - xContext.getScale() * getHeatmapPanel().getWidth());
         int maxY = (int) (yContext.getChrLength() - yContext.getScale() * getHeatmapPanel().getHeight());
 
-        int x = Math.max(0, Math.min(maxX, xContext.getOrigin() + dx));
-        int y = Math.max(0, Math.min(maxY, yContext.getOrigin() + dy));
+        int x = Math.max(0, Math.min(maxX, newX));
+        int y = Math.max(0, Math.min(maxY, newY));
 
         xContext.setOrigin(x);
         yContext.setOrigin(y);
@@ -754,7 +756,7 @@ public class MainWindow extends JFrame {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for(int i = 0; i < panel8.getComponentCount(); i++) {
+                        for (int i = 0; i < panel8.getComponentCount(); i++) {
                             Rectangle bounds = panel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);

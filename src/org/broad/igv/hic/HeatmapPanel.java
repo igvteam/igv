@@ -42,20 +42,27 @@ public class HeatmapPanel extends JComponent implements Serializable {
     @Override
     protected void paintComponent(Graphics g) {
 
-        if (mainWindow != null && mainWindow.zd != null && mainWindow.xContext.getScale() > 0) {
+        Rectangle clipBounds = g.getClipBounds();
+        g.clearRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
-            // 1  get image in "bin" coordinates.
+        // Same scale used for X & Y (square pixels)
+        if (mainWindow != null && mainWindow.zd != null) {
 
-            // bp / bin
+            final double scale = mainWindow.xContext.getScale();
+            if (scale <= 0) return;
+
+            // Size of bins in base-pairs
             int binSize = mainWindow.zd.getBinSize();
 
+            // Origin in base-pairs
             int originX = mainWindow.xContext.getOrigin();
             int originY = mainWindow.yContext.getOrigin();
 
+            // Bounds in bins
             int bLeft = (originX / binSize);
-            int bRight = bLeft + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
+            int bRight = (int) ((originX + (getWidth() * scale)) / binSize);
             int bTop = (originY / binSize);
-            int bBottom = bTop + (int) ((getWidth() * mainWindow.xContext.getScale()) / binSize);
+            int bBottom = (int) ((originY + (getHeight() * scale)) / binSize);
 
             // tile coordinates
             int tLeft = bLeft / imageTileWidth;
@@ -63,18 +70,20 @@ public class HeatmapPanel extends JComponent implements Serializable {
             int tTop = bTop / imageTileWidth;
             int tBottom = bBottom / imageTileWidth;
 
-            // scale factor -- for now we are using the same scale for x & y (square pixels)
-            double pixelsPerBin = binSize / mainWindow.xContext.getScale();
+            // Pixels per bin -- used to scale image
+            double pixelsPerBin = binSize / scale;
 
             for (int i = tLeft; i <= tRight; i++) {
                 for (int j = tTop; j <= tBottom; j++) {
 
                     ImageTile tile = getImageTile(i, j, pixelsPerBin);
+                    if (tile != null) {
 
-                    int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
-                    int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
+                        int pxOffset = (int) ((tile.bLeft - bLeft) * pixelsPerBin);
+                        int pyOffset = (int) ((tile.bTop - bTop) * pixelsPerBin);
 
-                    g.drawImage(tile.image, pxOffset, pyOffset, null);
+                        g.drawImage(tile.image, pxOffset, pyOffset, null);
+                    }
 
                 }
             }
@@ -136,27 +145,34 @@ public class HeatmapPanel extends JComponent implements Serializable {
         BufferedImage image = (BufferedImage) createImage(wh, wh);
         Graphics g = image.createGraphics();
 
-        // TODO -- get # of bins
-        int nBins = 500;
-
         renderer.render(0, 0, maxBinCountX, maxBinCountY, zd, g);
 
         return image.getScaledInstance(tw, th, Image.SCALE_SMOOTH);
 
     }
 
+    /**
+     * Return the specified image tile, scaled by scaleFactor
+     *
+     * @param i           column index of tile
+     * @param j           row index of tile
+     * @param scaleFactor
+     * @return
+     */
     private ImageTile getImageTile(int i, int j, double scaleFactor) {
         String key = "_" + i + "_" + j;
         ImageTile tile = tileCache.get(key);
+
         if (tile == null) {
 
             // Image size can be smaller than tile width when zoomed out, or near the edges.
             int maxBinCountX = (mainWindow.xContext.getChrLength() - mainWindow.xContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
             int maxBinCountY = (mainWindow.yContext.getChrLength() - mainWindow.yContext.getOrigin()) / mainWindow.zd.getBinSize() + 1;
 
+            if (maxBinCountX < 0 || maxBinCountY < 0) return null;
+
             int imageWidth = Math.min(maxBinCountX, imageTileWidth);
             int imageHeight = Math.min(maxBinCountY, imageTileWidth);
-
 
             BufferedImage image = (BufferedImage) createImage(imageWidth, imageHeight);
             Graphics2D g2D = (Graphics2D) image.getGraphics();
@@ -207,7 +223,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mousePressed(final MouseEvent e) {
 
-            if(mainWindow.isWholeGenome()) {
+            if (mainWindow.isWholeGenome()) {
                 return;
             }
 
@@ -331,7 +347,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     }
 
 
-                } else if(e.getClickCount() > 1) {
+                } else if (e.getClickCount() > 1) {
                     int currentZoom = mainWindow.xContext.getZoom();
                     final int newZoom = e.isAltDown()
                             ? Math.max(currentZoom - 1, 1)
