@@ -19,7 +19,7 @@ public class UserPasswordInputImpl implements UserPasswordInput {
 
     public boolean showDialog() {
 
-        UserPasswordDialog dlg = new UserPasswordDialog(IGV.getMainFrame(), user);
+        UserPasswordDialog dlg = new UserPasswordDialog(IGV.getMainFrame(), user, host);
         dlg.setVisible(true);
 
         if (dlg.isCanceled()) {

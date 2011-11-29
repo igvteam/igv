@@ -28,19 +28,22 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 /**
- * @author Stan Diamond
+ * @author Jim Robinson
  */
 public class UserPasswordDialog extends JDialog {
 
     boolean canceled = true;
 
-    public UserPasswordDialog(Frame owner, String user) {
+    public UserPasswordDialog(Frame owner, String user, String host) {
         super(owner);
         setModal(true);
         initComponents();
 
         if (user != null) {
             userField.setText(user);
+        }
+        if(host != null) {
+            hostLabel.setText(host);
         }
     }
 
