@@ -78,6 +78,23 @@ public class SAMCodec implements FeatureCodec {
         return null;
     }
 
+    /**
+     * This function returns true iff the File potentialInput can be parsed by this
+     * codec.
+     * <p/>
+     * There is an assumption that there's never a situation where two different Codecs
+     * return true for the same file.  If this occurs, the recommendation would be to error out.
+     * <p/>
+     * Note this function must never throw an error.  All errors should be trapped
+     * and false returned.
+     *
+     * @param path the file to test for parsability with this codec
+     * @return true if potentialInput can be parsed, false otherwise
+     */
+    public boolean canDecode(String path) {
+        return path.toLowerCase().endsWith(".sam");
+    }
+
     boolean isMapped(String[] fields) {
         int flags = Integer.parseInt(fields[FLAG_COL]);
         return (flags & READ_UNMAPPED_FLAG) == 0;
