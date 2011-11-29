@@ -242,7 +242,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
         @Override
         public void mouseReleased(final MouseEvent e) {
 
-            if (dragMode == 2) {
+            if (dragMode == 2 && zoomRectangle != null) {
 
                 double xBP = mainWindow.xContext.getChromosomePosition(zoomRectangle.x);
                 double yBP = mainWindow.yContext.getChromosomePosition(zoomRectangle.y);

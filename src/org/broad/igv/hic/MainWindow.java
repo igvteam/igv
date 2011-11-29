@@ -32,6 +32,7 @@ public class MainWindow extends JFrame {
     //int refMaxCount = 500;
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
+    public static String [] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "2.5 KB", "1 KB"};
     public static final int MAX_ZOOM = 10;
 
     //private int len;
@@ -49,7 +50,7 @@ public class MainWindow extends JFrame {
 
         final MainWindow mainWindow = new MainWindow();
         mainWindow.setVisible(true);
-        mainWindow.setSize(870, 700);
+        mainWindow.setSize(950, 700);
 
 
     }
@@ -79,6 +80,7 @@ public class MainWindow extends JFrame {
         colorScale.background = Color.white;
 
         initComponents();
+        resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
         // setLayout(new HiCLayout());
 
         // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
@@ -188,8 +190,8 @@ public class MainWindow extends JFrame {
                 Chromosome chr2 = (Chromosome) chrBox2.getSelectedItem();
 
                 //zoomComboBox.setEnabled(chr1.getIndex() != 0);
-                zoomInButton.setEnabled(chr1.getIndex() != 0);
-                zoomOutButton.setEnabled(chr1.getIndex() != 0);
+                //zoomInButton.setEnabled(chr1.getIndex() != 0);
+                //zoomOutButton.setEnabled(chr1.getIndex() != 0);
 
                 int t1 = chr1.getIndex();
                 int t2 = chr2.getIndex();
@@ -239,8 +241,10 @@ public class MainWindow extends JFrame {
         int maxNBins = pixels;
 
         if (xContext.getChromosome().getName().equals("All")) {
+            resolutionComboBox.setEnabled(false); //
             setZoom(0, -1, -1);
         } else {// Find right zoom level
+            resolutionComboBox.setEnabled(true);
             int bp_bin = len / maxNBins;
             int initialZoom = zoomBinSizes.length - 1;
             for (int z = 1; z < zoomBinSizes.length; z++) {
@@ -250,7 +254,8 @@ public class MainWindow extends JFrame {
                 }
             }
 
-            setZoom(initialZoom, -1, -1);
+            resolutionComboBox.setSelectedIndex(initialZoom);
+            //setZoom(initialZoom, -1, -1);
         }
     }
 
@@ -270,8 +275,8 @@ public class MainWindow extends JFrame {
         int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
         setZoom(newZoom, centerLocationX, centerLocationY);
 
-        zoomInButton.setEnabled(newZoom < MAX_ZOOM);
-        zoomOutButton.setEnabled(newZoom > 0);
+        //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
+       // zoomOutButton.setEnabled(newZoom > 0);
     }
 
     /**
@@ -284,6 +289,11 @@ public class MainWindow extends JFrame {
     public void setZoom(int newZoom, int centerLocationX, int centerLocationY) {
 
         if (newZoom < 0 || newZoom > MAX_ZOOM) return;
+
+        if(newZoom !=  resolutionComboBox.getSelectedIndex()) {
+            resolutionComboBox.setSelectedIndex(newZoom);
+        }
+
 
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
@@ -518,6 +528,13 @@ public class MainWindow extends JFrame {
         // TODO add your code here
     }
 
+    private void resolutionComboBoxActionPerformed(ActionEvent e) {
+        int idx = resolutionComboBox.getSelectedIndex();
+        if(idx >= 0 && idx < zoomBinSizes.length) {
+            setZoom(idx);
+        }
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -533,10 +550,9 @@ public class MainWindow extends JFrame {
         label3 = new JLabel();
         maxRange = new JTextField();
         label4 = new JLabel();
-        panel7 = new JPanel();
+        panel6 = new JPanel();
         label2 = new JLabel();
-        zoomOutButton = new JButton();
-        zoomInButton = new JButton();
+        resolutionComboBox = new JComboBox();
         panel3 = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
         heatmapPanel = new HeatmapPanel(this);
@@ -570,15 +586,18 @@ public class MainWindow extends JFrame {
 
             //======== panel4 ========
             {
-                panel4.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
-                panel4.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 5));
+                panel4.setBorder(null);
+                panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
 
                 //======== chrSelectionPanel ========
                 {
-                    chrSelectionPanel.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
+                    chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
                     chrSelectionPanel.setLayout(new FlowLayout());
 
                     //---- chrBox1 ----
+                    chrBox1.setModel(new DefaultComboBoxModel(new String[] {
+                        "All"
+                    }));
                     chrBox1.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             chrBox1ActionPerformed(e);
@@ -587,6 +606,9 @@ public class MainWindow extends JFrame {
                     chrSelectionPanel.add(chrBox1);
 
                     //---- chrBox2 ----
+                    chrBox2.setModel(new DefaultComboBoxModel(new String[] {
+                        "All"
+                    }));
                     chrBox2.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             chrBox2ActionPerformed(e);
@@ -607,7 +629,7 @@ public class MainWindow extends JFrame {
 
                 //======== panel1 ========
                 {
-                    panel1.setBorder(LineBorder.createBlackLineBorder());
+                    panel1.setBorder(LineBorder.createGrayLineBorder());
                     panel1.setLayout(new FlowLayout());
 
                     //---- label1 ----
@@ -658,38 +680,24 @@ public class MainWindow extends JFrame {
                 }
                 panel4.add(panel1);
 
-                //======== panel7 ========
+                //======== panel6 ========
                 {
-                    panel7.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
-                    panel7.setLayout(new FlowLayout());
+                    panel6.setBorder(LineBorder.createGrayLineBorder());
+                    panel6.setLayout(new FlowLayout());
 
                     //---- label2 ----
-                    label2.setText("Zoom ");
-                    panel7.add(label2);
+                    label2.setText("Resolution:");
+                    panel6.add(label2);
 
-                    //---- zoomOutButton ----
-                    zoomOutButton.setText("Zoom Out");
-                    //zoomOutButton.setMinimumSize(new Dimension(35, 30));
-                    //zoomOutButton.setPreferredSize(new Dimension(35, 30));
-                    zoomOutButton.addActionListener(new ActionListener() {
+                    //---- resolutionComboBox ----
+                    resolutionComboBox.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            zoomOutButtonActionPerformed(e);
+                            resolutionComboBoxActionPerformed(e);
                         }
                     });
-                    panel7.add(zoomOutButton);
-
-                    //---- zoomInButton ----
-                    zoomInButton.setText("Zoom In");
-                    //zoomInButton.setPreferredSize(new Dimension(35, 30));
-                    //zoomInButton.setMinimumSize(new Dimension(35, 30));
-                    zoomInButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            zoomInButtonActionPerformed(e);
-                        }
-                    });
-                    panel7.add(zoomInButton);
+                    panel6.add(resolutionComboBox);
                 }
-                panel4.add(panel7);
+                panel4.add(panel6);
             }
             panel2.add(panel4, BorderLayout.NORTH);
 
@@ -756,7 +764,7 @@ public class MainWindow extends JFrame {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < panel8.getComponentCount(); i++) {
+                        for(int i = 0; i < panel8.getComponentCount(); i++) {
                             Rectangle bounds = panel8.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -859,10 +867,9 @@ public class MainWindow extends JFrame {
     private JLabel label3;
     private JTextField maxRange;
     private JLabel label4;
-    private JPanel panel7;
+    private JPanel panel6;
     private JLabel label2;
-    private JButton zoomOutButton;
-    private JButton zoomInButton;
+    private JComboBox resolutionComboBox;
     private JPanel panel3;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;

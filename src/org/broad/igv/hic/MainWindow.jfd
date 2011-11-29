@@ -37,27 +37,11 @@
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>java.awt.FlowLayout</class> 
-           <void method="setProperty"> 
-            <string>alignment</string> 
-            <int>0</int> 
-           </void> 
-           <void method="setProperty"> 
-            <string>hgap</string> 
-            <int>25</int> 
-           </void> 
+           <class>javax.swing.BoxLayout</class> 
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
-           <object class="javax.swing.border.MatteBorder"> 
-            <object class="java.awt.Insets"> 
-             <int>1</int> 
-             <int>1</int> 
-             <int>1</int> 
-             <int>1</int> 
-            </object> 
-            <object class="java.awt.Color" field="black"/> 
-           </object> 
+           <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
           </void> 
           <void property="name"> 
            <string>panel4</string> 
@@ -70,14 +54,10 @@
             </object> 
             <void method="setProperty"> 
              <string>border</string> 
-             <object class="javax.swing.border.MatteBorder"> 
-              <object class="java.awt.Insets"> 
-               <int>1</int> 
-               <int>1</int> 
-               <int>1</int> 
-               <int>1</int> 
-              </object> 
-              <object class="java.awt.Color" field="black"/> 
+             <object class="javax.swing.border.LineBorder"> 
+              <object class="java.awt.Color" field="gray"/> 
+              <int>1</int> 
+              <boolean>false</boolean> 
              </object> 
             </void> 
             <void property="name"> 
@@ -86,6 +66,17 @@
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JComboBox</string> 
+              <void method="setProperty"> 
+               <string>model</string> 
+               <object class="javax.swing.DefaultComboBoxModel"> 
+                <void property="selectedItem"> 
+                 <string>All</string> 
+                </void> 
+                <void method="addElement"> 
+                 <string>All</string> 
+                </void> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>chrBox1</string> 
               </void> 
@@ -102,6 +93,17 @@
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JComboBox</string> 
+              <void method="setProperty"> 
+               <string>model</string> 
+               <object class="javax.swing.DefaultComboBoxModel"> 
+                <void property="selectedItem"> 
+                 <string>All</string> 
+                </void> 
+                <void method="addElement"> 
+                 <string>All</string> 
+                </void> 
+               </object> 
+              </void> 
               <void property="name"> 
                <string>chrBox2</string> 
               </void> 
@@ -146,7 +148,7 @@
             <void method="setProperty"> 
              <string>border</string> 
              <object class="javax.swing.border.LineBorder"> 
-              <object class="java.awt.Color" field="black"/> 
+              <object class="java.awt.Color" field="gray"/> 
               <int>1</int> 
               <boolean>false</boolean> 
              </object> 
@@ -284,25 +286,21 @@
             </object> 
             <void method="setProperty"> 
              <string>border</string> 
-             <object class="javax.swing.border.MatteBorder"> 
-              <object class="java.awt.Insets"> 
-               <int>1</int> 
-               <int>1</int> 
-               <int>1</int> 
-               <int>1</int> 
-              </object> 
-              <object class="java.awt.Color" field="black"/> 
+             <object class="javax.swing.border.LineBorder"> 
+              <object class="java.awt.Color" field="gray"/> 
+              <int>1</int> 
+              <boolean>false</boolean> 
              </object> 
             </void> 
             <void property="name"> 
-             <string>panel7</string> 
+             <string>panel6</string> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Zoom </string> 
+               <string>Resolution:</string> 
               </void> 
               <void property="name"> 
                <string>label2</string> 
@@ -311,67 +309,15 @@
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JButton</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>-</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>5</int> 
-                <int>5</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>preferredSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>35</int> 
-                <int>29</int> 
-               </object> 
-              </void> 
+              <string>javax.swing.JComboBox</string> 
               <void property="name"> 
-               <string>zoomOutButton</string> 
+               <string>resolutionComboBox</string> 
               </void> 
               <void method="addEvent"> 
                <object class="com.jformdesigner.model.FormEvent"> 
                 <string>java.awt.event.ActionListener</string> 
                 <string>actionPerformed</string> 
-                <string>zoomOutButtonActionPerformed</string> 
-                <boolean>true</boolean> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JButton</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>+</string> 
-              </void> 
-              <void method="setProperty"> 
-               <string>preferredSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>35</int> 
-                <int>29</int> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="java.awt.Dimension"> 
-                <int>5</int> 
-                <int>29</int> 
-               </object> 
-              </void> 
-              <void property="name"> 
-               <string>zoomInButton</string> 
-              </void> 
-              <void method="addEvent"> 
-               <object class="com.jformdesigner.model.FormEvent"> 
-                <string>java.awt.event.ActionListener</string> 
-                <string>actionPerformed</string> 
-                <string>zoomInButtonActionPerformed</string> 
+                <string>resolutionComboBoxActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
               </void> 
@@ -909,14 +855,14 @@
       <void method="setProperty"> 
        <string>location</string> 
        <object class="java.awt.Point"> 
-        <int>10</int> 
+        <int>0</int> 
         <int>0</int> 
        </object> 
       </void> 
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>920</int> 
+        <int>1070</int> 
         <int>705</int> 
        </object> 
       </void> 
