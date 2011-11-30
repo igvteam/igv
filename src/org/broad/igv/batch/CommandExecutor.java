@@ -23,6 +23,7 @@
 
 package org.broad.igv.batch;
 
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
@@ -331,11 +332,17 @@ public class CommandExecutor {
                 unload = false; // <= only onload one time
             }
 
-
             if (f.endsWith(".xml")) {
                 sessionPaths.add(f);
             } else {
                 ResourceLocator rl = new ResourceLocator(f);
+                if(rl.isLocal()) {
+                    File file = new File(f);
+                    if(!file.exists()) {
+                        return "Error: " + f + " does not exist.";
+                    }
+                }
+
                 fileLocators.add(rl);
             }
         }
