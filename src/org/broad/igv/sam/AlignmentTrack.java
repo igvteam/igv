@@ -80,15 +80,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         bisulfiteContextToPubString.put(BisulfiteContext.WCG, "WCG");
     }
 
-    protected static final Map<BisulfiteContext, Pair<String, String>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<String, String>>();
+    protected static final Map<BisulfiteContext, Pair<byte[], byte[]>> bisulfiteContextToContextString = new HashMap<BisulfiteContext, Pair<byte[], byte[]>>();
 
     static {
-        bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<String, String>("", "G"));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<String, String>("", "HH"));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<String, String>("", "HG"));
-        bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<String, String>("H", "G"));
-        bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<String, String>("G", "H"));
-        bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<String, String>("W", "G"));
+        bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'G'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H','H'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H','G'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<byte[], byte[]>(new byte[]{'H'}, new byte[]{'G'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<byte[], byte[]>(new byte[]{'G'}, new byte[]{'H'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
 
 
@@ -611,13 +611,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         return bisulfiteContextToPubString.get(item);
     }
 
-    public static String getBisulfiteContextPreContext(BisulfiteContext item) {
-        Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+    
+     public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
+        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
         return pair.getFirst();
     }
 
-    public static String getBisulfiteContextPostContext(BisulfiteContext item) {
-        Pair<String, String> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
+    public static byte[] getBisulfiteContextPostContext(BisulfiteContext item) {
+        Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
         return pair.getSecond();
     }
 
