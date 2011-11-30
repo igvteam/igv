@@ -12,7 +12,7 @@ import java.util.List;
  * @author Jim Robinson
  * @date 11/22/11
  */
-public class SparseAlignmentCounts implements AlignmentCounts {
+public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(SparseAlignmentCounts.class);
 

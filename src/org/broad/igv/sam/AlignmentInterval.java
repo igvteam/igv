@@ -183,6 +183,16 @@ public class AlignmentInterval extends Locus {
         return maxCount;
     }
 
+    public AlignmentCounts getAlignmentCounts(int pos) {
+        for (AlignmentCounts c : counts) {
+            if (pos >= c.getStart() && pos < c.getEnd()) {
+                return c;
+            }
+        }
+        return null;
+
+    }
+
     public int getTotalCount(int pos) {
         for (AlignmentCounts c : counts) {
             if (pos >= c.getStart() && pos < c.getEnd()) {

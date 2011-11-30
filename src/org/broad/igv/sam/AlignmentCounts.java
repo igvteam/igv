@@ -5,7 +5,7 @@ package org.broad.igv.sam;
  * @date 11/22/11
  */
 public interface AlignmentCounts {
-    
+
     int getTotalCount(int pos);
 
     int getNegTotal(int pos);
@@ -35,10 +35,12 @@ public interface AlignmentCounts {
     int getEnd();
 
     int getMaxCount();
-    
+
+    String getValueStringAt(int pos);
+
     PositionIterator getPositionIterator();
-    
-    
+
+
     static interface PositionIterator {
         int nextPosition();
     }

@@ -26,7 +26,7 @@ import org.broad.igv.ui.IGV;
  * @author jrobinso
  * @date Feb 23, 2011
  */
-public class DenseAlignmentCounts implements AlignmentCounts {
+public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(DenseAlignmentCounts.class);
 
