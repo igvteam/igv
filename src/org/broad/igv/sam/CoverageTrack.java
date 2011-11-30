@@ -234,43 +234,20 @@ public class CoverageTrack extends AbstractTrack {
         float maxRange = PreferenceManager.getInstance().getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         float minVisibleScale = (maxRange * 1000) / 700;
         if (frame.getScale() < minVisibleScale) {
-            AlignmentInterval interval = dataManager.getLoadedInterval(frame);
-            if (interval != null && interval.contains(chr, (int) position, (int) position)) {
-                StringBuffer buf = new StringBuffer();
-                final int pos = (int) position - 1;
-                int totalCount = interval.getTotalCount(pos);
-                buf.append("Total count: " + totalCount + "<br>");
-                for (char c : nucleotides) {
-                    int negCount = interval.getNegCount(pos, (byte) c);
-                    int posCount = interval.getPosCount(pos, (byte) c);
-                    int count = negCount + posCount;
-                    int percent = (int) Math.round(((float) count) * 100 / totalCount);
-                    char cU = Character.toUpperCase(c);
-                    buf.append(cU + "      : " + count);
-                    if (count == 0) {
-                        buf.append("<br>");
-                    } else {
-                        buf.append("  (" + percent + "%,     " + posCount + "+,   " + negCount + "- )<br>");
+            if (frame.getScale() < minVisibleScale) {
+                AlignmentInterval interval = dataManager.getLoadedInterval(frame);
+                if (interval != null && interval.contains(chr, (int) position, (int) position)) {
+                    final int pos = (int) position; // - 1;
+                    AlignmentCounts counts = interval.getAlignmentCounts(pos);
+                    if (counts != null) {
+                        return counts.getValueStringAt(pos);
                     }
                 }
-
-                int delCount = interval.getDelCount(pos);
-                if (delCount > 0) {
-                    buf.append("DEL: " + delCount);
-                }
-                int insCount = interval.getInsCount(pos);
-                if (insCount > 0) {
-                    buf.append("INS: " + insCount);
-                }
-
-                return buf.toString();
             }
         } else {
             return getPrecomputedValueString(chr, position, frame);
-
         }
         return null;
-
     }
 
     private String getPrecomputedValueString(String chr, double position, ReferenceFrame frame) {
