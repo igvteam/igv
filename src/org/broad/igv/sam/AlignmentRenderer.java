@@ -190,12 +190,14 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 // If the alignment is 3 pixels or less,  draw alignment as a single block,
                 // further detail would not be seen and just add to drawing overhead
-                if (pixelEnd - pixelStart < 4) {
+                // Does the change for Bisulfite kill some machines?
+                double pixelWidth = pixelEnd - pixelStart;
+                if ((pixelWidth < 4) && !(renderOptions.colorOption.equals(ColorOption.BISULFITE) && (pixelWidth >= 1) )) {
                     Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
 
-                    int w = Math.max(1, (int) (pixelEnd - pixelStart));
+                    int w = Math.max(1, (int) (pixelWidth));
                     int h = (int) Math.max(1, rect.getHeight() - 2);
                     int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
@@ -367,7 +369,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             drawSimpleAlignment(alignment, rect, g, context, renderOptions.flagUnmappedPairs);
             return;
         }
-
+ 
         // Get the terminal block (last block with respect to read direction).  This will have an "arrow" attached.
         AlignmentBlock terminalBlock = alignment.isNegativeStrand() ? blocks[0] : blocks[blocks.length - 1];
 
@@ -466,8 +468,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             }
 
-
-            if ((locScale < 5) || (renderOptions.colorOption.equals(ColorOption.BISULFITE) && (locScale < 30)))
+            if ((locScale < 5) || (renderOptions.colorOption.equals(ColorOption.BISULFITE) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 drawBases(context, rect, aBlock, alignmentColor, renderOptions);
             }
@@ -618,7 +619,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                     }
 
                     
-                    if ( ((dY>=12) && (dX >= 8)) && ( !bisulfiteMode || (bisulfiteMode && bisinfo.getDisplayStatus(idx).equals(DisplayStatus.CHARACTER))) ) 
+                    BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
+                    // System.err.printf("Draw text?  dY=%d, dX=%d, bismode=%s, dispStatus=%s\n",dY,dX,!bisulfiteMode || bisulfiteMode,bisstatus);
+                    if ( ((dY>=12) && (dX >= 8)) && ( !bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER))) ) 
                     {
                         g.setColor(color);
                         drawCenteredText(g, new char[]{c}, pX0, pY + 1, dX, dY - 2);
@@ -627,7 +630,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         int pX0i = pX0, dXi = dX;
 
                         // If bisulfite mode, we expand the rectangle to make it more visible
-                    	if (bisulfiteMode)
+                    	if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR))
                     	{
                            	if (dXi<8)
                         	{
