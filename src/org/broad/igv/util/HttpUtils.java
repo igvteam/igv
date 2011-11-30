@@ -141,6 +141,7 @@ public class HttpUtils {
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, null);
 
+
         try {
             is = conn.getInputStream();
             return readContents(is);
@@ -448,12 +449,7 @@ public class HttpUtils {
 
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
-
-            // The GenomeSpace server requires the Accept header below, unless doing a GET for an uploadurl.  Setting
-            // the header in that case results in a 406 error.
-            if (!url.toString().contains("datamanager/uploadurls")) {
-                conn.setRequestProperty("Accept", "application/json,application/text");
-            }
+            conn.setRequestProperty("Accept", "application/json,text/plain");
 
         }
 

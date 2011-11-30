@@ -44,11 +44,14 @@ import java.util.*;
 public class DMUtils {
 
     private static Logger log = Logger.getLogger(DMUtils.class);
+    public static final String VERSION = "v1.0";
+    private static final String UPLOADURL =  "/uploadurl";
 
 
     public static GSDirectoryListing listDefaultDirectory() {
         try {
-            URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "defaultdirectory");
+            URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
+                    VERSION + "/defaultdirectory");
             return getDirectoryListing(defaultURL);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -121,14 +124,10 @@ public class DMUtils {
 
         byte[] md5 = computeMD5(localFile);
         String base64String = (new BASE64Encoder()).encode(md5);
-        String hexString = toHexString(md5);
         long contentLength = localFile.length();
-        String contentType = "text";
+        String contentType = "application/octet-stream"; //"text";
 
-        // The GenomeSpace user,  is this the correct way to get it?
-        String user = GSUtils.getGSUser();
-
-        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "uploadurls" +
+        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + VERSION + UPLOADURL +
                 gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
@@ -136,7 +135,6 @@ public class DMUtils {
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-MD5", base64String);
-        headers.put("x-amz-meta-md5-hash", hexString);
         headers.put("Content-Length", String.valueOf(contentLength));
         headers.put("Content-Type", contentType);
 

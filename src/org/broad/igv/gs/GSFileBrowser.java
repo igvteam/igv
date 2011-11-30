@@ -117,7 +117,8 @@ public class GSFileBrowser extends JDialog {
         };
         fileList.addMouseListener(mouseListener);
 
-        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "defaultdirectory");
+        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
+                DMUtils.VERSION +  "/defaultdirectory");
         fetchContents(defaultURL);
     }
 

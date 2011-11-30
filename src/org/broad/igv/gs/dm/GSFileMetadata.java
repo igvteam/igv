@@ -48,11 +48,11 @@ public class GSFileMetadata {
         name = (String) o.get("name");
         path = (String) o.get("path");
         url = (String) o.get("url");
-        isDirectory = o.get("directory").equals("true");
+        isDirectory = (Boolean) o.get("isDirectory");
         if (o.has("dataFormat")) {
             JSONObject dataFormat = o.has("dataFormat") ? (JSONObject) o.get("dataFormat") : null;
             format = dataFormat == null ? "" : dataFormat.getString("name");
-            size = (String) o.get("size");
+            size =  o.get("size").toString();
         }
 
     }
