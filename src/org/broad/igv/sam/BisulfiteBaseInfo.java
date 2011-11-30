@@ -6,6 +6,20 @@ import org.broad.igv.sam.AlignmentTrack.BisulfiteContext;
 import org.broad.igv.sam.AlignmentRenderer;
 import org.broad.igv.sam.reader.GeraldParser;
 
+/**
+ * @author benb
+ * Benjamin Berman, University of Southern California
+ * 
+ * Note that this is only currently supporting a single bisulfite protocol with the following assumptions:
+ *  - The first end of paired end reads have C->T variants, while the second ends have G->A
+ *  - Bisulfite only affects one strand.  So for the first end, you don't see G->A and for the
+ *    second end you don't see C->T.  This allows us to detect true C->T genomic changes by examining
+ *    the strand opposite the bisulfite event (we use the DEAMINATION_COLOR for these variants).
+ * 
+ * This is the Illumina protocol published by Joe Ecker lab (Lister et al. 2009, Lister et al. 2011)
+ * and our lab (Berman et al. 2011)
+ *
+ */
 public class BisulfiteBaseInfo {
 
 	public enum DisplayStatus
@@ -13,6 +27,15 @@ public class BisulfiteBaseInfo {
 		NOTHING, COLOR, CHARACTER
 	}
 
+	// Constants
+	public static Color CYTOSINE_MISMATCH_COLOR = Color.orange; //Color.black;
+	public static Color NONCYTOSINE_MISMATCH_COLOR = Color.orange;
+	public static Color DEAMINATION_COLOR = new Color(139,94,60);
+	public static Color METHYLATED_COLOR = Color.red;
+	public static Color UNMETHYLATED_COLOR = Color.blue;
+
+	
+	// Private vars
 	private DisplayStatus[] displayStatus = null;
 	private byte[] displayChars = null;
 	private Color[] displayColors = null;
@@ -65,86 +88,87 @@ public class BisulfiteBaseInfo {
 
 			Color out = null;
 
+			
+			// The logic is organized according to the reference base.  If it's an A/T, it could only be a novel
+			// cytosine.  I'm not sure if it's safe to do a switch on refbase here. Would be faster, but I'm
+			// being safe (BPB).
 			if (AlignmentRenderer.compareBases((byte)'T',refbase) || AlignmentRenderer.compareBases((byte)'A',refbase))
 			{
-				// Eventually, we could check if it's a novel cytosine
+				// Eventually, we could check if it's a novel cytosine.  For now, we show mismatches
+				if (!AlignmentRenderer.compareBases(readbase,refbase)) out = NONCYTOSINE_MISMATCH_COLOR;
 			}
 			else if (AlignmentRenderer.compareBases((byte)'C',refbase))
 			{
-				// Check if we're actually a cytosine. If the ref is one and we're not,
+				// Check if the read is actually a cytosine. If the ref is one and we're not,
 				// make a mismatch color
-				if ((readbase != 'C')  && (readbase != 'T'))
+				if (!AlignmentRenderer.compareBases((byte)'C',readbase)  && !AlignmentRenderer.compareBases((byte)'T',readbase)  )
 				{
-					//out = Color.yellow;
+					out = CYTOSINE_MISMATCH_COLOR;
 				}
 				else	
 				{
+
 					// Get the context and see if it matches our desired context.
+					byte[] preContext = AlignmentTrack.getBisulfiteContextPreContext(bisulfiteContext);
+					byte[] postContext = AlignmentTrack.getBisulfiteContextPostContext(bisulfiteContext);
+					
 					boolean matchesContext = true;
-
-					// Change this to do it in an automatic way.  Requires the option constants to be simple
-					// strings, where you unambiguously know where the central "C" is.
-					// +1 base
-					if ( ((idx+1) >= reference.length) && ((idx+1) >= read.length ))
+					
+					// First do the "post" context
+					int minLen = Math.min(reference.length, read.length);
+					if ((idx+postContext.length)>=minLen)
 					{
 						matchesContext = false;
 					}
 					else
 					{
-						switch (bisulfiteContext)
+						// Cut short whenever we don't match
+						for (int posti = 0; matchesContext && (posti < postContext.length); posti++)
 						{
-						case CG:
-						case HCG:
-						case WCG:
-							if (!AlignmentRenderer.compareBases((byte)'G',reference[idx+1])) matchesContext = false;
-							if (!AlignmentRenderer.compareBases((byte)'G',read[idx+1])) matchesContext = false;  // Be careful, must consider bisulfite C->Ts here if applicable
-							break;
-						case GCH:
-							if (!AlignmentRenderer.compareBases((byte)'H',reference[idx+1])) matchesContext = false;
-							if (!AlignmentRenderer.compareBases((byte)'H',read[idx+1])) matchesContext = false;  // Be careful, must consider bisulfite C->Ts here if applicable
-							break;
+							byte contextb = postContext[posti];
+							int offsetidx = idx + 1 + posti;
+							matchesContext &= positionMatchesContext(contextb, reference, read, offsetidx);
+							
+//							System.err.printf("POST posMatchesContext(posti=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
+//									posti, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
+
 						}
 					}
-					// -1 base
-					if ((idx-1) < 0)
+								
+					// Now do the pre context
+					if ((idx-preContext.length)<0)
 					{
 						matchesContext = false;
 					}
 					else
 					{
-						switch (bisulfiteContext)
+						// Cut short whenever we don't match
+						for (int prei = 0; matchesContext && (prei < preContext.length); prei++)
 						{
-						case WCG:
-							if (!AlignmentRenderer.compareBases((byte)'W',reference[idx-1])) matchesContext = false;
-							if (!AlignmentRenderer.compareBases((byte)'W',read[idx-1])) matchesContext = false;
-							break;
-						case HCG:
-							if (!AlignmentRenderer.compareBases((byte)'H',reference[idx-1])) matchesContext = false;
-							if (!AlignmentRenderer.compareBases((byte)'H',read[idx-1])) matchesContext = false;
-							break;
-						case GCH:
-							if (!AlignmentRenderer.compareBases((byte)'G',reference[idx-1])) matchesContext = false;
-							if (!AlignmentRenderer.compareBases((byte)'G',read[idx-1])) matchesContext = false;
-							break;
+							byte contextb = preContext[prei];
+							int offsetidx = idx - (preContext.length - prei);
+							matchesContext &= positionMatchesContext(contextb, reference, read, offsetidx);
+//							System.err.printf("PRE posMatchesContext(prei=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
+//									prei, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
 						}
 					}
 
-
-
+					
 					if (matchesContext)
 					{
 						if (AlignmentRenderer.compareBases((byte)'T',readbase))
 						{
-							out = Color.BLUE;
+							out = UNMETHYLATED_COLOR;
 						}
 						else if (AlignmentRenderer.compareBases((byte)'C',readbase))
 						{
-							out = Color.red;
+							out = METHYLATED_COLOR;
 						}
-						else
-						{
-							out = Color.yellow;
-						}
+						// C and T should be the only options at this point
+						//						else
+						//						{
+						//							out = Color.yellow;
+						//						}
 					}
 				}
 
@@ -152,14 +176,16 @@ public class BisulfiteBaseInfo {
 			}
 			else if (AlignmentRenderer.compareBases((byte)'G',refbase))
 			{
-				// If it's a guanine in the reference, check if it indicates a variant.  Only
-				// print a color if it indicates a variant
+				// If it's a guanine in the reference, this could be a special case
+				// of deamination of the opposite strand.  I guess we might want to
+				// check the context of the opposite strand too.  But for now i'm
+				// not.
 
-				if (AlignmentRenderer.compareBases((byte)'A',readbase)) out = new Color(139,94,60);
+				if (AlignmentRenderer.compareBases((byte)'A',readbase)) out = DEAMINATION_COLOR;
 			}
 
 			
-			// Remember, the output should be relative to the FW strand
+			// Remember, the output should be relative to the FW strand (use idxFw)
 			this.displayColors[idxFw] = out;
 			if (out == null)
 			{
@@ -167,8 +193,18 @@ public class BisulfiteBaseInfo {
 			}
 			else
 			{
-				boolean isMethColor = ((out.equals(Color.blue)) || (out.equals(Color.red)));
-				this.displayStatus[idxFw] = (isMethColor) ? DisplayStatus.COLOR : DisplayStatus.CHARACTER;
+				boolean isMethColor = ((out.equals(UNMETHYLATED_COLOR)) || (out.equals(METHYLATED_COLOR)));
+				if (isMethColor)
+				{
+					// Display the color
+					this.displayStatus[idxFw] = DisplayStatus.COLOR;
+				}
+				else
+				{
+					// Display the character
+					this.displayStatus[idxFw] = DisplayStatus.CHARACTER;
+					this.displayChars[idxFw] = 'X';
+				}
 			}
 //			System.err.printf("\tSeting displayStatus[%d] = %s\n", idx, displayStatus[idx]);
 		}
@@ -176,7 +212,30 @@ public class BisulfiteBaseInfo {
 		this.numDisplayStatus();
 	}
 	
-	
+	/**
+	 * @param contextb The residue in the context string (IUPAC)
+	 * @param reference The reference sequence (already checked that offsetidx is within bounds)
+	 * @param read The read sequence (already checked that offsetidx is within bounds)
+	 * @param offsetidx The index of the position in both reference and read
+	 * @return
+	 */
+	protected static boolean positionMatchesContext(byte contextb, byte[] reference, byte[] read, int offsetidx)
+	{
+		boolean matchesContext = true;
+		matchesContext &= AlignmentRenderer.compareBases(contextb, reference[offsetidx]);
+
+		// For the read, we have to handle C separately
+		boolean matchesReadContext = false;
+		matchesReadContext |= AlignmentRenderer.compareBases(contextb, read[offsetidx]);
+		if (AlignmentRenderer.compareBases((byte)'T', read[offsetidx]))
+		{
+			matchesReadContext |= AlignmentRenderer.compareBases(contextb, (byte)'C');
+		}	
+		matchesContext &= matchesReadContext;
+		
+		return matchesContext;
+	}		
+		
 	public Color getDisplayColor(int idx)
 	{
 		return displayColors[idx];
@@ -205,15 +264,43 @@ public class BisulfiteBaseInfo {
 		double offset = 0.0;
 		// This gets CpGs on opposite strands to line up. Only do it for meth values though, not snps
 
-		if (myContext.equals(AlignmentTrack.BisulfiteContext.CG) && (getDisplayStatus(idx).equals(DisplayStatus.COLOR)) )
+		if (getDisplayStatus(idx).equals(DisplayStatus.COLOR))
 		{
-			// Would be better if they could meet in the middle, more accurate.  But can't do it with ints.
-			offset = offset + ( ( (myBlock.getBaseAlignment().isNegativeStrand() ^ myBlock.getBaseAlignment().isSecondOfPair() ) ? -1 : 1) * 0.5);
-			//if (isNegativeStrand) locToUse--;
+			double baseOffset = getBisulfiteSymmetricCytosineShift(myContext);
+			offset = offset + ( ( (myBlock.getBaseAlignment().isNegativeStrand() ^ myBlock.getBaseAlignment().isSecondOfPair() ) ? -1 : 1) * baseOffset);
 		}
-
+		
 		return offset;
 	}
 	
-	
+
+	   /**
+     * @param item
+     * @return 0 if the cytosine context is not symmetric, else the number of
+     * base pairs to shift the position by (caller must be careful to shift
+     * relative to the strand the cytosine is on).
+     */
+    public static double getBisulfiteSymmetricCytosineShift(BisulfiteContext item)
+    {
+    	double out = 0.0;
+    	
+    	switch (item)
+    	{
+    		case CG:
+    		case HCG:
+    		case WCG:
+    			out = 0.5;
+    			break;
+    		case CHG:
+    			out = 1.0;
+    			break;
+    		default:
+    			out = 0.0;
+    			break;
+    	}
+    	
+    	return out;
+    }
+
+
 }
