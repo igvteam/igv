@@ -145,8 +145,8 @@ public abstract class AbstractAlignment implements Alignment {
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
-                double insertionLeft = block.getStart() + .75;
-                double insertionRight = block.getStart() + 1.25;
+                double insertionLeft = block.getStart() -.25;
+                double insertionRight = block.getStart() + .25;
                 if (position > insertionLeft && position < insertionRight) {
                     return "Insertion: " + new String(block.getBases());
                 }
@@ -165,7 +165,7 @@ public abstract class AbstractAlignment implements Alignment {
         }
         buf.append("----------------------" + "<br>");
 
-        int basePosition = (int) position - 1;
+        int basePosition = (int) position;
         buf.append("Read name = " + getReadName() + "<br>");
         buf.append("Alignment start = " + (getAlignmentStart() + 1) + " (" + (isNegativeStrand() ? "-" : "+") + ")<br>");
         buf.append("Cigar = " + getCigarString() + "<br>");
