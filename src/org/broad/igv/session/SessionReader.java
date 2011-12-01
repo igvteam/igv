@@ -76,6 +76,7 @@ public class SessionReader {
     Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
     private Track geneTrack = null;
     private Track seqTrack = null;
+    private boolean hasTrackElments;
 
 
     static {
@@ -265,6 +266,9 @@ public class SessionReader {
             log.error("Session Management Error", e);
             throw new RuntimeException(e);
         }
+
+        NodeList tracks = document.getElementsByTagName("Track");
+        hasTrackElments = tracks.getLength() > 0;
 
         HashMap additionalInformation = new HashMap();
         additionalInformation.put(INPUT_FILE_KEY, sessionName);
@@ -499,8 +503,8 @@ public class SessionReader {
                     }
                 };
 
-                // Run synchronously if in batch mode
-                if (Globals.isBatch()) {
+                // Run synchronously if in batch mode or if there are no "track" elments
+                if (Globals.isBatch() || !hasTrackElments) {
                     runnable.run();
                 } else {
                     Thread t = new Thread(runnable);
