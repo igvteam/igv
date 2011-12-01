@@ -464,6 +464,20 @@ public class MainWindow extends JFrame {
     }
 
 
+    private void loadHindIIIActionPerformed(ActionEvent e) {
+        try {
+            colorScale.maxCount = 20;
+            maxRange.setText("20");
+            minRange.setText("0");
+            zd = null;
+            load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
+
+
+
     private void minRangeFocusLost(FocusEvent e) {
         minRangeActionPerformed(null);
     }
@@ -565,9 +579,10 @@ public class MainWindow extends JFrame {
         fileMenu = new JMenu();
         loadMenuItem = new JMenuItem();
         loadFromURL = new JMenuItem();
-        loadDmelDataset = new JMenuItem();
         loadGM = new JMenuItem();
         load562 = new JMenuItem();
+        loadHindIII = new JMenuItem();
+        loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
 
         //======== this ========
@@ -809,15 +824,6 @@ public class MainWindow extends JFrame {
                 fileMenu.add(loadFromURL);
                 fileMenu.addSeparator();
 
-                //---- loadDmelDataset ----
-                loadDmelDataset.setText("Fly");
-                loadDmelDataset.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        loadDmelDatasetActionPerformed(e);
-                    }
-                });
-                fileMenu.add(loadDmelDataset);
-
                 //---- loadGM ----
                 loadGM.setText("GM cell line (human)");
                 loadGM.addActionListener(new ActionListener() {
@@ -835,6 +841,26 @@ public class MainWindow extends JFrame {
                     }
                 });
                 fileMenu.add(load562);
+                fileMenu.addSeparator();
+
+                //---- loadHindIII ----
+                loadHindIII.setText("HindIII August (human)");
+                loadHindIII.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadHindIIIActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadHindIII);
+                fileMenu.addSeparator();
+
+                //---- loadDmelDataset ----
+                loadDmelDataset.setText("Fly");
+                loadDmelDataset.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadDmelDatasetActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadDmelDataset);
                 fileMenu.addSeparator();
 
                 //---- exit ----
@@ -882,9 +908,10 @@ public class MainWindow extends JFrame {
     private JMenu fileMenu;
     private JMenuItem loadMenuItem;
     private JMenuItem loadFromURL;
-    private JMenuItem loadDmelDataset;
     private JMenuItem loadGM;
     private JMenuItem load562;
+    private JMenuItem loadHindIII;
+    private JMenuItem loadDmelDataset;
     private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
