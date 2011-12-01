@@ -166,10 +166,10 @@ public class AlignmentPacker {
         PriorityQueue firstBucket = new PriorityQueue(5, lengthComparator);
         firstBucket.add(firstAlignment);
 
-        // Use dense buckets for < 100,000, sparse otherwise
+        // Use dense buckets for < 1,000,000 bp windows sparse otherwise
 
         BucketCollection buckets;
-        if (bucketCount < 100000) {
+        if (bucketCount < 1000000) {
             buckets = new DenseBucketCollection(bucketCount);
         } else {
             buckets = new SparseBucketCollection();
