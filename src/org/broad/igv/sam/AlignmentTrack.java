@@ -93,7 +93,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NONE;
+       INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, NONE;
     }
 
 
@@ -618,7 +618,11 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         IGV.getInstance().repaintDataPanels();
     }
 
-
+    public static boolean isBisulfiteColorType(ColorOption o)
+    {
+    	return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
+    }
+    
     public static String getBisulfiteContextPubStr(BisulfiteContext item) {
         return bisulfiteContextToPubString.get(item);
     }
@@ -1115,7 +1119,18 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             colorMenu.add(bisulfiteOption);
             group.add(bisulfiteOption);
 
-
+            JRadioButtonMenuItem m7 = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
+            m7.setSelected(colorByOption == ColorOption.NOMESEQ);
+            m7.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.NOMESEQ);
+                    refresh();
+                }
+            });
+            colorMenu.add(m7);
+            group.add(m7);
+            
+            
             add(colorMenu);
 
         }

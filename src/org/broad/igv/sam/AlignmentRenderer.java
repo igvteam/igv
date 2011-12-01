@@ -69,8 +69,10 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     // Bisulfite constants
-    private static final Color bisulfiteColorFw = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorRev = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorRev1 = new Color(195, 222, 195); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
 
     PreferenceManager prefs;
 
@@ -192,7 +194,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // further detail would not be seen and just add to drawing overhead
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
-                if ((pixelWidth < 4) && !(renderOptions.colorOption.equals(ColorOption.BISULFITE) && (pixelWidth >= 1) )) {
+                if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (pixelWidth >= 1) )) {
                     Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
@@ -468,7 +470,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             }
 
-            if ((locScale < 5) || (renderOptions.colorOption.equals(ColorOption.BISULFITE) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
+            if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 drawBases(context, rect, aBlock, alignmentColor, renderOptions);
             }
@@ -560,8 +562,13 @@ public class AlignmentRenderer implements FeatureRenderer {
             byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
 
             BisulfiteBaseInfo bisinfo = null;
-            boolean bisulfiteMode = (renderOptions.colorOption == AlignmentTrack.ColorOption.BISULFITE);
-            if (bisulfiteMode)
+            boolean nomeseqMode = (renderOptions.colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
+            boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
+            if (nomeseqMode)
+            {
+            	bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContextRenderOption);
+            }
+            else if (bisulfiteMode)
             {
             	bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContextRenderOption);
             }
@@ -632,7 +639,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                         // If bisulfite mode, we expand the rectangle to make it more visible
                     	if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR))
                     	{
-                           	if (dXi<8)
+                           	if (dXi<3)
                         	{
                         		int expansion = dXi;
                         		pX0i -= expansion;
@@ -792,14 +799,15 @@ public class AlignmentRenderer implements FeatureRenderer {
         Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
         	case BISULFITE:
+        	case NOMESEQ:
         		// Just a simple forward/reverse strand color scheme that won't clash with the 
         		// methylation rectangles.
                 if (alignment.isNegativeStrand()) {
-                    c = bisulfiteColorFw;
+                    c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
                 } else {
-                    c = bisulfiteColorRev;
+                    c = (alignment.isSecondOfPair()) ? bisulfiteColorFw2 : bisulfiteColorFw1;
                 }
-                //c = getOrientationColor(alignment, peStats);
+                // c = getOrientationColor(alignment, peStats);  // Can we eventually get this to use the builtin orientation stuff?  BPB
                
                 break;
             
@@ -904,7 +912,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (!alignment.isProperPair()) {
+        if (!alignment.isPaired())
+        {
+        	c = (alignment.isNegativeStrand()) ? frOrientationColors.get("R1F2") : frOrientationColors.get("F1R2");
+        }
+        else if (!alignment.isProperPair()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
