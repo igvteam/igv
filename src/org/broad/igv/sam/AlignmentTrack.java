@@ -93,7 +93,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE;
+        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NONE;
     }
 
 
@@ -129,6 +129,14 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
     // directory,  so this field might be null at any given time.  It is updated each repaint.
     DataPanel parent;
 
+
+    /**
+     * Create a new alignment track
+     *
+     * @param locator
+     * @param dataManager
+     * @param genome
+     */
     public AlignmentTrack(ResourceLocator locator, AlignmentDataManager dataManager, Genome genome) {
         super(locator);
 
@@ -162,9 +170,13 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 } catch (Exception e) {
                     log.error("Error setting color option", e);
                     colorByOption = DEFAULT_COLOR_OPTION;
-
                 }
             }
+        }
+        // Override color option preference, if necessary
+        if(!dataManager.isPairedEnd() &&
+                (colorByOption == ColorOption.INSERT_SIZE || colorByOption == ColorOption.PAIR_ORIENTATION)) {
+            colorByOption = ColorOption.NONE;
         }
 
         if (bisulfiteContext == null) {
@@ -1022,17 +1034,29 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
             ButtonGroup group = new ButtonGroup();
 
+            JRadioButtonMenuItem noneOption = new JRadioButtonMenuItem("no color");
+            noneOption.setSelected(colorByOption == ColorOption.NONE);
+            noneOption.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.NONE);
+                    refresh();
+                }
+            });
+            colorMenu.add(noneOption);
+            group.add(noneOption);
+
+
             if (dataManager.isPairedEnd()) {
-                JRadioButtonMenuItem m1 = new JRadioButtonMenuItem("by insert size");
-                m1.setSelected(colorByOption == ColorOption.INSERT_SIZE);
-                m1.addActionListener(new ActionListener() {
+                JRadioButtonMenuItem isizeOption = new JRadioButtonMenuItem("by insert size");
+                isizeOption.setSelected(colorByOption == ColorOption.INSERT_SIZE);
+                isizeOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
                         setColorOption(ColorOption.INSERT_SIZE);
                         refresh();
                     }
                 });
-                colorMenu.add(m1);
-                group.add(m1);
+                colorMenu.add(isizeOption);
+                group.add(isizeOption);
 
                 JRadioButtonMenuItem m1a = new JRadioButtonMenuItem("by pair orientation");
                 m1a.setSelected(colorByOption == ColorOption.PAIR_ORIENTATION);
@@ -1046,50 +1070,50 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 group.add(m1a);
             }
 
-            JRadioButtonMenuItem m2 = new JRadioButtonMenuItem("by read strand");
-            m2.setSelected(colorByOption == ColorOption.READ_STRAND);
-            m2.addActionListener(new ActionListener() {
+            JRadioButtonMenuItem readStrandOption = new JRadioButtonMenuItem("by read strand");
+            readStrandOption.setSelected(colorByOption == ColorOption.READ_STRAND);
+            readStrandOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.READ_STRAND);
                     refresh();
                 }
             });
-            colorMenu.add(m2);
-            group.add(m2);
+            colorMenu.add(readStrandOption);
+            group.add(readStrandOption);
 
-            JRadioButtonMenuItem m4 = new JRadioButtonMenuItem("by read group");
-            m4.setSelected(colorByOption == ColorOption.READ_GROUP);
-            m4.addActionListener(new ActionListener() {
+            JRadioButtonMenuItem readGroupOption = new JRadioButtonMenuItem("by read group");
+            readGroupOption.setSelected(colorByOption == ColorOption.READ_GROUP);
+            readGroupOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.READ_GROUP);
                     refresh();
                 }
             });
-            colorMenu.add(m4);
-            group.add(m4);
+            colorMenu.add(readGroupOption);
+            group.add(readGroupOption);
 
-            JRadioButtonMenuItem m5 = new JRadioButtonMenuItem("by sample");
-            m5.setSelected(colorByOption == ColorOption.SAMPLE);
-            m5.addActionListener(new ActionListener() {
+            JRadioButtonMenuItem sampleOption = new JRadioButtonMenuItem("by sample");
+            sampleOption.setSelected(colorByOption == ColorOption.SAMPLE);
+            sampleOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.SAMPLE);
                     refresh();
                 }
             });
-            colorMenu.add(m5);
-            group.add(m5);
+            colorMenu.add(sampleOption);
+            group.add(sampleOption);
 
 
-            JRadioButtonMenuItem m6 = new JRadioButtonMenuItem("bisulfite mode");
-            m6.setSelected(colorByOption == ColorOption.BISULFITE);
-            m6.addActionListener(new ActionListener() {
+            JRadioButtonMenuItem bisulfiteOption = new JRadioButtonMenuItem("bisulfite mode");
+            bisulfiteOption.setSelected(colorByOption == ColorOption.BISULFITE);
+            bisulfiteOption.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     setColorOption(ColorOption.BISULFITE);
                     refresh();
                 }
             });
-            colorMenu.add(m6);
-            group.add(m6);
+            colorMenu.add(bisulfiteOption);
+            group.add(bisulfiteOption);
 
 
             add(colorMenu);

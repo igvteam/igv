@@ -166,10 +166,10 @@ public class AlignmentPacker {
         PriorityQueue firstBucket = new PriorityQueue(5, lengthComparator);
         firstBucket.add(firstAlignment);
 
-        // Use dense buckets for < 50,000, sparse otherwise
+        // Use dense buckets for < 100,000, sparse otherwise
 
         BucketCollection buckets;
-        if (bucketCount < 50000) {
+        if (bucketCount < 100000) {
             buckets = new DenseBucketCollection(bucketCount);
         } else {
             buckets = new SparseBucketCollection();
@@ -389,10 +389,11 @@ public class AlignmentPacker {
         }
 
         /**
-         * Return the next occupied bucket at or after after bucketNumber
+         * Return the next occupied bucket at or after after bucketNumber.
          *
-         * @param bucketNumber
-         * @return
+         * @param bucketNumber -- the hash bucket index for the alignments, essential the position relative to the start
+         *                        of this packing interval
+         * @return the next occupied bucket at or after bucketNumber, or null if there are none.
          */
         public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {
 
@@ -412,17 +413,19 @@ public class AlignmentPacker {
             }
 
             // Now march from min to max until we cross bucketNumber
-            for (int i = min; i < keys.size(); i++) {
+            for (int i = 0; i < keys.size(); i++) {
                 Integer key = keys.get(i);
-                bucket = buckets.get(key);
-                if (bucket.isEmpty()) {
-                    emptyBuckets.add(key);
-                    bucket = null;
-                } else {
-                    break;
+                if (key >= bucketNumber) {
+                    bucket = buckets.get(key);
+                    if (bucket.isEmpty()) {
+                        emptyBuckets.add(key);
+                        bucket = null;
+                    } else {
+                        return bucket;
+                    }
                 }
             }
-            return bucket;
+            return null;     // No bucket found
         }
 
         public void removeBuckets(Collection<Integer> emptyBuckets) {
