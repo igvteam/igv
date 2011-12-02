@@ -822,7 +822,7 @@ public class SessionReader {
             }
         }
 
-        TrackPanel panel = IGV.getInstance().getDataPanel(panelName);
+        TrackPanel panel = IGV.getInstance().getTrackPanel(panelName);
         panel.addTracks(panelTracks);
     }
 

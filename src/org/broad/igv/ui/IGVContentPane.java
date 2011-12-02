@@ -18,7 +18,6 @@
 
 package org.broad.igv.ui;
 
-import com.jidesoft.swing.JideBoxLayout;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.panel.*;
@@ -105,8 +104,8 @@ public class IGVContentPane extends JPanel {
 
 
     public void repaintDataPanels() {
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
-            tsv.getDataPanel().repaint();
+        for (TrackPanel tp : mainPanel.getTrackPanels()) {
+            tp.getScrollPane().getDataPanel().repaint();
         }
 
     }

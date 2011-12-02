@@ -58,13 +58,10 @@ import org.broad.igv.util.*;
 import org.broad.tribble.util.SeekableFileStream;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -295,7 +292,8 @@ public class IGV {
     }
 
     void beginROI(JButton button) {
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
+        for (TrackPanel tp : getTrackPanels()) {
+            TrackPanelScrollPane tsv = tp.getScrollPane();
             DataPanelContainer dpc = tsv.getDataPanel();
             for (Component c : dpc.getComponents()) {
                 if (c instanceof DataPanel) {
@@ -310,9 +308,8 @@ public class IGV {
     }
 
     public void endROI() {
-
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
-            DataPanelContainer dp = tsv.getDataPanel();
+        for (TrackPanel tp : getTrackPanels()) {
+            DataPanelContainer dp = tp.getScrollPane().getDataPanel();
             dp.setCurrentTool(null);
         }
 
@@ -388,8 +385,8 @@ public class IGV {
     }
 
     public void repaintNamePanels() {
-        for (TrackPanelScrollPane tsv : trackManager.getTrackPanelScrollPanes()) {
-            tsv.getNamePanel().repaint();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().getNamePanel().repaint();
         }
 
     }
@@ -597,8 +594,8 @@ public class IGV {
                     // changed.  Also record panel sizes
                     final HashMap<TrackPanelScrollPane, Integer> trackCountMap = new HashMap();
                     final HashMap<TrackPanelScrollPane, Integer> panelSizeMap = new HashMap();
-                    final Collection<TrackPanelScrollPane> scrollPanes = trackManager.getTrackPanelScrollPanes();
-                    for (TrackPanelScrollPane sp : scrollPanes) {
+                    for (TrackPanel tp : getTrackPanels()) {
+                        TrackPanelScrollPane sp = tp.getScrollPane();
                         trackCountMap.put(sp, sp.getDataPanel().getAllTracks().size());
                         panelSizeMap.put(sp, sp.getDataPanel().getHeight());
                     }
@@ -606,7 +603,8 @@ public class IGV {
                     getTrackManager().loadResources(locators);
 
                     double totalHeight = 0;
-                    for (TrackPanelScrollPane sp : scrollPanes) {
+                    for (TrackPanel tp : getTrackPanels()) {
+                        TrackPanelScrollPane sp = tp.getScrollPane();
                         if (trackCountMap.containsKey(sp)) {
                             int prevTrackCount = trackCountMap.get(sp).intValue();
                             if (prevTrackCount != sp.getDataPanel().getAllTracks().size()) {
@@ -716,8 +714,8 @@ public class IGV {
 
     public void resetFrames() {
         contentPane.getMainPanel().headerPanelContainer.createHeaderPanels();
-        for (TrackPanelScrollPane tp : trackManager.getTrackPanelScrollPanes()) {
-            tp.getTrackPanel().createDataPanels();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.createDataPanels();
         }
 
         contentPane.getCommandBar().setGeneListMode(FrameManager.isGeneListMode());
@@ -1113,30 +1111,29 @@ public class IGV {
      * Add a new data panel set
      */
     public TrackPanelScrollPane addDataPanel(String name) {
-
         return contentPane.getMainPanel().addDataPanel(name);
     }
 
 
-    public TrackPanel getDataPanel(String name) {
-        TrackPanelScrollPane sp = trackManager.getScrollPane(name);
-        if (sp == null) {
-            sp = addDataPanel(name);
-            trackManager.putScrollPane(name, sp);
+    /**
+     * Return the panel with the given name.  This is called infrequently, and doesn't need to be fast (linear
+     * search is fine).
+     *
+     * @param name
+     * @return
+     */
+    public TrackPanel getTrackPanel(String name) {
+        for (TrackPanel sp : getTrackPanels()) {
+            if (name.equals(sp.getName())) {
+                return sp;
+            }
         }
+
+        // If we get this far this is a new panel
+        TrackPanelScrollPane sp = addDataPanel(name);
         return sp.getTrackPanel();
     }
 
-
-    public boolean scrollToTrack(String trackName) {
-        for (TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
-            if (sp.getNamePanel().scrollTo(trackName)) {
-                return true;
-            }
-
-        }
-        return false;
-    }
 
     /**
      * Return an ordered list of track panels.  This method is provided primarily for storing sessions, where
@@ -1144,6 +1141,16 @@ public class IGV {
      */
     public List<TrackPanel> getTrackPanels() {
         return contentPane.getMainPanel().getTrackPanels();
+    }
+
+
+    public boolean scrollToTrack(String trackName) {
+        for (TrackPanel tp : getTrackPanels()) {
+            if (tp.getScrollPane().getNamePanel().scrollTo(trackName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

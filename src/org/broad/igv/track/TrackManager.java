@@ -59,8 +59,6 @@ public class TrackManager {
 
     private TrackLoader loader;
 
-    private final Map<String, TrackPanelScrollPane> trackPanelScrollPanes = new Hashtable();
-
     /**
      * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
      */
@@ -115,25 +113,8 @@ public class TrackManager {
         return types;
     }
 
-
-    public void putScrollPane(String name, TrackPanelScrollPane sp) {
-        trackPanelScrollPanes.put(name, sp);
-    }
-
-    public TrackPanelScrollPane getScrollPane(String name) {
-        return trackPanelScrollPanes.get(name);
-    }
-
-    public Collection<TrackPanelScrollPane> getTrackPanelScrollPanes() {
-        return trackPanelScrollPanes.values();
-    }
-
-    public void removeScrollPane(String name) {
-        trackPanelScrollPanes.remove(name);
-    }
-
-    public void clearScrollPanes() {
-        trackPanelScrollPanes.clear();
+    private List<TrackPanel> getTrackPanels() {
+        return igv.getTrackPanels();
     }
 
 
@@ -146,17 +127,18 @@ public class TrackManager {
 
     public void reset() {
         groupByAttribute = null;
-        TrackPanelScrollPane tsp = trackPanelScrollPanes.get(DATA_PANEL_NAME);
-        if (tsp != null) {
-            tsp.getTrackPanel().reset();
+        for (TrackPanel sp : getTrackPanels()) {
+            if (DATA_PANEL_NAME.equals(sp.getName())) {
+                sp.reset();
+                break;
+            }
         }
         groupListeners.clear();
     }
 
 
     public void groupTracksByAttribute() {
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel trackPanel = tsp.getTrackPanel();
+        for (TrackPanel trackPanel : igv.getTrackPanels()) {
             trackPanel.groupTracksByAttribute(groupByAttribute);
         }
     }
@@ -417,6 +399,7 @@ public class TrackManager {
     /**
      * Return tracks overlaid on "track"
      * // TODO -- why aren't overlaid tracks stored in a track member?  This seems unnecessarily complex
+     *
      * @param track
      * @return
      */
@@ -435,20 +418,24 @@ public class TrackManager {
      */
     public int getVisibleTrackCount() {
         int count = 0;
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
+        for (TrackPanel tsv : igv.getTrackPanels()) {
             count += tsv.getVisibleTrackCount();
 
         }
         return count;
     }
 
+    /**
+     * Return the list of all tracks in the order they appear on the screen
+     *
+     * @param includeGeneTrack if false exclude gene and reference sequence tracks.
+     * @return
+     */
     public List<Track> getAllTracks(boolean includeGeneTrack) {
         List<Track> allTracks = new ArrayList<Track>();
 
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
-            allTracks.addAll(tsv.getTracks());
+        for (TrackPanel tp : igv.getTrackPanels()) {
+            allTracks.addAll(tp.getTracks());
         }
         if ((geneTrack != null) && !includeGeneTrack) {
             allTracks.remove(geneTrack);
@@ -548,13 +535,12 @@ public class TrackManager {
     public void removeTracks(Collection<Track> tracksToRemove) {
 
         // Make copy of list as we will be modifying the original in the loop
-        ArrayList<TrackPanelScrollPane> panes = new ArrayList(getTrackPanelScrollPanes());
-        for (TrackPanelScrollPane tsp : panes) {
-            TrackPanel trackPanel = tsp.getTrackPanel();
+        List<TrackPanel> panels = igv.getTrackPanels();
+        for (TrackPanel trackPanel : panels) {
             trackPanel.removeTracks(tracksToRemove);
 
             if (!trackPanel.hasTracks()) {
-                igv.removeDataPanel(tsp.getTrackPanelName());
+                igv.removeDataPanel(trackPanel.getName());
             }
         }
 
@@ -579,8 +565,7 @@ public class TrackManager {
     public void sortAllTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
         assert attributeNames.length == ascending.length;
 
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
+        for (TrackPanel tsv : getTrackPanels()) {
             tsv.sortTracksByAttributes(attributeNames, ascending);
         }
     }
@@ -594,8 +579,8 @@ public class TrackManager {
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
-            return igv.getDataPanel(DATA_PANEL_NAME);
-        } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
+            return igv.getTrackPanel(DATA_PANEL_NAME);
+        } else if (path.endsWith(".sam") || path.endsWith(".bam") || path.endsWith(".bam.hg19") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
                 path.endsWith(".aligned") || path.endsWith(".sorted.txt")) {
 
@@ -614,7 +599,7 @@ public class TrackManager {
     private TrackPanel getDefaultPanel(ResourceLocator locator) {
 
         if (locator.getType() != null && locator.getType().equalsIgnoreCase("das")) {
-            return igv.getDataPanel(FEATURE_PANEL_NAME);
+            return igv.getTrackPanel(FEATURE_PANEL_NAME);
         }
 
         String filename = locator.getPath().toLowerCase();
@@ -633,9 +618,9 @@ public class TrackManager {
                 filename.endsWith("bed") || filename.endsWith("gistic") ||
                 filename.endsWith("bedz") || filename.endsWith("repmask") ||
                 filename.contains("dranger")) {
-            return igv.getDataPanel(FEATURE_PANEL_NAME);
+            return igv.getTrackPanel(FEATURE_PANEL_NAME);
         } else {
-            return igv.getDataPanel(DATA_PANEL_NAME);
+            return igv.getTrackPanel(DATA_PANEL_NAME);
         }
     }
 
@@ -660,8 +645,7 @@ public class TrackManager {
             }
 
             public void run() {
-                for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-                    TrackPanel tsv = tsp.getTrackPanel();
+                for (TrackPanel tsv : getTrackPanels()) {
                     tsv.sortByRegionsScore(r, type, frame);
                 }
                 IGV.getMainFrame().repaint();
@@ -738,8 +722,7 @@ public class TrackManager {
     private void setGenomeTracks(Track newGeneTrack, SequenceTrack newSeqTrack) {
 
         boolean foundSeqTrack = false;
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
+        for (TrackPanel tsv : getTrackPanels()) {
             foundSeqTrack = tsv.replaceTrack(sequenceTrack, newSeqTrack);
             if (foundSeqTrack) {
                 break;
@@ -747,8 +730,7 @@ public class TrackManager {
         }
 
         boolean foundGeneTrack = false;
-        for (TrackPanelScrollPane tsp : getTrackPanelScrollPanes()) {
-            TrackPanel tsv = tsp.getTrackPanel();
+        for (TrackPanel tsv : getTrackPanels()) {
             foundGeneTrack = tsv.replaceTrack(geneTrack, newGeneTrack);
             if (foundGeneTrack) {
                 break;
@@ -758,7 +740,7 @@ public class TrackManager {
 
         if (!foundGeneTrack || !foundSeqTrack) {
             TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY) ?
-                    igv.getDataPanel(DATA_PANEL_NAME) : igv.getDataPanel(FEATURE_PANEL_NAME);
+                    igv.getTrackPanel(DATA_PANEL_NAME) : igv.getTrackPanel(FEATURE_PANEL_NAME);
 
             if (!foundSeqTrack) panel.addTrack(newSeqTrack);
             if (!foundGeneTrack && newGeneTrack != null) panel.addTrack(newGeneTrack);

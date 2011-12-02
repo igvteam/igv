@@ -289,6 +289,10 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     }
 
+    /**
+     * Shift-click,  used to select a range of tracks.
+     * @param e
+     */
     protected void shiftSelectTracks(MouseEvent e) {
         for (MouseableRegion mouseRegion : mouseRegions) {
             if (mouseRegion.containsPoint(e.getX(), e.getY())) {

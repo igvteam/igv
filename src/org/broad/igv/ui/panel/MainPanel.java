@@ -24,7 +24,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -143,8 +142,8 @@ public class MainPanel extends JPanel implements Paintable {
         layoutFrames();
         super.doLayout();
         applicationHeaderPanel.doLayout();
-        for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
-            tsp.doLayout();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().doLayout();
         }
     }
 
@@ -158,7 +157,7 @@ public class MainPanel extends JPanel implements Paintable {
             headerPanelContainer.setBackground(color);
             nameHeaderPanel.setBackground(color);
             attributeHeaderPanel.setBackground(color);
-            for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
+            for (TrackPanel tsp : getTrackPanels()) {
                 tsp.setBackground(color);
             }
         }
@@ -207,14 +206,12 @@ public class MainPanel extends JPanel implements Paintable {
 
         final TrackPanel dataTrackPanel = new TrackPanel(TrackManager.DATA_PANEL_NAME, this);
         dataTrackScrollPane.setViewportView(dataTrackPanel);
-        trackManager.putScrollPane(TrackManager.DATA_PANEL_NAME, dataTrackScrollPane);
 
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
             featureTrackScrollPane.setViewportView(new TrackPanel(TrackManager.FEATURE_PANEL_NAME, this));
             add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
-            trackManager.putScrollPane(TrackManager.FEATURE_PANEL_NAME, featureTrackScrollPane);
         }
 
 
@@ -244,8 +241,9 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void resetPanels() {
         // Remove user added panels
-        for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
-            tsp.getTrackPanel().clearTracks();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.clearTracks();
+            final TrackPanelScrollPane tsp = tp.getScrollPane();
             if (tsp == dataTrackScrollPane || tsp == featureTrackScrollPane) {
                 continue;
             }
@@ -254,8 +252,6 @@ public class MainPanel extends JPanel implements Paintable {
         }
 
         trackManager.reset();
-        trackManager.clearScrollPanes();
-        trackManager.putScrollPane(TrackManager.DATA_PANEL_NAME, dataTrackScrollPane);
 
         Track sequenceTrack = trackManager.getSequenceTrack();
         Track geneTrack = trackManager.getGeneTrack();
@@ -268,7 +264,6 @@ public class MainPanel extends JPanel implements Paintable {
                 dataTrackScrollPane.getTrackPanel().addTrack(geneTrack);
             }
         } else {
-            trackManager.putScrollPane(TrackManager.FEATURE_PANEL_NAME, featureTrackScrollPane);
             if (sequenceTrack != null) {
                 featureTrackScrollPane.getTrackPanel().addTrack(sequenceTrack);
             }
@@ -288,11 +283,10 @@ public class MainPanel extends JPanel implements Paintable {
         sp.setViewportView(trackPanel);
         //sp.setPreferredSize(new Dimension(700, 300));
 
-        for (TrackPanelScrollPane tsp : trackManager.getTrackPanelScrollPanes()) {
-            tsp.minimizeHeight();
+        for (TrackPanel tp : getTrackPanels()) {
+            tp.getScrollPane().minimizeHeight();
         }
 
-        trackManager.putScrollPane(name, sp);
 
         // Insert the new panel just before the feature panel, or at the end if there is no feature panel.
         int featurePaneIdx = centerSplitPane.indexOfPane(featureTrackScrollPane);
@@ -391,15 +385,14 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void removeEmptyDataPanels() {
         List<TrackPanelScrollPane> emptyPanels = new ArrayList();
-        for (TrackPanelScrollPane sp : trackManager.getTrackPanelScrollPanes()) {
-            if (sp.getTrackPanel().getTracks().isEmpty()) {
-                emptyPanels.add(sp);
+        for (TrackPanel tp : getTrackPanels()) {
+            if (tp.getTracks().isEmpty()) {
+                emptyPanels.add(tp.getScrollPane());
             }
         }
         for (TrackPanelScrollPane panel : emptyPanels) {
             if (panel != null) {
                 centerSplitPane.remove(panel);
-                trackManager.removeScrollPane(panel.getTrackPanelName());
                 TrackNamePanel.removeDropListenerFor(panel.getNamePanel());
             }
 
@@ -408,14 +401,20 @@ public class MainPanel extends JPanel implements Paintable {
     }
 
     public void removeDataPanel(String name) {
-        TrackPanelScrollPane sp = trackManager.getScrollPane(name);
+
+        TrackPanelScrollPane sp = null;
+        for (TrackPanel tp : getTrackPanels()) {
+            if (name.equals(tp.getName())) {
+                sp = tp.getScrollPane();
+                break;
+            }
+        }
         // Don't remove the "special" panes
         if (sp == dataTrackScrollPane || sp == featureTrackScrollPane) {
             return;
         }
         if (sp != null) {
             centerSplitPane.remove(sp);
-            trackManager.removeScrollPane(name);
             TrackNamePanel.removeDropListenerFor(sp.getNamePanel());
         }
     }

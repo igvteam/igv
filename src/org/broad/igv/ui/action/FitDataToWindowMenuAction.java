@@ -28,6 +28,7 @@ import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.panel.DataPanelContainer;
+import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.panel.TrackPanelScrollPane;
 
 import java.awt.event.ActionEvent;
@@ -56,8 +57,8 @@ public class FitDataToWindowMenuAction extends MenuAction {
      */
     public void actionPerformed(ActionEvent e) {
 
-        for (TrackPanelScrollPane sp : IGV.getInstance().getTrackManager().getTrackPanelScrollPanes()) {
-            fitTracksToPanel(sp.getDataPanel());
+        for (TrackPanel tp : IGV.getInstance().getTrackPanels()) {
+            fitTracksToPanel(tp.getScrollPane().getDataPanel());
         }
         mainFrame.doRefresh();
 
