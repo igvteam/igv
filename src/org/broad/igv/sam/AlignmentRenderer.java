@@ -521,8 +521,6 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param rect
      * @param block
      * @param alignmentColor
-     * @param shadeBases
-     * @param showAllBases
      */
     private void drawBases(RenderContext context,
                            Rectangle rect,
@@ -598,7 +596,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                 
                 if ( showAllBases || (!bisulfiteMode && misMatch) || 
-                		(bisulfiteMode && (!bisinfo.getDisplayStatus(idx).equals(DisplayStatus.NOTHING))) ) {
+                		(bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
                     char c = (char) read[idx];
 
                     Color color = nucleotideColors.get(c);
