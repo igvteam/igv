@@ -530,7 +530,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     {
 
     	boolean shadeBases = renderOptions.shadeBases;
-    	boolean showAllBases = renderOptions.showAllBases;
+        ColorOption colorOption = renderOptions.colorOption;
+
+        // Disable showAllBases in bisulfite mode
+    	boolean showAllBases = renderOptions.showAllBases &&
+                !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ);
     	
         double locScale = context.getScale();
         double origin = context.getOrigin();

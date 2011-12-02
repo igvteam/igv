@@ -379,7 +379,7 @@ public class AlignmentPacker {
 
         public void set(int idx, PriorityQueue<Alignment> bucket) {
             if (finished) {
-                System.err.println("Error: bucket added after finishAdding() called");
+                log.error("Error: bucket added after finishAdding() called");
             }
             buckets.put(idx, bucket);
         }

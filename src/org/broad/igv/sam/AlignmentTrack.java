@@ -84,8 +84,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     static {
         bisulfiteContextToContextString.put(BisulfiteContext.CG, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'G'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H','H'}));
-        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H','G'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHH, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H', 'H'}));
+        bisulfiteContextToContextString.put(BisulfiteContext.CHG, new Pair<byte[], byte[]>(new byte[]{}, new byte[]{'H', 'G'}));
         bisulfiteContextToContextString.put(BisulfiteContext.HCG, new Pair<byte[], byte[]>(new byte[]{'H'}, new byte[]{'G'}));
         bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<byte[], byte[]>(new byte[]{'G'}, new byte[]{'H'}));
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
@@ -93,7 +93,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
 
     public enum ColorOption {
-       INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, NONE;
+        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, NONE;
     }
 
 
@@ -174,7 +174,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             }
         }
         // Override color option preference, if necessary
-        if(!dataManager.isPairedEnd() &&
+        if (!dataManager.isPairedEnd() &&
                 (colorByOption == ColorOption.INSERT_SIZE || colorByOption == ColorOption.PAIR_ORIENTATION)) {
             colorByOption = ColorOption.NONE;
         }
@@ -883,9 +883,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             JMenu bisulfiteContextMenu = new JMenu("bisulfite mode");
 
 
+            JRadioButtonMenuItem nomeESeqOption = null;
             boolean showNomeESeq = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_NOMESEQ_ENABLED);
             if (showNomeESeq) {
-                JRadioButtonMenuItem nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
+                nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
                 nomeESeqOption.setSelected(colorByOption == ColorOption.NOMESEQ);
                 nomeESeqOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
@@ -893,10 +894,8 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                         refresh();
                     }
                 });
-                bisulfiteContextMenu.add(nomeESeqOption);
                 group.add(nomeESeqOption);
             }
-
 
             for (final BisulfiteContext item : BisulfiteContext.values()) {
 
@@ -912,6 +911,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 });
                 bisulfiteContextMenu.add(m1);
                 group.add(m1);
+            }
+
+            if (nomeESeqOption != null) {
+                bisulfiteContextMenu.add(nomeESeqOption);
             }
 
             return bisulfiteContextMenu;
@@ -1114,18 +1117,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             colorMenu.add(sampleOption);
             group.add(sampleOption);
 
-
-//            JRadioButtonMenuItem bisulfiteOption = new JRadioButtonMenuItem("bisulfite mode");
-//            bisulfiteOption.setSelected(colorByOption == ColorOption.BISULFITE);
-//            bisulfiteOption.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent aEvt) {
-//                    setColorOption(ColorOption.BISULFITE);
-//                    refresh();
-//                }
-//            });
-//            colorMenu.add(bisulfiteOption);
-//            group.add(bisulfiteOption);
-
             colorMenu.add(getBisulfiteContextMenuItem(group));
 
 
@@ -1265,7 +1256,12 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         public void addShowAllBasesMenuItem() {
             // Change track height by attribute
             final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
-            item.setSelected(renderOptions.showAllBases);
+
+            if (colorByOption == ColorOption.BISULFITE || colorByOption == ColorOption.NOMESEQ) {
+                item.setEnabled(false);
+            } else {
+                item.setSelected(renderOptions.showAllBases);
+            }
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     renderOptions.showAllBases = item.isSelected();
