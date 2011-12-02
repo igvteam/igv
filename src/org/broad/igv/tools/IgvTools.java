@@ -74,8 +74,9 @@ public class IgvTools {
             "sort    sort an alignment file by start position",
             "index   index an alignment file",
             "toTDF    convert an input file (cn, gct, wig) to tiled data format (tdf)",
-            "count   compute coverage density for an alignment file" ,
-            "formatExp  center, scale, and log2 normalize an expression file"
+            "count   compute coverage density for an alignment file",
+            "formatExp  center, scale, and log2 normalize an expression file",
+            "densitiesToBedgraph convert densities.txt.gz file to a bedgraph file"
     };
     public static final int MAX_RECORDS_IN_RAM = 500000;
     public static final int MAX_ZOOM = 7;
@@ -327,7 +328,15 @@ public class IgvTools {
             } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
             } else if (command.equals("densitytobedgraph")) {
-                DensitiesToBedGraph.main(argv);
+                File inputDir = new File(nonOptionArgs[1]);
+                File outputDir = new File(nonOptionArgs[2]);
+                if (inputDir.isDirectory() && outputDir.isDirectory()) {
+                    DensitiesToBedGraph.convert(inputDir, outputDir);
+                }
+                else if(inputDir.isFile() && outputDir.isFile()) {
+                    DensitiesToBedGraph.convert(inputDir, outputDir);
+                }
+
             } else {
                 throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
             }
@@ -373,7 +382,7 @@ public class IgvTools {
                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
 
-        if(!ifile.endsWith(".ts.csv"))  validateIsTilable(typeString);
+        if (!ifile.endsWith(".ts.csv")) validateIsTilable(typeString);
 
         System.out.println("Tile.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
@@ -698,7 +707,7 @@ public class IgvTools {
         }
 
         // If this is a gct file load genes
-        if(isGCT && genomeFile.getAbsolutePath().endsWith(".genome")) {
+        if (isGCT && genomeFile.getAbsolutePath().endsWith(".genome")) {
             GenomeDescriptor descriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
             String geneFileName = descriptor.getGeneFileName();
             if (geneFileName != null && geneFileName.trim().length() > 0) {

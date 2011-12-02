@@ -34,11 +34,15 @@ public class DensitiesToBedGraph {
 
     public static void main(String[] args) throws IOException {
 
-        System.out.println(args[0] + "  " + args[1] + " " + args[2]);
 
-        File inputDir = new File(args[1]);
-        File outputDir = new File(args[2]);
+        File inputDir = new File(args[0]);
+        File outputDir = new File(args[1]);
 
+        convertAll(inputDir, outputDir);
+
+    }
+
+    private static void convertAll(File inputDir, File outputDir) throws IOException {
         File[] files = inputDir.listFiles();
         for (File f : files) {
             if (f.getAbsolutePath().endsWith(".densities.txt.gz")) {
@@ -46,7 +50,6 @@ public class DensitiesToBedGraph {
                 convert(f, new File(outputDir, ofile));
             }
         }
-
     }
 
     public static void convert(File ifile, File ofile) throws IOException {

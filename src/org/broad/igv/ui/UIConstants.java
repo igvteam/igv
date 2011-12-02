@@ -156,7 +156,6 @@ public class UIConstants {
      */
     final public static String NEW_SESSION_MESSAGE =
             "<html>Creating a new session will unload all current data. " + "<br>Are you sure you wish to continue?";
-    final public static String DEFAULT_SERVER_GENOME_ARCHIVE_LIST = "http://igv.broadinstitute.org/genomes/genomes.txt";
     final public static String CANNOT_ACCESS_SERVER_GENOME_LIST = "The Genome server is currently inaccessible.";
     final public static String INVALID_SERVER_GENOME_LIST_HEADER = "Genomes cannot be retrieved from the server. " + "The server-side genome list is invalid!";
     // Session Folder
