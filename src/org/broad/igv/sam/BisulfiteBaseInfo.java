@@ -80,6 +80,10 @@ public class BisulfiteBaseInfo {
 			// This is extremely inefficient to do it in here because we have to do it for every position.
 			int idx = (flipRead) ? ((alignmentLen - 1) - idxFw) : idxFw;
 
+            // Since we allow soft-cliping, the reference sequence can actually be shorter than the read.  Not sure
+            // what to do in this case,  just skip?
+            if(idx < 0 || idx > reference.length) continue;
+
 			// The read base can be an equals sign, so change thet to the actual ref base
 			byte refbase = reference[idx];
 			byte readbase = read[idx];

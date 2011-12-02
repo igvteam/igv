@@ -237,11 +237,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         minHeight = preferredHeight;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     @Override
     public int getHeight() {
         int h = Math.max(minHeight, getNLevels() * (getRowHeight()) + 20);
@@ -618,17 +613,16 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
         IGV.getInstance().repaintDataPanels();
     }
 
-    public static boolean isBisulfiteColorType(ColorOption o)
-    {
-    	return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
+    public static boolean isBisulfiteColorType(ColorOption o) {
+        return (o.equals(ColorOption.BISULFITE) || o.equals(ColorOption.NOMESEQ));
     }
-    
+
     public static String getBisulfiteContextPubStr(BisulfiteContext item) {
         return bisulfiteContextToPubString.get(item);
     }
 
-    
-     public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
+
+    public static byte[] getBisulfiteContextPreContext(BisulfiteContext item) {
         Pair<byte[], byte[]> pair = AlignmentTrack.bisulfiteContextToContextString.get(item);
         return pair.getFirst();
     }
@@ -859,7 +853,6 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             addColorByMenuItem();
             addShadeBaseMenuItem();
             addShowAllBasesMenuItem();
-            addBisulfiteContextMenuItem();
 
             addSeparator();
             addViewAsPairsMenuItem();
@@ -884,20 +877,35 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             return;
         }
 
-        private void addBisulfiteContextMenuItem() {
+        private JMenu getBisulfiteContextMenuItem(ButtonGroup group) {
             // Change track height by attribute
-            JMenu bisulfiteContextMenu = new JMenu("Bisulfite Contexts");
+            //JMenu bisulfiteContextMenu = new JMenu("Bisulfite Contexts");
+            JMenu bisulfiteContextMenu = new JMenu("bisulfite mode");
 
-            ButtonGroup group = new ButtonGroup();
+
+            boolean showNomeESeq = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_NOMESEQ_ENABLED);
+            if (showNomeESeq) {
+                JRadioButtonMenuItem nomeESeqOption = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
+                nomeESeqOption.setSelected(colorByOption == ColorOption.NOMESEQ);
+                nomeESeqOption.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        setColorOption(ColorOption.NOMESEQ);
+                        refresh();
+                    }
+                });
+                bisulfiteContextMenu.add(nomeESeqOption);
+                group.add(nomeESeqOption);
+            }
+
 
             for (final BisulfiteContext item : BisulfiteContext.values()) {
 
                 String optionStr = getBisulfiteContextPubStr(item);
-
                 JRadioButtonMenuItem m1 = new JRadioButtonMenuItem(optionStr);
                 m1.setSelected(bisulfiteContext == item);
                 m1.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
+                        setColorOption(ColorOption.BISULFITE);
                         setBisulfiteContext(item);
                         refresh();
                     }
@@ -906,8 +914,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 group.add(m1);
             }
 
-
-            add(bisulfiteContextMenu);
+            return bisulfiteContextMenu;
 
         }
 
@@ -1108,29 +1115,20 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             group.add(sampleOption);
 
 
-            JRadioButtonMenuItem bisulfiteOption = new JRadioButtonMenuItem("bisulfite mode");
-            bisulfiteOption.setSelected(colorByOption == ColorOption.BISULFITE);
-            bisulfiteOption.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.BISULFITE);
-                    refresh();
-                }
-            });
-            colorMenu.add(bisulfiteOption);
-            group.add(bisulfiteOption);
+//            JRadioButtonMenuItem bisulfiteOption = new JRadioButtonMenuItem("bisulfite mode");
+//            bisulfiteOption.setSelected(colorByOption == ColorOption.BISULFITE);
+//            bisulfiteOption.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent aEvt) {
+//                    setColorOption(ColorOption.BISULFITE);
+//                    refresh();
+//                }
+//            });
+//            colorMenu.add(bisulfiteOption);
+//            group.add(bisulfiteOption);
 
-            JRadioButtonMenuItem m7 = new JRadioButtonMenuItem("NOMe-seq bisulfite mode");
-            m7.setSelected(colorByOption == ColorOption.NOMESEQ);
-            m7.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent aEvt) {
-                    setColorOption(ColorOption.NOMESEQ);
-                    refresh();
-                }
-            });
-            colorMenu.add(m7);
-            group.add(m7);
-            
-            
+            colorMenu.add(getBisulfiteContextMenuItem(group));
+
+
             add(colorMenu);
 
         }
