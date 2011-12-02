@@ -97,7 +97,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Distinguish Missing Data</string> 
+               <string>Distinguish missing data</string> 
               </void> 
               <void property="name"> 
                <string>showMissingDataCB</string> 
@@ -128,7 +128,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Combine Data and Feature Panels</string> 
+               <string>Display all tracks in a single panel</string> 
               </void> 
               <void property="name"> 
                <string>combinePanelsCB</string> 
@@ -159,7 +159,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Show Attribute Display</string> 
+               <string>Show attribute panel</string> 
               </void> 
               <void property="name"> 
                <string>showAttributesDisplayCheckBox</string> 
@@ -396,7 +396,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Sequence Resolution Threshold (bp/pixel):</string> 
+               <string>Sequence resolution threshold (bp/pixel):</string> 
               </void> 
               <void property="name"> 
                <string>label6</string> 
@@ -549,7 +549,7 @@
               <string>javax.swing.JCheckBox</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>Show Region Boundaries</string> 
+               <string>Show region boundaries</string> 
               </void> 
               <void property="name"> 
                <string>showRegionBoundariesCB</string> 

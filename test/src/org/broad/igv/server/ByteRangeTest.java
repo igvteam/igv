@@ -18,9 +18,11 @@
 
 package org.broad.igv.server;
 
+import org.broad.igv.util.HttpUtils;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.BeforeClass;
@@ -37,7 +39,7 @@ import java.net.URL;
 public class ByteRangeTest {
 
 
-    String urlString = "http://www.broadinstitute.org/igvdata/test/ds_21/CCLE_expression_IGV_2010-04-16.tdf";
+    String urlString = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
 
     @Test
     public void testGetContentLength() throws IOException {
@@ -46,7 +48,7 @@ public class ByteRangeTest {
         try {
             conn = (HttpURLConnection) (new URL(urlString)).openConnection();
             String contentLength =  conn.getHeaderField("Content-length");
-            assertEquals("976268429", contentLength);
+            assertEquals("249250621", contentLength);
 
         }
         finally {
@@ -58,9 +60,14 @@ public class ByteRangeTest {
     }
 
     @Test
+    public void test2() throws Exception {
+        assertTrue(HttpUtils.testByteRange());
+    }
+
+    @Test
     public void test1() throws IOException {
 
-        int[] expectedBytes = {140, 65, 230, 148, 217, 70, 35, 240, 180, 251, 84};
+        int[] expectedBytes = {65, 67, 84, 65, 65, 71, 67, 65, 67, 65, 67};
 
         String byteRange = "bytes=" + 100000 + "-" + 100010;
 

@@ -97,15 +97,17 @@ public class HttpUtils {
     public static boolean testByteRange() {
 
         try {
-            String testURL = "http://www.broadinstitute.org/igvdata/byteRangeTest.txt";
-            byte[] expectedBytes = {(byte) 'k', (byte) 'l', (byte) 'm', (byte) 'n', (byte) 'o'};
+            String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
+            byte [] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
+                    'T', 'T', 'T', 'A', 'G', 'T', 'A', 'G', 'A', 'G', 'T'};
+
 
             SeekableHTTPStream str = new SeekableHTTPStream(new IGVUrlHelper(new URL(testURL)));
-            str.seek(10);
-            byte[] buffer = new byte[5];
-            str.read(buffer, 0, 5);
+            str.seek(161032764);
+            byte[] buffer = new byte[expectedBytes.length];
+            str.read(buffer, 0, expectedBytes.length);
 
-            for (int i = 0; i < buffer.length; i++) {
+            for (int i = 0; i < expectedBytes.length; i++) {
                 if (buffer[i] != expectedBytes[i]) {
                     return false;
                 }

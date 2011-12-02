@@ -301,7 +301,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     missingDataExplanation.setBounds(41, 35, 474, missingDataExplanation.getPreferredSize().height);
 
                     //---- showMissingDataCB ----
-                    showMissingDataCB.setText("Distinguish Missing Data");
+                    showMissingDataCB.setText("Distinguish missing data");
                     showMissingDataCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             showMissingDataCBActionPerformed(e);
@@ -311,7 +311,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     showMissingDataCB.setBounds(new Rectangle(new Point(10, 6), showMissingDataCB.getPreferredSize()));
 
                     //---- combinePanelsCB ----
-                    combinePanelsCB.setText("Combine Data and Feature Panels");
+                    combinePanelsCB.setText("Display all tracks in a single panel");
                     combinePanelsCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             combinePanelsCBActionPerformed(e);
@@ -321,7 +321,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     combinePanelsCB.setBounds(new Rectangle(new Point(10, 95), combinePanelsCB.getPreferredSize()));
 
                     //---- showAttributesDisplayCheckBox ----
-                    showAttributesDisplayCheckBox.setText("Show Attribute Display");
+                    showAttributesDisplayCheckBox.setText("Show attribute panel");
                     showAttributesDisplayCheckBox.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             showAttributesDisplayCheckBoxActionPerformed(e);
@@ -381,7 +381,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     label5.setBounds(new Rectangle(new Point(50, 320), label5.getPreferredSize()));
 
                     //---- label6 ----
-                    label6.setText("Sequence Resolution Threshold (bp/pixel):");
+                    label6.setText("Sequence resolution threshold (bp/pixel):");
                     jPanel10.add(label6);
                     label6.setBounds(new Rectangle(new Point(15, 290), label6.getPreferredSize()));
 
@@ -422,7 +422,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     fontChangeButton.setBounds(360, 525, 97, fontChangeButton.getPreferredSize().height);
 
                     //---- showRegionBoundariesCB ----
-                    showRegionBoundariesCB.setText("Show Region Boundaries");
+                    showRegionBoundariesCB.setText("Show region boundaries");
                     showRegionBoundariesCB.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             showRegionBoundariesCBActionPerformed(e);
@@ -463,7 +463,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < jPanel10.getComponentCount(); i++) {
+                        for(int i = 0; i < jPanel10.getComponentCount(); i++) {
                             Rectangle bounds = jPanel10.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -621,7 +621,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < jPanel6.getComponentCount(); i++) {
+                        for(int i = 0; i < jPanel6.getComponentCount(); i++) {
                             Rectangle bounds = jPanel6.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -638,7 +638,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < tracksPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < tracksPanel.getComponentCount(); i++) {
                         Rectangle bounds = tracksPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -749,7 +749,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+                        for(int i = 0; i < jPanel5.getComponentCount(); i++) {
                             Rectangle bounds = jPanel5.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -765,18 +765,18 @@ public class PreferencesEditor extends javax.swing.JDialog {
                 GroupLayout overlaysPanelLayout = new GroupLayout(overlaysPanel);
                 overlaysPanel.setLayout(overlaysPanelLayout);
                 overlaysPanelLayout.setHorizontalGroup(
-                        overlaysPanelLayout.createParallelGroup()
-                                .add(overlaysPanelLayout.createSequentialGroup()
-                                        .add(28, 28, 28)
-                                        .add(jPanel5, GroupLayout.PREFERRED_SIZE, 673, GroupLayout.PREFERRED_SIZE)
-                                        .addContainerGap(80, Short.MAX_VALUE))
+                    overlaysPanelLayout.createParallelGroup()
+                        .add(overlaysPanelLayout.createSequentialGroup()
+                            .add(28, 28, 28)
+                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, 673, GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap(80, Short.MAX_VALUE))
                 );
                 overlaysPanelLayout.setVerticalGroup(
-                        overlaysPanelLayout.createParallelGroup()
-                                .add(overlaysPanelLayout.createSequentialGroup()
-                                        .add(55, 55, 55)
-                                        .add(jPanel5, GroupLayout.PREFERRED_SIZE, 394, GroupLayout.PREFERRED_SIZE)
-                                        .addContainerGap(117, Short.MAX_VALUE))
+                    overlaysPanelLayout.createParallelGroup()
+                        .add(overlaysPanelLayout.createSequentialGroup()
+                            .add(55, 55, 55)
+                            .add(jPanel5, GroupLayout.PREFERRED_SIZE, 394, GroupLayout.PREFERRED_SIZE)
+                            .addContainerGap(117, Short.MAX_VALUE))
                 );
             }
             tabbedPane.addTab("Mutations", overlaysPanel);
@@ -885,7 +885,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < jPanel4.getComponentCount(); i++) {
+                        for(int i = 0; i < jPanel4.getComponentCount(); i++) {
                             Rectangle bounds = jPanel4.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -930,7 +930,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < chartPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < chartPanel.getComponentCount(); i++) {
                         Rectangle bounds = chartPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1059,7 +1059,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel11.getComponentCount(); i++) {
+                            for(int i = 0; i < jPanel11.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel11.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1230,7 +1230,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel12.getComponentCount(); i++) {
+                            for(int i = 0; i < jPanel12.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel12.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1372,7 +1372,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel2.getComponentCount(); i++) {
+                            for(int i = 0; i < panel2.getComponentCount(); i++) {
                                 Rectangle bounds = panel2.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1444,7 +1444,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < panel3.getComponentCount(); i++) {
+                            for(int i = 0; i < panel3.getComponentCount(); i++) {
                                 Rectangle bounds = panel3.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1461,7 +1461,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                     { // compute preferred size
                         Dimension preferredSize = new Dimension();
-                        for (int i = 0; i < jPanel1.getComponentCount(); i++) {
+                        for(int i = 0; i < jPanel1.getComponentCount(); i++) {
                             Rectangle bounds = jPanel1.getComponent(i).getBounds();
                             preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                             preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1478,7 +1478,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < alignmentPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < alignmentPanel.getComponentCount(); i++) {
                         Rectangle bounds = alignmentPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1525,35 +1525,35 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     GroupLayout jPanel8Layout = new GroupLayout(jPanel8);
                     jPanel8.setLayout(jPanel8Layout);
                     jPanel8Layout.setHorizontalGroup(
-                            jPanel8Layout.createParallelGroup()
+                        jPanel8Layout.createParallelGroup()
+                            .add(jPanel8Layout.createSequentialGroup()
+                                .add(jPanel8Layout.createParallelGroup()
                                     .add(jPanel8Layout.createSequentialGroup()
-                                            .add(jPanel8Layout.createParallelGroup()
-                                                    .add(jPanel8Layout.createSequentialGroup()
-                                                            .add(45, 45, 45)
-                                                            .add(jPanel8Layout.createParallelGroup()
-                                                                    .add(expMapToLociCB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                                    .add(expMapToGeneCB)))
-                                                    .add(jPanel8Layout.createSequentialGroup()
-                                                            .addContainerGap()
-                                                            .add(jPanel8Layout.createParallelGroup()
-                                                                    .add(jPanel8Layout.createSequentialGroup()
-                                                                            .add(24, 24, 24)
-                                                                            .add(jLabel21, GroupLayout.PREFERRED_SIZE, 497, GroupLayout.PREFERRED_SIZE))
-                                                                    .add(jLabel24))))
-                                            .addContainerGap(179, Short.MAX_VALUE))
+                                        .add(45, 45, 45)
+                                        .add(jPanel8Layout.createParallelGroup()
+                                            .add(expMapToLociCB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .add(expMapToGeneCB)))
+                                    .add(jPanel8Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .add(jPanel8Layout.createParallelGroup()
+                                            .add(jPanel8Layout.createSequentialGroup()
+                                                .add(24, 24, 24)
+                                                .add(jLabel21, GroupLayout.PREFERRED_SIZE, 497, GroupLayout.PREFERRED_SIZE))
+                                            .add(jLabel24))))
+                                .addContainerGap(179, Short.MAX_VALUE))
                     );
                     jPanel8Layout.setVerticalGroup(
-                            jPanel8Layout.createParallelGroup()
-                                    .add(jPanel8Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .add(jLabel24)
-                                            .addPreferredGap(LayoutStyle.RELATED)
-                                            .add(jLabel21, GroupLayout.PREFERRED_SIZE, 44, GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(LayoutStyle.RELATED)
-                                            .add(expMapToLociCB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .add(14, 14, 14)
-                                            .add(expMapToGeneCB)
-                                            .addContainerGap(158, Short.MAX_VALUE))
+                        jPanel8Layout.createParallelGroup()
+                            .add(jPanel8Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jLabel24)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(jLabel21, GroupLayout.PREFERRED_SIZE, 44, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(expMapToLociCB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .add(14, 14, 14)
+                                .add(expMapToGeneCB)
+                                .addContainerGap(158, Short.MAX_VALUE))
                     );
                 }
                 expressionPane.add(jPanel8);
@@ -1561,7 +1561,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < expressionPane.getComponentCount(); i++) {
+                    for(int i = 0; i < expressionPane.getComponentCount(); i++) {
                         Rectangle bounds = expressionPane.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1673,7 +1673,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                         { // compute preferred size
                             Dimension preferredSize = new Dimension();
-                            for (int i = 0; i < jPanel2.getComponentCount(); i++) {
+                            for(int i = 0; i < jPanel2.getComponentCount(); i++) {
                                 Rectangle bounds = jPanel2.getComponent(i).getBounds();
                                 preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                                 preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1718,50 +1718,50 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
                         jPanel7.setLayout(jPanel7Layout);
                         jPanel7Layout.setHorizontalGroup(
-                                jPanel7Layout.createParallelGroup()
+                            jPanel7Layout.createParallelGroup()
+                                .add(jPanel7Layout.createSequentialGroup()
+                                    .add(jPanel7Layout.createParallelGroup()
                                         .add(jPanel7Layout.createSequentialGroup()
-                                                .add(jPanel7Layout.createParallelGroup()
-                                                        .add(jPanel7Layout.createSequentialGroup()
-                                                                .addContainerGap()
-                                                                .add(enablePortCB)
-                                                                .add(39, 39, 39)
-                                                                .add(portField, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE))
-                                                        .add(jPanel7Layout.createSequentialGroup()
-                                                                .add(48, 48, 48)
-                                                                .add(jLabel22)))
-                                                .addContainerGap(302, Short.MAX_VALUE))
+                                            .addContainerGap()
+                                            .add(enablePortCB)
+                                            .add(39, 39, 39)
+                                            .add(portField, GroupLayout.PREFERRED_SIZE, 126, GroupLayout.PREFERRED_SIZE))
+                                        .add(jPanel7Layout.createSequentialGroup()
+                                            .add(48, 48, 48)
+                                            .add(jLabel22)))
+                                    .addContainerGap(302, Short.MAX_VALUE))
                         );
                         jPanel7Layout.setVerticalGroup(
-                                jPanel7Layout.createParallelGroup()
-                                        .add(jPanel7Layout.createSequentialGroup()
-                                                .add(28, 28, 28)
-                                                .add(jPanel7Layout.createParallelGroup(GroupLayout.CENTER)
-                                                        .add(enablePortCB)
-                                                        .add(portField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(LayoutStyle.UNRELATED)
-                                                .add(jLabel22)
-                                                .addContainerGap(20, Short.MAX_VALUE))
+                            jPanel7Layout.createParallelGroup()
+                                .add(jPanel7Layout.createSequentialGroup()
+                                    .add(28, 28, 28)
+                                    .add(jPanel7Layout.createParallelGroup(GroupLayout.CENTER)
+                                        .add(enablePortCB)
+                                        .add(portField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(LayoutStyle.UNRELATED)
+                                    .add(jLabel22)
+                                    .addContainerGap(20, Short.MAX_VALUE))
                         );
                     }
 
                     GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
                     jPanel3.setLayout(jPanel3Layout);
                     jPanel3Layout.setHorizontalGroup(
-                            jPanel3Layout.createParallelGroup()
-                                    .add(jPanel3Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .add(jPanel3Layout.createParallelGroup()
-                                                    .add(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                            .addContainerGap())
+                        jPanel3Layout.createParallelGroup()
+                            .add(jPanel3Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel3Layout.createParallelGroup()
+                                    .add(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addContainerGap())
                     );
                     jPanel3Layout.setVerticalGroup(
-                            jPanel3Layout.createParallelGroup()
-                                    .add(jPanel3Layout.createSequentialGroup()
-                                            .add(20, 20, 20)
-                                            .add(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(LayoutStyle.RELATED, 20, Short.MAX_VALUE)
-                                            .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        jPanel3Layout.createParallelGroup()
+                            .add(jPanel3Layout.createSequentialGroup()
+                                .add(20, 20, 20)
+                                .add(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED, 20, Short.MAX_VALUE)
+                                .add(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     );
                 }
                 advancedPanel.add(jPanel3);
@@ -1785,24 +1785,24 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     GroupLayout jPanel9Layout = new GroupLayout(jPanel9);
                     jPanel9.setLayout(jPanel9Layout);
                     jPanel9Layout.setHorizontalGroup(
-                            jPanel9Layout.createParallelGroup()
+                        jPanel9Layout.createParallelGroup()
+                            .add(jPanel9Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(jPanel9Layout.createParallelGroup()
                                     .add(jPanel9Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .add(jPanel9Layout.createParallelGroup()
-                                                    .add(jPanel9Layout.createSequentialGroup()
-                                                            .add(38, 38, 38)
-                                                            .add(jLabel25, GroupLayout.PREFERRED_SIZE, 601, GroupLayout.PREFERRED_SIZE))
-                                                    .add(useByteRangeCB))
-                                            .addContainerGap(54, Short.MAX_VALUE))
+                                        .add(38, 38, 38)
+                                        .add(jLabel25, GroupLayout.PREFERRED_SIZE, 601, GroupLayout.PREFERRED_SIZE))
+                                    .add(useByteRangeCB))
+                                .addContainerGap(54, Short.MAX_VALUE))
                     );
                     jPanel9Layout.setVerticalGroup(
-                            jPanel9Layout.createParallelGroup()
-                                    .add(GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
-                                            .add(59, 59, 59)
-                                            .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(LayoutStyle.RELATED)
-                                            .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
-                                            .addContainerGap())
+                        jPanel9Layout.createParallelGroup()
+                            .add(GroupLayout.TRAILING, jPanel9Layout.createSequentialGroup()
+                                .add(59, 59, 59)
+                                .add(useByteRangeCB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(jLabel25, GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                                .addContainerGap())
                     );
                 }
                 advancedPanel.add(jPanel9);
@@ -1810,7 +1810,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < advancedPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < advancedPanel.getComponentCount(); i++) {
                         Rectangle bounds = advancedPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
@@ -1876,37 +1876,37 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         GroupLayout jPanel16Layout = new GroupLayout(jPanel16);
                         jPanel16.setLayout(jPanel16Layout);
                         jPanel16Layout.setHorizontalGroup(
-                                jPanel16Layout.createParallelGroup()
+                            jPanel16Layout.createParallelGroup()
+                                .add(jPanel16Layout.createSequentialGroup()
+                                    .add(jPanel16Layout.createParallelGroup()
                                         .add(jPanel16Layout.createSequentialGroup()
-                                                .add(jPanel16Layout.createParallelGroup()
-                                                        .add(jPanel16Layout.createSequentialGroup()
-                                                                .addContainerGap()
-                                                                .add(authenticateProxyCB))
-                                                        .add(jPanel16Layout.createSequentialGroup()
-                                                                .add(28, 28, 28)
-                                                                .add(jPanel16Layout.createParallelGroup()
-                                                                        .add(jLabel28)
-                                                                        .add(jLabel29))
-                                                                .add(37, 37, 37)
-                                                                .add(jPanel16Layout.createParallelGroup(GroupLayout.LEADING, false)
-                                                                        .add(proxyPasswordField)
-                                                                        .add(proxyUsernameField, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
-                                                .addContainerGap(353, Short.MAX_VALUE))
+                                            .addContainerGap()
+                                            .add(authenticateProxyCB))
+                                        .add(jPanel16Layout.createSequentialGroup()
+                                            .add(28, 28, 28)
+                                            .add(jPanel16Layout.createParallelGroup()
+                                                .add(jLabel28)
+                                                .add(jLabel29))
+                                            .add(37, 37, 37)
+                                            .add(jPanel16Layout.createParallelGroup(GroupLayout.LEADING, false)
+                                                .add(proxyPasswordField)
+                                                .add(proxyUsernameField, GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE))))
+                                    .addContainerGap(353, Short.MAX_VALUE))
                         );
                         jPanel16Layout.setVerticalGroup(
-                                jPanel16Layout.createParallelGroup()
-                                        .add(jPanel16Layout.createSequentialGroup()
-                                                .add(17, 17, 17)
-                                                .add(authenticateProxyCB)
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
-                                                        .add(jLabel28)
-                                                        .add(proxyUsernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
-                                                        .add(jLabel29)
-                                                        .add(proxyPasswordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                .addContainerGap(47, Short.MAX_VALUE))
+                            jPanel16Layout.createParallelGroup()
+                                .add(jPanel16Layout.createSequentialGroup()
+                                    .add(17, 17, 17)
+                                    .add(authenticateProxyCB)
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
+                                        .add(jLabel28)
+                                        .add(proxyUsernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(jPanel16Layout.createParallelGroup(GroupLayout.BASELINE)
+                                        .add(jLabel29)
+                                        .add(proxyPasswordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addContainerGap(47, Short.MAX_VALUE))
                         );
                     }
 
@@ -1958,37 +1958,37 @@ public class PreferencesEditor extends javax.swing.JDialog {
                         GroupLayout jPanel17Layout = new GroupLayout(jPanel17);
                         jPanel17.setLayout(jPanel17Layout);
                         jPanel17Layout.setHorizontalGroup(
-                                jPanel17Layout.createParallelGroup()
+                            jPanel17Layout.createParallelGroup()
+                                .add(jPanel17Layout.createSequentialGroup()
+                                    .add(jPanel17Layout.createParallelGroup()
                                         .add(jPanel17Layout.createSequentialGroup()
-                                                .add(jPanel17Layout.createParallelGroup()
-                                                        .add(jPanel17Layout.createSequentialGroup()
-                                                                .addContainerGap()
-                                                                .add(jPanel17Layout.createParallelGroup()
-                                                                        .add(jLabel27)
-                                                                        .add(jLabel23))
-                                                                .add(28, 28, 28)
-                                                                .add(jPanel17Layout.createParallelGroup()
-                                                                        .add(proxyPortField, GroupLayout.PREFERRED_SIZE, 108, GroupLayout.PREFERRED_SIZE)
-                                                                        .add(proxyHostField, GroupLayout.PREFERRED_SIZE, 485, GroupLayout.PREFERRED_SIZE)))
-                                                        .add(jPanel17Layout.createSequentialGroup()
-                                                                .add(9, 9, 9)
-                                                                .add(useProxyCB)))
-                                                .addContainerGap(21, Short.MAX_VALUE))
+                                            .addContainerGap()
+                                            .add(jPanel17Layout.createParallelGroup()
+                                                .add(jLabel27)
+                                                .add(jLabel23))
+                                            .add(28, 28, 28)
+                                            .add(jPanel17Layout.createParallelGroup()
+                                                .add(proxyPortField, GroupLayout.PREFERRED_SIZE, 108, GroupLayout.PREFERRED_SIZE)
+                                                .add(proxyHostField, GroupLayout.PREFERRED_SIZE, 485, GroupLayout.PREFERRED_SIZE)))
+                                        .add(jPanel17Layout.createSequentialGroup()
+                                            .add(9, 9, 9)
+                                            .add(useProxyCB)))
+                                    .addContainerGap(21, Short.MAX_VALUE))
                         );
                         jPanel17Layout.setVerticalGroup(
-                                jPanel17Layout.createParallelGroup()
-                                        .add(GroupLayout.TRAILING, jPanel17Layout.createSequentialGroup()
-                                                .addContainerGap(29, Short.MAX_VALUE)
-                                                .add(useProxyCB)
-                                                .add(18, 18, 18)
-                                                .add(jPanel17Layout.createParallelGroup(GroupLayout.BASELINE)
-                                                        .add(jLabel23)
-                                                        .add(proxyHostField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                .addPreferredGap(LayoutStyle.RELATED)
-                                                .add(jPanel17Layout.createParallelGroup(GroupLayout.BASELINE)
-                                                        .add(jLabel27)
-                                                        .add(proxyPortField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                .addContainerGap())
+                            jPanel17Layout.createParallelGroup()
+                                .add(GroupLayout.TRAILING, jPanel17Layout.createSequentialGroup()
+                                    .addContainerGap(29, Short.MAX_VALUE)
+                                    .add(useProxyCB)
+                                    .add(18, 18, 18)
+                                    .add(jPanel17Layout.createParallelGroup(GroupLayout.BASELINE)
+                                        .add(jLabel23)
+                                        .add(proxyHostField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(jPanel17Layout.createParallelGroup(GroupLayout.BASELINE)
+                                        .add(jLabel27)
+                                        .add(proxyPortField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                    .addContainerGap())
                         );
                     }
 
@@ -2006,34 +2006,34 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     GroupLayout jPanel15Layout = new GroupLayout(jPanel15);
                     jPanel15.setLayout(jPanel15Layout);
                     jPanel15Layout.setHorizontalGroup(
-                            jPanel15Layout.createParallelGroup()
+                        jPanel15Layout.createParallelGroup()
+                            .add(jPanel15Layout.createSequentialGroup()
+                                .add(jPanel15Layout.createParallelGroup()
                                     .add(jPanel15Layout.createSequentialGroup()
-                                            .add(jPanel15Layout.createParallelGroup()
-                                                    .add(jPanel15Layout.createSequentialGroup()
-                                                            .add(22, 22, 22)
-                                                            .add(label3, GroupLayout.PREFERRED_SIZE, 630, GroupLayout.PREFERRED_SIZE))
-                                                    .add(jPanel15Layout.createSequentialGroup()
-                                                            .addContainerGap()
-                                                            .add(jPanel15Layout.createParallelGroup()
-                                                                    .add(jPanel16, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                                    .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                                                    .add(jPanel15Layout.createSequentialGroup()
-                                                            .addContainerGap()
-                                                            .add(clearProxySettingsButton)))
-                                            .addContainerGap())
+                                        .add(22, 22, 22)
+                                        .add(label3, GroupLayout.PREFERRED_SIZE, 630, GroupLayout.PREFERRED_SIZE))
+                                    .add(jPanel15Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .add(jPanel15Layout.createParallelGroup()
+                                            .add(jPanel16, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                                    .add(jPanel15Layout.createSequentialGroup()
+                                        .addContainerGap()
+                                        .add(clearProxySettingsButton)))
+                                .addContainerGap())
                     );
                     jPanel15Layout.setVerticalGroup(
-                            jPanel15Layout.createParallelGroup()
-                                    .add(jPanel15Layout.createSequentialGroup()
-                                            .addContainerGap()
-                                            .add(label3, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(LayoutStyle.RELATED)
-                                            .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .add(18, 18, 18)
-                                            .add(jPanel16, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                            .add(18, 18, 18)
-                                            .add(clearProxySettingsButton)
-                                            .addContainerGap(100, Short.MAX_VALUE))
+                        jPanel15Layout.createParallelGroup()
+                            .add(jPanel15Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(label3, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(jPanel17, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .add(18, 18, 18)
+                                .add(jPanel16, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .add(18, 18, 18)
+                                .add(clearProxySettingsButton)
+                                .addContainerGap(100, Short.MAX_VALUE))
                     );
                 }
                 proxyPanel.add(jPanel15);
@@ -2113,7 +2113,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
 
                 { // compute preferred size
                     Dimension preferredSize = new Dimension();
-                    for (int i = 0; i < dbPanel.getComponentCount(); i++) {
+                    for(int i = 0; i < dbPanel.getComponentCount(); i++) {
                         Rectangle bounds = dbPanel.getComponent(i).getBounds();
                         preferredSize.width = Math.max(bounds.x + bounds.width, preferredSize.width);
                         preferredSize.height = Math.max(bounds.y + bounds.height, preferredSize.height);
