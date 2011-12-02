@@ -97,6 +97,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_JUNCTION_MIN_FLANKING_WIDTH = "SAM.JUNCTION_MIN_FLANKING_WIDTH";
     public static final String SAM_JUNCTION_MIN_COVERAGE = "SAM.JUNCTION_MIN_COVERAGE";
 
+    public static final String SAM_NOMESEQ_ENABLED = "SAM.NOMESEQ_ENABLED";
+
 
     public static final String EXPAND_FEAUTRE_TRACKS = "EXPAND_FEATURE_TRACKS";
     public static final String PORT_ENABLED = "PORT_ENABLED";
@@ -190,32 +192,9 @@ public class PreferenceManager implements PropertyManager {
     public static final String DB_HOST = "DB_HOST";
     public static final String DB_NAME = "DB_NAME";
     public static final String DB_PORT = "DB_PORT";
+    final public static String DEFAULT_GENOME_URL = "http://igv.broadinstitute.org/genomes/genomes.txt";
+    final public static String DEFAULT_DATA_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
 
-    /*
-   public static final String GENOME_SPACE_ID_SERVER = "identitytest.genomespace.org";
-
-
-   public static final String identityServerUrl = "https://identitytest.genomespace.org:8443/identityServer/basic";
-   public static String dmServer = "https://dmtest.genomespace.org:8444/datamanager/";
-   public static final String atmServer = "https://atmtest.genomespace.org:8443/atm/";
-
-    */
-
-
-    public static String DEFAULT_DATA_SERVER_URL;
-
-    static {
-        Properties properties = new Properties();
-        try {
-            properties.load(AboutDialog.class.getResourceAsStream("/resources/about.properties"));
-            DEFAULT_DATA_SERVER_URL = properties.getProperty("master-resource-url", "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt");
-            if (DEFAULT_DATA_SERVER_URL.equals("@DEFAULT_MASTER_RESOURCE_URL")) {
-                DEFAULT_DATA_SERVER_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
-            }
-        } catch (IOException e) {
-            DEFAULT_DATA_SERVER_URL = "http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt";
-        }
-    }
 
     /**
      * The preference cache
@@ -628,7 +607,7 @@ public class PreferenceManager implements PropertyManager {
     }
 
     public String getDataServerURL() {
-        String masterResourceFile = get(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
+        String masterResourceFile = get(DATA_SERVER_URL_KEY);
         return masterResourceFile;
     }
 
@@ -935,7 +914,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(CHART_COLOR_BORDERS, "true");
         defaultValues.put(CHART_DRAW_TRACK_NAME, "false");
         defaultValues.put(CHART_DRAW_Y_AXIS, "false");
-        defaultValues.put(CHART_AUTOSCALE, "true");
+        defaultValues.put(CHART_AUTOSCALE, "false");
         defaultValues.put(CHART_SHOW_DATA_RANGE, "true");
         defaultValues.put(CHART_COLOR_TRACK_NAME, "true");
         defaultValues.put(CHART_TRACK_HEIGHT_KEY, "40");
@@ -973,6 +952,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
         defaultValues.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, "0");
         defaultValues.put(SAM_JUNCTION_MIN_COVERAGE, "1");
+        defaultValues.put(SAM_NOMESEQ_ENABLED, "false");
 
         defaultValues.put(NORMALIZE_COVERAGE, "false");
 
@@ -982,10 +962,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SEARCH_ZOOM, "true");
 
 
-        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
+        defaultValues.put(PreferenceManager.GENOMES_SERVER_URL, DEFAULT_GENOME_URL);
         defaultValues.put(OVERLAY_ATTRIBUTE_KEY, "LINKING_ID");
         defaultValues.put(DEFAULT_GENOME_KEY, Globals.DEFAULT_GENOME);
-        defaultValues.put(DATA_SERVER_URL_KEY, DEFAULT_DATA_SERVER_URL);
 
         defaultValues.put(USE_PROXY, "false");
         defaultValues.put(PROXY_AUTHENTICATE, "false");
@@ -1024,6 +1003,21 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(DB_HOST, "");
         defaultValues.put(DB_NAME, "");
         defaultValues.put(DB_PORT, "-1");
+
+        String defaultDataURL = DEFAULT_DATA_URL;
+        Properties properties = new Properties();
+          try {
+              properties.load(AboutDialog.class.getResourceAsStream("/resources/about.properties"));
+              String tmp = properties.getProperty("master-resource-url");
+              if (tmp != null && !tmp.startsWith("@")) {
+                  defaultDataURL = tmp;
+              }
+          } catch (IOException e) {
+             log.error("Error reading dataURL property", e);
+          }
+
+        defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
+
 
 
     }

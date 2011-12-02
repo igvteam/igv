@@ -2783,10 +2783,10 @@ public class PreferencesEditor extends javax.swing.JDialog {
         // TODO add your handling code here:
         PreferenceManager prefMgr = PreferenceManager.getInstance();
         genomeServerURLTextField.setEnabled(true);
-        genomeServerURLTextField.setText(UIConstants.DEFAULT_SERVER_GENOME_ARCHIVE_LIST);
+        genomeServerURLTextField.setText(PreferenceManager.DEFAULT_GENOME_URL);
         updatedPreferenceMap.put(PreferenceManager.GENOMES_SERVER_URL, null);
         dataServerURLTextField.setEnabled(true);
-        dataServerURLTextField.setText(PreferenceManager.DEFAULT_DATA_SERVER_URL);
+        dataServerURLTextField.setText(PreferenceManager.DEFAULT_DATA_URL);
         updatedPreferenceMap.put(PreferenceManager.DATA_SERVER_URL_KEY, null);
     }
 
