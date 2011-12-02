@@ -36,7 +36,7 @@
     <!-- build specific properties.  -->
     <property name="build-number"  value="0" />
     <property name="version"       value="${build-number}" />
-    <property name="data-server-url"    value="http://www.broad.mit.edu/igv/resources/dataServerRegistry" />
+    <property name="data-server-url"    value="http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt" />
 
 
     <!-- Clean all generated artifacts -->
