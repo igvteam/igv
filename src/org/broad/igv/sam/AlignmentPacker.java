@@ -266,10 +266,10 @@ public class AlignmentPacker {
             buckets.removeBuckets(emptyBuckets);
             emptyBuckets.clear();
 
-            //if (alignmentRows.size() >= maxLevels) {
-            //    currentRow = null;
-            //    break;
-            //}
+            if (alignmentRows.size() >= maxLevels) {
+                currentRow = null;
+                break;
+            }
 
             currentRow = new Row();
             nextStart = start;

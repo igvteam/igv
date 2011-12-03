@@ -26,6 +26,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
+import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.*;
@@ -189,6 +190,7 @@ public class TrackPanel extends IGVPanel {
             }
             trackGroups.add(newGroup);
         }
+
         trackCountEstimate++;
     }
 

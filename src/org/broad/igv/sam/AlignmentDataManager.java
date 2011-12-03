@@ -418,5 +418,15 @@ public class AlignmentDataManager {
         }
     }
 
+    public void updateSpliceJunctions() {
+        final Collection<AlignmentInterval> loadedIntervals = getLoadedIntervals();
+        if (loadedIntervals != null) {
+            for (AlignmentInterval interval : loadedIntervals) {
+                interval.resetSpliceJunctions();
+
+            }
+        }
+    }
+
 }
 

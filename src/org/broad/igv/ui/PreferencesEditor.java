@@ -29,6 +29,7 @@ import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.legend.LegendDialog;
 import org.broad.igv.ui.util.FontChooser;
 import org.broad.igv.ui.util.MessageUtils;
@@ -37,9 +38,7 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
@@ -50,7 +49,16 @@ import org.jdesktop.layout.LayoutStyle;
 public class PreferencesEditor extends javax.swing.JDialog {
 
     private boolean canceled = false;
-    Map<String, String> updatedPreferenceMap = new HashMap();
+    Map<String, String> updatedPreferenceMap = new Hashtable<String, String>() {
+        @Override
+        public String put(String k, String v) {
+            String oldValue = prefMgr.get(k);
+            if (!v.equals(oldValue)) {
+                return super.put(k, v);
+            }
+            return v;
+        }
+    };
     PreferenceManager prefMgr = PreferenceManager.getInstance();
     boolean updateOverlays = false;
     boolean inputValidated = true;
@@ -3112,23 +3120,36 @@ public class PreferencesEditor extends javax.swing.JDialog {
                     break;
                 }
             }
+
+            boolean updateSpliceJunctions = false;
+            for (String key : SPLICE_JUNCTION_KEYS) {
+                if (updatedPreferenceMap.containsKey(key)) {
+                    updateSpliceJunctions = true;
+                    break;
+                }
+            }
+
+
+            final IGV igv = IGV.getInstance();
+            if (updateSpliceJunctions) {
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.SPLICE_JUNCTION);
+            }
             if (reloadSAM) {
-                final IGV trackManager = IGV.getInstance();
                 if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
                     CachingQueryReader.visibilityWindowChanged();
-                    for (Track t : trackManager.getAllTracks(false)) {
+                    for (Track t : igv.getAllTracks(false)) {
                         if (t instanceof AlignmentTrack) {
                             ((AlignmentTrack) t).visibilityWindowChanged();
                         }
                     }
                 }
-                trackManager.reloadSAMTracks();
-
+                igv.reloadSAMTracks();
+                igv.repaint();
             }
-        } catch (NumberFormatException numberFormatException) {
         } finally {
             WaitCursorManager.removeWaitCursor(token);
         }
+
     }
 
 
@@ -3355,4 +3376,13 @@ public class PreferencesEditor extends javax.swing.JDialog {
             PreferenceManager.SAM_MAX_READS,
             PreferenceManager.SAM_FILTER_FAILED_READS
     );
+
+    static java.util.List<String> SPLICE_JUNCTION_KEYS = Arrays.asList(
+            PreferenceManager.SAM_SHOW_JUNCTION_TRACK,
+            PreferenceManager.SAM_JUNCTION_MIN_FLANKING_WIDTH,
+            PreferenceManager.SAM_JUNCTION_MIN_COVERAGE
+
+    );
+
+
 }

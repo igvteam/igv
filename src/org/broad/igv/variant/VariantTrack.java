@@ -29,6 +29,8 @@ import org.broad.igv.session.SessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.TrackGroupEvent;
+import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;

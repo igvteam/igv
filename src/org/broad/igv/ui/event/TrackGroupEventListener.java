@@ -1,4 +1,4 @@
-package org.broad.igv.track;
+package org.broad.igv.ui.event;
 
 import java.util.EventListener;
 

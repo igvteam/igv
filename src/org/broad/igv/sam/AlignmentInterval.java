@@ -250,6 +250,14 @@ public class AlignmentInterval extends Locus {
     }
 
 
+    /**
+     * Set spliceJunctions to null, which will force a recalculation if/when they are needed again.
+     */
+    public void resetSpliceJunctions() {
+        spliceJunctions = null;
+    }
+
+
     public static class Row {
         int nextIdx;
         private double score = 0;
@@ -273,7 +281,7 @@ public class AlignmentInterval extends Locus {
 
         public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
 
-            if(true ) return;
+            if (true) return;
 
             int adjustedCenter = (int) center;
             Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);

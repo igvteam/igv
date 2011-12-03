@@ -129,8 +129,11 @@ public class CoverageTrack extends AbstractTrack {
 
     public void rescale() {
         if (autoScale & dataManager != null) {
-            for (AlignmentInterval interval : dataManager.getLoadedIntervals()) {
-                rescaleInterval(interval);
+            final Collection<AlignmentInterval> loadedIntervals = dataManager.getLoadedIntervals();
+            if (loadedIntervals != null) {
+                for (AlignmentInterval interval : loadedIntervals) {
+                    rescaleInterval(interval);
+                }
             }
         }
     }

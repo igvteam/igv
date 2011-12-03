@@ -30,6 +30,8 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -51,7 +53,7 @@ import java.util.List;
  * @author dhmay
  *         Finds splice junctions in real time and renders them as Features
  */
-public class SpliceJunctionFinderTrack extends FeatureTrack {
+public class SpliceJunctionFinderTrack extends FeatureTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(SpliceJunctionFinderTrack.class);
 
@@ -72,6 +74,8 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         setRendererClass(SpliceJunctionRenderer.class);
         this.dataManager = dataManager;
         prefs = PreferenceManager.getInstance();
+        // Register track
+        IGV.getInstance().addAlignmentTrackEventListener(this);
     }
 
 
@@ -151,4 +155,13 @@ public class SpliceJunctionFinderTrack extends FeatureTrack {
         return result;
     }
 
+    public void onAlignmentTrackEvent(AlignmentTrackEvent e) {
+        AlignmentTrackEvent.Type type = e.getType();
+        switch (type) {
+            case SPLICE_JUNCTION:
+                packedFeaturesMap.clear();
+                dataManager.updateSpliceJunctions();
+        }
+
+    }
 }

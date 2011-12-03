@@ -1,4 +1,4 @@
-package org.broad.igv.track;
+package org.broad.igv.ui.event;
 
 import org.broad.igv.track.Track;
 
@@ -10,7 +10,10 @@ import java.util.EventObject;
  */
 public class TrackGroupEvent extends EventObject {
 
-    public TrackGroupEvent(Object o) {
-        super(o);
+
+    public TrackGroupEvent(Object source) {
+        super(source);
     }
+
+
 }

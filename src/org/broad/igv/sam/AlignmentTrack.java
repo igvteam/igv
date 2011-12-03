@@ -36,6 +36,9 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.event.AlignmentTrackEventListener;
+import org.broad.igv.ui.event.TrackGroupEvent;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
@@ -51,6 +54,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
@@ -58,7 +62,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class AlignmentTrack extends AbstractTrack implements DragListener {
+public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
 
     public enum SortOption {
@@ -193,6 +197,10 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                 }
             }
         }
+
+        // Register track
+        IGV.getInstance().addAlignmentTrackEventListener(this);
+
 
     }
 
@@ -525,14 +533,15 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
     }
 
-    public void dragStopped(DragEvent evt) {
-        // Disabled.  Not sure why we ever thought this was a good idea
-        //if (PreferenceManager.getInstance().getSAMPreferences().isAutosort() &&
-        //        ReferenceFrame.getInstance().getScale() < 1) {
-        //    sortRows(SortOption.START);
-        //    IGV.getInstance().repaintDataPanels();
-        //}
+    /**
+     * Handle an AlignmentTrackEvent.
+     *
+     * @param e
+     */
+    public void onAlignmentTrackEvent(AlignmentTrackEvent e) {
+
     }
+
 
     private static Alignment getFeatureContaining(
             List<Alignment> features, int right) {

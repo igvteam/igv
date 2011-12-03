@@ -48,6 +48,10 @@ import org.broad.igv.track.*;
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 import org.broad.igv.ui.dnd.GhostGlassPane;
+import org.broad.igv.ui.event.AlignmentTrackEvent;
+import org.broad.igv.ui.event.AlignmentTrackEventListener;
+import org.broad.igv.ui.event.TrackGroupEvent;
+import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 
@@ -139,6 +143,9 @@ public class IGV {
      */
     Collection<SoftReference<TrackGroupEventListener>> groupListeners =
             Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
+
+    Collection<SoftReference<AlignmentTrackEventListener>> alignmentTrackListeners =
+            Collections.synchronizedCollection(new ArrayList<SoftReference<AlignmentTrackEventListener>>());
 
 
     public static IGV createInstance(Frame frame) {
@@ -1504,6 +1511,7 @@ public class IGV {
                     track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
                 }
             }
+
             return newTracks;
 
         } catch (DataLoadException dle) {
@@ -1627,7 +1635,6 @@ public class IGV {
                 ((AlignmentTrack) t).clearCaches();
             }
         }
-        repaintDataPanels();
     }
 
 
@@ -1898,6 +1905,9 @@ public class IGV {
             if (t instanceof TrackGroupEventListener) {
                 removeGroupEventListener((TrackGroupEventListener) t);
             }
+            if(t instanceof AlignmentTrackEventListener) {
+                removeAlignmentTrackEvent((AlignmentTrackEventListener) t);
+            }
         }
     }
 
@@ -2134,6 +2144,8 @@ public class IGV {
         }
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    // Events
 
     public synchronized void addGroupEventListener(TrackGroupEventListener l) {
         groupListeners.add(new SoftReference<TrackGroupEventListener>(l));
@@ -2155,6 +2167,28 @@ public class IGV {
         for (SoftReference<TrackGroupEventListener> ref : groupListeners) {
             TrackGroupEventListener l = ref.get();
             l.onTrackGroupEvent(e);
+        }
+    }
+
+    public synchronized void addAlignmentTrackEventListener(AlignmentTrackEventListener l) {
+        alignmentTrackListeners.add(new SoftReference<AlignmentTrackEventListener>(l));
+    }
+
+    public synchronized void removeAlignmentTrackEvent(AlignmentTrackEventListener l) {
+        for (Iterator<SoftReference<AlignmentTrackEventListener>> it = alignmentTrackListeners.iterator(); it.hasNext(); ) {
+            AlignmentTrackEventListener listener = it.next().get();
+            if (listener != null && listener == l) {
+                it.remove();
+                break;
+            }
+        }
+    }
+
+    public void notifyAlignmentTrackEvent(Object source, AlignmentTrackEvent.Type type) {
+        AlignmentTrackEvent e = new AlignmentTrackEvent(source, type);
+        for (SoftReference<AlignmentTrackEventListener> ref : alignmentTrackListeners) {
+            AlignmentTrackEventListener l = ref.get();
+            l.onAlignmentTrackEvent(e);
         }
     }
 
