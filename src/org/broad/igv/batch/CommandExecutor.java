@@ -23,7 +23,6 @@
 
 package org.broad.igv.batch;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
@@ -102,7 +101,7 @@ public class CommandExecutor {
                 } else if (cmd.equals("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equals("new") || cmd.equals("reset") || cmd.equals("clear")) {
-                    mainFrame.createNewSession(null);
+                    mainFrame.resetSession(null);
                 } else if (cmd.equals("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equals("sort")) {
@@ -309,7 +308,7 @@ public class CommandExecutor {
         List<String> sessionPaths = new ArrayList<String>();
 
         if (!merge) {
-            IGV.getFirstInstance().createNewSession(null);
+            IGV.getFirstInstance().resetSession(null);
         }
 
         // Create set of loaded files
@@ -328,7 +327,7 @@ public class CommandExecutor {
                 unload = MessageUtils.confirm("Unload current dataset?");
             }
             if (unload) {
-                mainFrame.createNewSession(null);
+                mainFrame.resetSession(null);
                 unload = false; // <= only onload one time
             }
 

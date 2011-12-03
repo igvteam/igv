@@ -79,11 +79,14 @@ public class Session {
     private String locus;
 
     public Session(String path) {
-
         log.debug("New session");
+        reset(path);
+
+    }
+
+    public void reset(String path) {
 
         this.path = path;
-
         regionsOfInterest = new LinkedHashMap<String, Collection<RegionOfInterest>>();
         regionsOfInterestObservable =
                 new ObserverForObject<Map<String, Collection<RegionOfInterest>>>(regionsOfInterest);
@@ -97,7 +100,6 @@ public class Session {
         if (resetRequired) {
             IGV.getInstance().resetFrames();
         }
-
     }
 
     public void clearDividerLocations() {

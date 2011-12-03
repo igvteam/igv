@@ -523,7 +523,7 @@ public class SessionReader {
             }
 
             long dt = System.currentTimeMillis() - t0;
-            log.info("Total load time = " + dt);
+            log.debug("Total load time = " + dt);
 
             if (errors.size() > 0) {
                 StringBuffer buf = new StringBuffer();

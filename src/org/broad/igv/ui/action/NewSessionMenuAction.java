@@ -48,7 +48,7 @@ public class NewSessionMenuAction extends MenuAction {
 
             public void run() {
 
-                mainFrame.createNewSession(null); // Clear everything but the genome 
+                mainFrame.resetSession(null); // Clear everything but the genome
 
             }
         });

@@ -189,7 +189,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         try {
                             monitor.fireProgressChange(50);
 
-
                             Genome genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
 
                             updateGenome(genome);
@@ -202,7 +201,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             // TODO -- warn user.
                             // Unload all tracks, begin new session.  This should be done after the genome switch
                             if (igv.isStartupComplete()) {
-                                igv.createNewSession(null);
+                                igv.resetSession(null);
                             }
 
                             PreferenceManager.getInstance().setDefaultGenome(genomeListItem.getId());

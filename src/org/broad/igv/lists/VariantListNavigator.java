@@ -23,10 +23,7 @@
 package org.broad.igv.lists;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
@@ -171,7 +168,7 @@ public class VariantListNavigator extends JDialog {
                     }
 
                     // New session
-                    IGV.getInstance().createNewSession(null);
+                    IGV.getInstance().resetSession(null);
                     IGV.getInstance().loadTracks(locators);
 
                 }

@@ -1027,7 +1027,7 @@ public class IGV {
 
     }
 
-    public void createNewSession(String sessionName) {
+    public void resetSession(String sessionPath) {
 
         LRUCache.clearCaches();
 
@@ -1041,7 +1041,11 @@ public class IGV {
 
         SeekableFileStream.closeAllInstances();
 
-        session = new Session(sessionName);
+        if (session == null) {
+            session = new Session(sessionPath);
+        } else {
+            session.reset(sessionPath);
+        }
 
         contentPane.getMainPanel().resetPanels();
 
@@ -1185,15 +1189,20 @@ public class IGV {
                                        final String locus,
                                        final boolean merge) {
 
-        NamedRunnable runnable = new NamedRunnable() {
-            public void run() {
+        SwingWorker worker = new SwingWorker() {
 
+            CursorToken cursorToken = null;
+
+            @Override
+            protected Object doInBackground() throws Exception {
                 InputStream inputStream = null;
                 try {
 
+                    cursorToken = WaitCursorManager.showWaitCursor();
+
                     if (!merge) {
                         // Do this first, it closes all open SeekableFileStreams.
-                        createNewSession(sessionPath);
+                        resetSession(sessionPath);
                     }
 
                     setStatusBarMessage("Opening session...");
@@ -1218,7 +1227,7 @@ public class IGV {
 
                     double[] dividerFractions = session.getDividerFractions();
                     if (dividerFractions != null) {
-                        contentPane.getMainPanel().setDividerFractions(dividerFractions);
+                         contentPane.getMainPanel().setDividerFractions(dividerFractions);
                     }
                     session.clearDividerLocations();
 
@@ -1247,14 +1256,18 @@ public class IGV {
                         resetStatusMessage();
                     }
                 }
+                return null;
             }
 
-            public String getName() {
-                return "Restore session: " + sessionPath;
+            @Override
+            protected void done() {
+                if (cursorToken != null) {
+                    WaitCursorManager.removeWaitCursor(cursorToken);
+                }
             }
         };
 
-        LongRunningTask.submit(runnable);
+        worker.execute();
 
 
     }
