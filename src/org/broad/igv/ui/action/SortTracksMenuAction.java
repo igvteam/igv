@@ -69,7 +69,7 @@ public class SortTracksMenuAction extends MenuAction {
 
         String[] selectedSortKeys = dialog.getSelectedSortKeys();
         if (selectedSortKeys != null) {
-            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(selectedSortKeys, dialog.isAscending());
+            IGV.getInstance().sortAllTracksByAttributes(selectedSortKeys, dialog.isAscending());
             mainFrame.getMainFrame().repaint();
         }
 

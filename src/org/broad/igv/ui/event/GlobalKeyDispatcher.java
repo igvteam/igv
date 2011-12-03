@@ -66,7 +66,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
     public boolean dispatchKeyEvent(KeyEvent event) {
 
         if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            IGV.getInstance().getTrackManager().clearSelections();
+            IGV.getInstance().clearSelections();
             IGV.getInstance().repaint();
             return true;
         }
@@ -265,7 +265,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
         ReferenceFrame vc = FrameManager.getDefaultFrame();
-        Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
+        Collection<Track> tracks = IGV.getInstance().getSelectedTracks();
         if (tracks.size() == 1) {
             Track t = tracks.iterator().next();
             if (!(t instanceof FeatureTrack)) {
@@ -348,7 +348,7 @@ public class GlobalKeyDispatcher implements KeyEventDispatcher {
         }
 
         ReferenceFrame vc = FrameManager.getDefaultFrame();
-        Collection<Track> tracks = IGV.getInstance().getTrackManager().getSelectedTracks();
+        Collection<Track> tracks = IGV.getInstance().getSelectedTracks();
         if (tracks.size() == 1) {
             try {
                 Track t = tracks.iterator().next();

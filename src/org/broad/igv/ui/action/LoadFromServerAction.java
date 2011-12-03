@@ -222,7 +222,7 @@ public class LoadFromServerAction extends MenuAction {
                 for (ResourceLocator locator : selectedLocators) {
 
                     // Don't reload data that is already loaded
-                    if (IGV.getInstance().getTrackManager().getDataResourceLocators().contains(locator)) {
+                    if (IGV.getInstance().getDataResourceLocators().contains(locator)) {
                         continue;
                     }
 

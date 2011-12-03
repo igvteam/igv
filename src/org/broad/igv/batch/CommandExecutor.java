@@ -29,7 +29,6 @@ import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.track.RegionScoreType;
-import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
@@ -49,11 +48,11 @@ public class CommandExecutor {
     private static Logger log = Logger.getLogger(CommandExecutor.class);
 
     private File snapshotDirectory;
-    private IGV mainFrame;
+    private IGV igv;
 
 
     public CommandExecutor() {
-        mainFrame = IGV.getFirstInstance();
+        igv = IGV.getFirstInstance();
     }
 
     private List<String> getArgs(String[] tokens) {
@@ -101,7 +100,7 @@ public class CommandExecutor {
                 } else if (cmd.equals("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equals("new") || cmd.equals("reset") || cmd.equals("clear")) {
-                    mainFrame.resetSession(null);
+                    igv.resetSession(null);
                 } else if (cmd.equals("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equals("sort")) {
@@ -113,7 +112,7 @@ public class CommandExecutor {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     expand(trackName);
                 } else if (cmd.equals("tweakdivider")) {
-                    IGV.getFirstInstance().tweakPanelDivider();
+                    igv.tweakPanelDivider();
                 } else if (cmd.equals("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
                 } else if (cmd.equals("exit")) {
@@ -125,7 +124,7 @@ public class CommandExecutor {
             } else {
                 return "Empty command string";
             }
-            IGV.getFirstInstance().doRefresh();
+            igv.doRefresh();
 
             if (RuntimeUtils.getAvailableMemoryFraction() < 0.5) {
                 log.debug("Clearing caches");
@@ -160,7 +159,7 @@ public class CommandExecutor {
         }
         String result;
         String genomeID = param1;
-        IGV.getFirstInstance().selectGenomeFromList(genomeID);
+        igv.selectGenomeFromList(genomeID);
         result = "OK";
         return result;
     }
@@ -214,27 +213,27 @@ public class CommandExecutor {
         for (int i = 2; i < args.size(); i++) {
             locus += (" " + args.get(i));
         }
-        IGV.getFirstInstance().goToLocus(locus);
+        igv.goToLocus(locus);
         return "OK";
     }
 
     private void collapse(String trackName) {
         if (trackName == null) {
-            IGV.getFirstInstance().getTrackManager().collapseTracks();
+            igv.collapseTracks();
         } else {
-            IGV.getFirstInstance().getTrackManager().collapseTrack(trackName);
+            igv.collapseTrack(trackName);
         }
-        IGV.getFirstInstance().repaintDataPanels();
+        igv.repaintDataPanels();
     }
 
 
     private void expand(String trackName) {
         if (trackName == null) {
-            IGV.getFirstInstance().getTrackManager().expandTracks();
+            igv.expandTracks();
         } else {
-            IGV.getFirstInstance().getTrackManager().expandTrack(trackName);
+            igv.expandTrack(trackName);
         }
-        IGV.getFirstInstance().repaintDataPanels();
+        igv.repaintDataPanels();
     }
 
     private void defineRegion(String param1, String param2, String param3) {
@@ -254,13 +253,12 @@ public class CommandExecutor {
             }
         }
         if (roi != null) {
-            IGV.getFirstInstance().addRegionOfInterest(roi);
+            igv.addRegionOfInterest(roi);
         }
     }
 
 
     private void sort(String sortArg, String locusString, String param3) {
-        TrackManager tm = IGV.getFirstInstance().getTrackManager();
         RegionScoreType regionSortOption = getRegionSortOption(sortArg);
         if (regionSortOption != null) {
             RegionOfInterest roi = null;
@@ -271,7 +269,7 @@ public class CommandExecutor {
                     roi = new RegionOfInterest(locus.getChr(), start, locus.getEnd(), "");
                 }
             }
-            tm.sortByRegionScore(roi, regionSortOption, FrameManager.getDefaultFrame());
+            igv.sortByRegionScore(roi, regionSortOption, FrameManager.getDefaultFrame());
 
         } else {
             Double location = null;
@@ -290,13 +288,13 @@ public class CommandExecutor {
 
             }
             if (location == null) {
-                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg));
+                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg));
             } else {
-                tm.sortAlignmentTracks(getAlignmentSortOption(sortArg), location);
+                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location);
             }
 
         }
-        IGV.getFirstInstance().repaintDataPanels();
+        igv.repaintDataPanels();
     }
 
     private String loadFiles(final String fileString, final String locus, final boolean merge, String param2) throws IOException {
@@ -308,12 +306,12 @@ public class CommandExecutor {
         List<String> sessionPaths = new ArrayList<String>();
 
         if (!merge) {
-            IGV.getFirstInstance().resetSession(null);
+            igv.resetSession(null);
         }
 
         // Create set of loaded files
         Set<String> loadedFiles = new HashSet<String>();
-        for (ResourceLocator rl : IGV.getFirstInstance().getTrackManager().getDataResourceLocators()) {
+        for (ResourceLocator rl : igv.getDataResourceLocators()) {
             loadedFiles.add(rl.getPath());
         }
 
@@ -327,7 +325,7 @@ public class CommandExecutor {
                 unload = MessageUtils.confirm("Unload current dataset?");
             }
             if (unload) {
-                mainFrame.resetSession(null);
+                igv.resetSession(null);
                 unload = false; // <= only onload one time
             }
 
@@ -347,21 +345,19 @@ public class CommandExecutor {
         }
 
         for (String sessionPath : sessionPaths) {
-            IGV.getFirstInstance().doRestoreSession(sessionPath, locus, merge);
+            igv.doRestoreSession(sessionPath, locus, merge);
         }
 
-        IGV.getFirstInstance().loadTracks(fileLocators);
+        igv.loadTracks(fileLocators);
 
         if (locus != null && !locus.equals("null")) {
-            IGV.getFirstInstance().goToLocus(locus);
+            igv.goToLocus(locus);
         }
 
         return "OK";
     }
 
     private void createSnapshot(String filename) {
-        IGV mainFrame = IGV.getFirstInstance();
-
         if (filename == null) {
             String locus = FrameManager.getDefaultFrame().getFormattedLocusString();
             filename = locus.replaceAll(":", "_").replace("-", "_") + ".png";
@@ -370,7 +366,7 @@ public class CommandExecutor {
         File file = snapshotDirectory == null ? new File(filename) : new File(snapshotDirectory, filename);
         System.out.println("Snapshot: " + file.getAbsolutePath());
 
-        SnapshotUtilities.doSnapshotOffscreen(mainFrame.getMainPanel(), file);
+        SnapshotUtilities.doSnapshotOffscreen(igv.getMainPanel(), file);
     }
 
     private static RegionScoreType getRegionSortOption(String str) {

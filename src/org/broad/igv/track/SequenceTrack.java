@@ -153,7 +153,7 @@ public class SequenceTrack extends AbstractTrack {
     private void flipStrand(Object source) {
         strand = (strand == Strand.POSITIVE ? Strand.NEGATIVE : Strand.POSITIVE);
         repaint();
-        IGV.getInstance().getTrackManager().clearSelections();
+        IGV.getInstance().clearSelections();
     }
 
     public void setShouldShowTranslation(boolean shouldShowTranslation) {
@@ -189,7 +189,7 @@ public class SequenceTrack extends AbstractTrack {
             public void actionPerformed(ActionEvent e) {
                 setShouldShowTranslation(m2.isSelected());
                 repaint();
-                IGV.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().clearSelections();
             }
         });
 

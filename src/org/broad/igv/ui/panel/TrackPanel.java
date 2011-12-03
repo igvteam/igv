@@ -281,22 +281,14 @@ public class TrackPanel extends IGVPanel {
      * @param type
      */
     public void sortByRegionsScore(final RegionOfInterest region, final RegionScoreType type,
-                                   final ReferenceFrame frame) {
-
-        boolean useLinkedSorting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.ENABLE_LINKED_SORTING);
-        String linkingAtt = IGV.getInstance().getSession().getOverlayAttribute();
+                                   final ReferenceFrame frame, List<String> sortedSamples) {
 
         sortGroupsByRegionScore(trackGroups, region, type, frame);
 
         for (TrackGroup group : trackGroups) {
             // If there is a non-null linking attribute
             // Segregate tracks into 2 sub-groups, those matching the score type and those that do not
-            if (useLinkedSorting) {
-                group.sortGroup(region, type, frame);
-            } else {
-                group.sortByRegionScore(region, type, frame);
-            }
-
+            group.sortGroup(type, sortedSamples);
         }
     }
 

@@ -124,7 +124,7 @@ public class SessionWriter {
             }
             //}
 
-            String groupBy = IGV.getInstance().getTrackManager().getGroupByAttribute();
+            String groupBy = IGV.getInstance().getGroupByAttribute();
             if (groupBy != null) {
                 globalElement.setAttribute(SessionAttribute.GROUP_TRACKS_BY.getText(), groupBy);
             }
@@ -427,7 +427,7 @@ public class SessionWriter {
         Collection<ResourceLocator> locators = new ArrayList();
 
         Collection<ResourceLocator> currentTrackFileLocators =
-                IGV.getInstance().getTrackManager().getDataResourceLocators();
+                IGV.getInstance().getDataResourceLocators();
 
         if (currentTrackFileLocators != null) {
             for (ResourceLocator locator : currentTrackFileLocators) {

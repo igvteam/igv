@@ -106,7 +106,7 @@ public class TrackMenuUtils {
             }
 
             private void close() {
-                IGV.getInstance().getTrackManager().clearSelections();
+                IGV.getInstance().clearSelections();
                 IGV.getInstance().repaint();
             }
 
@@ -708,7 +708,7 @@ public class TrackMenuUtils {
                     return;
                 }
 
-                IGV.getInstance().getTrackManager().removeTracks(selectedTracks);
+                IGV.getInstance().removeTracks(selectedTracks);
                 IGV.getInstance().doRefresh();
             }
         });
@@ -989,7 +989,7 @@ public class TrackMenuUtils {
                 // If one or fewer tracks are selected assume the intent is to use all tracks.  A right-click
                 // will always result in one selected track.
                 Collection<Track> tracks = selectedTracks.size() > 1 ? selectedTracks :
-                        IGV.getInstance().getTrackManager().getAllTracks(false);
+                        IGV.getInstance().getAllTracks(false);
                 KMPlotFrame frame = new KMPlotFrame(tracks);
                 frame.setVisible(true);
             }

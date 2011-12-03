@@ -273,15 +273,13 @@ public class TrackGroup {
 
 
     /**
-     * Sorts the entire group, including tracks for the given score type as well as other tracks.
+     * Sorts the entire group, including tracks for the given score type as well as other tracks, by
+     * the specified sample order
      *
-     * @param region
-     * @param type
-     * @param frame
      */
-    public void sortGroup(final RegionOfInterest region,
-                          final RegionScoreType type,
-                          final ReferenceFrame frame) {
+    public void sortGroup(final RegionScoreType type,
+                          List<String> sortedSamples) {
+
         // Step 1,  remove non-sortable tracks and remember position
         List<Track> unsortableTracks = new ArrayList();
         Map<Track, Integer> trackIndeces = new HashMap();
@@ -304,17 +302,7 @@ public class TrackGroup {
             }
         }
 
-        sortByRegionScore(tracksWithScore, region, type, frame);
-
-        // Now get sample order from sorted tracks, use to sort (tracks which do not implement the selected "sort by" score)
-        List<String> sortedSamples = new ArrayList();
-        for (Track t : tracksWithScore) {
-            String att = t.getSample(); //t.getAttributeValue(linkingAtt);
-            if (att != null) {
-                sortedSamples.add(att);
-            }
-
-        }
+        sortBySampleOrder(tracksWithScore, sortedSamples);
         sortBySampleOrder(otherTracks, sortedSamples);
 
         tracks.clear();
@@ -331,13 +319,6 @@ public class TrackGroup {
         }
 
     }
-
-    public void sortByRegionScore(final RegionOfInterest region,
-                                  final RegionScoreType type,
-                                  final ReferenceFrame frame) {
-        sortByRegionScore(tracks, region, type, frame);
-    }
-
 
     private void sortByRegionScore(List<Track> tracks,
                                    final RegionOfInterest region,
@@ -489,9 +470,9 @@ public class TrackGroup {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
-        TrackManager tm = IGV.getInstance().getTrackManager();
-        tm.clearSelections();
-        tm.setTrackSelections(new HashSet(tracks));
+        IGV igv = IGV.getInstance();
+        igv.clearSelections();
+        igv.setTrackSelections(new HashSet(tracks));
 
     }
 }

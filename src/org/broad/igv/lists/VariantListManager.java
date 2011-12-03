@@ -18,14 +18,6 @@
 
 package org.broad.igv.lists;
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.track.TrackManager;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.action.SearchCommand;
-import org.broad.igv.ui.panel.FrameManager;
-import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.NamedRunnable;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 

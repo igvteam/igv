@@ -45,11 +45,11 @@ public class DataPanelPainter {
     private static Logger log = Logger.getLogger(DataPanelPainter.class);
 
     public synchronized void paint(Collection<TrackGroup> groups,
-                      RenderContext context,
-                      int width,
-                      int height,
-                      Color background,
-                      Rectangle visibleRect) {
+                                   RenderContext context,
+                                   int width,
+                                   int height,
+                                   Color background,
+                                   Rectangle visibleRect) {
 
         Graphics2D graphics2D = null;
 
@@ -65,7 +65,7 @@ public class DataPanelPainter {
             int trackY = 0;
 
 
-            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext();) {
+            for (Iterator<TrackGroup> groupIter = groups.iterator(); groupIter.hasNext(); ) {
                 TrackGroup group = groupIter.next();
 
                 if (visibleRect != null && (trackY > visibleRect.y + visibleRect.height)) {
@@ -84,25 +84,27 @@ public class DataPanelPainter {
                     }
 
                     List<Track> trackList = group.getTracks();
-                    for (Track track : trackList) {
-                        if (track == null) continue;
-                        int trackHeight = track.getHeight();
-                        if (visibleRect != null) {
-                            if (trackY > visibleRect.y + visibleRect.height) {
-                                break;
-                            } else if (trackY + trackHeight < visibleRect.y) {
-                                if (track.isVisible()) {
-                                    trackY += trackHeight;
+                    synchronized (trackList) {
+                        for (Track track : trackList) {
+                            if (track == null) continue;
+                            int trackHeight = track.getHeight();
+                            if (visibleRect != null) {
+                                if (trackY > visibleRect.y + visibleRect.height) {
+                                    break;
+                                } else if (trackY + trackHeight < visibleRect.y) {
+                                    if (track.isVisible()) {
+                                        trackY += trackHeight;
+                                    }
+                                    continue;
                                 }
-                                continue;
                             }
-                        }
 
 
-                        if (track.isVisible()) {
-                            Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
-                            draw(track, rect, context);
-                            trackY += trackHeight;
+                            if (track.isVisible()) {
+                                Rectangle rect = new Rectangle(trackX, trackY, width, trackHeight);
+                                draw(track, rect, context);
+                                trackY += trackHeight;
+                            }
                         }
                     }
 
@@ -112,12 +114,10 @@ public class DataPanelPainter {
                     }
                 }
             }
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error(e);
             throw e;
-        }
-        finally {
+        } finally {
             graphics2D.dispose();
         }
     }
@@ -128,7 +128,7 @@ public class DataPanelPainter {
 
         // Get overlays
 
-        List<Track> overlayTracks = IGV.getInstance().getTrackManager().getOverlayTracks(track);
+        List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(track);
         if (overlayTracks != null) {
             for (Track overlayTrack : overlayTracks) {
 

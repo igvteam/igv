@@ -327,7 +327,7 @@ public abstract class DataTrack extends AbstractTrack {
                 return sumDiffs;
 
             } else if (type == RegionScoreType.MUTATION_COUNT) {
-                List<Track> overlayTracks = IGV.getInstance().getTrackManager().getOverlayTracks(this);
+                List<Track> overlayTracks = IGV.getInstance().getOverlayTracks(this);
                 float count = 0;
                 if (overlayTracks != null) {
                     for (Track t : overlayTracks) {

@@ -176,7 +176,7 @@ public class Mutation implements IGVFeature {
         StringBuffer buffer = new StringBuffer();
         buffer.append(getDescription());
         buffer.append("<br>");
-        buffer.append("<i><b>Click for more...</b></i>");
+        buffer.append("<i><b>Click mutation for more...</b></i>");
         return buffer.toString();
     }
 

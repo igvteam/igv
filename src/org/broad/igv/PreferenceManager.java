@@ -133,7 +133,6 @@ public class PreferenceManager implements PropertyManager {
     final public static String SHOW_ORPHANED_MUTATIONS = "SHOW_ORPHANED_MUTATIONS";
     final public static String OVERLAY_ATTRIBUTE_KEY = "OVERLAY_ATTRIBUTE_KEY";
     final public static String COLOR_MUTATIONS = "COVER_OVERLAY_KEY";
-    final public static String ENABLE_LINKED_SORTING = "ENABLE_LINKED_SORTING";
     final public static String TRACK_ATTRIBUTE_NAME_KEY = "TRACK_ATTRIBUTE_NAME_KEY";
     final public static String DATA_SERVER_URL_KEY = "MASTER_RESOURCE_FILE_KEY";
     //final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
@@ -900,7 +899,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(OVERLAY_MUTATION_TRACKS, "true");
         defaultValues.put(SHOW_ORPHANED_MUTATIONS, "false");
         defaultValues.put(COLOR_MUTATIONS, "false");
-        defaultValues.put(ENABLE_LINKED_SORTING, "true");
         defaultValues.put(SHOW_SINGLE_TRACK_PANE_KEY, "false");
         defaultValues.put(PORT_ENABLED, "true");
         defaultValues.put(EXPAND_FEAUTRE_TRACKS, "false");

@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.ui.util.UIUtilities;
 
@@ -42,7 +42,7 @@ public class MainPanel extends JPanel implements Paintable {
 
     private static Logger log = Logger.getLogger(MainPanel.class);
 
-    TrackManager trackManager;
+    IGV igv;
 
     // private static final int DEFAULT_NAME_PANEL_WIDTH = 160;
 
@@ -66,8 +66,8 @@ public class MainPanel extends JPanel implements Paintable {
     private JScrollPane headerScrollPane;
 
 
-    public MainPanel(TrackManager trackManager) {
-        this.trackManager = trackManager;
+    public MainPanel(IGV igv) {
+        this.igv = igv;
         initComponents();
 
         addComponentListener(new ComponentListener() {
@@ -204,13 +204,13 @@ public class MainPanel extends JPanel implements Paintable {
         dataTrackScrollPane = new TrackPanelScrollPane();
         dataTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 349));
 
-        final TrackPanel dataTrackPanel = new TrackPanel(TrackManager.DATA_PANEL_NAME, this);
+        final TrackPanel dataTrackPanel = new TrackPanel(IGV.DATA_PANEL_NAME, this);
         dataTrackScrollPane.setViewportView(dataTrackPanel);
 
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             featureTrackScrollPane = new TrackPanelScrollPane();
             featureTrackScrollPane.setPreferredSize(new java.awt.Dimension(1021, 50));
-            featureTrackScrollPane.setViewportView(new TrackPanel(TrackManager.FEATURE_PANEL_NAME, this));
+            featureTrackScrollPane.setViewportView(new TrackPanel(IGV.FEATURE_PANEL_NAME, this));
             add(featureTrackScrollPane, java.awt.BorderLayout.SOUTH);
         }
 
@@ -251,10 +251,10 @@ public class MainPanel extends JPanel implements Paintable {
             TrackNamePanel.removeDropListenerFor(tsp.getNamePanel());
         }
 
-        trackManager.reset();
+        igv.reset();
 
-        Track sequenceTrack = trackManager.getSequenceTrack();
-        Track geneTrack = trackManager.getGeneTrack();
+        Track sequenceTrack = igv.getSequenceTrack();
+        Track geneTrack = igv.getGeneTrack();
 
         if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             if (sequenceTrack != null) {

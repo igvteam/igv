@@ -19,7 +19,6 @@
 package org.broad.igv.ui;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
 
@@ -49,14 +48,14 @@ public class IGVContentPane extends JPanel {
     private MainPanel mainPanel;
     private ApplicationStatusBar statusBar;
 
-    private TrackManager trackManager;
+    private IGV igv;
 
     /**
      * Creates new form IGV
      */
-    public IGVContentPane(TrackManager trackManager) {
+    public IGVContentPane(IGV igv) {
 
-        this.trackManager = trackManager;
+        this.igv = igv;
 
         // Create components
 
@@ -75,7 +74,7 @@ public class IGVContentPane extends JPanel {
         commandBarPanel.add(igvCommandBar);
 
 
-        mainPanel = new MainPanel(trackManager);
+        mainPanel = new MainPanel(igv);
         add(mainPanel, BorderLayout.CENTER);
 
         statusBar = new ApplicationStatusBar();
@@ -122,8 +121,7 @@ public class IGVContentPane extends JPanel {
      * Reset the default status message, which is the number of tracks loaded.
      */
     public void resetStatusMessage() {
-        statusBar.setMessage("" +
-                IGV.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
+        statusBar.setMessage("" + igv.getVisibleTrackCount() + " tracks loaded");
 
     }
 

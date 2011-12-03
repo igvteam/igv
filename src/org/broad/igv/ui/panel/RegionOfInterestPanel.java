@@ -130,7 +130,7 @@ public class RegionOfInterestPanel extends JPanel {
 
     protected static JPopupMenu getPopupMenu(final Component parent, final RegionOfInterest roi, final ReferenceFrame frame) {
 
-        //Set<TrackType> loadedTypes = IGV.getInstance().getTrackManager().getLoadedTypes();
+        //Set<TrackType> loadedTypes = IGV.getInstance().getLoadedTypes();
 
         JPopupMenu popupMenu = new RegionMenu(roi, frame);
 

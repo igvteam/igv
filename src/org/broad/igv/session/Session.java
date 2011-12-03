@@ -27,7 +27,6 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.track.TrackManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -50,8 +49,6 @@ public class Session {
             PreferenceManager.OVERLAY_ATTRIBUTE_KEY
 
     };
-
-    private TrackManager trackManager;
 
     private int version;
     private String path;

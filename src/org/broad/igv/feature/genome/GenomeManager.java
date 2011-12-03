@@ -150,7 +150,7 @@ public class GenomeManager {
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
                 currentGenome = new Genome(id, name, fastaPath, true);
-                IGV.getInstance().getTrackManager().createGeneTrack(currentGenome, null, null, null, null);
+                IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
             }
 
             if (monitor != null) {
@@ -173,7 +173,7 @@ public class GenomeManager {
         try {
             geneStream = genomeDescriptor.getGeneStream();
             AsciiLineReader reader = geneStream == null ? null : new AsciiLineReader(geneStream);
-            IGV.getInstance().getTrackManager().createGeneTrack(currentGenome, reader,
+            IGV.getInstance().createGeneTrack(currentGenome, reader,
                     genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
                     genomeDescriptor.getUrl());
         } finally {

@@ -32,7 +32,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 /**
- * @deprecated -- use FileDialogUtils
+ * deprecated -- use FileDialogUtils
  *
  * @author eflakes
  */

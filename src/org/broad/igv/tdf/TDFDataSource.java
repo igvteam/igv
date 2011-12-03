@@ -391,7 +391,7 @@ public class TDFDataSource implements CoverageDataSource {
    double tileWidth = chromosome.getLength() / (Math.pow(2.0, zoom));
     */
 
-    public synchronized List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
+    public List<LocusScore> getSummaryScoresForRange(String chr, int startLocation, int endLocation, int zoom) {
 
         Chromosome chromosome = genome.getChromosome(chr);
 

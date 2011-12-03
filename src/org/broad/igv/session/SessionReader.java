@@ -285,14 +285,14 @@ public class SessionReader {
         addLeftoverTracks(trackDictionary.values());
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {
-            IGV.getInstance().getTrackManager().setGroupByAttribute(session.getGroupTracksBy());
+            igv.setGroupByAttribute(session.getGroupTracksBy());
         }
 
         if (session.isRemoveEmptyPanels()) {
-            IGV.getInstance().getMainPanel().removeEmptyDataPanels();
+            igv.getMainPanel().removeEmptyDataPanels();
         }
 
-        IGV.getInstance().getTrackManager().resetOverlayTracks();
+        igv.resetOverlayTracks();
 
     }
 
@@ -348,11 +348,11 @@ public class SessionReader {
         }
         session.setVersion(version);
 
-        geneTrack = IGV.getInstance().getTrackManager().getGeneTrack();
+        geneTrack = igv.getGeneTrack();
         if (geneTrack != null) {
             trackDictionary.put(geneTrack.getId(), Arrays.asList(geneTrack));
         }
-        seqTrack = IGV.getInstance().getTrackManager().getSequenceTrack();
+        seqTrack = igv.getSequenceTrack();
         if (seqTrack != null) {
             trackDictionary.put(seqTrack.getId(), Arrays.asList(seqTrack));
         }
@@ -376,7 +376,7 @@ public class SessionReader {
 
                         TrackPanel panel = trackPanelCache.get(track.getResourceLocator().getPath());
                         if (panel == null) {
-                            panel = IGV.getInstance().getTrackManager().getPanelFor(track.getResourceLocator());
+                            panel = IGV.getInstance().getPanelFor(track.getResourceLocator());
                             trackPanelCache.put(track.getResourceLocator().getPath(), panel);
                         }
                         panel.addTrack(track);
@@ -481,9 +481,7 @@ public class SessionReader {
                     public void run() {
                         List<Track> tracks = null;
                         try {
-                            final TrackManager tm = igv.getTrackManager();
-                            if (tm == null) log.info("TrackManager is null!");
-                            tracks = tm.load(locator);
+                            tracks = igv.load(locator);
                             for (Track track : tracks) {
                                 if (track == null) log.info("Null track for resource " + locator.getPath());
                                 String id = track.getId();
@@ -907,7 +905,7 @@ public class SessionReader {
 
                 // Special case for sequence & gene tracks,  they need to be removed before being placed.
                 if (version >= 4 && track == geneTrack || track == seqTrack) {
-                    IGV.getInstance().getTrackManager().removeTracks(Arrays.asList(track));
+                    igv.removeTracks(Arrays.asList(track));
                 }
 
                 track.restorePersistentState(tAttributes);

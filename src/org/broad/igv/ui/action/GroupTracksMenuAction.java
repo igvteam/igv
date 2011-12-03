@@ -82,7 +82,7 @@ public class GroupTracksMenuAction extends MenuAction {
         dlg.setModel(new javax.swing.DefaultComboBoxModel(selArray));
         dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        String currentSelection = IGV.getInstance().getTrackManager().getGroupByAttribute();
+        String currentSelection = IGV.getInstance().getGroupByAttribute();
         if (currentSelection == null) {
             dlg.setSelectedIndex(0);
         } else {
@@ -94,7 +94,7 @@ public class GroupTracksMenuAction extends MenuAction {
         if (!dlg.isCanceled()) {
             int selIndex = dlg.getSelectedIndex();
             String selectedAttribute = (selIndex == 0 ? null : selArray[selIndex]);
-            IGV.getInstance().getTrackManager().setGroupByAttribute(selectedAttribute);
+            IGV.getInstance().setGroupByAttribute(selectedAttribute);
             mainFrame.doRefresh();
 
         }

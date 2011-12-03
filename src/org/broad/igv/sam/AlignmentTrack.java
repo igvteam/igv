@@ -946,7 +946,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             m1.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.START);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.START);
                     refresh();
 
                 }
@@ -957,7 +957,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
             m2.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.STRAND);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.STRAND);
                     refresh();
 
                 }
@@ -969,7 +969,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.NUCELOTIDE);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.NUCELOTIDE);
                     refresh();
 
                 }
@@ -981,7 +981,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.QUALITY);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.QUALITY);
                     refresh();
 
                 }
@@ -994,7 +994,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.SAMPLE);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.SAMPLE);
                     refresh();
 
                 }
@@ -1006,7 +1006,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.READ_GROUP);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.READ_GROUP);
                     refresh();
 
                 }
@@ -1019,7 +1019,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
 
                     public void actionPerformed(ActionEvent aEvt) {
 
-                        IGV.getInstance().getTrackManager().sortAlignmentTracks(SortOption.INSERT_SIZE);
+                        IGV.getInstance().sortAlignmentTracks(SortOption.INSERT_SIZE);
                         refresh();
 
                     }
@@ -1134,7 +1134,7 @@ public class AlignmentTrack extends AbstractTrack implements DragListener {
                     UIUtilities.invokeOnEventThread(new Runnable() {
 
                         public void run() {
-                            IGV.getInstance().getTrackManager().packAlignmentTracks();
+                            IGV.getInstance().packAlignmentTracks();
                             refresh();
                         }
                     });

@@ -19,7 +19,6 @@
 package org.broad.igv.ui.action;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.track.DataTrack;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
@@ -35,7 +34,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
 import java.util.List;
 
 /**
@@ -45,18 +43,18 @@ import java.util.List;
 public class ExportTrackNamesMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(ClearRegionsMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
     public ExportTrackNamesMenuAction(String label, IGV mainFrame) {
         super(label, null);
-        this.mainFrame = mainFrame;
+        this.igv = mainFrame;
         setToolTipText(UIConstants.EXPORT_REGION_TOOLTIP);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        FileDialog fd = new FileDialog(mainFrame.getMainFrame());
+        FileDialog fd = new FileDialog(igv.getMainFrame());
         fd.setModal(true);
         fd.setMode(FileDialog.SAVE);
         fd.setVisible(true);
@@ -81,7 +79,7 @@ public class ExportTrackNamesMenuAction extends MenuAction {
                 pw.println();
             }
 
-            for (Track t : mainFrame.getTrackManager().getAllTracks(false)) {
+            for (Track t : igv.getAllTracks(false)) {
                 if (t.getTrackType() == TrackType.COPY_NUMBER || t.getTrackType() == TrackType.CNV) {
                     pw.print(t.getName());
                     for (ReferenceFrame frame : referenceFrames) {

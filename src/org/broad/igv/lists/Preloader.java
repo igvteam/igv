@@ -37,7 +37,7 @@ public class Preloader {
 
     public static synchronized void preload() {
 
-        Collection<Track> trackList = IGV.getInstance().getTrackManager().getAllTracks(true);
+        Collection<Track> trackList = IGV.getInstance().getAllTracks(true);
         int flankingRegion = 1; //PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION) + 1;
         String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
         for (ReferenceFrame frame : FrameManager.getFrames()) {

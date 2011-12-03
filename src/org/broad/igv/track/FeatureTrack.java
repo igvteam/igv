@@ -650,7 +650,7 @@ public class FeatureTrack extends AbstractTrack {
                         "<br>Unload track " + getName() + "?");
                 if (unload) {
                     Collection<Track> tmp = Arrays.asList((Track) this);
-                    IGV.getInstance().getTrackManager().removeTracks(tmp);
+                    IGV.getInstance().removeTracks(tmp);
                     IGV.getInstance().doRefresh();
                 } else {
                     fatalLoadError = false;

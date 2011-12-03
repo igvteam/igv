@@ -299,7 +299,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 Collection<Track> clickedTracks = mouseRegion.getTracks();
                 if (clickedTracks != null && clickedTracks.size() > 0) {
                     Track t = clickedTracks.iterator().next();
-                    IGV.getInstance().getTrackManager().shiftSelectTracks(t);
+                    IGV.getInstance().shiftSelectTracks(t);
                 }
                 return;
             }
@@ -475,7 +475,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                 IGV.getInstance().getDnDGlassPane().setImage(dndImage);
                 isDragging = true;
                 dragTracks.clear();
-                dragTracks.addAll(IGV.getInstance().getTrackManager().getSelectedTracks());
+                dragTracks.addAll(IGV.getInstance().getSelectedTracks());
 
 
                 if (getGroups().size() > 0) {

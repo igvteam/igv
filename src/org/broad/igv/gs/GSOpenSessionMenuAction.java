@@ -72,7 +72,7 @@ public class GSOpenSessionMenuAction extends MenuAction {
 
             // If anything has been loaded warn the users.  Popping up the
             // warning all the time will get annoying.
-            if (IGV.getInstance().getTrackManager().getAllTracks(false).size() > 0) {
+            if (IGV.getInstance().getAllTracks(false).size() > 0) {
                 int status =
                         JOptionPane.showConfirmDialog(
                                 mainFrame.getMainFrame(),

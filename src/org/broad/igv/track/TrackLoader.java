@@ -109,7 +109,7 @@ public class TrackLoader {
                 // Genome space hack -- check for explicit type converter
                 //https://dmtest.genomespace.org:8444/datamanager/files/users/SAGDemo/Step1/TF.data.tab
                 //   ?dataformat=http://www.genomespace.org/datamanager/dataformat/gct/0.0.0
-                if ((path.startsWith("http://") || path.startsWith("https://")) && GSUtils.isGenomeSpace(new URL(path)) && path.contains("?dataformat")) {
+                if (path.contains("?dataformat")) {
                     if (path.contains("dataformat/gct")) {
                         typeString = ".gct";
                     } else if (path.contains("dataformat/bed")) {
@@ -182,7 +182,7 @@ public class TrackLoader {
                 loadGeneFile(locator, newTracks, genome);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
-            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
+            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".bam.hg19") ||
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith("_sorted.txt") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
@@ -891,7 +891,7 @@ public class TrackLoader {
             }
             AlignmentDataManager dataManager = new AlignmentDataManager(locator);
 
-            if (locator.getPath().toLowerCase().endsWith(".bam")) {
+            if (locator.getPath().toLowerCase().endsWith(".bam") || locator.getPath().toLowerCase().endsWith(".bam.hg19")) {
                 if (!dataManager.hasIndex()) {
                     MessageUtils.showMessage("<html>Could not load index file for: " +
                             locator.getPath() + "<br>  An index file is required for SAM & BAM files.");

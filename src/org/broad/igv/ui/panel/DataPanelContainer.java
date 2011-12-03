@@ -177,7 +177,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
                 for (File file : files) {
                     try {
 
-                        IGV.getInstance().getTrackManager().load(file, panel);
+                        IGV.getInstance().load(file, panel);
                     }
                     catch (DataLoadException de) {
                         messages.append(de.getMessage());

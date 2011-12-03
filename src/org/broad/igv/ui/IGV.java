@@ -30,6 +30,7 @@ import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.*;
 import org.broad.igv.lists.GeneList;
@@ -38,10 +39,11 @@ import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.lists.Preloader;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.peaks.PeakCommandBar;
+import org.broad.igv.renderer.IGVFeatureRenderer;
+import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
-import org.broad.igv.track.AttributeManager;
-import org.broad.igv.track.TrackManager;
+import org.broad.igv.track.*;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
@@ -55,6 +57,8 @@ import org.broad.igv.ui.util.ProgressMonitor;
 
 
 import org.broad.igv.util.*;
+import org.broad.igv.variant.VariantTrack;
+import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.SeekableFileStream;
 
 import javax.swing.*;
@@ -63,11 +67,14 @@ import java.awt.event.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.net.*;
 import java.util.*;
 import java.util.List;
 
 /**
+ * Represents an IGV instance, consisting of a main window and associated model.
+ *
  * @author jrobinso
  */
 public class IGV {
@@ -97,19 +104,41 @@ public class IGV {
     //Session session;
     Session session;
 
-    // Manager classes
-    private TrackManager trackManager;
     private GenomeManager genomeManager;
+    /**
+     * The gene track for the current genome, rendered in the FeaturePanel
+     */
+    private Track geneTrack;
 
-    // FileChooser Dialogs
-    // private FileChooserDialog trackFileChooser;
-    // private FileChooser snapshotFileChooser;
+    /**
+     * The sequence track for the current genome
+     */
+    private SequenceTrack sequenceTrack;
+
+    /**
+     * Attribute used to group tracks.  Normally "null".  Set from the "Tracks" menu.
+     */
+    private String groupByAttribute = null;
+
+
+    private Map<String, List<Track>> overlayTracksMap = new HashMap();
+    private Set<Track> overlaidTracks = new HashSet();
+
+    public static final String DATA_PANEL_NAME = "DataPanel";
+    public static final String FEATURE_PANEL_NAME = "FeaturePanel";
 
 
     // Misc state
     private LinkedList<String> recentSessionList = new LinkedList<String>();
     private boolean isExportingSnapshot = false;
     private boolean startupComplete = false;
+
+
+    /**
+     *
+     */
+    Collection<SoftReference<TrackGroupEventListener>> groupListeners =
+            Collections.synchronizedCollection(new ArrayList<SoftReference<TrackGroupEventListener>>());
 
 
     public static IGV createInstance(Frame frame) {
@@ -208,7 +237,6 @@ public class IGV {
 
 
         session = new Session(null);
-        trackManager = new TrackManager(this);
 
         // Create cursors
         createHandCursor();
@@ -226,7 +254,7 @@ public class IGV {
             mainFrame.add(rootPane);
 
         }
-        contentPane = new IGVContentPane(trackManager);
+        contentPane = new IGVContentPane(this);
         menuBar = new IGVMenuBar();
 
         rootPane.setContentPane(contentPane);
@@ -271,14 +299,6 @@ public class IGV {
         rootPane.setGlassPane(glassPane);
         glassPane.setVisible(false);
     }
-
-    public void setSelectedRegion(RegionOfInterest region) {
-        //if (region != regionOfInterestPane.getSelectedRegion()) {
-        //    regionOfInterestPane.setSelectedRegion(region);
-        //    repaintDataPanels();
-        //}
-    }
-
 
     public Dimension getPreferredSize() {
         return UIConstants.preferredSize;
@@ -377,8 +397,6 @@ public class IGV {
 
     /**
      * Repaint the data panels.  Deprecated, but kept for backwards compatibility.
-     *
-     * @deprecated
      */
     public void repaintDataPanels() {
         repaintDataAndHeaderPanels(false);
@@ -600,7 +618,7 @@ public class IGV {
                         panelSizeMap.put(sp, sp.getDataPanel().getHeight());
                     }
 
-                    getTrackManager().loadResources(locators);
+                    loadResources(locators);
 
                     double totalHeight = 0;
                     for (TrackPanel tp : getTrackPanels()) {
@@ -1088,12 +1106,6 @@ public class IGV {
 
     }
 
-    public void updateTrackState() {
-
-        doRefresh();
-    }
-
-
     public void setFilterMatchAll(boolean value) {
         menuBar.setFilterMatchAll(value);
     }
@@ -1227,7 +1239,7 @@ public class IGV {
 
                     double[] dividerFractions = session.getDividerFractions();
                     if (dividerFractions != null) {
-                         contentPane.getMainPanel().setDividerFractions(dividerFractions);
+                        contentPane.getMainPanel().setDividerFractions(dividerFractions);
                     }
                     session.clearDividerLocations();
 
@@ -1277,7 +1289,7 @@ public class IGV {
      */
     public void resetStatusMessage() {
         contentPane.getStatusBar().setMessage("" +
-                IGV.getInstance().getTrackManager().getVisibleTrackCount() + " tracks loaded");
+                getVisibleTrackCount() + " tracks loaded");
 
     }
 
@@ -1288,7 +1300,7 @@ public class IGV {
 
     public void showLoadedTrackCount() {
         contentPane.getStatusBar().setMessage("" +
-                IGV.getInstance().getTrackManager().getVisibleTrackCount() +
+                getVisibleTrackCount() +
                 " track(s) currently loaded");
     }
 
@@ -1308,11 +1320,6 @@ public class IGV {
     public void goToLocus(String locus) {
 
         contentPane.getCommandBar().searchByLocus(locus, false);
-    }
-
-
-    public TrackManager getTrackManager() {
-        return trackManager;
     }
 
     public void tweakPanelDivider() {
@@ -1397,6 +1404,764 @@ public class IGV {
             statusWindow.updateText(text);
         }
     }
+
+
+    public void loadResources(Collection<ResourceLocator> locators) {
+
+        //Set<TrackPanel> changedPanels = new HashSet();
+
+        log.info("Loading" + locators.size() + " resources.");
+        final MessageCollection messages = new MessageCollection();
+
+
+        // Load files concurrently -- TODO, put a limit on # of threads?
+        List<Thread> threads = new ArrayList<Thread>(locators.size());
+
+        for (final ResourceLocator locator : locators) {
+
+            // If its a local file, check explicitly for existence (rather than rely on exception)
+            if (locator.isLocal()) {
+                File trackSetFile = new File(locator.getPath());
+                if (!trackSetFile.exists()) {
+                    messages.append("File not found: " + locator.getPath() + "\n");
+                    continue;
+                }
+            }
+
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    try {
+                        List<Track> tracks = load(locator);
+                        if (tracks.size() > 0) {
+                            String path = locator.getPath();
+
+                            // Get an appropriate panel.  If its a VCF file create a new panel if the number of genotypes
+                            // is greater than 10
+                            TrackPanel panel = getPanelFor(locator);
+                            if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+                                    path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+                                Track t = tracks.get(0);
+                                if (t instanceof VariantTrack && ((VariantTrack) t).getAllSamples().size() > 10) {
+                                    String newPanelName = "Panel" + System.currentTimeMillis();
+                                    panel = addDataPanel(newPanelName).getTrackPanel();
+                                }
+                            }
+                            panel.addTracks(tracks);
+                        }
+                    } catch (Throwable e) {
+                        log.error("Error loading tracks", e);
+                        messages.append(e.getMessage());
+                    }
+                }
+            };
+
+            //Thread thread = new Thread(runnable);
+            //thread.start();
+            //threads.add(thread);
+            runnable.run();
+        }
+
+        // Wait for all threads to complete
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ignore) {
+            }
+        }
+
+        resetGroups();
+        resetOverlayTracks();
+
+        if (!messages.isEmpty()) {
+            for (String message : messages.getMessages()) {
+                MessageUtils.showMessage(message);
+            }
+        }
+    }
+
+
+    /**
+     * Load a resource (track or sample attribute file)
+     */
+
+    public List<Track> load(ResourceLocator locator) {
+
+        TrackLoader loader = new TrackLoader();
+        try {
+            List<Track> newTracks = loader.load(locator, this);
+            if (newTracks.size() > 0) {
+                for (Track track : newTracks) {
+                    String fn = locator.getPath();
+                    int lastSlashIdx = fn.lastIndexOf("/");
+                    if (lastSlashIdx < 0) {
+                        lastSlashIdx = fn.lastIndexOf("\\");
+                    }
+                    if (lastSlashIdx > 0) {
+                        fn = fn.substring(lastSlashIdx);
+                    }
+                    track.setAttributeValue("NAME", track.getName());
+                    track.setAttributeValue("DATA FILE", fn);
+                    track.setAttributeValue("DATA TYPE", track.getTrackType().toString());
+                }
+            }
+            return newTracks;
+
+        } catch (DataLoadException dle) {
+            throw dle;
+        } catch (Exception e) {
+            log.error(e);
+            throw new DataLoadException(e.getMessage(), locator.getPath());
+        }
+
+    }
+
+
+    /**
+     * Load the data file into the specified panel.   Triggered via drag and drop.
+     *
+     * @param file
+     * @param panel
+     * @return
+     */
+    public void load(File file, TrackPanel panel) {
+        ResourceLocator locator = new ResourceLocator(file.getAbsolutePath());
+        List<Track> tracks = load(locator);
+        panel.addTracks(tracks);
+        doRefresh();
+    }
+
+    public Set<TrackType> getLoadedTypes() {
+        Set<TrackType> types = new HashSet();
+        for (Track t : getAllTracks(false)) {
+            TrackType type = t.getTrackType();
+            if (t != null) {
+                types.add(type);
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Return a DataPanel appropriate for the resource type
+     *
+     * @param locator
+     * @return
+     */
+    public TrackPanel getPanelFor(ResourceLocator locator) {
+        String path = locator.getPath().toLowerCase();
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+            return getTrackPanel(DATA_PANEL_NAME);
+        } else if (path.endsWith(".sam") || path.endsWith(".bam") || path.endsWith(".bam.hg19") ||
+                path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
+                path.endsWith(".aligned") || path.endsWith(".sorted.txt")) {
+
+            String newPanelName = "Panel" + System.currentTimeMillis();
+            return addDataPanel(newPanelName).getTrackPanel();
+            //} else if (path.endsWith(".vcf") || path.endsWith(".vcf.gz") ||
+            //        path.endsWith(".vcf4") || path.endsWith(".vcf4.gz")) {
+            //    String newPanelName = "Panel" + System.currentTimeMillis();
+            //    return igv.addDataPanel(newPanelName).getTrackPanel();
+        } else {
+            return getDefaultPanel(locator);
+        }
+    }
+
+
+    private TrackPanel getDefaultPanel(ResourceLocator locator) {
+
+        if (locator.getType() != null && locator.getType().equalsIgnoreCase("das")) {
+            return getTrackPanel(FEATURE_PANEL_NAME);
+        }
+
+        String filename = locator.getPath().toLowerCase();
+
+        if (filename.endsWith(".txt") || filename.endsWith(".tab") || filename.endsWith(
+                ".xls") || filename.endsWith(".gz")) {
+            filename = filename.substring(0, filename.lastIndexOf("."));
+        }
+
+
+        if (filename.contains("refflat") || filename.contains("ucscgene") ||
+                filename.contains("genepred") || filename.contains("ensgene") ||
+                filename.contains("refgene") ||
+                filename.endsWith("gff") || filename.endsWith("gtf") ||
+                filename.endsWith("gff3") || filename.endsWith("embl") ||
+                filename.endsWith("bed") || filename.endsWith("gistic") ||
+                filename.endsWith("bedz") || filename.endsWith("repmask") ||
+                filename.contains("dranger")) {
+            return getTrackPanel(FEATURE_PANEL_NAME);
+        } else {
+            return getTrackPanel(DATA_PANEL_NAME);
+        }
+    }
+
+    public Track getGeneTrack() {
+        return geneTrack;
+    }
+
+
+    public SequenceTrack getSequenceTrack() {
+        return sequenceTrack;
+    }
+
+
+    public void reset() {
+        groupByAttribute = null;
+        for (TrackPanel sp : getTrackPanels()) {
+            if (DATA_PANEL_NAME.equals(sp.getName())) {
+                sp.reset();
+                break;
+            }
+        }
+        groupListeners.clear();
+    }
+
+
+    /**
+     * A (hopefully) temporary solution to force SAM track reloads,  until we have a better
+     * dependency scheme
+     */
+    public void reloadSAMTracks() {
+        for (Track t : getAllTracks(false)) {
+            if (t instanceof AlignmentTrack) {
+                ((AlignmentTrack) t).clearCaches();
+            }
+        }
+        repaintDataPanels();
+    }
+
+
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option) {
+        for (Track t : getAllTracks(false)) {
+            if (t instanceof AlignmentTrack) {
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).sortRows(option, frame);
+                }
+            }
+        }
+    }
+
+    public void sortAlignmentTracks(AlignmentTrack.SortOption option, double location) {
+        for (Track t : getAllTracks(false)) {
+            if (t instanceof AlignmentTrack) {
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).sortRows(option, frame, location);
+                }
+            }
+        }
+    }
+
+    public void packAlignmentTracks() {
+        for (Track t : getAllTracks(false)) {
+            if (t instanceof AlignmentTrack) {
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).packAlignments(frame);
+                }
+            }
+        }
+    }
+
+    public void collapseTracks() {
+        for (Track t : getAllTracks(true)) {
+            t.setDisplayMode(Track.DisplayMode.COLLAPSED);
+        }
+    }
+
+
+    public void expandTracks() {
+        for (Track t : getAllTracks(true)) {
+            t.setDisplayMode(Track.DisplayMode.EXPANDED);
+        }
+    }
+
+    public void collapseTrack(String trackName) {
+        for (Track t : getAllTracks(true)) {
+            if (t.getName().equals(trackName)) {
+                t.setDisplayMode(Track.DisplayMode.COLLAPSED);
+            }
+        }
+    }
+
+
+    public void expandTrack(String trackName) {
+        for (Track t : getAllTracks(true)) {
+            if (t.getName().equals(trackName)) {
+                t.setDisplayMode(Track.DisplayMode.EXPANDED);
+            }
+        }
+    }
+
+
+    /**
+     * Reset the overlay tracks collection.  Currently the only overlayable track
+     * type is Mutation.  This method finds all mutation tracks and builds a map
+     * of key -> mutatinon track,  where the key is the specified attribute value
+     * for linking tracks for overlay.
+     */
+    public void resetOverlayTracks() {
+        overlayTracksMap.clear();
+        overlaidTracks.clear();
+
+
+        // Old option to allow overlaying based on an arbitrary attribute.
+        // String overlayAttribute = igv.getSession().getOverlayAttribute();
+
+        for (Track track : getAllTracks(false)) {
+            if (track != null && track.getTrackType() == TrackType.MUTATION) {
+
+                String sample = track.getSample();
+
+                if (sample != null) {
+                    List<Track> trackList = overlayTracksMap.get(sample);
+
+                    if (trackList == null) {
+                        trackList = new ArrayList();
+                        overlayTracksMap.put(sample, trackList);
+                    }
+
+                    trackList.add(track);
+                }
+            }
+
+        }
+
+        for (Track track : getAllTracks(false)) {
+            if (track != null) {  // <= this should not be neccessary
+                if (track.getTrackType() != TrackType.MUTATION) {
+                    String sample = track.getSample();
+                    if (sample != null) {
+                        List<Track> trackList = overlayTracksMap.get(sample);
+                        if (trackList != null) overlaidTracks.addAll(trackList);
+                    }
+                }
+            }
+        }
+
+        boolean displayOverlays = getSession().getOverlayMutationTracks();
+        for (Track track : getAllTracks(false)) {
+            if (track != null) {
+                if (track.getTrackType() == TrackType.MUTATION) {
+                    track.setOverlayed(displayOverlays && overlaidTracks.contains(track));
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Return tracks overlaid on "track"
+     * // TODO -- why aren't overlaid tracks stored in a track member?  This seems unnecessarily complex
+     *
+     * @param track
+     * @return
+     */
+    public List<Track> getOverlayTracks(Track track) {
+        String sample = track.getSample();
+        if (sample != null) {
+            return overlayTracksMap.get(sample);
+        }
+        return null;
+    }
+
+    public int getVisibleTrackCount() {
+        int count = 0;
+        for (TrackPanel tsv : getTrackPanels()) {
+            count += tsv.getVisibleTrackCount();
+
+        }
+        return count;
+    }
+
+    /**
+     * Return the list of all tracks in the order they appear on the screen
+     *
+     * @param includeGeneTrack if false exclude gene and reference sequence tracks.
+     * @return
+     */
+    public List<Track> getAllTracks(boolean includeGeneTrack) {
+        List<Track> allTracks = new ArrayList<Track>();
+
+        for (TrackPanel tp : getTrackPanels()) {
+            allTracks.addAll(tp.getTracks());
+        }
+        if ((geneTrack != null) && !includeGeneTrack) {
+            allTracks.remove(geneTrack);
+        }
+        if ((sequenceTrack != null) && !includeGeneTrack) {
+            allTracks.remove(sequenceTrack);
+        }
+
+        return allTracks;
+    }
+
+    public void clearSelections() {
+        for (Track t : getAllTracks(true)) {
+            if (t != null)
+                t.setSelected(false);
+
+        }
+
+    }
+
+    public void setTrackSelections(Set<Track> selectedTracks) {
+        for (Track t : getAllTracks(true)) {
+            if (selectedTracks.contains(t)) {
+                t.setSelected(true);
+            }
+        }
+    }
+
+    public void shiftSelectTracks(Track track) {
+        List<Track> allTracks = getAllTracks(true);
+        int clickedTrackIndex = allTracks.indexOf(track);
+        // Find another track that is already selected.  The semantics of this
+        // are not well defined, so any track will do
+        int otherIndex = clickedTrackIndex;
+        for (int i = 0; i < allTracks.size(); i++) {
+            if (allTracks.get(i).isSelected() && i != clickedTrackIndex) {
+                otherIndex = i;
+                break;
+            }
+        }
+
+        int left = Math.min(otherIndex, clickedTrackIndex);
+        int right = Math.max(otherIndex, clickedTrackIndex);
+        for (int i = left; i <= right; i++) {
+            allTracks.get(i).setSelected(true);
+        }
+    }
+
+    public void toggleTrackSelections(Set<Track> selectedTracks) {
+        for (Track t : getAllTracks(true)) {
+            if (selectedTracks.contains(t)) {
+                t.setSelected(!t.isSelected());
+            }
+        }
+    }
+
+    public Collection<Track> getSelectedTracks() {
+        HashSet<Track> selectedTracks = new HashSet();
+        for (Track t : getAllTracks(true)) {
+            if (t != null && t.isSelected()) {
+                selectedTracks.add(t);
+            }
+        }
+        return selectedTracks;
+
+    }
+
+    /**
+     * Return the complete set of unique DataResourceLocators currently loaded
+     *
+     * @return
+     */
+    public Set<ResourceLocator> getDataResourceLocators() {
+        HashSet<ResourceLocator> locators = new HashSet();
+
+        for (Track track : getAllTracks(false)) {
+            ResourceLocator locator = track.getResourceLocator();
+
+            if (locator != null) {
+                locators.add(locator);
+            }
+        }
+
+        return locators;
+
+    }
+
+
+    public void setAllTrackHeights(int newHeight) {
+        for (Track track : getAllTracks(false)) {
+            track.setHeight(newHeight);
+        }
+
+    }
+
+
+    public void removeTracks(Collection<Track> tracksToRemove) {
+
+        // Make copy of list as we will be modifying the original in the loop
+        List<TrackPanel> panels = getTrackPanels();
+        for (TrackPanel trackPanel : panels) {
+            trackPanel.removeTracks(tracksToRemove);
+
+            if (!trackPanel.hasTracks()) {
+                removeDataPanel(trackPanel.getName());
+            }
+        }
+
+        for (Track t : tracksToRemove) {
+            if (t instanceof DragListener) {
+                DragEventManager.getInstance().removeDragListener((DragListener) t);
+            }
+            if (t instanceof TrackGroupEventListener) {
+                removeGroupEventListener((TrackGroupEventListener) t);
+            }
+        }
+    }
+
+
+    /**
+     * @param reader        a reader for the gene (annotation) file.
+     * @param genome
+     * @param geneFileName
+     * @param geneTrackName
+     */
+    public void createGeneTrack(Genome genome, AsciiLineReader reader, String geneFileName, String geneTrackName,
+                                String annotationURL) {
+
+        FeatureDB.clearFeatures();
+        FeatureTrack geneFeatureTrack = null;
+
+        if (reader != null) {
+            FeatureParser parser = AbstractFeatureParser.getInstanceFor(new ResourceLocator(geneFileName), genome);
+            if (parser == null) {
+                MessageUtils.showMessage("ERROR: Unrecognized annotation file format: " + geneFileName +
+                        "<br>Annotations for genome: " + genome.getId() + " will not be loaded.");
+            } else {
+                List<org.broad.tribble.Feature> genes = parser.loadFeatures(reader);
+                String name = geneTrackName;
+                if (name == null) name = "Genes";
+
+                String id = genome.getId() + "_genes";
+                geneFeatureTrack = new FeatureTrack(id, name, new FeatureCollectionSource(genes, genome));
+                geneFeatureTrack.setMinimumHeight(5);
+                geneFeatureTrack.setHeight(35);
+                geneFeatureTrack.setPreferredHeight(35);
+                geneFeatureTrack.setRendererClass(IGVFeatureRenderer.class);
+                geneFeatureTrack.setColor(Color.BLUE.darker());
+                TrackProperties props = parser.getTrackProperties();
+                if (props != null) {
+                    geneFeatureTrack.setProperties(parser.getTrackProperties());
+                }
+                geneFeatureTrack.setUrl(annotationURL);
+            }
+        }
+
+
+        SequenceTrack seqTrack = new SequenceTrack("Reference sequence");
+        if (geneFeatureTrack != null) {
+            setGenomeTracks(geneFeatureTrack, seqTrack);
+        } else {
+            setGenomeTracks(null, seqTrack);
+        }
+
+    }
+
+    /**
+     * Replace current gene track with new one.  This is called upon switching genomes
+     *
+     * @param newGeneTrack
+     * @param newSeqTrack
+     */
+    private void setGenomeTracks(Track newGeneTrack, SequenceTrack newSeqTrack) {
+
+        boolean foundSeqTrack = false;
+        for (TrackPanel tsv : getTrackPanels()) {
+            foundSeqTrack = tsv.replaceTrack(sequenceTrack, newSeqTrack);
+            if (foundSeqTrack) {
+                break;
+            }
+        }
+
+        boolean foundGeneTrack = false;
+        for (TrackPanel tsv : getTrackPanels()) {
+            foundGeneTrack = tsv.replaceTrack(geneTrack, newGeneTrack);
+            if (foundGeneTrack) {
+                break;
+            }
+        }
+
+
+        if (!foundGeneTrack || !foundSeqTrack) {
+            TrackPanel panel = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY) ?
+                    getTrackPanel(DATA_PANEL_NAME) : getTrackPanel(FEATURE_PANEL_NAME);
+
+            if (!foundSeqTrack) panel.addTrack(newSeqTrack);
+            if (!foundGeneTrack && newGeneTrack != null) panel.addTrack(newGeneTrack);
+
+        }
+
+        // Keep a reference to this track so it can be removed
+        geneTrack = newGeneTrack;
+        sequenceTrack = newSeqTrack;
+
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // Sorting
+
+
+    /**
+     * Sort all groups (data and feature) by attribute value(s).  Tracks are
+     * sorted within groups.
+     *
+     * @param attributeNames
+     * @param ascending
+     */
+    public void sortAllTracksByAttributes(final String attributeNames[], final boolean[] ascending) {
+        assert attributeNames.length == ascending.length;
+
+        for (TrackPanel trackPanel : getTrackPanels()) {
+            trackPanel.sortTracksByAttributes(attributeNames, ascending);
+        }
+    }
+
+
+    /**
+     * Sort all groups (data and feature) by a computed score over a region.  The
+     * sort is done twice (1) groups are sorted with the featureGroup, and (2) the
+     * groups themselves are sorted.
+     *
+     * @param region
+     * @param type
+     */
+    public void sortByRegionScore(RegionOfInterest region,
+                                  final RegionScoreType type,
+                                  final ReferenceFrame frame) {
+
+        final RegionOfInterest r = region == null ? new RegionOfInterest(frame.getChrName(), (int) frame.getOrigin(),
+                (int) frame.getEnd() + 1, frame.getName()) : region;
+
+        // Create a rank order of samples.  This is done globally so sorting is consistent across groups and panels.
+        final List<String> sortedSamples = sortSamplesByRegionScore(region, type, frame);
+
+        for (TrackPanel trackPanel : getTrackPanels()) {
+            trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
+        }
+        repaintDataPanels();
+    }
+
+
+    /**
+     * Sort a collection of tracks by a score over a region.
+     *
+     * @param region
+     * @param type
+     * @param frame
+     */
+    private List<String> sortSamplesByRegionScore(final RegionOfInterest region,
+                                                  final RegionScoreType type,
+                                                  final ReferenceFrame frame) {
+
+        // Get the sortable tracks for this score (data) type
+        final List<Track> allTracks = getAllTracks(false);
+        final List<Track> tracksWithScore = new ArrayList(allTracks.size());
+        for (Track t : allTracks) {
+            if (t.isRegionScoreType(type)) {
+                tracksWithScore.add(t);
+            }
+        }
+
+        // Sort the "sortable" tracks
+        sortByRegionScore(tracksWithScore, region, type, frame);
+
+        // Now get sample order from sorted tracks, use to sort (tracks which do not implement the selected "sort by" score)
+        List<String> sortedSamples = new ArrayList(tracksWithScore.size());
+        for (Track t : tracksWithScore) {
+            String att = t.getSample(); //t.getAttributeValue(linkingAtt);
+            if (att != null) {
+                sortedSamples.add(att);
+            }
+
+        }
+
+        return sortedSamples;
+    }
+
+    private void sortByRegionScore(List<Track> tracks,
+                                   final RegionOfInterest region,
+                                   final RegionScoreType type,
+                                   final ReferenceFrame frame) {
+        if ((tracks != null) && (region != null) && !tracks.isEmpty()) {
+            final int zoom = Math.max(0, frame.getZoom());
+            final String chr = region.getChr();
+            final int start = region.getStart();
+            final int end = region.getEnd();
+
+            Comparator<Track> c = new Comparator<Track>() {
+
+                public int compare(Track t1, Track t2) {
+                    try {
+                        if (t1 == null && t2 == null) return 0;
+                        if (t1 == null) return 1;
+                        if (t2 == null) return -1;
+
+                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
+                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
+
+                        if (s2 > s1) {
+                            return 1;
+                        } else if (s1 < s2) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    } catch (Exception e) {
+                        log.error("Error sorting tracks. Sort might not be accurate.", e);
+                        return 0;
+                    }
+
+                }
+            };
+            Collections.sort(tracks, c);
+
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // Groups
+
+    public String getGroupByAttribute() {
+        return groupByAttribute;
+    }
+
+
+    public void setGroupByAttribute(String attributeName) {
+        groupByAttribute = attributeName;
+        resetGroups();
+        // Some tracks need to respond to changes in grouping, fire notification event
+        notifyGroupEvent();
+    }
+
+
+    private void resetGroups() {
+        for (TrackPanel trackPanel : getTrackPanels()) {
+            trackPanel.groupTracksByAttribute(groupByAttribute);
+        }
+    }
+
+
+    public synchronized void addGroupEventListener(TrackGroupEventListener l) {
+        groupListeners.add(new SoftReference<TrackGroupEventListener>(l));
+    }
+
+    public synchronized void removeGroupEventListener(TrackGroupEventListener l) {
+
+        for (Iterator<SoftReference<TrackGroupEventListener>> it = groupListeners.iterator(); it.hasNext(); ) {
+            TrackGroupEventListener listener = it.next().get();
+            if (listener != null && listener == l) {
+                it.remove();
+                break;
+            }
+        }
+    }
+
+    public void notifyGroupEvent() {
+        TrackGroupEvent e = new TrackGroupEvent(this);
+        for (SoftReference<TrackGroupEventListener> ref : groupListeners) {
+            TrackGroupEventListener l = ref.get();
+            l.onTrackGroupEvent(e);
+        }
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Startup
+
 
     public void startUp(Main.IGVArgs igvArgs) {
 
@@ -1502,7 +2267,7 @@ public class IGV {
                             rl.setIndexPath(indexFile);
                             locators.add(rl);
                         }
-                        getTrackManager().loadResources(locators);
+                        loadResources(locators);
                     }
 
 
@@ -1564,4 +2329,6 @@ public class IGV {
             }
         }
     }
+
+
 }

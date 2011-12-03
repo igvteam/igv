@@ -113,7 +113,7 @@ public class PeakCommandBar extends JPanel {
         } else {
             ReferenceFrame frame = FrameManager.getDefaultFrame();
             RegionOfInterest roi = new RegionOfInterest(frame.getChrName(), (int) frame.getOrigin(), (int) frame.getEnd(), "");
-            IGV.getInstance().getTrackManager().sortByRegionScore(roi, RegionScoreType.SCORE, frame);
+            IGV.getInstance().sortByRegionScore(roi, RegionScoreType.SCORE, frame);
         }
     }
 

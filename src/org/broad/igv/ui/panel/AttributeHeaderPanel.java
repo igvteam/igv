@@ -144,11 +144,11 @@ public class AttributeHeaderPanel extends JPanel {
                     AttributeManager.ColumnMetaData md = AttributeManager.getInstance().getColumnMetaData(attKey);
                     if (md != null) {
                         StringBuffer buf = new StringBuffer("<html>" + attKey + "<br>Click to sort");
-                        buf.append("<br>Is numeric = " + md.isNumeric() + "<br>");
-                        buf.append("Is diverging = " + md.isDiverging() + "<br>");
-                        buf.append("getUniqueCount = " + md.getUniqueCount() + "<br>");
-                        buf.append("getTotalCount = " + md.getTotalCount() + "<br>");
-                        buf.append("getUniqueRatio = " + md.getUniqueRatio() + "<br>");
+                        //buf.append("<br>Is numeric = " + md.isNumeric() + "<br>");
+                        //buf.append("Is diverging = " + md.isDiverging() + "<br>");
+                        //buf.append("getUniqueCount = " + md.getUniqueCount() + "<br>");
+                        //buf.append("getTotalCount = " + md.getTotalCount() + "<br>");
+                        //buf.append("getUniqueRatio = " + md.getUniqueRatio() + "<br>");
                         // buf.append("# unique = " + md.uniqueValues.size() + "<br>");
                         // buf.append("# total = " + md.totalCount + "<br>");
                         // buf.append("# numeric = " + md.numericCount + "<br>");
@@ -169,7 +169,7 @@ public class AttributeHeaderPanel extends JPanel {
     final public void sortTrackByAttribute(String sortKey, boolean isSortAscending) {
 
         if (sortKey != null) {
-            IGV.getInstance().getTrackManager().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
+            IGV.getInstance().sortAllTracksByAttributes(new String[]{sortKey}, new boolean[]{isSortAscending});
             IGV.getMainFrame().repaint();
         }
     }

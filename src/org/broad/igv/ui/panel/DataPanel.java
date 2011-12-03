@@ -398,7 +398,7 @@ public class DataPanel extends JComponent implements Paintable {
 
                     // First see if there is an overlay track.  If there is, give
                     // it first crack
-                    List<Track> overlays = IGV.getInstance().getTrackManager().getOverlayTracks(track);
+                    List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
                     boolean foundOverlaidFeature = false;
                     if (overlays != null) {
                         for (Track overlay : overlays) {
@@ -548,16 +548,6 @@ public class DataPanel extends JComponent implements Paintable {
 
 
         @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            IGV.getInstance().setSelectedRegion(null);
-        }
-
-
-        @Override
         public void mouseMoved(MouseEvent e) {
             String position = null;
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
@@ -605,7 +595,7 @@ public class DataPanel extends JComponent implements Paintable {
         }
 
         private void doPopupMenu(MouseEvent e) {
-            IGV.getInstance().getTrackManager().clearSelections();
+            IGV.getInstance().clearSelections();
             parent.selectTracks(e);
             TrackClickEvent te = new TrackClickEvent(e, frame);
             parent.openPopupMenu(te);
@@ -690,7 +680,7 @@ public class DataPanel extends JComponent implements Paintable {
 
                                     if (track != null) {
                                         TrackClickEvent te = new TrackClickEvent(e, frame);
-                                        List<Track> overlays = IGV.getInstance().getTrackManager().getOverlayTracks(track);
+                                        List<Track> overlays = IGV.getInstance().getOverlayTracks(track);
                                         boolean handled = false;
                                         if (overlays != null) {
                                             for (Track overlay : overlays) {

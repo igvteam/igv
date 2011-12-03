@@ -307,7 +307,7 @@ public class AttributeManager {
             loadedResources.add(locator);
 
             //createCurrentAttributeFileString(files);
-            IGV.getInstance().getTrackManager().resetOverlayTracks();
+            IGV.getInstance().resetOverlayTracks();
 
             IGV.getInstance().doRefresh();
 

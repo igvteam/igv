@@ -68,7 +68,7 @@ public class PedigreeUtils {
                 }
             }
 
-            IGV.getInstance().getTrackManager().notifyGroupEvent();
+            IGV.getInstance().notifyGroupEvent();
         } finally {
             if (reader != null) reader.close();
         }
