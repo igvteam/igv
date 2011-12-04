@@ -33,11 +33,11 @@ import java.awt.event.ActionEvent;
  */
 public class NewSessionMenuAction extends MenuAction {
 
-    IGV mainFrame;
+    IGV igv;
 
-    public NewSessionMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public NewSessionMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         setToolTipText(UIConstants.NEW_SESSION_TOOLTIP);
     }
 
@@ -48,7 +48,7 @@ public class NewSessionMenuAction extends MenuAction {
 
             public void run() {
 
-                mainFrame.resetSession(null); // Clear everything but the genome
+                igv.resetSession(null); // Clear everything but the genome
 
             }
         });

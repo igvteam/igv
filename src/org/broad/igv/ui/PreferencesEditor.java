@@ -3137,14 +3137,9 @@ public class PreferencesEditor extends javax.swing.JDialog {
             if (reloadSAM) {
                 if (updatedPreferenceMap.containsKey(PreferenceManager.SAM_MAX_VISIBLE_RANGE)) {
                     CachingQueryReader.visibilityWindowChanged();
-                    for (Track t : igv.getAllTracks(false)) {
-                        if (t instanceof AlignmentTrack) {
-                            ((AlignmentTrack) t).visibilityWindowChanged();
-                        }
-                    }
+                    igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.VISIBILITY_WINDOW);
                 }
-                igv.reloadSAMTracks();
-                igv.repaint();
+                igv.notifyAlignmentTrackEvent(this, AlignmentTrackEvent.Type.RELOAD);
             }
         } finally {
             WaitCursorManager.removeWaitCursor(token);

@@ -941,7 +941,6 @@ public class TrackLoader {
             if (showSpliceJunctionTrack) {
                 SpliceJunctionFinderTrack spliceJunctionTrack = new SpliceJunctionFinderTrack(locator.getPath() + "_junctions",
                         alignmentTrack.getName() + " Junctions", dataManager, genome);
-//            spliceJunctionTrack.setDataManager(dataManager);
                 spliceJunctionTrack.setHeight(60);
                 spliceJunctionTrack.setPreferredHeight(60);
                 spliceJunctionTrack.setVisible(showSpliceJunctionTrack);

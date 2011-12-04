@@ -8,7 +8,7 @@ import java.util.EventObject;
  */
 public class AlignmentTrackEvent extends EventObject {
 
-    public enum Type {SPLICE_JUNCTION}
+    public enum Type {SPLICE_JUNCTION, VISIBILITY_WINDOW, RELOAD}
 
     private Type type;
 

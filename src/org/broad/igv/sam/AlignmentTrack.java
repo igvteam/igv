@@ -204,15 +204,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     }
 
-    /**
-     * The visibility window has changed.  This should be some kind of "event".
-     */
-    public void visibilityWindowChanged() {
-        PreferenceManager prefs = PreferenceManager.getInstance();
-        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
-        minVisibleScale = (maxRange * 1000) / 700;
-    }
-
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
@@ -540,6 +531,25 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      */
     public void onAlignmentTrackEvent(AlignmentTrackEvent e) {
 
+        AlignmentTrackEvent.Type type = e.getType();
+        switch (type) {
+            case VISIBILITY_WINDOW:
+                visibilityWindowChanged();
+                break;
+            case RELOAD:
+               clearCaches();
+                break;
+        }
+
+    }
+
+    /**
+     * The visibility window has changed.
+     */
+    private void visibilityWindowChanged() {
+        PreferenceManager prefs = PreferenceManager.getInstance();
+        float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
+        minVisibleScale = (maxRange * 1000) / 700;
     }
 
 
@@ -1267,7 +1277,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             final JMenuItem item = new JCheckBoxMenuItem("Show all bases");
 
             if (colorByOption == ColorOption.BISULFITE || colorByOption == ColorOption.NOMESEQ) {
-                item.setEnabled(false);
+            //    item.setEnabled(false);
             } else {
                 item.setSelected(renderOptions.showAllBases);
             }

@@ -1058,7 +1058,8 @@ public class IGV {
 
         AttributeManager.getInstance().clearAllAttributes();
 
-        mainFrame.setTitle(UIConstants.APPLICATION_NAME);
+        String tile = sessionPath == null ? UIConstants.APPLICATION_NAME : sessionPath;
+        mainFrame.setTitle(tile);
 
         menuBar.resetSessionActions();
 
@@ -1071,6 +1072,9 @@ public class IGV {
         } else {
             session.reset(sessionPath);
         }
+
+        alignmentTrackListeners.clear();
+        groupListeners.clear();
 
         contentPane.getMainPanel().resetPanels();
 
@@ -1622,19 +1626,6 @@ public class IGV {
             }
         }
         groupListeners.clear();
-    }
-
-
-    /**
-     * A (hopefully) temporary solution to force SAM track reloads,  until we have a better
-     * dependency scheme
-     */
-    public void reloadSAMTracks() {
-        for (Track t : getAllTracks(false)) {
-            if (t instanceof AlignmentTrack) {
-                ((AlignmentTrack) t).clearCaches();
-            }
-        }
     }
 
 
