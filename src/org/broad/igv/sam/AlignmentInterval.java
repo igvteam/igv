@@ -281,8 +281,6 @@ public class AlignmentInterval extends Locus {
 
         public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
 
-            if (true) return;
-
             int adjustedCenter = (int) center;
             Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
             if (centerAlignment == null) {

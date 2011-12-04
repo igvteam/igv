@@ -617,7 +617,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                                 int spaceIndex = tmp.lastIndexOf(' ');
                                 int idx = spaceIndex > 30 ? spaceIndex : maxLength;
                                 final String substring = remainder.substring(0, idx);
-                                System.out.println(substring);
                                 buf.append(substring);
                                 buf.append("<br>");
                                 remainder = remainder.substring(idx);

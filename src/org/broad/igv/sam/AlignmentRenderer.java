@@ -668,7 +668,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     /**
      * Return true if the two bases can be considered a match.  The comparison is case-insentive, and
-     * ambiguity codes.
+     * considers ambiguity codes in the reference.
      *
      * @param refbase
      * @param readbase

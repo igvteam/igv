@@ -161,6 +161,7 @@ public class AlignmentDataManager {
      * center appear left to right by start position
      */
     public void sortRows(SortOption option, ReferenceFrame referenceFrame) {
+        double center = referenceFrame.getCenter();
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval != null) {
             loadedInterval.sortRows(option, referenceFrame);
