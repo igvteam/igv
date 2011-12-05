@@ -664,12 +664,7 @@ public class IGV {
                         }
                     }
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            contentPane.getMainPanel().doLayout();
-                            contentPane.getStatusBar().setMessage("");
-                        }
-                    });
+                    contentPane.getMainPanel().invalidate();
                     IGV.getInstance().showLoadedTrackCount();
                 }
 
@@ -1633,7 +1628,8 @@ public class IGV {
         for (Track t : getAllTracks(false)) {
             if (t instanceof AlignmentTrack) {
                 for (ReferenceFrame frame : FrameManager.getFrames()) {
-                    ((AlignmentTrack) t).sortRows(option, frame);
+                    double center = frame.getCenter();
+                    ((AlignmentTrack) t).sortRows(option, frame, center);
                 }
             }
         }
@@ -1644,6 +1640,16 @@ public class IGV {
             if (t instanceof AlignmentTrack) {
                 for (ReferenceFrame frame : FrameManager.getFrames()) {
                     ((AlignmentTrack) t).sortRows(option, frame, location);
+                }
+            }
+        }
+    }
+
+    public void groupAlignmentTracks(AlignmentTrack.GroupOption option) {
+        for (Track t : getAllTracks(false)) {
+            if (t instanceof AlignmentTrack) {
+                for (ReferenceFrame frame : FrameManager.getFrames()) {
+                    ((AlignmentTrack) t).groupAlignments(option, frame);
                 }
             }
         }
@@ -1896,7 +1902,7 @@ public class IGV {
             if (t instanceof TrackGroupEventListener) {
                 removeGroupEventListener((TrackGroupEventListener) t);
             }
-            if(t instanceof AlignmentTrackEventListener) {
+            if (t instanceof AlignmentTrackEventListener) {
                 removeAlignmentTrackEvent((AlignmentTrackEventListener) t);
             }
         }
