@@ -70,7 +70,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_MIN_INSERT_SIZE_THRESHOLD = "SAM.MIN_INSERT_SIZE_THRESHOLD";
     public static final String SAM_MAX_INSERT_SIZE_PERCENTILE = "SAM.ISIZE_MAX_PERCENTILE";
     public static final String SAM_MIN_INSERT_SIZE_PERCENTILE = "SAM.MIN_ISIZE_MIN_PERCENTILE";
-    public static final String SAM_COMPUTE_INSERT_SIZE_THRESHOLD = "SAM.COMPUTE_ISZIE";
     public static final String SAM_AUTO_SORT = "SAM.AUTOSORT";
     public static final String SAM_SHADE_CENTER = "SAM.SHADE_CENTER";
     public static final String SAM_SHOW_CENTER_LINE = "SAM.SHOW_CENTER_LINE";
@@ -941,11 +940,10 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_INSERT_SIZE_THRESHOLD, "1000");
         defaultValues.put(SAM_MIN_INSERT_SIZE_PERCENTILE, "0.5");
         defaultValues.put(SAM_MAX_INSERT_SIZE_PERCENTILE, "99.5");
-        defaultValues.put(SAM_COMPUTE_INSERT_SIZE_THRESHOLD, "false");
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_BISULFITE_CONTEXT, "CG");
-        defaultValues.put(SAM_COMPUTE_ISIZES, "false");
+        defaultValues.put(SAM_COMPUTE_ISIZES, "true");
         defaultValues.put(SAM_FLAG_ZERO_QUALITY, "true");
         defaultValues.put(SAM_SHOW_JUNCTION_TRACK, "false");
         defaultValues.put(SAM_JUNCTION_MIN_FLANKING_WIDTH, "0");

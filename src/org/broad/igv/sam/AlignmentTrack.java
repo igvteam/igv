@@ -166,44 +166,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions = new RenderOptions();
 
-
-        if (renderOptions.colorOption == null) {
-            String colorByString = PreferenceManager.getInstance().get(PreferenceManager.SAM_COLOR_BY);
-            if (colorByString == null) {
-                renderOptions.colorOption = DEFAULT_COLOR_OPTION;
-            } else {
-                try {
-                    renderOptions.colorOption = ColorOption.valueOf(colorByString);
-                } catch (Exception e) {
-                    log.error("Error setting color option", e);
-                    renderOptions.colorOption = DEFAULT_COLOR_OPTION;
-                }
-            }
-        }
         // Override color option preference, if necessary
         if (!dataManager.isPairedEnd() &&
                 (renderOptions.colorOption == ColorOption.INSERT_SIZE || renderOptions.colorOption == ColorOption.PAIR_ORIENTATION)) {
             renderOptions.colorOption = ColorOption.NONE;
         }
 
-        if (renderOptions.bisulfiteContext == null) {
-            String str = PreferenceManager.getInstance().get(PreferenceManager.SAM_BISULFITE_CONTEXT);
-            if (str == null) {
-                renderOptions.bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
-            } else {
-                try {
-                    renderOptions.bisulfiteContext = BisulfiteContext.valueOf(str);
-                } catch (Exception e) {
-                    log.error("Error setting bisulfite option", e);
-                    renderOptions.bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
-
-                }
-            }
-        }
-
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
-
 
     }
 
@@ -726,10 +696,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             minInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MIN_INSERT_SIZE_PERCENTILE);
             maxInsertSizePercentile = prefs.getAsFloat(PreferenceManager.SAM_MAX_INSERT_SIZE_PERCENTILE);
             showAllBases = DEFAULT_SHOWALLBASES;
-            colorOption = ColorOption.INSERT_SIZE;
+            colorOption = ColorOption.valueOf(prefs.get(PreferenceManager.SAM_COLOR_BY));
             GroupOption groupByOption = null;
-            bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
+            bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+
+
             //updateColorScale();
         }
 
