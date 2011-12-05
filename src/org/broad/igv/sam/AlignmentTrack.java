@@ -119,7 +119,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     private RenderOptions renderOptions;
 
-    private int nGroups = 1;
     private int expandedHeight = 14;
     private int maxSquishedHeight = 4;
     private int squishedHeight = maxSquishedHeight;
@@ -243,7 +242,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     @Override
     public int getHeight() {
         // TODO -- what is the 20 for? JTR
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + (nGroups - 1) * AlignmentRenderer.GROUP_MARGIN + 20);
+        int nGroups = dataManager.getMaxGroupCount();
+        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * AlignmentRenderer.GROUP_MARGIN +
+                AlignmentRenderer.TOP_MARGIN);
         return h;
     }
 
@@ -312,11 +313,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
 
             // Loop through groups
-            nGroups = groups.size();
+            Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
+            int nGroups = groups.size();
             int groupNumber = 0;
             for (Map.Entry<String, List<AlignmentInterval.Row>> entry : groups.entrySet()) {
-                groupNumber++;
                 String group = entry.getKey();
+                groupNumber++;
 
                 List<AlignmentInterval.Row> rows = entry.getValue();
                 for (AlignmentInterval.Row row : rows) {
@@ -337,16 +339,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     y += h;
                 }
 
-                // If alignments are grouped, draw a subtle divider line
+                // Draw a subtle divider line between groups
                 if (groupNumber < nGroups) {
-                    int borderY = (int) y + AlignmentRenderer.GROUP_MARGIN/2;
-                    Graphics2D groupBorderGraphics = context.getGraphic2DForColor(AlignmentRenderer.GROUP_DIVIDER_COLOR);
+                    int borderY = (int) y + AlignmentRenderer.GROUP_MARGIN / 2;
                     groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
                 }
-                y += AlignmentRenderer.GROUP_MARGIN;
-
-
             }
+
+            final int bottom = inputRect.y + inputRect.height;
+            groupBorderGraphics.drawLine(inputRect.x, bottom, inputRect.width, bottom);
+
         } catch (Exception ex) {
             log.error("Error rendering track", ex);
             throw new RuntimeException("Error rendering track ", ex);
@@ -697,7 +699,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public static class RenderOptions {
         boolean shadeBases;
         boolean shadeCenters;
-        boolean showCenterLine;
         boolean flagUnmappedPairs;
         boolean showAllBases;
         private boolean computeIsizes;
@@ -718,7 +719,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             PreferenceManager prefs = PreferenceManager.getInstance();
             shadeBases = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_BASE_QUALITY);
             shadeCenters = prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER);
-            showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
             flagUnmappedPairs = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR);
             computeIsizes = prefs.getAsBoolean(PreferenceManager.SAM_COMPUTE_ISIZES);
             minInsertSize = prefs.getAsInt(PreferenceManager.SAM_MIN_INSERT_SIZE_THRESHOLD);
@@ -758,9 +758,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             }
             if (shadeCenters != prefs.getAsBoolean(PreferenceManager.SAM_SHADE_CENTER)) {
                 attributes.put("shadeCenters", String.valueOf(shadeBases));
-            }
-            if (showCenterLine != prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE)) {
-                attributes.put("shadeCenters", String.valueOf(showCenterLine));
             }
             if (flagUnmappedPairs != prefs.getAsBoolean(PreferenceManager.SAM_FLAG_UNMAPPED_PAIR)) {
                 attributes.put("flagUnmappedPairs", String.valueOf(flagUnmappedPairs));
@@ -903,11 +900,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addSeparator();
             addGroupMenuItem();
             addSortMenuItem();
-            addPackMenuItem();
-            addCoverageDepthMenuItem();
+            addColorByMenuItem();
 
             addSeparator();
-            addColorByMenuItem();
             addShadeBaseMenuItem();
             addShowAllBasesMenuItem();
 
@@ -918,6 +913,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             addInsertSizeMenuItem();
 
             addSeparator();
+            addPackMenuItem();
+            addCoverageDepthMenuItem();
             addShowCoverageItem();
             addLoadCoverageDataItem();
 

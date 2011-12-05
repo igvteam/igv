@@ -260,4 +260,28 @@ public class GraphicUtils {
         g.fillPolygon(x, y, x.length);
     }
 
+    public static void drawCenteredText(Graphics2D g, char[] chars, int x, int y, int w, int h) {
+
+        // Get measures needed to center the message
+        FontMetrics fm = g.getFontMetrics();
+
+        // How many pixels wide is the string
+        int msg_width = fm.charsWidth(chars, 0, 1);
+
+        // How far above the baseline can the font go?
+        int ascent = fm.getMaxAscent();
+
+        // How far below the baseline?
+        int descent = fm.getMaxDescent();
+
+        // Use the string width to find the starting point
+        int msgX = x + w / 2 - msg_width / 2;
+
+        // Use the vertical height of this font to find
+        // the vertical starting coordinate
+        int msgY = y + h / 2 - descent / 2 + ascent / 2;
+
+        g.drawChars(chars, 0, 1, msgX, msgY);
+
+    }
 }

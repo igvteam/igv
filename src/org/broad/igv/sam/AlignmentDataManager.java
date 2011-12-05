@@ -161,7 +161,6 @@ public class AlignmentDataManager {
     }
 
 
-
     private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState,
                                   AlignmentTrack.GroupOption groupByOption) {
         if (currentPairState == true) {
@@ -199,7 +198,7 @@ public class AlignmentDataManager {
 
             // When repacking keep all currently loaded alignments (don't limit to levels)
             int max = Integer.MAX_VALUE;
-            Map<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
+            LinkedHashMap<String, List<AlignmentInterval.Row>> tmp = (new AlignmentPacker()).packAlignments(
                     alignments.iterator(),
                     loadedInterval.getEnd(),
                     viewAsPairs,
@@ -218,7 +217,7 @@ public class AlignmentDataManager {
      *
      * @param referenceFrame
      */
-    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption option) {
+    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption groupByOption) {
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) {
@@ -229,18 +228,18 @@ public class AlignmentDataManager {
 
         // When repacking keep all currently loaded alignments (don't limit to levels)
         int max = Integer.MAX_VALUE;
-        Map<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
+        LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = (new AlignmentPacker()).packAlignments(
                 iter,
                 loadedInterval.getEnd(),
                 viewAsPairs,
-                option,
+                groupByOption,
                 MAX_ROWS);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
 
-    public synchronized Map<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                           AlignmentTrack.GroupOption groupByOption) {
+    public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
+                                                                                     AlignmentTrack.GroupOption groupByOption) {
 
         final String genomeId = context.getGenomeId();
         final String chr = context.getChr();
@@ -306,7 +305,7 @@ public class AlignmentDataManager {
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
-                    Map<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
+                    LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
                             intervalEnd, viewAsPairs, groupByOption, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
@@ -369,6 +368,19 @@ public class AlignmentDataManager {
             nLevels = Math.max(nLevels, intervalNLevels);
         }
         return nLevels;
+    }
+
+    /**
+     * Get the maximum group count among all the loaded intervals.  Normally there is one interval, but there
+     * can be multiple if viewing split screen.
+     */
+    public int getMaxGroupCount() {
+
+        int groupCount = 0;
+        for (AlignmentInterval loadedInterval : loadedIntervalMap.values()) {
+            groupCount = Math.max(groupCount, loadedInterval.getGroupCount());
+        }
+        return groupCount;
     }
 
     @Override

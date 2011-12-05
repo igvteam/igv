@@ -65,14 +65,14 @@ public class AlignmentPacker {
      * @param maxLevels
      * @return
      */
-    public Map<String, List<AlignmentInterval.Row>> packAlignments(
+    public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(
             Iterator<Alignment> iter,
             int end,
             boolean pairAlignments,
             AlignmentTrack.GroupOption groupBy,
             int maxLevels) {
 
-        Map<String, List<AlignmentInterval.Row>> packedAlignments = new HashMap<String, List<Row>>();
+        LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
 
         if (iter == null || !iter.hasNext()) {
             return packedAlignments;

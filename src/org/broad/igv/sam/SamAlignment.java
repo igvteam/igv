@@ -33,8 +33,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -144,6 +143,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         }
     }
 
+    // Default constructor to support unit tests
+    SamAlignment() {
+    }
+
     private void setFirstReadStrand(SAMRecord record) {
         if (!record.getReadPairedFlag()) {
             firstReadStrand = (record.getReadNegativeStrandFlag() ? Strand.NEGATIVE : Strand.POSITIVE);
@@ -177,8 +180,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     }
 
-    private char[] tmp = new char[4];
-
     private void setPairOrientation(SAMRecord record) {
         if (record.getReadPairedFlag() &&
                 !readUnmappedFlag &&
@@ -196,6 +197,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 o1 = '2';
                 o2 = '1';
             }
+
+            final char[] tmp = new char[4];
             if (record.getInferredInsertSize() > 0) {
                 tmp[0] = s1;
                 tmp[1] = o1;
@@ -211,30 +214,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             pairOrientation = new String(tmp);
         }
     }
-
-    /**
-     * A copy constructor
-     */
-    private SamAlignment(SamAlignment alignment) {
-        this.chr = alignment.chr;
-        this.alignmentStart = alignment.alignmentStart;
-        this.alignmentEnd = alignment.alignmentEnd;
-        this.end = alignment.end;
-        this.negativeStrand = alignment.negativeStrand;
-        this.mate = alignment.mate;
-        this.alignmentBlocks = alignment.alignmentBlocks;
-        this.insertions = alignment.insertions;
-        this.cigarString = alignment.cigarString;
-        this.mappingQuality = alignment.mappingQuality;
-        this.readName = alignment.readName;
-        this.readNegativeStrandFlag = alignment.readNegativeStrandFlag;
-        this.duplicateReadFlag = alignment.duplicateReadFlag;
-        this.readUnmappedFlag = alignment.readUnmappedFlag;
-        this.readPairedFlag = alignment.readPairedFlag;
-        this.inferredInsertSize = alignment.inferredInsertSize;
-        this.properPairFlag = alignment.properPairFlag;
-    }
-    /**
+   /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
      *
@@ -427,10 +407,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 || (showSoftClipped && operator == SOFT_CLIP);
     }
 
-    // Default constructor to support unit tests
-
-    SamAlignment() {
-    }
 
     public boolean isNegativeStrand() {
         return readNegativeStrandFlag;
@@ -461,12 +437,12 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
     
     /**
-     * TODO
+     * Note: This method is required by the interface, but never used.
      *
      * @return
      */
     public LocusScore copy() {
-        return new SamAlignment(this);
+        return new SamAlignment(record);
     }
 
 
@@ -560,7 +536,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     public Object getAttribute(String key) {
         return record.getAttribute(key);
     }
-
 
     public String getClipboardString(double location) {
         return getValueStringImpl(location, false);

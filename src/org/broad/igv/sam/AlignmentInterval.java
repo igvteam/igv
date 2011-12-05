@@ -43,11 +43,12 @@ public class AlignmentInterval extends Locus {
     Genome genome;
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
-    private Map<String, List<Row>> groupedAlignmentRows;
+    private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions = null;
 
 
-    public AlignmentInterval(String chr, int start, int end, Map<String, List<Row>> groupedAlignmentRows, List<AlignmentCounts> counts) {
+    public AlignmentInterval(String chr, int start, int end, LinkedHashMap<String, List<Row>> groupedAlignmentRows,
+                             List<AlignmentCounts> counts) {
 
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
@@ -108,13 +109,18 @@ public class AlignmentInterval extends Locus {
     /**
      * The "packed" alignments in this interval
      */
-    public Map<String, List<Row>> getGroupedAlignments() {
+    public LinkedHashMap<String, List<Row>> getGroupedAlignments() {
         return groupedAlignmentRows;
     }
 
-    public void setAlignmentRows(Map<String, List<Row>> alignmentRows) {
+    public int getGroupCount() {
+        return groupedAlignmentRows == null ? 0 : groupedAlignmentRows.size();
+    }
+
+    public void setAlignmentRows(LinkedHashMap<String, List<Row>> alignmentRows) {
         this.groupedAlignmentRows = alignmentRows;
     }
+
 
 
     public void sortRows(AlignmentTrack.SortOption option, ReferenceFrame referenceFrame) {

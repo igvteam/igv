@@ -17,6 +17,7 @@
  */
 package org.broad.igv.sam;
 
+import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
@@ -41,6 +42,11 @@ import java.util.Map;
  */
 public class AlignmentRenderer implements FeatureRenderer {
 
+    private static Logger log = Logger.getLogger(AlignmentRenderer.class);
+
+    static final int GROUP_MARGIN = 5;
+    static final int TOP_MARGIN = 20;
+
     private static Map<Character, Color> nucleotideColors;
 
     private static Color smallISizeColor = new Color(0, 0, 150);
@@ -48,7 +54,6 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
-    private static float[] whiteComponents = Color.white.getRGBColorComponents(null);
     private static Color grey2 = new Color(165, 165, 165);
     public static Color grey1 = new Color(200, 200, 200);
 
@@ -64,8 +69,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color RR_COLOR = new Color(0, 0, 150);
     private static final Color LL_COLOR = new Color(0, 150, 150);
     private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
-    public static final Color GROUP_DIVIDER_COLOR = new Color(185, 185, 185);
-    public static final int GROUP_MARGIN = 5;
+    public static final Color GROUP_DIVIDER_COLOR = new Color(200, 200, 200);
 
     static Map<String, Color> frOrientationColors;
     static Map<String, Color> ffOrientationColors;
@@ -197,8 +201,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // further detail would not be seen and just add to drawing overhead
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
-                if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (pixelWidth >= 1) )) {
-                    Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+                if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (pixelWidth >= 1))) {
+                    Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
 
@@ -210,7 +214,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (alignment instanceof PairedAlignment) {
                         drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames, font);
                     } else {
-                        Color alignmentColor = getAlignmentColor(alignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+                        Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                         Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                         g.setFont(font);
                         drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
@@ -218,9 +222,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
             }
 
-            // Draw a border around the center base
+            // Optionally draw a border around the center base
+            boolean showCenterLine = prefs.getAsBoolean(PreferenceManager.SAM_SHOW_CENTER_LINE);
             final int bottom = rect.y + rect.height;
-            if (locScale < 5 && renderOptions.showCenterLine) {
+            if (locScale < 5 && showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
                 int centerLeftP = (int) (center / locScale);
@@ -234,7 +239,6 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
         }
     }
-
 
 
     /**
@@ -316,14 +320,14 @@ public class AlignmentRenderer implements FeatureRenderer {
             Font font) {
 
         double locScale = context.getScale();
-        Color alignmentColor = getAlignmentColor(pair.firstAlignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+        Color alignmentColor = getAlignmentColor(pair.firstAlignment, renderOptions);
         Graphics2D g = context.getGraphic2DForColor(alignmentColor);
         g.setFont(font);
         drawAlignment(pair.firstAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
 
         if (pair.secondAlignment != null) {
 
-            alignmentColor = getAlignmentColor(pair.secondAlignment, locScale, context.getReferenceFrame().getCenter(), renderOptions);
+            alignmentColor = getAlignmentColor(pair.secondAlignment, renderOptions);
             g = context.getGraphic2DForColor(alignmentColor);
 
             drawAlignment(pair.secondAlignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
@@ -375,7 +379,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             drawSimpleAlignment(alignment, rect, g, context, renderOptions.flagUnmappedPairs);
             return;
         }
- 
+
         // Get the terminal block (last block with respect to read direction).  This will have an "arrow" attached.
         AlignmentBlock terminalBlock = alignment.isNegativeStrand() ? blocks[0] : blocks[blocks.length - 1];
 
@@ -530,16 +534,15 @@ public class AlignmentRenderer implements FeatureRenderer {
                            Rectangle rect,
                            AlignmentBlock block,
                            Color alignmentColor,
-                           RenderOptions renderOptions)
-    {
+                           RenderOptions renderOptions) {
 
-    	boolean shadeBases = renderOptions.shadeBases;
+        boolean shadeBases = renderOptions.shadeBases;
         ColorOption colorOption = renderOptions.colorOption;
 
         // Disable showAllBases in bisulfite mode
-    	boolean showAllBases = renderOptions.showAllBases &&
+        boolean showAllBases = renderOptions.showAllBases &&
                 !(colorOption == ColorOption.BISULFITE || colorOption == ColorOption.NOMESEQ);
-    	
+
         double locScale = context.getScale();
         double origin = context.getOrigin();
         String chr = context.getChr();
@@ -570,15 +573,12 @@ public class AlignmentRenderer implements FeatureRenderer {
             BisulfiteBaseInfo bisinfo = null;
             boolean nomeseqMode = (renderOptions.colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
             boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
-            if (nomeseqMode)
-            {
-            	bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContext);
+            if (nomeseqMode) {
+                bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContext);
+            } else if (bisulfiteMode) {
+                bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContext);
             }
-            else if (bisulfiteMode)
-            {
-            	bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContext);
-            }
-            		
+
             // Loop through base pair coordinates
             for (int loc = start; loc < end; loc++) {
 
@@ -602,9 +602,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                             !compareBases(refbase, readbase);
                 }
 
-                
-                if ( showAllBases || (!bisulfiteMode && misMatch) || 
-                		(bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
+
+                if (showAllBases || (!bisulfiteMode && misMatch) ||
+                        (bisulfiteMode && (!DisplayStatus.NOTHING.equals(bisinfo.getDisplayStatus(idx))))) {
                     char c = (char) read[idx];
 
                     Color color = nucleotideColors.get(c);
@@ -622,7 +622,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
                     // If there is room for text draw the character, otherwise
                     // just draw a rectangle to represent the
-                    int pX0 = (int) (((double)loc + bisulfiteXaxisShift - (double)origin) / (double)locScale);
+                    int pX0 = (int) (((double) loc + bisulfiteXaxisShift - (double) origin) / (double) locScale);
 
                     // Don't draw out of clipping rect
                     if (pX0 > rect.getMaxX()) {
@@ -631,28 +631,25 @@ public class AlignmentRenderer implements FeatureRenderer {
                         continue;
                     }
 
-                    
+
                     BisulfiteBaseInfo.DisplayStatus bisstatus = (bisinfo == null) ? null : bisinfo.getDisplayStatus(idx);
                     // System.err.printf("Draw text?  dY=%d, dX=%d, bismode=%s, dispStatus=%s\n",dY,dX,!bisulfiteMode || bisulfiteMode,bisstatus);
-                    if ( ((dY>=12) && (dX >= 8)) && ( !bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER))) ) 
-                    {
+                    if (((dY >= 12) && (dX >= 8)) && (!bisulfiteMode || (bisulfiteMode && bisstatus.equals(DisplayStatus.CHARACTER)))) {
                         g.setColor(color);
-                        drawCenteredText(g, new char[]{c}, pX0, pY + 1, dX, dY - 2);
+                        GraphicUtils.drawCenteredText(g, new char[]{c}, pX0, pY + 1, dX, dY - 2);
                     } else {
 
                         int pX0i = pX0, dXi = dX;
 
                         // If bisulfite mode, we expand the rectangle to make it more visible
-                    	if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR))
-                    	{
-                           	if (dXi<3)
-                        	{
-                        		int expansion = dXi;
-                        		pX0i -= expansion;
-                        		dXi += (2*expansion);
-                        	}
-                    	}
-                    	
+                        if (bisulfiteMode && bisstatus.equals(DisplayStatus.COLOR)) {
+                            if (dXi < 3) {
+                                int expansion = dXi;
+                                pX0i -= expansion;
+                                dXi += (2 * expansion);
+                            }
+                        }
+
                         int dW = (dXi > 4 ? dXi - 1 : dXi);
 
                         if (color != null) {
@@ -739,31 +736,6 @@ public class AlignmentRenderer implements FeatureRenderer {
         return color;
     }
 
-    private void drawCenteredText(Graphics2D g, char[] chars, int x, int y, int w, int h) {
-
-        // Get measures needed to center the message
-        FontMetrics fm = g.getFontMetrics();
-
-        // How many pixels wide is the string
-        int msg_width = fm.charsWidth(chars, 0, 1);
-
-        // How far above the baseline can the font go?
-        int ascent = fm.getMaxAscent();
-
-        // How far below the baseline?
-        int descent = fm.getMaxDescent();
-
-        // Use the string width to find the starting point
-        int msgX = x + w / 2 - msg_width / 2;
-
-        // Use the vertical height of this font to find
-        // the vertical starting coordinate
-        int msgY = y + h / 2 - descent / 2 + ascent / 2;
-
-        g.drawChars(chars, 0, 1, msgX, msgY);
-
-    }
-
     private void drawInsertions(double origin, Rectangle rect, double locScale, Alignment alignment, RenderContext context) {
 
         Graphics2D gInsertion = context.getGraphic2DForColor(purple);
@@ -789,11 +761,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         }
     }
 
-    ContinuousColorScale cs = null;
-
-
-    private Color getAlignmentColor(Alignment alignment, double locScale,
-                                    double center, AlignmentTrack.RenderOptions renderOptions) {
+    private Color getAlignmentColor(Alignment alignment, AlignmentTrack.RenderOptions renderOptions) {
 
         // Set color used to draw the feature.  Highlight features that intersect the
         // center line.  Also restorePersistentState row "score" if alignment intersects center line
@@ -804,20 +772,20 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
-        	case BISULFITE:
-        	case NOMESEQ:
-        		// Just a simple forward/reverse strand color scheme that won't clash with the 
-        		// methylation rectangles.
+            case BISULFITE:
+            case NOMESEQ:
+                // Just a simple forward/reverse strand color scheme that won't clash with the
+                // methylation rectangles.
                 if (alignment.isNegativeStrand()) {
                     c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
                 } else {
                     c = (alignment.isSecondOfPair()) ? bisulfiteColorFw2 : bisulfiteColorFw1;
                 }
                 // c = getOrientationColor(alignment, peStats);  // Can we eventually get this to use the builtin orientation stuff?  BPB
-               
+
                 break;
-            
-        	case INSERT_SIZE:
+
+            case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
                     boolean sameChr = isPairedAlignment ||
@@ -891,14 +859,14 @@ public class AlignmentRenderer implements FeatureRenderer {
                 break;
 
             default:
-                if (renderOptions.shadeCenters && center >= alignment.getStart() && center <= alignment.getEnd()) {
-                    if (locScale < 1) {
-                        c = grey2;
-                    }
-                }
+//                if (renderOptions.shadeCenters && center >= alignment.getStart() && center <= alignment.getEnd()) {
+//                    if (locScale < 1) {
+//                        c = grey2;
+//                    }
+//                }
 
         }
-        if(c == null) c  = grey1;
+        if (c == null) c = grey1;
 
         if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
@@ -912,19 +880,15 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
     /**
-     * Illumin scheme -- todo, something for Solid
-     *
      * @return
      */
 
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (!alignment.isPaired())
-        {
-        	c = (alignment.isNegativeStrand()) ? frOrientationColors.get("R1F2") : frOrientationColors.get("F1R2");
-        }
-        else if (!alignment.isProperPair()) {
+        if (!alignment.isPaired()) {
+            c = (alignment.isNegativeStrand()) ? frOrientationColors.get("R1F2") : frOrientationColors.get("F1R2");
+        } else if (!alignment.isProperPair()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
@@ -945,6 +909,8 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
             } else {
+                // Legacy test, peStats should never be null!
+                log.info("Null peStats!");
                 if (alignment.getAttribute("CS") != null) {
                     c = ffOrientationColors.get(pairOrientation);
                 } else {
