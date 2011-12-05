@@ -93,7 +93,7 @@
             <pathelement path="${lib.dir}junit-4.5.jar" />
             <pathelement path="${lib.dir}log4j-1.2.15.jar" />
             <pathelement path="${lib.dir}mysql-connector-java-3.1.14-bin.jar" />
-            <pathelement path="${lib.dir}sam-1.53.jar" />
+            <pathelement path="${lib.dir}sam-1.57.jar" />
             <pathelement path="${lib.dir}swing-layout-1.0.jar" />
             <pathelement path="${lib.dir}tribble-0.1.jar" />
             <pathelement path="${lib.dir}vcf.jar" />

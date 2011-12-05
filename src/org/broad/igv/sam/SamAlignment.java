@@ -521,7 +521,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     @Override
     public String toString() {
-        return record.format();
+        return record.getSAMString();
     }
 
     @Override
