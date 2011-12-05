@@ -29,25 +29,7 @@ import javax.sound.midi.SysexMessage;
 import java.util.*;
 
 /**
- * A utility class to experiment with alignment packing methods.
- * <p/>
- * Numbers:
- * <p/>
- * packAlignments1  (original)
- * Packed  19075 out of 19075 in 59 rows in:     0.046 seconds
- * Packed  111748 out of 431053 in 1000 rows in: 14.313 seconds
- * <p/>
- * packAlignments2  (row by row)
- * Packed 17027 out of 17027 in 58 rows:        0.035 seconds
- * Packed 113061 out of 431053 in 1000 rows in  8.276 seconds
- * :
- * packAlignments2b  (row by row with hash)
- * Packed 15274 out of 15274 in 58 rows in:     0.011 seconds
- * Packed 101595 out of 423736 in 1000 rows in: 0.177 seconds
- * <p/>
- * packAlignments3  (priority queue)
- * Packed 19075 out of 19075 in 63 rows in:      0.044 seconds
- * Packed 104251 out of 430716 in 1000 rows in:  0.108 seconds
+ * Packs alignments such that there is no overlap
  *
  * @author jrobinso
  */
@@ -76,54 +58,67 @@ public class AlignmentPacker {
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
-     * @param iter Iterator wrapping the collection of alignments
+     * @param iter
+     * @param end
+     * @param pairAlignments
+     * @param groupBy
+     * @param maxLevels
+     * @return
      */
-    public List<AlignmentInterval.Row> packAlignments(
+    public Map<String, List<AlignmentInterval.Row>> packAlignments(
             Iterator<Alignment> iter,
             int end,
             boolean pairAlignments,
-            AlignmentTrack.SortOption groupBy,
+            AlignmentTrack.GroupOption groupBy,
             int maxLevels) {
 
+        Map<String, List<AlignmentInterval.Row>> packedAlignments = new HashMap<String, List<Row>>();
 
-        List<Row> alignmentRows = new ArrayList(1000);
         if (iter == null || !iter.hasNext()) {
-            return alignmentRows;
+            return packedAlignments;
         }
 
         if (groupBy == null) {
+            List<Row> alignmentRows = new ArrayList(10000);
             pack(iter, end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+            packedAlignments.put("", alignmentRows);
         } else {
-            // Separate by group
+            // Separate alignments into groups.
             List<Alignment> nullGroup = new ArrayList();
             HashMap<String, List<Alignment>> groupedAlignments = new HashMap();
             while (iter.hasNext()) {
-                Alignment al = iter.next();
-                String groupKey = getGroupValue(al, groupBy);
-                if (groupKey == null) nullGroup.add(al);
+                Alignment alignment = iter.next();
+                String groupKey = getGroupValue(alignment, groupBy);
+                if (groupKey == null) nullGroup.add(alignment);
                 else {
                     List<Alignment> group = groupedAlignments.get(groupKey);
                     if (group == null) {
                         group = new ArrayList(1000);
                         groupedAlignments.put(groupKey, group);
                     }
-                    group.add(al);
+                    group.add(alignment);
                 }
             }
+
+            // Now alphabetize (sort) and pack the groups
             List<String> keys = new ArrayList(groupedAlignments.keySet());
             Collections.sort(keys);
             for (String key : keys) {
+                List<Row> alignmentRows = new ArrayList(10000);
                 List<Alignment> group = groupedAlignments.get(key);
                 pack(group.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+                packedAlignments.put(key, alignmentRows);
             }
+            List<Row> alignmentRows = new ArrayList(10000);
             pack(nullGroup.iterator(), end, pairAlignments, lengthComparator, alignmentRows, maxLevels);
+            packedAlignments.put("", alignmentRows);
         }
 
-        return alignmentRows;
+        return packedAlignments;
 
     }
 
-    private String getGroupValue(Alignment al, AlignmentTrack.SortOption groupBy) {
+    private String getGroupValue(Alignment al, AlignmentTrack.GroupOption groupBy) {
         switch (groupBy) {
 
             case STRAND:
@@ -392,7 +387,7 @@ public class AlignmentPacker {
          * Return the next occupied bucket at or after after bucketNumber.
          *
          * @param bucketNumber -- the hash bucket index for the alignments, essential the position relative to the start
-         *                        of this packing interval
+         *                     of this packing interval
          * @return the next occupied bucket at or after bucketNumber, or null if there are none.
          */
         public PriorityQueue<Alignment> getNextBucket(int bucketNumber, Collection<Integer> emptyBuckets) {

@@ -163,7 +163,7 @@ public class CoverageTrack extends AbstractTrack {
 
             AlignmentInterval interval = null;
             if (dataManager != null) {
-                interval = dataManager.getLoadedInterval(context);
+                interval = dataManager.getLoadedInterval(context.getReferenceFrame());
 
             }
 

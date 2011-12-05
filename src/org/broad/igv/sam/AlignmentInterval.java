@@ -43,12 +43,14 @@ public class AlignmentInterval extends Locus {
     Genome genome;
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
-    private List<AlignmentInterval.Row> alignmentRows;
+    private Map<String, List<Row>> groupedAlignmentRows;
     private List<SpliceJunctionFeature> spliceJunctions = null;
 
-    public AlignmentInterval(String chr, int start, int end, List<Row> rows, List<AlignmentCounts> counts) {
+
+    public AlignmentInterval(String chr, int start, int end, Map<String, List<Row>> groupedAlignmentRows, List<AlignmentCounts> counts) {
+
         super(chr, start, end);
-        this.alignmentRows = rows;
+        this.groupedAlignmentRows = groupedAlignmentRows;
         genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         //reference = genome.getSequence(chr, start, end);
         this.counts = counts;
@@ -66,12 +68,6 @@ public class AlignmentInterval extends Locus {
             }
         }
     }
-
-
-    public int getDepth() {
-        return alignmentRows.size();
-    }
-
 
     static Alignment getFeatureContaining(List<Alignment> features, int right) {
 
@@ -112,12 +108,12 @@ public class AlignmentInterval extends Locus {
     /**
      * The "packed" alignments in this interval
      */
-    public List<Row> getAlignmentRows() {
-        return alignmentRows;
+    public Map<String, List<Row>> getGroupedAlignments() {
+        return groupedAlignmentRows;
     }
 
-    public void setAlignmentRows(List<Row> alignmentRows) {
-        this.alignmentRows = alignmentRows;
+    public void setAlignmentRows(Map<String, List<Row>> alignmentRows) {
+        this.groupedAlignmentRows = alignmentRows;
     }
 
 
@@ -126,29 +122,38 @@ public class AlignmentInterval extends Locus {
         sortRows(option, center);
     }
 
+
+    /**
+     * Sort rows group by group
+     *
+     * @param option
+     * @param location
+     */
     public void sortRows(AlignmentTrack.SortOption option, double location) {
-        if (alignmentRows == null) {
+        if (groupedAlignmentRows == null) {
             return;
         }
 
-        for (AlignmentInterval.Row row : alignmentRows) {
-            if (option == AlignmentTrack.SortOption.NUCELOTIDE) {
-                // TODO -- why is this here?
-            }
-            row.updateScore(option, location, this);
-        }
-
-        Collections.sort(alignmentRows, new Comparator<Row>() {
-
-            public int compare(AlignmentInterval.Row arg0, AlignmentInterval.Row arg1) {
-                if (arg0.getScore() > arg1.getScore()) {
-                    return 1;
-                } else if (arg0.getScore() > arg1.getScore()) {
-                    return -1;
+        for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
+            for (AlignmentInterval.Row row : alignmentRows) {
+                if (option == AlignmentTrack.SortOption.NUCELOTIDE) {
+                    // TODO -- why is this here?
                 }
-                return 0;
+                row.updateScore(option, location, this);
             }
-        });
+
+            Collections.sort(alignmentRows, new Comparator<Row>() {
+
+                public int compare(AlignmentInterval.Row arg0, AlignmentInterval.Row arg1) {
+                    if (arg0.getScore() > arg1.getScore()) {
+                        return 1;
+                    } else if (arg0.getScore() > arg1.getScore()) {
+                        return -1;
+                    }
+                    return 0;
+                }
+            });
+        }
     }
 
 
@@ -401,9 +406,11 @@ public class AlignmentInterval extends Locus {
                 }
             });
 
-            for (AlignmentInterval.Row r : alignmentRows) {
-                r.resetIdx();
-                rows.add(r);
+            for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
+                for (AlignmentInterval.Row r : alignmentRows) {
+                    r.resetIdx();
+                    rows.add(r);
+                }
             }
 
             advance();

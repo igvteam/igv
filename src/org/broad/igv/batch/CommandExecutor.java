@@ -105,6 +105,8 @@ public class CommandExecutor {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equals("sort")) {
                     sort(param1, param2, param3);
+                } else if (cmd.equals("group")) {
+                    sort(param1, param2, param3);
                 } else if (cmd.equals("collapse")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     collapse(trackName);
@@ -297,6 +299,11 @@ public class CommandExecutor {
         igv.repaintDataPanels();
     }
 
+    private void group(String sortArg) {
+        igv.groupAlignmentTracks(getAlignmentGroupOption(sortArg));
+        igv.repaintDataPanels();
+    }
+
     private String loadFiles(final String fileString, final String locus, final boolean merge, String param2) throws IOException {
 
         log.debug("Run load files");
@@ -333,9 +340,9 @@ public class CommandExecutor {
                 sessionPaths.add(f);
             } else {
                 ResourceLocator rl = new ResourceLocator(f);
-                if(rl.isLocal()) {
+                if (rl.isLocal()) {
                     File file = new File(f);
-                    if(!file.exists()) {
+                    if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
                 }
@@ -403,5 +410,19 @@ public class CommandExecutor {
             return AlignmentTrack.SortOption.INSERT_SIZE;
         }
         return AlignmentTrack.SortOption.NUCELOTIDE;
+    }
+
+    private static AlignmentTrack.GroupOption getAlignmentGroupOption(String str) {
+        String option = str.toLowerCase();
+        if (option.equals("strand")) {
+            return AlignmentTrack.GroupOption.STRAND;
+
+        } else if (option.equals("sample")) {
+            return AlignmentTrack.GroupOption.SAMPLE;
+
+        } else if (option.equals("readGroup") || option.equals("read_group")) {
+            return AlignmentTrack.GroupOption.READ_GROUP;
+        }
+        return AlignmentTrack.GroupOption.NONE;
     }
 }

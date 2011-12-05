@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author jrobinso
@@ -77,7 +78,7 @@ public class AlignmentPackerTest {
         int maxLevels = 1000;
 
 
-        List<AlignmentInterval.Row> result = (new AlignmentPacker()).packAlignments(iter, end, false, null, 10000);
+        Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, false, null, 10000);
 
     }
 

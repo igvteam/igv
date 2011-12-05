@@ -63,10 +63,13 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color RL_COLOR = new Color(0, 150, 0);
     private static final Color RR_COLOR = new Color(0, 0, 150);
     private static final Color LL_COLOR = new Color(0, 150, 150);
+    private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
+    public static final Color GROUP_DIVIDER_COLOR = new Color(185, 185, 185);
+    public static final int GROUP_MARGIN = 5;
+
     static Map<String, Color> frOrientationColors;
     static Map<String, Color> ffOrientationColors;
     static Map<String, Color> rfOrientationColors;
-    private static final Color OUTLINE_COLOR = new Color(185, 185, 185);
 
     // Bisulfite constants
     private static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
@@ -216,6 +219,7 @@ public class AlignmentRenderer implements FeatureRenderer {
             }
 
             // Draw a border around the center base
+            final int bottom = rect.y + rect.height;
             if (locScale < 5 && renderOptions.showCenterLine) {
                 // Calculate center lines
                 double center = (int) (context.getReferenceFrame().getCenter() - origin);
@@ -223,15 +227,15 @@ public class AlignmentRenderer implements FeatureRenderer {
                 int centerRightP = (int) ((center + 1) / locScale);
                 //float transparency = Math.max(0.5f, (float) Math.round(10 * (1 - .75 * locScale)) / 10);
                 Graphics2D gBlack = context.getGraphic2DForColor(Color.black); //new Color(0, 0, 0, transparency));
-                GraphicUtils.drawDottedDashLine(gBlack, centerLeftP, rect.y, centerLeftP,
-                        rect.y + rect.height);
+                GraphicUtils.drawDottedDashLine(gBlack, centerLeftP, rect.y, centerLeftP, bottom);
                 if ((centerRightP - centerLeftP > 2)) {
-                    GraphicUtils.drawDottedDashLine(gBlack, centerRightP, rect.y, centerRightP,
-                            rect.y + rect.height);
+                    GraphicUtils.drawDottedDashLine(gBlack, centerRightP, rect.y, centerRightP, bottom);
                 }
             }
         }
     }
+
+
 
     /**
      * Method for drawing alignments without "blocks" (e.g. DotAlignedAlignment)
@@ -568,11 +572,11 @@ public class AlignmentRenderer implements FeatureRenderer {
             boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
             if (nomeseqMode)
             {
-            	bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContextRenderOption);
+            	bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContext);
             }
             else if (bisulfiteMode)
             {
-            	bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContextRenderOption);
+            	bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContext);
             }
             		
             // Loop through base pair coordinates
@@ -892,7 +896,9 @@ public class AlignmentRenderer implements FeatureRenderer {
                         c = grey2;
                     }
                 }
+
         }
+        if(c == null) c  = grey1;
 
         if (alignment.getMappingQuality() == 0 && renderOptions.flagZeroQualityAlignments) {
             // Maping Q = 0
