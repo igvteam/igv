@@ -2,7 +2,9 @@ package org.broad.igv.hic;
 
 import org.broad.igv.hic.data.Block;
 import org.broad.igv.hic.data.ContactRecord;
+import org.broad.igv.hic.data.DensityFunction;
 import org.broad.igv.hic.data.MatrixZoomData;
+import org.broad.igv.renderer.ContinuousColorScale;
 
 import java.awt.*;
 import java.util.*;
@@ -14,10 +16,13 @@ import java.util.List;
  */
 public class HeatmapRenderer {
 
-    ColorScale colorScale;
+    org.broad.igv.renderer.ColorScale colorScale;
+    DensityFunction densityFunction;
 
     public HeatmapRenderer(ColorScale colorScale) {
-        this.colorScale = colorScale;
+       this.colorScale = colorScale;
+       // this.colorScale = new ContinuousColorScale(.2, 1,  5, Color.blue, Color.white, Color.red);
+       // densityFunction = new DensityFunction();;
     }
 
     public void render(int originX,
@@ -72,7 +77,16 @@ public class HeatmapRenderer {
                     //if (maxCount > 0 && score > 2 * maxCount) {
                     //    color = Color.ORANGE;
                     //} else {
-                    color = colorScale.getColor(score);
+
+//                    double xbp = (rec.getX() + 0.5) * zd.getBinSize();
+//                    double ybp = (rec.getY() + 0.5) * zd.getBinSize();
+//                    double dist = Math.abs(xbp - ybp);
+//                    double density =  densityFunction.getDensity((int) dist);
+//                    float observedOverExpected = (float) (score / density);
+
+
+
+                    color = colorScale.getColor((float) score);
                     //}
 
                     int px = (rec.getX() - originX);

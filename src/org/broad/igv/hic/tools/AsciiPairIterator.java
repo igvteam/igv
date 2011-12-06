@@ -19,14 +19,10 @@
 package org.broad.igv.hic.tools;
 
 
-import org.broad.tribble.util.ParsingUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-
-import org.broad.tribble.util.ParsingUtils;
 
 /**
  * @author Jim Robinson
@@ -39,7 +35,7 @@ public class AsciiPairIterator implements PairIterator {
 
 
     public AsciiPairIterator(String path) throws IOException {
-        this.reader = ParsingUtils.openBufferedReader(path);
+        this.reader = org.broad.igv.util.ParsingUtils.openBufferedReader(path);
         advance();
     }
 

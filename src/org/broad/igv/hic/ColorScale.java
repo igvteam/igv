@@ -18,6 +18,8 @@
 
 package org.broad.igv.hic;
 
+import org.broad.igv.renderer.ContinuousColorScale;
+
 import java.awt.*;
 import java.util.Hashtable;
 import java.util.Map;
@@ -26,7 +28,7 @@ import java.util.Map;
  * @author Jim Robinson
  * @date 9/22/11
  */
-public class ColorScale {
+public class ColorScale implements org.broad.igv.renderer.ColorScale {
 
     Map<Integer, Color> colorCache = new Hashtable();
 
@@ -34,7 +36,8 @@ public class ColorScale {
     int maxCount = 200;
     Color background;
 
-    public Color getColor(double score) {
+
+    public Color getColor(float score) {
 
         if(score < minCount) {
             return background;
@@ -56,5 +59,22 @@ public class ColorScale {
             colorCache.put(idx, c);
         }
         return c;
+    }
+
+    public Color getColor(String symbol) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+
+    public Color getNoDataColor() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public String asString() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean isDefault() {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
