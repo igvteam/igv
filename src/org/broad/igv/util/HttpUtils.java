@@ -109,6 +109,7 @@ public class HttpUtils {
 
             for (int i = 0; i < expectedBytes.length; i++) {
                 if (buffer[i] != expectedBytes[i]) {
+                    log.info("Byte range test failed -- problem with client network environment.");
                     return false;
                 }
             }
