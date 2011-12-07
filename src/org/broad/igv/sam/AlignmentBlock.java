@@ -38,7 +38,7 @@ public class AlignmentBlock {
         this.baseAlignment = baseAlignment;
         if (qualities == null || qualities.length < bases.length) {
             this.qualities = new byte[bases.length];
-            Arrays.fill(qualities, (byte) 126);
+            Arrays.fill(this.qualities, (byte) 126);
         } else {
             this.qualities = qualities;
         }
