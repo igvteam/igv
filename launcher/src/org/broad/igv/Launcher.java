@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
+ *
+ * Example
+ * http://www.broadinstitute.org/igv/projects/current/launch.php?sessionURL=http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig&genome=hg19&name=XXX
  * @author Jim Robinson
  * @date 11/3/11
  */
@@ -114,7 +117,7 @@ public class Launcher {
                 firstArg = false;
             }
 
-            File jnlpFile = createJNLP(file, locus, genome, memory, index);
+            File jnlpFile = createJNLP(file, name, locus, genome, memory, index);
             System.out.println(jnlpFile.getAbsolutePath());
 
             ProcessBuilder pb = new ProcessBuilder("javaws", jnlpFile.getAbsolutePath());
@@ -178,7 +181,7 @@ public class Launcher {
         return success;
     }
 
-    private static File createJNLP(String file, String locus, String genome, String memory, String index) throws IOException {
+    private static File createJNLP(String file, String name, String locus, String genome, String memory, String index) throws IOException {
 
         String tmp = System.getProperty("java.io.tmpdir");
         if (tmp == null) tmp = ".";
@@ -202,6 +205,7 @@ public class Launcher {
                     if (locus != null) pw.println("<argument>" + locus + "</argument>");
                     if (genome != null) pw.println("<argument>-g</argument><argument>" + genome + "</argument>");
                     if (index != null) pw.println("<argument>-i</argument><argument>" + index + "</argument>");
+                    if (name != null) pw.println("<argument>-n</argument><argument>" + name + "</argument>");
                 } else {
                     pw.println(nextLine.replace("$MAXHEAP", maxMem));
                 }

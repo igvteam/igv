@@ -329,7 +329,7 @@ public class Main {
             dataServerURL = (String) parser.getOptionValue(dataServerOption);
             genomeServerURL = (String) parser.getOptionValue(genomeServerOption);
             indexFile = (String) parser.getOptionValue(indexFileOption);
-            name = (String) parser.getOptionValue(indexFileOption);
+            name = (String) parser.getOptionValue(nameOption);
 
             String[] nonOptionArgs = parser.getRemainingArgs();
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {

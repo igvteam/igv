@@ -2285,18 +2285,25 @@ public class IGV {
                     } else if (igvArgs.getDataFileString() != null) {
                         // Not an xml file, assume its a list of data files
                         String[] tokens = igvArgs.getDataFileString().split(",");
+                        String [] names = null;
+                        if (igvArgs.getName() != null) {
+                            names = igvArgs.getName().split(",");
+                        }
+
                         String indexFile = igvArgs.getIndexFile();
                         List<ResourceLocator> locators = new ArrayList();
+                        int idx = 0;
                         for (String p : tokens) {
                             if (FileUtils.isRemote(p)) {
                                 p = URLDecoder.decode(p);
                             }
                             ResourceLocator rl = new ResourceLocator(p);
-                            if (igvArgs.getName() != null) {
-                                rl.setName(igvArgs.getName());
+                            if (names != null && idx < names.length) {
+                                rl.setName(names[idx]);
                             }
                             rl.setIndexPath(indexFile);
                             locators.add(rl);
+                            idx++;
                         }
                         loadResources(locators);
                     }
