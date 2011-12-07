@@ -38,10 +38,7 @@ import org.broad.igv.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CommandExecutor {
 
@@ -94,7 +91,7 @@ public class CommandExecutor {
                     createSnapshot(filename);
 
                 } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
-                    result = load(param1, param2);
+                    result = load(param1, param2, param3);
                 } else if (cmd.equals("hget") && args.size() > 3) {
                     result = hget(param1, param2, param3);
                 } else if (cmd.equals("genome") && args.size() > 1) {
@@ -176,11 +173,32 @@ public class CommandExecutor {
         return result;
     }
 
-    private String load(String param1, String param2) throws IOException {
-        if (param1 == null) {
-            return "ERROR: missing path parameter";
-        }
+    private String load(String param1, String param2, String param3) throws IOException {
         String fileString = param1.replace("\"", "").replace("'", "");
+
+        // Default for merge is "true" for session files,  "false" otherwise
+        String file = fileString;
+        boolean merge;
+        if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
+            // Session file
+            merge = false;
+        } else {
+            // Data file
+            merge = true;
+        }
+
+        // remaining parameters might be "merge" or "name"
+        String name = null;
+        for (String param : Arrays.asList(param2, param3)) {
+            if (param != null && param.startsWith("name=")) {
+                name = param.substring(5);
+            } else if (param != null && param.startsWith("merge=")) {
+                String mergeString = param.substring(6);
+                merge = mergeString.equalsIgnoreCase("true");
+            }
+        }
+        // Locus is not specified from port commands
+        String locus = null;
         return loadFiles(fileString, null, true, param2);
     }
 
@@ -304,7 +322,7 @@ public class CommandExecutor {
         igv.repaintDataPanels();
     }
 
-    private String loadFiles(final String fileString, final String locus, final boolean merge, String param2) throws IOException {
+    private String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
 
         log.debug("Run load files");
 
@@ -313,7 +331,16 @@ public class CommandExecutor {
         List<String> sessionPaths = new ArrayList<String>();
 
         if (!merge) {
-            igv.resetSession(null);
+            // If this is a session file start fresh without asking, otherwise ask
+            boolean unload = !merge;
+            if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
+                unload = !merge;
+            } else {
+                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
+            }
+            if (unload) {
+                igv.resetSession(null);
+            }
         }
 
         // Create set of loaded files
@@ -323,20 +350,11 @@ public class CommandExecutor {
         }
 
         // Loop through files
-        boolean unload = param2 != null && param2.toLowerCase().equals("newsession");
         for (String f : files) {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
-            if (unload && !Globals.isHeadless()) {
-                unload = MessageUtils.confirm("Unload current dataset?");
-            }
-            if (unload) {
-                igv.resetSession(null);
-                unload = false; // <= only onload one time
-            }
-
-            if (f.endsWith(".xml")) {
+            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3")) {
                 sessionPaths.add(f);
             } else {
                 ResourceLocator rl = new ResourceLocator(f);
@@ -345,6 +363,9 @@ public class CommandExecutor {
                     if (!file.exists()) {
                         return "Error: " + f + " does not exist.";
                     }
+                }
+                if (name != null) {
+                    rl.setName(name);
                 }
 
                 fileLocators.add(rl);

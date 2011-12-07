@@ -210,8 +210,19 @@ public class CommandListener implements Runnable {
                             IGV.getFirstInstance().selectGenomeFromList(genomeID);
                         }
 
-                        // Default for merge is "true"
-                        boolean merge = mergeValue == null ? true : mergeValue.equalsIgnoreCase("true");
+                        // Default for merge is "true" for session files,  "false" otherwise
+                        String file = params.get("file");
+                        boolean merge;
+                        if (mergeValue != null) {
+                            // Explicit setting
+                            merge = mergeValue.equalsIgnoreCase("true");
+                        } else if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
+                            // Session file
+                            merge = false;
+                        } else {
+                            // Data file
+                            merge = true;
+                        }
 
                         result = cmdExe.execute("hget " + params.get("file") + " " + locus + " " + merge);
                     } else {
