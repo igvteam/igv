@@ -70,7 +70,7 @@ public class Launcher {
 
         // TODO -- read port from igv preferences
         int port = 60151;
-        boolean igvIsRunning = loadDirectly(port, file, locus, genome, newSession);
+        boolean igvIsRunning = loadDirectly(port, file, name, locus, genome, newSession);
 
         if (!igvIsRunning) {
 
@@ -142,7 +142,7 @@ public class Launcher {
     }
 
 
-    private static boolean loadDirectly(int port, String file, String locus, String genome, boolean newSession) throws IOException {
+    private static boolean loadDirectly(int port, String file, String name, String locus, String genome, boolean newSession) throws IOException {
         boolean success;
         Socket socket = null;
         PrintWriter out = null;
@@ -159,6 +159,7 @@ public class Launcher {
             }
             if (file != null) {
                 String cmd = "load " + file;
+                if(name != null) cmd += " name=" + name;
                 if (newSession) cmd += " newSession";
                 out.println(cmd);
                 String response = in.readLine();
