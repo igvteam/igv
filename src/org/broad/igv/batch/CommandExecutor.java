@@ -199,7 +199,7 @@ public class CommandExecutor {
         }
         // Locus is not specified from port commands
         String locus = null;
-        return loadFiles(fileString, null, true, param2);
+        return loadFiles(fileString, null, merge, param2);
     }
 
     private String setSnapshotDirectory(String param1) {
