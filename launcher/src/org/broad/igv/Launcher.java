@@ -24,7 +24,7 @@ public class Launcher {
         String user = null;
         String memory = null;
         String index = null;
-        boolean merge = false;
+        String merge = null;
 
         // First get file
         for (String a : args) {
@@ -36,11 +36,6 @@ public class Launcher {
                 }
             }
         }
-
-
-        // Default "newSession" value depends on type -- true for sessions, false for files
-        boolean fileIsSession = (file != null && (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")));
-        boolean newSession = !fileIsSession;
 
         for (String a : args) {
             String tokens[] = a.split("=");
@@ -57,10 +52,10 @@ public class Launcher {
                 } else if (key.equals("index")) {
                     index = tokens[1];
                 } else if (key.equals("newsession")) {
-                    newSession = tokens[1].toLowerCase().equals("true");
+                    boolean newSession = tokens[1].toLowerCase().equals("true");
+                    merge = String.valueOf(!newSession);  // <= newSession is a legacy paramter, convert to "merge"
                 } else if (key.equals("merge")) {
-                    merge = tokens[1].toLowerCase().equals("true");
-                    newSession = !merge;
+                    merge = tokens[1].toLowerCase();
                 } else if (key.equals("name")) {
                     name = tokens[1];
                 }
@@ -70,7 +65,7 @@ public class Launcher {
 
         // TODO -- read port from igv preferences
         int port = 60151;
-        boolean igvIsRunning = loadDirectly(port, file, name, locus, genome, newSession);
+        boolean igvIsRunning = loadDirectly(port, file, name, locus, genome, merge);
 
         if (!igvIsRunning) {
 
@@ -142,7 +137,7 @@ public class Launcher {
     }
 
 
-    private static boolean loadDirectly(int port, String file, String name, String locus, String genome, boolean newSession) throws IOException {
+    private static boolean loadDirectly(int port, String file, String name, String locus, String genome, String merge) throws IOException {
         boolean success;
         Socket socket = null;
         PrintWriter out = null;
@@ -160,7 +155,7 @@ public class Launcher {
             if (file != null) {
                 String cmd = "load " + file;
                 if(name != null) cmd += " name=" + name;
-                if (newSession) cmd += " newSession";
+                if (merge != null) cmd += " merge=" + merge;
                 out.println(cmd);
                 String response = in.readLine();
             }
