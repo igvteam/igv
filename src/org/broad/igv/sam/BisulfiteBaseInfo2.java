@@ -17,8 +17,7 @@ import org.broad.igv.sam.AlignmentTrack.BisulfiteContext;
  *         This is the Illumina protocol published by Joe Ecker lab (Lister et al. 2009, Lister et al. 2011)
  *         and our lab (Berman et al. 2011)
  */
-public class BisulfiteBaseInfo {
-
+public class BisulfiteBaseInfo2 {
 
     public enum DisplayStatus {
         NOTHING, COLOR, CHARACTER
@@ -36,8 +35,8 @@ public class BisulfiteBaseInfo {
     private DisplayStatus[] displayStatus = null;
     private byte[] displayChars = null;
     private Color[] displayColors = null;
+    private AlignmentBlock myBlock = null;
     private BisulfiteContext myContext = null;
-    private boolean flipRead;
 
 
     /**
@@ -48,22 +47,20 @@ public class BisulfiteBaseInfo {
      * @param block
      * @param bisulfiteContext
      */
-    public BisulfiteBaseInfo(byte[] inReference, AlignmentBlock block, BisulfiteContext bisulfiteContext) {
+    public BisulfiteBaseInfo2(byte[] inReference,  AlignmentBlock block, BisulfiteContext bisulfiteContext) {
         super();
 
+        myBlock = block;
         myContext = bisulfiteContext;
         byte[] inRead = block.getBases();
         int alignmentLen = inRead.length;
 
 //		System.err.printf("Block=%s, alignment=%s\n", block, block.getBaseAlignment());
-        final Alignment baseAlignment = block.getBaseAlignment();
+        boolean isNegativeStrand = block.getBaseAlignment().isNegativeStrand();
+        boolean readIsSecondOfPair = block.getBaseAlignment().isSecondOfPair();
 
         // We will only need reverse complement if the strand and paired end status don't match (2nd ends are G->A)
-        if (baseAlignment.isPaired()) {
-            flipRead = (baseAlignment.isPaired() && (baseAlignment.isNegativeStrand() ^ baseAlignment.isSecondOfPair()));
-        } else {
-            flipRead = baseAlignment.isNegativeStrand();
-        }
+        boolean flipRead = isNegativeStrand ^ readIsSecondOfPair;
         byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
         byte[] reference = (flipRead) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
 
@@ -180,7 +177,7 @@ public class BisulfiteBaseInfo {
             for (int posti = 0; matchesContext && (posti < postContext.length); posti++) {
                 byte contextb = postContext[posti];
                 int offsetidx = idx + 1 + posti;
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference, read, offsetidx);
 
                 //				System.err.printf("POST posMatchesContext(posti=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
                 //						posti, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
@@ -196,7 +193,7 @@ public class BisulfiteBaseInfo {
             for (int prei = 0; matchesContext && (prei < preContext.length); prei++) {
                 byte contextb = preContext[prei];
                 int offsetidx = idx - (preContext.length - prei);
-                matchesContext &= positionMatchesContext(contextb, reference[offsetidx], read[offsetidx]);
+                matchesContext &= positionMatchesContext(contextb, reference, read, offsetidx);
                 //				System.err.printf("PRE posMatchesContext(prei=%d, contextb=%c, refb=%c, readb=%c, offsetidx=%d) = %s\n",
                 //						prei, contextb, reference[offsetidx], read[offsetidx], offsetidx, matchesContext);
             }
@@ -206,25 +203,25 @@ public class BisulfiteBaseInfo {
     }
 
     /**
-     * @param contextb      The residue in the context string (IUPAC)
-     * @param referenceBase The reference sequence (already checked that offsetidx is within bounds)
-     * @param readBase      The read sequence (already checked that offsetidx is within bounds)
+     * @param contextb  The residue in the context string (IUPAC)
+     * @param reference The reference sequence (already checked that offsetidx is within bounds)
+     * @param read      The read sequence (already checked that offsetidx is within bounds)
+     * @param offsetidx The index of the position in both reference and read
      * @return
      */
-    protected boolean positionMatchesContext(byte contextb, final byte referenceBase, final byte readBase) {
-
-        boolean matchesContext = AlignmentUtils.compareBases(contextb, referenceBase);
-        if (!matchesContext) {
-            return false; // Don't need to check any further
-        }
+    protected boolean positionMatchesContext(byte contextb, byte[] reference, byte[] read, int offsetidx) {
+        boolean matchesContext = true;
+        matchesContext &= AlignmentUtils.compareBases(contextb, reference[offsetidx]);
 
         // For the read, we have to handle C separately
-        boolean matchesReadContext = AlignmentUtils.compareBases(contextb, readBase);
-        if (AlignmentUtils.compareBases((byte) 'T', readBase)) {
+        boolean matchesReadContext = false;
+        matchesReadContext |= AlignmentUtils.compareBases(contextb, read[offsetidx]);
+        if (AlignmentUtils.compareBases((byte) 'T', read[offsetidx])) {
             matchesReadContext |= AlignmentUtils.compareBases(contextb, (byte) 'C');
         }
+        matchesContext &= matchesReadContext;
 
-        return matchesReadContext;
+        return matchesContext;
     }
 
     public Color getDisplayColor(int idx) {
@@ -254,10 +251,12 @@ public class BisulfiteBaseInfo {
 
         if (getDisplayStatus(idx).equals(DisplayStatus.COLOR)) {
             double baseOffset = getBisulfiteSymmetricCytosineShift(myContext);
-            offset = offset + ((flipRead ? -1 : 1) * baseOffset);
+            offset = offset + (((myBlock.getBaseAlignment().isNegativeStrand() ^ myBlock.getBaseAlignment().isSecondOfPair()) ? -1 : 1) * baseOffset);
         }
+
         return offset;
     }
+
 
     /**
      * @param item

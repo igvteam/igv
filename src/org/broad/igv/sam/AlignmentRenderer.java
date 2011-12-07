@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.sam.AlignmentTrack.ColorOption;
 import org.broad.igv.sam.AlignmentTrack.RenderOptions;
@@ -574,9 +573,9 @@ public class AlignmentRenderer implements FeatureRenderer {
             boolean nomeseqMode = (renderOptions.colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
             boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
             if (nomeseqMode) {
-                bisinfo = new BisulfiteBaseInfoNOMeseq(reference, read, read.length, block, renderOptions.bisulfiteContext);
+                bisinfo = new BisulfiteBaseInfoNOMeseq(reference,  block, renderOptions.bisulfiteContext);
             } else if (bisulfiteMode) {
-                bisinfo = new BisulfiteBaseInfo(reference, read, read.length, block, renderOptions.bisulfiteContext);
+                bisinfo = new BisulfiteBaseInfo(reference,  block, renderOptions.bisulfiteContext);
             }
 
             // Loop through base pair coordinates
@@ -599,7 +598,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                             reference != null &&
                             idx < reference.length &&
                             refbase != 0 &&
-                            !compareBases(refbase, readbase);
+                            !AlignmentUtils.compareBases(refbase, readbase);
                 }
 
 
@@ -664,56 +663,6 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
             }
-        }
-    }
-
-    /**
-     * Return true if the two bases can be considered a match.  The comparison is case-insentive, and
-     * considers ambiguity codes in the reference.
-     *
-     * @param refbase
-     * @param readbase
-     * @return
-     */
-    public static boolean compareBases(byte refbase, byte readbase) {
-        // Force both bases to upper case
-        if (refbase > 90) {
-            refbase = (byte) (refbase - 32);
-        }
-        if (readbase > 90) {
-            readbase = (byte) (readbase - 32);
-        }
-        if (refbase == readbase) {
-            return true;
-        }
-        switch (refbase) {
-            case 'N':
-                return true; // Everything matches 'N'
-            case 'U':
-                return readbase == 'T';
-            case 'M':
-                return readbase == 'A' || readbase == 'C';
-            case 'R':
-                return readbase == 'A' || readbase == 'G';
-            case 'W':
-                return readbase == 'A' || readbase == 'T';
-            case 'S':
-                return readbase == 'C' || readbase == 'G';
-            case 'Y':
-                return readbase == 'C' || readbase == 'T';
-            case 'K':
-                return readbase == 'G' || readbase == 'T';
-            case 'V':
-                return readbase == 'A' || readbase == 'C' || readbase == 'G';
-            case 'H':
-                return readbase == 'A' || readbase == 'C' || readbase == 'T';
-            case 'D':
-                return readbase == 'A' || readbase == 'G' || readbase == 'T';
-            case 'B':
-                return readbase == 'C' || readbase == 'G' || readbase == 'T';
-
-            default:
-                return refbase == readbase;
         }
     }
 

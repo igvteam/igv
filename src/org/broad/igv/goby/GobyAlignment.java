@@ -611,6 +611,12 @@ return 0;
             if (getPairOrientation().length() > 0) {
                 buffer.append("Pair orientation = " + getPairOrientation() + "<br>");
             }
+            if(isFirstOfPair()) {
+                buffer.append("First of pair <br>");
+            }
+            if(isSecondOfPair()) {
+                buffer.append("Second of pair <br>");
+            }
         }
         return buffer.toString();
     }

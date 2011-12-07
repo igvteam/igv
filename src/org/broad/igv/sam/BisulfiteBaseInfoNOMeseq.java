@@ -22,15 +22,12 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 	
 	/**
 	 * @param inReference
-	 * @param inRead
-	 * @param alignmentLen
 	 * @param block
 	 * @param bisulfiteContext
 	 */
-	public BisulfiteBaseInfoNOMeseq(byte[] inReference, byte[] inRead,
-			int alignmentLen, AlignmentBlock block,
+	public BisulfiteBaseInfoNOMeseq(byte[] inReference,  AlignmentBlock block,
 			BisulfiteContext bisulfiteContext) {
-		super(inReference, inRead, alignmentLen, block, bisulfiteContext);
+		super(inReference,  block, bisulfiteContext);
 	}
 
 
@@ -41,11 +38,11 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 		Color out = null;
 		if (bisulfiteContext.equals(BisulfiteContext.HCG))
 		{
-			out = (AlignmentRenderer.compareBases((byte)'T',readbase)) ? CG_UNMETH_COLOR : CG_METH_COLOR;
+			out = (AlignmentUtils.compareBases((byte) 'T', readbase)) ? CG_UNMETH_COLOR : CG_METH_COLOR;
 		}
 		else
 		{
-			out = (AlignmentRenderer.compareBases((byte)'T',readbase)) ? GC_UNMETH_COLOR : GC_METH_COLOR;
+			out = (AlignmentUtils.compareBases((byte) 'T', readbase)) ? GC_UNMETH_COLOR : GC_METH_COLOR;
 		}
 		return out;
 	}

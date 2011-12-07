@@ -26,7 +26,7 @@ import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.sam.GeraldAlignment;
 import org.broad.igv.sam.ReadMate;
 import org.broad.igv.ui.IGV;
@@ -138,7 +138,7 @@ public class GeraldParser implements AlignmentParser {
         byte[] phredQualities = fields[QUALITIES_COLUMN].getBytes();
         solexaToPhredQualityConverter.convertSolexa_1_3_QualityCharsToPhredBinary(phredQualities);
         if (isNegativeStrand) {
-            readString = reverseComplement(readString);
+            readString = AlignmentUtils.reverseComplement(readString);
             reverseArray(phredQualities);
         }
         byte[] read = readString.getBytes();
@@ -231,73 +231,4 @@ public class GeraldParser implements AlignmentParser {
         }
     }
 
-    /**
-     * Calculate the reverse complement of the specified sequence
-     * (Stolen from Reseq)
-     *
-     * @param sequenceData
-     * @return reverse complement
-     */
-    public static String reverseComplement(final String sequenceData) {
-        final byte[] bases = net.sf.samtools.util.StringUtil.stringToBytes(sequenceData);
-        reverseComplement(bases);
-        return net.sf.samtools.util.StringUtil.bytesToString(bases);
-    }
-
-    /**
-     * Returns the complement of a single byte.
-     */
-    public static final byte complement(final byte b) {
-        switch (b) {
-            case a:
-                return t;
-            case c:
-                return g;
-            case g:
-                return c;
-            case t:
-                return a;
-            case A:
-                return T;
-            case C:
-                return G;
-            case G:
-                return C;
-            case T:
-                return A;
-            default:
-                return b;
-        }
-    }
-
-    /**
-     * Reverses and complements the bases in place.
-     */
-    public static void reverseComplement(final byte[] bases) {
-        final int lastIndex = bases.length - 1;
-
-        int i, j;
-        for (i = 0, j = lastIndex; i < j; ++i, --j) {
-            final byte tmp = complement(bases[i]);
-            bases[i] = complement(bases[j]);
-            bases[j] = tmp;
-        }
-        if (bases.length % 2 == 1) {
-            bases[i] = complement(bases[i]);
-        }
-    }
-    
-    /**
-     * Reverses and complements a copy of the original array
-     */
-    public static byte[] reverseComplementCopy(final byte[] bases) {
-    	final int lastIndex = bases.length - 1;
-    	byte[] out = new byte[bases.length];
-    	int i;
-    	for (i=0; i <= lastIndex; i++)
-    	{
-    		out[lastIndex-i] = complement(bases[i]);
-    	}
-        return out;
-    }
 }
