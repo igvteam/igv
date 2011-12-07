@@ -322,7 +322,7 @@ public class CommandExecutor {
         igv.repaintDataPanels();
     }
 
-    private String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
+    String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
 
         log.debug("Run load files");
 

@@ -210,7 +210,7 @@ public class CommandListener implements Runnable {
                             IGV.getFirstInstance().selectGenomeFromList(genomeID);
                         }
 
-                        // Default for merge is "true" for session files,  "false" otherwise
+                        // Default for merge is "false" for session files,  "true" otherwise
                         String file = params.get("file");
                         boolean merge;
                         if (mergeValue != null) {
@@ -224,7 +224,9 @@ public class CommandListener implements Runnable {
                             merge = true;
                         }
 
-                        result = cmdExe.execute("hget " + params.get("file") + " " + locus + " " + merge);
+                        String name=params.get("name");
+
+                        result = cmdExe.loadFiles(file, locus, merge, name);
                     } else {
                         return ("ERROR Parameter \"file\" is required");
                     }
