@@ -15,11 +15,13 @@ public class Launcher {
     public static void main(String[] args) throws IOException {
 
         String file = null;
+        String name = null;
         String locus = null;
         String genome = null;
         String user = null;
         String memory = null;
         String index = null;
+        boolean merge = false;
 
         // First get file
         for (String a : args) {
@@ -32,15 +34,16 @@ public class Launcher {
             }
         }
 
+
         // Default "newSession" value depends on type -- true for sessions, false for files
         boolean fileIsSession = (file != null && (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")));
         boolean newSession = !fileIsSession;
 
         for (String a : args) {
-             String tokens[] = a.split("=");
-             if (tokens.length == 2) {
-                 String key = tokens[0].toLowerCase();
-                  if (key.equals("locus")) {
+            String tokens[] = a.split("=");
+            if (tokens.length == 2) {
+                String key = tokens[0].toLowerCase();
+                if (key.equals("locus")) {
                     locus = tokens[1];
                 } else if (key.equals("genome")) {
                     genome = tokens[1];
@@ -51,7 +54,12 @@ public class Launcher {
                 } else if (key.equals("index")) {
                     index = tokens[1];
                 } else if (key.equals("newsession")) {
-                    newSession = tokens[1].equals("true");
+                    newSession = tokens[1].toLowerCase().equals("true");
+                } else if (key.equals("merge")) {
+                    merge = tokens[1].toLowerCase().equals("true");
+                    newSession = !merge;
+                } else if (key.equals("name")) {
+                    name = tokens[1];
                 }
             }
         }
@@ -91,8 +99,14 @@ public class Launcher {
                 firstArg = false;
 
             }
+            if (name != null) {
+                String delim = firstArg ? "?" : "&";
+                buf.append(delim);
+                buf.append("name=");
+                buf.append(name);
+                firstArg = false;
+            }
             if (user != null) {
-
                 String delim = firstArg ? "?" : "&";
                 buf.append(delim);
                 buf.append("user=");
@@ -136,14 +150,13 @@ public class Launcher {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
 
-
             if (genome != null) {
                 out.println("genome " + genome);
                 String response = in.readLine();
             }
             if (file != null) {
                 String cmd = "load " + file;
-                if(newSession) cmd += " newSession";
+                if (newSession) cmd += " newSession";
                 out.println(cmd);
                 String response = in.readLine();
             }
