@@ -19,7 +19,7 @@
   </security>
   <update check="always" policy="always"/>
   <resources>
-    <java version="1.6+" initial-heap-size="$MINHEAP" max-heap-size="$MAXHEAP"/>
+    <java version="1.6+" max-heap-size="$MAXHEAP"/>
     <jar href="igv.jar" download="eager" main="true"/>
     <jar href="batik-codec.jar" download="eager"/>
     <property name="apple.laf.useScreenMenuBar" value="true"/>
