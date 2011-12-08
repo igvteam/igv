@@ -476,6 +476,7 @@ public class SessionReader {
             List<Thread> threads = new ArrayList(dataFiles.size());
             long t0 = System.currentTimeMillis();
             int i = 0;
+            List<Runnable> synchronousLoads = new ArrayList<Runnable>();
             for (final ResourceLocator locator : dataFiles) {
                 Runnable runnable = new Runnable() {
                     public void run() {
@@ -501,23 +502,25 @@ public class SessionReader {
                     }
                 };
 
-                // Run synchronously if in batch mode or if there are no "track" elments
-                if (Globals.isBatch() || !hasTrackElments) {
-                    runnable.run();
+                boolean isAlignment = locator.getPath().endsWith(".bam") || locator.getPath().endsWith(".entries") ||
+                        locator.getPath().endsWith(".sam");
+
+
+               // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
+                if (isAlignment || Globals.isBatch() || !hasTrackElments) {
+                    synchronousLoads.add(runnable);
                 } else {
                     Thread t = new Thread(runnable);
                     threads.add(t);
                     t.start();
                 }
                 i++;
+
             }
 
-            // Wait for all threads to complete
-            for (Thread t : threads) {
-                try {
-                    t.join();
-                } catch (InterruptedException ignore) {
-                }
+            // Now load data that must be loaded synchronously
+            for(Runnable runnable : synchronousLoads) {
+                runnable.run();
             }
 
             long dt = System.currentTimeMillis() - t0;
