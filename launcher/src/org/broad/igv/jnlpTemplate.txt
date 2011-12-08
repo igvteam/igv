@@ -2,7 +2,7 @@
 
 <jnlp
   spec="6.0+"
-  codebase="http://www.broadinstitute.org/igv/projects/dev">
+  codebase="http://www.broadinstitute.org/igv/projects/current">
   <information>
     <title>IGV 2.0</title>
     <vendor>The Broad Institute</vendor>
