@@ -1,0 +1,4 @@
+genome hg18
+goto chr1:65,289,335-67,427,933
+snapshot test1.png
+snapshot test1.svg

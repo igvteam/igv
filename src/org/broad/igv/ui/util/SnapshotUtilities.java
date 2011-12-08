@@ -213,7 +213,6 @@ public class SnapshotUtilities {
             //    exportScreenShotEPS(component, file, width, height);
             //    break;
             case PNG:
-
                 exportScreenShotPNG(component, file, width, height);
                 break;
             case SVG:
@@ -279,8 +278,7 @@ public class SnapshotUtilities {
         }
     }
 
-    private static void exportScreenShotJPEG(Component target, File selectedFile,
-                                             int width, int height) {
+    private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) {
 
         BufferedImage image = getDeviceCompatibleImage(width, height); //  new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
         Graphics g = image.createGraphics();
@@ -296,8 +294,7 @@ public class SnapshotUtilities {
         }
     }
 
-    private static void exportScreenShotPNG(Component target, File selectedFile,
-                                            int width, int height) {
+    private static void exportScreenShotPNG(Component target, File selectedFile, int width, int height) {
 
         BufferedImage image = getDeviceCompatibleImage(width, height);
         Graphics g = image.createGraphics();
@@ -314,11 +311,11 @@ public class SnapshotUtilities {
     }
 
 
-    public static void doSnapshotOffscreen(Component target, File selectedFile) {
+    public static String doSnapshotOffscreen(Component target, File selectedFile) {
 
         if (!(target instanceof Paintable)) {
             // TODO -- message that target does not support this
-            return;
+            return "Error: target is not paintable";
         }
 
         try {
@@ -339,23 +336,50 @@ public class SnapshotUtilities {
 
             Paintable paintable = (Paintable) target;
 
-            BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
-            Graphics2D g = image.createGraphics();
+            final String filenameLowercase = selectedFile.getName().toLowerCase();
+            if (filenameLowercase.endsWith(".svg")) {
+                logger.debug("Getting dom");
+                DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
 
-            paintable.paintOffscreen(g, rect);
 
-            if (selectedFile != null) {
+                // Create an instance of org.w3c.dom.Document.
+                String svgNS = "http://www.w3.org/2000/svg";
+                Document document = domImpl.createDocument(svgNS, "svg", null);
 
-                if (!selectedFile.getName().toLowerCase().endsWith(".png")) {
-                    String correctedFilename = selectedFile.getAbsolutePath() + ".png";
-                    selectedFile = new File(correctedFilename);
+                // Create an instance of the SVG Generator.
+                SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+                //logger.info("Painting");
+                paintable.paintOffscreen(svgGenerator, rect);
+
+                // Finally, stream out SVG to the standard output using
+                // UTF-8 encoding.
+                boolean useCSS = true; // we want to use CSS style attributes
+                Writer out = new BufferedWriter(new FileWriter(selectedFile));
+                //logger.info("Writing output");
+                svgGenerator.stream(out, useCSS);
+
+
+            } else {
+
+                BufferedImage image = getDeviceCompatibleImage(rect.width, rect.height);
+                Graphics2D g = image.createGraphics();
+                paintable.paintOffscreen(g, rect);
+                if (selectedFile != null) {
+                    if (!filenameLowercase.endsWith(".png")) {
+                        String correctedFilename = selectedFile.getAbsolutePath() + ".png";
+                        selectedFile = new File(correctedFilename);
+                    }
+                    writeImage(image, selectedFile, "png");
                 }
-                writeImage(image, selectedFile, "png");
             }
 
+        } catch (Exception e) {
+            logger.error("Error creating snapshot", e);
+            return "Error: " + e.toString();
         } finally {
             IGV.getInstance().setExportingSnapshot(false);
         }
+        return "OK";
 
     }
 
@@ -472,7 +496,4 @@ public class SnapshotUtilities {
             });
         }
     }
-
-
 }
-

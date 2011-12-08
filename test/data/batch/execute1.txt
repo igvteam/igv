@@ -1,9 +1,0 @@
-load test/data/CommandExecute/igv_session.xml
-snapshotDirectory test/data/CommandExecute
-genome hg18
-goto chr1:65,289,335-67,427,933
-snapshot
-goto chr1:113,144,120-115,282,718
-snapshot
-goto chr4:68,457,006-69,284,218
-snapshot
