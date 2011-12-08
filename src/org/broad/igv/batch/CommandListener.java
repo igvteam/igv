@@ -127,7 +127,8 @@ public class CommandListener implements Runnable {
                 } else {
                     Globals.setBatch(true);
                     Globals.setSuppressMessages(true);
-                    out.println(cmdExe.execute(inputLine));
+                    final String response = cmdExe.execute(inputLine);
+                    out.println(response);
                 }
             }
         } catch (IOException e) {

@@ -35,10 +35,12 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
 import org.broad.igv.util.*;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.List;
 
 public class CommandExecutor {
 
@@ -92,8 +94,6 @@ public class CommandExecutor {
 
                 } else if ((cmd.equals("loadfile") || cmd.equals("load")) && param1 != null) {
                     result = load(param1, param2, param3);
-                } else if (cmd.equals("hget") && args.size() > 3) {
-                    result = hget(param1, param2, param3);
                 } else if (cmd.equals("genome") && args.size() > 1) {
                     result = genome(param1);
                 } else if (cmd.equals("new") || cmd.equals("reset") || cmd.equals("clear")) {
@@ -114,6 +114,8 @@ public class CommandExecutor {
                     igv.tweakPanelDivider();
                 } else if (cmd.equals("maxpanelheight") && param1 != null) {
                     return setMaxPanelHeight(param1);
+                } else if (cmd.equals("tofront")) {
+                    return bringToFront();
                 } else if (cmd.equals("exit")) {
                     System.exit(0);
                 } else {
@@ -163,18 +165,18 @@ public class CommandExecutor {
         return result;
     }
 
-    private String hget(String param1, String param2, String param3) throws IOException {
-        String result;
-        String fileString = param1;
-        String locusString = (param2 == null || param2.equals("null")) ? null : URLDecoder.decode(param2);
-        String mergeValue = param3;
-        boolean merge = mergeValue != null && mergeValue.equalsIgnoreCase("true");
-        result = loadFiles(fileString, locusString, merge, param2);
-        return result;
-    }
+    /**
+     * Load function for port and batch script
+     *
+     * @param fileList
+     * @param param2
+     * @param param3
+     * @return
+     * @throws IOException
+     */
+    private String load(String fileList, String param2, String param3) throws IOException {
 
-    private String load(String param1, String param2, String param3) throws IOException {
-        String fileString = param1.replace("\"", "").replace("'", "");
+        String fileString = fileList.replace("\"", "").replace("'", "");
 
         // Default for merge is "true" for session files,  "false" otherwise
         String file = fileString;
@@ -199,9 +201,97 @@ public class CommandExecutor {
         }
         // Locus is not specified from port commands
         String locus = null;
-        return loadFiles(fileString, null, merge, param2);
+        return loadFiles(fileString, null, merge, name);
     }
 
+    /**
+     * Load files -- used by port, batch, and http commands
+     *
+     * @param fileString
+     * @param locus
+     * @param merge
+     * @param name
+     * @return
+     * @throws IOException
+     */
+    String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
+
+        log.debug("Run load files");
+
+        String[] files = fileString.split(",");
+        List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
+        List<String> sessionPaths = new ArrayList<String>();
+
+        if (!merge) {
+            // If this is a session file start fresh without asking, otherwise ask
+            boolean unload = !merge;
+            if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
+                unload = !merge;
+            } else {
+                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
+            }
+            if (unload) {
+                igv.resetSession(null);
+            }
+        }
+
+        // Create set of loaded files
+        Set<String> loadedFiles = new HashSet<String>();
+        for (ResourceLocator rl : igv.getDataResourceLocators()) {
+            loadedFiles.add(rl.getPath());
+        }
+
+        // Loop through files
+        for (String f : files) {
+            // Skip already loaded files TODO -- make this optional?  Check for change?
+            if (loadedFiles.contains(f)) continue;
+
+            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3")) {
+                sessionPaths.add(f);
+            } else {
+                ResourceLocator rl = new ResourceLocator(f);
+                if (rl.isLocal()) {
+                    File file = new File(f);
+                    if (!file.exists()) {
+                        return "Error: " + f + " does not exist.";
+                    }
+                }
+                if (name != null) {
+                    rl.setName(name);
+                }
+                fileLocators.add(rl);
+            }
+        }
+
+        for (String sessionPath : sessionPaths) {
+            igv.doRestoreSession(sessionPath, locus, merge);
+        }
+
+        igv.loadTracks(fileLocators);
+
+        if (locus != null && !locus.equals("null")) {
+            igv.goToLocus(locus);
+        }
+
+        return "OK";
+    }
+
+
+    private String bringToFront() {
+        // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
+        Frame mainFrame = IGV.getMainFrame();
+        mainFrame.toFront();
+        mainFrame.setAlwaysOnTop(true);
+        mainFrame.setAlwaysOnTop(false);
+        return "OK";
+    }
+
+    /**
+     * Set a directory to deposit image snapshots
+     *
+     * @param param1
+     * @return
+     */
     private String setSnapshotDirectory(String param1) {
         if (param1 == null) {
             return "ERROR: missing directory parameter";
@@ -322,68 +412,6 @@ public class CommandExecutor {
         igv.repaintDataPanels();
     }
 
-    String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
-
-        log.debug("Run load files");
-
-        String[] files = fileString.split(",");
-        List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
-        List<String> sessionPaths = new ArrayList<String>();
-
-        if (!merge) {
-            // If this is a session file start fresh without asking, otherwise ask
-            boolean unload = !merge;
-            if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
-                unload = !merge;
-            } else {
-                unload = MessageUtils.confirm("Unload current session before loading new tracks?");
-            }
-            if (unload) {
-                igv.resetSession(null);
-            }
-        }
-
-        // Create set of loaded files
-        Set<String> loadedFiles = new HashSet<String>();
-        for (ResourceLocator rl : igv.getDataResourceLocators()) {
-            loadedFiles.add(rl.getPath());
-        }
-
-        // Loop through files
-        for (String f : files) {
-            // Skip already loaded files TODO -- make this optional?  Check for change?
-            if (loadedFiles.contains(f)) continue;
-
-            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3")) {
-                sessionPaths.add(f);
-            } else {
-                ResourceLocator rl = new ResourceLocator(f);
-                if (rl.isLocal()) {
-                    File file = new File(f);
-                    if (!file.exists()) {
-                        return "Error: " + f + " does not exist.";
-                    }
-                }
-                if (name != null) {
-                    rl.setName(name);
-                }
-
-                fileLocators.add(rl);
-            }
-        }
-
-        for (String sessionPath : sessionPaths) {
-            igv.doRestoreSession(sessionPath, locus, merge);
-        }
-
-        igv.loadTracks(fileLocators);
-
-        if (locus != null && !locus.equals("null")) {
-            igv.goToLocus(locus);
-        }
-
-        return "OK";
-    }
 
     private void createSnapshot(String filename) {
         if (filename == null) {

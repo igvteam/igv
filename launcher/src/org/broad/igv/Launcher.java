@@ -7,9 +7,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- *
  * Example
  * http://www.broadinstitute.org/igv/projects/current/launch.php?sessionURL=http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig&genome=hg19&name=XXX
+ *
  * @author Jim Robinson
  * @date 11/3/11
  */
@@ -151,18 +151,25 @@ public class Launcher {
             if (genome != null) {
                 out.println("genome " + genome);
                 String response = in.readLine();
+                System.out.println(response);
             }
             if (file != null) {
                 String cmd = "load " + file;
-                if(name != null) cmd += " name=" + name;
+                if (name != null) cmd += " name=" + name;
                 if (merge != null) cmd += " merge=" + merge;
                 out.println(cmd);
                 String response = in.readLine();
+                System.out.println(response);
             }
             if (locus != null) {
                 out.println("goto " + locus);
                 String response = in.readLine();
+                System.out.println(response);
             }
+
+            out.println("tofront");
+            String response = in.readLine();
+            System.out.println(response);
             success = true;
 
         } catch (UnknownHostException e) {
