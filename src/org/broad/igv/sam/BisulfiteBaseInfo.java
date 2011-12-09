@@ -268,23 +268,23 @@ public class BisulfiteBaseInfo {
     protected double getBisulfiteSymmetricCytosineShift(BisulfiteContext item) {
         double out = 0.0;
 
-        // The following may be too non-intuitive? BPB
-        switch (item) {
-            case CG:
-            case HCG:
-            case WCG:
-                out = 0.5;
-                break;
-            case CHG:
-                out = 1.0;
-                break;
-            case GCH:   // Added by JTR,  confirm?
-                out = -0.5;
-                break;
-            default:
-                out = 0.0;
-                break;
-        }
+//        // The following may be too non-intuitive? BPB
+//        switch (item) {
+//            case CG:
+//            case HCG:
+//            case WCG:
+//                out = 0.5;
+//                break;
+//            case CHG:
+//                out = 1.0;
+//                break;
+//            case GCH:   // Added by JTR,  confirm?
+//                out = -0.5;
+//                break;
+//            default:
+//                out = 0.0;
+//                break;
+//        }
 
         return out;
     }
