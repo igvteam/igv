@@ -79,6 +79,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color bisulfiteColorRev1 = new Color(195, 222, 195); // A bit lighter than normal LR_COLOR
     private static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
     private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
+    private static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
 
     PreferenceManager prefs;
 
@@ -721,20 +722,21 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
-            case BISULFITE:
-            case NOMESEQ:
-                // Just a simple forward/reverse strand color scheme that won't clash with the
-                // methylation rectangles.
+        	case BISULFITE:
+        		// Just a simple forward/reverse strand color scheme that won't clash with the 
+        		// methylation rectangles.
                 if (alignment.isNegativeStrand()) {
                     c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
                 } else {
                     c = (alignment.isSecondOfPair()) ? bisulfiteColorFw2 : bisulfiteColorFw1;
                 }
                 // c = getOrientationColor(alignment, peStats);  // Can we eventually get this to use the builtin orientation stuff?  BPB
-
                 break;
-
-            case INSERT_SIZE:
+        	case NOMESEQ:
+        		c = nomeseqColor;
+                break;
+            
+        	case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
                     boolean sameChr = isPairedAlignment ||
