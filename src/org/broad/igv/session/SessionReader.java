@@ -515,8 +515,18 @@ public class SessionReader {
                     t.start();
                 }
                 i++;
-
             }
+
+
+            // Wait for all threads to complete
+            for (Thread t : threads) {
+                try {
+                    t.join();
+                } catch (InterruptedException ignore) {
+                }
+            }
+
+
 
             // Now load data that must be loaded synchronously
             for(Runnable runnable : synchronousLoads) {
