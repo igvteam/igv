@@ -94,25 +94,25 @@ public class PeakRenderer implements Renderer<LocusScore> {
                 } else {
                     drawPeak(context, fgColor, pX, dX, top, peakHeight, score, PeakTrack.getColorOption());
 
-                    float[] timeScores = peak.getTimeScores();
-                    if (dX > 10 && timeScores.length > 1) {
-                        Graphics2D gLine = context.getGraphic2DForColor(Color.black);
-                        gLine.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-                        double deltaX = ((double) dX / (timeScores.length - 1));
-                        double scaleY = peakHeight / 200.0;
-                        int bottomY = top + peakHeight;
-                        int lastX = pX;
-                        int lastY = (bottomY - (int) (scaleY * timeScores[0]));
-                        for (int i = 1; i < timeScores.length; i++) {
-                            score = timeScores[i];
-                            int x = pX + (int) (i * deltaX);
-                            int y = Math.max(top + 2, (int) (bottomY - (int) (scaleY * timeScores[i])));
-                            gLine.drawLine(lastX, lastY, x, y);
-                            lastX = x;
-                            lastY = y;
-
-                        }
-                    }
+//                    float[] timeScores = peak.getTimeScores();
+//                    if (dX > 10 && timeScores.length > 1) {
+//                        Graphics2D gLine = context.getGraphic2DForColor(Color.black);
+//                        gLine.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+//                        double deltaX = ((double) dX / (timeScores.length - 1));
+//                        double scaleY = peakHeight / 200.0;
+//                        int bottomY = top + peakHeight;
+//                        int lastX = pX;
+//                        int lastY = (bottomY - (int) (scaleY * timeScores[0]));
+//                        for (int i = 1; i < timeScores.length; i++) {
+//                            score = timeScores[i];
+//                            int x = pX + (int) (i * deltaX);
+//                            int y = Math.max(top + 2, (int) (bottomY - (int) (scaleY * timeScores[i])));
+//                            gLine.drawLine(lastX, lastY, x, y);
+//                            lastX = x;
+//                            lastY = y;
+//
+//                        }
+//                    }
                 }
             }
         }

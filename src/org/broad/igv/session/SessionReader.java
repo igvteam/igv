@@ -516,8 +516,6 @@ public class SessionReader {
                 }
                 i++;
             }
-
-
             // Wait for all threads to complete
             for (Thread t : threads) {
                 try {
