@@ -214,7 +214,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             pairOrientation = new String(tmp);
         }
     }
-   /**
+    /**
      * Create the alignment blocks from the read bases and alignment information in the CIGAR
      * string.  The CIGAR string encodes insertions, deletions, skipped regions, and padding.
      *
@@ -342,7 +342,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                         System.arraycopy(readBaseQualities, fromIdx, blockQualities, 0, op.nBases);
                     }
 
-                    AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities,this);
+                    AlignmentBlock block = new AlignmentBlock(blockStart, blockBases, blockQualities, this);
                     if (op.operator == SOFT_CLIP) {
                         block.setSoftClipped(true);
                     }
@@ -429,13 +429,13 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     }
 
     public boolean isFirstOfPair() {
-    	return this.firstRead;
+        return this.firstRead;
     }
-    
+
     public boolean isSecondOfPair() {
-    	return this.secondRead;
+        return this.secondRead;
     }
-    
+
     /**
      * Note: This method is required by the interface, but never used.
      *
@@ -529,10 +529,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return gapTypes;
     }
 
-    public Strand getFragmentStrand(int strand) {
-        return strand == 1 ? firstReadStrand : secondReadStrand;
-    }
-
     public Object getAttribute(String key) {
         return record.getAttribute(key);
     }
@@ -557,19 +553,26 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         StringBuffer buf = new StringBuffer(super.getValueString(position, null));
 
         if (isPaired()) {
+            boolean sectionBreak = false;
             if (record.getFirstOfPairFlag()) {
                 buf.append("<br>First in pair");
+                sectionBreak = true;
             }
             if (record.getSecondOfPairFlag()) {
                 buf.append("<br>Second in pair");
+                sectionBreak = true;
             }
             if (record.getNotPrimaryAlignmentFlag()) {
                 buf.append("<br>Alignment NOT primary");
+                sectionBreak = true;
             }
             if (record.getReadFailsVendorQualityCheckFlag()) {
                 buf.append("<br>FAILED Vendor Quality Check");
+                sectionBreak = true;
             }
-            buf.append("<br>-------------------");
+            if (sectionBreak) {
+                buf.append("<br>-------------------");
+            }
         }
 
         List<SAMRecord.SAMTagAndValue> attributes = record.getAttributes();
@@ -617,10 +620,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
             buf.append("<br>-------------------");
         }
         return buf.toString();
-    }
-
-    public boolean isFirstInPair() {
-        return record.getFirstOfPairFlag();
     }
 
     @Override

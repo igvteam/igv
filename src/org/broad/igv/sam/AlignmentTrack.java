@@ -65,11 +65,11 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, NONE
+        STRAND, SAMPLE, READ_GROUP, FRAGMENT_STRAND, NONE
     }
 
     public enum BisulfiteContext {
@@ -994,6 +994,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupMenu.add(m2);
             group.add(m2);
 
+            JCheckBoxMenuItem fragmentStrandOption = new JCheckBoxMenuItem("by first-of-pair strand");
+            fragmentStrandOption.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGV.getInstance().groupAlignmentTracks(GroupOption.FRAGMENT_STRAND);
+                    refresh();
+
+                }
+            });
+            fragmentStrandOption.setSelected(renderOptions.groupByOption == GroupOption.FRAGMENT_STRAND);
+            groupMenu.add(fragmentStrandOption);
+            group.add(fragmentStrandOption);
+
             JCheckBoxMenuItem m5 = new JCheckBoxMenuItem("by sample");
             m5.addActionListener(new ActionListener() {
 
@@ -1042,7 +1055,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             });
             sortMenu.add(m1);
 
-            JMenuItem m2 = new JMenuItem("by strand");
+            JMenuItem m2 = new JMenuItem("by read strand");
             m2.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
@@ -1052,6 +1065,17 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 }
             });
             sortMenu.add(m2);
+
+            JMenuItem fragmentStrandOption = new JMenuItem("by first-of-pair strand");
+            fragmentStrandOption.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    IGV.getInstance().sortAlignmentTracks(SortOption.FRAGMENT_STRAND);
+                    refresh();
+
+                }
+            });
+            sortMenu.add(fragmentStrandOption);
 
             JMenuItem m3 = new JMenuItem("by base");
             m3.addActionListener(new ActionListener() {
@@ -1183,6 +1207,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             });
             colorMenu.add(readStrandOption);
             group.add(readStrandOption);
+
+            if (dataManager.isPairedEnd()) {
+                JRadioButtonMenuItem fragmentStrandOption = new JRadioButtonMenuItem("by first-of-pair strand");
+                fragmentStrandOption.setSelected(renderOptions.colorOption == ColorOption.FRAGMENT_STRAND);
+                fragmentStrandOption.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent aEvt) {
+                        setColorOption(ColorOption.FRAGMENT_STRAND);
+                        refresh();
+                    }
+                });
+                colorMenu.add(fragmentStrandOption);
+                group.add(fragmentStrandOption);
+            }
 
             JRadioButtonMenuItem readGroupOption = new JRadioButtonMenuItem("by read group");
             readGroupOption.setSelected(renderOptions.colorOption == ColorOption.READ_GROUP);

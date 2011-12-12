@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.SpliceJunctionFeature;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -304,6 +305,14 @@ public class AlignmentInterval extends Locus {
                     case STRAND:
                         setScore(centerAlignment.isNegativeStrand() ? -1 : 1);
                         break;
+                    case FRAGMENT_STRAND:
+                        Strand strand = centerAlignment.getFirstOfPairStrand();
+                        int score = 2;
+                        if(strand != Strand.NONE) {
+                            score = strand == Strand.NEGATIVE ? 1 : -1;
+                        }
+                        setScore(score);
+                        break;
                     case NUCELOTIDE:
                         byte base = centerAlignment.getBase(adjustedCenter);
                         byte ref = interval.getReference(adjustedCenter);
@@ -316,8 +325,7 @@ public class AlignmentInterval extends Locus {
                         } else {
                             int count = interval.getCount(adjustedCenter, base);
                             byte phred = centerAlignment.getPhred(adjustedCenter);
-                            float score = -(count + (phred / 100.0f));
-                            setScore(score);
+                            setScore( -(count + (phred / 100.0f)));
                         }
                         break;
                     case QUALITY:

@@ -238,10 +238,6 @@ public class PairedAlignment implements Alignment {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Strand getFragmentStrand(int read) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public void setMateSequence(String sequence) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -291,14 +287,16 @@ public class PairedAlignment implements Alignment {
         return secondAlignment;
     }
 
-    @Override
 	public boolean isFirstOfPair() {
 		return false;
 	}
 
-	@Override
 	public boolean isSecondOfPair() {
 		return false;
 	}
-	
+
+    public Strand getFirstOfPairStrand() {
+        return firstAlignment.getFirstOfPairStrand();
+    }
+
 }

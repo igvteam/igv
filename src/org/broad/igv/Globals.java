@@ -68,6 +68,17 @@ public class Globals {
     final public static String GENOME_ARCHIVE_CYTOBAND_FILE_KEY = "cytobandFile";
     final public static String GENOME_ARCHIVE_GENE_FILE_KEY = "geneFile";
     final public static String GENOME_ARCHIVE_SEQUENCE_FILE_LOCATION_KEY = "sequenceLocation";
+    private static File DEFAULT_USER_DIRECTORY;
+    private static File DEFAULT_IGV_DIRECTORY;
+    private static File GENOME_CACHE_DIRECTORY;
+    private static File IGV_TEMP_DIRECTORY;
+    private static File GENE_LIST_DIRECTORY;
+    private static final String GENE_LIST_FOLDER_NAME = "lists";
+    public static final String IGV_DIR_USERPREF = "igvDir";
+    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
+    public static final String DEFAULT_GENOME = "hg18";
+
+    // Default user folder
 
     final static public Pattern commaPattern = Pattern.compile(",");
     final static public Pattern tabPattern = Pattern.compile("\t");
@@ -97,20 +108,6 @@ public class Globals {
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
     final public static String GENOME_CACHE_FOLDER_NAME = "genomes";
-    /**
-     * Field description
-     */
-    private static File DEFAULT_USER_DIRECTORY;
-    private static File DEFAULT_IGV_DIRECTORY;
-    private static File GENOME_CACHE_DIRECTORY;
-    private static File IGV_TEMP_DIRECTORY;
-    private static File GENE_LIST_DIRECTORY;
-    private static final String GENE_LIST_FOLDER_NAME = "lists";
-    public static final String IGV_DIR_USERPREF = "igvDir";
-    public static final String GENOME_CHR_ALIAS_FILE_KEY = "chrAliasFile";
-    public static final String DEFAULT_GENOME = "hg18";
-
-    // Default user folder
 
 
     static {

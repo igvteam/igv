@@ -65,14 +65,16 @@ public interface Alignment extends LocusScore {
     boolean isMapped();
 
     boolean isPaired();
-   
+
     boolean isFirstOfPair(); // Ben Berman
+
     boolean isSecondOfPair(); // Ben Berman
+
+    Strand getFirstOfPairStrand();
 
     public boolean isNegativeStrand();
 
     boolean isDuplicate();
-
 
     int getAlignmentEnd();
 
@@ -86,7 +88,6 @@ public interface Alignment extends LocusScore {
 
     Object getAttribute(String key);
 
-    public Strand getFragmentStrand(int read);
 
     public void setMateSequence(String sequence);
 
@@ -101,4 +102,6 @@ public interface Alignment extends LocusScore {
     String getLibrary();
 
     public String getClipboardString(double location);
+
+
 }

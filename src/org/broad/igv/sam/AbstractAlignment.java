@@ -145,7 +145,7 @@ public abstract class AbstractAlignment implements Alignment {
         // First check insertions.  Position is zero based, block coords 1 based
         if (this.insertions != null) {
             for (AlignmentBlock block : this.insertions) {
-                double insertionLeft = block.getStart() -.25;
+                double insertionLeft = block.getStart() - .25;
                 double insertionRight = block.getStart() + .25;
                 if (position > insertionLeft && position < insertionRight) {
                     return "Insertion: " + new String(block.getBases());
@@ -257,7 +257,21 @@ public abstract class AbstractAlignment implements Alignment {
         return null;
     }
 
-    public Strand getFragmentStrand() {
+
+    public Strand getFirstOfPairStrand() {
+        if (isPaired()) {
+            if (isFirstOfPair()) {
+                return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            } else {
+                // If we have a mate, it must be the firstOfPair
+                ReadMate mate = getMate();
+                if (mate != null && mate.isMapped()) {
+                    return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                }
+
+            }
+        }
+        // This alignment is either not paired, or the first-in-pair strand cannot be determined.
         return Strand.NONE;
     }
 

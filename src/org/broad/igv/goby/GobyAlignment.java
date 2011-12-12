@@ -473,9 +473,21 @@ return 0;
         return null;
     }
 
-    public Strand getFragmentStrand(int read) {
-        //LOG.info("getFragmentStrand");
-        return null;
+    public Strand getFirstOfPairStrand() {
+        if (isPaired()) {
+            if (isFirstOfPair()) {
+                return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            } else {
+                ReadMate mate = getMate();
+                if (mate.isMapped()) {
+                    return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                } else {
+                    return Strand.NONE;
+                }            }
+
+        } else {
+            return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+        }
     }
 
     public void setMateSequence(String sequence) {

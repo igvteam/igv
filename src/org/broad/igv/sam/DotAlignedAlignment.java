@@ -219,27 +219,24 @@ public class DotAlignedAlignment implements Alignment {
         return null;
     }
 
-
     public Object getAttribute(String key) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Strand getFragmentStrand(int readPair) {
-        return Strand.NONE;
-    }
 
     public char[] getGapTypes() {
         return null;
     }
-    
-	@Override
+
 	public boolean isFirstOfPair() {
 		return false;
 	}
 
-
-	@Override
 	public boolean isSecondOfPair() {
 		return false;
-	}    
+	}
+
+    public Strand getFirstOfPairStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+    }
 }

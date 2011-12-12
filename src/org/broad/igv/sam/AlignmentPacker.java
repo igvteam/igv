@@ -23,6 +23,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.AlignmentInterval.Row;
 
 import javax.sound.midi.SysexMessage;
@@ -127,7 +128,11 @@ public class AlignmentPacker {
                 return al.getSample();
             case READ_GROUP:
                 return al.getReadGroup();
-        }
+            case FRAGMENT_STRAND:
+                Strand strand = al.getFirstOfPairStrand();
+                String strandString = strand == Strand.NONE ? null : strand.toString();
+                return strandString;
+         }
         return null;
     }
 

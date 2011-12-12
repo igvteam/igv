@@ -196,8 +196,7 @@ public class GobyAlignmentQueryReaderTest {
                 setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
                 setQueryIndex(0).setTargetIndex(1).
                 setQueryAlignedLength(50).addSequenceVariations(mutation).build();
-        GobyAlignment
-                gAlignment = new GobyAlignment(null, entry);
+        GobyAlignment gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(1, gAlignment.block.length);
         assertEquals(50, gAlignment.block[0].getBases().length);

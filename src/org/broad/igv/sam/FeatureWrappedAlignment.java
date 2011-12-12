@@ -42,8 +42,6 @@ public class FeatureWrappedAlignment implements Alignment {
     AlignmentBlock[] blocks;
     Strand strand;
 
-    BasicFeature f;
-
     public FeatureWrappedAlignment(BasicFeature f) {
 
         this.readName = f.getName();
@@ -204,10 +202,6 @@ public class FeatureWrappedAlignment implements Alignment {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Strand getFragmentStrand(int readPair) {
-        return Strand.NONE;
-    }
-
     public void setMateSequence(String sequence) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -231,15 +225,16 @@ public class FeatureWrappedAlignment implements Alignment {
     public char[] getGapTypes() {
         return null;
     }
-    
-	@Override
+
 	public boolean isFirstOfPair() {
 		return false;
 	}
 
-
-	@Override
 	public boolean isSecondOfPair() {
 		return false;
-	}    
+	}
+
+    public Strand getFirstOfPairStrand() {
+        return strand;
+    }
 }

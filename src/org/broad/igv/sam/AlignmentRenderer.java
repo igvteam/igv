@@ -782,9 +782,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
                 break;
             case FRAGMENT_STRAND:
-                if (alignment.getFragmentStrand(1) == Strand.NEGATIVE) {
+                final Strand fragmentStrand = alignment.getFirstOfPairStrand();
+                if (fragmentStrand == Strand.NEGATIVE) {
                     c = negStrandColor;
-                } else if (alignment.getFragmentStrand(1) == Strand.POSITIVE) {
+                } else if (fragmentStrand == Strand.POSITIVE) {
                     c = posStrandColor;
                 }
                 break;
