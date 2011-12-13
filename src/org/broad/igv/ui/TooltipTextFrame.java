@@ -116,7 +116,6 @@ public class TooltipTextFrame extends JFrame {
 
         JEditorPane pane = new JEditorPane("text/html", text);
         pane.setEditable(false);
-        pane.setBackground(new Color(255, 254, 217));
         JScrollPane scrollPane = new JScrollPane(pane);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
