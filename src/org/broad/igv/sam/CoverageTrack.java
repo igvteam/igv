@@ -68,6 +68,7 @@ public class CoverageTrack extends AbstractTrack {
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
+    private static Color coverageGrey = new Color(140, 140, 140);
     private static final boolean DEFAULT_AUTOSCALE = true;
     private static final boolean DEFAULT_SHOW_REFERENCE = false;
 
@@ -93,7 +94,7 @@ public class CoverageTrack extends AbstractTrack {
         this.genome = genome;
         intervalRenderer = new IntervalRenderer();
 
-        setColor(AlignmentRenderer.grey1);
+        setColor(coverageGrey);
 
         prefs = PreferenceManager.getInstance();
         snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
@@ -397,7 +398,7 @@ public class CoverageTrack extends AbstractTrack {
 
         private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
 
-            Graphics2D graphics = context.getGraphic2DForColor(AlignmentRenderer.grey1);
+            Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
 
             DataRange range = getDataRange();
             double max = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
@@ -582,7 +583,7 @@ public class CoverageTrack extends AbstractTrack {
 
             if (showAllSnps) {
                 int q = interval.getAvgQuality(pos, (byte) nucleotide);
-                c = getShadedColor(q, AlignmentRenderer.grey1, c);
+                c = getShadedColor(q, coverageGrey, c);
             }
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
