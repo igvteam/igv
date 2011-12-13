@@ -53,7 +53,7 @@ public class SVGTest {
                 "xmlns=\"http://www.w3.org/2000/svg\">");
 
 
-        SVGGraphics g2d = new SVGGraphics(pw);
+        SVGGraphics g2d = new SVGGraphics(pw, new Rectangle(0,0,500,500));
 
         draw(g2d);
 

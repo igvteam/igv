@@ -54,17 +54,18 @@ public class SVGGraphics extends Graphics2D {
     int translateY;
     String clipRef;
     static int clipNumber = 0;
+    Shape clip;
 
 
-
-    public SVGGraphics(PrintWriter outputStream) {
-
+    public SVGGraphics(PrintWriter outputStream, Rectangle clip) {
+                   this.clip = clip;
         initDefaults();
 
         this.outputStream = outputStream;
     }
 
     public SVGGraphics(SVGGraphics g) {
+        this.clip = g.clip;
         this.outputStream = g.outputStream;
         this.color = g.color;
         this.background = g.background;
@@ -80,6 +81,7 @@ public class SVGGraphics extends Graphics2D {
         this.translateX = g.translateX;
         this.translateY = g.translateY;
     }
+
 
     private void initDefaults() {
         component = new JPanel();
@@ -275,7 +277,8 @@ public class SVGGraphics extends Graphics2D {
 
 
     @Override
-    public void translate(double v, double v1) {
+    public void translate(double x, double y) {
+        System.out.println("Translate " + x + " " + y);
     }
     
 
@@ -323,7 +326,7 @@ public class SVGGraphics extends Graphics2D {
 
     @Override
     public Rectangle getClipBounds() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return clip.getBounds();
     }
 
     @Override
@@ -335,7 +338,7 @@ public class SVGGraphics extends Graphics2D {
     @Override
     public void setClip(int x, int y, int w, int h) {
 
-
+            clip = new Rectangle(x, y, w, h);
             int tx = translateX + x;
             int ty = translateY + y;
             String id = getClipId();
@@ -356,12 +359,12 @@ public class SVGGraphics extends Graphics2D {
 
     @Override
     public Shape getClip() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return clip;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void setClip(Shape shape) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        this.clip = shape;
     }
 
     @Override
