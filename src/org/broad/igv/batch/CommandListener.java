@@ -77,7 +77,7 @@ public class CommandListener implements Runnable {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
 
-            while (true) {
+            while (true && serverSocket != null) {
                 clientSocket = serverSocket.accept();
                 processClientSession(cmdExe);
                 if (clientSocket != null) {
@@ -122,8 +122,44 @@ public class CommandListener implements Runnable {
 
                 String cmd = inputLine;
                 if (cmd.startsWith("GET")) {
-                    String result = processGet(cmd, in, cmdExe);
-                    sendHTTPResponse(out, result);
+                    String command = null;
+                    Map<String, String> params = null;
+                    String[] tokens = inputLine.split(" ");
+                    if (tokens.length < 2) {
+                        sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
+                        return;
+                    } else {
+                        String[] parts = tokens[1].split("\\?");
+                        if (parts.length < 2) {
+                            sendHTTPResponse(out, "ERROR unexpected command line: " + inputLine);
+                            return;
+                        } else {
+                            command = parts[0];
+                            params = parseParameters(parts[1]);
+                        }
+                    }
+
+                    // Consume the remainder of the request, if any.  This is important to free the connection.
+                    String nextLine = in.readLine();
+                    while (nextLine != null && nextLine.length() > 0) {
+                        nextLine = in.readLine();
+                    }
+
+                    // If a callback (javascript) function is specified write it back immediately.  This function
+                    // is used to cancel a timeout handler
+                    String callback = params.get("callback");
+                    if (callback != null) {
+                        sendHTTPResponse(out, callback);
+                    }
+
+                    String result = processGet(command, params, cmdExe);
+
+                    // If no callback was specified write back the result.
+                    // Note: null response => write header back only, to prevent page change
+                    //if (callback == null) {
+                    //    sendHTTPResponse(out, null);
+                    //}
+
                 } else {
                     Globals.setBatch(true);
                     Globals.setSuppressMessages(true);
@@ -132,7 +168,7 @@ public class CommandListener implements Runnable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
             Globals.setSuppressMessages(false);
             Globals.setBatch(false);
@@ -161,89 +197,83 @@ public class CommandListener implements Runnable {
         }
     }
 
+    private static final String CRNL = "\r\n";
+    private static final String CONTENT_TYPE = "Content-Type: ";
+    private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
+    private static final String CONTENT_LENGTH = "Content-Length: ";
+    private static final String CONTENT_TYPE_TEXT_HTML = "text/html";
+
     private void sendHTTPResponse(PrintWriter out, String result) {
-        out.println("HTTP/1.0 204 OK");
-        out.println(" Server: IGV");
-        out.println("Connection: close");
-        out.println();
-        out.println(result);
-        out.println();
+//        String response = "callBack();";
+//        printWriter.print(HTTP_RESPONSE + CRNL);
+//        printWriter.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML + CRNL);
+//        printWriter.print(CONTENT_LENGTH + response.length() + CRNL);
+//        printWriter.print(CRNL);
+//        printWriter.print(response);
+//        printWriter.flush();
+//        printWriter.close();
+
+        out.println("HTTP/1.1 200 OK");
+        if (result != null) {
+            out.println(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
+            out.println(CONTENT_LENGTH + (result.length()));
+            out.println();
+            out.println(result);
+            out.println();
+        }
         out.close();
     }
 
     /**
      * Process an http get request.
-     *
-     * @param line
-     * @param reader
-     * @return
-     * @throws IOException
      */
 
-    private String processGet(String line, BufferedReader reader, CommandExecutor cmdExe) throws IOException {
+    private String processGet(String command, Map<String, String> params, CommandExecutor cmdExe) throws IOException {
 
-        String nextLine = line;
         String result = "OK";
+        final Frame mainFrame = IGV.getMainFrame();
 
-        String[] tokens = nextLine.split(" ");
-        if (tokens.length < 2) {
-            return "ERROR unexpected command line: " + line;
-        } else {
-            String[] parts = tokens[1].split("\\?");
-            if (parts.length < 2) {
-                return ("ERROR unexpected command line: " + line);
-            } else {
-                String command = parts[0];
-                Map<String, String> params = parseParameters(parts[1]);
-                final Frame mainFrame = IGV.getMainFrame();
+        // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
+        mainFrame.toFront();
+        mainFrame.setAlwaysOnTop(true);
+        mainFrame.setAlwaysOnTop(false);
 
-                // Trick to force window to front, the setAlwaysOnTop works on a Mac,  toFront() does nothing.
-                mainFrame.toFront();
-                mainFrame.setAlwaysOnTop(true);
-                mainFrame.setAlwaysOnTop(false);
-
-                if (command.equals("/load")) {
-                    if (params.containsKey("file")) {
-                        String genomeID = params.get("genome");
-                        String mergeValue = params.get("merge");
-                        String locus = params.get("locus");
-                        if (genomeID != null) {
-                            IGV.getFirstInstance().selectGenomeFromList(genomeID);
-                        }
-
-                        // Default for merge is "false" for session files,  "true" otherwise
-                        String file = params.get("file");
-                        boolean merge;
-                        if (mergeValue != null) {
-                            // Explicit setting
-                            merge = mergeValue.equalsIgnoreCase("true");
-                        } else if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
-                            // Session file
-                            merge = false;
-                        } else {
-                            // Data file
-                            merge = true;
-                        }
-
-                        String name=params.get("name");
-
-                        result = cmdExe.loadFiles(file, locus, merge, name);
-                    } else {
-                        return ("ERROR Parameter \"file\" is required");
-                    }
-                } else if (command.equals("/reload") || command.equals("/goto")) {
-                    String locus = params.get("locus");
-                    IGV.getFirstInstance().goToLocus(locus);
-                } else {
-                    return ("ERROR Unknown command: " + command);
+        if (command.equals("/load")) {
+            if (params.containsKey("file")) {
+                String genomeID = params.get("genome");
+                String mergeValue = params.get("merge");
+                String locus = params.get("locus");
+                if (genomeID != null) {
+                    IGV.getFirstInstance().selectGenomeFromList(genomeID);
                 }
+
+                // Default for merge is "false" for session files,  "true" otherwise
+                String file = params.get("file");
+                boolean merge;
+                if (mergeValue != null) {
+                    // Explicit setting
+                    merge = mergeValue.equalsIgnoreCase("true");
+                } else if (file.endsWith(".xml") || file.endsWith(".php") || file.endsWith(".php3")) {
+                    // Session file
+                    merge = false;
+                } else {
+                    // Data file
+                    merge = true;
+                }
+
+                String name = params.get("name");
+
+                result = cmdExe.loadFiles(file, locus, merge, name);
+            } else {
+                return ("ERROR Parameter \"file\" is required");
             }
+        } else if (command.equals("/reload") || command.equals("/goto")) {
+            String locus = params.get("locus");
+            IGV.getFirstInstance().goToLocus(locus);
+        } else {
+            return ("ERROR Unknown command: " + command);
         }
 
-        // Consume the remainder of the request, if any.  This is important to free the connection.
-        while (nextLine != null && nextLine.length() > 0) {
-            nextLine = reader.readLine();
-        }
         return result;
     }
 
