@@ -235,7 +235,9 @@ public class SnapshotUtilities {
                     "xmlns=\"http://www.w3.org/2000/svg\">");
 
 
-            SVGGraphics g2d = new SVGGraphics(pw);
+            // TODO -- rectangle
+            Rectangle rectangle = target.getBounds();
+            SVGGraphics g2d = new SVGGraphics(pw, rectangle);
 
             target.paint(g2d);
             pw.print("</svg>");
