@@ -295,7 +295,7 @@ public class CachingQueryReader {
                 }
 
                 // Range of tile indeces that this alignment contributes to.
-                int aStart = record.getAlignmentStart();
+                int aStart = record.getStart();
                 int aEnd = record.getEnd();
                 int idx0 = Math.max(0, (aStart - start) / tileSize);
                 int idx1 = Math.min(tiles.size() - 1, (aEnd - start) / tileSize);
@@ -460,7 +460,7 @@ public class CachingQueryReader {
         private void advance() {
             if (currentSamIterator.hasNext()) {
                 nextRecord = currentSamIterator.next();
-                if (nextRecord.getAlignmentStart() > end) {
+                if (nextRecord.getStart() > end) {
                     nextRecord = null;
                 }
             } else {
@@ -571,7 +571,7 @@ public class CachingQueryReader {
 
             List<Alignment> sampledRecords = sampleCurrentBucket();
             for (Alignment alignment : sampledRecords) {
-                int aStart = alignment.getAlignmentStart();
+                int aStart = alignment.getStart();
                 int aEnd = alignment.getEnd();
                 if ((aStart >= start) && (aStart < end)) {
                     containedRecords.add(alignment);

@@ -43,9 +43,6 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
-    static final int GROUP_MARGIN = 5;
-    static final int TOP_MARGIN = 20;
-
     private static Map<Character, Color> nucleotideColors;
 
     private static Color smallISizeColor = new Color(0, 0, 150);
@@ -164,7 +161,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
     /**
-     * Render a list of alignments in the given rectangle.
+     * Render a row of alignments in the given rectangle.
      */
     public void renderAlignments(List<Alignment> alignments,
                                  RenderContext context,
@@ -210,16 +207,15 @@ public class AlignmentRenderer implements FeatureRenderer {
                     int h = (int) Math.max(1, rect.getHeight() - 2);
                     int y = (int) (rect.getY() + (rect.getHeight() - h) / 2);
                     g.fillRect((int) pixelStart, y, w, h);
+                } else if (alignment instanceof PairedAlignment) {
+                    drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames, font);
                 } else {
-                    if (alignment instanceof PairedAlignment) {
-                        drawPairedAlignment((PairedAlignment) alignment, rect, context, renderOptions, leaveMargin, selectedReadNames, font);
-                    } else {
-                        Color alignmentColor = getAlignmentColor(alignment, renderOptions);
-                        Graphics2D g = context.getGraphic2DForColor(alignmentColor);
-                        g.setFont(font);
-                        drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
-                    }
+                    Color alignmentColor = getAlignmentColor(alignment, renderOptions);
+                    Graphics2D g = context.getGraphic2DForColor(alignmentColor);
+                    g.setFont(font);
+                    drawAlignment(alignment, rect, g, context, alignmentColor, renderOptions, leaveMargin, selectedReadNames);
                 }
+
             }
 
             // Optionally draw a border around the center base
@@ -574,9 +570,9 @@ public class AlignmentRenderer implements FeatureRenderer {
             boolean nomeseqMode = (renderOptions.colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
             boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
             if (nomeseqMode) {
-                bisinfo = new BisulfiteBaseInfoNOMeseq(reference,  block, renderOptions.bisulfiteContext);
+                bisinfo = new BisulfiteBaseInfoNOMeseq(reference, block, renderOptions.bisulfiteContext);
             } else if (bisulfiteMode) {
-                bisinfo = new BisulfiteBaseInfo(reference,  block, renderOptions.bisulfiteContext);
+                bisinfo = new BisulfiteBaseInfo(reference, block, renderOptions.bisulfiteContext);
             }
 
             // Loop through base pair coordinates
@@ -722,9 +718,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
         Color c = alignment.getDefaultColor();
         switch (renderOptions.colorOption) {
-        	case BISULFITE:
-        		// Just a simple forward/reverse strand color scheme that won't clash with the 
-        		// methylation rectangles.
+            case BISULFITE:
+                // Just a simple forward/reverse strand color scheme that won't clash with the
+                // methylation rectangles.
                 if (alignment.isNegativeStrand()) {
                     c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
                 } else {
@@ -732,11 +728,11 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
                 // c = getOrientationColor(alignment, peStats);  // Can we eventually get this to use the builtin orientation stuff?  BPB
                 break;
-        	case NOMESEQ:
-        		c = nomeseqColor;
+            case NOMESEQ:
+                c = nomeseqColor;
                 break;
-            
-        	case INSERT_SIZE:
+
+            case INSERT_SIZE:
                 boolean isPairedAlignment = alignment instanceof PairedAlignment;
                 if (alignment.isPaired() && alignment.getMate().isMapped() || isPairedAlignment) {
                     boolean sameChr = isPairedAlignment ||

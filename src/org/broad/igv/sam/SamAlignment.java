@@ -453,13 +453,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         return alignmentStart;
     }
 
-    /**
-     * @param unclippedStart the unclippedStart to set
-     */
-    public void setUnclippedStart(int unclippedStart) {
-        this.alignmentStart = unclippedStart;
-    }
-
     public String getCigarString() {
         return cigarString;
     }
@@ -481,7 +474,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public void setStart(int start) {
         this.start = start;
-        this.alignmentStart = start;
     }
 
     public int getEnd() {
@@ -490,21 +482,6 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public void setEnd(int end) {
         this.end = end;
-        this.alignmentEnd = end;
-    }
-
-    /**
-     * @return the softClippedStart
-     */
-    public boolean isSoftClippedStart() {
-        return softClippedStart;
-    }
-
-    /**
-     * @return the softClippedEnd
-     */
-    public boolean isSoftClippedEnd() {
-        return softClippedEnd;
     }
 
     public String getSample() {

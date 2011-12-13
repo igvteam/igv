@@ -125,8 +125,6 @@ public class FeatureUtils {
             int effectiveEnd = feature.getEnd();
 
             if (position >= effectiveStart - buffer) {
-
-
                 if (position <= effectiveEnd + buffer) {
                     return features.get(idx);
                 } else {

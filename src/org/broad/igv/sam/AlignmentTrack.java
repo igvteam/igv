@@ -63,6 +63,8 @@ import java.util.List;
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
+    static final int GROUP_MARGIN = 5; 
+    static final int TOP_MARGIN = 20;
 
     public enum SortOption {
         START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND
@@ -213,8 +215,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public int getHeight() {
         // TODO -- what is the 20 for? JTR
         int nGroups = dataManager.getMaxGroupCount();
-        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * AlignmentRenderer.GROUP_MARGIN +
-                AlignmentRenderer.TOP_MARGIN);
+        int h = Math.max(minHeight, getNLevels() * getRowHeight() + nGroups * GROUP_MARGIN +
+                TOP_MARGIN);
         return h;
     }
 
@@ -230,7 +232,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         parent = context.getPanel();
 
-        // Split rects
+        // Split track rectangle into sections.
         int seqHeight = sequenceTrack == null ? 0 : sequenceTrack.getHeight();
         if (seqHeight > 0) {
             Rectangle seqRect = new Rectangle(rect);
@@ -238,6 +240,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             sequenceTrack.render(context, seqRect);
         }
 
+        // Top gap.  If there's a sequence track no gap is needed
         int gap = (seqHeight > 0 ? seqHeight : 6);
 
         rect.y += gap;
@@ -245,17 +248,16 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderedRect = new Rectangle(rect);
 
         if (context.getScale() > minVisibleScale) {
-
             Graphics2D g = context.getGraphic2DForColor(Color.gray);
             GraphicUtils.drawCenteredText("Zoom in to see alignments.", context.getVisibleRect(), g);
             return;
 
         }
 
-        renderFeatures(context, rect);
+        renderAlignments(context, rect);
     }
 
-    private void renderFeatures(RenderContext context, Rectangle inputRect) {
+    private void renderAlignments(RenderContext context, Rectangle inputRect) {
         try {
             log.debug("Render features");
             Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroups(context, renderOptions.groupByOption);
@@ -271,6 +273,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
             Rectangle visibleRect = context.getVisibleRect();
+            final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
             // Divide rectangle into equal height levels
             double y = inputRect.getY();
@@ -290,6 +293,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 String group = entry.getKey();
                 groupNumber++;
 
+                // Loop through the alignment rows for this group
                 List<AlignmentInterval.Row> rows = entry.getValue();
                 for (AlignmentInterval.Row row : rows) {
 
@@ -298,12 +302,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                     }
 
                     if (y + h > visibleRect.getY()) {
-                        Rectangle rect = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
+                        Rectangle rowRectangle = new Rectangle(inputRect.x, (int) y, inputRect.width, (int) h);
                         renderer.renderAlignments(row.alignments,
                                 context,
-                                rect,
+                                rowRectangle,
                                 renderOptions,
-                                getDisplayMode() == DisplayMode.EXPANDED,
+                                leaveMargin,
                                 selectedReadNames);
                     }
                     y += h;
@@ -311,9 +315,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 // Draw a subtle divider line between groups
                 if (groupNumber < nGroups) {
-                    int borderY = (int) y + AlignmentRenderer.GROUP_MARGIN / 2;
+                    int borderY = (int) y + GROUP_MARGIN / 2;
                     groupBorderGraphics.drawLine(inputRect.x, borderY, inputRect.width, borderY);
                 }
+                y += GROUP_MARGIN;
             }
 
             final int bottom = inputRect.y + inputRect.height;
@@ -484,7 +489,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        Alignment feature = getAlignmentAt(position, y, frame);
+        Alignment feature = getAlignmentAt(position+1, y, frame);
         if (feature == null) {
             return null;
         }
@@ -505,7 +510,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 //            return null;
 //        }
 
-        int startY = renderedRect.y;
+        int startY = renderedRect.y;                                               final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
+
         for (List<AlignmentInterval.Row> rows : groups.values()) {
             int endY = startY + rows.size() * h;
             if (y >= startY && y < endY) {
@@ -517,7 +523,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 int buffer = 0;
                 return (Alignment) FeatureUtils.getFeatureAt(position, buffer, features);
             }
-            startY = endY + AlignmentRenderer.GROUP_MARGIN;
+            startY = endY + GROUP_MARGIN;
         }
 
         return null;
@@ -552,43 +558,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         minVisibleScale = (maxRange * 1000) / 700;
     }
 
-
-    private static Alignment getFeatureContaining(
-            List<Alignment> features, int right) {
-
-        int leftBounds = 0;
-        int rightBounds = features.size() - 1;
-        int idx = features.size() / 2;
-        int lastIdx = -1;
-
-        while (idx != lastIdx) {
-            lastIdx = idx;
-            Alignment f = features.get(idx);
-            if (f.contains(right)) {
-                return f;
-            }
-
-            if (f.getStart() > right) {
-                rightBounds = idx;
-                idx = (leftBounds + idx) / 2;
-            } else {
-                leftBounds = idx;
-                idx = (rightBounds + idx) / 2;
-
-            }
-
-        }
-        // Check the extremes
-        if (features.get(0).contains(right)) {
-            return features.get(0);
-        }
-
-        if (features.get(rightBounds).contains(right)) {
-            return features.get(rightBounds);
-        }
-
-        return null;
-    }
 
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
