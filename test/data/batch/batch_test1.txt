@@ -6,7 +6,6 @@ goto chr13:74,775,421-74,790,846
 sort position
 snapshot test.svg
 goto chr13:77,167,670-77,183,095
-sort base
-snapshot
 collapse
+sort base
 snapshot
