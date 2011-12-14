@@ -121,7 +121,6 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
-                System.out.println(cmd);
                 if (cmd.startsWith("GET")) {
                     String command = null;
                     Map<String, String> params = null;
@@ -172,7 +171,7 @@ public class CommandListener implements Runnable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error("Error processing client session", e);
         } finally {
             Globals.setSuppressMessages(false);
             Globals.setBatch(false);
@@ -187,7 +186,7 @@ public class CommandListener implements Runnable {
                 clientSocket.close();
                 clientSocket = null;
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                log.error("Error closing clientSocket", e);
             }
         }
 
@@ -196,7 +195,7 @@ public class CommandListener implements Runnable {
                 serverSocket.close();
                 serverSocket = null;
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                log.error("Error closing server socket", e);
             }
         }
     }
@@ -213,7 +212,6 @@ public class CommandListener implements Runnable {
 
         out.println(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
         if (result != null) {
-            System.out.println(result);
             out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
             out.print(CRNL);
             out.print(CONTENT_LENGTH + (result.length()));
