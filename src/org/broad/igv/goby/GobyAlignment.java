@@ -63,6 +63,7 @@ public class GobyAlignment implements Alignment {
     protected AlignmentBlock[] insertionBlock;
     private Color defaultColor = new Color(200, 200, 200);
     private CharArrayList gapTypes = null;
+    private ReadMate unmappedMate=new ReadMate("*",-1,false,true);
 
     /**
      * Construct the facade for an iterator and entry.
@@ -394,8 +395,7 @@ public class GobyAlignment implements Alignment {
             ReadMate mate = new ReadMate(mateChr, mateStart, mateNegativeStrand, isReadUnmappedFlag);
             return mate;
         } else {
-
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return unmappedMate;
         }
     }
 
