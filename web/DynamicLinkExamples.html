@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <script type="text/javascript" src="webstart.js"></script>
+    <title></title>
+</head>
+<body>
+
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig')">Load</button>
+<br/>
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig', 'hg19')">Load with genome</button>
+<br/>
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig', 'hg19', 'true')">Load with genome, merge=true</button>
+<br/>
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig', 'hg19', 'true', 'EGFR')">Load with genome, merge=true, locus</button>
+<br/>
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig', 'hg19', 'false', 'EGFR')">Load with genome, merge=false, locus</button>
+<br/>
+<br/>
+<button type="button"
+        onclick="appRequest(60151, 'http://www.broadinstitute.org/igvdata/encode/hg19/broadEncode/wgEncodeBroadHistoneGm12878ControlStdSig.bigWig', 'hg19', 'true', 'EGFR', 'GM12878 Control')">Load with genome, merge=true, locus, name</button>
+<br/>
+<br/>
+
+
+
+</body>
+</html>

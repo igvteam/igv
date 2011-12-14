@@ -153,11 +153,11 @@ function disableLink(linkID) {
  * @param port -- the IGV port, typically 60151
  * @param dataUrl -- an http or ftp url to the data.
  * @param genomeID -- the genomeID,  e.g. hg18
- * @param locusString -- an IGV locus string, e.g. chr1:100,000-200,000  or EGFR.  See IGV doc for full details
  * @param mergeFlag -- flag to indicate if data should be merged with current IGV session, or should start a new session
+ * @param locusString -- an IGV locus string, e.g. chr1:100,000-200,000  or EGFR.  See IGV doc for full details
  * @param trackName -- name for the track resulting from dataURL.  This only works for "single-track" formats, e.g. wig.
  */
-function appRequest(port, dataUrl, genomeID, locusString, mergeFlag, trackName) {
+function appRequest(port, dataUrl, genomeID, mergeFlag, locusString, trackName) {
 
     // be good and remove the previous cytoscape script element
     // although, based on debugging, i'm not sure this really does anything
