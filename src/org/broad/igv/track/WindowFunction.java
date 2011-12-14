@@ -23,6 +23,9 @@
 
 package org.broad.igv.track;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author jrobinso
  */
@@ -41,6 +44,14 @@ public enum WindowFunction {
     count("Count"),
     density("Density");
 
+    static final Map<String, WindowFunction> wfMap =
+            new HashMap<String, WindowFunction>();
+
+    static {
+        for (WindowFunction c : WindowFunction.values())
+            wfMap.put(c.name(), c);
+    }
+
     private String displayName = "";
 
     WindowFunction(String displayName) {
@@ -52,31 +63,7 @@ public enum WindowFunction {
     }
 
     static public WindowFunction getWindowFunction(String name) {
-
-        WindowFunction windowFunction = null;
-        if (WindowFunction.none.name().equals(name)) {
-            windowFunction = WindowFunction.none;
-        } else if (WindowFunction.mean.name().equals(name)) {
-            windowFunction = WindowFunction.mean;
-        } else if (WindowFunction.median.name().equals(name)) {
-            windowFunction = WindowFunction.median;
-        } else if (WindowFunction.min.name().equals(name)) {
-            windowFunction = WindowFunction.min;
-        } else if (WindowFunction.max.name().equals(name)) {
-            windowFunction = WindowFunction.max;
-        } else if (WindowFunction.percentile10.name().equals(name)) {
-            windowFunction = WindowFunction.percentile10;
-        } else if (WindowFunction.percentile90.name().equals(name)) {
-            windowFunction = WindowFunction.percentile90;
-        } else if (WindowFunction.percentile98.name().equals(name)) {
-            windowFunction = WindowFunction.percentile98;
-        } else if (WindowFunction.stddev.name().equals(name)) {
-            windowFunction = WindowFunction.stddev;
-        } else if (WindowFunction.count.name().equals(name)) {
-            windowFunction = WindowFunction.count;
-        } else if (WindowFunction.density.name().equals(name)) {
-            windowFunction = WindowFunction.density;
-        }
-        return windowFunction;
+        return wfMap.get(name);
     }
+
 }
