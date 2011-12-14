@@ -120,7 +120,8 @@ public class GobyAlignment implements Alignment {
                 scores.clear();
                 for (int i = 0; i < sequenceVariationLength; i++) {
                     final char toChar = i >= toLength ? '-' : to.charAt(i);
-                    final byte qual = toQuality.size() > 0 ? toQuality.byteAt(i) : 40;
+                    int size = toQuality.size();
+                    final byte qual = size > 0 && i< size ? toQuality.byteAt(i) : 40;
 
                     bases.add((byte) toChar);
                     scores.add(qual);
