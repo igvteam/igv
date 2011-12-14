@@ -77,7 +77,7 @@ public class CommandListener implements Runnable {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
 
-            while (true && serverSocket != null) {
+            while (true) {
                 clientSocket = serverSocket.accept();
                 processClientSession(cmdExe);
                 if (clientSocket != null) {
@@ -85,7 +85,7 @@ public class CommandListener implements Runnable {
                         clientSocket.close();
                         clientSocket = null;
                     } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        log.error("Error in client socket loop", e);
                     }
                 }
             }
@@ -94,7 +94,7 @@ public class CommandListener implements Runnable {
         } catch (java.net.BindException e) {
             log.error(e);
         } catch (ClosedByInterruptException e) {
-            // Not really an error, caused by an interrupt
+            log.error(e);
 
         } catch (IOException e) {
             if (!halt) {
@@ -121,6 +121,7 @@ public class CommandListener implements Runnable {
             while (!halt && (inputLine = in.readLine()) != null) {
 
                 String cmd = inputLine;
+                System.out.println(cmd);
                 if (cmd.startsWith("GET")) {
                     String command = null;
                     Map<String, String> params = null;
@@ -152,15 +153,18 @@ public class CommandListener implements Runnable {
                         sendHTTPResponse(out, callback);
                     }
 
-                    String result = processGet(command, params, cmdExe);
+                    processGet(command, params, cmdExe);
 
-                    // If no callback was specified write back the result.
-                    // Note: null response => write header back only, to prevent page change
-                    //if (callback == null) {
-                    //    sendHTTPResponse(out, null);
-                    //}
+                    // If no callback was specified write back a "no response" header
+                    if (callback == null) {
+                        sendHTTPResponse(out, null);
+                    }
+
+                    // http sockets are used for one request onle
+                    return;
 
                 } else {
+                    // Port command
                     Globals.setBatch(true);
                     Globals.setSuppressMessages(true);
                     final String response = cmdExe.execute(inputLine);
@@ -168,7 +172,7 @@ public class CommandListener implements Runnable {
                 }
             }
         } catch (IOException e) {
-            //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
             Globals.setSuppressMessages(false);
             Globals.setBatch(false);
@@ -200,26 +204,25 @@ public class CommandListener implements Runnable {
     private static final String CRNL = "\r\n";
     private static final String CONTENT_TYPE = "Content-Type: ";
     private static final String HTTP_RESPONSE = "HTTP/1.1 200 OK";
+    private static final String HTTP_NO_RESPONSE = "HTTP/1.1 204 No Response";
     private static final String CONTENT_LENGTH = "Content-Length: ";
     private static final String CONTENT_TYPE_TEXT_HTML = "text/html";
+    private static final String CONNECTION_CLOSE = "Connection: close";
 
     private void sendHTTPResponse(PrintWriter out, String result) {
-//        String response = "callBack();";
-//        printWriter.print(HTTP_RESPONSE + CRNL);
-//        printWriter.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML + CRNL);
-//        printWriter.print(CONTENT_LENGTH + response.length() + CRNL);
-//        printWriter.print(CRNL);
-//        printWriter.print(response);
-//        printWriter.flush();
-//        printWriter.close();
 
-        out.println("HTTP/1.1 200 OK");
+        out.println(result == null ? HTTP_NO_RESPONSE : HTTP_RESPONSE);
         if (result != null) {
-            out.println(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
-            out.println(CONTENT_LENGTH + (result.length()));
-            out.println();
-            out.println(result);
-            out.println();
+            System.out.println(result);
+            out.print(CONTENT_TYPE + CONTENT_TYPE_TEXT_HTML);
+            out.print(CRNL);
+            out.print(CONTENT_LENGTH + (result.length()));
+            out.print(CRNL);
+            out.print(CONNECTION_CLOSE);
+            out.print(CRNL);
+            out.print(CRNL);
+            out.print(result);
+            out.print(CRNL);
         }
         out.close();
     }
