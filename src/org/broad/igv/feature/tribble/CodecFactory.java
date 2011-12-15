@@ -77,7 +77,7 @@ public class CodecFactory {
             return new REPMaskCodec();
         } else if (fn.endsWith(".gff3")) {
             return new GFFCodec(GFFCodec.Version.GFF3);
-        } else if (fn.endsWith(".gff")) {
+        } else if (fn.endsWith(".gff") || fn.endsWith(".gtf")) {
             return new GFFCodec();
         //} else if (fn.endsWith(".sam")) {
             //return new SAMCodec();
