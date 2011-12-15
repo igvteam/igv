@@ -79,8 +79,8 @@ public class CodecFactory {
             return new GFFCodec(GFFCodec.Version.GFF3);
         } else if (fn.endsWith(".gff")) {
             return new GFFCodec();
-        } else if (fn.endsWith(".sam")) {
-            return new SAMCodec();
+        //} else if (fn.endsWith(".sam")) {
+            //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec();
 
