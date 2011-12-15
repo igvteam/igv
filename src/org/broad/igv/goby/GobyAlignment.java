@@ -63,7 +63,7 @@ public class GobyAlignment implements Alignment {
     protected AlignmentBlock[] insertionBlock;
     private Color defaultColor = new Color(200, 200, 200);
     private CharArrayList gapTypes = null;
-    private ReadMate unmappedMate=new ReadMate("*",-1,false,true);
+    private static final ReadMate unmappedMate=new ReadMate("*",-1,false,true);
 
     /**
      * Construct the facade for an iterator and entry.
@@ -385,6 +385,11 @@ public class GobyAlignment implements Alignment {
         }
     }
 
+    /**
+     * Returns the mate for a paited-end read. Please note that this method will return an unmapped
+     * mate for any single end read as well. Do check if the read is paired before calling getMate().
+     * @return The mate, or a constant unmapped mate (for single end reads, or paired end where the mate is not found).
+     */
     public ReadMate getMate() {
         if (entry.hasPairAlignmentLink()) {
             Alignments.RelatedAlignmentEntry link = entry.getPairAlignmentLink();
@@ -393,7 +398,7 @@ public class GobyAlignment implements Alignment {
             boolean mateNegativeStrand = EntryFlagHelper.isMateReverseStrand(entry);
 
             boolean isReadUnmappedFlag = EntryFlagHelper.isReadUnmapped(entry);
-            ReadMate mate = new ReadMate(mateChr, mateStart, mateNegativeStrand, isReadUnmappedFlag);
+            final ReadMate mate = new ReadMate(mateChr, mateStart, mateNegativeStrand, isReadUnmappedFlag);
             return mate;
         } else {
             return unmappedMate;
