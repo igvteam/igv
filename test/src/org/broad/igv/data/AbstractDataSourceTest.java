@@ -21,14 +21,13 @@ package org.broad.igv.data;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.TrackType;
 import org.junit.After;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by IntelliJ IDEA.
@@ -86,18 +85,21 @@ public class AbstractDataSourceTest {
 
         TestDataSource ds = new TestDataSource();
 
-        SummaryTile tile = ds.computeSummaryTile("", 0, 0, 10000,1 );
+        SummaryTile tile = ds.computeSummaryTile("", 0, 0, 10000, 1);
 
         List<LocusScore> scores = tile.getScores();
 
         // Scores should be within 10 +/- 0.5,  and the mean should be very close to 10
         float sum = 0.0f;
+        long totPoints = 0;
         for (LocusScore score : scores) {
             float v = score.getScore();
             assertTrue((v >= 9.5f && v <= 10.5f));
-            sum += v;
+            int numPoints = score.getEnd() - score.getStart();
+            sum += numPoints * v;
+            totPoints += numPoints;
         }
-        double mean = sum / scores.size();
+        double mean = sum / totPoints;
         assertEquals(10.0, mean, 1.0e-2);
     }
 

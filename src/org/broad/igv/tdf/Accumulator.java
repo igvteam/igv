@@ -22,12 +22,15 @@
  */
 package org.broad.igv.tdf;
 
-import org.broad.igv.util.collections.DoubleArrayList;
 import org.apache.commons.math.stat.StatUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.DoubleArrayList;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Accumulator for a single window function.
@@ -84,14 +87,14 @@ public class Accumulator {
 
         // Some older TDF files created in previous versions of igvtools from wig files were improperly coded,
         // with start=end, resulting in an nBases value of zero.  This is not a possible value, so threshold it
-        if(nBases < 1) nBases = 1;
+        if (nBases < 1) nBases = 1;
 
         if (!Float.isNaN(v)) {
             if (data != null && nPts < data.length) {
-            data[nPts] = v;
-            probes[nPts] = probe;
-        }
-             switch (windowFunction) {
+                data[nPts] = v;
+                probes[nPts] = probe;
+            }
+            switch (windowFunction) {
                 case min:
                     value = Float.isNaN(value) ? v : Math.min(value, v);
                     break;

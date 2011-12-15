@@ -202,6 +202,7 @@ public abstract class AbstractDataSource implements DataSource {
      * @param tileNumber
      * @param startLocation
      * @param endLocation
+     * @param nBins
      * @return
      */
 
