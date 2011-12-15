@@ -61,7 +61,10 @@ public class AlignmentReaderFactory {
         AlignmentQueryReader reader = null;
 
         String samFile = locator.getPath();
-        if (pathLowerCase.endsWith(".sam")) {
+
+        if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
+            reader = new CGIAlignmentReader(samFile);
+        } else if (pathLowerCase.endsWith(".sam")) {
             reader = new SamQueryTextReader(samFile, requireIndex);
 
         } else if (pathLowerCase.endsWith("sorted.txt")
@@ -72,7 +75,7 @@ public class AlignmentReaderFactory {
                 || pathLowerCase.endsWith("psl")
                 || pathLowerCase.endsWith("pslx")) {
             reader = new GeraldQueryReader(samFile, requireIndex);
-        } else if (pathLowerCase.endsWith(".bam")) {
+        } else if (pathLowerCase.endsWith(".bam") || pathLowerCase.endsWith(".bam.hg19")) {
             if (locator.isLocal()) {
                 reader = new BAMQueryReader(new File(samFile));
             } else if (HttpUtils.getInstance().isURL(locator.getPath().toLowerCase())) {
@@ -119,9 +122,9 @@ public class AlignmentReaderFactory {
                 if (nextLine.startsWith("#replace")) {
                     String[] tokens = nextLine.split("\\s+");
                     if (tokens.length == 2) {
-                        String [] kv = tokens[1].split("=");
-                        if(kv.length == 2)
-                        replacements.put(kv[0], kv[1]);
+                        String[] kv = tokens[1].split("=");
+                        if (kv.length == 2)
+                            replacements.put(kv[0], kv[1]);
                     }
                 } else {
                     String f = nextLine.trim();

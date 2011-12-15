@@ -917,11 +917,13 @@ public class TrackLoader {
                 dataManager.setCoverageTrack(covTrack);
             }
 
-            // Search for precalculated coverage data
+            // Search for precalculated coverage data   -- DON'T DO THIS FOR CGI READER
             String covPath = locator.getCoverage();
             if (covPath == null) {
                 String path = locator.getPath();
-                covPath = path + ".tdf";
+                if (!path.contains("/query.cgi?")) {
+                    covPath = path + ".tdf";
+                }
             }
             if (covPath != null) {
                 try {
@@ -977,7 +979,9 @@ public class TrackLoader {
     private void loadSegFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
         // TODO - -handle remote resource
-        SegmentedAsciiDataSet ds = new SegmentedAsciiDataSet(locator, genome);
+        SegmentFileParser parser = new SegmentFileParser(locator);
+        SegmentedAsciiDataSet ds = parser.loadSegments(locator, genome);
+
         String path = locator.getPath();
         TrackProperties props = ds.getTrackProperties();
 
