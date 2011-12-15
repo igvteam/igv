@@ -74,7 +74,9 @@ public class SegmentFileParser implements SegFileParser {
      *
      * @return
      */
-    public void loadSegments(SegmentedAsciiDataSet dataset, Genome genome) {
+    public SegmentedAsciiDataSet loadSegments(ResourceLocator locator, Genome genome) {
+
+        SegmentedAsciiDataSet dataset = new SegmentedAsciiDataSet(genome);
 
         if (birdsuite) {
             dataset.setTrackType(TrackType.CNV);
@@ -190,6 +192,8 @@ public class SegmentFileParser implements SegFileParser {
                 reader.close();
             }
         }
+
+        return dataset;
     }
 
 

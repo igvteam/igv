@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class SegmentedAsciiDataSet implements SegmentedDataSet {
 
-    SegFileParser parser;
+    //SegFileParser parser;
     TrackType trackType = TrackType.COPY_NUMBER;
     float dataMax = -Float.MAX_VALUE;
     float dataMin = Float.MAX_VALUE;
@@ -73,8 +73,6 @@ public class SegmentedAsciiDataSet implements SegmentedDataSet {
         //        new GBenchFileParser(locator) :
         //        new SegmentFileParser(locator);
         this.genome = genome;
-        parser = new SegmentFileParser(locator);
-        parser.loadSegments(this, genome);
         sortLists();
 
 
