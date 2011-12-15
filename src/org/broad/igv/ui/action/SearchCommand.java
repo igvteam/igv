@@ -26,18 +26,18 @@ package org.broad.igv.ui.action;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
-import org.broad.igv.session.Session;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -113,7 +113,8 @@ public class SearchCommand implements Command {
                 success = true;
             } catch (NumberFormatException e) {
                 // Multiple tokens, On the fly gene list ?
-
+            }
+            if (!success) {
                 List<String> loci = new ArrayList<String>(tokens.length);
                 for (String t : tokens) {
                     Locus l = new Locus(t);
@@ -135,10 +136,7 @@ public class SearchCommand implements Command {
                     IGV.getInstance().getSession().setCurrentGeneList(geneList);
                     IGV.getInstance().resetFrames();
                     success = true;
-
                 }
-
-
             }
 
         }
@@ -172,13 +170,14 @@ public class SearchCommand implements Command {
                     log.debug("End search: " + searchString);
                 }
                 success = true;
-
+            } else {
+                //Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
             }
 
 
             // Apparently not a feature. Either a locus or track name.  Track names can be quoted,
             // loci are never quoted.
-            else if (!searchString.contains("\"")) {
+            if (!searchString.contains("\"") && !success) {
                 String chr = null;
                 int[] startEnd = null;
                 int colonIdx = searchString.lastIndexOf(":");

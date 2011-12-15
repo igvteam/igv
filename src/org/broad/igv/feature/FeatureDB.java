@@ -22,12 +22,11 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This is a placeholder class for a true "feature database" wrapper.  Its purpose
@@ -41,7 +40,9 @@ public class FeatureDB {
     /**
      * Map for all features other than genes.
      */
-    private static Map<String, NamedFeature> featureMap = new HashMap(10000);
+    //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
+    private static Map<String, NamedFeature> featureMap = new TreeMap<String, NamedFeature>();
+    private static Genome GENOME = null;
 
     public static void addFeature(NamedFeature feature) {
 
@@ -59,8 +60,8 @@ public class FeatureDB {
             addByAttributes(igvFeature);
 
             List<Exon> exons = igvFeature.getExons();
-            if(exons != null) {
-                for(Exon exon : exons) {
+            if (exons != null) {
+                for (Exon exon : exons) {
                     addByAttributes(exon);
                 }
             }
@@ -82,8 +83,8 @@ public class FeatureDB {
 
         String key = name.toUpperCase();
 
-        Genome currentGenome = null;
-        if(!Globals.isHeadless()) {
+        Genome currentGenome = GENOME;
+        if (!Globals.isHeadless()) {
             currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         }
 
@@ -116,6 +117,10 @@ public class FeatureDB {
         }
     }
 
+    static void setGenome(Genome genome) {
+        GENOME = genome;
+    }
+
 
     public static void addFeature(String name, NamedFeature feature) {
         if (Globals.isHeadless()) {
@@ -127,7 +132,6 @@ public class FeatureDB {
 
 
     private FeatureDB() {
-        // This class can't be instantiated
     }
 
 
@@ -148,11 +152,23 @@ public class FeatureDB {
      * precedence.
      */
     public static NamedFeature getFeature(String nm) {
-
-
         String name = nm.trim().toUpperCase();
         return featureMap.get(name);
+    }
 
+    /**
+     * Get all features which match nm. Not necessarily
+     * an exact match. Currenty implementation will match anything
+     * for which nm is at the beginning, including but not limited to
+     * exact matches
+     *
+     * @param nm
+     * @return
+     */
+    public static Map<String, NamedFeature> getFeatures(String nm) {
+        String name = nm.trim().toUpperCase();
+        TreeMap<String, NamedFeature> treeMap = (TreeMap) featureMap;
+        return treeMap.subMap(name, true, name + "Z", true);
     }
 
 }
