@@ -18,6 +18,7 @@
 
 package org.broad.igv.util.ftp;
 
+import junit.framework.TestCase;
 import org.broad.igv.util.stream.SeekableFTPStream;
 import org.junit.Test;
 
@@ -30,18 +31,9 @@ import java.net.URLConnection;
  * User: jrobinso
  * Date: Apr 13, 2010
  */
-public class SeekableFTPStreamTest {
+public class SeekableFTPStreamTest extends TestCase {
 
-    // This site hangs
-    //ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/pilot_data/release/2010_07/low_coverage/snps/CEU.low_coverage.2010_07.genotypes.vcf.gz
-    //static String url = "ftp://ftp.ncbi.nih.gov/1000genomes/ftp/pilot_data/data/NA06984/alignment/NA06984.454.MOSAIK.SRP000033.2009_11.bam";
-    //static String url = "ftp://ftp.st-va.ncbi.nlm.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom1.ILLUMINA.bwa.SRP000033.20091216.bam";
-    //static String url = "ftp://ftp.st-va.ncbi.nlm.nih.gov/1000genomes/data/NA12878/alignment/NA12878.chrom10.ILLUMINA.bwa.CEU.high_coverage.20100311.bam";
-    //static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/NA12878/alignment/NA12878.chrom10.ILLUMINA.bwa.CEU.high_coverage.20100311.bam";
-    //static String url = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
-    static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
-
-    //static String url = "ftp://ftp.broadinstitute.org/pub/igv/NA12878.SLX.chr1_sample.bam";
+    static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.mapped.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
 
     @Test
     public void testRead() throws IOException {
@@ -57,15 +49,11 @@ public class SeekableFTPStreamTest {
             stream.read(buffer, 0, buffer.length);
 
             for (int i = 0; i < 10; i++) {
-                System.out.println(buffer[i]);
+                //System.out.println(buffer[i]);
             }
         }
-
         stream.close();
-
-
     }
-
 
     @Test
     public void testRead2() throws IOException {
@@ -76,17 +64,17 @@ public class SeekableFTPStreamTest {
         URLConnection conn = u.openConnection();
 
         conn.connect();
-        
+
         //PrintWriter pw = new PrintWriter(new OutputStreamWriter(conn.getOutputStream()));
         //pw.close();
-        
+
         InputStream stream = conn.getInputStream();
-         for (int j = 0; j < 1; j++) {
+        for (int j = 0; j < 1; j++) {
 
             stream.read(buffer, 0, buffer.length);
 
             for (int i = 0; i < 10; i++) {
-                System.out.println(buffer[i]);
+                //System.out.println(buffer[i]);
             }
         }
 

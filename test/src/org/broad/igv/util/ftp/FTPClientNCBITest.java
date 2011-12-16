@@ -25,7 +25,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.DataInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,35 +34,40 @@ import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 /**
- * ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam;
- * ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam
- *
  * @author jrobinso
  * @date Oct 30, 2010
  */
 public class FTPClientNCBITest {
 
-    //static String host = "ftp.1000genomes.ebi.ac.uk";
-    //static String file = "/vol1/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
-    //ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam
     static String host = "ftp-trace.ncbi.nih.gov";
-    static String file = "/1000genomes/ftp/data/HG00099/alignment/HG00099.chrom1.SOLID.bfast.GBR.low_coverage.20100817.bam";
-    static byte[] expectedBytes = {(byte) 31, (byte) 139, (byte) 8, (byte) 4, 0, 0, 0, 0, 0, (byte) 255, (byte) 6, 0,
-            (byte) 66, (byte) 67, (byte) 2, 0, (byte) 240, (byte) 100, (byte) 204, (byte) 189, (byte) 123, (byte) 112, (byte) 99,
-            (byte) 105, (byte) 118, (byte) 31, (byte) 134};
+
+    private static String dirs = "1000genomes/ftp/data/HG00099/alignment/";
+    private static String filename = "HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
+    private static String file = dirs + "/" + filename;
+    private static byte[] expectedBytes;
     FTPClient client;
+
+    private void loadLocalFile() throws IOException {
+        String path = "test/data/bam/" + filename;
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path));
+        expectedBytes = new byte[bis.available()];
+        bis.read(expectedBytes);
+    }
 
     @Before
     public void setUp() throws IOException {
         client = new FTPClient();
         FTPReply reply = client.connect(host);
         assertTrue(reply.isSuccess());
+
+        loadLocalFile();
     }
 
     @After
     public void tearDown() {
-        System.out.println("Disconnecting");
+        //System.out.println("Disconnecting");
         client.disconnect();
+        expectedBytes = null;
     }
 
 
@@ -114,9 +120,7 @@ public class FTPClientNCBITest {
                 assertEquals(expectedBytes[i + restPosition], buffer[i]);
             }
             System.out.println();
-        }
-
-        finally {
+        } finally {
 
             client.closeDataStream();
             FTPReply reply = client.getReply();  // <== MUST READ THE REPLY
