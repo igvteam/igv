@@ -24,7 +24,10 @@ package org.broad.igv.tools;
 
 
 import jargs.gnu.CmdLineParser;
-import org.apache.log4j.*;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.FeatureParser;
@@ -32,14 +35,13 @@ import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.graph.GeneUtils;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.FileUtils;
@@ -105,16 +107,7 @@ public class IgvTools {
         return buf.toString();
     }
 
-
-    /**
-     * Main method.  Used to run igvtools from the command line
-     *
-     * @param argv
-     * @throws IOException
-     * @throws PreprocessingException
-     */
-    public static void main(String[] argv) throws IOException, PreprocessingException {
-
+    private static void initLogger() {
         RollingFileAppender appender = new RollingFileAppender();
         PatternLayout layout = new PatternLayout();
         layout.setConversionPattern("%p [%d{ISO8601}] [%F:%L]  %m%n");
@@ -127,7 +120,19 @@ public class IgvTools {
         appender.activateOptions();
         appender.setLayout(layout);
         Logger.getRootLogger().addAppender(appender);
+    }
 
+
+    /**
+     * Main method.  Used to run igvtools from the command line
+     *
+     * @param argv
+     * @throws IOException
+     * @throws PreprocessingException
+     */
+    public static void main(String[] argv) throws IOException, PreprocessingException {
+
+        initLogger();
         Globals.setHeadless(true);
 
         (new IgvTools()).run(argv);
@@ -136,7 +141,7 @@ public class IgvTools {
         System.exit(1);
     }
 
-    private void run(String[] argv) {
+    void run(String[] argv) {
 
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option helpOption = parser.addBooleanOption('h', "help");
@@ -332,8 +337,7 @@ public class IgvTools {
                 File outputDir = new File(nonOptionArgs[2]);
                 if (inputDir.isDirectory() && outputDir.isDirectory()) {
                     DensitiesToBedGraph.convert(inputDir, outputDir);
-                }
-                else if(inputDir.isFile() && outputDir.isFile()) {
+                } else if (inputDir.isFile() && outputDir.isFile()) {
                     DensitiesToBedGraph.convert(inputDir, outputDir);
                 }
 

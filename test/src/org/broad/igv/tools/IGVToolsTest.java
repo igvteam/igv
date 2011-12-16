@@ -18,7 +18,7 @@
 
 package org.broad.igv.tools;
 
-import org.broad.igv.feature.tribble.VCFFeature;
+import junit.framework.TestCase;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
@@ -31,10 +31,6 @@ import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.After;
-
-import static junit.framework.Assert.*;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,18 +40,20 @@ import java.io.IOException;
 import java.util.Iterator;
 
 
-public class IGVToolsTest {
+public class IGVToolsTest extends TestCase {
 
-    IgvTools igvTools = new IgvTools();
+    IgvTools igvTools;
 
     @Before
-    public void setUp() {
-        // Add your code here
+    public void setUp() throws Exception {
+        super.setUp();
+        igvTools = new IgvTools();
     }
 
     @After
-    public void tearDown() {
-        // Add your code here
+    public void tearDown() throws Exception {
+        igvTools = null;
+        super.tearDown();
     }
 
     @Test
@@ -134,7 +132,7 @@ public class IGVToolsTest {
         int start = 178599764;
         int end = 179830787;
 
-        BasicFeatureSource bfr =  BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
         Iterator<BEDFeature> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
@@ -149,10 +147,11 @@ public class IGVToolsTest {
     @Test
     public void testVersion() throws IOException {
         String[] args = {"version"};
-        IgvTools.main(args);
+        //IgvTools.main(args);
+        igvTools.run(args);
     }
 
-    //@Test
+    @Test
     public void testCompressWigFile() throws IOException {
 
         String inputFile = "test/data/phastCons_chr1.wig";
@@ -166,7 +165,6 @@ public class IGVToolsTest {
         testCompressOption(inputFile, 5000000, 6000000);
     }
 
-
     private void testCompressOption(String inputFile, int start, int end) throws IOException {
         String uncompressedFile = "uncompressed.tdf";
         String compressedFile = "compressed.tdf";
@@ -174,10 +172,10 @@ public class IGVToolsTest {
 
 
         String[] args = {"tile", "-z", "0", inputFile, uncompressedFile, genome};
-        IgvTools.main(args);
+        igvTools.run(args);
 
         args = new String[]{"tile", "-z", "0", "-c", inputFile, compressedFile, genome};
-        IgvTools.main(args);
+        (new IgvTools()).run(args);
 
 
         String dsName = "/chr1/raw";
@@ -199,4 +197,5 @@ public class IGVToolsTest {
         //(new File(uncompressedFile)).delete();
         //(new File(compressedFile)).delete();
     }
+
 }
