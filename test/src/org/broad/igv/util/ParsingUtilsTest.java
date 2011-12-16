@@ -19,6 +19,7 @@
 package org.broad.igv.util;
 
 import org.broad.igv.Globals;
+import org.broad.igv.TestInformation;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertTrue;
@@ -111,12 +112,10 @@ public class ParsingUtilsTest {
 
     @Test
     public void testGetContentLengthFTP() {
-        String url = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
-        assertTrue(ParsingUtils.getContentLength(url) > 0);
+        assertTrue(ParsingUtils.getContentLength(TestInformation.AVAILABLE_FTP_URL) > 0);
 
-        url = "ftp://www.example.com/file.txt";
         long start_time = System.currentTimeMillis();
-        assertTrue(ParsingUtils.getContentLength(url) == -1);
+        assertTrue(ParsingUtils.getContentLength(TestInformation.UNAVAILABLE_FTP_URL) == -1);
         long end_time = System.currentTimeMillis();
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
     }

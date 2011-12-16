@@ -18,10 +18,14 @@
 
 package org.broad.igv.util.ftp;
 
+import org.broad.igv.TestInformation;
+import org.broad.tribble.util.ftp.FTPUtils;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
+import java.net.URL;
+
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author jrobinso
@@ -31,9 +35,9 @@ public class FTPUtilsTest {
 
     @Test
     public void testResourceAvailable() throws Exception {
-        org.junit.Assert.fail("testResourceAvailable not implemented");
+        assertTrue(FTPUtils.resourceAvailable(new URL(TestInformation.AVAILABLE_FTP_URL)));
+        assertFalse(FTPUtils.resourceAvailable(new URL(TestInformation.UNAVAILABLE_FTP_URL)));
     }
-
 
 
 }
