@@ -106,7 +106,7 @@ public class FTPClientNCBITest {
 
             client.setRestPosition(restPosition);
 
-            reply = client.retr(file);
+            client.retr(file);
             //assertTrue(reply.getCode() == 150);
 
             InputStream is = client.getDataStream();
@@ -123,7 +123,7 @@ public class FTPClientNCBITest {
         } finally {
 
             client.closeDataStream();
-            FTPReply reply = client.getReply();  // <== MUST READ THE REPLY
+            client.getReply();  // <== MUST READ THE REPLY
 
         }
     }
