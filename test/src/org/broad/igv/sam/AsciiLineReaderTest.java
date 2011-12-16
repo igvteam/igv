@@ -24,8 +24,6 @@ package org.broad.igv.sam;
 
 import org.broad.tribble.readers.AsciiLineReader;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,6 +31,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -52,7 +53,7 @@ public class AsciiLineReaderTest {
 
     @Test
     public void testContent() throws Exception {
-        File testFile = new File("test/data/recombRate.ens.igv.txt");
+        File testFile = new File("test/data/igv/recombRate.ens.igv.txt");
 
 
         AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
@@ -70,7 +71,7 @@ public class AsciiLineReaderTest {
 
     @Test
     public void testSpeed() throws Exception {
-        File testFile = new File("test/data/HindForGISTIC.hg16.cn");
+        File testFile = new File("test/data/cn/HindForGISTIC.hg16.cn");
 
 
         AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
@@ -92,7 +93,7 @@ public class AsciiLineReaderTest {
 
         // It will be considered a bug if AsciiLineReader is slower than BufferedReader
         assertTrue(bufferedReaderTime > ascciReaderTime);
-        assertEquals(asciiCount,  brCount);
+        assertEquals(asciiCount, brCount);
 
     }
 }

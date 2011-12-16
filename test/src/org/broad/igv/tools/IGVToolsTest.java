@@ -59,7 +59,7 @@ public class IGVToolsTest extends TestCase {
     @Test
     public void testLinearIndex() throws IOException {
 
-        String bedFile = "test/data/test.bed";
+        String bedFile = "test/data/bed/test.bed";
 
         File idxFile = new File(bedFile + ".idx");
         if (idxFile.exists()) {
@@ -168,7 +168,7 @@ public class IGVToolsTest extends TestCase {
     private void testCompressOption(String inputFile, int start, int end) throws IOException {
         String uncompressedFile = "uncompressed.tdf";
         String compressedFile = "compressed.tdf";
-        String genome = "test/data/hg18.genome";
+        String genome = "test/data/genomes/hg18.genome";
 
 
         String[] args = {"tile", "-z", "0", inputFile, uncompressedFile, genome};

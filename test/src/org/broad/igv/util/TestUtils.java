@@ -20,11 +20,8 @@ package org.broad.igv.util;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.IgvTools;
-import org.broad.igv.ui.IGV;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -35,7 +32,7 @@ public class TestUtils {
 
     public static Genome loadGenome(String genomeId) throws IOException {
         Globals.setHeadless(true);
-        return IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome", false);
+        return IgvTools.loadGenome("test/data/genomes/hg18.genome", false);
 
     }
 }
