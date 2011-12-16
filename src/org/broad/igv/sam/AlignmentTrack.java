@@ -168,12 +168,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         renderOptions = new RenderOptions();
 
-        // Override color option preference, if necessary
-        if (!dataManager.isPairedEnd() &&
-                (renderOptions.colorOption == ColorOption.INSERT_SIZE || renderOptions.colorOption == ColorOption.PAIR_ORIENTATION)) {
-            renderOptions.colorOption = ColorOption.NONE;
-        }
-
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
 
