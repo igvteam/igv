@@ -20,6 +20,7 @@ package org.broad.igv.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
@@ -31,6 +32,7 @@ import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -93,7 +95,9 @@ public class ParsingUtils {
             } else if (path.startsWith("ftp:")) {
                 // Use JDK url
                 URL url = new URL(path);
-                contentLength = url.openConnection().getContentLength();
+                URLConnection connection = url.openConnection();
+                connection.setConnectTimeout(Globals.CONNECT_TIMEOUT);
+                contentLength = connection.getContentLength();
             } else {
                 contentLength = (new File(path)).length();
             }
@@ -614,11 +618,11 @@ public class ParsingUtils {
     public static byte[] readAll(String path) throws IOException {
         InputStream is = null;
         try {
-            byte [] buffer = new byte[100000];
+            byte[] buffer = new byte[100000];
             ByteArrayOutputStream bos = new ByteArrayOutputStream(1000000);
             is = openInputStream(new ResourceLocator(path));
             int nRead;
-            while((nRead = is.read(buffer)) >= 0) {
+            while ((nRead = is.read(buffer)) >= 0) {
                 bos.write(buffer, 0, nRead);
             }
             return bos.toByteArray();

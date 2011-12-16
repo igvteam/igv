@@ -23,7 +23,6 @@ import org.broad.igv.exceptions.DataLoadException;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ public class Globals {
     public static boolean headless = false;
     public static boolean suppressMessages = false;
     private static boolean batch = false;
+    public static int CONNECT_TIMEOUT = 10000; //msej
     /**
      * Field description
      */
@@ -114,8 +114,7 @@ public class Globals {
         Properties properties = new Properties();
         try {
             properties.load(Globals.class.getResourceAsStream("/resources/about.properties"));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("*** Error retrieving version and build information! ***", e);
         }
         VERSION = properties.getProperty("version", "???");
@@ -201,15 +200,14 @@ public class Globals {
                     DEFAULT_IGV_DIRECTORY = new File(rootDir, "igv");
                 }
             }
-            
+
             if (!DEFAULT_IGV_DIRECTORY.exists()) {
                 try {
                     boolean wasSuccessful = DEFAULT_IGV_DIRECTORY.mkdir();
                     if (!wasSuccessful) {
                         log.error("Failed to create user directory!");
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     log.error("Error creating user directory", e);
                 }
             }

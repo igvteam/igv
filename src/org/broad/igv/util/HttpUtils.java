@@ -19,6 +19,7 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
@@ -36,7 +37,8 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Wrapper utility class... for interacting with HttpURLConnection.
@@ -98,7 +100,7 @@ public class HttpUtils {
 
         try {
             String testURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg19/chr1.txt";
-            byte [] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
+            byte[] expectedBytes = {'C', 'A', 'G', 'C', 'T', 'A', 'A', 'T', 'T', 'T', 'T', 'G', 'T', 'A', 'T', 'T',
                     'T', 'T', 'T', 'A', 'G', 'T', 'A', 'G', 'A', 'G', 'T'};
 
 
@@ -456,7 +458,7 @@ public class HttpUtils {
 
         }
 
-        conn.setConnectTimeout(10000);
+        conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
         conn.setReadTimeout(300000);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "close");
