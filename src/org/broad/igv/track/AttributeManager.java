@@ -564,9 +564,9 @@ public class AttributeManager {
         if (c == null) {
 
             // Measure of "information content" added by using color, very crude
-            boolean useColor = (metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() <= 0.5) &&
-                    !(attKey.equals("NAME") || attKey.equals("DATA FILE") || attKey.equals("DATA TYPE"));
-
+            //boolean useColor = (metaData.getUniqueCount() < 10 || metaData.getUniqueRatio() <= 0.5) &&
+            //        !(attKey.equals("NAME") || attKey.equals("DATA FILE") || attKey.equals("DATA TYPE"));
+            boolean useColor=true;
             if (useColor) {
                 ColorTable ct = colorTables.get(attKey);
                 if (ct == null) {
