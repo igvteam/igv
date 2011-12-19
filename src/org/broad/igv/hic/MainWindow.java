@@ -6,21 +6,22 @@ package org.broad.igv.hic;
 
 import java.awt.event.*;
 import javax.swing.border.*;
+import javax.swing.event.*;
+
 
 import org.broad.igv.hic.data.*;
 import org.broad.igv.ui.util.IconFactory;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
-import org.broad.tribble.util.SeekableStreamFactory;
+import slider.RangeSlider;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSliderUI;
 
 /**
  * @author James Robinson
@@ -32,7 +33,7 @@ public class MainWindow extends JFrame {
     //int refMaxCount = 500;
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
-    public static String [] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "2.5 KB", "1 KB"};
+    public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "2.5 KB", "1 KB"};
     public static final int MAX_ZOOM = 10;
 
     //private int len;
@@ -76,11 +77,13 @@ public class MainWindow extends JFrame {
 
         int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
         colorScale = new ColorScale();
-        colorScale.maxCount = initialMaxCount;
-        colorScale.background = Color.white;
+        colorScale.setMaxCount(initialMaxCount);
+        colorScale.setBackground(Color.white);
 
         initComponents();
-        resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
+
+        resolutionSlider.setUI(new BasicSliderUI(resolutionSlider));
+        //resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
         // setLayout(new HiCLayout());
 
         // setup the glass pane to display a wait cursor when visible, and to grab all mouse events
@@ -90,9 +93,6 @@ public class MainWindow extends JFrame {
 
 
         createCursors();
-
-        maxRange.setText(String.valueOf(colorScale.maxCount));
-        minRange.setText(String.valueOf(colorScale.minCount));
 
         thumbnailPanel.setMainWindow(this);
         thumbnailPanel.setPreferredSize(new Dimension(100, 100));
@@ -241,10 +241,10 @@ public class MainWindow extends JFrame {
         int maxNBins = pixels;
 
         if (xContext.getChromosome().getName().equals("All")) {
-            resolutionComboBox.setEnabled(false); //
+            resolutionSlider.setEnabled(false); //
             setZoom(0, -1, -1);
         } else {// Find right zoom level
-            resolutionComboBox.setEnabled(true);
+            resolutionSlider.setEnabled(true);
             int bp_bin = len / maxNBins;
             int initialZoom = zoomBinSizes.length - 1;
             for (int z = 1; z < zoomBinSizes.length; z++) {
@@ -254,7 +254,7 @@ public class MainWindow extends JFrame {
                 }
             }
 
-            resolutionComboBox.setSelectedIndex(initialZoom);
+            resolutionSlider.setValue(initialZoom);
             //setZoom(initialZoom, -1, -1);
         }
     }
@@ -270,13 +270,14 @@ public class MainWindow extends JFrame {
      */
     public void setZoom(int newZoom) {
         newZoom = Math.max(0, Math.min(newZoom, MAX_ZOOM));
-
-        int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
-        int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
-        setZoom(newZoom, centerLocationX, centerLocationY);
+        if (xContext != null) {
+            int centerLocationX = (int) xContext.getChromosomePosition(getHeatmapPanel().getWidth() / 2);
+            int centerLocationY = (int) yContext.getChromosomePosition(getHeatmapPanel().getHeight() / 2);
+            setZoom(newZoom, centerLocationX, centerLocationY);
+        }
 
         //zoomInButton.setEnabled(newZoom < MAX_ZOOM);
-       // zoomOutButton.setEnabled(newZoom > 0);
+        // zoomOutButton.setEnabled(newZoom > 0);
     }
 
     /**
@@ -290,8 +291,8 @@ public class MainWindow extends JFrame {
 
         if (newZoom < 0 || newZoom > MAX_ZOOM) return;
 
-        if(newZoom !=  resolutionComboBox.getSelectedIndex()) {
-            resolutionComboBox.setSelectedIndex(newZoom);
+        if (newZoom != resolutionSlider.getValue()) {
+            resolutionSlider.setValue(newZoom);
         }
 
 
@@ -428,9 +429,9 @@ public class MainWindow extends JFrame {
 
     private void loadDmelDatasetActionPerformed(ActionEvent e) {
         try {
-            colorScale.maxCount = 20000;
-            maxRange.setText("20000");
-            minRange.setText("0");
+            colorScale.setMaxCount(20000);
+            colorRangeSlider.setMaximum(20000);
+            colorRangeSlider.setMinimum(0);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/dmel/selected_formatted.hic");
 
@@ -441,9 +442,9 @@ public class MainWindow extends JFrame {
 
     private void loadGMActionPerformed(ActionEvent e) {
         try {
-            colorScale.maxCount = 100;
-            maxRange.setText("100");
-            minRange.setText("0");
+            colorScale.setMaxCount(100);
+            colorRangeSlider.setMaximum(100);
+            colorRangeSlider.setMinimum(0);
             zd = null;
             load("http://www.broadinstitute.org/igvdata/hic/hg18/GM.summary.binned.hic");
         } catch (IOException e1) {
@@ -453,9 +454,9 @@ public class MainWindow extends JFrame {
 
     private void load562ActionPerformed(ActionEvent e) {
         try {
-            colorScale.maxCount = 100;
-            maxRange.setText("100");
-            minRange.setText("0");
+            colorScale.setMaxCount(100);
+            colorRangeSlider.setMaximum(100);
+            colorRangeSlider.setMinimum(0);
             zd = null;
             load("http://www.broadinstitute.org/igvdata/hic/hg18/K562.summary.binned.hic");
         } catch (IOException e1) {
@@ -466,9 +467,9 @@ public class MainWindow extends JFrame {
 
     private void loadHindIIIActionPerformed(ActionEvent e) {
         try {
-            colorScale.maxCount = 20;
-            maxRange.setText("20");
-            minRange.setText("0");
+            colorScale.setMaxCount(20);
+            colorRangeSlider.setMaximum(20);
+            colorRangeSlider.setMinimum(0);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
         } catch (IOException e1) {
@@ -476,37 +477,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-
-
-    private void minRangeFocusLost(FocusEvent e) {
-        minRangeActionPerformed(null);
-    }
-
-    private void maxRangeFocusLost(FocusEvent e) {
-        maxRangeActionPerformed(null);
-    }
-
-    private void minRangeActionPerformed(ActionEvent e) {
-        try {
-            int min = Integer.parseInt(minRange.getText());
-            colorScale.minCount = min;
-            heatmapPanel.clearTileCache();
-            repaint();
-
-        } catch (NumberFormatException ex) {
-
-        }
-    }
-
-    private void maxRangeActionPerformed(ActionEvent e) {
-        try {
-            int max = Integer.parseInt(maxRange.getText());
-            colorScale.maxCount = max;
-            heatmapPanel.clearTileCache();
-            repaint();
-        } catch (NumberFormatException ex) {
-
-        }
+    private void colorRangeSliderStateChanged(ChangeEvent e) {
+        int min = colorRangeSlider.getLowerValue();
+        int max = colorRangeSlider.getUpperValue();
+        colorScale.setRange(min, max);
+        heatmapPanel.clearTileCache();
+        repaint();
     }
 
     private void chrBox1ActionPerformed(ActionEvent e) {
@@ -543,11 +519,15 @@ public class MainWindow extends JFrame {
     }
 
     private void resolutionComboBoxActionPerformed(ActionEvent e) {
-        int idx = resolutionComboBox.getSelectedIndex();
-        if(idx >= 0 && idx < zoomBinSizes.length) {
+    }
+
+    private void resolutionSliderStateChanged(ChangeEvent e) {
+        int idx = resolutionSlider.getValue();
+        if (idx >= 0 && idx < zoomBinSizes.length) {
             setZoom(idx);
         }
     }
+
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -555,18 +535,25 @@ public class MainWindow extends JFrame {
         panel2 = new JPanel();
         panel4 = new JPanel();
         chrSelectionPanel = new JPanel();
+        panel10 = new JPanel();
+        label3 = new JLabel();
+        panel9 = new JPanel();
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
         refreshButton = new JButton();
-        panel1 = new JPanel();
-        label1 = new JLabel();
-        minRange = new JTextField();
-        label3 = new JLabel();
-        maxRange = new JTextField();
+        panel13 = new JPanel();
+        panel14 = new JPanel();
         label4 = new JLabel();
+        panel1 = new JPanel();
+        panel11 = new JPanel();
+        label1 = new JLabel();
+        panel7 = new JPanel();
+        colorRangeSlider = new RangeSlider();
         panel6 = new JPanel();
+        panel12 = new JPanel();
         label2 = new JLabel();
-        resolutionComboBox = new JComboBox();
+        panel5 = new JPanel();
+        resolutionSlider = new JSlider();
         panel3 = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
         heatmapPanel = new HeatmapPanel(this);
@@ -607,110 +594,160 @@ public class MainWindow extends JFrame {
                 //======== chrSelectionPanel ========
                 {
                     chrSelectionPanel.setBorder(LineBorder.createGrayLineBorder());
-                    chrSelectionPanel.setLayout(new FlowLayout());
+                    chrSelectionPanel.setMinimumSize(new Dimension(130, 57));
+                    chrSelectionPanel.setPreferredSize(new Dimension(130, 57));
+                    chrSelectionPanel.setLayout(new BorderLayout());
 
-                    //---- chrBox1 ----
-                    chrBox1.setModel(new DefaultComboBoxModel(new String[] {
-                        "All"
-                    }));
-                    chrBox1.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            chrBox1ActionPerformed(e);
-                        }
-                    });
-                    chrSelectionPanel.add(chrBox1);
+                    //======== panel10 ========
+                    {
+                        panel10.setBackground(new Color(153, 204, 255));
+                        panel10.setLayout(new BoxLayout(panel10, BoxLayout.X_AXIS));
 
-                    //---- chrBox2 ----
-                    chrBox2.setModel(new DefaultComboBoxModel(new String[] {
-                        "All"
-                    }));
-                    chrBox2.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            chrBox2ActionPerformed(e);
-                        }
-                    });
-                    chrSelectionPanel.add(chrBox2);
+                        //---- label3 ----
+                        label3.setText("Chromosomes");
+                        panel10.add(label3);
+                    }
+                    chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
 
-                    //---- refreshButton ----
-                    refreshButton.setText("Refresh");
-                    refreshButton.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            refreshButtonActionPerformed(e);
-                        }
-                    });
-                    chrSelectionPanel.add(refreshButton);
+                    //======== panel9 ========
+                    {
+                        panel9.setBackground(new Color(238, 238, 238));
+                        panel9.setLayout(new FlowLayout());
+
+                        //---- chrBox1 ----
+                        chrBox1.setModel(new DefaultComboBoxModel(new String[] {
+                            "All"
+                        }));
+                        chrBox1.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                chrBox1ActionPerformed(e);
+                            }
+                        });
+                        panel9.add(chrBox1);
+
+                        //---- chrBox2 ----
+                        chrBox2.setModel(new DefaultComboBoxModel(new String[] {
+                            "All"
+                        }));
+                        chrBox2.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                chrBox2ActionPerformed(e);
+                            }
+                        });
+                        panel9.add(chrBox2);
+
+                        //---- refreshButton ----
+                        refreshButton.setText("Refresh");
+                        refreshButton.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                refreshButtonActionPerformed(e);
+                            }
+                        });
+                        panel9.add(refreshButton);
+                    }
+                    chrSelectionPanel.add(panel9, BorderLayout.CENTER);
                 }
                 panel4.add(chrSelectionPanel);
+
+                //======== panel13 ========
+                {
+                    panel13.setBackground(new Color(238, 238, 238));
+                    panel13.setBorder(LineBorder.createGrayLineBorder());
+                    panel13.setLayout(new BorderLayout());
+
+                    //======== panel14 ========
+                    {
+                        panel14.setBackground(new Color(153, 204, 255));
+                        panel14.setLayout(new BoxLayout(panel14, BoxLayout.X_AXIS));
+
+                        //---- label4 ----
+                        label4.setText("Show");
+                        panel14.add(label4);
+                    }
+                    panel13.add(panel14, BorderLayout.NORTH);
+                }
+                panel4.add(panel13);
 
                 //======== panel1 ========
                 {
                     panel1.setBorder(LineBorder.createGrayLineBorder());
-                    panel1.setLayout(new FlowLayout());
+                    panel1.setMinimumSize(new Dimension(96, 70));
+                    panel1.setPreferredSize(new Dimension(202, 70));
+                    panel1.setMaximumSize(new Dimension(32769, 70));
+                    panel1.setLayout(new BorderLayout());
 
-                    //---- label1 ----
-                    label1.setText("Color Range");
-                    label1.setHorizontalAlignment(SwingConstants.CENTER);
-                    label1.setToolTipText("Range of color scale in counts per mega-base squared.");
-                    panel1.add(label1);
+                    //======== panel11 ========
+                    {
+                        panel11.setBackground(new Color(153, 204, 255));
+                        panel11.setLayout(new BoxLayout(panel11, BoxLayout.X_AXIS));
 
-                    //---- minRange ----
-                    minRange.setPreferredSize(new Dimension(64, 26));
-                    minRange.setMinimumSize(new Dimension(14, 26));
-                    minRange.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            minRangeFocusLost(e);
-                        }
-                    });
-                    minRange.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            minRangeActionPerformed(e);
-                        }
-                    });
-                    panel1.add(minRange);
+                        //---- label1 ----
+                        label1.setText("Color Range");
+                        label1.setHorizontalAlignment(SwingConstants.CENTER);
+                        label1.setToolTipText("Range of color scale in counts per mega-base squared.");
+                        panel11.add(label1);
+                    }
+                    panel1.add(panel11, BorderLayout.PAGE_START);
 
-                    //---- label3 ----
-                    label3.setText("to");
-                    panel1.add(label3);
+                    //======== panel7 ========
+                    {
+                        panel7.setLayout(new BoxLayout(panel7, BoxLayout.X_AXIS));
 
-                    //---- maxRange ----
-                    maxRange.setPreferredSize(new Dimension(64, 26));
-                    maxRange.setMinimumSize(new Dimension(14, 26));
-                    maxRange.addFocusListener(new FocusAdapter() {
-                        @Override
-                        public void focusLost(FocusEvent e) {
-                            maxRangeFocusLost(e);
-                        }
-                    });
-                    maxRange.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            maxRangeActionPerformed(e);
-                        }
-                    });
-                    panel1.add(maxRange);
-
-                    //---- label4 ----
-                    label4.setText("counts / mb^2");
-                    panel1.add(label4);
+                        //---- colorRangeSlider ----
+                        colorRangeSlider.setPaintTicks(true);
+                        colorRangeSlider.setPaintLabels(true);
+                        colorRangeSlider.setLowerValue(0);
+                        colorRangeSlider.setMajorTickSpacing(10);
+                        colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
+                        colorRangeSlider.setPreferredSize(new Dimension(200, 52));
+                        colorRangeSlider.setMinimumSize(new Dimension(36, 52));
+                        colorRangeSlider.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent e) {
+                                colorRangeSliderStateChanged(e);
+                            }
+                        });
+                        panel7.add(colorRangeSlider);
+                    }
+                    panel1.add(panel7, BorderLayout.CENTER);
                 }
                 panel4.add(panel1);
 
                 //======== panel6 ========
                 {
                     panel6.setBorder(LineBorder.createGrayLineBorder());
-                    panel6.setLayout(new FlowLayout());
+                    panel6.setLayout(new BorderLayout());
 
-                    //---- label2 ----
-                    label2.setText("Resolution:");
-                    panel6.add(label2);
+                    //======== panel12 ========
+                    {
+                        panel12.setBackground(new Color(153, 204, 255));
+                        panel12.setLayout(new BorderLayout());
 
-                    //---- resolutionComboBox ----
-                    resolutionComboBox.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            resolutionComboBoxActionPerformed(e);
-                        }
-                    });
-                    panel6.add(resolutionComboBox);
+                        //---- label2 ----
+                        label2.setText("Resolution");
+                        label2.setHorizontalAlignment(SwingConstants.CENTER);
+                        label2.setBackground(new Color(204, 204, 204));
+                        panel12.add(label2, BorderLayout.CENTER);
+                    }
+                    panel6.add(panel12, BorderLayout.NORTH);
+
+                    //======== panel5 ========
+                    {
+                        panel5.setLayout(new BoxLayout(panel5, BoxLayout.X_AXIS));
+
+                        //---- resolutionSlider ----
+                        resolutionSlider.setMaximum(10);
+                        resolutionSlider.setMajorTickSpacing(1);
+                        resolutionSlider.setPaintTicks(true);
+                        resolutionSlider.setSnapToTicks(true);
+                        resolutionSlider.setPaintLabels(true);
+                        resolutionSlider.addChangeListener(new ChangeListener() {
+                            public void stateChanged(ChangeEvent e) {
+                                resolutionSliderStateChanged(e);
+                            }
+                        });
+                        panel5.add(resolutionSlider);
+                    }
+                    panel6.add(panel5, BorderLayout.CENTER);
                 }
                 panel4.add(panel6);
             }
@@ -718,7 +755,7 @@ public class MainWindow extends JFrame {
 
             //======== panel3 ========
             {
-                panel3.setLayout(new HiCLayout());
+                panel3.setLayout(new BorderLayout());
 
                 //---- rulerPanel2 ----
                 rulerPanel2.setMaximumSize(new Dimension(4000, 50));
@@ -732,6 +769,7 @@ public class MainWindow extends JFrame {
                 heatmapPanel.setMaximumSize(new Dimension(500, 500));
                 heatmapPanel.setMinimumSize(new Dimension(500, 500));
                 heatmapPanel.setPreferredSize(new Dimension(500, 500));
+                heatmapPanel.setBackground(new Color(238, 238, 238));
                 heatmapPanel.addMouseMotionListener(new MouseMotionAdapter() {
                     @Override
                     public void mouseDragged(MouseEvent e) {
@@ -884,18 +922,25 @@ public class MainWindow extends JFrame {
     private JPanel panel2;
     private JPanel panel4;
     private JPanel chrSelectionPanel;
+    private JPanel panel10;
+    private JLabel label3;
+    private JPanel panel9;
     private JComboBox chrBox1;
     private JComboBox chrBox2;
     private JButton refreshButton;
-    private JPanel panel1;
-    private JLabel label1;
-    private JTextField minRange;
-    private JLabel label3;
-    private JTextField maxRange;
+    private JPanel panel13;
+    private JPanel panel14;
     private JLabel label4;
+    private JPanel panel1;
+    private JPanel panel11;
+    private JLabel label1;
+    private JPanel panel7;
+    private RangeSlider colorRangeSlider;
     private JPanel panel6;
+    private JPanel panel12;
     private JLabel label2;
-    private JComboBox resolutionComboBox;
+    private JPanel panel5;
+    private JSlider resolutionSlider;
     private JPanel panel3;
     private HiCRulerPanel rulerPanel2;
     private HeatmapPanel heatmapPanel;

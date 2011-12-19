@@ -55,13 +55,14 @@ public class HiCTools {
                 chromosomes = hg18Chromosomes;
             } else if (genomeId.equals("b37")) {
                 chromosomes = b37Chromosomes;
-
+            } else if (genomeId.equals("chr14")) {
+                chromosomes = chr14;
             } else {
                 chromosomes = dmelChromosomes;
             }
 
             if (args[0].equals("bamToPairs")) {
-                 filterBam(args[1], args[2]);
+                filterBam(args[1], args[2]);
             } else {
                 // Preprocess
                 long genomeLength = 0;
@@ -114,14 +115,14 @@ public class HiCTools {
                         allChroms.contains(mate.getChr()) &&
                         (!alignment.getChr().equals(mate.getChr()) || alignment.getInferredInsertSize() > 1000)) {
 
-                        // Each pair is represented twice in the file,  keep the record with the "leftmost" coordinate
-                        if (alignment.getStart() < mate.getStart()) {
-                            String strand = alignment.isNegativeStrand() ? "-" : "+";
-                            String mateStrand = mate.isNegativeStrand() ? "-" : "+";
-                            pw.println(alignment.getReadName() + "\t" + alignment.getChr() + "\t" + alignment.getStart() +
-                                    "\t" + strand + "\t.\t" + mate.getChr() + "\t" + mate.getStart() + "\t" + mateStrand);
-                        }
+                    // Each pair is represented twice in the file,  keep the record with the "leftmost" coordinate
+                    if (alignment.getStart() < mate.getStart()) {
+                        String strand = alignment.isNegativeStrand() ? "-" : "+";
+                        String mateStrand = mate.isNegativeStrand() ? "-" : "+";
+                        pw.println(alignment.getReadName() + "\t" + alignment.getChr() + "\t" + alignment.getStart() +
+                                "\t" + strand + "\t.\t" + mate.getChr() + "\t" + mate.getStart() + "\t" + mateStrand);
                     }
+                }
 
             }
         } finally {
@@ -172,8 +173,7 @@ public class HiCTools {
             new Chromosome(21, "21", 46944323),
             new Chromosome(22, "22", 49691432),
             new Chromosome(23, "23", 154913754),
-            new Chromosome(24, "24", 57772954),
-            new Chromosome(25, "0", 16571),
+            new Chromosome(24, "24", 57772954)
     };
 
 
@@ -203,6 +203,12 @@ public class HiCTools {
             new Chromosome(22, "22", 51304566),
             new Chromosome(23, "X", 155270560),
             new Chromosome(24, "Y", 59373566)
+    };
+
+    // For testing
+    public final static Chromosome[] chr14 = new Chromosome[]{
+            null,                               // Placeholder for whole genome
+            new Chromosome(1, "14", 107349540)
     };
 
 

@@ -17,12 +17,11 @@ import java.util.List;
 public class HeatmapRenderer {
 
     org.broad.igv.renderer.ColorScale colorScale;
-    DensityFunction densityFunction;
 
     public HeatmapRenderer(ColorScale colorScale) {
        this.colorScale = colorScale;
        // this.colorScale = new ContinuousColorScale(.2, 1,  5, Color.blue, Color.white, Color.red);
-       // densityFunction = new DensityFunction();;
+
     }
 
     public void render(int originX,
@@ -87,6 +86,7 @@ public class HeatmapRenderer {
 
 
                     color = colorScale.getColor((float) score);
+                   // color = colorScale.getColor((float) score);
                     //}
 
                     int px = (rec.getX() - originX);

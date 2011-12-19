@@ -32,14 +32,14 @@ public class ColorScale implements org.broad.igv.renderer.ColorScale {
 
     Map<Integer, Color> colorCache = new Hashtable();
 
-    int minCount = 0;
-    int maxCount = 200;
-    Color background;
+    private int minCount = 0;
+    private int maxCount = 200;
+    private Color background;
 
 
     public Color getColor(float score) {
 
-        if(score < minCount) {
+        if (score < minCount) {
             return background;
         }
 
@@ -76,5 +76,35 @@ public class ColorScale implements org.broad.igv.renderer.ColorScale {
 
     public boolean isDefault() {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public int getMinCount() {
+        return minCount;
+    }
+
+    public int getMaxCount() {
+        return maxCount;
+    }
+
+    public Color getBackground() {
+        return background;
+    }
+
+    public void setMinCount(int minCount) {
+        this.minCount = minCount;
+    }
+
+    public void setMaxCount(int maxCount) {
+        this.maxCount = maxCount;
+    }
+
+    public void setBackground(Color background) {
+        this.background = background;
+    }
+
+    public void setRange(int min, int max) {
+        this.minCount = min;
+        this.maxCount = max;
+
     }
 }

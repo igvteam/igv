@@ -12,6 +12,20 @@ public class Matrix {
     public int chr2;
     public MatrixZoomData[] zoomData;
 
+
+    /**
+     * Constructor for creating a matrix from precomputed data.
+     *
+     * @param chr1
+     * @param chr2
+     * @param zoomData
+     */
+    public Matrix(int chr1, int chr2, MatrixZoomData[] zoomData) {
+        this.chr1 = chr1;
+        this.chr2 = chr2;
+        this.zoomData = zoomData;
+    }
+
     /**
      * Constructor for creating a matrix and initializing zoomd data at predefined resolution scales.  This
      * constructor is used when parsing alignment files.
@@ -47,18 +61,6 @@ public class Matrix {
 
     }
 
-    /**
-     * Constructor for creating a matrix from precomputed data.
-     *
-     * @param chr1
-     * @param chr2
-     * @param zoomData
-     */
-    public Matrix(int chr1, int chr2, MatrixZoomData[] zoomData) {
-        this.chr1 = chr1;
-        this.chr2 = chr2;
-        this.zoomData = zoomData;
-    }
 
     public static String generateKey(int chr1, int chr2) {
         return "" + chr1 + "_" + chr2;

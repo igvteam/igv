@@ -48,7 +48,7 @@ public class ColorScalePanel extends JComponent implements Serializable {
             if(nSteps <= 0) {
                 return;
             }
-            float delta = (colorScale.maxCount / nSteps);
+            float delta = (colorScale.getMaxCount() / nSteps);
 
             int xLast = 0;
             for (int n = 1; n < nSteps; n++) {

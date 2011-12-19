@@ -19,14 +19,18 @@ public class DatasetReader {
     SeekableStream stream;
 
     Map<String, Preprocessor.IndexEntry> masterIndex = new HashMap();
+    private long totalCount;
+    private DensityFunction densityFunction;
+    Dataset dataset;
 
     public DatasetReader(SeekableStream stream) {
         this.stream = stream;
+        dataset = new Dataset(this);
     }
 
     public Dataset read() throws FileNotFoundException {
 
-        Dataset ds = new Dataset(this);
+
 
         try {
             // Read the header
@@ -41,7 +45,7 @@ public class DatasetReader {
                 int size = dis.readInt();
                 chromosomes[i] = new Chromosome(i, name, size);
             }
-            ds.setChromosomes(chromosomes);
+            dataset.setChromosomes(chromosomes);
 
             // Read attribute dictionary
             int nAttributes = dis.readInt();
@@ -52,12 +56,13 @@ public class DatasetReader {
 
             readMasterIndex(masterIndexPos);
 
+
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
 
-        return ds;
+        return dataset;
 
     }
 
@@ -83,9 +88,37 @@ public class DatasetReader {
             masterIndex.put(key, new Preprocessor.IndexEntry(filePosition, sizeInBytes));
         }
 
+        try {
+            readExpectedValues(dis);
+        } catch (IOException e) {
+            System.err.println("Warning: No expected value information available.");
+        }
+
         return masterIndex;
 
     }
+
+    private void readExpectedValues(LittleEndianInputStream dis) throws IOException {
+
+        totalCount = dis.readLong();
+
+        int gridSize =   dis.readInt();
+        int nGrids = dis.readInt();
+        double[] densities = new double[nGrids];
+        for (int i = 0; i < nGrids; i++) {
+            densities[i] = dis.readDouble();
+        }
+
+        int nNormFactors = dis.readInt();
+        Map<Integer,Double> normFactors = new HashMap<Integer, Double>(nNormFactors);
+        for (int i=0; i<nNormFactors; i++) {
+            Integer key = dis.readInt();
+            Double  norm = dis.readDouble();
+            normFactors.put(key, norm);
+        }
+        densityFunction = new DensityFunction(gridSize, densities, normFactors);
+    }
+
 
     public Matrix readMatrix(String key) throws IOException {
         Preprocessor.IndexEntry idx = masterIndex.get(key);

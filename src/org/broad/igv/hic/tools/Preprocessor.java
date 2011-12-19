@@ -8,11 +8,9 @@ import org.broad.igv.util.CompressionUtils;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author jrobinso
@@ -24,11 +22,13 @@ public class Preprocessor {
     File outputFile;
     LittleEndianOutputStream fos;
     long bytesWritten = 0;
+    long totalCount = 0;
 
     long masterIndexPosition;
     Map<String, IndexEntry> matrixPositions = new LinkedHashMap();
     Map<String, Long> blockIndexPositions = new LinkedHashMap();
     Map<String, IndexEntry[]> blockIndexMap = new LinkedHashMap();
+    static DensityCalculation densityCalculation;
 
     public Preprocessor(File outputFile) {
         this.outputFile = outputFile;
@@ -41,10 +41,11 @@ public class Preprocessor {
         try {
             fos = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile)));
 
+            densityCalculation = new DensityCalculation(HiCTools.chromosomes);
+
             // Placeholder for master index position, replace later
             writeLong(0l);
 
-            // Chromosome dictionary
             int nChrs = HiCTools.chromosomes.length;
             writeInt(nChrs);
             for (int i = 0; i < nChrs; i++) {
@@ -64,7 +65,7 @@ public class Preprocessor {
 
                     if ((c1 == 0 && c2 != 0) || (c2 == 0 && c1 != 0)) continue;
 
-                    Matrix matrix = readMatrix(inputFileList, c1, c2);
+                    Matrix matrix = computeMatrix(inputFileList, c1, c2);
 
                     if (matrix != null) {
                         System.out.println("writing matrix: " + matrix.getKey());
@@ -76,6 +77,8 @@ public class Preprocessor {
 
             masterIndexPosition = bytesWritten;
             writeMasterIndex();
+
+
         } finally {
             fos.close();
         }
@@ -83,18 +86,18 @@ public class Preprocessor {
         updateIndexPositions();
     }
 
-    /*
-                    for (File inputFile : inputFileList) {
-                        InputStream fis = new FileInputStream(inputFile);
-                        if (inputFile.getName().endsWith(".gz")) {
-                            fis = new GZIPInputStream(fis);
-                        }
-                        isList.add(fis);
-                    }
 
+    /**
+     * Compute matrix for the given chromosome combination.  This resultes in full pass through the input files
+     * for each chromosome combination.  This is done to save memory, at the expense of longer running times.
+     *
+     * @param inputFileList
+     * @param c1
+     * @param c2
+     * @return
+     * @throws IOException
      */
-
-    public Matrix readMatrix(List<String> inputFileList, int c1, int c2) throws IOException {
+    public Matrix computeMatrix(List<String> inputFileList, int c1, int c2) throws IOException {
 
         boolean isWholeGenome = (c1 == 0 && c2 == 0);
 
@@ -110,7 +113,7 @@ public class Preprocessor {
 
         for (String file : inputFileList) {
 
-            PairIterator iter = file.endsWith(".bam") ?
+            PairIterator iter = (file.endsWith(".bam") || file.endsWith(".bam.hg19")) ?
                     new BAMPairIterator(file) :
                     new AsciiPairIterator(file);
 
@@ -122,11 +125,11 @@ public class Preprocessor {
                 Integer chr1 = HiCTools.chromosomeOrdinals.get(pair.getChr1());
                 Integer chr2 = HiCTools.chromosomeOrdinals.get(pair.getChr2());
                 if (chr1 != null && chr2 != null) {
-
                     if (isWholeGenome) {
                         pos1 = getGenomicPosition(chr1, pos1);
                         pos2 = getGenomicPosition(chr2, pos2);
                         incrementCount(matrix, c1, pos1, c2, pos2);
+                        totalCount++;
                     } else if ((c1 == chr1 && c2 == chr2) || (c1 == chr2 && c2 == chr1)) {
                         incrementCount(matrix, chr1, pos1, chr2, pos2);
                     }
@@ -166,6 +169,11 @@ public class Preprocessor {
         }
 
         matrix.incrementCount(pos1, pos2);
+
+        if (chr1 == chr2) {
+            int dist = Math.abs(pos1 - pos2);
+            densityCalculation.addDistance(chr1, dist);
+        }
     }
 
 
@@ -210,11 +218,34 @@ public class Preprocessor {
             buffer.putLong(entry.getValue().position);
             buffer.putInt(entry.getValue().size);
         }
-        byte[] bytes = buffer.getBytes();
 
+        writeExpectedValues(buffer);
+
+        byte[] bytes = buffer.getBytes();
         writeInt(bytes.length);
         write(bytes);
     }
+
+    private void writeExpectedValues(BufferedByteWriter buffer) throws IOException {
+        buffer.putLong(totalCount);
+
+        densityCalculation.computeDensity();
+
+        buffer.putInt(densityCalculation.getGridSize());
+        double[] densities = densityCalculation.getDensityAvg();
+        buffer.putInt(densities.length);
+        for(int i=0; i<densities.length; i++) {
+            buffer.putDouble(densities[i]);
+        }
+
+        Map<Integer, Double> normFactors = densityCalculation.getNormalizationFactors();
+        buffer.putInt(normFactors.size());
+        for(Map.Entry<Integer, Double> entry : normFactors.entrySet()) {
+            buffer.putInt(entry.getKey());
+            buffer.putDouble(entry.getValue());
+        }
+    }
+
 
     public void writeMatrix(Matrix matrix) throws IOException {
 
@@ -383,6 +414,9 @@ public class Preprocessor {
             dos.writeInt(v);
         }
 
+        public void putDouble(double v) throws IOException {
+            dos.writeDouble(v);
+        }
 
         public void putLong(long v) throws IOException {
             dos.writeLong(v);
