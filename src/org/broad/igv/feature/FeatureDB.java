@@ -24,6 +24,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,7 +42,7 @@ public class FeatureDB {
      * Map for all features other than genes.
      */
     //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
-    private static Map<String, NamedFeature> featureMap = new TreeMap<String, NamedFeature>();
+    private static Map<String, NamedFeature> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, NamedFeature>());
     private static Genome GENOME = null;
 
     public static void addFeature(NamedFeature feature) {
