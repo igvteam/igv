@@ -71,14 +71,19 @@ public class SearchCommand implements Command {
     Genome genome;
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
-        this.referenceFrame = referenceFrame;
-        this.searchString = searchString.trim();
-        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        this(referenceFrame, searchString,
+                IGV.getInstance().getGenomeManager().getCurrentGenome());
     }
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString, boolean recordHistory) {
         this(referenceFrame, searchString);
         this.recordHistory = recordHistory;
+    }
+
+    SearchCommand(ReferenceFrame referenceFrame, String searchString, Genome genome) {
+        this.referenceFrame = referenceFrame;
+        this.searchString = searchString.trim();
+        this.genome = genome;
     }
 
 
@@ -88,176 +93,196 @@ public class SearchCommand implements Command {
             log.debug("Run search: " + searchString);
         }
 
-        boolean success = false;
+        SearchResult result = runSearch(searchString);
 
-        // Space delimited?
-        String[] tokens = searchString.split("\\s+");
-        if (tokens.length >= 2) {
-            String chr = genome.getChromosomeAlias(tokens[0].trim());
-            try {
-                int start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
-                int end = start + 1;
-                if (tokens.length > 2) {
-                    end = Integer.parseInt(tokens[2].trim());
-                }
-
-                if (FrameManager.isGeneListMode()) {
-                    IGV.getInstance().getSession().setCurrentGeneList(null);
-                    IGV.getInstance().resetFrames();
-                }
-
-                if (recordHistory) {
-                    IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-                }
-                referenceFrame.jumpTo(chr, start, end);
-                success = true;
-            } catch (NumberFormatException e) {
-                // Multiple tokens, On the fly gene list ?
-            }
-            if (!success) {
-                List<String> loci = new ArrayList<String>(tokens.length);
-                for (String t : tokens) {
-                    Locus l = new Locus(t);
-                    if (l.isValid()) {
-                        loci.add(t);
-                    } else if (FeatureDB.getFeature(t) != null) {
-                        loci.add(t);
-                    }
-                }
-
-                if (loci.size() <= 1) {
-                    //MessageUtils.showMessage("Invalid search string: " + searchString);
-                    success = false;
-                } else {
-                    if (loci.size() != tokens.length) {
-                        MessageUtils.showMessage("Not all portions of the search string are recognized as genes or loci.");
-                    }
-                    GeneList geneList = new GeneList("", loci, false);
-                    IGV.getInstance().getSession().setCurrentGeneList(geneList);
-                    IGV.getInstance().resetFrames();
-                    success = true;
-                }
-            }
-
-        }
-
-        // Feature search
-
-        else {
-
-            if (FrameManager.isGeneListMode()) {
-                IGV.getInstance().getSession().setCurrentGeneList(null);
-                IGV.getInstance().resetFrames();
-            }
-
-            NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
-            if (feature != null) {
-                int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
-                int start = Math.max(0, feature.getStart() - flankingRegion);
-                int end = feature.getEnd() + flankingRegion;
-
-                if (recordHistory) {
-                    IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-                }
-                if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
-                    referenceFrame.jumpTo(feature.getChr(), start, end);
-                } else {
-                    int center = (start + end) / 2;
-                    referenceFrame.centerOnLocation(feature.getChr(), center);
-                }
-
-                if (log.isDebugEnabled()) {
-                    log.debug("End search: " + searchString);
-                }
-                success = true;
-            } else {
-                //Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
-            }
-
-
-            // Apparently not a feature. Either a locus or track name.  Track names can be quoted,
-            // loci are never quoted.
-            if (!searchString.contains("\"") && !success) {
-                String chr = null;
-                int[] startEnd = null;
-                int colonIdx = searchString.lastIndexOf(":");
-
-                if (colonIdx > 0) {
-
-                    // The chromosome is that portion of the search string up to the colon.
-                    chr = genome.getChromosomeAlias(searchString.substring(0, colonIdx));
-                    String posString = searchString.substring(colonIdx).replace(":", "");
-                    startEnd = getStartEnd(posString);
-
-                    if (startEnd != null) {
-                        if (recordHistory) {
-                            IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-                        }
-
-                        referenceFrame.jumpTo(chr, startEnd[0], startEnd[1]);
-
-                        if (log.isDebugEnabled()) {
-                            log.debug("End search: " + searchString);
-                        }
-                        success = true;
-                    }
-                } else {
-
-                    // No chromosome delimiter (color),  The search string is either chromosome name
-                    // or a locus in the current chromosome.
-                    if (searchString.contains("-")) {
-
-                        // Presense of a dash indicates this is a locus string in the current chromosome
-                        startEnd = getStartEnd(searchString);
-                        if (startEnd != null) {
-                            if (recordHistory) {
-                                IGV.getInstance().getSession().getHistory().push(searchString, referenceFrame.getZoom());
-                            }
-
-                            referenceFrame.jumpTo(null, startEnd[0], startEnd[1]);
-
-                            if (log.isDebugEnabled()) {
-                                log.debug("End search: " + searchString);
-                            }
-                            success = true;
-
-                        }
-                    } else {
-
-                        // No dash, this is either a chromosome or an unkown search string
-                        chr = genome.getChromosomeAlias(searchString);
-                        Chromosome chromosome = genome.getChromosome(chr);
-                        if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
-                            if (recordHistory) {
-                                IGV.getInstance().getSession().getHistory().push(chr, referenceFrame.getZoom());
-                            }
-
-                            referenceFrame.setChromosomeName(chr, true);
-                            IGV.getInstance().repaintDataAndHeaderPanels();
-                            IGV.getInstance().repaintStatusAndZoomSlider();
-
-                            if (log.isDebugEnabled()) {
-                                log.debug("End search: " + searchString);
-                            }
-                            success = true;
-                        }
-
-                    }
-                }
-            }
-        }
-
-
-        if (!success) {
+        if (result != null) {
+            showSearchResult(result);
+        } else {
             if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
-                showError("Cannot find feature or locus: " + searchString);
+                MessageUtils.showMessage("Cannot find feature or locus: " + searchString);
             }
         }
 
         if (log.isDebugEnabled()) {
             log.debug("End search: " + searchString);
         }
+    }
 
+    /**
+     * Given a string, search for the appropriate data to show the user.
+     * Differerent syntaxes are accepted.
+     *
+     * @param searchString
+     * @return result
+     *         SearchResult describing the results of the search. Will never
+     *         be null, field type will equal SearchType.ERROR if something went wrong.
+     */
+    SearchResult runSearch(String searchString) {
+
+        SearchResult result = new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
+
+        // Space delimited?
+        String[] tokens = searchString.split("\\s+");
+        if (tokens.length >= 2) {
+            result = parseTokens(tokens);
+            // Feature search
+        } else {
+            NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
+            if (feature != null) {
+                return new SearchResult(feature, searchString);
+            } else {
+                //Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
+            }
+
+            // Apparently not a feature. Either a locus or track name.  Track names can be quoted,
+            // loci are never quoted.
+            if (!searchString.contains("\"")) {
+                result = calcChromoLocus(searchString);
+            }
+        }
+
+        return result;
+    }
+
+    private void showSearchResult(SearchResult result) {
+        int origZoom = referenceFrame.getZoom();
+        if (result == null)
+            result = new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
+
+        boolean showMessage = false;
+        boolean success = true;
+        String message = "Invalid search string: " + result.searchString;
+
+        if (result.type != SearchType.ERROR && FrameManager.isGeneListMode()) {
+            IGV.getInstance().getSession().setCurrentGeneList(null);
+            IGV.getInstance().resetFrames();
+        }
+
+        switch (result.type) {
+            case FEATURE:
+                showFlankedRegion(result.chr, result.start, result.end);
+                break;
+            case LOCUS:
+                referenceFrame.jumpTo(result.chr, result.start, result.end);
+                break;
+            case LOCI:
+                message = result.getMessage();
+                showMessage = message != null;
+                GeneList geneList = new GeneList("", result.loci, false);
+                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+                IGV.getInstance().resetFrames();
+                break;
+            case CHROMOSOME:
+                referenceFrame.setChromosomeName(result.chr, true);
+                IGV.getInstance().repaintDataAndHeaderPanels();
+                IGV.getInstance().repaintStatusAndZoomSlider();
+                break;
+            case ERROR:
+            default:
+                success = false;
+                showMessage = true;
+        }
+        if (success && recordHistory)
+            IGV.getInstance().getSession().getHistory().push(searchString, origZoom);
+
+        if (showMessage) {
+            MessageUtils.showMessage(message);
+        }
+
+    }
+
+    /**
+     * Determine searchResult for white-space delimited search query.
+     *
+     * @param tokens
+     * @return searchResult
+     */
+    private SearchResult parseTokens(String[] tokens) {
+        SearchResult result;
+        boolean success = false;
+        int start = 0, end = 0;
+        String chr = genome.getChromosomeAlias(tokens[0].trim());
+        try {
+            start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
+            end = start + 1;
+            if (tokens.length >= 3) {
+                end = Integer.parseInt(tokens[2].trim());
+            }
+            result = new SearchResult(SearchType.LOCUS, chr, start, end, searchString);
+            return result;
+        } catch (NumberFormatException e) {
+            // Multiple tokens, On the fly gene list ?
+        }
+
+        List<String> loci = new ArrayList<String>(tokens.length);
+        Chromosome chromo = null;
+        for (String t : tokens) {
+            Locus l = new Locus(t);
+            if (l.isValid()) {
+                loci.add(t);
+            } else if (FeatureDB.getFeature(t.toUpperCase().trim()) != null) {
+                loci.add(t);
+            } else if ((chromo = genome.getChromosome(t)) != null) {
+                //Locus will only be valid if fully qualified.
+                //Should rethink this approach
+                String ft = t + ":1-" + chromo.getLength();
+                Locus fl = new Locus(ft);
+                if (fl.isValid())
+                    loci.add(ft);
+            }
+        }
+        result = new SearchResult(loci);
+
+        if (loci.size() <= 1)
+            return null;
+
+        if (loci.size() != tokens.length) {
+            result.setMessage("Not all portions of the search string are recognized as genes or loci.");
+            //MessageUtils.showMessage("Not all portions of the search string are recognized as genes or loci.");
+        }
+        return result;
+    }
+
+    private SearchResult calcChromoLocus(String searchString) {
+        int colonIdx = searchString.lastIndexOf(":");
+        if (colonIdx > 0) {
+            // The chromosome is that portion of the search string up to the last colon.
+            String chr = genome.getChromosomeAlias(searchString.substring(0, colonIdx));
+            String posString = searchString.substring(colonIdx).replace(":", "");
+            int[] startEnd = getStartEnd(posString);
+            if (startEnd != null) {
+                return new SearchResult(SearchType.LOCUS, chr, startEnd[0], startEnd[1], searchString);
+            }
+        } else {
+            // No chromosome delimiter (color),  The search string is either chromosome name
+            // or a locus in the current chromosome.
+            if (searchString.contains("-")) {
+                // Presense of a dash indicates this is a locus string in the current chromosome
+                int[] startEnd = getStartEnd(searchString);
+                return new SearchResult(SearchType.LOCUS, null, startEnd[0], startEnd[1], searchString);
+            } else {
+                // No dash, this is either a chromosome or an unkown search string
+                String chr = genome.getChromosomeAlias(searchString);
+                Chromosome chromosome = genome.getChromosome(chr);
+                if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
+                    return new SearchResult(SearchType.CHROMOSOME, chr, 0, 0, searchString);
+                }
+            }
+        }
+        return new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
+    }
+
+    private void showFlankedRegion(String chr, int start, int end) {
+        int flankingRegion = PreferenceManager.getInstance().getAsInt(PreferenceManager.FLANKING_REGION);
+        start = Math.max(0, start - flankingRegion);
+        end = end + flankingRegion;
+
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SEARCH_ZOOM)) {
+            referenceFrame.jumpTo(chr, start, end);
+        } else {
+            int center = (start + end) / 2;
+            referenceFrame.centerOnLocation(chr, center);
+        }
     }
 
     /**
@@ -299,12 +324,57 @@ public class SearchCommand implements Command {
 
     }
 
-    /**
-     * TODO -- should this be here?  If not here where?
-     *
-     * @param message
+    enum SearchType {
+        FEATURE,
+        FEATURES,
+        LOCUS,
+        LOCI,
+        TRACK,
+        CHROMOSOME,
+        ERROR
+    }
+
+    /*
+    Container class for search results
      */
-    private void showError(String message) {
-        MessageUtils.showMessage(message);
+    class SearchResult {
+        String chr;
+        private int start;
+        private int end;
+        SearchType type;
+        private String searchString;
+
+        private List<String> loci;
+        private String message;
+
+        public SearchResult(SearchType type, String chr, int start, int end, String searchString) {
+            this.type = type;
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.searchString = searchString;
+        }
+
+        public SearchResult(List<String> loci) {
+            this.type = SearchType.LOCI;
+            this.loci = loci;
+        }
+
+        public SearchResult(NamedFeature feature, String searchString) {
+            this(SearchType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd(),
+                    searchString);
+        }
+
+        private void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return this.message;
+        }
+
+        List<String> getLoci() {
+            return this.loci;
+        }
     }
 }

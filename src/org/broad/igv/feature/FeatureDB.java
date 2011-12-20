@@ -24,10 +24,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * This is a placeholder class for a true "feature database" wrapper.  Its purpose
@@ -161,15 +158,23 @@ public class FeatureDB {
      * Get all features which match nm. Not necessarily
      * an exact match. Currenty implementation will match anything
      * for which nm is at the beginning, including but not limited to
-     * exact matches
+     * exact matches.
+     * <p/>
+     * NOTE: "It is imperative that the user manually synchronize
+     * on [this sorted map] when iterating over any of its
+     * collection views, or the collections views of any of its
+     * subMap, headMap or tailMap views". See
+     * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Collections.html#synchronizedSortedMap%28java.util.SortedMap%29> here</a>
      *
-     * @param nm
+     * @param nm : Search string. Features which begin with this
+     *           string will be found.
      * @return
      */
     public static Map<String, NamedFeature> getFeatures(String nm) {
         String name = nm.trim().toUpperCase();
-        TreeMap<String, NamedFeature> treeMap = (TreeMap) featureMap;
-        return treeMap.subMap(name, true, name + "Z", true);
+        SortedMap<String, NamedFeature> treeMap = (SortedMap) featureMap;
+        //Search is inclusive to first argument, exclusive to second
+        return treeMap.subMap(name, name + (char) ((int) 'Z' + 1));
     }
 
 }
