@@ -95,13 +95,7 @@ public class SearchCommand implements Command {
 
         SearchResult result = runSearch(searchString);
 
-        if (result != null) {
-            showSearchResult(result);
-        } else {
-            if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
-                MessageUtils.showMessage("Cannot find feature or locus: " + searchString);
-            }
-        }
+        showSearchResult(result);
 
         if (log.isDebugEnabled()) {
             log.debug("End search: " + searchString);
@@ -119,7 +113,7 @@ public class SearchCommand implements Command {
      */
     SearchResult runSearch(String searchString) {
 
-        SearchResult result = new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
+        SearchResult result = new SearchResult(searchString);
 
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
@@ -146,9 +140,9 @@ public class SearchCommand implements Command {
 
     private void showSearchResult(SearchResult result) {
         int origZoom = referenceFrame.getZoom();
-        if (result == null)
-            result = new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
-
+        if (result == null) {
+            result = new SearchResult(searchString);
+        }
         boolean showMessage = false;
         boolean success = true;
         String message = "Invalid search string: " + result.searchString;
@@ -179,12 +173,15 @@ public class SearchCommand implements Command {
                 break;
             case ERROR:
             default:
-                success = false;
-                showMessage = true;
+                if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
+                    message = "Cannot find feature or locus: " + searchString;
+                    success = false;
+                    showMessage = true;
+                }
         }
-        if (success && recordHistory)
+        if (success && recordHistory) {
             IGV.getInstance().getSession().getHistory().push(searchString, origZoom);
-
+        }
         if (showMessage) {
             MessageUtils.showMessage(message);
         }
@@ -198,7 +195,7 @@ public class SearchCommand implements Command {
      * @return searchResult
      */
     private SearchResult parseTokens(String[] tokens) {
-        SearchResult result;
+        SearchResult result = new SearchResult(searchString);
         boolean success = false;
         int start = 0, end = 0;
         String chr = genome.getChromosomeAlias(tokens[0].trim());
@@ -227,18 +224,20 @@ public class SearchCommand implements Command {
                 //Should rethink this approach
                 String ft = t + ":1-" + chromo.getLength();
                 Locus fl = new Locus(ft);
-                if (fl.isValid())
+                if (fl.isValid()) {
                     loci.add(ft);
+                }
             }
         }
-        result = new SearchResult(loci);
 
-        if (loci.size() <= 1)
-            return null;
+        if (loci.size() <= 1) {
+            return result;
+        } else {
+            result = new SearchResult(loci);
+        }
 
         if (loci.size() != tokens.length) {
             result.setMessage("Not all portions of the search string are recognized as genes or loci.");
-            //MessageUtils.showMessage("Not all portions of the search string are recognized as genes or loci.");
         }
         return result;
     }
@@ -346,6 +345,10 @@ public class SearchCommand implements Command {
 
         private List<String> loci;
         private String message;
+
+        public SearchResult(String searchString) {
+            this(SearchType.ERROR, null, -1, -1, searchString);
+        }
 
         public SearchResult(SearchType type, String chr, int start, int end, String searchString) {
             this.type = type;
