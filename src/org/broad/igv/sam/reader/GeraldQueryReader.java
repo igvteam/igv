@@ -51,11 +51,6 @@ public class GeraldQueryReader implements AlignmentQueryReader {
     FileInputStream is;
     AlignmentParser parser;
 
-
-    public GeraldQueryReader(String alignmentFile) {
-        this(alignmentFile, true);
-    }
-
     public GeraldQueryReader(String alignmentFile, boolean requireIndex) {
         this.alignmentFile = alignmentFile;
         parser = getParserFor(alignmentFile);

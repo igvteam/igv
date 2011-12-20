@@ -63,7 +63,7 @@ public class GeraldParser implements AlignmentParser {
     private static final int REQUIRED_EXPORT_COLUMNS = PASSING_FILTER_COLUMN + 1;
     private String[] fields = new String[REQUIRED_EXPORT_COLUMNS];
     SolexaQualityConverter solexaToPhredQualityConverter = SolexaQualityConverter.getSingleton();
-    Genome genome;
+    //Genome genome;
     /**
      * Byte typed variables for all normal bases.
      */
@@ -76,10 +76,8 @@ public class GeraldParser implements AlignmentParser {
     public static final byte G = 'G';
     public static final byte T = 'T';
 
-    public GeraldParser()
-
-    {
-        genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+    public GeraldParser() {
+        //   genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
     public GeraldAlignment readNextRecord(AsciiLineReader reader) {
@@ -177,7 +175,8 @@ public class GeraldParser implements AlignmentParser {
             loadChrMap();
         }
         String chr = seqChrMap.containsKey(seq) ? seqChrMap.get(seq) : seq;
-        return genome == null ? chr : genome.getChromosomeAlias(chr);
+        return chr;
+        //return genome == null ? chr : genome.getChromosomeAlias(chr);
 
     }
 
