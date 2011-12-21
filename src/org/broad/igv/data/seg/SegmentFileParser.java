@@ -172,7 +172,7 @@ public class SegmentFileParser implements SegFileParser {
                         String description = desc == null ? null : desc.toString();
                         dataset.addSegment(trackId, chr, start, end, value, description);
                     } catch (NumberFormatException numberFormatException) {
-                        log.info("Skipping line: " + nextLine);
+                       // log.info("Skipping line: " + nextLine);
                     }
                 }
             }

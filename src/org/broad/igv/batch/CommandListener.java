@@ -247,6 +247,10 @@ public class CommandListener implements Runnable {
                 if (genomeID != null) {
                     IGV.getFirstInstance().selectGenomeFromList(genomeID);
                 }
+                if(genomeID != null) genomeID = URLDecoder.decode(genomeID);
+                if(mergeValue != null) mergeValue = URLDecoder.decode(mergeValue);
+                if(locus != null) locus = URLDecoder.decode(locus);
+
 
                 // Default for merge is "false" for session files,  "true" otherwise
                 String file = params.get("file");
