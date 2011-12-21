@@ -36,9 +36,12 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.tribble.Feature;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -121,11 +124,16 @@ public class SearchCommand implements Command {
             result = parseTokens(tokens);
             // Feature search
         } else {
-            NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
+            //Check exact match
+            Feature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
             if (feature != null) {
                 return new SearchResult(feature, searchString);
             } else {
-                //Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
+                //Check inexact match
+                Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
+                if (!features.isEmpty()) {
+                    return new SearchResult(features, searchString);
+                }
             }
 
             // Apparently not a feature. Either a locus or track name.  Track names can be quoted,
@@ -153,6 +161,16 @@ public class SearchCommand implements Command {
         }
 
         switch (result.type) {
+            case FEATURES:
+                //Multiple results, ask user
+                SearchResult single_result = askUserFeature(result);
+                if (single_result == null) {
+                    //User cancelled
+                    break;
+                } else {
+                    //User selected
+                    result = single_result;
+                }
             case FEATURE:
                 showFlankedRegion(result.chr, result.start, result.end);
                 break;
@@ -173,11 +191,12 @@ public class SearchCommand implements Command {
                 break;
             case ERROR:
             default:
-                if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
-                    message = "Cannot find feature or locus: " + searchString;
-                    success = false;
-                    showMessage = true;
-                }
+                //if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
+            {
+                message = "Cannot find feature or locus: " + searchString;
+                success = false;
+                showMessage = true;
+            }
         }
         if (success && recordHistory) {
             IGV.getInstance().getSession().getHistory().push(searchString, origZoom);
@@ -189,6 +208,41 @@ public class SearchCommand implements Command {
     }
 
     /**
+     * Display a dialog asking user which search result they want
+     * to display.
+     * TODO Limit number of results shown
+     * TODO Display locations along with gene names (make right clickable, add other goodies?)
+     * TODO make it so double clicking activates an option, rather than click + OK
+     *
+     * @param results
+     * @return A new SearchResult with the selected feature
+     */
+    private SearchResult askUserFeature(SearchResult results) {
+
+        Object[] Options = results.getFeatures().keySet().toArray();
+
+        JList ls = new JList(Options);
+        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        ls.setSelectedValue(Options[0], true);
+
+        Object[] message = {"Please select the desired feature", ls};
+
+        // Use showOptionDialog () interface which offers the most complete
+        int resp = JOptionPane.showConfirmDialog(
+                null, message, "Features",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+
+        // And we treat the return val:
+        SearchResult val = null;
+        if (resp == JOptionPane.OK_OPTION) {
+            NamedFeature feature = FeatureDB.getFeature((String) ls.getSelectedValue());
+            val = new SearchResult(feature, results.searchString);
+        }
+        return val;
+    }
+
+    /**
      * Determine searchResult for white-space delimited search query.
      *
      * @param tokens
@@ -196,7 +250,6 @@ public class SearchCommand implements Command {
      */
     private SearchResult parseTokens(String[] tokens) {
         SearchResult result = new SearchResult(searchString);
-        boolean success = false;
         int start = 0, end = 0;
         String chr = genome.getChromosomeAlias(tokens[0].trim());
         try {
@@ -345,6 +398,7 @@ public class SearchCommand implements Command {
 
         private List<String> loci;
         private String message;
+        private Map<String, NamedFeature> features;
 
         public SearchResult(String searchString) {
             this(SearchType.ERROR, null, -1, -1, searchString);
@@ -363,9 +417,15 @@ public class SearchCommand implements Command {
             this.loci = loci;
         }
 
-        public SearchResult(NamedFeature feature, String searchString) {
+        public SearchResult(Feature feature, String searchString) {
             this(SearchType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd(),
                     searchString);
+        }
+
+        public SearchResult(Map<String, NamedFeature> features, String searchString) {
+            this.type = SearchType.FEATURES;
+            this.searchString = searchString;
+            this.features = features;
         }
 
         private void setMessage(String message) {
@@ -377,7 +437,19 @@ public class SearchCommand implements Command {
         }
 
         List<String> getLoci() {
-            return this.loci;
+            if (this.type == SearchType.LOCI) {
+                return this.loci;
+            } else {
+                throw new IllegalStateException("SearchResult is type " + this.type + ", must be type LOCI");
+            }
+        }
+
+        Map<String, NamedFeature> getFeatures() {
+            if (this.type == SearchType.FEATURES) {
+                return this.features;
+            } else {
+                throw new IllegalStateException("SearchResult is type " + this.type + ", must be type FEATURES");
+            }
         }
     }
 }
