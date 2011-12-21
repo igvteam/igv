@@ -23,11 +23,14 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.Globals;
 import org.broad.igv.tools.IgvTools;
+import org.broad.tribble.Feature;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * @author jrobinso
@@ -35,10 +38,11 @@ import java.io.IOException;
 public class TestLoadGeneManager {
 
     @Test
-    public static void main(String[] args) throws IOException {
-        Genome genome = IgvTools.loadGenome("/Users/jrobinso/projects/genomes/hg18.genome", false);
-
-        System.out.println(FeatureDB.getFeature("EGFR"));
+    public void main() throws IOException {
+        Globals.setHeadless(true);
+        IgvTools.loadGenome("test/data/genomes/hg18.genome", true);
+        Feature feature = FeatureDB.getFeature("EGFR");
+        assertNotNull(feature);
     }
 
 }

@@ -47,7 +47,7 @@ public class Globals {
     public static boolean headless = false;
     public static boolean suppressMessages = false;
     private static boolean batch = false;
-    public static int CONNECT_TIMEOUT = 10000; //msej
+    public static int CONNECT_TIMEOUT = 10000;
     /**
      * Field description
      */
