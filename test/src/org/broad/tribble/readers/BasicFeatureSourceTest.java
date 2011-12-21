@@ -19,6 +19,7 @@
 package org.broad.tribble.readers;
 
 
+import org.broad.igv.TestInformation;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
@@ -34,7 +35,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -48,7 +52,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BasicFeatureSourceTest {
 
-    static String testFile = "test/data/CEU.SRP000032.2010_03.genotypes.head.vcf";
+    static String testFile = TestInformation.DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.head.vcf";
     static BasicFeatureSource<VariantContext> bfr;
 
     @BeforeClass
@@ -113,8 +117,7 @@ public class BasicFeatureSourceTest {
         try {
             stream = new LittleEndianOutputStream(new BufferedOutputStream(new FileOutputStream(idxFile)));
             idx.write(stream);
-        }
-        finally {
+        } finally {
             if (stream != null) {
                 stream.close();
             }

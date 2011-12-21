@@ -22,12 +22,14 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.TestInformation;
 import org.junit.*;
-import static org.junit.Assert.fail;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author jrobinso
@@ -58,7 +60,7 @@ public class ProbeToGeneMapTest {
      */
     @Test
     public void testAffy() throws FileNotFoundException, IOException {
-        File f = new File("../server/web/resources/probes/affy_probe_gene_mapping.txt");
+        File f = new File(TestInformation.LARGE_DATA_DIR + "/affy_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
         while ((nextLine = br.readLine()) != null) {
@@ -81,7 +83,7 @@ public class ProbeToGeneMapTest {
 
     @Test
     public void testAgilent() throws FileNotFoundException, IOException {
-        File f = new File("../server/web/resources/probes/agilent_probe_gene_mapping.txt");
+        File f = new File(TestInformation.LARGE_DATA_DIR + "/agilent_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
 
@@ -106,7 +108,7 @@ public class ProbeToGeneMapTest {
 
     @Test
     public void testIllumina() throws FileNotFoundException, IOException {
-        File f = new File("../server/web/resources/probes/illumina_probe_gene_mapping.txt");
+        File f = new File(TestInformation.LARGE_DATA_DIR + "/illumina_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
 

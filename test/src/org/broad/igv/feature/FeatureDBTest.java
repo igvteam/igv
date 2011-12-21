@@ -19,6 +19,7 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.Globals;
+import org.broad.igv.TestInformation;
 import org.broad.igv.tools.IgvTools;
 import org.junit.After;
 import org.junit.Before;
@@ -34,7 +35,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class FeatureDBTest {
 
-    static String dataFileName = "test/data/genomes/hg18.genome";
+    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.genome";
 
     @Before
     public void setUp() throws Exception {

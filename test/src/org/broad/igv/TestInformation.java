@@ -18,10 +18,6 @@
 
 package org.broad.igv;
 
-import org.broad.igv.util.FileUtils;
-
-import java.io.File;
-
 /**
  * User: jacob
  * Date: 2011/12/15
@@ -31,50 +27,7 @@ public class TestInformation {
     public static String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
     public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
 
-    /*
-    private static String DIR_FILE_NAME = "test" + File.separator + "test_data_loc";
-
-    public static String getTestDataDirectory() {
-        String tdata_dir = null;
-
-        String infile = getConfigFilePath();
-        System.out.println(infile);
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(infile));
-            tdata_dir = in.readLine();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return tdata_dir;
-    }
-
-    static String getConfigFilePath(){
-        return getFilePath(DIR_FILE_NAME);
-    }*/
-
-    static String getFilePath(String filename) {
-        /*
-         * Starting from installation directory, search upwards
-         * for the given file.
-         */
-        String testDir = FileUtils.getInstallDirectory();
-        String filePath = null;
-        int lastSep = testDir.lastIndexOf(File.separator);
-
-        while (lastSep > 0) {
-            lastSep = testDir.lastIndexOf(File.separator);
-            File testFile = new File(testDir, filename);
-            if (testFile.isFile()) {
-                filePath = testFile.getAbsolutePath();
-                break;
-            } else {
-                testDir = testDir.substring(0, lastSep);
-            }
-        }
-        return filePath;
-    }
+    public static String DATA_DIR = "test/data";
+    public static String LARGE_DATA_DIR = "test/largedata";
 
 }

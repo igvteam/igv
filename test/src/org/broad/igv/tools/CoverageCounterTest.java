@@ -21,8 +21,6 @@ package org.broad.igv.tools;
 import org.broad.igv.Globals;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,15 +28,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- *    public CoverageCounter(String alignmentFile,
-                           DataConsumer consumer,
-                           int windowSize,
-                           int extFactor,
-                           File tdfFile,  // For reference
-                           File wigFile,
-                           Genome genome,
-                           String options)
+ * public CoverageCounter(String alignmentFile,
+ * DataConsumer consumer,
+ * int windowSize,
+ * int extFactor,
+ * File tdfFile,  // For reference
+ * File wigFile,
+ * Genome genome,
+ * String options)
  */
 public class CoverageCounterTest {
 
@@ -67,8 +67,8 @@ public class CoverageCounterTest {
     }
 
     @Test
-
     public void testInclueDuplicatesFlag() throws IOException {
+        //TODO Guessing this URL is obsolete
         String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/IlluminaHiSeq2000_BodySites/Merged/HBM.adipose.bam.sorted.bam";
         String options = "d,q@chr1:153425249-153425249";
         int windowSize = 1;

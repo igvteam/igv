@@ -18,11 +18,10 @@
 
 package org.broad.igv.bbfile;
 
-import org.junit.BeforeClass;
+import org.broad.igv.TestInformation;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * @author jrobinso
@@ -57,7 +56,7 @@ public class BBFileReaderTest {
     @Test
     public void testBigBed() throws IOException {
 
-        String path = "test/data/bb/chr21.refseq.bb";
+        String path = TestInformation.DATA_DIR + "/bb/chr21.refseq.bb";
         BBFileReader bbReader = openReader(path);
 
         String chr = "chr21";
