@@ -193,7 +193,7 @@ public class TrackMenuUtils {
      *
      * @return
      */
-    private static void addDataItems(JPopupMenu menu, final Collection<Track> tracks) {
+    public static void addDataItems(JPopupMenu menu, final Collection<Track> tracks) {
 
         if (log.isDebugEnabled()) {
             log.debug("enter getDataPopupMenu");
@@ -253,7 +253,7 @@ public class TrackMenuUtils {
             }
         }
 
-        if (!avaibleWindowFunctions.isEmpty() || !currentWindowFunctions.isEmpty()) {
+        if (avaibleWindowFunctions.size() > 1 || currentWindowFunctions.size() > 1) {
             JLabel statisticsHeading = new JLabel(LEADING_HEADING_SPACER + "Windowing Function", JLabel.LEFT);
             statisticsHeading.setFont(UIConstants.boldFont);
 
@@ -291,7 +291,7 @@ public class TrackMenuUtils {
         menu.add(getShowDataRangeItem(tracks));
 
 
-        menu.add(getChangeKMPlotItem(tracks));
+        //menu.add(getChangeKMPlotItem(tracks));
 
     }
 
@@ -505,7 +505,7 @@ public class TrackMenuUtils {
     }
 
 
-    private static JMenuItem getLogScaleItem(final Collection<Track> selectedTracks) {
+    public static JMenuItem getLogScaleItem(final Collection<Track> selectedTracks) {
         // Change track height by attribute
 
 
@@ -561,7 +561,7 @@ public class TrackMenuUtils {
         return autoscaleItem;
     }
 
-    private static JMenuItem getShowDataRangeItem(final Collection<Track> selectedTracks) {
+    public static JMenuItem getShowDataRangeItem(final Collection<Track> selectedTracks) {
 
         final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Show Data Range");
         if (selectedTracks.size() == 0) {

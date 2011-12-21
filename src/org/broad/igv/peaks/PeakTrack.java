@@ -28,7 +28,9 @@ import org.broad.igv.renderer.Renderer;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.track.*;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.util.LongRunningTask;
@@ -214,6 +216,15 @@ public class PeakTrack extends AbstractTrack {
         return showSignals ? signalDataRange : scoreDataRange;
     }
 
+    @Override
+    public void setDataRange(DataRange axisDefinition) {
+        if (showSignals) {
+            signalDataRange = axisDefinition;
+        } else {
+            scoreDataRange = axisDefinition;
+        }
+    }
+
     public void render(RenderContext context, Rectangle rect) {
 
         try {
@@ -223,10 +234,13 @@ public class PeakTrack extends AbstractTrack {
             }
 
             renderer.render(peakList, context, rect, this);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
 
     public Renderer getRenderer() {
         return renderer;
@@ -294,7 +308,7 @@ public class PeakTrack extends AbstractTrack {
                 LocusScore score = getLocusScoreAt(scores, position, frame);
                 if (score != null) {
                     foundValue = true;
-                    buf.append( "Score = " + score.getScore());
+                    buf.append("Score = " + score.getScore());
                 }
             }
             return foundValue ? buf.toString() : null;
@@ -629,6 +643,50 @@ public class PeakTrack extends AbstractTrack {
             source.setNormalizeCounts(b, v);
         }
     }
+
+
+
+
+    private InViewInterval computeScale(double origin, double end, List<LocusScore> scores) {
+
+        InViewInterval interval = new InViewInterval();
+
+        if (scores.size() == 1) {
+            interval.dataMax = Math.max(0, scores.get(0).getScore());
+            interval.dataMin = Math.min(0, scores.get(0).getScore());
+        } else {
+            interval.startIdx = 0;
+            interval.endIdx = scores.size();
+            for (int i = 1; i < scores.size(); i++) {
+                if (scores.get(i).getEnd() >= origin) {
+                    interval.startIdx = i - 1;
+                    break;
+                }
+            }
+
+            for (int i = interval.startIdx + 1; i < scores.size(); i++) {
+                LocusScore locusScore = scores.get(i);
+                float value = locusScore.getScore();
+                if (Float.isNaN(value)) value = 0;
+                interval.dataMax = Math.max(interval.dataMax, value);
+                interval.dataMin = Math.min(interval.dataMin, value);
+                if (locusScore.getStart() > end) {
+                    interval.endIdx = i;
+                    break;
+                }
+            }
+        }
+
+        return interval;
+    }
+
+    class InViewInterval {
+        int startIdx;
+        int endIdx;
+        float dataMax = 0;
+        float dataMin = 0;
+    }
+
 
 
 }

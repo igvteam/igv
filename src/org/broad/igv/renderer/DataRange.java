@@ -67,24 +67,15 @@ public class DataRange implements Persistable {
     private boolean drawBaseline = true;
 
 
-    /**
-     * Constructs ...
-     *
-     * @param minimum
-     * @param baseline
-     * @param maximum
-     */
+    public DataRange(float minimum, float maximum) {
+        this(minimum, minimum, maximum, true);
+    }
+
+
     public DataRange(float minimum, float baseline, float maximum) {
         this(minimum, baseline, maximum, true);
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param minimum
-     * @param baseline
-     * @param maximum
-     */
     public DataRange(float minimum, float baseline, float maximum, boolean drawBaseline) {
         this.minimum = minimum;
         this.baseline = baseline;

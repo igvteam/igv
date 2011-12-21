@@ -44,6 +44,7 @@ public class DataRangeDialog extends javax.swing.JDialog {
      */
     public DataRangeDialog(java.awt.Frame parent, DataRange axisDefinition) {
         super(parent, true);
+        this.setLocationRelativeTo(parent);
         initComponents();
         if (axisDefinition != null) {
             min = axisDefinition.getMinimum();
@@ -77,6 +78,7 @@ public class DataRangeDialog extends javax.swing.JDialog {
         baseTextField = new javax.swing.JTextField();
         maxTextField = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
+        getRootPane().setDefaultButton(okButton);
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

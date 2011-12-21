@@ -67,7 +67,7 @@ public class PeakTrackMenu extends IGVPopupMenu {
 
     private void init(final TrackClickEvent trackClickEvent) {
 
-        List<Track> tracks = Arrays.asList(new Track[] {track});
+        Collection<Track> tracks = IGV.getInstance().getSelectedTracks(); //Arrays.asList(new Track[] {track});
 
         //Title
         JLabel popupTitle = new JLabel("<html><b>" + track.getName(), JLabel.LEFT);
@@ -91,6 +91,12 @@ public class PeakTrackMenu extends IGVPopupMenu {
             }
         });
         add(plotItem);
+
+        if (track.isShowSignals()) {
+            add(TrackMenuUtils.getDataRangeItem(tracks));
+            add(TrackMenuUtils.getLogScaleItem(tracks));
+            add(TrackMenuUtils.getShowDataRangeItem(tracks));
+        }
 
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(tracks));
@@ -161,14 +167,13 @@ public class PeakTrackMenu extends IGVPopupMenu {
     }
 
 
-
     void openTimeSeriesPlot(TrackClickEvent trackClickEvent) {
 
-        if(trackClickEvent == null) return;
+        if (trackClickEvent == null) return;
 
         ReferenceFrame referenceFrame = trackClickEvent.getFrame();
-        if(referenceFrame == null) return;
-        
+        if (referenceFrame == null) return;
+
         String chr = referenceFrame.getChrName();
         double position = trackClickEvent.getChromosomePosition();
 
