@@ -50,7 +50,7 @@ public class SeekableServiceStreamTest extends TestCase {
         byte[] expectedBytes = new byte[range];
         hs.read(expectedBytes, 0, expectedBytes.length);
 
-        SeekableServiceStream sss = new SeekableServiceStream(tdfFile);
+        SeekableServiceStream sss = new SeekableServiceStream(new URL(tdfFile));
         sss.seek(position);
         byte[] bytes = new byte[range];
         sss.read(bytes, 0, bytes.length);

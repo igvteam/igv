@@ -124,13 +124,22 @@ public class HttpUtils {
         }
     }
 
-    public static boolean useByteRange() {
+    public static boolean useByteRange(URL url) {
+
+        // Get explicit user setting
         useByteRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-        if (useByteRange && !byteRangeTested) {
+
+        // Test broad urls for successful byte range requests.
+        if (useByteRange && !byteRangeTested && url.getHost().contains("broadinstitute.org")) {
             useByteRange = testByteRange();
-            byteRangeTested = true;
+            byteRangeTested = true;   // <= to prevent testing again
         }
-        return useByteRange;
+
+        return useByteRange && url.getHost().contains("broadinstitute.org");
+    }
+
+    public void shutdown() {
+        // Do any cleanup required here
     }
 
 

@@ -282,11 +282,11 @@ public class SequenceHelper {
 
     public static String convertSequenceURL(String url) {
 
-        final boolean useByteRange = HttpUtils.getInstance().useByteRange();
-        String key = url + useByteRange;
+        String key = url;
         String convertedURL = sequenceUrlCache.get(key);
         if (convertedURL == null) {
             convertedURL = url;
+
             // Legacy URLs -- this code can be removed when all .genome files are updated.
             convertedURL = convertedURL.replace(
                     "broad.mit.edu",
@@ -296,22 +296,6 @@ public class SequenceHelper {
             convertedURL = convertedURL.replace(
                     "http://www.broadinstitute.org/igv/SequenceServlet",
                     "http://igvdata.broadinstitute.org/genomes/seq");
-
-
-            if (!useByteRange) {
-                // Translate our URLS to use the servlet
-                convertedURL = convertedURL.replace(
-                        "http://www.broadinstitute.org/igvdata/annotations/seq",
-                        "http://www.broadinstitute.org/igv/sequence");
-
-                convertedURL = convertedURL.replace(
-                        "http://igvdata.broadinstitute.org/genomes/seq",
-                        "http://www.broadinstitute.org/igv/sequence");
-
-                convertedURL = convertedURL.replace(
-                        "http://igv.broadinstitute.org/genomes/seq",
-                        "http://www.broadinstitute.org/igv/sequence");
-            }
 
 
             if (!url.equals(convertedURL)) {

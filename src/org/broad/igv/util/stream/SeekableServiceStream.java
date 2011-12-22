@@ -46,14 +46,8 @@ public class SeekableServiceStream extends SeekableStream {
     private long contentLength = Long.MAX_VALUE;
     private String dataPath;
 
-    public SeekableServiceStream(String path) {
-        try {
-            URL url = new URL(path);
-            this.dataPath = url.getPath().replaceFirst(DATA_HTTP_PATH, DATA_PATH);
-        } catch (MalformedURLException e) {
-           log.error("Error instantiating SeekableServiceStream", e);
-        }
-
+    public SeekableServiceStream(URL url) {
+        this.dataPath = url.getPath().replaceFirst(DATA_HTTP_PATH, DATA_PATH);
     }
 
     public long length() {
@@ -93,7 +87,7 @@ public class SeekableServiceStream extends SeekableStream {
         try {
 
             is = HttpUtils.getInstance().openConnectionStream(url);
-            
+
             while (n < length) {
                 int count = is.read(buffer, offset + n, length - n);
                 if (count < 0) {
@@ -117,9 +111,7 @@ public class SeekableServiceStream extends SeekableStream {
             } else {
                 throw e;
             }
-        }
-
-        finally {
+        } finally {
             if (is != null) {
                 is.close();
             }

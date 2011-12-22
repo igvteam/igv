@@ -138,7 +138,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         String protocol = url.getProtocol().toLowerCase();
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
-            boolean useByteRange = HttpUtils.getInstance().useByteRange();
+            boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
             if (useByteRange) {              
                 is = new SeekablePicardHTTPStream(url);
             } else {

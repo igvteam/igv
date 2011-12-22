@@ -39,21 +39,18 @@ public class IGVSeekableStreamFactory {
 
         } else {
             SeekableStream is = null;
+            final URL url = new URL(path);
             if (path.toLowerCase().startsWith("http:") || path.toLowerCase().startsWith("https:")) {
-                boolean useByteRange = HttpUtils.getInstance().useByteRange();
+                boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
                 if (useByteRange) {
-
-                    // Test path
-                    long contentLength = HttpUtils.getInstance().getContentLength(new URL(path));
-
-                    is = new SeekableHTTPStream(new IGVUrlHelper(new URL(path)));
+                    is = new SeekableHTTPStream(new IGVUrlHelper(url));
                 } else {
-                    is = new SeekableServiceStream(path);
+                    is = new SeekableServiceStream(url);
                 }
             } else if (path.toLowerCase().startsWith("ftp:")) {
 
                 
-                is = new SeekableFTPStream(new URL(path));
+                is = new SeekableFTPStream(url);
             } else {
                 is = new SeekableFileStream(new File(path));
             }
