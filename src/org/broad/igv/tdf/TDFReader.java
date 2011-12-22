@@ -251,7 +251,7 @@ public class TDFReader {
             }
 
         } catch (IOException ex) {
-            log.error("Error reading dataset: " + name, ex);
+            log.error("Error reading dataset: " + getPath() + " (" + name + ")", ex);
             throw new RuntimeException("System error occured while reading dataset: " + name);
         }
     }

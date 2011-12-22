@@ -1060,8 +1060,6 @@ public class IGV {
 
         AttributeManager.getInstance().clearAllAttributes();
 
-        SeekableFileStream.closeAllInstances();
-
         if (session == null) {
             session = new Session(sessionPath);
         } else {
@@ -1072,6 +1070,8 @@ public class IGV {
         groupListeners.clear();
 
         contentPane.getMainPanel().resetPanels();
+
+        SeekableFileStream.closeAllInstances();
 
         doRefresh();
 
@@ -2285,7 +2285,7 @@ public class IGV {
                     } else if (igvArgs.getDataFileString() != null) {
                         // Not an xml file, assume its a list of data files
                         String[] tokens = igvArgs.getDataFileString().split(",");
-                        String [] names = null;
+                        String[] names = null;
                         if (igvArgs.getName() != null) {
                             names = igvArgs.getName().split(",");
                         }
