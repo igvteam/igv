@@ -24,7 +24,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.*;
-import org.broad.igv.renderer.Renderer;
 import org.broad.igv.session.RendererFactory;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.ui.FontManager;
@@ -100,7 +99,7 @@ public abstract class AbstractTrack implements Track {
     private ContinuousColorScale colorScale;
 
     private Color posColor = Color.blue.darker(); //java.awt.Color[r=0,g=0,b=178];
-    private Color altColor;
+    private Color altColor = Color.blue.darker();
     private DataRange dataRange;
     protected int visibilityWindow = -1;
     private DisplayMode displayMode = DisplayMode.COLLAPSED;

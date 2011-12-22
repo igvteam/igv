@@ -59,9 +59,7 @@ public class LineplotRenderer extends XYPlotRenderer {
 
         Color posColor = track.getColor();
         Color negColor = track.getAltColor();
-        if (negColor == null) {
-            negColor = posColor;
-        }
+
         Graphics2D gPos = context.getGraphic2DForColor(posColor);
         gPos.setRenderingHint(RenderingHints.KEY_ANTIALIASING, // Anti-alias!
                 RenderingHints.VALUE_ANTIALIAS_ON);
