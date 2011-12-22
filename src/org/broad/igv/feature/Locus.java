@@ -22,6 +22,9 @@
  */
 package org.broad.igv.feature;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  * @author jrobinso
  */
@@ -30,6 +33,8 @@ public class Locus {
     private String chr = null;
     protected int start = -1;
     protected int end = -1;
+
+    private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
 
     public Locus(String chr, int start, int end) {
         this.chr = chr;
@@ -89,6 +94,18 @@ public class Locus {
         return chr + ":" + start + "-" + end;
     }
 
+    public String getFormattedLocusString() {
+        return getFormattedLocusString(chr, start, end);
+    }
+
+    public static String getFormattedLocusString(String chr, int start, int end) {
+        String startStr = NUMBER_FORMAT.format(start);
+        String endStr = NUMBER_FORMAT.format(end);
+        String position = chr + ":" + startStr + "-" + endStr;
+
+        return position;
+    }
+
     /**
      * Weak version of contains, does not check genome
      *
@@ -104,4 +121,5 @@ public class Locus {
     public boolean overlaps(String chr, int start, int end) {
         return this.chr.equals(chr) && this.start <= end && this.end >= start;
     }
+
 }

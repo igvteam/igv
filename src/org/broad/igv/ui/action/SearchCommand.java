@@ -39,9 +39,10 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.Feature;
 
 import javax.swing.*;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -67,11 +68,13 @@ import java.util.Map;
 public class SearchCommand implements Command {
 
     private static Logger log = Logger.getLogger(SearchCommand.class);
+    private static int SEARCH_LIMIT = 20;
 
     String searchString;
     ReferenceFrame referenceFrame;
     boolean recordHistory = true;
     Genome genome;
+
 
     public SearchCommand(ReferenceFrame referenceFrame, String searchString) {
         this(referenceFrame, searchString,
@@ -130,8 +133,8 @@ public class SearchCommand implements Command {
                 return new SearchResult(feature, searchString);
             } else {
                 //Check inexact match
-                Map<String, NamedFeature> features = FeatureDB.getFeatures(searchString.toUpperCase().trim());
-                if (!features.isEmpty()) {
+                List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+                if (features.size() > 0) {
                     return new SearchResult(features, searchString);
                 }
             }
@@ -163,14 +166,25 @@ public class SearchCommand implements Command {
         switch (result.type) {
             case FEATURES:
                 //Multiple results, ask user
-                SearchResult single_result = askUserFeature(result);
-                if (single_result == null) {
-                    //User cancelled
+                List<NamedFeature> features = askUserFeature(result.getFeatures());
+                SearchResult newResult = null;
+                if (features == null || features.size() == 0) {
+                    //User cancelled or nothing found
                     break;
-                } else {
+                } else if (features.size() == 1) {
                     //User selected
-                    result = single_result;
+                    newResult = new SearchResult(features.get(0), searchString);
+                } else {
+                    //More than 1 feature
+                    List<String> loci = new ArrayList<String>(features.size());
+                    for (NamedFeature f : features) {
+                        loci.add(f.getName());
+                    }
+                    newResult = new SearchResult(loci);
                 }
+                showSearchResult(newResult);
+                success = false; //Do this to prevent double logging
+                break;
             case FEATURE:
                 showFlankedRegion(result.chr, result.start, result.end);
                 break;
@@ -209,35 +223,69 @@ public class SearchCommand implements Command {
 
     /**
      * Display a dialog asking user which search result they want
-     * to display.
-     * TODO Limit number of results shown
-     * TODO Display locations along with gene names (make right clickable, add other goodies?)
+     * to display. Number of results are limited to SEARCH_LIMIT.
+     * The user can select multiple options, in which case all
+     * are displayed.
      * TODO make it so double clicking activates an option, rather than click + OK
      *
-     * @param results
-     * @return A new SearchResult with the selected feature
+     * @param features
+     * @return features which the user has selected
      */
-    private SearchResult askUserFeature(SearchResult results) {
+    private List<NamedFeature> askUserFeature(List<NamedFeature> features) {
 
-        Object[] Options = results.getFeatures().keySet().toArray();
 
-        JList ls = new JList(Options);
-        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //Format for display. <Featurename> (<chromosome>:<start>-<end>)
+        //eg EGFR (chr7:55,054,218-55,242,525)
+        String startStr, endStr;
+        NamedFeature feature;
+        NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+        String[] options = new String[Math.min(features.size(), SEARCH_LIMIT)];
+        for (int ii = 0; ii < options.length; ii++) {
+            feature = features.get(ii);
+            options[ii] = feature.getName() + " (" +
+                    Locus.getFormattedLocusString(feature.getChr(), feature.getStart(), feature.getEnd()) + ")";
+        }
+        JList ls = new JList(options);
+        ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        //ls.setSelectedValue(options[0], true);
+//        ls.addMouseListener(new MouseListener() {
+//            public void mouseClicked(MouseEvent e) {
+//                if(e.getClickCount() >= 2){
+//                    //Dismiss dialog
+//                }
+//            }
+//
+//            public void mousePressed(MouseEvent e) {
+//                //To change body of implemented methods use File | Settings | File Templates.
+//            }
+//
+//            public void mouseReleased(MouseEvent e) {
+//                //To change body of implemented methods use File | Settings | File Templates.
+//            }
+//
+//            public void mouseEntered(MouseEvent e) {
+//                //To change body of implemented methods use File | Settings | File Templates.
+//            }
+//
+//            public void mouseExited(MouseEvent e) {
+//                //To change body of implemented methods use File | Settings | File Templates.
+//            }
+//        });
 
-        ls.setSelectedValue(Options[0], true);
-
-        Object[] message = {"Please select the desired feature", ls};
+        Object[] message = {"Please select the desired feature(s)", ls};
 
         // Use showOptionDialog () interface which offers the most complete
         int resp = JOptionPane.showConfirmDialog(
                 null, message, "Features",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
 
-        // And we treat the return val:
-        SearchResult val = null;
+        List<NamedFeature> val = null;
         if (resp == JOptionPane.OK_OPTION) {
-            NamedFeature feature = FeatureDB.getFeature((String) ls.getSelectedValue());
-            val = new SearchResult(feature, results.searchString);
+            int[] selected = ls.getSelectedIndices();
+            val = new ArrayList<NamedFeature>(selected.length);
+            for (int ii = 0; ii < selected.length; ii++) {
+                val.add(ii, features.get(selected[ii]));
+            }
         }
         return val;
     }
@@ -398,7 +446,7 @@ public class SearchCommand implements Command {
 
         private List<String> loci;
         private String message;
-        private Map<String, NamedFeature> features;
+        private List<NamedFeature> features;
 
         public SearchResult(String searchString) {
             this(SearchType.ERROR, null, -1, -1, searchString);
@@ -422,7 +470,7 @@ public class SearchCommand implements Command {
                     searchString);
         }
 
-        public SearchResult(Map<String, NamedFeature> features, String searchString) {
+        public SearchResult(List<NamedFeature> features, String searchString) {
             this.type = SearchType.FEATURES;
             this.searchString = searchString;
             this.features = features;
@@ -444,7 +492,7 @@ public class SearchCommand implements Command {
             }
         }
 
-        Map<String, NamedFeature> getFeatures() {
+        List<NamedFeature> getFeatures() {
             if (this.type == SearchType.FEATURES) {
                 return this.features;
             } else {

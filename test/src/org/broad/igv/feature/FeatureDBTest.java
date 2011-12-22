@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature;
 
+import junit.framework.AssertionFailedError;
 import org.broad.igv.Globals;
 import org.broad.igv.TestInformation;
 import org.broad.igv.tools.IgvTools;
@@ -25,9 +26,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.swing.*;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * User: jacob
@@ -36,6 +40,46 @@ import static junit.framework.Assert.assertTrue;
 public class FeatureDBTest {
 
     static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.genome";
+    public static final int LARGE = 500;
+
+    private static final String CHECK_STR = "ABC";
+    private static final int EXPECTED = 50;
+
+
+    //Not a unit test
+    public static void junk(String[] args) {
+        //String CHECK_STR = CHECK_STR;
+        //Map<String, NamedFeature> fMap = FeatureDB.getFeatures(CHECK_STR);
+
+        String[] Options = {"Option1", "Option2", "Option3", "48549"};
+        // Create the JList containing the items:
+        JList ls = new JList(Options);
+        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // On the square in a scrollPane size desired:
+        JScrollPane scls = new JScrollPane(ls);
+
+        // It sets the initial val:
+        ls.setSelectedValue(Options[0], true);
+
+        // Create the content of our dialogue:
+        // Message 1 + scrollpane containing the ls:
+        Object[] message = {"Choose your contact", ls};
+
+        // Use showOptionDialog () interface which offers the most complete
+        int resp = JOptionPane.showConfirmDialog(
+                null, message, "Contact List.",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+
+        // And we treat the return val:
+        String val = null;
+        if (resp == JOptionPane.OK_OPTION) {
+            val = ls.getSelectedValue().toString();
+        }
+        //return val;
+
+    }
+
 
     @Before
     public void setUp() throws Exception {
@@ -49,13 +93,80 @@ public class FeatureDBTest {
     }
 
     @Test
-    public void testPartialMatch() throws Exception {
-        String chkstr = "ABC";
-        Map<String, NamedFeature> fMap = FeatureDB.getFeatures(chkstr);
+    public void testFeaturesMap() throws Exception {
+        Map<String, NamedFeature> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
 
         for (String k : fMap.keySet()) {
 
-            assertTrue(k.startsWith(chkstr));
+            assertTrue(k.startsWith(CHECK_STR));
+        }
+
+    }
+
+    @Test
+    public void testFeatureListSize() throws Exception {
+        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, 3);
+        assertEquals(3, features.size());
+
+        features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        assertTrue(features.size() < LARGE);
+        int expected = 50;
+        assertEquals(expected, features.size());
+    }
+
+    @Test
+    public void testFeatureList() throws Exception {
+        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        for (NamedFeature f : features) {
+            assertTrue(f.getName().startsWith(CHECK_STR));
+            assertNotNull(FeatureDB.getFeature(f.getName()));
+        }
+
+    }
+
+    /**
+     * Test thread safety by trying to read the map and clear it at the same time.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testThreadSafety() throws Exception {
+
+        final Map<Integer, AssertionFailedError> map = new HashMap<Integer, AssertionFailedError>();
+
+        Thread read = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+                    for (NamedFeature f : features) {
+                        //Check for data corruption
+                        assertTrue(f.getName().startsWith(CHECK_STR));
+                    }
+                    assertEquals(EXPECTED, features.size());
+                } catch (AssertionFailedError e) {
+                    map.put(0, e);
+                }
+            }
+        });
+
+        Thread write = new Thread(new Runnable() {
+            public void run() {
+                FeatureDB.clearFeatures();
+            }
+        });
+
+        read.start();
+        write.start();
+        read.join();
+
+        write.join();
+
+        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        assertEquals(0, features.size());
+
+        if (map.containsKey(0)) {
+            AssertionFailedError e = map.get(0);
+            throw e;
         }
 
     }

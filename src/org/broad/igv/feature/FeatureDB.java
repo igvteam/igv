@@ -170,11 +170,31 @@ public class FeatureDB {
      *           string will be found.
      * @return
      */
-    public static Map<String, NamedFeature> getFeatures(String nm) {
+    static Map<String, NamedFeature> getFeaturesMap(String nm) {
         String name = nm.trim().toUpperCase();
         SortedMap<String, NamedFeature> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
         return treeMap.subMap(name, name + (char) ((int) 'Z' + 1));
     }
+
+    public static List<NamedFeature> getFeaturesList(String nm, int limit) {
+
+        //Note: We are iterating over submap, this needs
+        //to be synchronized over the main map.
+        synchronized (featureMap) {
+            Map<String, NamedFeature> resultMap = getFeaturesMap(nm);
+            Set<String> names = resultMap.keySet();
+            Iterator<String> nameIter = names.iterator();
+            ArrayList<NamedFeature> features = new ArrayList<NamedFeature>((Math.min(limit, names.size())));
+            int ii = 0;
+            while (nameIter.hasNext() && ii < limit) {
+                features.add(resultMap.get(nameIter.next()));
+                ii++;
+            }
+            return features;
+        }
+
+    }
+
 
 }
