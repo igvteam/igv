@@ -28,7 +28,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -51,7 +51,6 @@ public class SearchCommandTest {
 
         int min = 1;
         int max = 22;
-        SearchCommand cmd;
         String[] chrs = new String[max - min + 1];
         String chr;
 
@@ -59,23 +58,23 @@ public class SearchCommandTest {
             chr = "chr" + cn;
             chrs[cn - min] = chr;
         }
-        tstFeatureTypes(chrs, SearchCommand.SearchType.CHROMOSOME);
+        tstFeatureTypes(chrs, SearchCommand.ResultType.CHROMOSOME);
     }
 
     @Test
     public void testSingleFeatures() throws Exception {
         String[] features = {"EGFR", "ABO", "BRCA1"};
-        tstFeatureTypes(features, SearchCommand.SearchType.FEATURE);
+        tstFeatureTypes(features, SearchCommand.ResultType.FEATURE);
     }
 
     /*
     Run a bunch of queries, test that they all return the same type
      */
-    private void tstFeatureTypes(String[] queries, SearchCommand.SearchType type) {
+    private void tstFeatureTypes(String[] queries, SearchCommand.ResultType type) {
         SearchCommand cmd;
         for (String f : queries) {
             cmd = new SearchCommand(null, f, genome);
-            SearchCommand.SearchResult result = cmd.runSearch(cmd.searchString);
+            SearchCommand.SearchResult result = cmd.runSearch(cmd.searchString).get(0);
             try {
                 assertEquals(type, result.type);
             } catch (AssertionFailedError e) {
@@ -97,19 +96,25 @@ public class SearchCommandTest {
 
     public void tstMultiFeatures(String delim) throws Exception {
         String[] tokens = {"EgfR", "ABO", "BRCA1", "chr1:1-100"};
+        SearchCommand.ResultType[] types = new SearchCommand.ResultType[]{
+                SearchCommand.ResultType.FEATURE,
+                SearchCommand.ResultType.FEATURE,
+                SearchCommand.ResultType.FEATURE,
+                SearchCommand.ResultType.LOCUS
+        };
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
             searchStr += delim + tokens[ii];
         }
         SearchCommand cmd;
         cmd = new SearchCommand(null, searchStr, genome);
-        SearchCommand.SearchResult result = cmd.runSearch(cmd.searchString);
-        assertEquals(SearchCommand.SearchType.LOCI, result.type);
-        List<String> loci = result.getLoci();
+        List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
 
         for (int ii = 0; ii < tokens.length; ii++) {
+            SearchCommand.SearchResult result = results.get(ii);
             try {
-                assertEquals(tokens[ii].toLowerCase(), loci.get(ii).toLowerCase());
+                assertEquals(types[ii], result.type);
+                assertEquals(tokens[ii].toLowerCase(), result.getLocus().toLowerCase());
             } catch (AssertionFailedError e) {
                 System.out.println(searchStr + " :" + result.getMessage());
                 throw e;
@@ -127,20 +132,45 @@ public class SearchCommandTest {
 
         SearchCommand cmd;
         cmd = new SearchCommand(null, searchStr, genome);
-        SearchCommand.SearchResult result = cmd.runSearch(cmd.searchString);
-        assertEquals(SearchCommand.SearchType.LOCI, result.type);
-        List<String> loci = result.getLoci();
+        List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
+
         for (int ii = 0; ii < tokens.length; ii++) {
+            SearchCommand.SearchResult result = results.get(ii);
             //We add coordinates, and expect that loci may be
             //chr1:1-xxx where xxx is some large number.
-            loci.get(ii).contains(tokens[ii]);
+            assertEquals(SearchCommand.ResultType.LOCUS, result.type);
+            assertTrue(result.getLocus().contains(tokens[ii]));
         }
     }
 
     @Test
     public void testError() throws Exception {
-        String[] tokens = {"ueth", "EGFRa", "BRCA"};
-        tstFeatureTypes(tokens, SearchCommand.SearchType.ERROR);
+        String[] tokens = {"ueth", "EGFRa", "BRCA56"};
+        tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
     }
+
+/*    @Test
+    public void testTokenParsing(){
+        String[] chromos = {"chr3", "chr20","chrX", "chrY"};
+        SearchCommand cmd = new SearchCommand(null, "", genome);
+        for(String chr: chromos){
+            assertEquals(SearchCommand.TokenType.CHROMOSOME, cmd.parseIndividualToken(chr));
+        }
+        
+        String[] starts = {"39,239,480", "958392", "0,4829,44"};
+        String[] ends = {"40,321,111","5","48153181,813156"};
+        for(int ii=0; ii < starts.length; ii++){
+            String tstr = chromos[ii] + ":" + starts[ii]+ "-" + ends[ii];
+            assertEquals(SearchCommand.TokenType.LOCUS, cmd.parseIndividualToken(tstr));
+            tstr = chromos[ii] + "\t" + starts[ii]+ "  " + ends[ii];
+            assertEquals(SearchCommand.TokenType.LOCUS, cmd.parseIndividualToken(tstr));
+        }
+        
+        String[] errors = {"egfr:1-100", "chr100", "chrz", "chr1:3","   "};
+        for(String s: errors){
+            System.out.println(s);
+            assertEquals(SearchCommand.TokenType.ERROR, cmd.parseIndividualToken(s));
+        }
+    }*/
 
 }

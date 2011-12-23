@@ -94,10 +94,6 @@ public class Locus {
         return chr + ":" + start + "-" + end;
     }
 
-    public String getFormattedLocusString() {
-        return getFormattedLocusString(chr, start, end);
-    }
-
     public static String getFormattedLocusString(String chr, int start, int end) {
         String startStr = NUMBER_FORMAT.format(start);
         String endStr = NUMBER_FORMAT.format(end);

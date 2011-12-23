@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
@@ -15,10 +15,8 @@
  * THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
+
 package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
@@ -36,13 +34,13 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.tribble.Feature;
 
 import javax.swing.*;
-import java.text.NumberFormat;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * A class for performing search actions.  The class takes a view context and
@@ -69,6 +67,7 @@ public class SearchCommand implements Command {
 
     private static Logger log = Logger.getLogger(SearchCommand.class);
     private static int SEARCH_LIMIT = 20;
+    private boolean askUser = false;
 
     String searchString;
     ReferenceFrame referenceFrame;
@@ -99,9 +98,12 @@ public class SearchCommand implements Command {
             log.debug("Run search: " + searchString);
         }
 
-        SearchResult result = runSearch(searchString);
+        List<SearchResult> results = runSearch(searchString);
+        if (askUser) {
+            results = askUserFeature(results);
+        }
 
-        showSearchResult(result);
+        showSearchResult(results);
 
         if (log.isDebugEnabled()) {
             log.debug("End search: " + searchString);
@@ -110,108 +112,114 @@ public class SearchCommand implements Command {
 
     /**
      * Given a string, search for the appropriate data to show the user.
-     * Differerent syntaxes are accepted.
+     * Different syntaxes are accepted.
      *
-     * @param searchString
+     * @param searchString Feature name (EGFR), chromosome (chr1), or locus string (chr1:1-100 or chr1:6)
+     *                     Partial matches to a feature name (EG) will return multiple results, and
+     *                     ask the user which they want.
      * @return result
-     *         SearchResult describing the results of the search. Will never
-     *         be null, field type will equal SearchType.ERROR if something went wrong.
+     *         List<SearchResult> describing the results of the search. Will never
+     *         be null, field type will equal ResultType.ERROR if something went wrong.
      */
-    SearchResult runSearch(String searchString) {
+    List<SearchResult> runSearch(String searchString) {
 
-        SearchResult result = new SearchResult(searchString);
+        List<SearchResult> results = new ArrayList<SearchResult>();
 
+        searchString = searchString.replace("\"", "");
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
         if (tokens.length >= 2) {
-            result = parseTokens(tokens);
+            results.addAll(parseTokens(tokens));
             // Feature search
         } else {
             //Check exact match
-            Feature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
+            NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
             if (feature != null) {
-                return new SearchResult(feature, searchString);
+                results.add(new SearchResult(feature));
+                return results;
             } else {
                 //Check inexact match
+                //We will later want to ask the user which of these to keep
                 List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
                 if (features.size() > 0) {
-                    return new SearchResult(features, searchString);
+                    askUser = features.size() >= 2;
+                    return getResults(features);
                 }
             }
 
-            // Apparently not a feature. Either a locus or track name.  Track names can be quoted,
+            // Apparently not a feature.
+            // Either a locus or track name.  Track names can be quoted,
             // loci are never quoted.
-            if (!searchString.contains("\"")) {
-                result = calcChromoLocus(searchString);
-            }
+
+            //Update: not supporting track names here
+            results.add(calcChromoLocus(searchString));
         }
 
-        return result;
+        if (results.size() == 0) {
+            SearchResult result = new SearchResult();
+            result.setMessage("Invalid Search String: " + searchString);
+            results.add(result);
+        }
+
+        return results;
     }
 
-    private void showSearchResult(SearchResult result) {
+    private void showSearchResult(List<SearchResult> results) {
         int origZoom = referenceFrame.getZoom();
-        if (result == null) {
-            result = new SearchResult(searchString);
+        SearchResult result = new SearchResult();
+        if (results == null || results.size() == 0) {
+            results = new ArrayList<SearchResult>();
+            results.add(result);
         }
         boolean showMessage = false;
         boolean success = true;
-        String message = "Invalid search string: " + result.searchString;
+        String message = "Invalid search string: " + searchString;
 
-        if (result.type != SearchType.ERROR && FrameManager.isGeneListMode()) {
-            IGV.getInstance().getSession().setCurrentGeneList(null);
-            IGV.getInstance().resetFrames();
-        }
-
-        switch (result.type) {
-            case FEATURES:
-                //Multiple results, ask user
-                List<NamedFeature> features = askUserFeature(result.getFeatures());
-                SearchResult newResult = null;
-                if (features == null || features.size() == 0) {
-                    //User cancelled or nothing found
-                    break;
-                } else if (features.size() == 1) {
-                    //User selected
-                    newResult = new SearchResult(features.get(0), searchString);
-                } else {
-                    //More than 1 feature
-                    List<String> loci = new ArrayList<String>(features.size());
-                    for (NamedFeature f : features) {
-                        loci.add(f.getName());
-                    }
-                    newResult = new SearchResult(loci);
-                }
-                showSearchResult(newResult);
-                success = false; //Do this to prevent double logging
-                break;
-            case FEATURE:
-                showFlankedRegion(result.chr, result.start, result.end);
-                break;
-            case LOCUS:
-                referenceFrame.jumpTo(result.chr, result.start, result.end);
-                break;
-            case LOCI:
-                message = result.getMessage();
-                showMessage = message != null;
-                GeneList geneList = new GeneList("", result.loci, false);
-                IGV.getInstance().getSession().setCurrentGeneList(geneList);
+        if (results.size() == 1) {
+            result = results.get(0);
+            if (result.type != ResultType.ERROR && FrameManager.isGeneListMode()) {
+                IGV.getInstance().getSession().setCurrentGeneList(null);
                 IGV.getInstance().resetFrames();
-                break;
-            case CHROMOSOME:
-                referenceFrame.setChromosomeName(result.chr, true);
-                IGV.getInstance().repaintDataAndHeaderPanels();
-                IGV.getInstance().repaintStatusAndZoomSlider();
-                break;
-            case ERROR:
-            default:
-                //if (!IGV.getInstance().scrollToTrack(searchString.replaceAll("\"", ""))) {
-            {
-                message = "Cannot find feature or locus: " + searchString;
-                success = false;
-                showMessage = true;
             }
+
+            switch (result.type) {
+                case FEATURE:
+                    showFlankedRegion(result.chr, result.start, result.end);
+                    break;
+                case LOCUS:
+                    referenceFrame.jumpTo(result.chr, result.start, result.end);
+                    break;
+                case CHROMOSOME:
+                    referenceFrame.setChromosomeName(result.chr, true);
+                    IGV.getInstance().repaintDataAndHeaderPanels();
+                    IGV.getInstance().repaintStatusAndZoomSlider();
+                    break;
+                case ERROR:
+                default: {
+                    message = "Cannot find feature or locus: " + searchString;
+                    success = false;
+                    showMessage = true;
+                }
+
+            }
+        } else {
+            List<String> loci = new ArrayList<String>(results.size());
+            message = "";
+            for (SearchResult res : results) {
+                if (res.type != ResultType.ERROR) {
+                    loci.add(res.getLocus());
+                } else {
+                    message = message + res.getMessage() + "\n";
+                    showMessage = true;
+                }
+            }
+            GeneList geneList = new GeneList("", loci, false);
+            IGV.getInstance().getSession().setCurrentGeneList(geneList);
+            IGV.getInstance().resetFrames();
+
         }
+
+
         if (success && recordHistory) {
             IGV.getInstance().getSession().getHistory().push(searchString, origZoom);
         }
@@ -226,69 +234,72 @@ public class SearchCommand implements Command {
      * to display. Number of results are limited to SEARCH_LIMIT.
      * The user can select multiple options, in which case all
      * are displayed.
-     * TODO make it so double clicking activates an option, rather than click + OK
      *
-     * @param features
-     * @return features which the user has selected
+     * @param results
+     * @return SearchResults which the user has selected
      */
-    private List<NamedFeature> askUserFeature(List<NamedFeature> features) {
+    private List<SearchResult> askUserFeature(List<SearchResult> results) {
 
-
-        //Format for display. <Featurename> (<chromosome>:<start>-<end>)
-        //eg EGFR (chr7:55,054,218-55,242,525)
-        String startStr, endStr;
-        NamedFeature feature;
-        NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
-        String[] options = new String[Math.min(features.size(), SEARCH_LIMIT)];
+        String[] options = new String[Math.min(results.size(), SEARCH_LIMIT)];
         for (int ii = 0; ii < options.length; ii++) {
-            feature = features.get(ii);
-            options[ii] = feature.getName() + " (" +
-                    Locus.getFormattedLocusString(feature.getChr(), feature.getStart(), feature.getEnd()) + ")";
+            options[ii] = results.get(ii).getLongName();
         }
+
         JList ls = new JList(options);
-        ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        //ls.setSelectedValue(options[0], true);
-//        ls.addMouseListener(new MouseListener() {
-//            public void mouseClicked(MouseEvent e) {
-//                if(e.getClickCount() >= 2){
-//                    //Dismiss dialog
-//                }
-//            }
-//
-//            public void mousePressed(MouseEvent e) {
-//                //To change body of implemented methods use File | Settings | File Templates.
-//            }
-//
-//            public void mouseReleased(MouseEvent e) {
-//                //To change body of implemented methods use File | Settings | File Templates.
-//            }
-//
-//            public void mouseEntered(MouseEvent e) {
-//                //To change body of implemented methods use File | Settings | File Templates.
-//            }
-//
-//            public void mouseExited(MouseEvent e) {
-//                //To change body of implemented methods use File | Settings | File Templates.
-//            }
-//        });
+        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        Object[] message = {"Please select the desired feature(s)", ls};
+        final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+        final Dialog dialog = pane.createDialog("Features");
+        dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
 
-        // Use showOptionDialog () interface which offers the most complete
-        int resp = JOptionPane.showConfirmDialog(
-                null, message, "Features",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+        //On double click, show that option
+        ls.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2) {
+                    dialog.setVisible(false);
+                    pane.setValue(JOptionPane.OK_OPTION);
+                    dialog.dispose();
+                }
+            }
+        });
 
-        List<NamedFeature> val = null;
+        dialog.setVisible(true);
+
+        int resp = (Integer) pane.getValue();
+
+        List<SearchResult> val = null;
         if (resp == JOptionPane.OK_OPTION) {
             int[] selected = ls.getSelectedIndices();
-            val = new ArrayList<NamedFeature>(selected.length);
+            val = new ArrayList<SearchResult>(selected.length);
             for (int ii = 0; ii < selected.length; ii++) {
-                val.add(ii, features.get(selected[ii]));
+                val.add(ii, results.get(selected[ii]));
             }
         }
         return val;
+
     }
+
+    /**
+     * Tokens will be separated somehow. Differentiating token types may be easier
+     * using regex.
+     * @param token
+     * @return
+     */
+/*    private TokenType parseIndividualToken(String token){
+        //Regexp for a number with commas in it (no periods)
+        String num_withcommas = "((\\d)+,?)+";
+        String chromo_string = "^chr([\\d]{1,2}|[XY])";
+        RE chromo = new RE(chromo_string + "\\s*$", RE.MATCH_CASEINDEPENDENT);
+        RE chromo_range = new RE(chromo_string + ":|\\s+" + num_withcommas + "(-|\\s+)" + num_withcommas + "(\\s)*$");
+        if(chromo.match(token)){
+            return TokenType.CHROMOSOME;
+        }else if (chromo_range.match(token)){
+            return TokenType.LOCUS;
+        }
+        
+        return TokenType.ERROR;
+    }*/
 
     /**
      * Determine searchResult for white-space delimited search query.
@@ -296,9 +307,9 @@ public class SearchCommand implements Command {
      * @param tokens
      * @return searchResult
      */
-    private SearchResult parseTokens(String[] tokens) {
-        SearchResult result = new SearchResult(searchString);
-        int start = 0, end = 0;
+    private List<SearchResult> parseTokens(String[] tokens) {
+        List<SearchResult> results = new ArrayList<SearchResult>();
+        int start, end;
         String chr = genome.getChromosomeAlias(tokens[0].trim());
         try {
             start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
@@ -306,41 +317,41 @@ public class SearchCommand implements Command {
             if (tokens.length >= 3) {
                 end = Integer.parseInt(tokens[2].trim());
             }
-            result = new SearchResult(SearchType.LOCUS, chr, start, end, searchString);
-            return result;
+            SearchResult result = new SearchResult(ResultType.LOCUS, chr, start, end);
+            results.add(result);
+            return results;
         } catch (NumberFormatException e) {
             // Multiple tokens, On the fly gene list ?
         }
 
-        List<String> loci = new ArrayList<String>(tokens.length);
-        Chromosome chromo = null;
+        //List<String> loci = new ArrayList<String>(tokens.length);
+        results = new ArrayList<SearchResult>(tokens.length);
+        SearchResult result;
+        Chromosome chromo;
         for (String t : tokens) {
             Locus l = new Locus(t);
+            result = new SearchResult();
+            result.setMessage("Invalid token: " + t);
             if (l.isValid()) {
-                loci.add(t);
-            } else if (FeatureDB.getFeature(t.toUpperCase().trim()) != null) {
-                loci.add(t);
+                result = new SearchResult(l);
             } else if ((chromo = genome.getChromosome(t)) != null) {
                 //Locus will only be valid if fully qualified.
                 //Should rethink this approach
                 String ft = t + ":1-" + chromo.getLength();
                 Locus fl = new Locus(ft);
                 if (fl.isValid()) {
-                    loci.add(ft);
+                    result = new SearchResult(fl);
+                }
+            } else {
+                NamedFeature feat = FeatureDB.getFeature(t.toUpperCase().trim());
+                if (feat != null) {
+                    result = new SearchResult(feat);
                 }
             }
+            results.add(result);
         }
 
-        if (loci.size() <= 1) {
-            return result;
-        } else {
-            result = new SearchResult(loci);
-        }
-
-        if (loci.size() != tokens.length) {
-            result.setMessage("Not all portions of the search string are recognized as genes or loci.");
-        }
-        return result;
+        return results;
     }
 
     private SearchResult calcChromoLocus(String searchString) {
@@ -351,25 +362,25 @@ public class SearchCommand implements Command {
             String posString = searchString.substring(colonIdx).replace(":", "");
             int[] startEnd = getStartEnd(posString);
             if (startEnd != null) {
-                return new SearchResult(SearchType.LOCUS, chr, startEnd[0], startEnd[1], searchString);
+                return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
             }
         } else {
             // No chromosome delimiter (color),  The search string is either chromosome name
             // or a locus in the current chromosome.
             if (searchString.contains("-")) {
-                // Presense of a dash indicates this is a locus string in the current chromosome
+                // Presence of a dash indicates this is a locus string in the current chromosome
                 int[] startEnd = getStartEnd(searchString);
-                return new SearchResult(SearchType.LOCUS, null, startEnd[0], startEnd[1], searchString);
+                return new SearchResult(ResultType.LOCUS, null, startEnd[0], startEnd[1]);
             } else {
                 // No dash, this is either a chromosome or an unkown search string
                 String chr = genome.getChromosomeAlias(searchString);
                 Chromosome chromosome = genome.getChromosome(chr);
                 if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
-                    return new SearchResult(SearchType.CHROMOSOME, chr, 0, 0, searchString);
+                    return new SearchResult(ResultType.CHROMOSOME, chr, 0, 0);
                 }
             }
         }
-        return new SearchResult(SearchType.ERROR, null, -1, -1, searchString);
+        return new SearchResult(ResultType.ERROR, null, -1, -1);
     }
 
     private void showFlankedRegion(String chr, int start, int end) {
@@ -424,12 +435,9 @@ public class SearchCommand implements Command {
 
     }
 
-    enum SearchType {
+    enum ResultType {
         FEATURE,
-        FEATURES,
         LOCUS,
-        LOCI,
-        TRACK,
         CHROMOSOME,
         ERROR
     }
@@ -441,42 +449,37 @@ public class SearchCommand implements Command {
         String chr;
         private int start;
         private int end;
-        SearchType type;
-        private String searchString;
+        ResultType type;
 
-        private List<String> loci;
+        private String locus;
         private String message;
-        private List<NamedFeature> features;
+        private NamedFeature feature;
+        private String coords;
 
-        public SearchResult(String searchString) {
-            this(SearchType.ERROR, null, -1, -1, searchString);
+        public SearchResult() {
+            this(ResultType.ERROR, null, -1, -1);
         }
 
-        public SearchResult(SearchType type, String chr, int start, int end, String searchString) {
+        public SearchResult(ResultType type, String chr, int start, int end) {
             this.type = type;
             this.chr = chr;
             this.start = start;
             this.end = end;
-            this.searchString = searchString;
+            this.coords = Locus.getFormattedLocusString(chr, start, end);
+            this.locus = this.coords;
         }
 
-        public SearchResult(List<String> loci) {
-            this.type = SearchType.LOCI;
-            this.loci = loci;
+        public SearchResult(Locus locus) {
+            this(ResultType.LOCUS, locus.getChr(), locus.getStart(), locus.getEnd());
         }
 
-        public SearchResult(Feature feature, String searchString) {
-            this(SearchType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd(),
-                    searchString);
+        public SearchResult(NamedFeature feature) {
+            this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
+            this.feature = feature;
+            this.locus = this.feature.getName();
         }
 
-        public SearchResult(List<NamedFeature> features, String searchString) {
-            this.type = SearchType.FEATURES;
-            this.searchString = searchString;
-            this.features = features;
-        }
-
-        private void setMessage(String message) {
+        void setMessage(String message) {
             this.message = message;
         }
 
@@ -484,20 +487,66 @@ public class SearchCommand implements Command {
             return this.message;
         }
 
-        List<String> getLoci() {
-            if (this.type == SearchType.LOCI) {
-                return this.loci;
+        /**
+         * Always a coordinate string.
+         * eg chr1:1-100
+         *
+         * @return
+         */
+        private String getCoordinates() {
+            return this.coords;
+        }
+
+        /**
+         * Either a feature name, or coordinates
+         *
+         * @return
+         */
+        String getLocus() {
+            return this.locus;
+        }
+
+        String getShortName() {
+            if (this.type == ResultType.FEATURE) {
+                return this.feature.getName();
             } else {
-                throw new IllegalStateException("SearchResult is type " + this.type + ", must be type LOCI");
+                return this.getLocus();
             }
         }
 
-        List<NamedFeature> getFeatures() {
-            if (this.type == SearchType.FEATURES) {
-                return this.features;
+        /**
+         * Format for display. If a feature,
+         * <Featurename> (<chromosome>:<start>-<end>)
+         * eg EGFR (chr7:55,054,218-55,242,525)
+         * <p/>
+         * Otherwise, just locus
+         *
+         * @return
+         */
+        String getLongName() {
+            if (this.type == ResultType.FEATURE) {
+                return feature.getName() + " (" + this.getCoordinates() + ")";
             } else {
-                throw new IllegalStateException("SearchResult is type " + this.type + ", must be type FEATURES");
+                return this.getLocus();
             }
         }
+
     }
+
+    /**
+     * Get a list of search results from the provided objects,
+     * which must be loci strings or NamedFeature objects.
+     *
+     * @param objects
+     * @return
+     */
+    List<SearchResult> getResults(List<NamedFeature> objects) {
+        List<SearchResult> results = new ArrayList<SearchResult>(objects.size());
+        for (NamedFeature f : objects) {
+            results.add(new SearchResult(f));
+        }
+        return results;
+    }
+
+
 }
