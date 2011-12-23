@@ -59,7 +59,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
      * @param context
      * @param arect
      */
-    public synchronized void  renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
+    public synchronized void renderScores(Track track, List<LocusScore> locusScores, RenderContext context, Rectangle arect) {
 
         boolean showMissingData = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_MISSING_DATA_KEY);
 
@@ -72,9 +72,6 @@ public abstract class XYPlotRenderer extends DataRenderer {
 
         Color posColor = track.getColor();
         Color negColor = track.getAltColor();
-        if (negColor == null) {
-            negColor = posColor;
-        }
 
         // Get the Y axis definition, consisting of minimum, maximum, and base value.  Often
         // the base value is == min value which is == 0.
@@ -302,7 +299,7 @@ public abstract class XYPlotRenderer extends DataRenderer {
             borderGraphics.drawLine(adjustedRect.x, zeroY, adjustedRect.x + adjustedRect.width, zeroY);
 
             // Optionally draw "Y" line  (UCSC track line option)
-            if(track.isDrawYLine()) {
+            if (track.isDrawYLine()) {
                 Graphics2D yLineGraphics = context.getGraphic2DForColor(Color.gray);
                 int yLine = computeYPixelValue(adjustedRect, axisDefinition, track.getYLine());
                 GraphicUtils.drawDashedLine(borderGraphics, adjustedRect.x, yLine, adjustedRect.x + adjustedRect.width, yLine);
