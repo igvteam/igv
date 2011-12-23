@@ -51,7 +51,7 @@ public class HttpUtils {
     private static Logger log = Logger.getLogger(HttpUtils.class);
 
     public static boolean byteRangeTested = false;
-    public static boolean useByteRange = true;
+    public static boolean byteRangeTestSuccess = false;
     private static HttpUtils instance;
 
     private ProxySettings proxySettings = null;
@@ -124,18 +124,29 @@ public class HttpUtils {
         }
     }
 
+
     public static boolean useByteRange(URL url) {
 
         // Get explicit user setting
-        useByteRange = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-
-        // Test broad urls for successful byte range requests.
-        if (useByteRange && !byteRangeTested && url.getHost().contains("broadinstitute.org")) {
-            useByteRange = testByteRange();
-            byteRangeTested = true;   // <= to prevent testing again
+        boolean userByteRangeSetting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
+        if (userByteRangeSetting == false) {
+            // No means no!
+            return false;
         }
 
-        return useByteRange && url.getHost().contains("broadinstitute.org");
+        // We can test byte-range success for broad hosted data. We can't know if they work or not in other
+        // environments (e.g. intranets)
+        if (url.getHost().contains("broadinstitute.org")) {
+            // Test broad urls for successful byte range requests.
+            if (!byteRangeTested) {
+                byteRangeTestSuccess = testByteRange();
+                byteRangeTested = true;   // <= to prevent testing again
+            }
+            return byteRangeTestSuccess;
+        } else {
+            return true;
+        }
+
     }
 
     public void shutdown() {
