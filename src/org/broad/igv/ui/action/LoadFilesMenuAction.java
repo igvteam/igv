@@ -80,9 +80,8 @@ public class LoadFilesMenuAction extends MenuAction {
         if (trackFiles != null && trackFiles.length > 0) {
 
             File lastFile = trackFiles[0];
-            if (lastFile != null && !lastFile.isDirectory()) {
-                lastFile = lastFile.getParentFile();
-                PreferenceManager.getInstance().setLastTrackDirectory(lastFile.getParentFile());
+            if (lastFile != null) {
+                PreferenceManager.getInstance().setLastTrackDirectory(lastFile);
             }
         }
         mainFrame.resetStatusMessage();

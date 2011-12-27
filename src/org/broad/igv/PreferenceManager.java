@@ -663,7 +663,7 @@ public class PreferenceManager implements PropertyManager {
     }
 
     public void setLastTrackDirectory(File directory) {
-        String lastDirectory = directory.getAbsolutePath();
+        String lastDirectory = directory.isDirectory() ? directory.getAbsolutePath() : directory.getParent();
         put(LAST_TRACK_DIRECTORY, lastDirectory);
     }
 
