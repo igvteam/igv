@@ -66,8 +66,7 @@ public class CommandListener implements Runnable {
     }
 
     /**
-     * Loop forever, processing client requests synchronously.  The server is single threaded, because in most cases
-     * we would not know how to process commands ssychronously
+     * Loop forever, processing client requests synchronously.  The server is single threaded.
      */
     public void run() {
 
@@ -77,7 +76,7 @@ public class CommandListener implements Runnable {
             serverSocket = new ServerSocket(port);
             log.info("Listening on port " + port);
 
-            while (true) {
+            while (!halt) {
                 clientSocket = serverSocket.accept();
                 processClientSession(cmdExe);
                 if (clientSocket != null) {
