@@ -20,6 +20,7 @@ package org.broad.igv.util.stream;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.UserPasswordInputImpl;
+import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.broad.tribble.util.ftp.FTPReply;
 import org.broad.tribble.util.ftp.FTPUtils;
@@ -35,9 +36,9 @@ import static junit.framework.Assert.assertTrue;
  * @author jrobinso
  * @date Oct 27, 2010
  */
-public class SeekableFTPStreamHelper {
+public class IGVSeekableFTPStream extends SeekableStream {
 
-    private static Logger log = Logger.getLogger(SeekableFTPStreamHelper.class);
+    private static Logger log = Logger.getLogger(IGVSeekableFTPStream.class);
 
     private long position = 0;
     private String host;
@@ -45,7 +46,7 @@ public class SeekableFTPStreamHelper {
     private String userInfo;
     FTPClient ftp = null;
 
-    SeekableFTPStreamHelper(URL url) throws IOException {
+    public IGVSeekableFTPStream(URL url) throws IOException {
         this.userInfo = url.getUserInfo();
         this.host = url.getHost();
         this.path = url.getPath();

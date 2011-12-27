@@ -19,7 +19,7 @@
 package org.broad.igv.util.ftp;
 
 import junit.framework.TestCase;
-import org.broad.igv.util.stream.SeekableFTPStream;
+import org.broad.igv.util.stream.IGVSeekableFTPStream;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ public class SeekableFTPStreamTest extends TestCase {
         byte[] buffer = new byte[100];
 
         System.out.println((new URL(url)).getHost());
-        SeekableFTPStream stream = new SeekableFTPStream(new URL(url));
+        IGVSeekableFTPStream stream = new IGVSeekableFTPStream(new URL(url));
 
         for (int j = 0; j < 10; j++) {
             stream.seek(20 + j * 100);

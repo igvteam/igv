@@ -49,7 +49,7 @@ public class IGVSeekableStreamFactory {
                 }
             } else if (path.toLowerCase().startsWith("ftp:")) {
                 final URL url = new URL(path);
-                is = new SeekableFTPStream(url);
+                is = new IGVSeekableFTPStream(url);
             } else {
                 is = new SeekableFileStream(new File(path));
             }

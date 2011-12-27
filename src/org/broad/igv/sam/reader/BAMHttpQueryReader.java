@@ -23,6 +23,8 @@ import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMSequenceRecord;
 import net.sf.samtools.util.*;
+import net.sf.samtools.util.SeekableBufferedStream;
+import net.sf.samtools.util.SeekableStream;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.DataLoadException;
@@ -30,8 +32,9 @@ import org.broad.igv.sam.Alignment;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.igv.util.HttpUtils;
-import org.broad.igv.util.stream.SeekablePicardFtpStream;
-import org.broad.igv.util.stream.SeekablePicardHTTPStream;
+import org.broad.igv.util.stream.IGVUrlHelper;
+import org.broad.igv.util.stream.SeekablePicardStream;
+import org.broad.tribble.util.SeekableFTPStream;
 
 import java.io.*;
 import java.net.URL;
@@ -112,8 +115,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                 reader = new SAMFileReader(new BufferedInputStream(is));
             }
             return new WrappedIterator(reader.iterator());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error creating iterator", e);
             throw new RuntimeException(e);
         }
@@ -139,13 +141,18 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         SeekableStream is = null;
         if (protocol.equals("http") || protocol.equals("https")) {
             boolean useByteRange = HttpUtils.getInstance().useByteRange(url);
-            if (useByteRange) {              
-                is = new SeekablePicardHTTPStream(url);
+            if (useByteRange) {
+                org.broad.tribble.util.SeekableStream tribbleStream =
+                        new org.broad.tribble.util.SeekableHTTPStream(new IGVUrlHelper(url));
+                String source = url.toExternalForm();
+                is = new SeekablePicardStream(tribbleStream, source);
             } else {
                 throw new RuntimeException("Byte-range requests are disabled.  HTTP and FTP access to BAM files require byte-range support.");
             }
         } else if (protocol.equals("ftp")) {
-            is = new SeekablePicardFtpStream(url);
+            org.broad.tribble.util.SeekableStream tribbleStream = new SeekableFTPStream(url);
+            String source = url.toExternalForm();
+            is = new SeekablePicardStream(tribbleStream, source);
         } else {
             throw new RuntimeException("Unknown protocol: " + protocol);
         }
@@ -190,16 +197,14 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
             os = new FileOutputStream(indexFile);
             try {
                 is = HttpUtils.getInstance().openConnectionStream(indexURL);
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 // Try other index convention
                 String baseName = path.substring(0, path.length() - 4);
                 indexURL = new URL(baseName + ".bai");
 
                 try {
                     is = org.broad.igv.util.HttpUtils.getInstance().openConnectionStream(indexURL);
-                }
-                catch (FileNotFoundException e1) {
+                } catch (FileNotFoundException e1) {
                     MessageUtils.showMessage("Index file not found for file: " + path);
                     throw new DataLoadException("Index file not found for file: " + path, path);
                 }
@@ -210,8 +215,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                 os.write(buf, 0, bytesRead);
             }
 
-        }
-        finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
@@ -276,8 +280,7 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 if (reader != null) {
                     try {
                         reader.close();
