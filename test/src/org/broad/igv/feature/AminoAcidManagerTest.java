@@ -23,8 +23,6 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -39,13 +37,14 @@ import java.util.List;
 public class AminoAcidManagerTest {
 
 
+    private static Genome genome;
 
     public AminoAcidManagerTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Genome genome = TestUtils.loadGenome("hg18");
+        genome = TestUtils.loadGenome("hg18");
      }
 
     @AfterClass
@@ -60,7 +59,7 @@ public class AminoAcidManagerTest {
         String expectedSeq = "MRPSGTAGAALLALLAALCPASRALEEKKVC";
         IGVFeature egfr =  (IGVFeature) FeatureDB.getFeature("EGFR");
 
-        AminoAcidSequence aaSeq = egfr.getExons().get(0).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = egfr.getExons().get(0).getAminoAcidSequence(genome);
 
         int i = 0;
         for (AminoAcid acid : aaSeq.getSequence()) {
@@ -78,7 +77,7 @@ public class AminoAcidManagerTest {
         int expectedOffset = 2;
         IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
 
-        AminoAcidSequence aaSeq = egfr.getExons().get(1).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = egfr.getExons().get(1).getAminoAcidSequence(genome);
         List<AminoAcid> aaList = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("i=" + i, expectedSeq.charAt(i), aaList.get(i).getSymbol());
@@ -94,7 +93,7 @@ public class AminoAcidManagerTest {
         int expectedOffset = 0;
         IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
 
-        AminoAcidSequence aaSeq = egfr.getExons().get(exonIndex).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = egfr.getExons().get(exonIndex).getAminoAcidSequence(genome);
         List<AminoAcid> aaList = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("i=" + i, expectedSeq.charAt(i), aaList.get(i).getSymbol());
@@ -115,7 +114,7 @@ public class AminoAcidManagerTest {
         assertEquals(Strand.NEGATIVE, fbxw7.getStrand());
 
         int lastExon = 10;
-        AminoAcidSequence aaSeq = fbxw7.getExons().get(lastExon).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = fbxw7.getExons().get(lastExon).getAminoAcidSequence(genome);
 
         int n = expectedSeq.length();
         for (int i = n; i < expectedSeq.length(); i++) {
@@ -134,7 +133,7 @@ public class AminoAcidManagerTest {
         IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
 
 
-        AminoAcidSequence aaSeq = fbxw7.getExons().get(1).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = fbxw7.getExons().get(1).getAminoAcidSequence(genome);
 
 
         List<AminoAcid> tmp = aaSeq.getSequence();
@@ -158,7 +157,7 @@ public class AminoAcidManagerTest {
         String expectedEndSeq = "GSVV";
         IGVFeature fbxw7 = (IGVFeature) FeatureDB.getFeature("FBXW7");
 
-        AminoAcidSequence aaSeq = fbxw7.getExons().get(2).getAminoAcidSequence();
+        AminoAcidSequence aaSeq = fbxw7.getExons().get(2).getAminoAcidSequence(genome);
         List<AminoAcid> tmp = aaSeq.getSequence();
         for (int i = 0; i < expectedSeq.length(); i++) {
             assertEquals("# = " + i, expectedSeq.charAt(i), tmp.get(i).getSymbol());

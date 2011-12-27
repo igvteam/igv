@@ -77,11 +77,6 @@ public class DRangerFeature extends AbstractFeature {
         this.str2 = str2;
     }
 
-    @Override
-    public boolean hasScore() {
-        return true;
-    }
-
     public String getURL() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }

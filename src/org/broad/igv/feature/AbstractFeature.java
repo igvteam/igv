@@ -78,15 +78,7 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
         return name;
     }
 
-    public boolean hasScore() {
-        return false;
-    }
-
     public List<Exon> getExons() {
-        return null;
-    }
-
-    public Exon getExonAt(double location) {
         return null;
     }
 
@@ -117,10 +109,9 @@ abstract public class AbstractFeature implements IGVFeature, org.broad.tribble.F
 
     /**
      * Return true if the feature is completely contained within the bounds of this
-     * featre.
+     * feature. amd is on the same strand..
      * <p/>
-     * //TODO -- should strand be included in this test?
-     *
+      *
      * @param feature
      * @return
      */

@@ -26,9 +26,12 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
+import org.broad.tribble.Feature;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,6 +52,7 @@ public class GeneTest {
     static BasicFeature egfr;
 
     static BasicFeature GTPBP6;
+    private static Genome genome;
 
     public GeneTest() {
 
@@ -56,7 +60,7 @@ public class GeneTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Genome genome = TestUtils.loadGenome("hg18");
+        genome = TestUtils.loadGenome("hg18");
         egfr = (BasicFeature) FeatureDB.getFeature("egfr");
         GTPBP6 = (BasicFeature) FeatureDB.getFeature("GTPBP6");
 
@@ -72,7 +76,7 @@ public class GeneTest {
      * Test of getStart method, of class IGVFeature.
      */
     @Test
-    public void getStart() {
+    public void testGetStart() {
         assertEquals(55054218, egfr.getStart());
     }
 
@@ -80,7 +84,7 @@ public class GeneTest {
      * Test of getCdStart method, of class IGVFeature.
      */
     @Test
-    public void getCdStart() {
+    public void testGetCdStart() {
         assertEquals(55054464, egfr.getExons().get(0).getCdStart());
     }
 
@@ -88,29 +92,16 @@ public class GeneTest {
      * Test of getCdEnd method, of class IGVFeature.
      */
     @Test
-    public void getCdEnd() {
+    public void testGetCdEnd() {
         assertEquals(55240804, egfr.getExons().get(egfr.getExonCount() - 1).getCdEnd());
     }
 
-    /**
-     * Test of getExonStarts method, of class IGVFeature.
-     */
-    @Test
-    public void getExonStarts() {
-    }
-
-    /**
-     * Test of getExonEnds method, of class IGVFeature.
-     */
-    @Test
-    public void getExonEnds() {
-    }
 
     /**
      * Test of getExonCount method, of class IGVFeature.
      */
     @Test
-    public void getExonCount() {
+    public void testGetExonCount() {
         assertEquals(28, egfr.getExons().size());
     }
 
@@ -124,7 +115,7 @@ public class GeneTest {
      * 55054552,55177624,55178675,55181927,55186549,55187851,55189339,55191133,55191846,55192019,55192940,55195525,55196818,55199010,55200624,55206400,55208311,55209230,55210007,55216665,55227061,55228028,55234050,55235600,55236542,55236969,55237812,55242525,
      */
     @Test
-    public void getCodingLength() {
+    public void testGetCodingLength() {
         int cdStart = 55054464;
         int cdEnd = 55240804;
 
@@ -159,6 +150,35 @@ public class GeneTest {
             int expectedLength = exonEnds[i] - exonStarts[i];
             assertEquals(expectedLength, egfr.getExons().get(i).getCodingLength());
         }
+    }
+
+    @Test
+    public void testGetCodon() {
+
+        NamedFeature feature = FeatureDB.getFeature("egfr");
+
+        // Like nearly all uses of instanceof and casts this is a terrible hack, but one we will live with temporarily
+        // until the feature hierarchy can be refactored.
+        if (feature instanceof BasicFeature) {
+
+            BasicFeature bf = (BasicFeature) feature;
+            int featureStart = bf.getStart();
+
+            // EGFR starts with protiens MRPSG
+            Codon codon = bf.getCodon(genome, 2);
+            assertEquals('R', codon.getAminoAcid().getSymbol());
+            assertEquals(featureStart + 2, codon.getGenomePosition1());
+            assertEquals(featureStart + 3, codon.getGenomePosition2());
+            assertEquals(featureStart + 4, codon.getGenomePosition3());
+
+            codon = bf.getCodon(genome, 3);
+            assertEquals('P', codon.getAminoAcid().getSymbol());
+            assertEquals(featureStart + 5, codon.getGenomePosition1());
+            assertEquals(featureStart + 6, codon.getGenomePosition2());
+            assertEquals(featureStart + 7, codon.getGenomePosition3());
+
+        }
+
     }
 
 

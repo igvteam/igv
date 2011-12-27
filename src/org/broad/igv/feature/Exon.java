@@ -154,14 +154,14 @@ public class Exon extends AbstractFeature {
         return readingFrame;
     }
 
-    public AminoAcidSequence getAminoAcidSequence() {
+    public AminoAcidSequence getAminoAcidSequence(Genome genome) {
         if (aminoAcidSequence == null) {
-            computeAminoAcidSequence();
+            computeAminoAcidSequence(genome);
         }
         return aminoAcidSequence;
     }
 
-    private void computeAminoAcidSequence() {
+    private void computeAminoAcidSequence(Genome genome) {
         if (utr) {
             return;
         }
@@ -172,50 +172,16 @@ public class Exon extends AbstractFeature {
             int readStart = (codingStart > start) ? codingStart : start + readingFrame;
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
                 byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
                 aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
             }
         }
     }
 
-    public byte[] getCodon(int position) {
-        int readStart = (codingStart > start) ? codingStart : start + readingFrame;
-        if (position >= readStart) {
-            int codonNumber = (position - readStart) / 3;
-            int codonStart = readStart + codonNumber * 3;
-            int codonEnd = Math.min(codonStart + 3, codingEnd);
-            if (codonEnd - codonStart == 3) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                return genome.getSequence(getChr(), codonStart, codonEnd);
-            }
-        }
-        return null;
-    }
 
-    public byte[] getCodon(int position, byte altBase) {
-        int readStart = (codingStart > start) ? codingStart : start + readingFrame;
-        if (position >= readStart) {
-            int codonNumber = (position - readStart) / 3;
-            int codonStart = readStart + codonNumber * 3;
-            int codonEnd = Math.min(codonStart + 3, codingEnd);
-            if (codonEnd - codonStart == 3) {
-                Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                byte [] refBytes = genome.getSequence(getChr(), codonStart, codonEnd);
-                int delta = position - codonStart;
-                if(delta > 3) {
-                    System.out.println("Error getting alternate codon.  Position out of bounds: " + position);
-                    return null;
-                }
-                refBytes[delta] = altBase;
-            }
-        }
-        return null;
-    }
-
-    public AminoAcid getAminoAcid(int position) {
+    public AminoAcid getAminoAcid(Genome genome, int position) {
         if (aminoAcidSequence == null) {
-            computeAminoAcidSequence();
+            computeAminoAcidSequence(genome);
         }
         if (aminoAcidSequence == null) {
             return null;

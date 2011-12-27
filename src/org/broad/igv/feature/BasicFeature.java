@@ -17,9 +17,9 @@
  */
 package org.broad.igv.feature;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
 import java.util.*;
@@ -44,30 +44,15 @@ public class BasicFeature extends AbstractFeature {
     private int thickEnd;
     private int thickStart;
 
-    public String[] getParentIds() {
-        return parentIds;
-    }
-
-    public void setParentIds(String[] parentIds) {
-        this.parentIds = parentIds;
-    }
 
     String[] parentIds;
     String link;
 
-    /**
-     * Constructs ...
-     */
+
     public BasicFeature() {
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param chr
-     * @param start
-     * @param end
-     */
+
     public BasicFeature(String chr, int start, int end) {
 
         this(chr, start, end, Strand.NONE);
@@ -75,14 +60,7 @@ public class BasicFeature extends AbstractFeature {
         this.thickEnd = end;
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param chr
-     * @param start
-     * @param end
-     * @param strand
-     */
+
     public BasicFeature(String chr, int start, int end, Strand strand) {
         super(chr, start, end, strand);
         this.thickStart = start;
@@ -90,11 +68,6 @@ public class BasicFeature extends AbstractFeature {
 
     }
 
-    /**
-     * Constructs ...
-     *
-     * @param feature
-     */
     public BasicFeature(BasicFeature feature) {
         super(feature.getChr(), feature.getStart(), feature.getEnd(), feature.getStrand());
         super.setName(feature.getName());
@@ -128,6 +101,12 @@ public class BasicFeature extends AbstractFeature {
     }
 
 
+    // TODO -- why are these set?  they are never used.
+    public void setParentIds(String[] parentIds) {
+        this.parentIds = parentIds;
+    }
+
+
     /**
      * Return a string for popup text, and related uses.  The default just
      * returns the feature name.  Its expected that this method will be
@@ -148,7 +127,7 @@ public class BasicFeature extends AbstractFeature {
         }
 
 
-        if (hasScore()) {
+        if (!Float.isNaN(score)) {
             valueString.append("<br>Score = " + score);
         }
         if (description != null) {
@@ -174,32 +153,14 @@ public class BasicFeature extends AbstractFeature {
         return valueString.toString();
     }
 
-
-    /**
-     * Method description
-     *
-     * @param score
-     */
     public void setScore(float score) {
         this.score = score;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     @Override
     public float getScore() {
         return score;
     }
-
-
-    @Override
-    public boolean hasScore() {
-        return Float.isNaN(score) ? false : true;
-    }
-
 
     @Override
     public List<Exon> getExons() {
@@ -207,24 +168,12 @@ public class BasicFeature extends AbstractFeature {
     }
 
 
-    // TODO -- reimplement for efficienty
-
-    @Override
-    public Exon getExonAt(double position) {
-        if (exons == null) return null;
-        for (Exon exon : exons) {
-            if (position >= exon.getStart() && position <= exon.getEnd()) {
-                return exon;
-            }
-        }
-        return null;
-    }
-
-
+    /**
+     * Sort the exon collection, if any, by start position.
+     */
     public void sortExons() {
         if (exons != null) {
             Collections.sort(exons, new Comparator<IGVFeature>() {
-
                 public int compare(IGVFeature arg0, IGVFeature arg1) {
                     return arg0.getStart() - arg1.getStart();
                 }
@@ -242,44 +191,19 @@ public class BasicFeature extends AbstractFeature {
     }
 
 
-    public int compareTo(Object o) {
-        IGVFeature otherObj = (IGVFeature) o;
-        return (int) (getStart() - otherObj.getStart());
-    }
-
-    /**
-     * Method description
-     *
-     * @return
-     */
     @Override
     public String getIdentifier() {
         return identifier;
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public int getExonCount() {
         return (exons == null) ? 0 : exons.size();
     }
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public String getType() {
         return type;
     }
 
-    /**
-     * Method description
-     *
-     * @param type
-     */
     public void setType(String type) {
         this.type = type;
     }
@@ -291,7 +215,6 @@ public class BasicFeature extends AbstractFeature {
     public String getURL() {
         return link;
     }
-
 
     public int getThickEnd() {
         return thickEnd;
@@ -307,5 +230,46 @@ public class BasicFeature extends AbstractFeature {
 
     public void setThickStart(int thickStart) {
         this.thickStart = thickStart;
+    }
+
+
+    public Codon getCodon(Genome genome, int proteinPosition) {
+        List<Exon> exons = getExons();
+        if (exons != null) {
+
+            if (getStrand() == Strand.POSITIVE) {
+
+                Codon codonInfo = new Codon(proteinPosition);
+
+                // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
+                int startTranscriptPosition = (proteinPosition - 1) * 3;
+                int genomePosition;
+
+                int tp = 0;
+                for (Exon exon : exons) {
+                    int cdStart = exon.getCdStart();
+                    int cdEnd = exon.getCdEnd();
+                    for (genomePosition = cdStart; genomePosition < cdEnd; genomePosition++) {
+                        tp++;
+                        if (tp > startTranscriptPosition) {
+                            codonInfo.setNextGenomePosition(genomePosition);
+                        }
+                        if (codonInfo.isGenomePositionsSet()) {
+                            AminoAcid aa = exon.getAminoAcid(genome, genomePosition);
+                            if (aa != null) {
+                                codonInfo.setAminoAcid(aa);
+                            }
+                            return codonInfo;
+                        }
+                    }
+                }
+            } else {
+                // TODO -- negative strand
+            }
+        }
+
+        // No codon found
+        return null;
+
     }
 }

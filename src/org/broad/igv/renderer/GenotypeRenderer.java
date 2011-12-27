@@ -20,10 +20,12 @@ package org.broad.igv.renderer;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.FontManager;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
 
 import java.awt.*;
@@ -407,7 +409,9 @@ public class GenotypeRenderer extends FeatureRenderer {
     public void labelAminoAcids(int pStart, Graphics2D fontGraphics, double theOrigin,
                                 RenderContext context, IGVFeature gene, double locationScale,
                                 int yOffset, Exon exon, Rectangle trackRectangle) {
-        AminoAcidSequence aaSequence = exon.getAminoAcidSequence();
+
+        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        AminoAcidSequence aaSequence = exon.getAminoAcidSequence(genome);
         if ((aaSequence != null) && aaSequence.hasNonNullSequence()) {
             Rectangle aaRect = new Rectangle(pStart, yOffset - BLOCK_HEIGHT / 2, 1, BLOCK_HEIGHT);
 

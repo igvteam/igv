@@ -674,7 +674,7 @@ public class IgvTools {
     }
 
 
-    public static Genome loadGenome(String genomeFileOrID, boolean isGCT) throws IOException {
+    public static Genome loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
@@ -686,21 +686,17 @@ public class IgvTools {
         }
 
         File genomeFile = new File(genomeFileOrID);
-        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID + ".genome");
 
         }
-        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(rootDir, "genomes" + File.separator + genomeFileOrID);
 
         }
-        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             genomeFile = new File(genomeFileOrID);
         }
-        System.out.println("Trying " + genomeFile.getAbsolutePath() + " ...");
         if (!genomeFile.exists()) {
             throw new PreprocessingException("Genome definition file not found for: " + genomeFileOrID);
         }
@@ -710,8 +706,8 @@ public class IgvTools {
             throw new PreprocessingException("Error loading: " + genomeFileOrID);
         }
 
-        // If this is a gct file load genes
-        if (isGCT && genomeFile.getAbsolutePath().endsWith(".genome")) {
+        // If this is a .genome file optionally file load genes
+        if (loadGenes && genomeFile.getAbsolutePath().endsWith(".genome")) {
             GenomeDescriptor descriptor = genomeManager.parseGenomeArchiveFile(genomeFile);
             String geneFileName = descriptor.getGeneFileName();
             if (geneFileName != null && geneFileName.trim().length() > 0) {

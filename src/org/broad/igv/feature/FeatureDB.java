@@ -121,9 +121,9 @@ public class FeatureDB {
 
 
     public static void addFeature(String name, NamedFeature feature) {
-        if (Globals.isHeadless()) {
-            return;
-        }
+//        if (Globals.isHeadless()) {
+//            return;
+//        }
         featureMap.put(name.toUpperCase(), feature);
 
     }

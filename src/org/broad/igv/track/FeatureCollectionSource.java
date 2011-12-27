@@ -158,18 +158,13 @@ public class FeatureCollectionSource implements FeatureSource {
                         int genStart = (int) ((offset + f.getStart()) / 1000);
                         int genEnd = (int) ((offset + f.getEnd()) / 1000);
                         if (genEnd > lastFeaturePosition + sampleLength) {
-                            IGVFeature f2 = (IGVFeature) f.copy();
-                            //BasicFeature f2 = new BasicFeature(UIStringConstants.CHR_ALL, genStart, genEnd, f.getStrand());
-                            f2.setChr(Globals.CHR_ALL);
-                            f2.setStart(genStart);
-                            f2.setEnd(genEnd);
-                            if (f2 instanceof BasicFeature) {
+                            BasicFeature f2 = new BasicFeature(Globals.CHR_ALL, genStart, genEnd);
+                            if (f instanceof BasicFeature) {
                                 BasicFeature bf = (BasicFeature) f;
-                                BasicFeature bf2 = (BasicFeature) f2;
-                                bf2.setThickEnd((int) ((offset + bf.getThickEnd()) / 1000));
-                                bf2.setThickStart((int) ((offset + bf.getThickStart()) / 1000));
+                                f2.setThickEnd((int) ((offset + bf.getThickEnd()) / 1000));
+                                f2.setThickStart((int) ((offset + bf.getThickStart()) / 1000));
+                                f2.setName(f.getName());
                             }
-                            f2.setName(f.getName());
                             chrAllFeatures.add(f2);
 
                             lastFeaturePosition = genEnd;

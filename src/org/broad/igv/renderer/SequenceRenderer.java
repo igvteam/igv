@@ -444,8 +444,7 @@ public class SequenceRenderer {
             if (seq != null && seq.length > 0) {
                 Graphics2D g = (Graphics2D) context.getGraphics().create();
 
-                String nucSequence = new String(seq, indexOfFirstCodonStart,
-                        seq.length - indexOfFirstCodonStart);
+                String nucSequence = new String(seq, indexOfFirstCodonStart, seq.length - indexOfFirstCodonStart);
                 java.util.List<AminoAcid> acids = AminoAcidManager.getAminoAcids(nucSequence, strand);
 
                 // Set the start position of this amino acid.

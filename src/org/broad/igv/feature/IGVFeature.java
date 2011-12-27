@@ -28,39 +28,24 @@ public interface IGVFeature extends LocusScore, NamedFeature {
 
     public String getType();
 
-    public String getChr();
-
-    public void setChr(String chr);
-
-    public int getStart();
-
-    public int getEnd();
-
     public String getIdentifier();
-
-    public String getName();
 
     public String getDescription();
 
-    public boolean hasScore();
-
     public Strand getStrand();
-
-    public void setName(String name);
-
-    public Color getColor();
-
-    public boolean contains(IGVFeature feature);
-
-    public List<Exon> getExons();
 
     public int getLength();
 
     public Map<String, String> getAttributes();
 
+    public boolean contains(IGVFeature feature);
+
     boolean contains(double location);
+
+    public List<Exon> getExons();
+
+    public Color getColor();
 
     public String getURL();
 
-    public Exon getExonAt(double location);
 }
