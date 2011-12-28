@@ -29,6 +29,8 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -98,7 +100,7 @@ public class FTPClientNCBITest {
     }
 
     private void restRetr(int restPosition, int length) throws IOException, InterruptedException {
-
+        boolean getReply = true;
         try {
 
             FTPReply reply = client.pasv();
@@ -119,12 +121,21 @@ public class FTPClientNCBITest {
                 System.out.print((char) buffer[i]);
                 assertEquals(expectedBytes[i + restPosition], buffer[i]);
             }
-            System.out.println();
+        } catch (SocketException e) {
+            //Error contacting server
+            //This isn't strictly necessary, but avoids trying
+            //to contact server in finally clause
+            getReply = false;
         } finally {
-
             client.closeDataStream();
-            client.getReply();  // <== MUST READ THE REPLY
+            if (getReply) {
+                //If we were able
+                client.getReply();
+            }
+        }
 
+        if (!getReply) {
+            throw new SocketTimeoutException("Could not contact host");
         }
     }
 }

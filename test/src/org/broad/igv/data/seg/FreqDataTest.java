@@ -18,7 +18,6 @@
 
 package org.broad.igv.data.seg;
 
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
@@ -46,14 +45,12 @@ public class FreqDataTest {
     public void test() throws IOException {
 
         Genome genome = TestUtils.loadGenome("hg18");
-        
+
         String segfile = "test/data/seg/canFam2_hg18.seg";
 
 
         SegmentedDataSet sd = new SegmentedAsciiDataSet(new ResourceLocator(segfile), genome);
 
         FreqData fd = new FreqData(sd, genome);
-
-        fd.dumpData(Globals.CHR_ALL);
     }
 }
