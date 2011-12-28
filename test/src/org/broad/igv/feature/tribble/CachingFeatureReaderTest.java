@@ -18,9 +18,11 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.source.BasicFeatureSource;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -28,21 +30,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  *
  */
 public class CachingFeatureReaderTest {
 
-    String path = "test/data/CEU.SRP000032.2010_03.genotypes.vcf.gz";
+    String path = "test/largedata/CEU.SRP000032.2010_03.genotypes.vcf.gz";
     BasicFeatureSource baseReader;
     CachingFeatureReader cacheReader;
 
     @Before
     public void setUp() throws IOException {
         FeatureCodec codec = CodecFactory.getCodec(path);
-        baseReader =  BasicFeatureSource.getFeatureSource(path, codec);
+        baseReader = BasicFeatureSource.getFeatureSource(path, codec);
         cacheReader = new CachingFeatureReader(baseReader);
 
     }
@@ -74,28 +77,33 @@ public class CachingFeatureReaderTest {
         final int start = 182773022;
         final int end = 182776742;
         final String chr = "1";
-        Iterator<VCFFeature> iter = baseReader.query(chr, start, end);
-        while(iter.hasNext()) {
-            VCFFeature feat = iter.next();
-            assertEquals(chr, feat.getChr());
-            assertTrue(feat.getEnd() >= start && feat.getStart() <= end);
-            baseReaderLoci.add(feat.getLocusString());
+        Iterator<VCFVariant> iter = baseReader.query(chr, start, end);
+
+        while (iter.hasNext()) {
+            VCFVariant var = iter.next();
+            assertEquals(chr, var.getChr());
+            assertTrue(var.getEnd() >= start && var.getStart() <= end);
+            baseReaderLoci.add(getLocusString(var));
         }
         assertTrue(baseReaderLoci.size() > 0);
 
         // Now use CachingFeatureReader and insure results are the same
         Set<String> cacheReaderLoci = new HashSet();
         iter = cacheReader.query(chr, start, end);
-        while(iter.hasNext()) {
-            VCFFeature feat = iter.next();
-            assertEquals(chr, feat.getChr());
-            assertTrue(feat.getEnd() >= start && feat.getStart() <= end);
-            cacheReaderLoci.add(feat.getLocusString());
+        while (iter.hasNext()) {
+            VCFVariant var = iter.next();
+            assertEquals(chr, var.getChr());
+            assertTrue(var.getEnd() >= start && var.getStart() <= end);
+            cacheReaderLoci.add(getLocusString(var));
         }
 
         assertEquals(baseReaderLoci.size(), cacheReaderLoci.size());
-        for(String locus : cacheReaderLoci) {
+        for (String locus : cacheReaderLoci) {
             assertTrue(baseReaderLoci.contains(locus));
         }
+    }
+
+    String getLocusString(VCFVariant variant) {
+        return variant.getChr() + ":" + variant.getStart() + "-" + variant.getEnd();
     }
 }
