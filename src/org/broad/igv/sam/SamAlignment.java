@@ -59,6 +59,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private int end;    // ditto
     private int alignmentStart;
     private int alignmentEnd;
+    private int readLength;
     boolean negativeStrand;
     boolean readNegativeStrandFlag;
     boolean duplicateReadFlag;
@@ -80,6 +81,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
     private String readGroup;
     private String library;
     private String sample;
+
+	private boolean firstInPair;
 
     /**
      * Constructs ...
@@ -112,6 +115,8 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.readPairedFlag = record.getReadPairedFlag();
         this.setInferredInsertSize(record.getInferredInsertSize());
         this.readSequence = record.getReadString();
+        this.readLength = record.getReadLength();
+        this.firstInPair = record.getFirstOfPairFlag();
 
         setMatePair(record, genome);
         setPairOrientation(record);
@@ -407,7 +412,9 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
                 || (showSoftClipped && operator == SOFT_CLIP);
     }
 
-
+    public boolean isFirstInPair() {
+    	return firstInPair;
+    }
     public boolean isNegativeStrand() {
         return readNegativeStrandFlag;
     }
@@ -418,6 +425,10 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
 
     public boolean isMapped() {
         return !readUnmappedFlag;
+    }
+    
+    public int getReadLength() { 
+    	return this.readLength;
     }
 
     public boolean isPaired() {
