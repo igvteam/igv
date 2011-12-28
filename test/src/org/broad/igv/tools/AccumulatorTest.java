@@ -5,7 +5,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
@@ -23,10 +23,6 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.track.WindowFunction;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,26 +31,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author jrobinso
  */
 public class AccumulatorTest {
-    protected final int numberOfPoints = 10000000;
-    List<WindowFunction> wfs;
-    List<WindowFunction> percentileFunctions;
-    Map<WindowFunction, Double> values;
+    protected final int numberOfPoints = (int) 1e6;
+    private List<WindowFunction> wfs;
+    private Map<WindowFunction, Double> values;
 
     public AccumulatorTest() {
     }
 
     @Before
     public void setUp() throws Exception {
-        percentileFunctions = Arrays.asList(
-                WindowFunction.percentile90,
-                WindowFunction.percentile10,
-                WindowFunction.median,
-                WindowFunction.percentile2,
-                WindowFunction.percentile98);
         wfs = Arrays.asList(
                 WindowFunction.min,
                 WindowFunction.percentile90,
@@ -65,7 +57,7 @@ public class AccumulatorTest {
                 WindowFunction.count,
                 WindowFunction.percentile2,
                 WindowFunction.percentile98);
-        values = new HashMap();
+        values = new HashMap<WindowFunction, Double>();
         values.put(WindowFunction.min, 0.0);
         values.put(WindowFunction.percentile90, 0.9);
         values.put(WindowFunction.percentile10, 0.1);
@@ -86,7 +78,7 @@ public class AccumulatorTest {
     @Test
     public void testAll() {
 
-        // Compute stats for 1,000,000 points
+        // Compute stats for large number of points
         ListAccumulator accum = new ListAccumulator(wfs);
         for (int i = 0; i < numberOfPoints; i++) {
             accum.add(1, (float) Math.random());
@@ -107,9 +99,10 @@ public class AccumulatorTest {
     @Test
     public void testZeroes() {
 
-        // Compute stats for 1,000,000 points
+        // Takes too long to use all 1e6 points
+        // Percentile.select is slow when all elements are the same (apparently)
         ListAccumulator accum = new ListAccumulator(wfs);
-        for (int i = 0; i < numberOfPoints; i++) {
+        for (int i = 0; i < 200001; i++) {
             accum.add(1, 0);
         }
         accum.finish();
@@ -181,7 +174,7 @@ public class AccumulatorTest {
 
 
     /**
-     * Pathological case,  # of data poinst exactly equals percentile chunk size
+     * Pathological case,  # of data points exactly equals percentile chunk size
      */
     @Test
     public void testChunkSize() {
