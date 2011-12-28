@@ -26,11 +26,16 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -39,7 +44,7 @@ public class IGVDatasetTest {
 
     String cnFile = "test/data/igv/MIP_44.cn";
     static Genome genome;
-    
+
     public IGVDatasetTest() {
     }
 
@@ -57,7 +62,6 @@ public class IGVDatasetTest {
      */
     @Test
     public void testDataset() {
-
 
 
         IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
@@ -90,18 +94,21 @@ public class IGVDatasetTest {
 
         String[] tokens = headingsLine.split("\t");
 
+        IGVDataset ds = new IGVDataset(new ResourceLocator(cnFile), genome, null);
         IGVDatasetParser parser = new IGVDatasetParser(new ResourceLocator(cnFile), genome, null);
+
+        //parser.scan necessary to set values needed in getHeadings
+        List<ChromosomeSummary> summaries = parser.scan(ds);
         String[] headings = parser.getHeadings(tokens, 1);
 
         assertEquals(firstHeading, headings[0]);
         assertEquals(secondHeading, headings[1]);
         assertEquals(lastHeading, headings[headings.length - 1]);
-        System.out.println("Done");
-
     }
 
     /**
-     * Test of scan method
+     * Test of scan method. Test that we find
+     * all chromosomes we expect
      */
     @Test
     public void testScanDataset() {
@@ -110,9 +117,18 @@ public class IGVDatasetTest {
         List<ChromosomeSummary> summaries = parser.scan(ds);
 
         assertEquals(24, summaries.size());
+        Set<String> chromos = new TreeSet<String>();
+        ArrayList<String> chromos_L = new ArrayList<String>(24);
+        for (int ii = 1; ii <= 22; ii++) {
+            chromos_L.add("chr" + ii);
+        }
+        chromos_L.add("chrX");
+        chromos_L.add("chrY");
+        chromos.addAll(chromos_L);
 
-        ChromosomeSummary chr1 = summaries.get(0);
-        assertEquals("chr1", chr1.getName());
+        for (ChromosomeSummary cSum : summaries) {
+            assertTrue(chromos.contains(cSum.getName()));
+        }
 
     }
 

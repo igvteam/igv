@@ -19,18 +19,18 @@ package org.broad.igv.data;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.collections.FloatArrayList;
-import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.util.*;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.FloatArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.SeekableStream;
@@ -315,24 +315,20 @@ public class IGVDatasetParser {
 
             dataset.setLongestFeatureMap(longestFeatureMap);
 
-        }
-        catch (ParserException pe) {
+        } catch (ParserException pe) {
             throw pe;
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             // DialogUtils.showError("SNP file not found: " + dataSource.getCopyNoFile());
             log.error("File not found: " + dataResourceLocator);
             throw new RuntimeException(e);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Exception when loading: " + dataResourceLocator.getPath(), e);
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {
                 throw new RuntimeException(e);
             }
-        }
-        finally {
+        } finally {
             if (is != null) {
                 try {
                     is.close();
@@ -370,8 +366,7 @@ public class IGVDatasetParser {
                 copyNo = Float.parseFloat(token);
             }
 
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             // This is an expected condition.
         }
         return copyNo;
@@ -417,43 +412,43 @@ public class IGVDatasetParser {
 
             while ((nextLine != null) && (nextLine.trim().length() > 0)) {
 
-                if(!nextLine.startsWith("#")) {
-                try {
-                    int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
-                    String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
-                    if (thisChromosome.equals(chromosome)) {
-                        chromosomeStarted = true;
+                if (!nextLine.startsWith("#")) {
+                    try {
+                        int nTokens = ParsingUtils.split(nextLine, tokens, '\t');
+                        String thisChromosome = genome.getChromosomeAlias(tokens[chrColumn].trim());
+                        if (thisChromosome.equals(chromosome)) {
+                            chromosomeStarted = true;
 
-                        // chromosomeData.setMarkerId(nRows, tokens[0]);
+                            // chromosomeData.setMarkerId(nRows, tokens[0]);
 
-                        // The probe.  A new string is created to prevent holding on to the entire row through a substring reference
-                        String probe = new String(tokens[probeColumn]);
-                        probes.add(probe);
+                            // The probe.  A new string is created to prevent holding on to the entire row through a substring reference
+                            String probe = new String(tokens[probeColumn]);
+                            probes.add(probe);
 
-                        int start = Integer.parseInt(tokens[startColumn].trim()) - startBase;
-                        if (hasEndLocations) {
-                            endLocations.add(Integer.parseInt(tokens[endColumn].trim()));
+                            int start = Integer.parseInt(tokens[startColumn].trim()) - startBase;
+                            if (hasEndLocations) {
+                                endLocations.add(Integer.parseInt(tokens[endColumn].trim()));
+                            }
+
+                            startLocations.add(start);
+
+                            for (int idx = 0; idx < dataHeaders.length; idx++) {
+                                int i = firstDataColumn + idx * skipColumns;
+                                float copyNo = i <= lastDataColumn ? readFloat(tokens[i]) : Float.NaN;
+                                String heading = dataHeaders[idx];
+                                dataMap.get(heading).add(copyNo);
+                            }
+
+
+                        } else if (chromosomeStarted) {
+                            break;
                         }
 
-                        startLocations.add(start);
+                    } catch (NumberFormatException numberFormatException) {
 
-                        for (int idx = 0; idx < dataHeaders.length; idx++) {
-                            int i = firstDataColumn + idx * skipColumns;
-                            float copyNo = i <= lastDataColumn ? readFloat(tokens[i]) : Float.NaN;
-                            String heading = dataHeaders[idx];
-                            dataMap.get(heading).add(copyNo);
-                        }
-
-
-                    } else if (chromosomeStarted) {
-                        break;
+                        // Skip line
+                        log.info("Skipping line (NumberFormatException) " + nextLine);
                     }
-
-                } catch (NumberFormatException numberFormatException) {
-
-                    // Skip line
-                    log.info("Skipping line (NumberFormatException) " + nextLine);
-                }
                 }
 
                 nextLine = reader.readLine();
@@ -580,14 +575,14 @@ public class IGVDatasetParser {
                     if (kv[0].toLowerCase().equals("chr")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                         } else {
                             chrColumn = c - 1;
                         }
                     } else if (kv[0].toLowerCase().equals("start")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                         } else {
                             startColumn = c - 1;
                         }
@@ -596,7 +591,7 @@ public class IGVDatasetParser {
                     } else if (kv[0].toLowerCase().equals("end")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                         } else {
                             endColumn = c - 1;
                             hasEndLocations = true;
@@ -606,7 +601,7 @@ public class IGVDatasetParser {
                     } else if (kv[0].toLowerCase().equals("probe")) {
                         int c = Integer.parseInt(kv[1]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                         } else {
                             probeColumn = c - 1;
                         }
@@ -617,7 +612,7 @@ public class IGVDatasetParser {
                         String[] se = kv[1].split("-");
                         int c = Integer.parseInt(se[0]);
                         if (c < 1) {
-                            MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                            MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                         } else {
                             this.firstDataColumn = c - 1;
                         }
@@ -625,7 +620,7 @@ public class IGVDatasetParser {
 
                             c = Integer.parseInt(se[1]);
                             if (c < 1) {
-                                MessageUtils.showMessage("Error parisng column line: " + tmp + "<br>Column numbers must be > 0");
+                                MessageUtils.showMessage("Error parsing column line: " + tmp + "<br>Column numbers must be > 0");
                             } else {
                                 this.lastDataColumn = c - 1;
                             }
