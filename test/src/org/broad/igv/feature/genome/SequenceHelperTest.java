@@ -25,14 +25,13 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.ui.IGV;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -40,28 +39,20 @@ import java.io.IOException;
 public class SequenceHelperTest {
 
     static String seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
-
-    static Genome genome;
-
     static SequenceHelper helper;
-
+    static Genome genome;
 
     public SequenceHelperTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        helper = new SequenceHelper(seqPath);
         Globals.setHeadless(true);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
     }
 
     @Before
     public void setUp() {
-        helper.clearCache();
+        helper = new SequenceHelper(seqPath);
     }
 
     /**
@@ -122,13 +113,13 @@ public class SequenceHelperTest {
         byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
         assertEquals(expSequence, new String(seq));
     }
-
+/*
     @Test
     public void testURL1() {
 
-       // GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
-       // descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/SequenceServlet/hg18");
-       // readEGFRSequence();
+       //GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
+       //descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/SequenceServlet/hg18");
+       //readEGFRSequence();
     }
 
     @Test
@@ -153,30 +144,30 @@ public class SequenceHelperTest {
       //  GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
       //  descriptor.setSequenceLocation("http://igvdata.broadinstitute.org/genomes/seq/hg18");
       //  readEGFRSequence();
-    }
+    }*/
 
     @Test
     public void testByteRangePref() {
         final PreferenceManager preferenceManager = PreferenceManager.getInstance();
         boolean useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
+
         try {
             preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(!useByteRange));
 
-            testURL1();
+            readEGFRSequence();
             helper.clearCache();
 
-            testURL2();
-            helper.clearCache();
+//            testURL2();
+//            helper.clearCache();
+//
+//            testURL3();
+//            helper.clearCache();
+//
+//            testURL4();
+//            helper.clearCache();
 
-            testURL3();
-            helper.clearCache();
 
-            testURL4();
-            helper.clearCache();
-
-
-        }
-        finally {
+        } finally {
             preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(useByteRange));
         }
     }
