@@ -66,7 +66,7 @@ import java.util.List;
 public class SearchCommand implements Command {
 
     private static Logger log = Logger.getLogger(SearchCommand.class);
-    private static int SEARCH_LIMIT = 20;
+    public static int SEARCH_LIMIT = 20;
     private boolean askUser = false;
 
     String searchString;
@@ -101,6 +101,12 @@ public class SearchCommand implements Command {
         List<SearchResult> results = runSearch(searchString);
         if (askUser) {
             results = askUserFeature(results);
+            if (results == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Multiple results, show cancelled: " + searchString);
+                }
+                return;
+            }
         }
 
         showSearchResult(results);
@@ -164,7 +170,7 @@ public class SearchCommand implements Command {
         return results;
     }
 
-    private void showSearchResult(List<SearchResult> results) {
+    public void showSearchResult(List<SearchResult> results) {
         int origZoom = referenceFrame.getZoom();
         SearchResult result = new SearchResult();
         if (results == null || results.size() == 0) {
@@ -230,22 +236,43 @@ public class SearchCommand implements Command {
     }
 
     /**
+     * Get a list of strings of feature names suitable for display, containing only
+     * those search results which were not an error
+     *
+     * @param results
+     * @param longName Whether to use the long (true) or short (false)
+     *                 of search results.
+     * @return Array of strings of results found.
+     */
+    public static Object[] getSelectionList(List<SearchResult> results, boolean longName) {
+        ArrayList<String> options = new ArrayList<String>(Math.min(results.size(), SEARCH_LIMIT));
+        for (SearchResult result : results) {
+            if (result.type == ResultType.ERROR) {
+                continue;
+            }
+            if (longName) {
+                options.add(result.getLongName());
+            } else
+                options.add(result.getShortName());
+        }
+
+        return options.toArray();
+    }
+
+    /**
      * Display a dialog asking user which search result they want
      * to display. Number of results are limited to SEARCH_LIMIT.
      * The user can select multiple options, in which case all
      * are displayed.
      *
      * @param results
-     * @return SearchResults which the user has selected
+     * @return SearchResults which the user has selected.
+     *         Will be null if cancelled
      */
     private List<SearchResult> askUserFeature(List<SearchResult> results) {
 
-        String[] options = new String[Math.min(results.size(), SEARCH_LIMIT)];
-        for (int ii = 0; ii < options.length; ii++) {
-            options[ii] = results.get(ii).getLongName();
-        }
-
-        JList ls = new JList(options);
+        Object[] list = getSelectionList(results, true);
+        JList ls = new JList(list);
         ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -445,7 +472,7 @@ public class SearchCommand implements Command {
     /*
     Container class for search results
      */
-    class SearchResult {
+    public static class SearchResult {
         String chr;
         private int start;
         private int end;
@@ -540,10 +567,10 @@ public class SearchCommand implements Command {
      * @param objects
      * @return
      */
-    List<SearchResult> getResults(List<NamedFeature> objects) {
+    public static List<SearchResult> getResults(List<NamedFeature> objects) {
         List<SearchResult> results = new ArrayList<SearchResult>(objects.size());
         for (NamedFeature f : objects) {
-            results.add(new SearchResult(f));
+            results.add(new SearchCommand.SearchResult(f));
         }
         return results;
     }

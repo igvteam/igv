@@ -5,7 +5,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
@@ -23,6 +23,7 @@
 package org.broad.igv.ui;
 
 
+import com.jidesoft.hints.ListDataIntelliHints;
 import com.jidesoft.swing.JideBoxLayout;
 import com.jidesoft.swing.JideButton;
 import com.jidesoft.swing.JideToggleButton;
@@ -32,25 +33,30 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Cytoband;
 import org.broad.igv.feature.FeatureDB;
+import org.broad.igv.feature.NamedFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
+import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.ui.action.SearchCommand;
 import org.broad.igv.ui.panel.ZoomSliderPanel;
-import org.broad.igv.ui.util.*;
+import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.ui.util.ProgressBar;
 import org.broad.igv.ui.util.ProgressMonitor;
+import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.NamedRunnable;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -100,6 +106,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         initComponents();
 
         // Initialize controls
+        SearchHints hints = new SearchHints(this.searchTextField);
 
         String currentChr = getDefaultReferenceFrame().getChrName();
         boolean isWholeGenome = currentChr.equals(Globals.CHR_ALL);
@@ -725,6 +732,14 @@ public class IGVCommandBar extends javax.swing.JPanel {
         genomeComboBox.setModel(getModelForGenomeListComboBox());
     }
 
+    private void partialMatchSelected(final Component popup,
+                                      JList list, SearchCommand cmd,
+                                      List<SearchCommand.SearchResult> results) {
+        results.subList(list.getSelectedIndex(), list.getSelectedIndex());
+        popup.setVisible(false);
+        cmd.showSearchResult(results.subList(list.getSelectedIndex(), list.getSelectedIndex() + 1));
+    }
+
     /**
      * This method is called from within the constructor to
      * initialize the form.
@@ -779,6 +794,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         searchTextField.setMinimumSize(new java.awt.Dimension(100, 28));
         searchTextField.setPreferredSize(new java.awt.Dimension(230, 28));
         searchTextField.setAlignmentY(CENTER_ALIGNMENT);
+
         locationPanel.add(searchTextField, JideBoxLayout.FIX);
 
         goButton = new JideButton("Go");
@@ -1089,5 +1105,34 @@ public class IGVCommandBar extends javax.swing.JPanel {
 
     }
 
+    private class SearchHints extends ListDataIntelliHints<String> {
 
+        public SearchHints(JTextComponent jTextComponent) {
+            super(jTextComponent, new String[]{});
+        }
+
+        @Override
+        public void acceptHint(Object context) {
+            String text = (String) context;
+            super.acceptHint(context);
+            searchByLocus(text);
+        }
+
+        @Override
+        public boolean updateHints(Object context) {
+            String text = (String) context;
+            if (text.length() <= 2) {
+                return false;
+            } else {
+                List<NamedFeature> features = FeatureDB.getFeaturesList(text, SearchCommand.SEARCH_LIMIT);
+                final List<SearchCommand.SearchResult> results = SearchCommand.getResults(features);
+                Object[] list = SearchCommand.getSelectionList(results, false);
+                if (list.length >= 1) {
+                    this.setListData(list);
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }
