@@ -24,15 +24,14 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -46,7 +45,7 @@ public class GenomeManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        genomeManager = IGV.getInstance().getGenomeManager();
+        genomeManager = new GenomeManager(null);
     }
 
     @AfterClass
@@ -54,23 +53,22 @@ public class GenomeManagerTest {
     }
 
 
-
     @Test
     public void testSortChromosomes() {
 
-        String [] chrs = {"chr12", "chr10", "chrMT",  "chr1", "chrLongName", "chrLongName1"};
-        String [] expectedResult = {"chr1", "chr10", "chr12", "chrLongName1", "chrLongName", "chrMT"};
+        String[] chrs = {"chr12", "chr10", "chrMT", "chr1", "chrLongName", "chrLongName1"};
+        String[] expectedResult = {"chr1", "chr10", "chr12", "chrLongName1", "chrLongName", "chrMT"};
 
         Arrays.sort(chrs, new Genome.ChromosomeComparator());
-        for(int i=0; i<chrs.length; i++) {
+        for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }
         System.out.println();
 
-        chrs = new String [] {"scaffold_v2_10414", "scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10415"};
-        expectedResult = new String [] {"scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10414", "scaffold_v2_10415"};
+        chrs = new String[]{"scaffold_v2_10414", "scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10415"};
+        expectedResult = new String[]{"scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10414", "scaffold_v2_10415"};
         Arrays.sort(chrs, new Genome.ChromosomeComparator());
-        for(int i=0; i<chrs.length; i++) {
+        for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }
     }
