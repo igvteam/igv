@@ -18,12 +18,13 @@
 
 package org.broad.igv.synteny;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * User: jrobinso
@@ -31,7 +32,7 @@ import java.util.Map;
  */
 public class SyntenyUtilsTest {
 
-    String testMappings = "test/data/hg18_to_mm8.regions";
+    String testMappings = "test/data/igv/hg18_to_mm8.regions";
 
     @Test
     public void testLoadMappings() {

@@ -35,7 +35,7 @@ import java.io.File;
  */
 public class SamIndexTest {
 
-    File f = new File("/Users/jrobinso/snp130.bedz.sai");
+    File f = new File("test/largedata/snp130.bedz.sai");
 
     public SamIndexTest() {
     }
