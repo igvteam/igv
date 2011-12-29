@@ -6,10 +6,12 @@ package org.broad.igv.feature;
  */
 class Codon {
 
-    private int proteinPosition;   // Position in protein coordinates, first amino acid is numbered 1
-    private int genomePosition1 = -1;  // Triplet -- genomic (base) positions
-    private int genomePosition2 = -1;  //    in "zero" based (UCSC style) coordinates
-    private int genomePosition3 = -1;
+    // Position in protein coordinates, first amino acid is numbered 1
+    private int proteinPosition;
+    // Triplet -- genomic (base) positions
+    // in "zero" based (UCSC style) coordinates
+    private int[] genomePositions = new int[]{-1, -1, -1};
+    private int nextPos = 0;
     private AminoAcid aminoAcid;
 
     Codon(int proteinPosition) {
@@ -17,20 +19,20 @@ class Codon {
     }
 
     void setNextGenomePosition(int gp) {
-        if (genomePosition1 < 0) {
-            genomePosition1 = gp;
-        } else if (genomePosition2 < -0) {
-            genomePosition2 = gp;
-        } else if (genomePosition3 < 0) {
-            genomePosition3 = gp;
-        }
-        else {
-            // TODO -- throw an exception?
+        if (nextPos < 3) {
+            genomePositions[nextPos] = gp;
+            nextPos++;
+        } else {
+            throw new IllegalStateException("Genome positions have already been set, cannot set any more");
         }
     }
 
     boolean isGenomePositionsSet() {
-        return genomePosition1 >= 0 && genomePosition2 >= 0 && genomePosition3 >= 0;
+        boolean set = true;
+        for (int ii : genomePositions) {
+            set &= ii > 0;
+        }
+        return set;
     }
 
     public void setAminoAcid(AminoAcid aa) {
@@ -41,16 +43,12 @@ class Codon {
         return proteinPosition;
     }
 
-    public int getGenomePosition1() {
-        return genomePosition1;
-    }
-
-    public int getGenomePosition2() {
-        return genomePosition2;
-    }
-
-    public int getGenomePosition3() {
-        return genomePosition3;
+    public int getGenomePosition(int pos) {
+        try {
+            return genomePositions[pos];
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("pos argument must be 0-2");
+        }
     }
 
     public AminoAcid getAminoAcid() {

@@ -23,22 +23,14 @@
 package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.Feature;
 import org.junit.AfterClass;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * + example
@@ -132,13 +124,13 @@ public class GeneTest {
                 55234050, 55235600, 55236542, 55236969, 55237812, 55242525
         };
 
-        Exon[] exons = new Exon[exonStarts.length];
-        for (int i = 0; i < exonStarts.length; i++) {
-            Exon exon = new Exon("chr7", exonStarts[i], exonEnds[i], Strand.POSITIVE);
-            exon.setCodingStart(cdStart);
-            exon.setCodingEnd(cdEnd);
-            exons[i] = exon;
-        }
+//        Exon[] exons = new Exon[exonStarts.length];
+//        for (int i = 0; i < exonStarts.length; i++) {
+//            Exon exon = new Exon("chr7", exonStarts[i], exonEnds[i], Strand.POSITIVE);
+//            exon.setCodingStart(cdStart);
+//            exon.setCodingEnd(cdEnd);
+//            exons[i] = exon;
+//        }
 
         int cdLength0 = exonEnds[0] - cdStart;
         assertEquals(cdLength0, egfr.getExons().get(0).getCodingLength());
@@ -155,29 +147,24 @@ public class GeneTest {
     @Test
     public void testGetCodon() {
 
-        NamedFeature feature = FeatureDB.getFeature("egfr");
+        NamedFeature feature = egfr;
 
-        // Like nearly all uses of instanceof and casts this is a terrible hack, but one we will live with temporarily
-        // until the feature hierarchy can be refactored.
-        if (feature instanceof BasicFeature) {
+        BasicFeature bf = (BasicFeature) feature;
+        bf.sortExons();
+        List<Exon> exons = bf.getExons();
+        int cdStart = exons.get(0).getCdStart();
 
-            BasicFeature bf = (BasicFeature) feature;
-            int featureStart = bf.getStart();
-
-            // EGFR starts with protiens MRPSG
-            Codon codon = bf.getCodon(genome, 2);
-            assertEquals('R', codon.getAminoAcid().getSymbol());
-            assertEquals(featureStart + 2, codon.getGenomePosition1());
-            assertEquals(featureStart + 3, codon.getGenomePosition2());
-            assertEquals(featureStart + 4, codon.getGenomePosition3());
-
-            codon = bf.getCodon(genome, 3);
-            assertEquals('P', codon.getAminoAcid().getSymbol());
-            assertEquals(featureStart + 5, codon.getGenomePosition1());
-            assertEquals(featureStart + 6, codon.getGenomePosition2());
-            assertEquals(featureStart + 7, codon.getGenomePosition3());
-
+        // EGFR starts with proteins MRPSG
+        char[] symbols = new char[]{'M', 'R', 'P', 'S', 'G'};
+        int[] range = new int[]{0, 1, 2};
+        for (int pos = 0; pos < symbols.length; pos++) {
+            Codon codon = bf.getCodon(genome, pos + 1);
+            assertEquals(symbols[pos], codon.getAminoAcid().getSymbol());
+            for (int offset : range) {
+                assertEquals(cdStart + 3 * pos + offset, codon.getGenomePosition(offset));
+            }
         }
+
 
     }
 
