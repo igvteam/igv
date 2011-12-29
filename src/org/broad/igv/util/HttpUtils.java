@@ -18,6 +18,7 @@
 
 package org.broad.igv.util;
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -28,7 +29,6 @@ import org.broad.tribble.util.SeekableHTTPStream;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.broad.tribble.util.ftp.FTPStream;
 import org.broad.tribble.util.ftp.FTPUtils;
-import sun.misc.BASE64Encoder;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -463,7 +463,8 @@ public class HttpUtils {
 
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
-                String encodedUserPwd = (new BASE64Encoder()).encode(bytes);
+
+                String encodedUserPwd = Base64Coder.encodeLines(bytes);
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
             }
         } else {

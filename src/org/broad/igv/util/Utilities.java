@@ -19,6 +19,7 @@ package org.broad.igv.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -47,12 +48,9 @@ public class Utilities {
     private static Logger log = Logger.getLogger(Utilities.class);
     final static int ZIP_ENTRY_CHUNK_SIZE = 64000;
 
-
-    // TODO -- replace use of sun package
     public static String base64Encode(String str) {
-        sun.misc.BASE64Encoder encoder = new sun.misc.BASE64Encoder();
         byte[] bytes = str.getBytes();
-        return encoder.encode(bytes);
+        return Base64Coder.encodeLines(bytes);
 
     }
 

@@ -19,6 +19,7 @@
 package org.broad.igv.gs.dm;
 
 
+import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
@@ -27,7 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.net.*;
@@ -123,7 +123,7 @@ public class DMUtils {
 
 
         byte[] md5 = computeMD5(localFile);
-        String base64String = (new BASE64Encoder()).encode(md5);
+        String base64String = Base64Coder.encodeLines(md5);
         long contentLength = localFile.length();
         String contentType = "application/octet-stream"; //"text";
 
