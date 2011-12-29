@@ -75,16 +75,17 @@ public class AsciiLineReaderTest {
 
 
         AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
-        long t02 = System.currentTimeMillis();
+
         long asciiCount = 0;
+        long t02 = System.currentTimeMillis();
         while (reader.readLine() != null) {
             asciiCount++;
         }
-        long ascciReaderTime = System.currentTimeMillis() - t02;
+        long asciiReaderTime = System.currentTimeMillis() - t02;
 
         BufferedReader br = new BufferedReader(new FileReader(testFile));
+        long brCount = 0;
         long t0 = System.currentTimeMillis();
-        int brCount = 0;
         while (br.readLine() != null) {
             brCount++;
         }
@@ -92,7 +93,7 @@ public class AsciiLineReaderTest {
 
 
         // It will be considered a bug if AsciiLineReader is slower than BufferedReader
-        assertTrue(bufferedReaderTime > ascciReaderTime);
+        assertTrue(bufferedReaderTime > asciiReaderTime);
         assertEquals(asciiCount, brCount);
 
     }
