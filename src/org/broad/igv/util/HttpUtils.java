@@ -5,7 +5,7 @@
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
@@ -22,6 +22,7 @@ import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.stream.IGVUrlHelper;
@@ -37,6 +38,8 @@ import javax.net.ssl.X509TrustManager;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,7 +132,7 @@ public class HttpUtils {
 
         // Get explicit user setting
         boolean userByteRangeSetting = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-        if (userByteRangeSetting == false) {
+        if (!userByteRangeSetting) {
             // No means no!
             return false;
         }
@@ -160,6 +163,7 @@ public class HttpUtils {
      *
      * @param url
      * @return
+     * @throws IOException
      */
     public String getContentsAsString(URL url) throws IOException {
 
@@ -228,9 +232,8 @@ public class HttpUtils {
     }
 
     public long getContentLength(URL url) throws IOException {
-        String contentLengthString = "";
 
-        contentLengthString = getHeaderField(url, "Content-Length");
+        String contentLengthString = getHeaderField(url, "Content-Length");
         if (contentLengthString == null) {
             return -1;
         } else {
@@ -355,7 +358,7 @@ public class HttpUtils {
 
         // Error messages below.
         StringBuffer buf = new StringBuffer();
-        InputStream inputStream = null;
+        InputStream inputStream;
 
         if (responseCode >= 200 && responseCode < 300) {
             inputStream = urlconnection.getInputStream();
@@ -376,8 +379,6 @@ public class HttpUtils {
             throw new IOException("Error creating GS directory: " + buf.toString());
         }
     }
-
-    ;
 
     /**
      * Code for disabling SSL certification
@@ -405,7 +406,8 @@ public class HttpUtils {
             SSLContext sc = SSLContext.getInstance("TLS");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
             HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
+        } catch (KeyManagementException e) {
         }
 
     }
@@ -425,6 +427,9 @@ public class HttpUtils {
 
         try {
             inputStream = connection.getErrorStream();
+            if (inputStream == null) {
+                return null;
+            }
             return readContents(inputStream);
         } finally {
             if (inputStream != null) inputStream.close();
@@ -464,7 +469,7 @@ public class HttpUtils {
             if (proxySettings.auth && proxySettings.user != null && proxySettings.pw != null) {
                 byte[] bytes = (proxySettings.user + ":" + proxySettings.pw).getBytes();
 
-                String encodedUserPwd = Base64Coder.encodeLines(bytes);
+                String encodedUserPwd = String.valueOf(Base64Coder.encode(bytes));
                 conn.setRequestProperty("Proxy-Authorization", "Basic " + encodedUserPwd);
             }
         } else {
@@ -480,7 +485,7 @@ public class HttpUtils {
         }
 
         conn.setConnectTimeout(Globals.CONNECT_TIMEOUT);
-        conn.setReadTimeout(300000);
+        conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "close");
 
@@ -540,8 +545,11 @@ public class HttpUtils {
                     message = conn.getResponseMessage();
                 }
                 String details = readErrorStream(conn);
+                log.debug("error stream: " + details);
+                log.debug(message);
+                HttpResponseException exc = new HttpResponseException(code);
 
-                throw new IOException("Server returned error code: " + code + " (" + message + ")");
+                throw exc;
             }
         }
         return conn;
@@ -571,7 +579,7 @@ public class HttpUtils {
     public class IGVAuthenticator extends Authenticator {
 
         /**
-         * Called when password authentcation is needed.
+         * Called when password authentication is needed.
          *
          * @return
          */
