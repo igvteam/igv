@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * Class for specifc wrapping certain HTTP response codes as exceptions
+ * Class for converting HTTP error response codes to exceptions
  *
  * @author Jim Robinson
  * @date Jul 27, 2011
@@ -47,6 +47,8 @@ public class HttpResponseException extends IOException {
                 return "Proxy authentication required (status code " + statusCode + ")";
             case 403:
                 return "Access Forbidden (status code " + statusCode + ")";
+            case 404:
+                return "File not found (status code " + statusCode + ")";
             default:
                 return "HTTP access error (status code " + statusCode + ")";
         }
