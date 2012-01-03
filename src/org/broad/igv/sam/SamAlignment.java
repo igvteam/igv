@@ -116,7 +116,7 @@ public class SamAlignment extends AbstractAlignment implements Alignment {
         this.setInferredInsertSize(record.getInferredInsertSize());
         this.readSequence = record.getReadString();
         this.readLength = record.getReadLength();
-        this.firstInPair = record.getFirstOfPairFlag();
+        this.firstInPair = record.getReadPairedFlag() ?  record.getFirstOfPairFlag() : true;
 
         setMatePair(record, genome);
         setPairOrientation(record);
