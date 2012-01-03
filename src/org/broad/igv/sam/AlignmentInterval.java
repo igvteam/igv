@@ -143,9 +143,6 @@ public class AlignmentInterval extends Locus {
 
         for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
             for (AlignmentInterval.Row row : alignmentRows) {
-                if (option == AlignmentTrack.SortOption.NUCELOTIDE) {
-                    // TODO -- why is this here?
-                }
                 row.updateScore(option, location, this);
             }
 
@@ -344,6 +341,19 @@ public class AlignmentInterval extends Locus {
                     case INSERT_SIZE:
                         setScore(-Math.abs(centerAlignment.getInferredInsertSize()));
                         break;
+                    case MATE_CHR:
+                        ReadMate mate = centerAlignment.getMate();
+                        if(mate == null) {
+                            setScore(Integer.MAX_VALUE);
+                        }
+                        else {
+                            if(mate.getChr().equals(centerAlignment.getChr())) {
+                                setScore(Integer.MAX_VALUE-1);
+                            }
+                            else {
+                                setScore(mate.getChr().hashCode());
+                            }
+                        }
                 }
             }
         }

@@ -67,7 +67,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     static final int TOP_MARGIN = 20;
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR
     }
 
     public enum GroupOption {
@@ -1103,6 +1103,19 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 sortMenu.add(m7);
             }
 
+            if (dataManager.isPairedEnd()) {
+                JMenuItem m7 = new JMenuItem("by chromosome of mate");
+                m7.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent aEvt) {
+
+                        IGV.getInstance().sortAlignmentTracks(SortOption.MATE_CHR);
+                        refresh();
+
+                    }
+                });
+                sortMenu.add(m7);
+            }
 
             add(sortMenu);
         }
