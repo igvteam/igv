@@ -19,14 +19,13 @@
 package org.broad.igv.feature;
 
 import junit.framework.AssertionFailedError;
-import org.broad.igv.Globals;
-import org.broad.igv.TestInformation;
-import org.broad.igv.tools.IgvTools;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,62 +38,51 @@ import static junit.framework.Assert.*;
  */
 public class FeatureDBTest {
 
-    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.genome";
+
     public static final int LARGE = 500;
 
     private static final String CHECK_STR = "ABC";
-    private static final int EXPECTED = 50;
+    private static boolean reload = false;
+    private static Genome genome;
 
 
     //Not a unit test
-    public static void junk(String[] args) {
-        //String CHECK_STR = CHECK_STR;
-        //Map<String, NamedFeature> fMap = FeatureDB.getFeatures(CHECK_STR);
+    public static void main(String[] args) {
 
-        String[] Options = {"Option1", "Option2", "Option3", "48549"};
-        // Create the JList containing the items:
-        JList ls = new JList(Options);
-        ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // On the square in a scrollPane size desired:
-        JScrollPane scls = new JScrollPane(ls);
-
-        // It sets the initial val:
-        ls.setSelectedValue(Options[0], true);
-
-        // Create the content of our dialogue:
-        // Message 1 + scrollpane containing the ls:
-        Object[] message = {"Choose your contact", ls};
-
-        // Use showOptionDialog () interface which offers the most complete
-        int resp = JOptionPane.showConfirmDialog(
-                null, message, "Contact List.",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
-
-        // And we treat the return val:
-        String val = null;
-        if (resp == JOptionPane.OK_OPTION) {
-            val = ls.getSelectedValue().toString();
-        }
-        //return val;
 
     }
 
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        genome = TestUtils.loadGenome();
+        FeatureDB.setGenome(genome);
+        reload = false;
+    }
+
     @Before
-    public void setUp() throws Exception {
-        Globals.setHeadless(true);
-        IgvTools.loadGenome(dataFileName, true);
+    public void setUpTest() throws Exception {
+
+        try {
+            if (FeatureDB.size() == 0) {
+                reload = true;
+            }
+        } catch (NullPointerException e) {
+            reload = true;
+        }
+        if (reload) {
+            setUpClass();
+        }
     }
 
     @After
     public void tearDown() {
-        FeatureDB.clearFeatures();
+        //FeatureDB.clearFeatures();
     }
 
     @Test
     public void testFeaturesMap() throws Exception {
-        Map<String, NamedFeature> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
+        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(CHECK_STR);
 
         for (String k : fMap.keySet()) {
 
@@ -133,6 +121,8 @@ public class FeatureDBTest {
     public void testThreadSafety() throws Exception {
 
         final Map<Integer, AssertionFailedError> map = new HashMap<Integer, AssertionFailedError>();
+        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        final int expected = features.size();
 
         Thread read = new Thread(new Runnable() {
             public void run() {
@@ -142,7 +132,7 @@ public class FeatureDBTest {
                         //Check for data corruption
                         assertTrue(f.getName().startsWith(CHECK_STR));
                     }
-                    assertEquals(EXPECTED, features.size());
+                    assertEquals(expected, features.size());
                 } catch (AssertionFailedError e) {
                     map.put(0, e);
                 }
@@ -161,7 +151,7 @@ public class FeatureDBTest {
 
         write.join();
 
-        List<NamedFeature> features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
+        features = FeatureDB.getFeaturesList(CHECK_STR, LARGE);
         assertEquals(0, features.size());
 
         if (map.containsKey(0)) {
@@ -171,5 +161,66 @@ public class FeatureDBTest {
 
     }
 
+    @Test
+    public void testMultiRetrieve() throws Exception {
+        String checkstr = "EGFLAM";
+        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
+        List<NamedFeature> data = fMap.get(checkstr);
+        assertEquals(4, data.size());
+    }
+
+    @Test
+    public void testMultipleEntries() throws Exception {
+        String checkstr = "EG";
+        Map<String, List<NamedFeature>> fMap = FeatureDB.getFeaturesMap(checkstr);
+        for (String k : fMap.keySet()) {
+            List<NamedFeature> data = fMap.get(k);
+            //System.out.println("key " + k + " has " + data.size());
+            for (int ii = 0; ii < data.size() - 1; ii++) {
+                NamedFeature feat1 = data.get(ii);
+                NamedFeature feat2 = data.get(ii + 1);
+                int len1 = feat1.getEnd() - feat1.getStart();
+                int len2 = feat2.getEnd() - feat2.getStart();
+                //We require either the start or end to be different,
+                //which is the same as start or length
+                assertTrue("Coordinates are the same for " + k,
+                        len2 != len1 || feat1.getStart() != feat2.getStart());
+
+                assertTrue("Data for key " + k + " not sorted", len1 >= len2);
+            }
+        }
+    }
+
+
+    @Test
+    public void testMutationSearch() throws Exception {
+
+        String name = "EGFR";
+        // EGFR starts with proteins MRPSG
+        char[] symbols = new char[]{'M', 'R', 'P', 'S', 'G'};
+        List<NamedFeature> matches;
+        for (int ii = 0; ii < symbols.length; ii++) {
+            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii]);
+            assertEquals(4, matches.size());
+        }
+
+
+        name = "EGFLAM";
+        int exp_start = 38439399;
+        matches = FeatureDB.getMutation(name, 2, 'H');
+        assertEquals(1, matches.size());
+        NamedFeature feat = matches.get(0);
+        assertEquals(exp_start, feat.getStart());
+
+        char[] others = new char[]{'D', 'R', 'E'};
+        for (char c : others) {
+            matches = FeatureDB.getMutation(name, 2, c);
+            assertEquals(1, matches.size());
+            BasicFeature bf = (BasicFeature) matches.get(0);
+            assertEquals(bf.getCodon(genome, 2).getAminoAcid().getSymbol(), c);
+        }
+
+
+    }
 
 }

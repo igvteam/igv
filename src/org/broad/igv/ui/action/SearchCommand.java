@@ -21,6 +21,7 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -119,6 +120,11 @@ public class SearchCommand implements Command {
     /**
      * Given a string, search for the appropriate data to show the user.
      * Different syntaxes are accepted.
+     * <p/>
+     * In general, whitespace delimited tokens are treated separately and each are shown.
+     * There is 1 exception to this. A locus of form chr1   1   10000 will be treated the same
+     * as chr1:1-10000. Only one entry of this form can be entered, chr1    1   10000 chr2:1-1000 will
+     * not be recognized.
      *
      * @param searchString Feature name (EGFR), chromosome (chr1), or locus string (chr1:1-100 or chr1:6)
      *                     Partial matches to a feature name (EG) will return multiple results, and
@@ -132,33 +138,17 @@ public class SearchCommand implements Command {
         List<SearchResult> results = new ArrayList<SearchResult>();
 
         searchString = searchString.replace("\"", "");
+
+        ResultType wholeStringType = checkTokenType(searchString);
+        if (wholeStringType == ResultType.LOCUS) {
+            results.add(calcChromoLocus(searchString));
+            return results;
+        }
+
         // Space delimited?
         String[] tokens = searchString.split("\\s+");
-        if (tokens.length >= 2) {
-            results.addAll(parseTokens(tokens));
-            // Feature search
-        } else {
-            //Check exact match
-            NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
-            if (feature != null) {
-                results.add(new SearchResult(feature));
-                return results;
-            } else {
-                //Check inexact match
-                //We will later want to ask the user which of these to keep
-                List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
-                if (features.size() > 0) {
-                    askUser = features.size() >= 2;
-                    return getResults(features);
-                }
-            }
-
-            // Apparently not a feature.
-            // Either a locus or track name.  Track names can be quoted,
-            // loci are never quoted.
-
-            //Update: not supporting track names here
-            results.add(calcChromoLocus(searchString));
+        for (String s : tokens) {
+            results.addAll(parseToken(s));
         }
 
         if (results.size() == 0) {
@@ -274,6 +264,7 @@ public class SearchCommand implements Command {
         Object[] list = getSelectionList(results, true);
         JList ls = new JList(list);
         ls.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        //ls.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         final JOptionPane pane = new JOptionPane(ls, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
         final Dialog dialog = pane.createDialog("Features");
@@ -308,106 +299,148 @@ public class SearchCommand implements Command {
     }
 
     /**
-     * Tokens will be separated somehow. Differentiating token types may be easier
-     * using regex.
+     * Check token type using regex.
+     *
      * @param token
      * @return
      */
-/*    private TokenType parseIndividualToken(String token){
+    ResultType checkTokenType(String token) {
         //Regexp for a number with commas in it (no periods)
-        String num_withcommas = "((\\d)+,?)+";
+        String num_withcommas = "(((\\d)+,?)+)";
+        //Not ideal, will match chr + (1 or 2 digit number) or chrX, chrY
         String chromo_string = "^chr([\\d]{1,2}|[XY])";
         RE chromo = new RE(chromo_string + "\\s*$", RE.MATCH_CASEINDEPENDENT);
-        RE chromo_range = new RE(chromo_string + ":|\\s+" + num_withcommas + "(-|\\s+)" + num_withcommas + "(\\s)*$");
-        if(chromo.match(token)){
-            return TokenType.CHROMOSOME;
-        }else if (chromo_range.match(token)){
-            return TokenType.LOCUS;
+        //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
+        RE chromo_range = new RE(chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
+                RE.MATCH_CASEINDEPENDENT);
+
+        //Simple feature, which is letters/numbers only
+        RE feature = new RE("^(\\w)(\\s)*$", RE.MATCH_CASEINDEPENDENT);
+        //Mutation notation. e.g. KRAS:G12C
+        RE feature_mut = new RE("^(\\w)+:[A-Z]" + num_withcommas + "[A-Z](\\s)*$", RE.MATCH_CASEINDEPENDENT);
+        if (chromo.match(token)) {
+            return ResultType.CHROMOSOME;
+        } else if (chromo_range.match(token)) {
+            return ResultType.LOCUS;
+        } else if (feature.match(token)) {
+            return ResultType.FEATURE;
+        } else if (feature_mut.match(token)) {
+            return ResultType.FEATURE_MUT;
         }
-        
-        return TokenType.ERROR;
-    }*/
+
+        return ResultType.ERROR;
+    }
 
     /**
      * Determine searchResult for white-space delimited search query.
      *
-     * @param tokens
+     * @param token
      * @return searchResult
      */
-    private List<SearchResult> parseTokens(String[] tokens) {
+    private List<SearchResult> parseToken(String token) {
+
         List<SearchResult> results = new ArrayList<SearchResult>();
-        int start, end;
-        String chr = genome.getChromosomeAlias(tokens[0].trim());
-        try {
-            start = Integer.parseInt(tokens[1].trim()) - 1; // Convert to UCSC convention
-            end = start + 1;
-            if (tokens.length >= 3) {
-                end = Integer.parseInt(tokens[2].trim());
+
+        ResultType type = checkTokenType(token);
+        SearchResult result;
+        if (type == ResultType.LOCUS) {
+            //Check if a full or partial locus string
+            result = calcChromoLocus(token);
+            if (result.type != ResultType.ERROR) {
+                results.add(result);
+                return results;
             }
-            SearchResult result = new SearchResult(ResultType.LOCUS, chr, start, end);
+        }
+
+        if (type == ResultType.FEATURE_MUT) {
+            //We know it has the right form, but may
+            //not be valid feature name or mutation
+            //which exists.
+            String[] items = token.split(":");
+            String name = items[0].trim().toUpperCase();
+            String coords = items[1];
+            char aminoAcidSymbol = coords.subSequence(coords.length() - 1, coords.length()).charAt(0);
+            coords = coords.substring(1, coords.length() - 1);
+            int location = Integer.parseInt(coords);
+            List<NamedFeature> features = FeatureDB.getMutation(name, location, aminoAcidSymbol);
+            //Only keep the largest one
+            if (features.size() >= 1) {
+                NamedFeature feat = features.get(0);
+                result = new SearchResult(feat);
+                //Zoom in on mutation of interest?
+                //result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0,location-20), location + 20);
+                results.add(result);
+                return results;
+            }
+        }
+
+        //Check if just a single chromosome
+        String chr = genome.getChromosomeAlias(token);
+        Chromosome chromo = genome.getChromosome(chr);
+        if (chromo != null) {
+            result = new SearchResult(ResultType.CHROMOSOME, chr, 1, chromo.getLength());
             results.add(result);
             return results;
-        } catch (NumberFormatException e) {
-            // Multiple tokens, On the fly gene list ?
         }
 
-        //List<String> loci = new ArrayList<String>(tokens.length);
-        results = new ArrayList<SearchResult>(tokens.length);
-        SearchResult result;
-        Chromosome chromo;
-        for (String t : tokens) {
-            Locus l = new Locus(t);
-            result = new SearchResult();
-            result.setMessage("Invalid token: " + t);
-            if (l.isValid()) {
-                result = new SearchResult(l);
-            } else if ((chromo = genome.getChromosome(t)) != null) {
-                //Locus will only be valid if fully qualified.
-                //Should rethink this approach
-                String ft = t + ":1-" + chromo.getLength();
-                Locus fl = new Locus(ft);
-                if (fl.isValid()) {
-                    result = new SearchResult(fl);
-                }
-            } else {
-                NamedFeature feat = FeatureDB.getFeature(t.toUpperCase().trim());
-                if (feat != null) {
-                    result = new SearchResult(feat);
-                }
-            }
-            results.add(result);
+        //Check if a feature
+        NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
+        if (feat != null) {
+            results.add(new SearchResult(feat));
+            return results;
         }
 
+        //Check inexact match
+        //We will later want to ask the user which of these to keep
+        List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+        if (features.size() > 0) {
+            askUser |= features.size() >= 2;
+            return getResults(features);
+        }
+
+        result = new SearchResult();
+        result.setMessage("Invalid token: " + token);
+        results.add(result);
         return results;
+
     }
 
+    /**
+     * Parse a string of locus coordinates.
+     * Can have whitespace delimiters, and be mising second coordinate,
+     * but must have 1st coordinate.
+     *
+     * @param searchString
+     * @return
+     */
     private SearchResult calcChromoLocus(String searchString) {
         int colonIdx = searchString.lastIndexOf(":");
+        int[] startEnd = null;
+        String chr = null;
         if (colonIdx > 0) {
-            // The chromosome is that portion of the search string up to the last colon.
-            String chr = genome.getChromosomeAlias(searchString.substring(0, colonIdx));
+            chr = searchString.substring(0, colonIdx);
             String posString = searchString.substring(colonIdx).replace(":", "");
-            int[] startEnd = getStartEnd(posString);
+            startEnd = getStartEnd(posString);
+        } else {
+            //Assume whitespace delimited
+            String[] tokens = searchString.split("\\s+");
+            chr = tokens[0];
+            String posString = tokens[1];
+            if (tokens.length >= 3) {
+                posString += "-" + tokens[2];
+            }
+            startEnd = getStartEnd(posString);
+
+        }
+        chr = genome.getChromosomeAlias(chr);
+        Chromosome chromosome = genome.getChromosome(chr);
+        if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
             if (startEnd != null) {
                 return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
             }
-        } else {
-            // No chromosome delimiter (color),  The search string is either chromosome name
-            // or a locus in the current chromosome.
-            if (searchString.contains("-")) {
-                // Presence of a dash indicates this is a locus string in the current chromosome
-                int[] startEnd = getStartEnd(searchString);
-                return new SearchResult(ResultType.LOCUS, null, startEnd[0], startEnd[1]);
-            } else {
-                // No dash, this is either a chromosome or an unkown search string
-                String chr = genome.getChromosomeAlias(searchString);
-                Chromosome chromosome = genome.getChromosome(chr);
-                if (chromosome != null || searchString.equals(Globals.CHR_ALL)) {
-                    return new SearchResult(ResultType.CHROMOSOME, chr, 0, 0);
-                }
-            }
+            return new SearchResult(ResultType.CHROMOSOME, chr, 0, 0);
         }
-        return new SearchResult(ResultType.ERROR, null, -1, -1);
+        return new SearchResult(ResultType.ERROR, chr, -1, -1);
     }
 
     private void showFlankedRegion(String chr, int start, int end) {
@@ -464,6 +497,7 @@ public class SearchCommand implements Command {
 
     enum ResultType {
         FEATURE,
+        FEATURE_MUT,
         LOCUS,
         CHROMOSOME,
         ERROR
@@ -494,10 +528,6 @@ public class SearchCommand implements Command {
             this.end = end;
             this.coords = Locus.getFormattedLocusString(chr, start, end);
             this.locus = this.coords;
-        }
-
-        public SearchResult(Locus locus) {
-            this(ResultType.LOCUS, locus.getChr(), locus.getStart(), locus.getEnd());
         }
 
         public SearchResult(NamedFeature feature) {
@@ -543,7 +573,7 @@ public class SearchCommand implements Command {
 
         /**
          * Format for display. If a feature,
-         * <Featurename> (<chromosome>:<start>-<end>)
+         * Featurename (chromosome:start-end)
          * eg EGFR (chr7:55,054,218-55,242,525)
          * <p/>
          * Otherwise, just locus

@@ -19,27 +19,29 @@
 package org.broad.igv.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.FeatureParser;
+import org.broad.igv.TestInformation;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeDescriptor;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.IgvTools;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author jrobinso
  * @date Jul 28, 2010
  */
 public class TestUtils {
+    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.genome";
 
     public static Genome loadGenome(String genomeId) throws IOException {
         Globals.setHeadless(true);
         final String genomeFile = "test/data/genomes/hg18.genome";
         return IgvTools.loadGenome(genomeFile, true);
 
+    }
+
+    public static Genome loadGenome() throws IOException {
+        Globals.setHeadless(true);
+        final String genomeFile = dataFileName;
+        return IgvTools.loadGenome(genomeFile, true);
     }
 }

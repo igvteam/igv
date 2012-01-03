@@ -19,10 +19,12 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.jidesoft.utils.SortedList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
+import org.broad.tribble.Feature;
 
 import java.util.*;
 
@@ -39,7 +41,7 @@ public class FeatureDB {
      * Map for all features other than genes.
      */
     //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
-    private static Map<String, NamedFeature> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, NamedFeature>());
+    private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static Genome GENOME = null;
 
     public static void addFeature(NamedFeature feature) {
@@ -77,41 +79,43 @@ public class FeatureDB {
         }
     }
 
-    public static void put(String name, NamedFeature feature) {
-
+    /**
+     * Add feature to the list of features associated with this name.
+     * Performs no data integrity checks
+     *
+     * @param name
+     * @param feature
+     * @return true if successfully added, false if not
+     */
+    public static boolean put(String name, NamedFeature feature) {
         String key = name.toUpperCase();
-
         Genome currentGenome = GENOME;
         if (!Globals.isHeadless()) {
             currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         }
+        if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
+            return false;
+        }
 
-        if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
-            NamedFeature currentFeature = featureMap.get(key);
-            if (currentFeature == null) {
-                featureMap.put(key, feature);
+        synchronized (featureMap) {
+            List<NamedFeature> currentList = featureMap.get(key);
+            if (currentList == null) {
+                List<NamedFeature> newList = new SortedList(new ArrayList<NamedFeature>(),
+                        new FeatureComparator<NamedFeature>(true));
+                boolean added = newList.add(feature);
+                if (added) {
+                    featureMap.put(key, newList);
+                }
+                return added;
             } else {
-                // If there are multiple features, prefer the one that is NOT on a "random" chromosome.
-                // This is a hack, but an important one for the human assemblies
-                String featureChr = feature.getChr().toLowerCase();
-                String currentFeatureChr = currentFeature.getChr();
-                if (featureChr.contains("random") || featureChr.contains("chrun") || featureChr.contains("hap")) {
-                    return;
-                } else if (currentFeatureChr.contains("random") || currentFeatureChr.contains("chrun") ||
-                        currentFeatureChr.contains("hap")) {
-                    featureMap.put(key, feature);
-                    return;
+                //Don't want to add exact duplicates.
+                for (NamedFeature f : currentList) {
+                    if ((f.getStart() == feature.getStart()) && (f.getEnd() == feature.getEnd())) {
+                        return false;
+                    }
                 }
-
-                // If there are multiple features, use or keep the longest one
-                int w1 = currentFeature.getEnd() - currentFeature.getStart();
-                int w2 = feature.getEnd() - feature.getStart();
-                if (w2 > w1) {
-                    featureMap.put(key, feature);
-                }
-
+                return currentList.add(feature);
             }
-
         }
     }
 
@@ -121,11 +125,7 @@ public class FeatureDB {
 
 
     public static void addFeature(String name, NamedFeature feature) {
-//        if (Globals.isHeadless()) {
-//            return;
-//        }
-        featureMap.put(name.toUpperCase(), feature);
-
+        put(name.toUpperCase(), feature);
     }
 
 
@@ -145,13 +145,23 @@ public class FeatureDB {
         featureMap.clear();
     }
 
+    static int size() {
+        return featureMap.size();
+    }
+
     /**
      * Return the feature, if any, with the given name.  Genes are given
      * precedence.
      */
-    public static NamedFeature getFeature(String nm) {
-        String name = nm.trim().toUpperCase();
-        return featureMap.get(name);
+    public static NamedFeature getFeature(String name) {
+        String nm = name.trim().toUpperCase();
+        List<NamedFeature> features = featureMap.get(nm);
+
+        if (features != null) {
+            return features.get(0);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -166,34 +176,108 @@ public class FeatureDB {
      * subMap, headMap or tailMap views". See
      * <a href="http://docs.oracle.com/javase/6/docs/api/java/util/Collections.html#synchronizedSortedMap%28java.util.SortedMap%29> here</a>
      *
-     * @param nm : Search string. Features which begin with this
-     *           string will be found.
+     * @param name : Search string. Features which begin with this
+     *             string will be found.
      * @return
      */
-    static Map<String, NamedFeature> getFeaturesMap(String nm) {
-        String name = nm.trim().toUpperCase();
-        SortedMap<String, NamedFeature> treeMap = (SortedMap) featureMap;
+    static Map<String, List<NamedFeature>> getFeaturesMap(String name) {
+        String nm = name.trim().toUpperCase();
+        SortedMap<String, List<NamedFeature>> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
-        return treeMap.subMap(name, name + (char) ((int) 'Z' + 1));
+        return treeMap.subMap(nm, nm + (char) ((int) 'Z' + 1));
     }
 
-    public static List<NamedFeature> getFeaturesList(String nm, int limit) {
+    public static List<NamedFeature> getFeaturesList(String name, int limit) {
+        return getFeaturesList(name, limit, true);
+    }
+
+    public static List<NamedFeature> getFeaturesList(String name, int limit, boolean longestOnly) {
 
         //Note: We are iterating over submap, this needs
         //to be synchronized over the main map.
         synchronized (featureMap) {
-            Map<String, NamedFeature> resultMap = getFeaturesMap(nm);
+            Map<String, List<NamedFeature>> resultMap = getFeaturesMap(name);
             Set<String> names = resultMap.keySet();
             Iterator<String> nameIter = names.iterator();
             ArrayList<NamedFeature> features = new ArrayList<NamedFeature>((Math.min(limit, names.size())));
             int ii = 0;
             while (nameIter.hasNext() && ii < limit) {
-                features.add(resultMap.get(nameIter.next()));
+                List<NamedFeature> subFeats = resultMap.get(nameIter.next());
+                if (longestOnly) {
+                    features.add(subFeats.get(0));
+                } else {
+                    features.addAll(subFeats);
+                }
                 ii++;
             }
             return features;
         }
 
+    }
+
+    /**
+     * Search for a feature with the given name, which has the specified aminoAcid
+     * at the specified proteinPosition (1-indexed).
+     *
+     * @param name
+     * @param proteinPosition
+     * @param aminoAcidSymbol char symbolizing the desired amino acid
+     * @return
+     */
+    public static List<NamedFeature> getMutation(String name, int proteinPosition, char aminoAcidSymbol) {
+        String nm = name.toUpperCase();
+        Genome currentGenome = GENOME;
+        if (!Globals.isHeadless()) {
+            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        }
+
+        List<NamedFeature> results = new ArrayList<NamedFeature>();
+        List<NamedFeature> possibles = featureMap.get(nm);
+        if (possibles != null) {
+            synchronized (featureMap) {
+                for (NamedFeature f : possibles) {
+                    if (!(f instanceof BasicFeature)) {
+                        continue;
+                    }
+                    BasicFeature bf = (BasicFeature) f;
+                    Codon c = bf.getCodon(currentGenome, proteinPosition);
+                    if (c == null) {
+                        continue;
+                    }
+                    if (c.getAminoAcid().getSymbol() == aminoAcidSymbol) {
+                        results.add(f);
+                    }
+                }
+            }
+        }
+
+        return results;
+
+    }
+
+
+    private static class FeatureComparator<T extends Feature> implements Comparator {
+        private boolean reverse;
+
+        public FeatureComparator(boolean reverse) {
+            this.reverse = reverse;
+        }
+
+        public int compare(Object o1, Object o2) {
+            T feat1 = (T) o1;
+            T feat2 = (T) o2;
+            int len1 = (feat1.getEnd() - feat1.getStart());
+            int len2 = (feat2.getEnd() - feat2.getStart());
+            int toRet;
+            if (!this.reverse) {
+                toRet = len1 - len2;
+            } else {
+                toRet = len2 - len1;
+            }
+
+            return toRet;
+
+        }
     }
 
 

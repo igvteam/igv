@@ -19,10 +19,9 @@
 package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tools.IgvTools;
-import org.junit.Before;
+import org.broad.igv.util.TestUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,13 +36,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class SearchCommandTest {
 
-    private Genome genome;
+    private static Genome genome;
 
-    @Before
-    public void setUp() throws Exception {
-        String dataFileName = "test/data/genomes/hg18.genome";
-        Globals.setHeadless(true);
-        this.genome = IgvTools.loadGenome(dataFileName, true);
+    @BeforeClass
+    public static void setUp() throws Exception {
+        genome = TestUtils.loadGenome();
     }
 
     @Test
@@ -95,6 +92,8 @@ public class SearchCommandTest {
     }
 
     public void tstMultiFeatures(String delim) throws Exception {
+        //TODO chr1:1-100 fails because 1 gets subtracted.
+        //Not sure if this is correct behavior or not
         String[] tokens = {"EgfR", "ABO", "BRCA1", "chr1:1-100"};
         SearchCommand.ResultType[] types = new SearchCommand.ResultType[]{
                 SearchCommand.ResultType.FEATURE,
@@ -136,9 +135,8 @@ public class SearchCommandTest {
 
         for (int ii = 0; ii < tokens.length; ii++) {
             SearchCommand.SearchResult result = results.get(ii);
-            //We add coordinates, and expect that loci may be
-            //chr1:1-xxx where xxx is some large number.
-            assertEquals(SearchCommand.ResultType.LOCUS, result.type);
+
+            assertEquals(SearchCommand.ResultType.CHROMOSOME, result.type);
             assertTrue(result.getLocus().contains(tokens[ii]));
         }
     }
@@ -149,28 +147,28 @@ public class SearchCommandTest {
         tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
     }
 
-/*    @Test
-    public void testTokenParsing(){
-        String[] chromos = {"chr3", "chr20","chrX", "chrY"};
+    @Test
+    public void testTokenChecking() {
+        String[] chromos = {"chr3", "chr20", "chrX", "chrY"};
         SearchCommand cmd = new SearchCommand(null, "", genome);
-        for(String chr: chromos){
-            assertEquals(SearchCommand.TokenType.CHROMOSOME, cmd.parseIndividualToken(chr));
+        for (String chr : chromos) {
+            assertEquals(SearchCommand.ResultType.CHROMOSOME, cmd.checkTokenType(chr));
         }
-        
-        String[] starts = {"39,239,480", "958392", "0,4829,44"};
-        String[] ends = {"40,321,111","5","48153181,813156"};
-        for(int ii=0; ii < starts.length; ii++){
-            String tstr = chromos[ii] + ":" + starts[ii]+ "-" + ends[ii];
-            assertEquals(SearchCommand.TokenType.LOCUS, cmd.parseIndividualToken(tstr));
-            tstr = chromos[ii] + "\t" + starts[ii]+ "  " + ends[ii];
-            assertEquals(SearchCommand.TokenType.LOCUS, cmd.parseIndividualToken(tstr));
+
+        String[] starts = {"39,239,480", "958392", "0,4829,44", "5"};
+        String[] ends = {"40,321,111", "5", "48153181,813156", ""};
+        for (int ii = 0; ii < starts.length; ii++) {
+            String tstr = chromos[ii] + ":" + starts[ii] + "-" + ends[ii];
+            assertEquals(SearchCommand.ResultType.LOCUS, cmd.checkTokenType(tstr));
+            tstr = chromos[ii] + "\t" + starts[ii] + "  " + ends[ii];
+            assertEquals(SearchCommand.ResultType.LOCUS, cmd.checkTokenType(tstr));
         }
-        
-        String[] errors = {"egfr:1-100", "chr100", "chrz", "chr1:3","   "};
-        for(String s: errors){
-            System.out.println(s);
-            assertEquals(SearchCommand.TokenType.ERROR, cmd.parseIndividualToken(s));
+
+        String[] errors = {"egfr:1-100", "   ", "chr1\t1\t100\tchr2"};
+        for (String s : errors) {
+            //System.out.println(s);
+            assertEquals(SearchCommand.ResultType.ERROR, cmd.checkTokenType(s));
         }
-    }*/
+    }
 
 }
