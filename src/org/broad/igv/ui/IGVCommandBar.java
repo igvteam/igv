@@ -1121,7 +1121,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
         @Override
         public boolean updateHints(Object context) {
             String text = (String) context;
-            if (text.length() <= 2) {
+            if (text.length() <= 1) {
                 return false;
             } else {
                 List<NamedFeature> features = FeatureDB.getFeaturesList(text, SearchCommand.SEARCH_LIMIT);

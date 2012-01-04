@@ -307,15 +307,15 @@ public class SearchCommand implements Command {
     ResultType checkTokenType(String token) {
         //Regexp for a number with commas in it (no periods)
         String num_withcommas = "(((\\d)+,?)+)";
-        //Not ideal, will match chr + (1 or 2 digit number) or chrX, chrY
-        String chromo_string = "^chr([\\d]{1,2}|[XY])";
+        //Not ideal, will match chr + (1 or 2 digit number) or chr[X,Y, or M]
+        String chromo_string = "^chr([\\d]{1,2}|[XYM])";
         RE chromo = new RE(chromo_string + "\\s*$", RE.MATCH_CASEINDEPENDENT);
         //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
         RE chromo_range = new RE(chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
                 RE.MATCH_CASEINDEPENDENT);
 
         //Simple feature, which is letters/numbers only
-        RE feature = new RE("^(\\w)(\\s)*$", RE.MATCH_CASEINDEPENDENT);
+        RE feature = new RE("^(\\s)*(\\w)+(\\s)*$", RE.MATCH_CASEINDEPENDENT);
         //Mutation notation. e.g. KRAS:G12C
         RE feature_mut = new RE("^(\\w)+:[A-Z]" + num_withcommas + "[A-Z](\\s)*$", RE.MATCH_CASEINDEPENDENT);
         if (chromo.match(token)) {
@@ -340,62 +340,68 @@ public class SearchCommand implements Command {
     private List<SearchResult> parseToken(String token) {
 
         List<SearchResult> results = new ArrayList<SearchResult>();
+        List<NamedFeature> features;
 
+        //Guess at token type via regex.
+        //We don't assume success
         ResultType type = checkTokenType(token);
         SearchResult result;
-        if (type == ResultType.LOCUS) {
-            //Check if a full or partial locus string
-            result = calcChromoLocus(token);
-            if (result.type != ResultType.ERROR) {
-                results.add(result);
-                return results;
-            }
-        }
+        switch (type) {
+            case LOCUS:
+                //Check if a full or partial locus string
+                result = calcChromoLocus(token);
+                if (result.type != ResultType.ERROR) {
+                    results.add(result);
+                    return results;
+                }
+                break;
+            case FEATURE_MUT:
+                //We know it has the right form, but may
+                //not be valid feature name or mutation
+                //which exists.
+                String[] items = token.split(":");
+                String name = items[0].trim().toUpperCase();
+                String coords = items[1];
+                char refAASymbol = coords.subSequence(0, 1).charAt(0);
+                coords = coords.substring(1, coords.length() - 1);
+                int location = Integer.parseInt(coords) - 1;
+                features = FeatureDB.getMutation(name, location, refAASymbol);
+                //Only keep the largest one
+                if (features.size() >= 1) {
+                    NamedFeature feat = features.get(0);
+                    //result = new SearchResult(feat);
+                    //Zoom in on mutation of interest
+                    result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0, location));
+                    results.add(result);
+                    return results;
+                }
+                break;
+            case CHROMOSOME:
+                String chr = genome.getChromosomeAlias(token);
+                Chromosome chromo = genome.getChromosome(chr);
+                if (chromo != null) {
+                    result = new SearchResult(ResultType.CHROMOSOME, chr, 1, chromo.getLength());
+                    results.add(result);
+                    return results;
+                }
+                //Chromosome string can look similar to feature.
+                //If we fail at chromosome, check against being a feature
+            default:
+            case FEATURE:
+                //Check if a feature
+                NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
+                if (feat != null) {
+                    results.add(new SearchResult(feat));
+                    return results;
+                }
 
-        if (type == ResultType.FEATURE_MUT) {
-            //We know it has the right form, but may
-            //not be valid feature name or mutation
-            //which exists.
-            String[] items = token.split(":");
-            String name = items[0].trim().toUpperCase();
-            String coords = items[1];
-            char aminoAcidSymbol = coords.subSequence(coords.length() - 1, coords.length()).charAt(0);
-            coords = coords.substring(1, coords.length() - 1);
-            int location = Integer.parseInt(coords);
-            List<NamedFeature> features = FeatureDB.getMutation(name, location, aminoAcidSymbol);
-            //Only keep the largest one
-            if (features.size() >= 1) {
-                NamedFeature feat = features.get(0);
-                result = new SearchResult(feat);
-                //Zoom in on mutation of interest?
-                //result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0,location-20), location + 20);
-                results.add(result);
-                return results;
-            }
-        }
-
-        //Check if just a single chromosome
-        String chr = genome.getChromosomeAlias(token);
-        Chromosome chromo = genome.getChromosome(chr);
-        if (chromo != null) {
-            result = new SearchResult(ResultType.CHROMOSOME, chr, 1, chromo.getLength());
-            results.add(result);
-            return results;
-        }
-
-        //Check if a feature
-        NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
-        if (feat != null) {
-            results.add(new SearchResult(feat));
-            return results;
-        }
-
-        //Check inexact match
-        //We will later want to ask the user which of these to keep
-        List<NamedFeature> features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
-        if (features.size() > 0) {
-            askUser |= features.size() >= 2;
-            return getResults(features);
+                //Check inexact match
+                //We will later want to ask the user which of these to keep
+                features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+                if (features.size() > 0) {
+                    askUser |= features.size() >= 2;
+                    return getResults(features);
+                }
         }
 
         result = new SearchResult();
@@ -526,7 +532,7 @@ public class SearchCommand implements Command {
             this.chr = chr;
             this.start = start;
             this.end = end;
-            this.coords = Locus.getFormattedLocusString(chr, start, end);
+            this.coords = Locus.getFormattedLocusString(chr, start + 1, end);
             this.locus = this.coords;
         }
 
@@ -534,6 +540,14 @@ public class SearchCommand implements Command {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = this.feature.getName();
+        }
+
+        public SearchResult(ResultType type, String chr, int location) {
+            this.type = type;
+            this.chr = chr;
+            this.start = location;
+            this.end = location + 1;
+            this.locus = chr + ":" + (location + 1);
         }
 
         void setMessage(String message) {

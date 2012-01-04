@@ -166,8 +166,8 @@ public class FeatureDB {
 
     /**
      * Get all features which match nm. Not necessarily
-     * an exact match. Currenty implementation will match anything
-     * for which nm is at the beginning, including but not limited to
+     * an exact match. Current implementation will match anything
+     * for which name is at the beginning, including but not limited to
      * exact matches.
      * <p/>
      * NOTE: "It is imperative that the user manually synchronize
