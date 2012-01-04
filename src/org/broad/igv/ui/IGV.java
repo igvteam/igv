@@ -1071,6 +1071,7 @@ public class IGV {
 
         contentPane.getMainPanel().resetPanels();
 
+        //TODO -- this is a very blunt and dangerous way to clean up -- change to close files associated with this session
         SeekableFileStream.closeAllInstances();
 
         doRefresh();

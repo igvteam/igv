@@ -144,13 +144,10 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         return Strand.NONE;
     }
 
-	@Override
 	public boolean isFirstOfPair() {
 		return false;
 	}
 
-
-	@Override
 	public boolean isSecondOfPair() {
 		return false;
 	}   

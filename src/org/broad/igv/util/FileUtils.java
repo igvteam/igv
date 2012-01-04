@@ -18,14 +18,14 @@
 package org.broad.igv.util;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -56,11 +56,8 @@ public class FileUtils {
         illegalChar.put("_pp_", "\\|");
     }
 
-    public static void main(String [] args) throws IOException {
-        File inputDirectory = new File(args[0]);
-        File outputDirectory = new File(args[1]);
-        searchAndReplace(inputDirectory, outputDirectory, args[2], args[3]);
-    }
+    static String [] igvJnlpPrefixes = {"igv", "ichip", "29mammals", "hic"};
+
 
     /**
      * Replace all occurences of str1 with str2 in all files in inputDirectory.  Write the modified files
@@ -71,11 +68,11 @@ public class FileUtils {
      * @param str1
      * @param str2
      */
-    public static void searchAndReplace(File inputDirectory, File outputDirectory,  String str1, String str2)
+    public static void searchAndReplace(File inputDirectory, File outputDirectory, String str1, String str2)
             throws IOException {
 
-        for(File in : inputDirectory.listFiles()) {
-            if(!in.isDirectory() && !in.isHidden()) {
+        for (File in : inputDirectory.listFiles()) {
+            if (!in.isDirectory() && !in.isHidden()) {
 
                 File of = new File(outputDirectory, in.getName());
                 BufferedReader reader = null;
@@ -85,17 +82,15 @@ public class FileUtils {
                     reader = new BufferedReader(new FileReader(in));
                     pw = new PrintWriter(new BufferedWriter(new FileWriter(of)));
                     String nextLine;
-                    while((nextLine = reader.readLine()) != null) {
+                    while ((nextLine = reader.readLine()) != null) {
                         nextLine = nextLine.replaceAll(str1, str2);
                         pw.println(nextLine);
                     }
-                }
-                finally {
+                } finally {
                     reader.close();
                     pw.close();
 
                 }
-
 
 
             }
@@ -106,8 +101,7 @@ public class FileUtils {
     public static boolean resourceExists(String path) {
         try {
             boolean remoteFile = isRemote(path);
-            // TODO -- what if its ftp?
-            return (!remoteFile && (new File(path).exists())) ||
+             return (!remoteFile && (new File(path).exists())) ||
                     (remoteFile && HttpUtils.getInstance().resourceAvailable(new URL(path)));
         } catch (IOException e) {
             log.error("Malformed URL: " + path, e);
@@ -443,13 +437,86 @@ public class FileUtils {
     }
 
 
-
     static public String legalFileName(String string) {
         for (Map.Entry<String, String> entry : illegalChar.entrySet()) {
             string = string.replaceAll(entry.getValue(), entry.getKey());
         }
         return string;
     }
+
+    /**
+     * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
+     */
+    public static void cleanupJnlpFiles() {
+
+        // Cleanup jnlp files
+        if (Globals.IS_MAC) {
+            File desktop = new File(System.getProperty("user.home") + "/Desktop");
+            if (desktop.exists() && desktop.isDirectory()) {
+                FileUtils.cleanup(desktop);
+            }
+            File downloads = new File(System.getProperty("user.home") + "/Downloads");
+            if (downloads.exists() && downloads.isDirectory()) {
+                FileUtils.cleanup(downloads);
+            }
+        }
+    }
+
+    private static void cleanup(File dir) {
+
+        if (dir.exists() && dir.isDirectory()) {
+            File[] jnlpFiles = dir.listFiles(new FileFilter() {
+
+                public boolean accept(File arg0) {
+                    final String name = arg0.getName();
+                    for(String pre : igvJnlpPrefixes) {
+                        if(name.startsWith(pre) && name.endsWith(".jnlp")) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            });
+
+            // Sort files by ascending version number
+            Arrays.sort(jnlpFiles, new Comparator<File>() {
+
+                public int compare(File file1, File file2) {
+                    if(org.apache.commons.io.FileUtils.isFileNewer(file1, file2)) {
+                        return 1;
+                    }
+                    else {
+                        return -1;
+                    }
+                }
+            });
+
+            // Delete all but the highest version (newest) jnlp file
+            for (int i = 0; i < jnlpFiles.length - 1; i++) {
+                jnlpFiles[i].delete();
+            }
+
+            // Strip the version nuber fro the newest file
+            if (jnlpFiles.length > 1) {
+                File newestFile = jnlpFiles[jnlpFiles.length - 1];
+                String fn = newestFile.getName();
+                int dotIndex = fn.indexOf(".jnlp");
+                int dashIndex = fn.lastIndexOf("-");
+                if (dashIndex > 1) {
+                    String newName = fn.substring(0, dashIndex) + fn.substring(dotIndex);
+                    newestFile.renameTo(new File(newestFile.getParentFile(), newName));
+                }
+            }
+        }
+    }
+
+
+//    public static void main(String[] args) throws IOException {
+//        File inputDirectory = new File(args[0]);
+//        File outputDirectory = new File(args[1]);
+//        searchAndReplace(inputDirectory, outputDirectory, args[2], args[3]);
+//    }
+
 }
 
 

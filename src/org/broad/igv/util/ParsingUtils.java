@@ -159,6 +159,10 @@ public class ParsingUtils {
     }
 
 
+    public static InputStream openInputStream(String path) throws IOException {
+        return openInputStream(new ResourceLocator(path));
+    }
+
     public static InputStream openInputStream(ResourceLocator locator) throws IOException {
 
         if (locator.getServerURL() != null) {
