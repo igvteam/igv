@@ -7,14 +7,26 @@ package org.broad.igv.hic.data;
 public class ContactRecord {
 
     private int blockNumber;
+
+    /**
+     * Bin number in x coordinate
+     */
     private int x;
+
+    /**
+     * Bin number in y coordinate
+     */
     private int y;
+
+    /**
+     * Total number of counts
+     */
     private int counts;
 
-    public ContactRecord(int block, int x, int bin2, int counts) {
+    public ContactRecord(int block, int x, int y, int counts) {
         this.blockNumber = block;
         this.x = x;
-        this.y = bin2;
+        this.y = y;
         this.counts = counts;
     }
 

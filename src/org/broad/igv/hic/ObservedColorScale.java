@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Jim Robinson
  * @date 9/22/11
  */
-public class ColorScale implements org.broad.igv.renderer.ColorScale {
+public class ObservedColorScale implements org.broad.igv.renderer.ColorScale {
 
     Map<Integer, Color> colorCache = new Hashtable();
 

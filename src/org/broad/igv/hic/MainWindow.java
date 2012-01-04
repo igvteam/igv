@@ -8,9 +8,17 @@ import java.awt.event.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 
+import com.jidesoft.swing.*;
+
 
 import org.broad.igv.hic.data.*;
+import org.broad.igv.hic.tools.DensityUtil;
+import org.broad.igv.renderer.ColorScale;
+import org.broad.igv.renderer.ContinuousColorScale;
+import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.util.IconFactory;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.stream.IGVSeekableStreamFactory;
 import org.broad.tribble.util.SeekableStream;
 import slider.RangeSlider;
@@ -20,6 +28,11 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicSliderUI;
 
@@ -28,13 +41,36 @@ import javax.swing.plaf.basic.BasicSliderUI;
  */
 public class MainWindow extends JFrame {
 
-    public static final int MIN_BIN_WIDTH = 2;
+    public DisplayOption getDisplayOption() {
+        return displayOption;
+    }
+
+    public void setDisplayOption(DisplayOption displayOption) {
+        this.displayOption = displayOption;
+    }
+
+    Map<Integer, DensityFunction> zoomToDensityMap = null;
+
+    /**
+     * Return the expected density function for the given zoom level.
+     *
+     * @param zoom
+     * @return
+     */
+    public DensityFunction getDensityFunction(int zoom) {
+        return zoomToDensityMap == null ? null : zoomToDensityMap.get(zoom);
+    }
+
+    enum DisplayOption {OBSERVED, OE, PEARSON}
+
+
     public static Cursor fistCursor;
     //int refMaxCount = 500;
 
     public static int[] zoomBinSizes = {2500000, 1000000, 500000, 250000, 100000, 50000, 25000, 10000, 5000, 2500, 1000};
     public static String[] zoomLabels = {"2.5 MB", "1 MB", "500 KB", "250 KB", "100 KB", "50 KB", "25 KB", "10 KB", "5 KB", "2.5 KB", "1 KB"};
     public static final int MAX_ZOOM = 10;
+    public static final int BIN_PIXEL_WIDTH = 1;
 
     //private int len;
     public Context xContext;
@@ -42,9 +78,13 @@ public class MainWindow extends JFrame {
     Dataset dataset;
     MatrixZoomData zd;
     private Chromosome[] chromosomes;
-
-    ColorScale colorScale;
     private int[] chromosomeBoundaries;
+
+    private ObservedColorScale observedColorScale;
+    private ColorScale oeColorScale;
+    private ColorScale pearsonColorScale;
+
+    private DisplayOption displayOption = DisplayOption.OBSERVED;
 
 
     public static void main(String[] args) throws IOException {
@@ -75,14 +115,21 @@ public class MainWindow extends JFrame {
 
     public MainWindow() throws IOException {
 
-        int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
-        colorScale = new ColorScale();
-        colorScale.setMaxCount(initialMaxCount);
-        colorScale.setBackground(Color.white);
+        initColorScales();
 
         initComponents();
 
-        resolutionSlider.setUI(new BasicSliderUI(resolutionSlider));
+        //resolutionSlider.setUI(new BasicSliderUI(resolutionSlider));
+        Dictionary<Integer, JLabel> resolutionLabels = new Hashtable<Integer, JLabel>();
+        Font f = FontManager.getFont(8);
+        for (int i = 0; i < zoomLabels.length; i++) {
+            if (i % 2 == 0) {
+                final JLabel tickLabel = new JLabel(zoomLabels[i]);
+                tickLabel.setFont(f);
+                resolutionLabels.put(i, tickLabel);
+            }
+        }
+        resolutionSlider.setLabelTable(resolutionLabels);
         //resolutionComboBox.setModel(new DefaultComboBoxModel(zoomLabels));
         // setLayout(new HiCLayout());
 
@@ -101,6 +148,17 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
+    }
+
+    private void initColorScales() {
+        int initialMaxCount = 50;  // TODO -- record stats with data and estimate this
+        observedColorScale = new ObservedColorScale();
+        observedColorScale.setMaxCount(initialMaxCount);
+        observedColorScale.setBackground(Color.white);
+
+        oeColorScale = new ContinuousColorScale(-2, 0, 2, Color.blue, Color.white, Color.red);
+
+        pearsonColorScale = new ContinuousColorScale(-1, 0, 1, Color.blue, Color.white, Color.red);
     }
 
     public HeatmapPanel getHeatmapPanel() {
@@ -141,6 +199,18 @@ public class MainWindow extends JFrame {
         refreshChromosomes();
     }
 
+    public ColorScale getColorScale() {
+
+        switch (displayOption) {
+            case OE:
+                return oeColorScale;
+            case PEARSON:
+                return pearsonColorScale;
+            default:
+                return observedColorScale;
+        }
+    }
+
     class ZoomLabel {
         String label;
         int zoom;
@@ -162,6 +232,19 @@ public class MainWindow extends JFrame {
             setChromosomes(dataset.getChromosomes());
             chrBox1.setModel(new DefaultComboBoxModel(getChromosomes()));
             chrBox2.setModel(new DefaultComboBoxModel(getChromosomes()));
+
+            String densityFile = file + ".densities";
+            if (FileUtils.resourceExists(densityFile)) {
+                InputStream is = null;
+                try {
+                    is = ParsingUtils.openInputStream(densityFile);
+                    zoomToDensityMap = DensityUtil.readDensities(is);
+                } finally {
+                    if (is != null) is.close();
+                }
+            } else {
+                zoomToDensityMap = null;
+            }
         } else {
             // error -- unknown file type
         }
@@ -238,7 +321,7 @@ public class MainWindow extends JFrame {
 
         int len = (Math.max(xContext.getChrLength(), yContext.getChrLength()));
         int pixels = getHeatmapPanel().getWidth();
-        int maxNBins = pixels;
+        int maxNBins = pixels / BIN_PIXEL_WIDTH;
 
         if (xContext.getChromosome().getName().equals("All")) {
             resolutionSlider.setEnabled(false); //
@@ -253,9 +336,8 @@ public class MainWindow extends JFrame {
                     break;
                 }
             }
-
             resolutionSlider.setValue(initialZoom);
-            //setZoom(initialZoom, -1, -1);
+            setZoom(initialZoom, -1, -1);
         }
     }
 
@@ -298,7 +380,7 @@ public class MainWindow extends JFrame {
 
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
-        zd = dataset.getMatrix(chr1, chr2).getZoomData(newZoom);
+        zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(newZoom);
 
         int newBinSize = zd.getBinSize();
 
@@ -338,7 +420,7 @@ public class MainWindow extends JFrame {
 
         Chromosome chr1 = xContext.getChromosome();
         Chromosome chr2 = yContext.getChromosome();
-        zd = dataset.getMatrix(chr1, chr2).getZoomData(zoom);
+        zd = dataset.getMatrix(chr1, chr2).getObservedMatrix(zoom);
 
         xContext.setZoom(zoom, scale);
         yContext.setZoom(zoom, scale);
@@ -429,7 +511,7 @@ public class MainWindow extends JFrame {
 
     private void loadDmelDatasetActionPerformed(ActionEvent e) {
         try {
-            colorScale.setMaxCount(20000);
+            observedColorScale.setMaxCount(20000);
             colorRangeSlider.setMaximum(20000);
             colorRangeSlider.setMinimum(0);
             zd = null;
@@ -442,7 +524,7 @@ public class MainWindow extends JFrame {
 
     private void loadGMActionPerformed(ActionEvent e) {
         try {
-            colorScale.setMaxCount(100);
+            observedColorScale.setMaxCount(100);
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
             zd = null;
@@ -454,7 +536,7 @@ public class MainWindow extends JFrame {
 
     private void load562ActionPerformed(ActionEvent e) {
         try {
-            colorScale.setMaxCount(100);
+            observedColorScale.setMaxCount(100);
             colorRangeSlider.setMaximum(100);
             colorRangeSlider.setMinimum(0);
             zd = null;
@@ -467,7 +549,7 @@ public class MainWindow extends JFrame {
 
     private void loadHindIIIActionPerformed(ActionEvent e) {
         try {
-            colorScale.setMaxCount(20);
+            observedColorScale.setMaxCount(20);
             colorRangeSlider.setMaximum(20);
             colorRangeSlider.setMinimum(0);
             zd = null;
@@ -480,7 +562,7 @@ public class MainWindow extends JFrame {
     private void colorRangeSliderStateChanged(ChangeEvent e) {
         int min = colorRangeSlider.getLowerValue();
         int max = colorRangeSlider.getUpperValue();
-        colorScale.setRange(min, max);
+        observedColorScale.setRange(min, max);
         heatmapPanel.clearTileCache();
         repaint();
     }
@@ -528,31 +610,48 @@ public class MainWindow extends JFrame {
         }
     }
 
+    private void colorRangeLabelMouseClicked(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
+            rangeDialog.setVisible(true);
+
+        }
+
+    }
+
+    private void colorRangeLabelMousePressed(MouseEvent e) {        if (e.isPopupTrigger()) {
+            ColorRangeDialog rangeDialog = new ColorRangeDialog(this, colorRangeSlider);
+            rangeDialog.setVisible(true);
+
+        }
+
+    }
 
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
-        panel2 = new JPanel();
-        panel4 = new JPanel();
+        mainPanel = new JPanel();
+        toolbarPanel = new JPanel();
         chrSelectionPanel = new JPanel();
         panel10 = new JPanel();
         label3 = new JLabel();
         panel9 = new JPanel();
         chrBox1 = new JComboBox();
         chrBox2 = new JComboBox();
-        refreshButton = new JButton();
-        panel13 = new JPanel();
+        refreshButton = new JideButton();
+        displayOptionPanel = new JPanel();
         panel14 = new JPanel();
         label4 = new JLabel();
         panel1 = new JPanel();
+        comboBox1 = new JComboBox();
+        colorRangePanel = new JPanel();
         panel11 = new JPanel();
-        label1 = new JLabel();
-        panel7 = new JPanel();
+        colorRangeLabel = new JLabel();
         colorRangeSlider = new RangeSlider();
-        panel6 = new JPanel();
+        resolutionPanel = new JPanel();
         panel12 = new JPanel();
-        label2 = new JLabel();
-        panel5 = new JPanel();
+        resolutionLabel = new JLabel();
+        panel2 = new JPanel();
         resolutionSlider = new JSlider();
         panel3 = new JPanel();
         rulerPanel2 = new HiCRulerPanel(this);
@@ -582,14 +681,14 @@ public class MainWindow extends JFrame {
         Container contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout());
 
-        //======== panel2 ========
+        //======== mainPanel ========
         {
-            panel2.setLayout(new BorderLayout());
+            mainPanel.setLayout(new BorderLayout());
 
-            //======== panel4 ========
+            //======== toolbarPanel ========
             {
-                panel4.setBorder(null);
-                panel4.setLayout(new BoxLayout(panel4, BoxLayout.X_AXIS));
+                toolbarPanel.setBorder(null);
+                toolbarPanel.setLayout(new GridLayout());
 
                 //======== chrSelectionPanel ========
                 {
@@ -600,19 +699,20 @@ public class MainWindow extends JFrame {
 
                     //======== panel10 ========
                     {
-                        panel10.setBackground(new Color(153, 204, 255));
-                        panel10.setLayout(new BoxLayout(panel10, BoxLayout.X_AXIS));
+                        panel10.setBackground(new Color(204, 204, 204));
+                        panel10.setLayout(new BorderLayout());
 
                         //---- label3 ----
                         label3.setText("Chromosomes");
-                        panel10.add(label3);
+                        label3.setHorizontalAlignment(SwingConstants.CENTER);
+                        panel10.add(label3, BorderLayout.CENTER);
                     }
                     chrSelectionPanel.add(panel10, BorderLayout.PAGE_START);
 
                     //======== panel9 ========
                     {
                         panel9.setBackground(new Color(238, 238, 238));
-                        panel9.setLayout(new FlowLayout());
+                        panel9.setLayout(new GridLayout());
 
                         //---- chrBox1 ----
                         chrBox1.setModel(new DefaultComboBoxModel(new String[] {
@@ -637,7 +737,7 @@ public class MainWindow extends JFrame {
                         panel9.add(chrBox2);
 
                         //---- refreshButton ----
-                        refreshButton.setText("Refresh");
+                        refreshButton.setIcon(new ImageIcon(getClass().getResource("/toolbarButtonGraphics/general/Refresh24.gif")));
                         refreshButton.addActionListener(new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 refreshButtonActionPerformed(e);
@@ -647,92 +747,111 @@ public class MainWindow extends JFrame {
                     }
                     chrSelectionPanel.add(panel9, BorderLayout.CENTER);
                 }
-                panel4.add(chrSelectionPanel);
+                toolbarPanel.add(chrSelectionPanel);
 
-                //======== panel13 ========
+                //======== displayOptionPanel ========
                 {
-                    panel13.setBackground(new Color(238, 238, 238));
-                    panel13.setBorder(LineBorder.createGrayLineBorder());
-                    panel13.setLayout(new BorderLayout());
+                    displayOptionPanel.setBackground(new Color(238, 238, 238));
+                    displayOptionPanel.setBorder(LineBorder.createGrayLineBorder());
+                    displayOptionPanel.setLayout(new BorderLayout());
 
                     //======== panel14 ========
                     {
-                        panel14.setBackground(new Color(153, 204, 255));
-                        panel14.setLayout(new BoxLayout(panel14, BoxLayout.X_AXIS));
+                        panel14.setBackground(new Color(204, 204, 204));
+                        panel14.setLayout(new BorderLayout());
 
                         //---- label4 ----
                         label4.setText("Show");
-                        panel14.add(label4);
+                        label4.setHorizontalAlignment(SwingConstants.CENTER);
+                        panel14.add(label4, BorderLayout.CENTER);
                     }
-                    panel13.add(panel14, BorderLayout.NORTH);
-                }
-                panel4.add(panel13);
+                    displayOptionPanel.add(panel14, BorderLayout.PAGE_START);
 
-                //======== panel1 ========
+                    //======== panel1 ========
+                    {
+                        panel1.setBorder(new EmptyBorder(0, 10, 0, 10));
+                        panel1.setLayout(new GridLayout(1, 0, 20, 0));
+
+                        //---- comboBox1 ----
+                        comboBox1.setModel(new DefaultComboBoxModel(new String[] {
+                            "Expected"
+                        }));
+                        panel1.add(comboBox1);
+                    }
+                    displayOptionPanel.add(panel1, BorderLayout.CENTER);
+                }
+                toolbarPanel.add(displayOptionPanel);
+
+                //======== colorRangePanel ========
                 {
-                    panel1.setBorder(LineBorder.createGrayLineBorder());
-                    panel1.setMinimumSize(new Dimension(96, 70));
-                    panel1.setPreferredSize(new Dimension(202, 70));
-                    panel1.setMaximumSize(new Dimension(32769, 70));
-                    panel1.setLayout(new BorderLayout());
+                    colorRangePanel.setBorder(LineBorder.createGrayLineBorder());
+                    colorRangePanel.setMinimumSize(new Dimension(96, 70));
+                    colorRangePanel.setPreferredSize(new Dimension(202, 70));
+                    colorRangePanel.setMaximumSize(new Dimension(32769, 70));
+                    colorRangePanel.setLayout(new BorderLayout());
 
                     //======== panel11 ========
                     {
-                        panel11.setBackground(new Color(153, 204, 255));
-                        panel11.setLayout(new BoxLayout(panel11, BoxLayout.X_AXIS));
+                        panel11.setBackground(new Color(204, 204, 204));
+                        panel11.setLayout(new BorderLayout());
 
-                        //---- label1 ----
-                        label1.setText("Color Range");
-                        label1.setHorizontalAlignment(SwingConstants.CENTER);
-                        label1.setToolTipText("Range of color scale in counts per mega-base squared.");
-                        panel11.add(label1);
-                    }
-                    panel1.add(panel11, BorderLayout.PAGE_START);
-
-                    //======== panel7 ========
-                    {
-                        panel7.setLayout(new BoxLayout(panel7, BoxLayout.X_AXIS));
-
-                        //---- colorRangeSlider ----
-                        colorRangeSlider.setPaintTicks(true);
-                        colorRangeSlider.setPaintLabels(true);
-                        colorRangeSlider.setLowerValue(0);
-                        colorRangeSlider.setMajorTickSpacing(10);
-                        colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
-                        colorRangeSlider.setPreferredSize(new Dimension(200, 52));
-                        colorRangeSlider.setMinimumSize(new Dimension(36, 52));
-                        colorRangeSlider.addChangeListener(new ChangeListener() {
-                            public void stateChanged(ChangeEvent e) {
-                                colorRangeSliderStateChanged(e);
+                        //---- colorRangeLabel ----
+                        colorRangeLabel.setText("Color Range");
+                        colorRangeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                        colorRangeLabel.setToolTipText("Range of color scale in counts per mega-base squared.");
+                        colorRangeLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                        colorRangeLabel.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mousePressed(MouseEvent e) {
+                                colorRangeLabelMousePressed(e);
+                            }
+                            @Override
+                            public void mouseClicked(MouseEvent e) {
+                                colorRangeLabelMouseClicked(e);
                             }
                         });
-                        panel7.add(colorRangeSlider);
+                        panel11.add(colorRangeLabel, BorderLayout.CENTER);
                     }
-                    panel1.add(panel7, BorderLayout.CENTER);
-                }
-                panel4.add(panel1);
+                    colorRangePanel.add(panel11, BorderLayout.PAGE_START);
 
-                //======== panel6 ========
+                    //---- colorRangeSlider ----
+                    colorRangeSlider.setPaintTicks(true);
+                    colorRangeSlider.setPaintLabels(true);
+                    colorRangeSlider.setLowerValue(0);
+                    colorRangeSlider.setMajorTickSpacing(10);
+                    colorRangeSlider.setMaximumSize(new Dimension(32767, 52));
+                    colorRangeSlider.setPreferredSize(new Dimension(200, 52));
+                    colorRangeSlider.setMinimumSize(new Dimension(36, 52));
+                    colorRangeSlider.addChangeListener(new ChangeListener() {
+                        public void stateChanged(ChangeEvent e) {
+                            colorRangeSliderStateChanged(e);
+                        }
+                    });
+                    colorRangePanel.add(colorRangeSlider, BorderLayout.PAGE_END);
+                }
+                toolbarPanel.add(colorRangePanel);
+
+                //======== resolutionPanel ========
                 {
-                    panel6.setBorder(LineBorder.createGrayLineBorder());
-                    panel6.setLayout(new BorderLayout());
+                    resolutionPanel.setBorder(LineBorder.createGrayLineBorder());
+                    resolutionPanel.setLayout(new BorderLayout());
 
                     //======== panel12 ========
                     {
-                        panel12.setBackground(new Color(153, 204, 255));
+                        panel12.setBackground(new Color(204, 204, 204));
                         panel12.setLayout(new BorderLayout());
 
-                        //---- label2 ----
-                        label2.setText("Resolution");
-                        label2.setHorizontalAlignment(SwingConstants.CENTER);
-                        label2.setBackground(new Color(204, 204, 204));
-                        panel12.add(label2, BorderLayout.CENTER);
+                        //---- resolutionLabel ----
+                        resolutionLabel.setText("Resolution");
+                        resolutionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                        resolutionLabel.setBackground(new Color(204, 204, 204));
+                        panel12.add(resolutionLabel, BorderLayout.CENTER);
                     }
-                    panel6.add(panel12, BorderLayout.NORTH);
+                    resolutionPanel.add(panel12, BorderLayout.PAGE_START);
 
-                    //======== panel5 ========
+                    //======== panel2 ========
                     {
-                        panel5.setLayout(new BoxLayout(panel5, BoxLayout.X_AXIS));
+                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 
                         //---- resolutionSlider ----
                         resolutionSlider.setMaximum(10);
@@ -740,18 +859,19 @@ public class MainWindow extends JFrame {
                         resolutionSlider.setPaintTicks(true);
                         resolutionSlider.setSnapToTicks(true);
                         resolutionSlider.setPaintLabels(true);
+                        resolutionSlider.setMinorTickSpacing(1);
                         resolutionSlider.addChangeListener(new ChangeListener() {
                             public void stateChanged(ChangeEvent e) {
                                 resolutionSliderStateChanged(e);
                             }
                         });
-                        panel5.add(resolutionSlider);
+                        panel2.add(resolutionSlider);
                     }
-                    panel6.add(panel5, BorderLayout.CENTER);
+                    resolutionPanel.add(panel2, BorderLayout.CENTER);
                 }
-                panel4.add(panel6);
+                toolbarPanel.add(resolutionPanel);
             }
-            panel2.add(panel4, BorderLayout.NORTH);
+            mainPanel.add(toolbarPanel, BorderLayout.NORTH);
 
             //======== panel3 ========
             {
@@ -831,9 +951,9 @@ public class MainWindow extends JFrame {
                 }
                 panel3.add(panel8, BorderLayout.EAST);
             }
-            panel2.add(panel3, BorderLayout.CENTER);
+            mainPanel.add(panel3, BorderLayout.CENTER);
         }
-        contentPane.add(panel2, BorderLayout.CENTER);
+        contentPane.add(mainPanel, BorderLayout.CENTER);
 
         //======== menuBar1 ========
         {
@@ -919,27 +1039,28 @@ public class MainWindow extends JFrame {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel panel2;
-    private JPanel panel4;
+    private JPanel mainPanel;
+    private JPanel toolbarPanel;
     private JPanel chrSelectionPanel;
     private JPanel panel10;
     private JLabel label3;
     private JPanel panel9;
     private JComboBox chrBox1;
     private JComboBox chrBox2;
-    private JButton refreshButton;
-    private JPanel panel13;
+    private JideButton refreshButton;
+    private JPanel displayOptionPanel;
     private JPanel panel14;
     private JLabel label4;
     private JPanel panel1;
+    private JComboBox comboBox1;
+    private JPanel colorRangePanel;
     private JPanel panel11;
-    private JLabel label1;
-    private JPanel panel7;
+    private JLabel colorRangeLabel;
     private RangeSlider colorRangeSlider;
-    private JPanel panel6;
+    private JPanel resolutionPanel;
     private JPanel panel12;
-    private JLabel label2;
-    private JPanel panel5;
+    private JLabel resolutionLabel;
+    private JPanel panel2;
     private JSlider resolutionSlider;
     private JPanel panel3;
     private HiCRulerPanel rulerPanel2;

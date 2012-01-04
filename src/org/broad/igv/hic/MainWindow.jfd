@@ -31,20 +31,20 @@
          <class>java.awt.BorderLayout</class> 
         </object> 
         <void property="name"> 
-         <string>panel2</string> 
+         <string>mainPanel</string> 
         </void> 
         <void method="add"> 
          <object class="com.jformdesigner.model.FormContainer"> 
           <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>javax.swing.BoxLayout</class> 
+           <class>java.awt.GridLayout</class> 
           </object> 
           <void method="setProperty"> 
            <string>border</string> 
            <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
           </void> 
           <void property="name"> 
-           <string>panel4</string> 
+           <string>toolbarPanel</string> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormContainer"> 
@@ -81,14 +81,14 @@
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>javax.swing.BoxLayout</class> 
+               <class>java.awt.BorderLayout</class> 
               </object> 
               <void method="setProperty"> 
                <string>background</string> 
                <object class="java.awt.Color"> 
-                <int>153</int> 
                 <int>204</int> 
-                <int>255</int> 
+                <int>204</int> 
+                <int>204</int> 
                 <int>255</int> 
                </object> 
               </void> 
@@ -102,8 +102,19 @@
                  <string>text</string> 
                  <string>Chromosomes</string> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>horizontalAlignment</string> 
+                 <int>0</int> 
+                </void> 
                 <void property="name"> 
                  <string>label3</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>java.lang.String</class> 
+                <void method="setProperty"> 
+                 <string>value</string> 
+                 <string>Center</string> 
                 </void> 
                </object> 
               </void> 
@@ -120,7 +131,7 @@
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>java.awt.FlowLayout</class> 
+               <class>java.awt.GridLayout</class> 
               </object> 
               <void method="setProperty"> 
                <string>background</string> 
@@ -190,10 +201,13 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
-                <string>javax.swing.JButton</string> 
+                <string>com.jidesoft.swing.JideButton</string> 
                 <void method="setProperty"> 
-                 <string>text</string> 
-                 <string>Refresh</string> 
+                 <string>icon</string> 
+                 <object class="com.jformdesigner.model.SwingIcon"> 
+                  <int>0</int> 
+                  <string>/toolbarButtonGraphics/general/Refresh24.gif</string> 
+                 </object> 
                 </void> 
                 <void property="name"> 
                  <string>refreshButton</string> 
@@ -243,24 +257,20 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>panel13</string> 
+             <string>displayOptionPanel</string> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>javax.swing.BoxLayout</class> 
-               <void method="setProperty"> 
-                <string>axis</string> 
-                <int>0</int> 
-               </void> 
+               <class>java.awt.BorderLayout</class> 
               </object> 
               <void method="setProperty"> 
                <string>background</string> 
                <object class="java.awt.Color"> 
-                <int>153</int> 
                 <int>204</int> 
-                <int>255</int> 
+                <int>204</int> 
+                <int>204</int> 
                 <int>255</int> 
                </object> 
               </void> 
@@ -274,8 +284,19 @@
                  <string>text</string> 
                  <string>Show</string> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>horizontalAlignment</string> 
+                 <int>0</int> 
+                </void> 
                 <void property="name"> 
                  <string>label4</string> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>java.lang.String</class> 
+                <void method="setProperty"> 
+                 <string>value</string> 
+                 <string>Center</string> 
                 </void> 
                </object> 
               </void> 
@@ -284,7 +305,57 @@
               <class>java.lang.String</class> 
               <void method="setProperty"> 
                <string>value</string> 
-               <string>North</string> 
+               <string>First</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>java.awt.GridLayout</class> 
+               <void method="setProperty"> 
+                <string>hgap</string> 
+                <int>20</int> 
+               </void> 
+              </object> 
+              <void method="setProperty"> 
+               <string>border</string> 
+               <object class="javax.swing.border.EmptyBorder"> 
+                <int>0</int> 
+                <int>10</int> 
+                <int>0</int> 
+                <int>10</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>panel1</string> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JComboBox</string> 
+                <void method="setProperty"> 
+                 <string>model</string> 
+                 <object class="javax.swing.DefaultComboBoxModel"> 
+                  <void property="selectedItem"> 
+                   <string>Expected</string> 
+                  </void> 
+                  <void method="addElement"> 
+                   <string>Expected</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>comboBox1</string> 
+                </void> 
+               </object> 
+              </void> 
+             </object> 
+             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+              <class>java.lang.String</class> 
+              <void method="setProperty"> 
+               <string>value</string> 
+               <string>Center</string> 
               </void> 
              </object> 
             </void> 
@@ -326,20 +397,20 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>panel1</string> 
+             <string>colorRangePanel</string> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>javax.swing.BoxLayout</class> 
+               <class>java.awt.BorderLayout</class> 
               </object> 
               <void method="setProperty"> 
                <string>background</string> 
                <object class="java.awt.Color"> 
-                <int>153</int> 
                 <int>204</int> 
-                <int>255</int> 
+                <int>204</int> 
+                <int>204</int> 
                 <int>255</int> 
                </object> 
               </void> 
@@ -361,8 +432,35 @@
                  <string>toolTipText</string> 
                  <string>Range of color scale in counts per mega-base squared.</string> 
                 </void> 
+                <void method="setProperty"> 
+                 <string>horizontalTextPosition</string> 
+                 <int>0</int> 
+                </void> 
                 <void property="name"> 
-                 <string>label1</string> 
+                 <string>colorRangeLabel</string> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.MouseListener</string> 
+                  <string>mouseClicked</string> 
+                  <string>colorRangeLabelMouseClicked</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+                <void method="addEvent"> 
+                 <object class="com.jformdesigner.model.FormEvent"> 
+                  <string>java.awt.event.MouseListener</string> 
+                  <string>mousePressed</string> 
+                  <string>colorRangeLabelMousePressed</string> 
+                  <boolean>true</boolean> 
+                 </object> 
+                </void> 
+               </object> 
+               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+                <class>java.lang.String</class> 
+                <void method="setProperty"> 
+                 <string>value</string> 
+                 <string>Center</string> 
                 </void> 
                </object> 
               </void> 
@@ -376,65 +474,54 @@
              </object> 
             </void> 
             <void method="add"> 
-             <object class="com.jformdesigner.model.FormContainer"> 
-              <string>javax.swing.JPanel</string> 
-              <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>javax.swing.BoxLayout</class> 
-              </object> 
-              <void property="name"> 
-               <string>panel7</string> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>slider.RangeSlider</string> 
+              <void method="setProperty"> 
+               <string>paintTicks</string> 
+               <boolean>true</boolean> 
               </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>slider.RangeSlider</string> 
-                <void method="setProperty"> 
-                 <string>paintTicks</string> 
-                 <boolean>true</boolean> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>paintLabels</string> 
-                 <boolean>true</boolean> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>lowerValue</string> 
-                 <int>0</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>majorTickSpacing</string> 
-                 <int>10</int> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>maximumSize</string> 
-                 <object class="java.awt.Dimension"> 
-                  <int>32767</int> 
-                  <int>52</int> 
-                 </object> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>preferredSize</string> 
-                 <object class="java.awt.Dimension"> 
-                  <int>200</int> 
-                  <int>52</int> 
-                 </object> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>minimumSize</string> 
-                 <object class="java.awt.Dimension"> 
-                  <int>36</int> 
-                  <int>52</int> 
-                 </object> 
-                </void> 
-                <void property="name"> 
-                 <string>colorRangeSlider</string> 
-                </void> 
-                <void method="addEvent"> 
-                 <object class="com.jformdesigner.model.FormEvent"> 
-                  <string>javax.swing.event.ChangeListener</string> 
-                  <string>stateChanged</string> 
-                  <string>colorRangeSliderStateChanged</string> 
-                  <boolean>true</boolean> 
-                 </object> 
-                </void> 
+              <void method="setProperty"> 
+               <string>paintLabels</string> 
+               <boolean>true</boolean> 
+              </void> 
+              <void method="setProperty"> 
+               <string>lowerValue</string> 
+               <int>0</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>majorTickSpacing</string> 
+               <int>10</int> 
+              </void> 
+              <void method="setProperty"> 
+               <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>32767</int> 
+                <int>52</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>200</int> 
+                <int>52</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>36</int> 
+                <int>52</int> 
+               </object> 
+              </void> 
+              <void property="name"> 
+               <string>colorRangeSlider</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>javax.swing.event.ChangeListener</string> 
+                <string>stateChanged</string> 
+                <string>colorRangeSliderStateChanged</string> 
+                <boolean>true</boolean> 
                </object> 
               </void> 
              </object> 
@@ -442,7 +529,7 @@
               <class>java.lang.String</class> 
               <void method="setProperty"> 
                <string>value</string> 
-               <string>Center</string> 
+               <string>Last</string> 
               </void> 
              </object> 
             </void> 
@@ -463,7 +550,7 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>panel6</string> 
+             <string>resolutionPanel</string> 
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormContainer"> 
@@ -474,9 +561,9 @@
               <void method="setProperty"> 
                <string>background</string> 
                <object class="java.awt.Color"> 
-                <int>153</int> 
                 <int>204</int> 
-                <int>255</int> 
+                <int>204</int> 
+                <int>204</int> 
                 <int>255</int> 
                </object> 
               </void> 
@@ -504,7 +591,7 @@
                  </object> 
                 </void> 
                 <void property="name"> 
-                 <string>label2</string> 
+                 <string>resolutionLabel</string> 
                 </void> 
                </object> 
                <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -520,7 +607,7 @@
               <class>java.lang.String</class> 
               <void method="setProperty"> 
                <string>value</string> 
-               <string>North</string> 
+               <string>First</string> 
               </void> 
              </object> 
             </void> 
@@ -531,7 +618,7 @@
                <class>javax.swing.BoxLayout</class> 
               </object> 
               <void property="name"> 
-               <string>panel5</string> 
+               <string>panel2</string> 
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
@@ -555,6 +642,10 @@
                 <void method="setProperty"> 
                  <string>paintLabels</string> 
                  <boolean>true</boolean> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>minorTickSpacing</string> 
+                 <int>1</int> 
                 </void> 
                 <void property="name"> 
                  <string>resolutionSlider</string> 

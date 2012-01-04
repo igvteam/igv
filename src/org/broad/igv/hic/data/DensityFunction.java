@@ -27,20 +27,15 @@ public class DensityFunction {
         this.normFactors = normFactors;
     }
 
-    public double getDensity(int chrIdx, int distance, int binSize) {
-
-        double ratio = ((double) binSize) / gridSize;
-        double mult = 1.0; // ratio*ratio;
-
+    public double getDensity(int chrIdx, int distance) {
 
         double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
-        mult *= normFactor;
 
-        int grid = distance / gridSize;
+        int grid = distance;
         if (grid >= nPoints) {
-            return density[nPoints - 1] * mult;
+            return density[nPoints - 1] * normFactor;
         } else {
-            return density[grid] * mult;
+            return density[grid] * normFactor;
         }
     }
 

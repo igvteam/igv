@@ -51,15 +51,6 @@ public class Dataset {
 
     }
 
-
-    public boolean isCaching() {
-        return caching;
-    }
-
-    public void setCaching(boolean caching) {
-        this.caching = caching;
-    }
-
     public Chromosome[] getChromosomes() {
         return chromosomes;
     }

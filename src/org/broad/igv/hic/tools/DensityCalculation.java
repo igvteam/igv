@@ -1,12 +1,15 @@
 package org.broad.igv.hic.tools;
 
+import org.apache.batik.util.DoublyLinkedList;
+import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
+import org.broad.igv.hic.MainWindow;
 import org.broad.igv.hic.data.Chromosome;
+import org.broad.tribble.util.LittleEndianInputStream;
+import org.broad.tribble.util.LittleEndianOutputStream;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Jim Robinson
@@ -32,53 +35,78 @@ public class DensityCalculation {
     // chr -> norm
     private LinkedHashMap<Integer, Double> normalizationFactors;
 
-    public static void main(String[] args) throws IOException {
-        //String[] paths = {"/Users/jrobinso/IGV/hic/formattedalignment.txt.gz"};
-        String[] paths = {"/Users/jrobinso/IGV/hic/GSM455139_428EGAAXX.7.maq.hic.summary.binned.txt",
-                "/Users/jrobinso/IGV/hic/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
-        //chromosomes = HiCTools.b37Chromosomes;
-        Chromosome[] chromosomes = HiCTools.hg18Chromosomes;
-//        String[] paths = {
-//                "/Volumes/igv/data/broad/hic/human/GSM455133_30E0LAAXX.1.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455134_30E0LAAXX.2.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455135_30U85AAXX.2.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455136_30U85AAXX.3.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455137_30305AAXX.1.maq.hic.summary.binned.txt.gz",
-//                "/Volumes/igv/data/broad/hic/human/GSM455138_30305AAXX.2.maq.hic.summary.binned.txt.gz"};
-
-        Map<String, Integer> chrIndexMap = new HashMap<String, Integer>();
-        for (Chromosome chr : chromosomes) {
-            if(chr != null && chr.getIndex() > 0)
-            chrIndexMap.put(chr.getName(), chr.getIndex());
-        }
-
-
-        DensityCalculation densityCalculation = new DensityCalculation(chromosomes);
-        for (String path : paths) {
-            AsciiPairIterator iter = new AsciiPairIterator(path);
-            while (iter.hasNext()) {
-                AlignmentPair pair = iter.next();
-                if (pair.getChr1().equals(pair.getChr2())) {
-                    int dist = Math.abs(pair.getPos1() - pair.getPos2());
-                    String chrName1 = pair.getChr1();
-                    Integer index = chrIndexMap.get(chrName1);
-                    if (index != null) {
-                        densityCalculation.addDistance(index, dist);
-                    }
-                }
-            }
-        }
-        densityCalculation.computeDensity();
-        densityCalculation.printDensities(14);
+    public DensityCalculation() {
     }
 
-    DensityCalculation(Chromosome[] chromosomes) {
+    DensityCalculation(Chromosome[] chromosomes, int gridSize) {
+        this.gridSize = gridSize;
         this.chromosomes = chromosomes;
-        numberOfBins = (int) (totalLen / gridSize) + 1;
+        numberOfBins = (totalLen / gridSize) + 1;
         actualDistances = new double[numberOfBins];
         Arrays.fill(actualDistances, 0);
         chromosomeCounts = new HashMap();
         normalizationFactors = new LinkedHashMap<Integer, Double>();
+
+    }
+
+
+    public void outputBinary(LittleEndianOutputStream os) throws IOException {
+
+        os.writeInt(gridSize);
+
+        int nonNullChrCount = 0;
+        for (Chromosome chr : chromosomes) {
+            if (chr != null) nonNullChrCount++;
+        }
+        os.writeInt(nonNullChrCount);
+
+        // Chromosome indeces
+        for (Chromosome chr : chromosomes) {
+            if (chr == null) continue;
+            os.writeInt(chr.getIndex());
+        }
+
+        // Normalization factors
+        for (Chromosome chr : chromosomes) {
+            if (chr == null) continue;
+            Integer idx = chr.getIndex();
+            Double normFactor = normalizationFactors.get(idx);
+            os.writeInt(idx);
+            os.writeDouble(normFactor == null ? 0 : normFactor.doubleValue());
+        }
+
+        // Expected value (densityAvg)
+        os.writeInt(densityAvg.length);
+        for (int i = 0; i < densityAvg.length; i++) {
+            os.writeDouble(densityAvg[i]);
+        }
+    }
+
+    public void fill(LittleEndianInputStream is) throws IOException {
+        gridSize = is.readInt();
+        int nChromosomes = is.readInt();
+
+        // Chromosome indexes
+        Integer[] chrIndexes = new Integer[nChromosomes];
+        for (int i = 0; i < nChromosomes; i++) {
+            chrIndexes[i] = is.readInt();
+        }
+
+        // Normalization factors
+        normalizationFactors = new LinkedHashMap(nChromosomes);
+        for (int i = 0; i < nChromosomes; i++) {
+            Integer chrIdx = is.readInt();
+            double normFactor = is.readDouble();
+            normalizationFactors.put(chrIdx, normFactor);
+        }
+
+        // Densities
+        int nDensities = is.readInt();
+        densityAvg = new double[nDensities];
+        for(int i=0; i<nDensities; i++) {
+            densityAvg[i] = is.readDouble();
+        }
+
 
     }
 
@@ -226,6 +254,8 @@ public class DensityCalculation {
     public double[] getDensityAvg() {
         return densityAvg;
     }
+
+
 }
 
 

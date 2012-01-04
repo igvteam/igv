@@ -28,13 +28,13 @@ import java.io.Serializable;
  */
 public class ColorScalePanel extends JComponent implements Serializable {
 
-    ColorScale colorScale;
+    ObservedColorScale colorScale;
 
     public ColorScalePanel() {
 
     }
 
-    public ColorScalePanel(ColorScale colorScale) {
+    public ColorScalePanel(ObservedColorScale colorScale) {
         this.colorScale = colorScale;
     }
 

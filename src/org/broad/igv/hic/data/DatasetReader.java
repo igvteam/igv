@@ -136,8 +136,6 @@ public class DatasetReader {
         int nZooms = dis.readInt();
 
 
-//    public MatrixZoomData(int chr1, int chr2, int binSize, int blockColumnCount, int zoom) {
-
         MatrixZoomData[] zd = new MatrixZoomData[nZooms];
         for (int i = 0; i < nZooms; i++) {
             int zoom = dis.readInt();

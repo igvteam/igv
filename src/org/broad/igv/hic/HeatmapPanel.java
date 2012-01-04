@@ -32,7 +32,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
     public HeatmapPanel(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
-        renderer = new HeatmapRenderer(mainWindow.colorScale);
+        renderer = new HeatmapRenderer(mainWindow);
         final HeatmapMouseHandler mouseHandler = new HeatmapMouseHandler();
         addMouseListener(mouseHandler);
         addMouseMotionListener(mouseHandler);

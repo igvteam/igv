@@ -26,25 +26,7 @@ public class Matrix {
         this.zoomData = zoomData;
     }
 
-    /**
-     * Constructor for creating a matrix and initializing zoomd data at predefined resolution scales.  This
-     * constructor is used when parsing alignment files.
-     *
-     * @param chr1
-     * @param chr2
-     */
-    public Matrix(int chr1, int chr2) {
-        this.chr1 = chr1;
-        this.chr2 = chr2;
-        zoomData = new MatrixZoomData[MainWindow.zoomBinSizes.length];
-        for (int i = 0; i < MainWindow.zoomBinSizes.length; i++) {
-            int binSize = MainWindow.zoomBinSizes[i];
-            int nBlocks = (int) Math.pow(Math.pow(2, i), 0.25);
-            zoomData[i] = new MatrixZoomData(chr1, chr2, binSize, nBlocks, i);
-        }
-    }
-
-    /**
+  /**
      * Constructor for creating a matrix with a single zoom level at a specified bin size.  This is provided
      * primarily for constructing a whole-genome view.
      *
@@ -70,8 +52,31 @@ public class Matrix {
         return generateKey(chr1, chr2);
     }
 
-    public MatrixZoomData getZoomData(int zoomIndex) {
+    public MatrixZoomData getObservedMatrix(int zoomIndex) {
         return zoomData[zoomIndex];
+    }
+
+
+     ////////////////////////////////////////////////////////////////
+     // Methods below used during preprocessing only
+     ////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructor for creating a matrix and initializing zoomd data at predefined resolution scales.  This
+     * constructor is used when parsing alignment files.
+     *
+     * @param chr1
+     * @param chr2
+     */
+    public Matrix(int chr1, int chr2) {
+        this.chr1 = chr1;
+        this.chr2 = chr2;
+        zoomData = new MatrixZoomData[MainWindow.zoomBinSizes.length];
+        for (int zoom = 0; zoom < MainWindow.zoomBinSizes.length; zoom++) {
+            int binSize = MainWindow.zoomBinSizes[zoom];
+            int nColumns = (int) Math.pow(Math.pow(2, zoom), 0.25);
+            zoomData[zoom] = new MatrixZoomData(chr1, chr2, binSize, nColumns, zoom);
+        }
     }
 
 
@@ -82,9 +87,6 @@ public class Matrix {
         }
 
     }
-
-
-    //static int[] zoomBinSizes = {1000};
 
     public void parsingComplete() {
         for (MatrixZoomData zd : zoomData) {
