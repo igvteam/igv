@@ -24,13 +24,11 @@ import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
 import org.broad.igv.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
+import org.broad.igv.util.FileUtils;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 
 /**
  * This thread is registered upon startup and will get executed upon exit.
@@ -45,14 +43,7 @@ public class ShutdownThread extends Thread {
 
         // Cleanup jnlp files
         if (Globals.IS_MAC) {
-            File desktop = new File(System.getProperty("user.home") + "/Desktop");
-            if (desktop.exists() && desktop.isDirectory()) {
-                cleanupJnlpFiles(desktop);
-            }
-            File downloads = new File(System.getProperty("user.home") + "/Downloads");
-            if (downloads.exists() && downloads.isDirectory()) {
-                cleanupJnlpFiles(downloads);
-            }
+            FileUtils.cleanupJnlpFiles();
         }
 
         DBManager.shutdown();
@@ -60,62 +51,6 @@ public class ShutdownThread extends Thread {
         IGV.getInstance().doExitApplication();
     }
 
-
-      /**
-     * Cleanup extra jnlp files.  This method is written specifcally for Mac OS.
-     */
-    public static void cleanupJnlpFiles(File desktop) {
-
-        if (desktop.exists() && desktop.isDirectory()) {
-            File[] jnlpFiles = desktop.listFiles(new FileFilter() {
-
-                public boolean accept(File arg0) {
-                    return arg0.getName().startsWith("igv") && arg0.getName().endsWith(".jnlp");
-                }
-            });
-
-            // Sort files by ascending version number
-            Arrays.sort(jnlpFiles, new Comparator<File>() {
-
-                public int compare(File file1, File file2) {
-                    return getVersionNumber(file1.getName()) - getVersionNumber(file2.getName());
-                }
-
-                private int getVersionNumber(String fn) {
-                    int idx = fn.indexOf(".jnlp");
-                    int idx2 = fn.lastIndexOf("-");
-                    if (idx2 < 0) {
-                        return 0;
-                    } else {
-                        try {
-                            return Integer.parseInt(fn.substring(idx2 + 1, idx));
-
-                        } catch (NumberFormatException numberFormatException) {
-                            return 0;
-                        }
-                    }
-
-                }
-            });
-
-            // Delete all but the highest version (newest) jnlp file
-            for (int i = 0; i < jnlpFiles.length - 1; i++) {
-                jnlpFiles[i].delete();
-            }
-
-            // Strip the version nuber fro the newest file
-            if (jnlpFiles.length > 1) {
-                File newestFile = jnlpFiles[jnlpFiles.length - 1];
-                String fn = newestFile.getName();
-                int dotIndex = fn.indexOf(".jnlp");
-                int dashIndex = fn.lastIndexOf("-");
-                if (dashIndex > 1) {
-                    String newName = fn.substring(0, dashIndex) + fn.substring(dotIndex);
-                    newestFile.renameTo(new File(newestFile.getParentFile(), newName));
-                }
-            }
-        }
-    }
 
     private static void writeRegionsOfInterestFile(File roiFile) {
 
