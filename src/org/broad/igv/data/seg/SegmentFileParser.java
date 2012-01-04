@@ -127,13 +127,13 @@ public class SegmentFileParser implements SegFileParser {
                     int start;
                     int end;
                     try {
-                        start = Integer.parseInt(tokens[startColumn].trim());
+                        start = (int) Double.parseDouble(tokens[startColumn].trim());
                     } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (startColumn + 1) + " must contain a numeric value.",
                                 reader.getCurrentLineNumber(), nextLine);
                     }
                     try {
-                        end = Integer.parseInt(tokens[endColumn].trim());
+                        end = (int) Double.parseDouble(tokens[endColumn].trim());
                     } catch (NumberFormatException numberFormatException) {
                         throw new ParserException("Column " + (endColumn + 1) + " must contain a numeric value.",
                                 reader.getCurrentLineNumber(), nextLine);
