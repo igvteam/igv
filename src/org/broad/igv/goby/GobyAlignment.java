@@ -135,6 +135,7 @@ public class GobyAlignment implements Alignment {
                     final int offset = j + var.getPosition() + i - 1 + leftPadding;
                     if (offset < readBases.length) {
                         readBases[offset] = (byte) to.charAt(i);
+                        readQual[offset]=toQuality.byteAt(i);
                     }
                 }
             }
