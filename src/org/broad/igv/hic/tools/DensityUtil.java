@@ -18,9 +18,9 @@ import java.util.Map;
 public class DensityUtil {
 
     public static void main(String[] args) throws IOException {
-        //calculate();
+         calculate();
         //read();
-        dumpDensities("/Users/jrobinso/IGV/hic/test.hic.densitites", 7, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
+        dumpDensities("/Users/jrobinso/IGV/hic/test.hic.densities", 1, 14); //Hi-C_HindIII_Human_August.hic.densities", 1, 14);
     }
 
     private static void dumpDensities(String path, int zoomNumber, int chr) throws IOException {
@@ -49,7 +49,7 @@ public class DensityUtil {
                 "/Users/jrobinso/IGV/hic/GSM455140_428EGAAXX.8.maq.hic.summary.binned.txt"};
 //        //chromosomes = HiCTools.b37Chromosomes;
         Chromosome[] chromosomes = HiCTools.hg18Chromosomes;
-        //Chromosome[] chromosomes = HiCTools.b37Chromosomes;
+//        Chromosome[] chromosomes = HiCTools.b37Chromosomes;
 //        String[] paths = {
 //                "/Volumes/igv/data/broad/hic/human/GSM455133_30E0LAAXX.1.maq.hic.summary.binned.txt.gz",
 //                "/Volumes/igv/data/broad/hic/human/GSM455134_30E0LAAXX.2.maq.hic.summary.binned.txt.gz",
@@ -97,7 +97,7 @@ public class DensityUtil {
             calcs[z].computeDensity();
         }
 
-        outputDensities(calcs, new File("test.hic.densitites"));
+        outputDensities(calcs, new File("test.hic.densities"));
     }
 
 

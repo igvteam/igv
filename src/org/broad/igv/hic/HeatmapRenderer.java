@@ -90,7 +90,7 @@ public class HeatmapRenderer {
                     int dist = Math.abs(x - y);
                     double expected = df.getDensity(dist, chr1);
                     score = rec.getCounts() / expected;
-                    score = Math.log(score) / Math.log(2);
+                    score = Math.log10(score);
                 } else {
                      score = rec.getCounts() / binSizeMB2;
                 }

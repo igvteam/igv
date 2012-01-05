@@ -212,7 +212,7 @@ public class DensityCalculation {
 
             double observedCount = (double) chromosomeCounts.get(chr.getIndex());
 
-            double f = observedCount / expectedCount;
+            double f =  expectedCount / observedCount;
             System.out.println(chr.getName() + "\t" + f);
 
             normalizationFactors.put(chr.getIndex(), f);

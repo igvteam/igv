@@ -30,12 +30,13 @@ public class DensityFunction {
     public double getDensity(int chrIdx, int distance) {
 
         double normFactor = normFactors.containsKey(chrIdx) ? normFactors.get(chrIdx) : 1.0;
-
+         normFactor /= 0.958646806;
         int grid = distance;
         if (grid >= nPoints) {
-            return density[nPoints - 1] * normFactor;
+
+            return density[nPoints - 1] / normFactor;
         } else {
-            return density[grid] * normFactor;
+            return density[grid] / normFactor;
         }
     }
 
