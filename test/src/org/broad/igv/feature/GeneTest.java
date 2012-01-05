@@ -28,8 +28,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -48,6 +46,18 @@ public class GeneTest {
 
     public GeneTest() {
 
+    }
+
+    public static void main(String[] args) {
+        //        int[] positions = new int[]{0,1,2,3,4,5,6,7};
+//
+//        String ret = "";
+//        for(int pos: positions){
+//            Codon codon = bf.getCodon(genome, pos + 1);
+//            //System.out.println("Pos: " + (pos + 1) + " AA: " + codon.getAminoAcid().getSymbol());
+//            ret += codon.getAminoAcid().getSymbol();
+//        }
+//        System.out.println(ret);
     }
 
     @BeforeClass
@@ -146,26 +156,31 @@ public class GeneTest {
 
     @Test
     public void testGetCodon() {
+        // See http://www.ncbi.nlm.nih.gov/nuccore/NM_201283
+        //Note: This covers a break in exons
+        char[] expected = "MRPSGTAGAALLALLAALCPASRALEEKKVCQGTSNKLTQLGTFEDHFLSLQRMFNNCEVVLGNLEITYVQRNYDLSFLKTIQEVAGYVLIALNTVERIPLE".toCharArray();
+        tstGetCodon(egfr, expected);
 
-        NamedFeature feature = egfr;
+    }
 
+    @Test
+    public void testGetCodonNeg() {
+        //See http://www.ncbi.nlm.nih.gov/nuccore/NM_004985
+        String exp_string = "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQV";
+        char[] expected = exp_string.toCharArray();
+
+        BasicFeature KRAS = (BasicFeature) FeatureDB.getFeature("KRAS");
+        tstGetCodon(KRAS, expected);
+    }
+
+    public void tstGetCodon(NamedFeature feature, char[] expected) {
         BasicFeature bf = (BasicFeature) feature;
-        bf.sortExons();
-        List<Exon> exons = bf.getExons();
-        int cdStart = exons.get(0).getCdStart();
 
-        // EGFR starts with proteins MRPSG
-        char[] symbols = new char[]{'M', 'R', 'P', 'S', 'G'};
         int[] range = new int[]{0, 1, 2};
-        for (int pos = 0; pos < symbols.length; pos++) {
+        for (int pos = 0; pos < expected.length; pos++) {
             Codon codon = bf.getCodon(genome, pos + 1);
-            assertEquals(symbols[pos], codon.getAminoAcid().getSymbol());
-            for (int offset : range) {
-                assertEquals(cdStart + 3 * pos + offset, codon.getGenomePosition(offset));
-            }
+            assertEquals(expected[pos], codon.getAminoAcid().getSymbol());
         }
-
-
     }
 
 

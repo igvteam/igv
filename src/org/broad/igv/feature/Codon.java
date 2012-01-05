@@ -8,21 +8,39 @@ class Codon {
 
     // Position in protein coordinates, first amino acid is numbered 1
     private int proteinPosition;
+
     // Triplet -- genomic (base) positions
     // in "zero" based (UCSC style) coordinates
     private int[] genomePositions = new int[]{-1, -1, -1};
     private int nextPos = 0;
     private AminoAcid aminoAcid;
+    private Strand strand;
+    private int incr = 1;
 
     Codon(int proteinPosition) {
-        this.proteinPosition = proteinPosition;
+        this(proteinPosition, Strand.POSITIVE);
     }
 
+    public Codon(int proteinPosition, Strand strand) {
+        this.proteinPosition = proteinPosition;
+        this.strand = strand;
+        if (this.strand == Strand.NEGATIVE) {
+            this.nextPos = 2;
+            this.incr = -1;
+        }
+    }
+
+    /**
+     * If on positive strand, will add each successive
+     * gp at end. If on negative strand, they will be added in reverse order.
+     *
+     * @param gp
+     */
     void setNextGenomePosition(int gp) {
-        if (nextPos < 3) {
+        try {
             genomePositions[nextPos] = gp;
-            nextPos++;
-        } else {
+            nextPos += incr;
+        } catch (IndexOutOfBoundsException e) {
             throw new IllegalStateException("Genome positions have already been set, cannot set any more");
         }
     }
@@ -43,12 +61,8 @@ class Codon {
         return proteinPosition;
     }
 
-    public int getGenomePosition(int pos) {
-        try {
-            return genomePositions[pos];
-        } catch (IndexOutOfBoundsException e) {
-            throw new IllegalArgumentException("pos argument must be 0-2");
-        }
+    public int[] getGenomePositions() {
+        return genomePositions;
     }
 
     public AminoAcid getAminoAcid() {

@@ -222,16 +222,17 @@ public class FeatureDB {
      * @param name
      * @param proteinPosition
      * @param aminoAcidSymbol char symbolizing the desired amino acid
-     * @return
+     * @return Map from genome position to features found. Feature name
+     *         must be exact, but there can be multiple features with the same name
      */
-    public static List<NamedFeature> getMutation(String name, int proteinPosition, char aminoAcidSymbol) {
+    public static Map<Integer, BasicFeature> getMutation(String name, int proteinPosition, char aminoAcidSymbol) {
         String nm = name.toUpperCase();
         Genome currentGenome = GENOME;
         if (!Globals.isHeadless()) {
             currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         }
 
-        List<NamedFeature> results = new ArrayList<NamedFeature>();
+        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
         List<NamedFeature> possibles = featureMap.get(nm);
         if (possibles != null) {
             synchronized (featureMap) {
@@ -239,15 +240,17 @@ public class FeatureDB {
                     if (!(f instanceof BasicFeature)) {
                         continue;
                     }
+
                     BasicFeature bf = (BasicFeature) f;
                     Codon c = bf.getCodon(currentGenome, proteinPosition);
                     if (c == null) {
                         continue;
                     }
                     if (c.getAminoAcid().getSymbol() == aminoAcidSymbol) {
-                        results.add(f);
+                        results.put(c.getGenomePositions()[0], bf);
                     }
                 }
+
             }
         }
 

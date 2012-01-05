@@ -25,16 +25,14 @@ import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.FeatureDB;
-import org.broad.igv.feature.Locus;
-import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
+import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
@@ -364,22 +362,24 @@ public class SearchCommand implements Command {
             //We know it has the right form, but may
             //not be valid feature name or mutation
             //which exists.
-            String[] items = token.split(":");
+            String[] items = token.toUpperCase().split(":");
             String name = items[0].trim().toUpperCase();
             String coords = items[1];
             char refAASymbol = coords.subSequence(0, 1).charAt(0);
             coords = coords.substring(1, coords.length() - 1);
             int location = Integer.parseInt(coords) - 1;
-            features = FeatureDB.getMutation(name, location + 1, refAASymbol);
+            //
+            Map<Integer, BasicFeature> genomePosList = FeatureDB.getMutation(name, location + 1, refAASymbol);
+            askUser |= genomePosList.size() >= 2;
             //Only keep the largest one
-            if (features.size() >= 1) {
-                NamedFeature feat = features.get(0);
-                //result = new SearchResult(feat);
+            for (int genomePos : genomePosList.keySet()) {
+                Feature feat = genomePosList.get(genomePos);
                 //Zoom in on mutation of interest
-                result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0, location));
+                result = new SearchResult(ResultType.LOCUS, feat.getChr(), genomePos);
                 results.add(result);
-                return results;
+
             }
+            return results;
         }
 
         if (types.contains(ResultType.FEATURE)) {

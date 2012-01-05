@@ -22,7 +22,9 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -232,44 +234,74 @@ public class BasicFeature extends AbstractFeature {
         this.thickStart = thickStart;
     }
 
-
+    /**
+     * @param genome
+     * @param proteinPosition 1-Indexed position of protein
+     * @return
+     */
     public Codon getCodon(Genome genome, int proteinPosition) {
         List<Exon> exons = getExons();
         if (exons != null) {
 
-            if (getStrand() == Strand.POSITIVE) {
+            if (getStrand() == Strand.NONE) {
+                throw new IllegalStateException("Exon not on a strand");
+            }
+            boolean positive = getStrand() == Strand.POSITIVE;
 
-                Codon codonInfo = new Codon(proteinPosition);
+            Codon codonInfo = new Codon(proteinPosition, getStrand());
 
-                // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
-                int startTranscriptPosition = (proteinPosition - 1) * 3;
-                int genomePosition;
-
-                int tp = 0;
-                for (Exon exon : exons) {
-                    int cdStart = exon.getCdStart();
-                    int cdEnd = exon.getCdEnd();
-                    for (genomePosition = cdStart; genomePosition < cdEnd; genomePosition++) {
-                        tp++;
-                        if (tp > startTranscriptPosition) {
-                            codonInfo.setNextGenomePosition(genomePosition);
-                        }
-                        if (codonInfo.isGenomePositionsSet()) {
-                            AminoAcid aa = exon.getAminoAcid(genome, genomePosition);
-                            if (aa != null) {
-                                codonInfo.setAminoAcid(aa);
-                            }
-                            return codonInfo;
-                        }
-                    }
+            // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
+            int startTranscriptPosition = (proteinPosition - 1) * 3;
+            int genomePosition, iter, tp = 0;
+            Exon exon;
+            /*
+             We loop over all exons, either from the beginning or the end.
+             */
+            for (int exnum = 0; exnum < exons.size(); exnum++) {
+                if (positive) {
+                    exon = exons.get(exnum);
+                } else {
+                    exon = exons.get(exons.size() - 1 - exnum);
                 }
-            } else {
-                // TODO -- negative strand
+
+                int distance = exon.getCdEnd() - exon.getCdStart();
+                genomePosition = positive ? exon.getCdStart() : exon.getCdEnd() - 1;
+                int incr = positive ? 1 : -1;
+                for (iter = 0; iter < distance; iter++) {
+                    tp++;
+                    if (tp > startTranscriptPosition) {
+                        codonInfo.setNextGenomePosition(genomePosition);
+                    }
+                    if (codonInfo.isGenomePositionsSet()) {
+                        AminoAcid aa = getAminoAcid(genome, codonInfo);
+                        //System.out.println(aa.getSymbol());
+                        if (aa != null) {
+                            codonInfo.setAminoAcid(aa);
+                        }
+                        return codonInfo;
+                    }
+                    genomePosition += incr;
+
+                }
             }
         }
 
         // No codon found
         return null;
 
+    }
+
+    private AminoAcid getAminoAcid(Genome genome, Codon codon) {
+
+        int[] positions = codon.getGenomePositions();
+        String aas = "";
+        for (int start : positions) {
+            aas += new String(genome.getSequence(getChr(), start, start + 1));
+        }
+
+        if (getStrand() == Strand.NEGATIVE) {
+            aas = AminoAcidManager.getNucleotideComplement(aas);
+        }
+        return AminoAcidManager.getAminoAcid(aas);
     }
 }

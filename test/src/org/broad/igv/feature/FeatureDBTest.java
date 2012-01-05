@@ -198,10 +198,13 @@ public class FeatureDBTest {
         String name = "EGFR";
         // EGFR starts with proteins MRPSG
         char[] symbols = new char[]{'M', 'R', 'P', 'S', 'G'};
-        List<NamedFeature> matches;
+        Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
             matches = FeatureDB.getMutation(name, ii + 1, symbols[ii]);
-            assertEquals(4, matches.size());
+            assertEquals(1, matches.size());
+            for (int pos : matches.keySet()) {
+                assertEquals(name, matches.get(pos).getName());
+            }
         }
 
 
@@ -209,18 +212,26 @@ public class FeatureDBTest {
         int exp_start = 38439399;
         matches = FeatureDB.getMutation(name, 2, 'H');
         assertEquals(1, matches.size());
-        NamedFeature feat = matches.get(0);
-        assertEquals(exp_start, feat.getStart());
+        for (int geneloc : matches.keySet()) {
+            assertEquals(exp_start, matches.get(geneloc).getStart());
+        }
 
         char[] others = new char[]{'D', 'R', 'E'};
         for (char c : others) {
             matches = FeatureDB.getMutation(name, 2, c);
             assertEquals(1, matches.size());
-            BasicFeature bf = (BasicFeature) matches.get(0);
-            assertEquals(bf.getCodon(genome, 2).getAminoAcid().getSymbol(), c);
         }
+    }
 
-
+    @Test
+    public void testMutationSearchFail() throws Exception {
+        String name = "EGFR";
+        char[] symbols = "RPSGM".toCharArray();
+        Map<Integer, BasicFeature> matches;
+        for (int ii = 0; ii < symbols.length; ii++) {
+            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii]);
+            assertEquals(0, matches.size());
+        }
     }
 
 }

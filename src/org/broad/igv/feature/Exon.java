@@ -22,7 +22,6 @@ package org.broad.igv.feature;
 
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -179,22 +178,22 @@ public class Exon extends AbstractFeature {
     }
 
 
-    public AminoAcid getAminoAcid(Genome genome, int position) {
-        if (aminoAcidSequence == null) {
-            computeAminoAcidSequence(genome);
-        }
-        if (aminoAcidSequence == null) {
-            return null;
-        }
-
-        int delta = position - aminoAcidSequence.getStartPosition();
-        if (delta < 0) {
-            System.out.println("Warning: negative amino acide offset");
-        }
-        int aaIndex = delta / 3;
-        return aaIndex >= aminoAcidSequence.getSequence().size() ? null : aminoAcidSequence.getSequence().get(aaIndex);
-
-    }
+//    public AminoAcid getAminoAcid(Genome genome, int position) {
+//        if (aminoAcidSequence == null) {
+//            computeAminoAcidSequence(genome);
+//        }
+//        if (aminoAcidSequence == null) {
+//            return null;
+//        }
+//
+//        int delta = position - aminoAcidSequence.getStartPosition();
+//        if (delta < 0) {
+//            System.out.println("Warning: negative amino acid offset");
+//        }
+//        int aaIndex = delta / 3;
+//        return aaIndex >= aminoAcidSequence.getSequence().size() ? null : aminoAcidSequence.getSequence().get(aaIndex);
+//
+//    }
 
     public LocusScore copy() {
         Exon copy = new Exon(getChr(), getStart(), getEnd(), getStrand());
