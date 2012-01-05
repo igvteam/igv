@@ -40,7 +40,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -139,8 +139,8 @@ public class SearchCommand implements Command {
 
         searchString = searchString.replace("\"", "");
 
-        ResultType wholeStringType = checkTokenType(searchString);
-        if (wholeStringType == ResultType.LOCUS) {
+        Set<ResultType> wholeStringType = checkTokenType(searchString);
+        if (wholeStringType.contains(ResultType.LOCUS)) {
             results.add(calcChromoLocus(searchString));
             return results;
         }
@@ -300,15 +300,18 @@ public class SearchCommand implements Command {
 
     /**
      * Check token type using regex.
+     * Intended to be inclusive, returns all possible matches
      *
      * @param token
      * @return
      */
-    ResultType checkTokenType(String token) {
+    Set<ResultType> checkTokenType(String token) {
         //Regexp for a number with commas in it (no periods)
         String num_withcommas = "(((\\d)+,?)+)";
-        //Not ideal, will match chr + (1 or 2 digit number) or chr[X,Y, or M]
-        String chromo_string = "^chr([\\d]{1,2}|[XYM])";
+
+        //Don't use this on its own
+        String chromo_string = "^([\\w:_])+";
+
         RE chromo = new RE(chromo_string + "\\s*$", RE.MATCH_CASEINDEPENDENT);
         //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
         RE chromo_range = new RE(chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
@@ -318,17 +321,20 @@ public class SearchCommand implements Command {
         RE feature = new RE("^(\\s)*(\\w)+(\\s)*$", RE.MATCH_CASEINDEPENDENT);
         //Mutation notation. e.g. KRAS:G12C
         RE feature_mut = new RE("^(\\w)+:[A-Z]" + num_withcommas + "[A-Z](\\s)*$", RE.MATCH_CASEINDEPENDENT);
-        if (chromo.match(token)) {
-            return ResultType.CHROMOSOME;
-        } else if (chromo_range.match(token)) {
-            return ResultType.LOCUS;
-        } else if (feature.match(token)) {
-            return ResultType.FEATURE;
-        } else if (feature_mut.match(token)) {
-            return ResultType.FEATURE_MUT;
+
+        Set<ResultType> possibles = new HashSet<ResultType>();
+        Map<ResultType, RE> matchers = new HashMap<ResultType, RE>();
+        matchers.put(ResultType.CHROMOSOME, chromo);
+        matchers.put(ResultType.LOCUS, chromo_range);
+        matchers.put(ResultType.FEATURE, feature);
+        matchers.put(ResultType.FEATURE_MUT, feature_mut);
+        for (ResultType type : matchers.keySet()) {
+            if (matchers.get(type).match(token)) {
+                possibles.add(type);
+            }
         }
 
-        return ResultType.ERROR;
+        return possibles;
     }
 
     /**
@@ -344,64 +350,53 @@ public class SearchCommand implements Command {
 
         //Guess at token type via regex.
         //We don't assume success
-        ResultType type = checkTokenType(token);
+        Set<ResultType> types = checkTokenType(token);
         SearchResult result;
-        switch (type) {
-            case LOCUS:
-                //Check if a full or partial locus string
-                result = calcChromoLocus(token);
-                if (result.type != ResultType.ERROR) {
-                    results.add(result);
-                    return results;
-                }
-                break;
-            case FEATURE_MUT:
-                //We know it has the right form, but may
-                //not be valid feature name or mutation
-                //which exists.
-                String[] items = token.split(":");
-                String name = items[0].trim().toUpperCase();
-                String coords = items[1];
-                char refAASymbol = coords.subSequence(0, 1).charAt(0);
-                coords = coords.substring(1, coords.length() - 1);
-                int location = Integer.parseInt(coords) - 1;
-                features = FeatureDB.getMutation(name, location, refAASymbol);
-                //Only keep the largest one
-                if (features.size() >= 1) {
-                    NamedFeature feat = features.get(0);
-                    //result = new SearchResult(feat);
-                    //Zoom in on mutation of interest
-                    result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0, location));
-                    results.add(result);
-                    return results;
-                }
-                break;
-            case CHROMOSOME:
-                String chr = genome.getChromosomeAlias(token);
-                Chromosome chromo = genome.getChromosome(chr);
-                if (chromo != null) {
-                    result = new SearchResult(ResultType.CHROMOSOME, chr, 1, chromo.getLength());
-                    results.add(result);
-                    return results;
-                }
-                //Chromosome string can look similar to feature.
-                //If we fail at chromosome, check against being a feature
-            default:
-            case FEATURE:
-                //Check if a feature
-                NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
-                if (feat != null) {
-                    results.add(new SearchResult(feat));
-                    return results;
-                }
+        if (types.contains(ResultType.LOCUS) || types.contains(ResultType.CHROMOSOME)) {
+            //Check if a full or partial locus string
+            result = calcChromoLocus(token);
+            if (result.type != ResultType.ERROR) {
+                results.add(result);
+                return results;
+            }
+        }
+        if (types.contains(ResultType.FEATURE_MUT)) {
+            //We know it has the right form, but may
+            //not be valid feature name or mutation
+            //which exists.
+            String[] items = token.split(":");
+            String name = items[0].trim().toUpperCase();
+            String coords = items[1];
+            char refAASymbol = coords.subSequence(0, 1).charAt(0);
+            coords = coords.substring(1, coords.length() - 1);
+            int location = Integer.parseInt(coords) - 1;
+            features = FeatureDB.getMutation(name, location + 1, refAASymbol);
+            //Only keep the largest one
+            if (features.size() >= 1) {
+                NamedFeature feat = features.get(0);
+                //result = new SearchResult(feat);
+                //Zoom in on mutation of interest
+                result = new SearchResult(ResultType.LOCUS, feat.getChr(), Math.max(0, location));
+                results.add(result);
+                return results;
+            }
+        }
 
-                //Check inexact match
-                //We will later want to ask the user which of these to keep
-                features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
-                if (features.size() > 0) {
-                    askUser |= features.size() >= 2;
-                    return getResults(features);
-                }
+        if (types.contains(ResultType.FEATURE)) {
+            //Check if a feature
+            NamedFeature feat = FeatureDB.getFeature(token.toUpperCase().trim());
+            if (feat != null) {
+                results.add(new SearchResult(feat));
+                return results;
+            }
+
+            //Check inexact match
+            //We will later want to ask the user which of these to keep
+            features = FeatureDB.getFeaturesList(searchString, SEARCH_LIMIT);
+            if (features.size() > 0) {
+                askUser |= features.size() >= 2;
+                return getResults(features);
+            }
         }
 
         result = new SearchResult();
@@ -420,31 +415,56 @@ public class SearchCommand implements Command {
      * @return
      */
     private SearchResult calcChromoLocus(String searchString) {
-        int colonIdx = searchString.lastIndexOf(":");
+        /*
+        chromosome can have whitespace or : delimiter
+        chromosome also might have : in the name
+         */
         int[] startEnd = null;
-        String chr = null;
-        if (colonIdx > 0) {
-            chr = searchString.substring(0, colonIdx);
-            String posString = searchString.substring(colonIdx).replace(":", "");
-            startEnd = getStartEnd(posString);
-        } else {
-            //Assume whitespace delimited
-            String[] tokens = searchString.split("\\s+");
-            chr = tokens[0];
+        String[] tokens = searchString.split("\\s+");
+
+        String chr = tokens[0];
+        boolean whitespace_delim = tokens.length >= 2;
+        if (whitespace_delim) {
             String posString = tokens[1];
             if (tokens.length >= 3) {
                 posString += "-" + tokens[2];
             }
             startEnd = getStartEnd(posString);
+        } else {
+            //Not whitespace delimited
+            //Could be chromoname:1-100, chromoname:1, chromoname
 
+            int colonIdx = searchString.lastIndexOf(":");
+            if (colonIdx > 0) {
+                chr = searchString.substring(0, colonIdx);
+                String posString = searchString.substring(colonIdx).replace(":", "");
+                startEnd = getStartEnd(posString);
+                //This MAY for case of chromoname having semicolon in it
+                if (startEnd == null) {
+                    chr = searchString;
+                }
+            }
         }
+
+        //startEnd will have coordinates if found.
         chr = genome.getChromosomeAlias(chr);
         Chromosome chromosome = genome.getChromosome(chr);
+        //If we couldn't find chromosome, check
+        //whole string
+        if (chromosome == null) {
+            chr = genome.getChromosomeAlias(tokens[0]);
+            chromosome = genome.getChromosome(chr);
+            if (chromosome != null) {
+                //Found chromosome
+                startEnd = null;
+            }
+        }
+
         if (chromosome != null && !searchString.equals(Globals.CHR_ALL)) {
             if (startEnd != null) {
                 return new SearchResult(ResultType.LOCUS, chr, startEnd[0], startEnd[1]);
             }
-            return new SearchResult(ResultType.CHROMOSOME, chr, 0, 0);
+            return new SearchResult(ResultType.CHROMOSOME, chr, 0, chromosome.getLength() - 1);
         }
         return new SearchResult(ResultType.ERROR, chr, -1, -1);
     }

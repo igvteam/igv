@@ -24,7 +24,9 @@ import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -49,13 +51,43 @@ public class SearchCommandTest {
         int min = 1;
         int max = 22;
         String[] chrs = new String[max - min + 1];
+        String[] nums = new String[max - min + 1];
         String chr;
 
         for (int cn = min; cn <= max; cn++) {
             chr = "chr" + cn;
             chrs[cn - min] = chr;
+            nums[cn - min] = "" + cn;
         }
         tstFeatureTypes(chrs, SearchCommand.ResultType.CHROMOSOME);
+        tstFeatureTypes(nums, SearchCommand.ResultType.CHROMOSOME);
+    }
+
+    @Test
+    public void testChromoWithColon() throws Exception {
+        Map<String, String> aliases = new HashMap<String, String>();
+        aliases.put("abc:123", "chr10");
+        aliases.put("xy:12", "chr1");
+        aliases.put("aaa:bbb", "chr20");
+
+        genome.addChrAliases(aliases);
+
+        SearchCommand cmd;
+
+        for (String searchStr : aliases.keySet()) {
+            cmd = new SearchCommand(null, searchStr, genome);
+            List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
+            assertEquals(1, results.size());
+            assertEquals(SearchCommand.ResultType.CHROMOSOME, results.get(0).type);
+            assertEquals(aliases.get(searchStr), results.get(0).chr);
+        }
+
+        String[] queries = new String[]{"X:100-1000", "Y:100-1000", "Y:12", "1\t 100", "X\t50", "X\t50\t500"};
+        tstFeatureTypes(queries, SearchCommand.ResultType.LOCUS);
+
+        genome = null;
+        setUp();
+
     }
 
     @Test
@@ -92,14 +124,16 @@ public class SearchCommandTest {
     }
 
     public void tstMultiFeatures(String delim) throws Exception {
-        //TODO chr1:1-100 fails because 1 gets subtracted.
+
         //Not sure if this is correct behavior or not
         String[] tokens = {"EgfR", "ABO", "BRCA1", "chr1:1-100"};
         SearchCommand.ResultType[] types = new SearchCommand.ResultType[]{
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.FEATURE,
                 SearchCommand.ResultType.FEATURE,
-                SearchCommand.ResultType.LOCUS
+                SearchCommand.ResultType.LOCUS,
+                SearchCommand.ResultType.CHROMOSOME,
+                SearchCommand.ResultType.CHROMOSOME
         };
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
@@ -123,7 +157,7 @@ public class SearchCommandTest {
 
     @Test
     public void testMultiChromosomes() throws Exception {
-        String[] tokens = {"chr1", "chr5"};
+        String[] tokens = {"chr1", "chr5", "4", "12", "X", "Y"};
         String searchStr = tokens[0];
         for (int ii = 1; ii < tokens.length; ii++) {
             searchStr += " " + tokens[ii];
@@ -147,7 +181,11 @@ public class SearchCommandTest {
         tstFeatureTypes(tokens, SearchCommand.ResultType.ERROR);
     }
 
-    @Test
+    /**
+     * Saving because we might want these test cases, but don't
+     * want to test checkTokenType specifically
+     */
+    @Deprecated
     public void testTokenChecking() {
         String[] chromos = {"chr3", "chr20", "chrX", "chrY"};
         SearchCommand cmd = new SearchCommand(null, "", genome);
