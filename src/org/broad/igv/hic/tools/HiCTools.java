@@ -57,7 +57,9 @@ public class HiCTools {
                 chromosomes = b37Chromosomes;
             } else if (genomeId.equals("chr14")) {
                 chromosomes = chr14;
-            } else {
+            } else if (genomeId.equals("mm9")) {
+                chromosomes = mm9Chromosomes;
+            }else {
                 chromosomes = dmelChromosomes;
             }
 
