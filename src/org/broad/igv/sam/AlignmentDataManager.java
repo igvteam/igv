@@ -23,8 +23,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
-import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.sam.reader.SamListReader;
 import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGV;
@@ -121,6 +121,16 @@ public class AlignmentDataManager {
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
     }
+
+    /**
+     * The set of sequences found in the file.
+     *
+     * @return
+     */
+    public Set<String> getSequenceNames() {
+        return reader.getSequenceNames();
+    }
+
 
     /**
      * Return the loaded interval for the specified frame.  Note this can be null if the interval isn't loaded

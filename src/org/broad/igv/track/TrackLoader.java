@@ -24,23 +24,22 @@ import org.broad.igv.bbfile.BBFileReader;
 import org.broad.igv.bigwig.BigWigDataSource;
 import org.broad.igv.das.DASFeatureSource;
 import org.broad.igv.data.*;
-import org.broad.igv.db.SampleInfoSQLReader;
-import org.broad.igv.db.SegmentedSQLReader;
-import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.expression.ExpressionDataset;
+import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.data.rnai.RNAIDataSource;
 import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
+import org.broad.igv.db.SampleInfoSQLReader;
+import org.broad.igv.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.*;
+import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
-import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gwas.GWASData;
 import org.broad.igv.gwas.GWASParser;
 import org.broad.igv.gwas.GWASTrack;
@@ -78,6 +77,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * User: jrobinso
@@ -890,6 +890,28 @@ public class TrackLoader {
                 return;
             }
             AlignmentDataManager dataManager = new AlignmentDataManager(locator);
+
+            //Check that alignments we loaded actually match some data
+            Set<String> seqNames = dataManager.getSequenceNames();
+            String missingNames = "";
+            int numMissing = 0;
+            for (String seqName : seqNames) {
+                if (genome.getChromosome(seqName) == null) {
+                    numMissing++;
+                    if (numMissing < 5) {
+                        missingNames += seqName + ", ";
+                    } else if (numMissing == 5) {
+                        missingNames += " ... ";
+                    }
+                }
+            }
+
+            if (numMissing == seqNames.size()) {
+                MessageUtils.showMessage("File did not any sequence names which matched current genome");
+                return;
+            } else if (numMissing > 0) {
+                MessageUtils.showMessage("Reference sequence contains no information for the following names: \n" + missingNames);
+            }
 
             if (locator.getPath().toLowerCase().endsWith(".bam") || locator.getPath().toLowerCase().endsWith(".bam.hg19")) {
                 if (!dataManager.hasIndex()) {
