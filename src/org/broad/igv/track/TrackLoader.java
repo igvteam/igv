@@ -893,24 +893,27 @@ public class TrackLoader {
 
             //Check that alignments we loaded actually match some data
             Set<String> seqNames = dataManager.getSequenceNames();
-            String missingNames = "";
-            int numMissing = 0;
-            for (String seqName : seqNames) {
-                if (genome.getChromosome(seqName) == null) {
-                    numMissing++;
-                    if (numMissing < 5) {
-                        missingNames += seqName + ", ";
-                    } else if (numMissing == 5) {
-                        missingNames += " ... ";
+            if (seqNames != null) {
+                String missingNames = "";
+                int numMissing = 0;
+                for (String seqName : seqNames) {
+                    if (genome.getChromosome(seqName) == null) {
+                        numMissing++;
+                        if (numMissing < 5) {
+                            missingNames += seqName + ", ";
+                        } else if (numMissing == 5) {
+                            missingNames += " ... ";
+                        }
                     }
                 }
-            }
 
-            if (numMissing == seqNames.size()) {
-                MessageUtils.showMessage("File did not any sequence names which matched current genome");
-                return;
-            } else if (numMissing > 0) {
-                MessageUtils.showMessage("Reference sequence contains no information for the following names: \n" + missingNames);
+
+                if (numMissing == seqNames.size()) {
+                    MessageUtils.showMessage("File did not any sequence names which matched current genome");
+                    return;
+                } else if (numMissing > 0) {
+                    MessageUtils.showMessage("Reference sequence contains no information for the following names: \n" + missingNames);
+                }
             }
 
             if (locator.getPath().toLowerCase().endsWith(".bam") || locator.getPath().toLowerCase().endsWith(".bam.hg19")) {

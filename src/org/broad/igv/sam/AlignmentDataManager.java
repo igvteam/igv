@@ -124,6 +124,7 @@ public class AlignmentDataManager {
 
     /**
      * The set of sequences found in the file.
+     * May be null
      *
      * @return
      */
