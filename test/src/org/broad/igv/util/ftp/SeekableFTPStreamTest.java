@@ -33,7 +33,7 @@ import java.net.URLConnection;
  */
 public class SeekableFTPStreamTest extends TestCase {
 
-    static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/data/HG00099/alignment/HG00099.mapped.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
+    static String url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/phase1/data/HG00099/alignment/HG00099.mapped.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
 
     @Test
     public void testRead() throws IOException {
