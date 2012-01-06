@@ -304,27 +304,28 @@ public class SearchCommand implements Command {
      * @return
      */
     Set<ResultType> checkTokenType(String token) {
+        token = token.trim();
         //Regexp for a number with commas in it (no periods)
         String num_withcommas = "(((\\d)+,?)+)";
 
-        //Don't use this on its own
-        String chromo_string = "^([\\w:_])+";
+        //chromosome can include anything except whitespace
+        String chromo_string = "(\\S)+";
 
-        RE chromo = new RE(chromo_string + "\\s*$", RE.MATCH_CASEINDEPENDENT);
+        RE chromo = new RE("^" + chromo_string + "$", RE.MATCH_CASEINDEPENDENT);
         //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
-        RE chromo_range = new RE(chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
+        RE chromo_range = new RE("^" + chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
                 RE.MATCH_CASEINDEPENDENT);
 
-        //Simple feature, which is letters/numbers only
-        RE feature = new RE("^(\\s)*(\\w)+(\\s)*$", RE.MATCH_CASEINDEPENDENT);
+        //Simple feature
+        RE feature = new RE("^(\\S)+$", RE.MATCH_CASEINDEPENDENT);
         //Mutation notation. e.g. KRAS:G12C
-        RE feature_mut = new RE("^(\\w)+:[A-Z]" + num_withcommas + "[A-Z](\\s)*$", RE.MATCH_CASEINDEPENDENT);
+        RE feature_mut = new RE("^" + chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]$", RE.MATCH_CASEINDEPENDENT);
 
         Set<ResultType> possibles = new HashSet<ResultType>();
         Map<ResultType, RE> matchers = new HashMap<ResultType, RE>();
         matchers.put(ResultType.CHROMOSOME, chromo);
-        matchers.put(ResultType.LOCUS, chromo_range);
         matchers.put(ResultType.FEATURE, feature);
+        matchers.put(ResultType.LOCUS, chromo_range);
         matchers.put(ResultType.FEATURE_MUT, feature_mut);
         for (ResultType type : matchers.keySet()) {
             if (matchers.get(type).match(token)) {
