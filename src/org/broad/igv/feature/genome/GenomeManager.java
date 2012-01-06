@@ -92,7 +92,7 @@ public class GenomeManager {
             throws IOException {
 
         try {
-
+            log.info("Loading genome: " + genomePath);
             GenomeDescriptor genomeDescriptor = null;
 
             if (monitor != null) {
@@ -124,6 +124,7 @@ public class GenomeManager {
                 final String displayName = genomeDescriptor.getName();
                 boolean isFasta = genomeDescriptor.isFasta();
                 currentGenome = new Genome(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
+                log.info("Genome loaded.  id= " + id);
                 currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
                 if (aliases != null) currentGenome.addChrAliases(aliases);
                 if(!Globals.isHeadless()) {
@@ -150,6 +151,7 @@ public class GenomeManager {
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
                 currentGenome = new Genome(id, name, fastaPath, true);
+                log.info("Genome loaded.  id= " + id);
                 IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
             }
 
