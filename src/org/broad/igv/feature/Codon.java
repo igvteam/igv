@@ -1,5 +1,7 @@
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
+
 /**
  * @author Jim Robinson
  * @date 12/26/11
@@ -16,14 +18,17 @@ class Codon {
     private AminoAcid aminoAcid;
     private Strand strand;
     private int incr = 1;
+    private String chr;
+    private String sequence;
 
-    Codon(int proteinPosition) {
-        this(proteinPosition, Strand.POSITIVE);
+    Codon(String chr, int proteinPosition) {
+        this(chr, proteinPosition, Strand.POSITIVE);
     }
 
-    public Codon(int proteinPosition, Strand strand) {
+    public Codon(String chr, int proteinPosition, Strand strand) {
         this.proteinPosition = proteinPosition;
         this.strand = strand;
+        this.chr = chr;
         if (this.strand == Strand.NEGATIVE) {
             this.nextPos = 2;
             this.incr = -1;
@@ -67,5 +72,26 @@ class Codon {
 
     public AminoAcid getAminoAcid() {
         return aminoAcid;
+    }
+
+    public void calcSequence(Genome genome) {
+        if (!this.isGenomePositionsSet()) {
+            throw new IllegalStateException("Must set genome positions first");
+        }
+        int[] positions = this.getGenomePositions();
+        String aas = "";
+        for (int start : positions) {
+            aas += new String(genome.getSequence(chr, start, start + 1));
+        }
+
+        if (strand == Strand.NEGATIVE) {
+            aas = AminoAcidManager.getNucleotideComplement(aas);
+        }
+
+        this.sequence = aas;
+    }
+
+    String getSequence() {
+        return sequence;
     }
 }

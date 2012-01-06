@@ -197,39 +197,40 @@ public class FeatureDBTest {
 
         String name = "EGFR";
         // EGFR starts with proteins MRPSG
-        char[] symbols = new char[]{'M', 'R', 'P', 'S', 'G'};
+        String[] symbols = new String[]{"M", "R", "P", "S", "G"};
+        //All of these should be possible with a SNP from the EGFR sequence
+        String[] muts = new String[]{"I", "R", "P", "P", "R"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii]);
+            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii], muts[ii]);
             assertEquals(1, matches.size());
             for (int pos : matches.keySet()) {
                 assertEquals(name, matches.get(pos).getName());
             }
         }
 
-
         name = "EGFLAM";
         int exp_start = 38439399;
-        matches = FeatureDB.getMutation(name, 2, 'H');
+        matches = FeatureDB.getMutation(name, 2, "H", "H");
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
             assertEquals(exp_start, matches.get(geneloc).getStart());
         }
 
-        char[] others = new char[]{'D', 'R', 'E'};
-        for (char c : others) {
-            matches = FeatureDB.getMutation(name, 2, c);
-            assertEquals(1, matches.size());
+        String[] others = new String[]{"I", "M", "T"};
+        for (String c : others) {
+            matches = FeatureDB.getMutation(name, 2, "H", c);
+            assertEquals(0, matches.size());
         }
     }
 
     @Test
     public void testMutationSearchFail() throws Exception {
         String name = "EGFR";
-        char[] symbols = "RPSGM".toCharArray();
+        String[] symbols = "R,P,S,G,M".split(",");
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii]);
+            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii], "M");
             assertEquals(0, matches.size());
         }
     }

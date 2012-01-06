@@ -248,7 +248,7 @@ public class BasicFeature extends AbstractFeature {
             }
             boolean positive = getStrand() == Strand.POSITIVE;
 
-            Codon codonInfo = new Codon(proteinPosition, getStrand());
+            Codon codonInfo = new Codon(getChr(), proteinPosition, getStrand());
 
             // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
             int startTranscriptPosition = (proteinPosition - 1) * 3;
@@ -256,6 +256,7 @@ public class BasicFeature extends AbstractFeature {
             Exon exon;
             /*
              We loop over all exons, either from the beginning or the end.
+             Increment position only on coding regions.
              */
             for (int exnum = 0; exnum < exons.size(); exnum++) {
                 if (positive) {
@@ -273,8 +274,8 @@ public class BasicFeature extends AbstractFeature {
                         codonInfo.setNextGenomePosition(genomePosition);
                     }
                     if (codonInfo.isGenomePositionsSet()) {
-                        AminoAcid aa = getAminoAcid(genome, codonInfo);
-                        //System.out.println(aa.getSymbol());
+                        codonInfo.calcSequence(genome);
+                        AminoAcid aa = AminoAcidManager.getAminoAcid(codonInfo.getSequence());
                         if (aa != null) {
                             codonInfo.setAminoAcid(aa);
                         }
@@ -291,17 +292,4 @@ public class BasicFeature extends AbstractFeature {
 
     }
 
-    private AminoAcid getAminoAcid(Genome genome, Codon codon) {
-
-        int[] positions = codon.getGenomePositions();
-        String aas = "";
-        for (int start : positions) {
-            aas += new String(genome.getSequence(getChr(), start, start + 1));
-        }
-
-        if (getStrand() == Strand.NEGATIVE) {
-            aas = AminoAcidManager.getNucleotideComplement(aas);
-        }
-        return AminoAcidManager.getAminoAcid(aas);
-    }
 }

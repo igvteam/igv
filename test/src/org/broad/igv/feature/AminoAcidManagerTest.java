@@ -25,11 +25,15 @@ package org.broad.igv.feature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -45,7 +49,7 @@ public class AminoAcidManagerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         genome = TestUtils.loadGenome("hg18");
-     }
+    }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
@@ -57,7 +61,7 @@ public class AminoAcidManagerTest {
     @Test
     public void testStartEgfr() {
         String expectedSeq = "MRPSGTAGAALLALLAALCPASRALEEKKVC";
-        IGVFeature egfr =  (IGVFeature) FeatureDB.getFeature("EGFR");
+        IGVFeature egfr = (IGVFeature) FeatureDB.getFeature("EGFR");
 
         AminoAcidSequence aaSeq = egfr.getExons().get(0).getAminoAcidSequence(genome);
 
@@ -193,6 +197,37 @@ public class AminoAcidManagerTest {
         assertEquals(3, acids.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(aminoSeq[i], acids.get(i).getSymbol());
+        }
+    }
+
+    @Test
+    public void testCheckSNPs() {
+        Set<String> snps = AminoAcidManager.getAllSNPs("AAA");
+        for (String snp : snps) {
+            assertEquals(3, snp.length());
+            int aas = 0;
+            for (char c : snp.toCharArray()) {
+                if (c == 'A') {
+                    aas += 1;
+                }
+            }
+            assertEquals(2, aas);
+        }
+    }
+
+    @Test
+    public void testgetAminoAcidByName() throws Exception {
+        Map<String, String> expected = new HashMap<String, String>();
+        expected.put("His", "Histidine");
+        expected.put("Thr", "Threonine");
+        expected.put("Asn", "Asparagine");
+        expected.put("R", "Arginine");
+        expected.put("K", "Lysine");
+        expected.put("V", "Valine");
+        for (String name : expected.keySet()) {
+            String exp = expected.get(name);
+            String act = AminoAcidManager.getAminoAcidByName(name).getFullName();
+            assertEquals(exp, act);
         }
     }
 }

@@ -317,7 +317,7 @@ public class SearchCommand implements Command {
                 RE.MATCH_CASEINDEPENDENT);
 
         //Simple feature
-        RE feature = new RE("^(\\S)+$", RE.MATCH_CASEINDEPENDENT);
+        RE feature = new RE("^" + chromo_string + "$", RE.MATCH_CASEINDEPENDENT);
         //Mutation notation. e.g. KRAS:G12C
         RE feature_mut = new RE("^" + chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]$", RE.MATCH_CASEINDEPENDENT);
 
@@ -366,17 +366,20 @@ public class SearchCommand implements Command {
             String[] items = token.toUpperCase().split(":");
             String name = items[0].trim().toUpperCase();
             String coords = items[1];
-            char refAASymbol = coords.subSequence(0, 1).charAt(0);
-            coords = coords.substring(1, coords.length() - 1);
-            int location = Integer.parseInt(coords) - 1;
-            //
-            Map<Integer, BasicFeature> genomePosList = FeatureDB.getMutation(name, location + 1, refAASymbol);
+            String refAASymbol = coords.substring(0, 1);
+            String mutAASymbol = coords.substring(coords.length() - 1);
+
+            String strLoc = coords.substring(1, coords.length() - 1);
+            int location = Integer.parseInt(strLoc) - 1;
+
+            Map<Integer, BasicFeature> genomePosList = FeatureDB.getMutation(name, location + 1, refAASymbol, mutAASymbol);
             askUser |= genomePosList.size() >= 2;
-            //Only keep the largest one
+
             for (int genomePos : genomePosList.keySet()) {
                 Feature feat = genomePosList.get(genomePos);
                 //Zoom in on mutation of interest
-                result = new SearchResult(ResultType.LOCUS, feat.getChr(), genomePos);
+                int[] locs = getStartEnd("" + genomePos);
+                result = new SearchResult(ResultType.LOCUS, feat.getChr(), locs[0], locs[1]);
                 results.add(result);
 
             }
@@ -561,14 +564,6 @@ public class SearchCommand implements Command {
             this(ResultType.FEATURE, feature.getChr(), feature.getStart(), feature.getEnd());
             this.feature = feature;
             this.locus = this.feature.getName();
-        }
-
-        public SearchResult(ResultType type, String chr, int location) {
-            this.type = type;
-            this.chr = chr;
-            this.start = location;
-            this.end = location + 1;
-            this.locus = chr + ":" + (location + 1);
         }
 
         void setMessage(String message) {

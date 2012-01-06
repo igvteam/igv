@@ -26,10 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,21 +97,36 @@ public class AminoAcidManager {
     }
 
     public static AminoAcid getAminoAcid(String codon) {
-        AminoAcid aa = null;
+        AminoAcid aa = AminoAcid.NULL_AMINO_ACID;
 
         if (codonTable == null) {
             initTable();
         }
 
-        if (codonTable == null || codon == null) {
-            aa = AminoAcid.NULL_AMINO_ACID;
-        } else {
+        if (codonTable != null && codon != null) {
             aa = codonTable.get(codon);
             if (aa == null) {
                 aa = AminoAcid.NULL_AMINO_ACID;
             }
         }
         return aa;
+    }
+
+    public static AminoAcid getAminoAcidByName(String name) {
+        if (codonTable == null) {
+            initTable();
+        }
+
+        boolean found;
+        for (AminoAcid aa : codonTable.values()) {
+            found = aa.equalsByName(name);
+            if (found) {
+                return aa;
+            }
+
+        }
+
+        return AminoAcid.NULL_AMINO_ACID;
     }
 
     public static String getNucleotideComplement(String sequence) {
@@ -144,6 +156,45 @@ public class AminoAcidManager {
             }
         }
         return new String(complement);
+    }
+
+    public static Set<String> getMappingSNPs(String codon, AminoAcid mutAA) {
+        Set<String> mapSNPs = new HashSet<String>();
+        Set<String> SNPs = getAllSNPs(codon);
+        for (String modCodon : SNPs) {
+            //todo override equals?
+            if (codonTable.get(modCodon).equalsByName(mutAA.getFullName())) {
+                mapSNPs.add(modCodon);
+            }
+        }
+        return mapSNPs;
+    }
+
+    /**
+     * Gets all possible strings which are a SNP from
+     * the provided sequence. Does not include original in
+     * returned set. Assumes sequence is DNA sequence, consisting
+     * of A,T,G,C, and uses that set to create SNPs.
+     *
+     * @param sequence
+     * @return
+     */
+    public static Set<String> getAllSNPs(String sequence) {
+        Set<String> SNPs = new HashSet<String>();
+        char[] bps = "ATGC".toCharArray();
+        char[] orig = sequence.toCharArray();
+        char[] mod;
+        for (int loc = 0; loc < orig.length; loc++) {
+            mod = orig.clone();
+            for (char bp : bps) {
+                if (bp == orig[loc]) {
+                    continue;
+                }
+                mod[loc] = bp;
+                SNPs.add(new String(mod));
+            }
+        }
+        return SNPs;
     }
 
     static synchronized void initTable() {

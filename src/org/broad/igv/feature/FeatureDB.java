@@ -184,7 +184,7 @@ public class FeatureDB {
         String nm = name.trim().toUpperCase();
         SortedMap<String, List<NamedFeature>> treeMap = (SortedMap) featureMap;
         //Search is inclusive to first argument, exclusive to second
-        return treeMap.subMap(nm, nm + (char) ((int) 'Z' + 1));
+        return treeMap.subMap(nm, nm + Character.MAX_VALUE);
     }
 
     public static List<NamedFeature> getFeaturesList(String name, int limit) {
@@ -221,11 +221,12 @@ public class FeatureDB {
      *
      * @param name
      * @param proteinPosition
-     * @param aminoAcidSymbol char symbolizing the desired amino acid
+     * @param refAA           String symbolizing the desired amino acid
+     * @param mutAA           String symbolizing the mutated amino acid
      * @return Map from genome position to features found. Feature name
      *         must be exact, but there can be multiple features with the same name
      */
-    public static Map<Integer, BasicFeature> getMutation(String name, int proteinPosition, char aminoAcidSymbol) {
+    public static Map<Integer, BasicFeature> getMutation(String name, int proteinPosition, String refAA, String mutAA) {
         String nm = name.toUpperCase();
         Genome currentGenome = GENOME;
         if (!Globals.isHeadless()) {
@@ -234,6 +235,7 @@ public class FeatureDB {
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
         List<NamedFeature> possibles = featureMap.get(nm);
+
         if (possibles != null) {
             synchronized (featureMap) {
                 for (NamedFeature f : possibles) {
@@ -246,8 +248,12 @@ public class FeatureDB {
                     if (c == null) {
                         continue;
                     }
-                    if (c.getAminoAcid().getSymbol() == aminoAcidSymbol) {
-                        results.put(c.getGenomePositions()[0], bf);
+                    if (c.getAminoAcid().equalsByName(refAA)) {
+                        Set<String> snps = AminoAcidManager.getMappingSNPs(c.getSequence(),
+                                AminoAcidManager.getAminoAcidByName(mutAA));
+                        if (snps.size() >= 1) {
+                            results.put(c.getGenomePositions()[0], bf);
+                        }
                     }
                 }
 
