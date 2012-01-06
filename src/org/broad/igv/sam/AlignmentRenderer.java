@@ -100,6 +100,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         frOrientationColors.put("F1R2", LR_COLOR);
         frOrientationColors.put("F2R1", LR_COLOR);
         frOrientationColors.put("F R ", LR_COLOR);
+        frOrientationColors.put("FR", LR_COLOR);
         //LL
         frOrientationColors.put("F1F2", LL_COLOR);
         frOrientationColors.put("F2F1", LL_COLOR);
@@ -114,6 +115,7 @@ public class AlignmentRenderer implements FeatureRenderer {
         frOrientationColors.put("R1F2", RL_COLOR);
         frOrientationColors.put("R2F1", RL_COLOR);
         frOrientationColors.put("R F ", RL_COLOR);
+        frOrientationColors.put("RF", RL_COLOR);
 
         // rf orienation  (e.g. Illumina mate-pair libraries)
         rfOrientationColors = new HashMap();
@@ -121,18 +123,22 @@ public class AlignmentRenderer implements FeatureRenderer {
         rfOrientationColors.put("R1F2", LR_COLOR);
         rfOrientationColors.put("R2F1", LR_COLOR);
         rfOrientationColors.put("R F ", LR_COLOR);
+        rfOrientationColors.put("RF", LR_COLOR);
         //LL
         rfOrientationColors.put("R1R2", LL_COLOR);
         rfOrientationColors.put("R2R1", LL_COLOR);
-        rfOrientationColors.put("R r ", LL_COLOR);
-        //RR
+        rfOrientationColors.put("R R ", LL_COLOR);
+        rfOrientationColors.put("RR ", LL_COLOR);
+
         rfOrientationColors.put("F1F2", RR_COLOR);
         rfOrientationColors.put("F2F1", RR_COLOR);
         rfOrientationColors.put("F F ", RR_COLOR);
+        rfOrientationColors.put("FF", RR_COLOR);
         //RL
         rfOrientationColors.put("F1R2", RL_COLOR);
         rfOrientationColors.put("F2R1", RL_COLOR);
         rfOrientationColors.put("F R ", RL_COLOR);
+        rfOrientationColors.put("FR", RL_COLOR);
 
 
         // ff orienation  (e.g. SOLID libraries)
@@ -834,9 +840,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (!alignment.isPaired()) {
-            c = (alignment.isNegativeStrand()) ? frOrientationColors.get("R1F2") : frOrientationColors.get("F1R2");
-        } else if (!alignment.isProperPair()) {
+        if (!alignment.isProperPair()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
