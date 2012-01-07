@@ -63,7 +63,7 @@ public class GobyAlignment implements Alignment {
     protected AlignmentBlock[] insertionBlock;
     private Color defaultColor = new Color(200, 200, 200);
     private CharArrayList gapTypes = null;
-    private static final ReadMate unmappedMate=new ReadMate("*",-1,false,true);
+    private static final ReadMate unmappedMate = new ReadMate("*", -1, false, true);
 
     /**
      * Construct the facade for an iterator and entry.
@@ -121,7 +121,7 @@ public class GobyAlignment implements Alignment {
                 for (int i = 0; i < sequenceVariationLength; i++) {
                     final char toChar = i >= toLength ? '-' : to.charAt(i);
                     int size = toQuality.size();
-                    final byte qual = size > 0 && i< size ? toQuality.byteAt(i) : 40;
+                    final byte qual = size > 0 && i < size ? toQuality.byteAt(i) : 40;
 
                     bases.add((byte) toChar);
                     scores.add(qual);
@@ -133,9 +133,11 @@ public class GobyAlignment implements Alignment {
             } else if (!to.contains("-")) {
                 for (int i = 0; i < toLength; i++) {
                     final int offset = j + var.getPosition() + i - 1 + leftPadding;
-                    if (offset < readBases.length) {
+                    if (offset>0 && offset < readBases.length) {
                         readBases[offset] = (byte) to.charAt(i);
-                        readQual[offset]=toQuality.byteAt(i);
+                        if (offset < toQuality.size()) {
+                            readQual[offset] = toQuality.byteAt(i);
+                        }
                     }
                 }
             }
@@ -196,6 +198,7 @@ public class GobyAlignment implements Alignment {
 
     /**
      * Verify that the list has an appropriate unbroken chain of back links.
+     *
      * @param list the list of splices to validate
      * @return true if the list has an unbroken chain of back links
      */
@@ -207,11 +210,11 @@ public class GobyAlignment implements Alignment {
                 Alignments.RelatedAlignmentEntry currentBackwardLink = currentEntry.getSplicedBackwardAlignmentLink();
 
                 if ((currentBackwardLink == null) ||
-                    (prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
-                    (prevEntry.getFragmentIndex() >= currentEntry.getFragmentIndex()) ||
-                    (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
-                    (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
-                    (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
+                        (prevEntry.getQueryIndex() != currentEntry.getQueryIndex()) ||
+                        (prevEntry.getFragmentIndex() >= currentEntry.getFragmentIndex()) ||
+                        (prevEntry.getFragmentIndex() != currentBackwardLink.getFragmentIndex()) ||
+                        (prevEntry.getPosition() != currentBackwardLink.getPosition()) ||
+                        (prevEntry.getTargetIndex() != currentBackwardLink.getTargetIndex())) {
                     return false;
                 }
 
@@ -387,8 +390,9 @@ public class GobyAlignment implements Alignment {
     }
 
     /**
-     * Returns the mate for a paited-end read. Please note that this method will return an unmapped
+     * Returns the mate for a paired-end read. Please note that this method will return an unmapped
      * mate for any single end read as well. Do check if the read is paired before calling getMate().
+     *
      * @return The mate, or a constant unmapped mate (for single end reads, or paired end where the mate is not found).
      */
     public ReadMate getMate() {
@@ -441,24 +445,7 @@ public class GobyAlignment implements Alignment {
         //LOG.info("getAlignmentEnd");
         return entry.getPosition() + entry.getTargetAlignedLength();
     }
-    /*
-public byte getBase(double position) {
-//LOG.info("getBase");
-return 0;
-}
 
-public byte getPhred(double position) {
-for (Alignments.SequenceVariation var : entry.getSequenceVariationsList()) {
-for (int i = 0; i < var.getTo().length(); i++) {
- if (var.getPosition() + i == position) {
-     return var.getToQuality().byteAt(i);
- }
-}
-}
-// Goby only stores quality scores for variations at this point, so if we have not found the
-// position in stored sequence variations, we return zero.
-return 0;
-}         */
 
     public String getSample() {
         //LOG.info("getSample");
@@ -490,7 +477,8 @@ return 0;
                     return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
                 } else {
                     return Strand.NONE;
-                }            }
+                }
+            }
 
         } else {
             return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
@@ -630,10 +618,10 @@ return 0;
             if (getPairOrientation().length() > 0) {
                 buffer.append("Pair orientation = " + getPairOrientation() + "<br>");
             }
-            if(isFirstOfPair()) {
+            if (isFirstOfPair()) {
                 buffer.append("First of pair <br>");
             }
-            if(isSecondOfPair()) {
+            if (isSecondOfPair()) {
                 buffer.append("Second of pair <br>");
             }
         }
@@ -668,15 +656,15 @@ return 0;
     /**
      * Return true if this alignment is marked "first in pair".  Added to suppor bisulfite sequencing mode.
      */
-	public boolean isFirstOfPair() {
-		return EntryFlagHelper.isFirstInPair(entry);
-	}
+    public boolean isFirstOfPair() {
+        return EntryFlagHelper.isFirstInPair(entry);
+    }
 
 
-	/**
+    /**
      * Return true if this alignment is marked "second in pair".  Added to suppor bisulfite sequencing mode.
-	 */
-	public boolean isSecondOfPair() {
-       return EntryFlagHelper.isSecondInPair(entry);
-	}
+     */
+    public boolean isSecondOfPair() {
+        return EntryFlagHelper.isSecondInPair(entry);
+    }
 }
