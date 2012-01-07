@@ -559,6 +559,7 @@ public class MainWindow extends JFrame {
             observedColorScale.setMaxCount(20);
             colorRangeSlider.setMaximum(50);
             colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setUpperValue(20);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
         } catch (IOException e1) {
@@ -569,9 +570,11 @@ public class MainWindow extends JFrame {
 
     private void loadCoolAidActionPerformed(ActionEvent e) {
         try {
-            observedColorScale.setMaxCount(5);
-            colorRangeSlider.setMaximum(1);
+            observedColorScale.setMaxCount(1);
+            colorRangeSlider.setMaximum(5);
             colorRangeSlider.setMinimum(0);
+            colorRangeSlider.setUpperValue(1);
+            colorRangeSlider.setMajorTickSpacing(1);
             zd = null;
             load("https://iwww.broadinstitute.org/igvdata/hic/COOL-AID_Elena_Mouse_December11.hic");
         } catch (IOException e1) {
