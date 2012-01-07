@@ -455,14 +455,21 @@ public class MainWindow extends JFrame {
     }
 
     private void moveTo(int newX, int newY) {
-        int maxX = (int) (xContext.getChrLength() - xContext.getScale() * getHeatmapPanel().getWidth());
-        int maxY = (int) (yContext.getChrLength() - yContext.getScale() * getHeatmapPanel().getHeight());
+        final double bpWidthX = xContext.getScale() * getHeatmapPanel().getWidth();
+        int maxX = (int) (xContext.getChrLength() - bpWidthX);
+        final double bpWidthY = yContext.getScale() * getHeatmapPanel().getHeight();
+        int maxY = (int) (yContext.getChrLength() - bpWidthY);
 
         int x = Math.max(0, Math.min(maxX, newX));
         int y = Math.max(0, Math.min(maxY, newY));
 
         xContext.setOrigin(x);
         yContext.setOrigin(y);
+
+//        String locus1 = "chr" + (xContext.getChromosome().getName()) + ":" + x + "-" + (int) (x + bpWidthX);
+//        String locus2 = "chr" + (yContext.getChromosome().getName()) + ":" + x + "-" + (int) (y + bpWidthY);
+//        IGVUtils.sendToIGV(locus1, locus2);
+
         repaint();
     }
 
@@ -712,7 +719,7 @@ public class MainWindow extends JFrame {
                     //======== panel9 ========
                     {
                         panel9.setBackground(new Color(238, 238, 238));
-                        panel9.setLayout(new GridLayout());
+                        panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
 
                         //---- chrBox1 ----
                         chrBox1.setModel(new DefaultComboBoxModel(new String[] {

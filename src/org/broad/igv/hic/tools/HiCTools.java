@@ -209,27 +209,27 @@ public class HiCTools {
 
     public final static Chromosome[] mm9Chromosomes = new Chromosome[]{
             null,                               // Placeholder for whole genome
-            new Chromosome(1, "1", 197195432),
-            new Chromosome(2, "2", 181748087),
-            new Chromosome(3, "3", 159599783),
-            new Chromosome(4, "4", 155630120),
-            new Chromosome(5, "5", 152537259),
-            new Chromosome(6, "6", 149517037),
-            new Chromosome(7, "7", 152524553),
-            new Chromosome(8, "8", 131738871),
-            new Chromosome(9, "9", 124076172),
-            new Chromosome(10, "10", 129993255),
-            new Chromosome(11, "11", 121843856),
-            new Chromosome(12, "12", 121257530),
-            new Chromosome(13, "13", 120284312),
-            new Chromosome(14, "14", 125194864),
-            new Chromosome(15, "15", 103494974),
-            new Chromosome(16, "16", 98319150),
-            new Chromosome(17, "17", 95272651),
-            new Chromosome(18, "18", 90772031),
-            new Chromosome(19, "19", 61342430),
-            new Chromosome(23, "X", 166650296),
-            new Chromosome(24, "Y", 15902555)
+            new Chromosome(1, "chr1", 197195432),
+            new Chromosome(2, "chr2", 181748087),
+            new Chromosome(3, "chr3", 159599783),
+            new Chromosome(4, "chr4", 155630120),
+            new Chromosome(5, "chr5", 152537259),
+            new Chromosome(6, "chr6", 149517037),
+            new Chromosome(7, "chr7", 152524553),
+            new Chromosome(8, "chr8", 131738871),
+            new Chromosome(9, "chr9", 124076172),
+            new Chromosome(10, "chr10", 129993255),
+            new Chromosome(11, "chr11", 121843856),
+            new Chromosome(12, "chr12", 121257530),
+            new Chromosome(13, "chr13", 120284312),
+            new Chromosome(14, "chr14", 125194864),
+            new Chromosome(15, "chr15", 103494974),
+            new Chromosome(16, "chr16", 98319150),
+            new Chromosome(17, "chr17", 95272651),
+            new Chromosome(18, "chr18", 90772031),
+            new Chromosome(19, "chr19", 61342430),
+            new Chromosome(23, "chrX", 166650296),
+            new Chromosome(24, "chrY", 15902555)
     };
 
     // For testing

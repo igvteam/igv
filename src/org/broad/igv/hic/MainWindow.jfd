@@ -131,7 +131,7 @@
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>java.awt.GridLayout</class> 
+               <class>javax.swing.BoxLayout</class> 
               </object> 
               <void method="setProperty"> 
                <string>background</string> 
@@ -338,10 +338,10 @@
                  <string>model</string> 
                  <object class="javax.swing.DefaultComboBoxModel"> 
                   <void property="selectedItem"> 
-                   <string>Expected</string> 
+                   <string>Observed</string> 
                   </void> 
                   <void method="addElement"> 
-                   <string>Expected</string> 
+                   <string>Observed</string> 
                   </void> 
                  </object> 
                 </void> 
