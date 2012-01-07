@@ -840,7 +840,7 @@ public class AlignmentRenderer implements FeatureRenderer {
     private Color getOrientationColor(Alignment alignment, PEStats peStats) {
 
         Color c = null;
-        if (!alignment.isProperPair()) {
+        if (alignment.isPaired() && !alignment.isProperPair()) {
 
             final String pairOrientation = alignment.getPairOrientation();
             if (peStats != null) {
@@ -861,8 +861,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
 
             } else {
-                // Legacy test, peStats should never be null!
-                log.info("Null peStats!");
+                // No peStats for this library
                 if (alignment.getAttribute("CS") != null) {
                     c = ffOrientationColors.get(pairOrientation);
                 } else {
