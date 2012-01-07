@@ -557,7 +557,7 @@ public class MainWindow extends JFrame {
     private void loadHindIIIActionPerformed(ActionEvent e) {
         try {
             observedColorScale.setMaxCount(20);
-            colorRangeSlider.setMaximum(20);
+            colorRangeSlider.setMaximum(50);
             colorRangeSlider.setMinimum(0);
             zd = null;
             load("http://iwww.broadinstitute.org/igvdata/hic/Human_August/Hi-C_HindIII_Human_August.hic");
@@ -565,6 +565,20 @@ public class MainWindow extends JFrame {
             JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
         }
     }
+
+
+    private void loadCoolAidActionPerformed(ActionEvent e) {
+        try {
+            observedColorScale.setMaxCount(5);
+            colorRangeSlider.setMaximum(1);
+            colorRangeSlider.setMinimum(0);
+            zd = null;
+            load("https://iwww.broadinstitute.org/igvdata/hic/COOL-AID_Elena_Mouse_December11.hic");
+        } catch (IOException e1) {
+            JOptionPane.showMessageDialog(this, "Error loading data: " + e1.getMessage());
+        }
+    }
+
 
     private void colorRangeSliderStateChanged(ChangeEvent e) {
         int min = colorRangeSlider.getLowerValue();
@@ -675,6 +689,7 @@ public class MainWindow extends JFrame {
         loadGM = new JMenuItem();
         load562 = new JMenuItem();
         loadHindIII = new JMenuItem();
+        loadCoolAid = new JMenuItem();
         loadDmelDataset = new JMenuItem();
         exit = new JMenuItem();
 
@@ -1016,6 +1031,15 @@ public class MainWindow extends JFrame {
                     }
                 });
                 fileMenu.add(loadHindIII);
+
+                //---- loadCoolAid ----
+                loadCoolAid.setText("COOL-AID Elena Mouse (12/2011)");
+                loadCoolAid.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadCoolAidActionPerformed(e);
+                    }
+                });
+                fileMenu.add(loadCoolAid);
                 fileMenu.addSeparator();
 
                 //---- loadDmelDataset ----
@@ -1084,6 +1108,7 @@ public class MainWindow extends JFrame {
     private JMenuItem loadGM;
     private JMenuItem load562;
     private JMenuItem loadHindIII;
+    private JMenuItem loadCoolAid;
     private JMenuItem loadDmelDataset;
     private JMenuItem exit;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
