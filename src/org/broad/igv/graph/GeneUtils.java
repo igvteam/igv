@@ -18,16 +18,9 @@
 
 package org.broad.igv.graph;
 
-import org.broad.igv.feature.AbstractFeatureParser;
-import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.Exon;
-import org.broad.igv.feature.FeatureParser;
+import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.awt.*;
 import java.io.IOException;
@@ -40,32 +33,35 @@ import java.util.List;
  */
 public class GeneUtils {
 
-    static String file = "hg18_refGene.txt";
-    static HashMap<String, List<BasicFeature>> transcripts;
 
     public static Graph getGraphFor(String gene, Genome genome) throws IOException {
-        if (transcripts == null) {
-            loadGenes(genome);
+        List<NamedFeature> nfList = FeatureDB.getFeaturesList(gene, 50);
+        if (nfList != null) {
+            return createGraph(nfList);
+        } else {
+            return null;
         }
-        return createGraph(transcripts.get(gene));
     }
 
 
     // TODO -- account for strand
 
-    private static Graph createGraph(List<BasicFeature> transcripts) {
+    private static Graph createGraph(List<NamedFeature> transcripts) {
 
         Graph graph = new Graph();
 
         // get unique exons.  Uniqueness is defined by locus
         HashSet<String> locusStrings = new HashSet();
         ArrayList<Exon> uniqExons = new ArrayList();
-        for (BasicFeature t : transcripts) {
-            for (Exon exon : t.getExons()) {
-                String locus = exon.getLocusString();
-                if (!locusStrings.contains(locus)) {
-                    uniqExons.add(exon);
-                    locusStrings.add(locus);
+        for (NamedFeature nf : transcripts) {
+            if (nf instanceof BasicFeature) {
+                BasicFeature t = (BasicFeature) nf;
+                for (Exon exon : t.getExons()) {
+                    String locus = exon.getLocusString();
+                    if (!locusStrings.contains(locus)) {
+                        uniqExons.add(exon);
+                        locusStrings.add(locus);
+                    }
                 }
             }
         }
@@ -87,20 +83,23 @@ public class GeneUtils {
 
         // Create edges and subgraphs
         int idx = 1;
-        for (BasicFeature t : transcripts) {
-            SubGraph sg = new SubGraph();
-            Color color = ColorUtilities.randomColor(idx, 0.5f);
-            List<Exon> exons = t.getExons();
-            for (int i = 0; i < exons.size() - 1; i++) {
-                Node n1 = nodes.get(exons.get(i).getLocusString());
-                Node n2 = nodes.get(exons.get(i + 1).getLocusString());
-                sg.addEdge(n1, n2, color);
-                graph.addNode(n1);
-                graph.addNode(n2);
-            }
-            idx++;
+        for (NamedFeature nf : transcripts) {
+            if (nf instanceof BasicFeature) {
+                BasicFeature t = (BasicFeature) nf;
+                SubGraph sg = new SubGraph();
+                Color color = ColorUtilities.randomColor(idx, 0.5f);
+                List<Exon> exons = t.getExons();
+                for (int i = 0; i < exons.size() - 1; i++) {
+                    Node n1 = nodes.get(exons.get(i).getLocusString());
+                    Node n2 = nodes.get(exons.get(i + 1).getLocusString());
+                    sg.addEdge(n1, n2, color);
+                    graph.addNode(n1);
+                    graph.addNode(n2);
+                }
+                idx++;
 
-            graph.addSubGraph(sg);
+                graph.addSubGraph(sg);
+            }
         }
 
 
@@ -109,28 +108,5 @@ public class GeneUtils {
         return graph;
     }
 
-    public static void loadGenes(Genome genome) throws IOException {
-
-        transcripts = new HashMap();
-
-        FeatureParser fp = AbstractFeatureParser.getInstanceFor(file, genome);
-        AsciiLineReader reader = ParsingUtils.openAsciiReader(new ResourceLocator(file));
-        List<Feature> features = fp.loadFeatures(reader);
-
-        for (Feature f : features) {
-
-
-            // This cast is not safe, not for production use
-            BasicFeature bf = (BasicFeature) f;
-            List<BasicFeature> tlist = transcripts.get(bf.getName().toUpperCase());
-            if (tlist == null) {
-                tlist = new ArrayList();
-                transcripts.put(bf.getName().toUpperCase(), tlist);
-            }
-            tlist.add(bf);
-        }
-
-
-    }
 
 }

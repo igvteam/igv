@@ -217,10 +217,10 @@ public class IGVCommandBar extends javax.swing.JPanel {
                             IGV.getInstance().doRefresh();
 
                         } catch (GenomeServerException e) {
-                            log.error("Error accessing genome list: " + e.getMessage());
+                            log.error("Error loading genome: " + genomeListItem.getLocation(), e);
                             JOptionPane.showMessageDialog(
                                     IGV.getMainFrame(),
-                                    UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+                                    "Error loading genome: " + genomeListItem.getDisplayableName());
                         } catch (IOException e) {
                             if (bar != null) {
                                 bar.close();
