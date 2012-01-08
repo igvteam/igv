@@ -727,12 +727,13 @@ public class AlignmentRenderer implements FeatureRenderer {
             case BISULFITE:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
-                if (alignment.isNegativeStrand()) {
-                    c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
-                } else {
-                    c = (alignment.isSecondOfPair()) ? bisulfiteColorFw2 : bisulfiteColorFw1;
-                }
-                // c = getOrientationColor(alignment, peStats);  // Can we eventually get this to use the builtin orientation stuff?  BPB
+                c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ?  bisulfiteColorFw1 :  bisulfiteColorRev1;
+
+//                if (alignment.isNegativeStrand()) {
+//                    c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
+//                } else {
+//                    c = (alignment.isSecondOfPair()) ? bisulfiteColorFw2 : bisulfiteColorFw1;
+//                }
                 break;
             case NOMESEQ:
                 c = nomeseqColor;
