@@ -891,28 +891,12 @@ public class TrackLoader {
             }
             AlignmentDataManager dataManager = new AlignmentDataManager(locator);
 
-            //Check that alignments we loaded actually match some data
+            // Check that alignments we loaded actually match some data.  Many BAM files will contain some sequences
+            // not represented in the genome, buf if there are no matches warn the user.
             Set<String> seqNames = dataManager.getSequenceNames();
-            if (seqNames != null) {
-                String missingNames = "";
-                int numMissing = 0;
-                for (String seqName : seqNames) {
-                    if (genome.getChromosome(seqName) == null) {
-                        numMissing++;
-                        if (numMissing < 5) {
-                            missingNames += seqName + ", ";
-                        } else if (numMissing == 5) {
-                            missingNames += " ... ";
-                        }
-                    }
-                }
-
-
-                if (numMissing == seqNames.size()) {
-                    MessageUtils.showMessage("File did not any sequence names which matched current genome");
+            if (seqNames != null && seqNames.size() > 0) {
+                if (!checkSequenceNames(locator.getPath(), genome, seqNames)) {
                     return;
-                } else if (numMissing > 0) {
-                    MessageUtils.showMessage("Reference sequence contains no information for the following names: \n" + missingNames);
                 }
             }
 
@@ -981,6 +965,52 @@ public class TrackLoader {
             MessageUtils.showMessage("<html>Could not find the index file for  <br><br>&nbsp;&nbsp;" + e.getSamFile() +
                     "<br><br>Note: The index file can be created using igvtools and must be in the same directory as the .sam file.");
         }
+    }
+
+
+    /**
+     * Compare the sequence names against sequence (chromosome) names in the genome.  If no matches warn the user.
+     *
+     * @param filename
+     * @param genome
+     * @param seqNames
+     * @return true if there is at least one sequence match, false otherwise
+     */
+    private boolean checkSequenceNames(String filename, Genome genome, Set<String> seqNames) {
+        boolean atLeastOneMatch = false;
+        for (String seqName : seqNames) {
+            if (genome.getChromosome(seqName) != null) {
+                atLeastOneMatch = true;
+                break;
+            }
+        }
+        if (!atLeastOneMatch) {
+            StringBuffer message = new StringBuffer();
+            message.append("<html>File: " + filename +
+                    "<br>does not contain any sequence names which match the current genome.");
+            message.append("<br><br>File: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+            int n = 0;
+            for (String sn : seqNames) {
+                message.append(sn + ", ");
+                n++;
+                if (n > 3) {
+                    message.append(" ...");
+                    break;
+                }
+            }
+            message.append("<br>Genome: ");
+            n = 0;
+            for (String cn : genome.getChromosomeNames()) {
+                message.append(cn + ", ");
+                n++;
+                if (n > 3) {
+                    message.append(" ...");
+                    break;
+                }
+            }
+            MessageUtils.showMessage(message.toString());
+        }
+        return atLeastOneMatch;
     }
 
 
