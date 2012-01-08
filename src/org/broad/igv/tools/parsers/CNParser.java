@@ -174,13 +174,13 @@ public class CNParser extends AbstractParser {
                     }
                     lastChr = chr;
 
-                    int startPosition = Integer.parseInt(tokens[startColumn].trim());
+                    int startPosition = ParsingUtils.parseInt(tokens[startColumn].trim());
                     if (startPosition < lastPosition) {
                         throw new RuntimeException("Error: unsorted file.  .cn files must be sorted by genomic position.");
                     }
                     lastPosition = startPosition;
 
-                    int endPosition = hasEndLocations ? Integer.parseInt(tokens[endColumn].trim()) : startPosition + 1;
+                    int endPosition = hasEndLocations ? ParsingUtils.parseInt(tokens[endColumn].trim()) : startPosition + 1;
 
                     // TODO -- compare nTokens with expected number
                     for (int i = firstDataColumn; i < nTokens; i += skipColumns) {

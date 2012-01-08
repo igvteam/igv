@@ -45,6 +45,13 @@ public class ParsingUtils {
     private static Logger log = Logger.getLogger(ParsingUtils.class);
 
 
+    /**
+     * Open a BufferedReader on the path, which might be a local file or URL, and might be gzipped or not.
+     *
+     * @param pathOrUrl
+     * @return
+     * @throws IOException
+     */
     public static BufferedReader openBufferedReader(String pathOrUrl) throws IOException {
 
         BufferedReader reader;
@@ -68,6 +75,74 @@ public class ParsingUtils {
     }
 
 
+    public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
+        InputStream stream = openInputStream(locator);
+        return new AsciiLineReader(stream);
+
+    }
+
+
+    public static InputStream openInputStream(String path) throws IOException {
+        return openInputStream(new ResourceLocator(path));
+    }
+
+    public static InputStream openInputStream(ResourceLocator locator) throws IOException {
+
+        if (locator.getServerURL() != null) {
+            // Use IGV webservice to fetch content
+            URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
+            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
+            // Note -- assumption that url stream is compressed!
+            try {
+                return new GZIPInputStream(is);
+            } catch (Exception ex) {
+                log.error("Error with gzip stream", ex);
+                throw new RuntimeException(
+                        "There was a server error loading file: " + locator.getTrackName() +
+                                ". Please report to igv-help@broadinstitute.org");
+
+            }
+
+        } else {
+
+            InputStream inputStream = null;
+            if (HttpUtils.getInstance().isURL(locator.getPath())) {
+                URL url = new URL(locator.getPath());
+                inputStream = HttpUtils.getInstance().openConnectionStream(url);
+            } else {
+                String path = locator.getPath();
+                if (path.startsWith("file://")) {
+                    path = path.substring(7);
+                }
+                File file = new File(path);
+                inputStream = new FileInputStream(file);
+            }
+
+            if (locator.getPath().endsWith("gz")) {
+                return new GZIPInputStream(inputStream);
+            } else {
+                return inputStream;
+            }
+        }
+    }
+
+    /**
+     * Parse the string and return the result as an integer.  This method supports scientific notation for integers,
+     * which Integer.parseInt() does not.
+     *
+     * @param string
+     * @return
+     */
+    public static int parseInt(String string) {
+        return ParsingUtils.parseInt(string);
+    }
+
+    /**
+     * Estimage the number of lines in the given file, or all files in the given directory.
+     *
+     * @param file a file or directory.
+     * @return
+     */
     public static int estimateLineCount(File file) {
         if (file.isDirectory()) {
             int lineCount = 0;
@@ -152,57 +227,6 @@ public class ParsingUtils {
 
     }
 
-    public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
-        InputStream stream = openInputStream(locator);
-        return new AsciiLineReader(stream);
-
-    }
-
-
-    public static InputStream openInputStream(String path) throws IOException {
-        return openInputStream(new ResourceLocator(path));
-    }
-
-    public static InputStream openInputStream(ResourceLocator locator) throws IOException {
-
-        if (locator.getServerURL() != null) {
-            URL url = new URL(locator.getServerURL() + "?method=getContents&file=" + locator.getPath());
-            InputStream is = HttpUtils.getInstance().openConnectionStream(url);
-
-            // Note -- assumption that url stream is compressed!
-            try {
-                return new GZIPInputStream(is);
-            } catch (Exception ex) {
-                log.error("Error with gzip stream", ex);
-                throw new RuntimeException(
-                        "There was a server error loading file: " + locator.getTrackName() +
-                                ". Please report to igv-help@broadinstitute.org");
-
-            }
-
-        } else {
-
-            InputStream inputStream = null;
-            if (HttpUtils.getInstance().isURL(locator.getPath())) {
-                URL url = new URL(locator.getPath());
-                inputStream = HttpUtils.getInstance().openConnectionStream(url);
-            } else {
-                String path = locator.getPath();
-                if (path.startsWith("file://")) {
-                    path = path.substring(7);
-                }
-                File file = new File(path);
-                inputStream = new FileInputStream(file);
-            }
-
-            if (locator.getPath().endsWith("gz")) {
-                return new GZIPInputStream(inputStream);
-            } else {
-                return inputStream;
-            }
-        }
-    }
-
     /**
      * Split the string into tokesn separated by the given delimiter.  Profiling has
      * revealed that the standard string.split() method typically takes > 1/2
@@ -248,51 +272,10 @@ public class ParsingUtils {
     }
 
     /**
-     * Split the string into tokens separated by one or more space.  This method
-     * was added so support PLINK files.
-     *
-     * @param aString the string to split
-     * @param tokens  an array to hold the parsed tokens
-     * @return the number of tokens parsed
-     */
-    public static int splitSpaces(String aString, String[] tokens) {
-
-        aString = aString.trim();
-        int maxTokens = tokens.length;
-        int nTokens = 0;
-        int start = 0;
-        int end = aString.indexOf(' ');
-        if (end < 0) {
-            tokens[nTokens++] = aString;
-            return nTokens;
-        }
-        while ((end > 0) && (nTokens < maxTokens)) {
-
-            String t = aString.substring(start, end);
-            if (t.length() > 0) {
-                tokens[nTokens++] = t;
-            }
-            start = end + 1;
-
-            end = aString.indexOf(' ', start);
-
-        }
-
-        // Add the trailing string,  if there is room and if it is not empty.
-        if (nTokens < maxTokens) {
-            String trailingString = aString.substring(start);
-            if (trailingString.length() > 0) {
-                tokens[nTokens++] = trailingString;
-            }
-        }
-        return nTokens;
-    }
-
-
-    /**
      * Split the string into tokesn separated by tab or space(s).  This method
-     * was added so support wig and bed files, which apparently accept
-     * either.
+     * was added so support wig and bed files, which apparently accept space delimieters.
+     *
+     * Note:  TODO REGEX expressions are not used for speed.  This should be re-evaluated with JDK 1.5 or later
      *
      * @param aString the string to split
      * @param tokens  an array to hold the parsed tokens
@@ -329,63 +312,6 @@ public class ParsingUtils {
         }
         return nTokens;
     }
-
-    /**
-     * Method description
-     *
-     * @param str
-     * @param ifile
-     * @param ofile
-     * @throws IOException
-     */
-    public static void replaceString(String str, String rplString, File ifile, File ofile) throws IOException {
-
-        PrintWriter pw = null;
-        BufferedReader br = null;
-
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(ofile)));
-            br = new BufferedReader(new FileReader(ifile));
-            String nextLine = null;
-            while ((nextLine = br.readLine()) != null) {
-                if (!nextLine.startsWith("##")) {
-                    pw.println(nextLine.replace(str, rplString));
-                }
-            }
-        } finally {
-            pw.close();
-            br.close();
-        }
-    }
-
-    /**
-     * Method description
-     *
-     * @param str
-     * @param ifile
-     * @param ofile
-     * @throws IOException
-     */
-    public static void dropLinesContaining(String str, File ifile, File ofile) throws IOException {
-
-        PrintWriter pw = null;
-        BufferedReader br = null;
-
-        try {
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(ofile)));
-            br = new BufferedReader(new FileReader(ifile));
-            String nextLine = null;
-            while ((nextLine = br.readLine()) != null) {
-                if (!nextLine.contains(str)) {
-                    pw.println(nextLine);
-                }
-            }
-        } finally {
-            pw.close();
-            br.close();
-        }
-    }
-
     /**
      * Method description
      *
@@ -610,30 +536,5 @@ public class ParsingUtils {
             // todo -- log
             return false;
         }
-    }
-
-    /**
-     * Return the contents of the resource at path as a byte array
-     *
-     * @param path
-     * @return
-     * @throws IOException
-     */
-    public static byte[] readAll(String path) throws IOException {
-        InputStream is = null;
-        try {
-            byte[] buffer = new byte[100000];
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(1000000);
-            is = openInputStream(new ResourceLocator(path));
-            int nRead;
-            while ((nRead = is.read(buffer)) >= 0) {
-                bos.write(buffer, 0, nRead);
-            }
-            return bos.toByteArray();
-        } finally {
-            is.close();
-        }
-
-
     }
 }

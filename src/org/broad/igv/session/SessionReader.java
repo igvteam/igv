@@ -739,8 +739,12 @@ public class SessionReader {
                         reorderedFrames.add(f);
                         try {
                             String chr = getAttribute((Element) childNode, SessionAttribute.CHR.getText());
-                            int start = (int) Double.parseDouble(getAttribute((Element) childNode, SessionAttribute.START.getText()));
-                            int end = (int) Double.parseDouble(getAttribute((Element) childNode, SessionAttribute.END.getText()));
+                            final String startString =
+                                    getAttribute((Element) childNode, SessionAttribute.START.getText()).replace(",", "");
+                            final String endString =
+                                    getAttribute((Element) childNode, SessionAttribute.END.getText()).replace(",", "");
+                            int start = ParsingUtils.parseInt(startString);
+                            int end = ParsingUtils.parseInt(endString);
                             f.setInterval(chr, start, end);
                         } catch (NumberFormatException e) {
                             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

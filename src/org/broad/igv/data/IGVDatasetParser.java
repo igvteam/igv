@@ -260,7 +260,7 @@ public class IGVDatasetParser {
 
                     int location = -1;
                     try {
-                        location = Integer.parseInt(tokens[startColumn]) - startBase;
+                        location = ParsingUtils.parseInt(tokens[startColumn]) - startBase;
 
                     } catch (NumberFormatException numberFormatException) {
                         log.error("Column " + tokens[startColumn] + " is not a number");
@@ -272,7 +272,7 @@ public class IGVDatasetParser {
                     int length = 1;
                     if (hasEndLocations) {
                         try {
-                            length = Integer.parseInt(tokens[endColumn].trim()) - location + 1;
+                            length = ParsingUtils.parseInt(tokens[endColumn].trim()) - location + 1;
 
                         } catch (NumberFormatException numberFormatException) {
                             log.error("Column " + tokens[endColumn] + " is not a number");
@@ -425,9 +425,9 @@ public class IGVDatasetParser {
                             String probe = new String(tokens[probeColumn]);
                             probes.add(probe);
 
-                            int start = Integer.parseInt(tokens[startColumn].trim()) - startBase;
+                            int start = ParsingUtils.parseInt(tokens[startColumn].trim()) - startBase;
                             if (hasEndLocations) {
-                                endLocations.add(Integer.parseInt(tokens[endColumn].trim()));
+                                endLocations.add(ParsingUtils.parseInt(tokens[endColumn].trim()));
                             }
 
                             startLocations.add(start);
