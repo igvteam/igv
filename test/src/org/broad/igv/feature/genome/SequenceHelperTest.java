@@ -25,9 +25,7 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 
@@ -39,8 +37,8 @@ import static org.junit.Assert.assertEquals;
 public class SequenceHelperTest {
 
     static String seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
-    static SequenceHelper helper;
-    static Genome genome;
+    static PreferenceManager preferenceManager;
+    static boolean useByteRange;
 
     public SequenceHelperTest() {
     }
@@ -48,11 +46,24 @@ public class SequenceHelperTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Globals.setHeadless(true);
+        preferenceManager = PreferenceManager.getInstance();
+        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
     }
 
     @Before
     public void setUp() {
-        helper = new SequenceHelper(seqPath);
+        //Web requests don't seem to work with this false
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
+    }
+
+    @After
+    public void tearDown() {
+        SequenceHelper.setCacheSequences(true);
     }
 
     /**
@@ -94,7 +105,7 @@ public class SequenceHelperTest {
         int start = 5;
         int end = 10;
         String expSequence = "ATTGC";
-        helper = new SequenceHelper("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
+        SequenceHelper helper = new SequenceHelper("http://www.broadinstitute.org/igvdata/annotations/seq/spur_2.1/");
         byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
         assertEquals(expSequence, new String(seq));
 
@@ -105,71 +116,22 @@ public class SequenceHelperTest {
      */
     @Test
     public void readEGFRSequence() {
-        String genome = "hg18";
         String chr = "chr7";
         int start = 55054464;
         int end = start + 20;
         String expSequence = "ATGCGACCCTCCGGGACGGC";
+        SequenceHelper helper = new SequenceHelper(seqPath);
         byte[] seq = helper.getSequence(chr, start, end, Integer.MAX_VALUE);
         assertEquals(expSequence, new String(seq));
     }
-/*
-    @Test
-    public void testURL1() {
 
-       //GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
-       //descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/SequenceServlet/hg18");
-       //readEGFRSequence();
-    }
 
     @Test
-    public void testURL2() {
+    public void testByteRangeFalse() {
+        PreferenceManager preferenceManager = PreferenceManager.getInstance();
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, false);
 
-      //  GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
-      //  descriptor.setSequenceLocation("http://www.broadinstitute.org/igv/sequence/hg18");
-      //  readEGFRSequence();
-    }
-
-    @Test
-    public void testURL3() {
-
-      //  GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
-      //  descriptor.setSequenceLocation("http://igv.broadinstitute.org/genomes/seq/hg18");
-      //  readEGFRSequence();
-    }
-
-    @Test
-    public void testURL4() {
-
-      //  GenomeDescriptor descriptor = IGV.getInstance().getGenomeManager().getGenomeDescriptor("hg18");
-      //  descriptor.setSequenceLocation("http://igvdata.broadinstitute.org/genomes/seq/hg18");
-      //  readEGFRSequence();
-    }*/
-
-    @Test
-    public void testByteRangePref() {
-        final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-        boolean useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-
-        try {
-            preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(!useByteRange));
-
-            readEGFRSequence();
-            helper.clearCache();
-
-//            testURL2();
-//            helper.clearCache();
-//
-//            testURL3();
-//            helper.clearCache();
-//
-//            testURL4();
-//            helper.clearCache();
-
-
-        } finally {
-            preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, String.valueOf(useByteRange));
-        }
+        readEGFRSequence();
     }
 
 }
