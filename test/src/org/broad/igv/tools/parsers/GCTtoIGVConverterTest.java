@@ -19,10 +19,9 @@
 package org.broad.igv.tools.parsers;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tools.IgvTools;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.igv.util.TestUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,33 +37,39 @@ import static org.broad.igv.util.TestUtils.loadGenome;
 public class GCTtoIGVConverterTest {
 
     Genome genome;
+    File igvFile;
 
     @Before
-    public void setup() throws IOException {
-        genome = loadGenome("/Users/jrobinso/projects/client/genomes/hg18.genome");
+    public void setUp() throws IOException {
+        genome = loadGenome("/test/data/genomes/hg18.genome");
+        igvFile = null;
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (igvFile != null) {
+            igvFile.delete();
+        }
     }
 
 
     @Test
     public void testDescriptionMapping() throws IOException {
-        String gctFile = "test/data/gct/small.gct";
-        File igvFile = new File("test/data/gct/small.gct.igv");
+        String gctFile = "test/data/gct/igv_test2.gct";
+        igvFile = new File("test/data/gct/igv_test2.gct.igv");
 
         ResourceLocator locator = new ResourceLocator(gctFile);
         GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
-
-
     }
 
 
     @Test
     public void testAffyMapping() throws IOException {
         String gctFile = "test/data/gct/affy_human.gct";
-        File igvFile = new File("test/data/gct/affy_human.gct.igv");
+        igvFile = new File("test/data/gct/affy_human.gct.igv");
 
         ResourceLocator locator = new ResourceLocator(gctFile);
         GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
-
     }
 
 }
