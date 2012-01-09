@@ -23,18 +23,17 @@
 
 package org.broad.igv.util;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
-
 import java.io.File;
+
+import static org.junit.Assert.assertEquals;
 
 public class SequenceGCTest {
 
-    @Test
-    public void testSequenceGC() throws Exception{
+    //@Test
+    public void testSequenceGC() throws Exception {
 
         //TODO Remove the Asserts, do a check at a position instead.
-        SequenceGC sequence = new SequenceGC(5,1);
+        SequenceGC sequence = new SequenceGC(5, 1);
         sequence.ProcessPath("test/data/SequenceGC/chr1.txt", "test/data/SequenceGC/chr1.wig");
         assertEquals("e145353e034285330dd9ba303b3796b3", MD5Checksum.getMD5Checksum("test/data/SequenceGC/chr1.wig"));
         File wigFile1 = new File("test/data/SequenceGC/chr1.wig");
