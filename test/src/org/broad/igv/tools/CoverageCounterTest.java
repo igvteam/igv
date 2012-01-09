@@ -67,9 +67,8 @@ public class CoverageCounterTest {
     }
 
     @Test
-    public void testInclueDuplicatesFlag() throws IOException {
-        //TODO Guessing this URL is obsolete
-        String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/IlluminaHiSeq2000_BodySites/Merged/HBM.adipose.bam.sorted.bam";
+    public void testIncludeDuplicatesFlag() throws IOException {
+        String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
         String options = "d,q@chr1:153425249-153425249";
         int windowSize = 1;
 
@@ -88,26 +87,26 @@ public class CoverageCounterTest {
 
     static class TestDataConsumer implements DataConsumer {
 
-        Map<String, String> attributes = new HashMap();
+        Map<String, String> attributes = new HashMap<String, String>();
 
         public void setType(String type) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void addData(String chr, int start, int end, float[] data, String name) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void parsingComplete() {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void setSortTolerance(int tolerance) {
-            //To change body of implemented methods use File | Settings | File Templates.
+
         }
 
         public void setAttribute(String key, String value) {
