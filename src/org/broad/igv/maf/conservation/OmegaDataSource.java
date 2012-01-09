@@ -25,7 +25,6 @@ package org.broad.igv.maf.conservation;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataSource;
 import org.broad.igv.data.DataTile;
-import org.broad.igv.data.SummaryTile;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
@@ -42,7 +41,8 @@ import java.util.List;
  */
 public class OmegaDataSource extends AbstractDataSource implements DataSource {
 
-    File rootDir = new File("/Volumes/igv/annotations/hg18/conservation/omega/12mer");
+    //todo this is where we should put this data, but it's not there
+    File rootDir = new File("/resources/omega/12mer");
 
     public OmegaDataSource(Genome genome) {
         super(genome);
@@ -98,10 +98,6 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
     @Override
     public DataTile getRawData(String chr, int startLocation, int endLocation) {
 
-        // harcode to egfr
-        startLocation = 55240000;
-        endLocation = 55242525;
-
         int bStart = startLocation / 1000000;
         int bEnd = endLocation / 1000000;
 
@@ -111,7 +107,7 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
         }
 
         File chrDir = new File(rootDir, chr.substring(3));
-        List<File> files = new ArrayList(bEnd - bStart + 1);
+        List<File> files = new ArrayList<File>(bEnd - bStart + 1);
         for (int i = bStart; i <= bEnd; i++) {
 
             int start = i * 1000000;
@@ -146,18 +142,7 @@ public class OmegaDataSource extends AbstractDataSource implements DataSource {
 
     @Override
     protected List<LocusScore> getPrecomputedSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
-    /*
-     *         private int[] startLocations;
-    private int[] endLocations;
-    private float[] values;
-
-    public DataTile(int [] startLocations, int [] endLocations, float [] values) {
-    this.startLocations = startLocations;
-    this.endLocations = endLocations;
-    this.values = values;
-    }
-     */
 }

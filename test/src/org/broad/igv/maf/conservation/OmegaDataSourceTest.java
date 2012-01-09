@@ -57,7 +57,10 @@ public class OmegaDataSourceTest {
         Genome genome = TestUtils.loadGenome("hg18");
         OmegaDataSource ds = new OmegaDataSource(genome);
 
-        DataTile dt = ds.getRawData("chr7", 1, 2);
+        //egfr
+        int startLocation = 55240000;
+        int endLocation = 55242525;
+        DataTile dt = ds.getRawData("chr7", startLocation, endLocation);
 
         dt.getStartLocations();
         dt.getValues();
