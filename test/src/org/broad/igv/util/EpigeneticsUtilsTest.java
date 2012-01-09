@@ -18,6 +18,7 @@
 
 package org.broad.igv.util;
 
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,39 +28,54 @@ import java.io.File;
  * User: jrobinso
  * Date: Jun 9, 2010
  * Time: 8:39:20 AM
- * To change this template use File | Settings | File Templates.
  */
 public class EpigeneticsUtilsTest {
+
+
+    File outputDir = new File("test/data/wig/epigenetics/out");
 
     @Test
     /**
      * fixedStep chrom=chr1 start=1 step=25 span=25
--1  0
--1  25
--1  50
-1   75     75-125
-1   100
-2   125    125-200
-2   150
-2   175
-1   200    200-250
-1   225
--1  250
--1  275
--1  300
-3   325    325-375
-3   350
--1  375
--1  400
--1  425
-4   450    450-525
-4   475
-4   500
+     -1  0
+     -1  25
+     -1  50
+     1   75     75-125
+     1   100
+     2   125    125-200
+     2   150
+     2   175
+     1   200    200-250
+     1   225
+     -1  250
+     -1  275
+     -1  300
+     3   325    325-375
+     3   350
+     -1  375
+     -1  400
+     -1  425
+     4   450    450-525
+     4   475
+     4   500
      */
     public void testCreateCombinedWigs() throws Exception {
 
-        File inputDir = new File("test/data");
-        File outputDir = new File("./");
+        File inputDir = new File("test/data/wig/epigenetics");
         EpigeneticsUtils.createCombinedWigs(inputDir, outputDir);
     }
+
+    @After
+    public void tearDown() {
+        deleteAllInDirectory(outputDir);
+    }
+
+    public void deleteAllInDirectory(File dir) {
+        for (File f : dir.listFiles()) {
+            f.delete();
+        }
+
+    }
+
+
 }
