@@ -134,7 +134,7 @@ public class ParsingUtils {
      * @return
      */
     public static int parseInt(String string) {
-        return ParsingUtils.parseInt(string);
+        return (int) Double.parseDouble(string);
     }
 
     /**
