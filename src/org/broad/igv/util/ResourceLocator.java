@@ -17,8 +17,6 @@
  */
 package org.broad.igv.util;
 
-import EDU.oswego.cs.dl.util.concurrent.FJTask;
-
 import java.awt.*;
 import java.io.File;
 
@@ -35,7 +33,7 @@ public class ResourceLocator {
     String name;
 
     /**
-     *  The path for the file or resource, either local file path, http, https, ftp, or a database URL
+     * The path for the file or resource, either local file path, http, https, ftp, or a database URL
      */
     String path;
 
@@ -55,8 +53,8 @@ public class ResourceLocator {
      */
     String coverage;
 
-    /**   A UCSC style track line.  Overrides value in file, if any.
-     *
+    /**
+     * A UCSC style track line.  Overrides value in file, if any.
      */
     String trackLine;  //
 
@@ -67,6 +65,7 @@ public class ResourceLocator {
 
     /**
      * URL to a web service that provides this resource.  This is obsolete, kept for backward compatibility.
+     *
      * @deprecated
      */
     String serverURL; // URL for the remote data server.  Null for local files
@@ -100,6 +99,8 @@ public class ResourceLocator {
         } else {
             this.path = path;
         }
+
+
     }
 
     /**
@@ -157,6 +158,7 @@ public class ResourceLocator {
         return (new File(path)).getName();
     }
 
+    @Deprecated
     public String getServerURL() {
         return serverURL;
     }
@@ -209,7 +211,6 @@ public class ResourceLocator {
     public void setColor(Color color) {
         this.color = color;
     }
-
 
 
     public String getUrl() {
