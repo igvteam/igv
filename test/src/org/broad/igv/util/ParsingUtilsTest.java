@@ -119,5 +119,17 @@ public class ParsingUtilsTest {
         long end_time = System.currentTimeMillis();
         assertTrue(end_time - start_time < Globals.CONNECT_TIMEOUT + 1000);
     }
+
+    @Test
+    public void testParseInt() {
+        String with_commas = "123456";
+        int expected = 123456;
+        int actual = ParsingUtils.parseInt(with_commas);
+        assertEquals(expected, actual);
+
+        String exp_not = "3.5e4";
+        expected = 35000;
+        assertEquals(expected, ParsingUtils.parseInt(exp_not));
+    }
 }
 
