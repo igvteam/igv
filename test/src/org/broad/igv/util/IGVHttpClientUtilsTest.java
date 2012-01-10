@@ -36,16 +36,19 @@ import static org.junit.Assert.assertEquals;
 
 public class IGVHttpClientUtilsTest {
 
+    private static String hg18URL = "http://www.broadinstitute.org/igvdata/genomes/hg18.genome";
+    private static int hg18bytes = 3617644;
+
     @Test
     public void testGetContentLength() throws IOException {
 
-        String url = "http://igvdata.broadinstitute.org/genomes/hg18.genome";
-        assertEquals(3617644, HttpUtils.getInstance().getContentLength(new URL(url)));
+        String url = hg18URL;
+        assertEquals(hg18bytes, HttpUtils.getInstance().getContentLength(new URL(url)));
     }
 
     @Test
     public void testExists() throws IOException {
-        URL url = new URL("http://igvdata.broadinstitute.org/genomes/hg18.genome");
+        URL url = new URL(hg18URL);
         assertTrue(HttpUtils.getInstance().resourceAvailable(url));
 
         url = new URL("http://nosuchserver/genomes/hg18.genome");
@@ -63,7 +66,7 @@ public class IGVHttpClientUtilsTest {
     @Test
     public void testProxy() throws IOException {
 
-        final URL testURL = new URL("http://igv.broadinstitute.org/genomes/hg18.genome");
+        final URL testURL = new URL(hg18URL);
 
         PreferenceManager mgr = PreferenceManager.getInstance();
         mgr.override(PreferenceManager.PROXY_HOST, "igvdev01.broadinstitute.org");
@@ -77,7 +80,7 @@ public class IGVHttpClientUtilsTest {
         long contentLength = 0;
         try {
             contentLength = HttpUtils.getInstance().getContentLength(testURL);
-            assertEquals(3617644, contentLength);
+            assertEquals(hg18bytes, contentLength);
         } catch (IOException e) {
             System.out.println("Proxy unreachable.  Skipping proxy test");
             return;

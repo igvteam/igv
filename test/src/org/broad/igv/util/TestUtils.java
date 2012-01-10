@@ -30,12 +30,12 @@ import java.io.IOException;
  * @date Jul 28, 2010
  */
 public class TestUtils {
-    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.genome";
+    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.unittest.genome";
+
 
     public static Genome loadGenome(String genomeId) throws IOException {
         Globals.setHeadless(true);
-        final String genomeFile = "test/data/genomes/hg18.genome";
-        return IgvTools.loadGenome(genomeFile, true);
+        return IgvTools.loadGenome(genomeId, true);
 
     }
 

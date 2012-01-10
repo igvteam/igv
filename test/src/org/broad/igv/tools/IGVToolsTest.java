@@ -211,7 +211,7 @@ public class IGVToolsTest {
     private void testTile(String inputFile, int start, int end) throws IOException {
         String file1 = "test/data/out/file1.tdf";
         String file2 = "test/data/out/file2.tdf";
-        String genome = "test/data/genomes/hg18.genome";
+        String genome = "test/data/genomes/hg18.unittest.genome";
 
 
         //todo Compare 2 outputs more meaningfully

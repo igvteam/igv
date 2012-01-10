@@ -40,7 +40,7 @@ public class TestLoadGeneManager {
     @Test
     public void main() throws IOException {
         Globals.setHeadless(true);
-        IgvTools.loadGenome("test/data/genomes/hg18.genome", true);
+        IgvTools.loadGenome("test/data/genomes/hg18.unittest.genome", true);
         Feature feature = FeatureDB.getFeature("EGFR");
         assertNotNull(feature);
     }
