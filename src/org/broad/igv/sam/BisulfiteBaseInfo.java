@@ -65,7 +65,7 @@ public class BisulfiteBaseInfo {
             flipRead = baseAlignment.isNegativeStrand();
         }
         byte[] read = (flipRead) ? AlignmentUtils.reverseComplementCopy(inRead) : inRead;
-        byte[] reference = (flipRead) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
+        byte[] reference = (flipRead && inReference != null) ? AlignmentUtils.reverseComplementCopy(inReference) : inReference;
 
 
         displayChars = new byte[alignmentLen];
