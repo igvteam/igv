@@ -7,9 +7,7 @@ import net.sf.samtools.util.LineReader;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.HttpUtils;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -34,38 +32,60 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
     private static Logger log = Logger.getLogger(CGIAlignmentReader.class);
 
     String baseURL;
-    String queryPath = "/query.cgi?";
-    String headerPath = "/samHeader.cgi?";
-    String seqNamePath = "/getSequenceNames.cgi?";
-    String file;
+    String queryScript = "query.cgi";
+    String headerScript = "samHeader.cgi";
+    String seqNameScript = "getSequenceNames.cgi";
+    String query;
     SAMFileHeader header;
 
     public CGIAlignmentReader(String url) throws MalformedURLException {
 
         URL u = new URL(url);
-        baseURL = u.getProtocol() + "://" + u.getHost();
-        file = u.getQuery();
+        baseURL = u.getProtocol() + "://" + u.getHost() + u.getPath();
+        query = u.getQuery();
+
         loadHeader();
     }
+
+
+    // The URL methods are package-scope to allow unit testing
+
+    String getHeaderURL() {
+        return baseURL.replace(queryScript, headerScript) + "?" + query;
+    }
+
+    String getSequenceNamesURL() {
+        return baseURL.replace(queryScript, seqNameScript) + "?" + query;
+    }
+
+    String getQueryURL() {
+        return baseURL + "?" + query;
+    }
+
+
 
     public void close() throws IOException {
         //Nothing to do.  Could notify server that we are done, if that is useful
     }
 
     // TODO -- nearly exact copy of BAMRemoteQueryReader, only url differs. -- refactor
+
+    /**
+     * Try to load header, if there are any errors just set to null and continue.  The header is optional
+     */
     private void loadHeader() {
         InputStream is = null;
         try {
-            URL url = new URL(baseURL + headerPath + file);
+            URL url = new URL(getHeaderURL());
             is = HttpUtils.getInstance().openConnectionStream(url);
 
             LineReader reader = new BufferedLineReader(is);
             SAMTextHeaderCodec codec = new SAMTextHeaderCodec();
             header = codec.decode(reader, null);
 
-        } catch (IOException ex) {
-            log.error("Error opening file", ex);
-            throw new RuntimeException(ex);
+        } catch (Exception ex) {
+            log.info("Error loading header : " + ex.getMessage());
+            header = null;
         } finally {
             if (is != null) {
                 try {
@@ -81,7 +101,7 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
 
         InputStream is = null;
         try {
-            URL url = new URL(baseURL + seqNamePath + file);
+            URL url = new URL(getSequenceNamesURL());
             is = HttpUtils.getInstance().openConnectionStream(url);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             HashSet<String> seqNames = new HashSet<String>();
@@ -114,7 +134,7 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
 
     public CloseableIterator<Alignment> iterator() {
         try {
-            URL url = new URL(baseURL + queryPath + file);
+            URL url = new URL(getQueryURL());
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
@@ -130,10 +150,10 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
     public CloseableIterator<Alignment> query(String sequence, int start, int end, boolean contained) throws IOException {
         try {
             //
-            final String parameters = file +  "&chr=" + sequence + "&start=" + start + "&end=" + end +
+            final String parameters = "&chr=" + sequence + "&start=" + start + "&end=" + end +
                     "&contained=" + contained;
-            String encodedParameters = URLEncoder.encode(parameters);
-            URL url = new URL(baseURL + queryPath + encodedParameters);
+            //String encodedParameters = URLEncoder.encode(parameters);
+            URL url = new URL(getQueryURL() + parameters);
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
 
             SAMFileReader reader = new SAMFileReader(new BufferedInputStream(is, 500000));
