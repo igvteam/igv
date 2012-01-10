@@ -126,11 +126,22 @@ public class SequenceHelperTest {
     }
 
 
+    /**
+     * Test fetching sequence using the "Range service" for 3 URL patterns: cloudfront, s3 storage, and the
+     * Broad server.
+     */
     @Test
-    public void testByteRangeFalse() {
+    public void testRangeService() {
         PreferenceManager preferenceManager = PreferenceManager.getInstance();
         preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, false);
 
+        seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
+        readEGFRSequence();
+
+        seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
+        readEGFRSequence();
+
+        seqPath = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/";
         readEGFRSequence();
     }
 
