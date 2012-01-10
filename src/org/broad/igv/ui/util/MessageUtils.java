@@ -29,7 +29,6 @@ import org.broad.igv.ui.IGV;
 import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
 /**
  * Provides thread-safe, Swing-safe, utilities for interacting with JOptionPane.  Accounts for
@@ -72,6 +71,14 @@ public class MessageUtils {
                     throw new RuntimeException(e.getCause());
                 }
             }
+        }
+    }
+
+    public static void setStatusBarMessage(final String message) {
+        if (Globals.isHeadless()) {
+            log.info("Status bar: " + message);
+        } else if (IGV.hasInstance()) {
+            IGV.getInstance().setStatusBarMessage(message);
         }
     }
 

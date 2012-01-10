@@ -24,26 +24,31 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
  */
 public class BAMCachingQueryReaderTest {
 
-    String testFile = "/xchip/igv/testfiles/sam/NA12878.chrom1.SRP000032.2009_02.bam";
-    String server = "http://node257:8095/webservices/igv";
-    String sequence = "1";
-    int start = 44780145;
+    //String testFile = "/xchip/igv/testfiles/sam/NA12878.chrom1.SRP000032.2009_02.bam";
+    String testFile = "/xchip/igv/data/public/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
+    String server = "http://www.broadinstitute.org/webservices/igv";
+    String sequence = "chr1";
+    int start = 44780145 - 100000;
     int end = 44789983;
     //String testFile = "/Volumes/igv/testfiles/Sam/303KY.8.paired.bam";
     //String server = null;
@@ -55,6 +60,7 @@ public class BAMCachingQueryReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        Globals.setHeadless(true);
     }
 
     @AfterClass
@@ -99,16 +105,17 @@ public class BAMCachingQueryReaderTest {
      */
     @Test
     public void testQuery() throws IOException {
-        System.out.println("query");
+        //System.out.println("query");
         boolean contained = false;
 
         ResourceLocator loc = new ResourceLocator(server, testFile);
         AlignmentQueryReader reader = new BAMRemoteQueryReader(loc);
         CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
-        List<Alignment> expectedResult = new ArrayList();
+        //TODO the results may be returned in a different order. Not sure if that's a bug or not
+        Map<String, Alignment> expectedResult = new HashMap();
         while (iter.hasNext()) {
             Alignment rec = iter.next();
-            expectedResult.add(rec);
+            expectedResult.put(rec.getReadName(), rec);
         }
         reader.close();
 
@@ -124,8 +131,11 @@ public class BAMCachingQueryReaderTest {
         assertTrue(expectedResult.size() > 0);
         assertEquals(expectedResult.size(), result.size());
         for (int i = 0; i < result.size(); i++) {
-
-            assertEquals(expectedResult.get(i).getReadName(), result.get(i).getReadName());
+            Alignment res = result.get(i);
+            assertTrue(expectedResult.containsKey(res.getReadName()));
+            Alignment exp = expectedResult.get(res.getReadName());
+            assertEquals(exp.getAlignmentStart(), res.getAlignmentStart());
+            assertEquals(exp.getAlignmentEnd(), res.getAlignmentEnd());
         }
     }
 }

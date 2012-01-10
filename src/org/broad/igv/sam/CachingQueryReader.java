@@ -25,6 +25,7 @@ package org.broad.igv.sam;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
@@ -309,7 +310,7 @@ public class CachingQueryReader {
                 alignmentCount++;
                 if (alignmentCount % 1000 == 0) {
                     if (cancel) return false;
-                    IGV.getInstance().setStatusBarMessage("Reads loaded: " + alignmentCount);
+                    MessageUtils.setStatusBarMessage("Reads loaded: " + alignmentCount);
                     if (checkMemory() == false) {
                         cancelReaders();
                         return false;        // <=  TODO need to cancel all readers
@@ -368,7 +369,9 @@ public class CachingQueryReader {
             if (iter != null) {
                 iter.close();
             }
-            IGV.getInstance().resetStatusMessage();
+            if (!Globals.isHeadless()) {
+                IGV.getInstance().resetStatusMessage();
+            }
         }
     }
 
