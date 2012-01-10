@@ -18,8 +18,6 @@
 
 package org.broad.igv.tools.sort;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -28,6 +26,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -79,16 +80,12 @@ public class SorterTest {
                 lastChr = chr;
                 lastStart = start;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
-        }
-
-        finally {
+        } finally {
             try {
                 reader.close();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
 
             }
         }
