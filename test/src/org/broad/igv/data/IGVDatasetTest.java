@@ -50,7 +50,7 @@ public class IGVDatasetTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        genome = TestUtils.loadGenome("hg18");
+        genome = TestUtils.loadGenome();
     }
 
     @AfterClass

@@ -44,7 +44,7 @@ public class FreqDataTest {
     @Test
     public void test() throws IOException {
 
-        Genome genome = TestUtils.loadGenome("hg18");
+        Genome genome = TestUtils.loadGenome();
 
         String segfile = "test/data/seg/canFam2_hg18.seg";
 

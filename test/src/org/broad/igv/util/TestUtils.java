@@ -33,11 +33,11 @@ public class TestUtils {
     static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.unittest.genome";
 
 
-    public static Genome loadGenome(String genomeId) throws IOException {
-        Globals.setHeadless(true);
-        return IgvTools.loadGenome(genomeId, true);
-
-    }
+//    public static Genome loadGenome(String genomeId) throws IOException {
+//        Globals.setHeadless(true);
+//        return IgvTools.loadGenome(genomeId, true);
+//
+//    }
 
     public static Genome loadGenome() throws IOException {
         Globals.setHeadless(true);

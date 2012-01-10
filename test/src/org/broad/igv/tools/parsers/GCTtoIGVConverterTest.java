@@ -40,7 +40,7 @@ public class GCTtoIGVConverterTest {
 
     @Before
     public void setUp() throws IOException {
-        genome = loadGenome("/test/data/genomes/hg18.unittest.genome");
+        genome = loadGenome();
     }
 
     @After

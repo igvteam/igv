@@ -54,7 +54,7 @@ public class OmegaDataSourceTest {
      */
     @Test
     public void testGetRawData() throws IOException {
-        Genome genome = TestUtils.loadGenome("hg18");
+        Genome genome = TestUtils.loadGenome();
         OmegaDataSource ds = new OmegaDataSource(genome);
 
         //egfr
