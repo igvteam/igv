@@ -18,11 +18,13 @@
 
 package org.broad.igv.tools;
 
+import org.broad.igv.Globals;
 import org.broad.igv.TestInformation;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
+import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.bed.BEDCodec;
 import org.broad.tribble.bed.BEDFeature;
 import org.broad.tribble.index.Block;
@@ -30,6 +32,7 @@ import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,6 +52,7 @@ public class IGVToolsTest {
 
     @Before
     public void setUp() throws Exception {
+        Globals.setHeadless(true);
         igvTools = new IgvTools();
     }
 
@@ -79,11 +83,22 @@ public class IGVToolsTest {
     }
 
     @Test
-    public void testIntervalIndex() throws IOException {
+    public void testIntervalIndex33() throws Exception {
+        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
+        FeatureCodec codec = new VCF3Codec();
+        testIntervalIndex(testFile, codec);
+    }
+
+    @Test
+    public void testIntervalIndex40() throws Exception {
+        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
+        FeatureCodec codec = new VCFCodec();
+        testIntervalIndex(testFile, codec);
+    }
+
+    public void testIntervalIndex(String testFile, FeatureCodec codec) throws IOException {
 
         // Create an interval tree index with 5 features per interval
-        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.head.vcf";
-
         File indexFile = new File(testFile + ".idx");
         if (indexFile.exists()) {
             indexFile.delete();
@@ -98,7 +113,7 @@ public class IGVToolsTest {
         int[] expectedStarts = {1718547, 1718829, 1723079, 1724830, 1731376, 1733967, 1735586, 1736016, 1738594,
                 1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, new VCF3Codec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, codec);
         Iterator<VariantContext> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
@@ -180,37 +195,37 @@ public class IGVToolsTest {
     }
 
     @Test
-    public void testCompressWigFile() throws IOException {
+    public void testTileWigFile() throws IOException {
 
-        //String inputFile = "test/data/phastCons_chr1.wig";
-        String inputFile = "test/data/wig/test_fixedStep.wig";
-        testCompressOption(inputFile, 0, 0);
+        String inputFile = TestInformation.LARGE_DATA_DIR + "/phastCons_chr1.wig";
+        testTile(inputFile, 0, 0);
     }
 
     @Test
-    public void testCompressCNFile() throws IOException {
+    public void testTileCNFile() throws IOException {
 
         String inputFile = "test/data/cn/HindForGISTIC.hg16.cn";
-        testCompressOption(inputFile, 5000000, 6000000);
+        testTile(inputFile, 5000000, 6000000);
     }
 
-    private void testCompressOption(String inputFile, int start, int end) throws IOException {
-        String uncompressedFile = "test/data/out/uncompressed.tdf";
-        String compressedFile = "test/data/out/compressed.tdf";
+    private void testTile(String inputFile, int start, int end) throws IOException {
+        String file1 = "test/data/out/file1.tdf";
+        String file2 = "test/data/out/file2.tdf";
         String genome = "test/data/genomes/hg18.genome";
 
 
-        String[] args = {"tile", "-z", "0", inputFile, uncompressedFile, genome};
+        //todo Compare 2 outputs more meaningfully
+        String[] args = {"tile", "-z", "1", "--windowFunctions", "min", inputFile, file1, genome};
         igvTools.run(args);
 
-        args = new String[]{"tile", "-z", "0", "-c", inputFile, compressedFile, genome};
+        args = new String[]{"tile", "-z", "2", "--windowFunctions", "max", inputFile, file2, genome};
         (new IgvTools()).run(args);
 
 
         String dsName = "/chr1/raw";
 
-        TDFDataset ds1 = TDFReader.getReader(uncompressedFile).getDataset(dsName);
-        TDFDataset ds2 = TDFReader.getReader(compressedFile).getDataset(dsName);
+        TDFDataset ds1 = TDFReader.getReader(file1).getDataset(dsName);
+        TDFDataset ds2 = TDFReader.getReader(file2).getDataset(dsName);
 
         TDFTile t1 = ds1.getTiles(start, end).get(0);
         TDFTile t2 = ds2.getTiles(start, end).get(0);
@@ -219,12 +234,16 @@ public class IGVToolsTest {
         assertEquals(nPts, t2.getSize());
 
         for (int i = 0; i < nPts; i++) {
+            assertTrue(t1.getStartPosition(i) < t1.getEndPosition(i));
             assertEquals(t1.getStartPosition(i), t2.getStartPosition(i));
-            assertEquals(t1.getValue(0, i), t2.getValue(0, i), 1.0e-6);
+            assertTrue(t1.getValue(0, i) <= t2.getValue(0, i));
+            if (i < nPts - 1) {
+                assertTrue(t1.getStartPosition(i) < t1.getStartPosition(i + 1));
+            }
         }
 
-        (new File(uncompressedFile)).delete();
-        (new File(compressedFile)).delete();
+        (new File(file1)).delete();
+        (new File(file2)).delete();
     }
 
 }

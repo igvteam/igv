@@ -20,6 +20,7 @@ package org.broad.tribble.readers;
 
 
 import org.broad.igv.TestInformation;
+import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
@@ -44,26 +45,22 @@ import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 /**
- *
-
-
- * Created by IntelliJ IDEA.
  * User: jrobinso
  * Date: Jul 17, 2010
  * Time: 9:28:49 PM
- * To change this template use File | Settings | File Templates.
  */
 public class BasicFeatureSourceTest {
 
-    static String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.head.vcf";
+    static String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
     static BasicFeatureSource<VariantContext> bfr;
 
     @BeforeClass
     public static void setUp() throws IOException {
         File idxFile = new File(testFile + ".idx");
-        createIndex(idxFile);
+        FeatureCodec codec = new VCFCodec();
+        createIndex(idxFile, codec);
 
-        bfr = BasicFeatureSource.getFeatureSource(testFile, new VCFCodec());
+        bfr = BasicFeatureSource.getFeatureSource(testFile, codec);
     }
 
     @AfterClass
@@ -85,7 +82,7 @@ public class BasicFeatureSourceTest {
         int count = 0;
         while (iter.hasNext()) {
             VariantContext feat = iter.next();
-            int expStart = expectedStarts[count] - 1;
+            int expStart = expectedStarts[count];// - 1;
             assertEquals(expStart, feat.getStart());
             count++;
         }
@@ -108,13 +105,13 @@ public class BasicFeatureSourceTest {
     }
 
 
-    private static void createIndex(File idxFile) throws IOException {
+    private static void createIndex(File idxFile, FeatureCodec codec) throws IOException {
         if (idxFile.exists()) {
             idxFile.delete();
         }
 
         // Create the index  
-        Index idx = IndexFactory.createIntervalIndex(new File(testFile), new VCFCodec(), 10);
+        Index idx = IndexFactory.createIntervalIndex(new File(testFile), codec, 10);
 
         LittleEndianOutputStream stream = null;
         try {
