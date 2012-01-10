@@ -37,26 +37,22 @@ import static org.broad.igv.util.TestUtils.loadGenome;
 public class GCTtoIGVConverterTest {
 
     Genome genome;
-    File igvFile;
 
     @Before
     public void setUp() throws IOException {
         genome = loadGenome("/test/data/genomes/hg18.genome");
-        igvFile = null;
     }
 
     @After
     public void tearDown() throws Exception {
-        if (igvFile != null) {
-            igvFile.delete();
-        }
     }
 
 
     @Test
     public void testDescriptionMapping() throws IOException {
         String gctFile = "test/data/gct/igv_test2.gct";
-        igvFile = new File("test/data/gct/igv_test2.gct.igv");
+        File igvFile = new File("test/data/gct/igv_test2.gct.igv");
+        igvFile.deleteOnExit();
 
         ResourceLocator locator = new ResourceLocator(gctFile);
         GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
@@ -66,7 +62,8 @@ public class GCTtoIGVConverterTest {
     @Test
     public void testAffyMapping() throws IOException {
         String gctFile = "test/data/gct/affy_human.gct";
-        igvFile = new File("test/data/gct/affy_human.gct.igv");
+        File igvFile = new File("test/data/gct/affy_human.gct.igv");
+        igvFile.deleteOnExit();
 
         ResourceLocator locator = new ResourceLocator(gctFile);
         GCTtoIGVConverter.convert(locator, igvFile, null, 50000, null, genome);
