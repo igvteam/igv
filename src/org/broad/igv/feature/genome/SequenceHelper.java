@@ -43,15 +43,10 @@ public class SequenceHelper {
     public SequenceHelper(String seqpath) {
 
         if (seqpath == null) {
-
+           // ?? What do we do here, why do we even check ??
         } else {
-            seqpath = convertSequenceURL(seqpath);
-            if (seqpath.startsWith("http://www.broadinstitute.org/igv/SequenceServlet") ||
-                    seqpath.startsWith("http://www.broadinstitute.org/igv/sequence")) {
-                sequence = new ServletSequence(seqpath);
-            } else {
-                sequence = new IGVSequence(seqpath);
-            }
+            seqpath = checkSequenceURL(seqpath);
+            sequence = new IGVSequence(seqpath);
         }
     }
 
@@ -280,7 +275,18 @@ public class SequenceHelper {
     private static Hashtable<String, String> sequenceUrlCache = new Hashtable();
 
 
-    public static String convertSequenceURL(String url) {
+    /**
+     * Some rather ugly code to maintain backward compatibility.  Does 2 things
+     * (1) domain swap  (mit -> broadinstitute)
+     * (2) removes references to SequenceServlet, there are 2 forms
+     * <p/>
+     * This method can be removed when its verified that references to the MIT domain and sequence servlet have
+     * been removed from all genomes.
+     *
+     * @param url
+     * @return
+     */
+    public static String checkSequenceURL(String url) {
 
         String key = url;
         String convertedURL = sequenceUrlCache.get(key);
@@ -288,13 +294,15 @@ public class SequenceHelper {
             convertedURL = url;
 
             // Legacy URLs -- this code can be removed when all .genome files are updated.
-            convertedURL = convertedURL.replace(
-                    "broad.mit.edu",
-                    "broadinstitute.org");
+            convertedURL = convertedURL.replace("broad.mit.edu", "broadinstitute.org");
 
-
+            // Replace all references to the old SequenceServlet with direct references to a sequence directory.
             convertedURL = convertedURL.replace(
                     "http://www.broadinstitute.org/igv/SequenceServlet",
+                    "http://igvdata.broadinstitute.org/genomes/seq");
+
+            convertedURL = convertedURL.replace(
+                    "http://www.broadinstitute.org/igv/sequence",
                     "http://igvdata.broadinstitute.org/genomes/seq");
 
 

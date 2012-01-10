@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SequenceHelperTest {
 
-    static String seqPath = "http://igv.broadinstitute.org/genomes/seq/hg18/";
+    static String seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
     static PreferenceManager preferenceManager;
     static boolean useByteRange;
 

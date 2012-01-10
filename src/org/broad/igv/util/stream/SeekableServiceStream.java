@@ -30,14 +30,22 @@ import java.net.URL;
 
 /**
  * A SeekableStream implementation for the "range" webservice.  The purpose of this class is to serve range-byte
- * requests to clients who are unable to use the http header for this  (primarily users in the Partners network).
+ * requests to clients who are unable to use the http header for this.
+ * <p/>
+ * /xchip/igv/data/public/annotations/seq/hg18/chr1.txt
  */
 public class SeekableServiceStream extends SeekableStream {
 
     static Logger log = Logger.getLogger(SeekableServiceStream.class);
 
     private static final String WEBSERVICE_URL = "http://www.broadinstitute.org/webservices/igv";
+    private static final String CLOUD_GENOME_URL = "http://igv.broadinstitute.org/genomes/seq";
+    private static final String CLOUDFRONT_GENOME_URL = "http://igvdata.broadinstitute.org/genomes/seq";
+    private static final String BROAD_GENOME_URL = "http://www.broadinstitute.org/igvdata/annotations/seq";
+    private static final String BROAD_GENOME_PATH = "/xchip/igv/data/public/annotations/seq";
     private static final String IGV_DATA_HOST = "www.broadinstitute.org";
+
+    private static final String BROAD_DATA_URL = "http://www.broadinstitute.org/igvdata";
     private static final String DATA_PATH = "/xchip/igv/data/public";
     private static final String DATA_HTTP_PATH = "/igvdata";
 
@@ -47,7 +55,26 @@ public class SeekableServiceStream extends SeekableStream {
     private String dataPath;
 
     public SeekableServiceStream(URL url) {
-        this.dataPath = url.getPath().replaceFirst(DATA_HTTP_PATH, DATA_PATH);
+        this.dataPath = convertPath(url);
+    }
+
+    /**
+     * Attempt to convert the URL path to something our "range  webservice" can handle.
+     *
+     * @param url
+     * @return
+     */
+    private String convertPath(URL url) {
+        String urlString = url.toString();
+        if (urlString.startsWith(CLOUD_GENOME_URL)) {
+            return (urlString.replace(CLOUD_GENOME_URL, BROAD_GENOME_PATH));
+        } else if (urlString.startsWith(CLOUDFRONT_GENOME_URL)) {
+            return (urlString.replace(CLOUDFRONT_GENOME_URL, BROAD_GENOME_PATH));
+        } else if (urlString.startsWith(BROAD_GENOME_URL)) {
+            return (urlString.replace(BROAD_GENOME_URL, BROAD_GENOME_PATH));
+        } else {
+            return url.getPath().replaceFirst(DATA_HTTP_PATH, DATA_PATH);
+        }
     }
 
     public long length() {
