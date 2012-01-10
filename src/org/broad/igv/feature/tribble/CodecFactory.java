@@ -24,6 +24,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.bed.BEDCodec;
 import org.broad.tribble.util.BlockCompressedInputStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
@@ -36,7 +37,6 @@ import java.io.InputStreamReader;
 /**
  * A factory class for Tribble codecs.  implements a single, static, public method to return a codec given a
  * path to a feature file  (bed, gff, vcf, etc).
- *
  */
 public class CodecFactory {
 
@@ -73,13 +73,13 @@ public class CodecFactory {
             return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.GENEPRED);
         } else if (fn.contains("ucscgene")) {
             return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.UCSCGENE);
-        }else if (fn.endsWith(".repmask")) {
+        } else if (fn.endsWith(".repmask")) {
             return new REPMaskCodec();
         } else if (fn.endsWith(".gff3")) {
             return new GFFCodec(GFFCodec.Version.GFF3);
         } else if (fn.endsWith(".gff") || fn.endsWith(".gtf")) {
             return new GFFCodec();
-        //} else if (fn.endsWith(".sam")) {
+            //} else if (fn.endsWith(".sam")) {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
             return new PSLCodec();
@@ -96,7 +96,7 @@ public class CodecFactory {
 
     /**
      * Return the appropriate VCFCodec based on the version tag.
-     * 
+     * <p/>
      * e.g.  ##fileformat=VCFv4.1
      *
      * @param path Path to the VCF file.  Can be a file path, or URL
@@ -132,12 +132,10 @@ public class CodecFactory {
                 lineCount++;
             }
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Error checking VCF Version");
 
-        }
-        finally {
+        } finally {
             if (reader != null) try {
                 reader.close();
             } catch (IOException e) {

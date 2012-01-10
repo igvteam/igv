@@ -18,7 +18,8 @@
 
 package org.broad.igv.tools;
 
-import junit.framework.TestCase;
+import org.broad.igv.TestInformation;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
@@ -28,7 +29,7 @@ import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
 import org.broad.tribble.source.BasicFeatureSource;
-import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.After;
 import org.junit.Assert;
@@ -39,21 +40,21 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
+import static junit.framework.Assert.*;
 
-public class IGVToolsTest extends TestCase {
+
+public class IGVToolsTest {
 
     IgvTools igvTools;
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         igvTools = new IgvTools();
     }
 
     @After
     public void tearDown() throws Exception {
         igvTools = null;
-        super.tearDown();
     }
 
     @Test
@@ -73,19 +74,15 @@ public class IGVToolsTest extends TestCase {
         Index idx = IndexFactory.loadIndex(idxFile.getAbsolutePath());
 
         Block block = idx.getBlocks("chr1", 100, 200).get(0);
-        assertEquals(0, block.getStartPosition());
-        assertEquals(54, block.getSize());
-
-        block = idx.getBlocks("chr1", 20000, 20001).get(0);
-        assertEquals(54, block.getStartPosition());
-        assertEquals(0, block.getSize());
+        assertEquals("Unexpected start position ", 0, block.getStartPosition());
+        assertEquals("Unexpected block size", 100, block.getSize());
     }
 
     @Test
     public void testIntervalIndex() throws IOException {
 
         // Create an interval tree index with 5 features per interval
-        String testFile = "test/data/CEU.SRP000032.2010_03.genotypes.head.vcf";
+        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.head.vcf";
 
         File indexFile = new File(testFile + ".idx");
         if (indexFile.exists()) {
@@ -101,12 +98,12 @@ public class IGVToolsTest extends TestCase {
         int[] expectedStarts = {1718547, 1718829, 1723079, 1724830, 1731376, 1733967, 1735586, 1736016, 1738594,
                 1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, new VCFCodec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, new VCF3Codec());
         Iterator<VariantContext> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
             VariantContext feat = iter.next();
-            int expStart = expectedStarts[count] - 1;
+            int expStart = expectedStarts[count];
             assertEquals(expStart, feat.getStart());
             count++;
         }
@@ -117,7 +114,7 @@ public class IGVToolsTest extends TestCase {
     @Test
     public void testLargeBed() throws Exception {
         //chr2:178,599,764-179,830,787 <- CONTAINS TTN
-        String bedFile = "test/data/bed/Unigene.sorted.bed";
+        String bedFile = "test/data/bed/Unigene.sample.sorted.bed";
 
         // Interval index
         File indexFile = new File(bedFile + ".idx");
@@ -129,18 +126,49 @@ public class IGVToolsTest extends TestCase {
 
 
         String chr = "chr2";
-        int start = 178599764;
-        int end = 179830787;
+        int start = 178707289 / 2;
+        int end = 179973464 * 2;
 
         BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
         Iterator<BEDFeature> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
             BEDFeature feat = iter.next();
-            System.out.println(feat.getName());
+            check_feat_unigene(feat, chr, start, end);
             count++;
         }
 
+        assertEquals(71, count);
+
+        //Re-query with some restrictions
+        count = 0;
+        start = 178709699;
+        end = 179721089;
+        iter = bfr.query(chr, start, end);
+        while (iter.hasNext()) {
+            BEDFeature feat = iter.next();
+            check_feat_unigene(feat, chr, start, end);
+            count++;
+        }
+
+        assertEquals(65, count);
+    }
+
+    /**
+     * Some checking of features queried from a given test file
+     *
+     * @param feat
+     * @param chr
+     * @param start
+     * @param end
+     */
+    private void check_feat_unigene(BEDFeature feat, String chr, int start, int end) {
+        assertEquals(chr, feat.getChr());
+        assertTrue(feat.getEnd() > feat.getStart());
+        assertEquals(0.0f, feat.getScore()); //This particular data set is all 0
+        assertNotSame(Strand.NONE, feat.getStrand());
+        assertTrue("Start out of range", feat.getStart() > start);
+        assertTrue("end out of range", feat.getStart() <= end);
     }
 
 
@@ -154,20 +182,21 @@ public class IGVToolsTest extends TestCase {
     @Test
     public void testCompressWigFile() throws IOException {
 
-        String inputFile = "test/data/phastCons_chr1.wig";
+        //String inputFile = "test/data/phastCons_chr1.wig";
+        String inputFile = "test/data/wig/test_fixedStep.wig";
         testCompressOption(inputFile, 0, 0);
     }
 
     @Test
     public void testCompressCNFile() throws IOException {
 
-        String inputFile = "test/data/HindForGISTIC.hg16.cn";
+        String inputFile = "test/data/cn/HindForGISTIC.hg16.cn";
         testCompressOption(inputFile, 5000000, 6000000);
     }
 
     private void testCompressOption(String inputFile, int start, int end) throws IOException {
-        String uncompressedFile = "uncompressed.tdf";
-        String compressedFile = "compressed.tdf";
+        String uncompressedFile = "test/data/out/uncompressed.tdf";
+        String compressedFile = "test/data/out/compressed.tdf";
         String genome = "test/data/genomes/hg18.genome";
 
 
@@ -194,8 +223,8 @@ public class IGVToolsTest extends TestCase {
             assertEquals(t1.getValue(0, i), t2.getValue(0, i), 1.0e-6);
         }
 
-        //(new File(uncompressedFile)).delete();
-        //(new File(compressedFile)).delete();
+        (new File(uncompressedFile)).delete();
+        (new File(compressedFile)).delete();
     }
 
 }

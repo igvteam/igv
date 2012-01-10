@@ -27,12 +27,14 @@ import java.util.Map;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: jrobinso
- * Date: Dec 20, 2009
- * Time: 10:15:49 PM
- * To change this template use File | Settings | File Templates.
+ * @deprecated Use org.broad.tribble.bed.BEDCodec
+ *             Created by IntelliJ IDEA.
+ *             User: jrobinso
+ *             Date: Dec 20, 2009
+ *             Time: 10:15:49 PM
+ *             To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class BEDCodec extends UCSCCodec {
 
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
@@ -53,7 +55,7 @@ public class BEDCodec extends UCSCCodec {
             return null;
         }
 
-        String chr = tokens[0];  //genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
+        String chr = tokens[0];
         int start = Integer.parseInt(tokens[1]) - startBase;
 
         int end = start + 1;
@@ -90,9 +92,9 @@ public class BEDCodec extends UCSCCodec {
                     FeatureDB.put(alias.toUpperCase(), feature);
                 }
                 String geneSymbols = atts.get("Symbol");
-                if(geneSymbols != null) {
-                    String [] symbols = geneSymbols.split(",");
-                    for(String sym : symbols) {
+                if (geneSymbols != null) {
+                    String[] symbols = geneSymbols.split(",");
+                    for (String sym : symbols) {
                         FeatureDB.put(sym.trim().toUpperCase(), feature);
                     }
                 }
@@ -210,7 +212,7 @@ public class BEDCodec extends UCSCCodec {
      */
     private Color parseColor(String colorString) {
         String[] rgb = new String[3];
-        int nTokens = ParsingUtils.split(tokens[8].replaceAll("\"", ""), rgb, ',');
+        int nTokens = ParsingUtils.split(colorString.replaceAll("\"", ""), rgb, ',');
 
         try {
             if (nTokens < 3) {
