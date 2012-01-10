@@ -145,10 +145,10 @@ public class AlignmentDataManager {
     }
 
 
-    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location) {
+    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval != null) {
-            loadedInterval.sortRows(option, location);
+            loadedInterval.sortRows(option, location, tag);
         }
     }
 
@@ -158,7 +158,7 @@ public class AlignmentDataManager {
     }
 
 
-    public void setViewAsPairs(boolean option, AlignmentTrack.GroupOption groupByOption) {
+    public void setViewAsPairs(boolean option, AlignmentTrack.GroupOption groupByOption, String tag) {
         if (option == this.viewAsPairs) {
             return;
         }
@@ -167,13 +167,13 @@ public class AlignmentDataManager {
         this.viewAsPairs = option;
 
         for (ReferenceFrame frame : FrameManager.getFrames()) {
-            repackAlignments(frame, currentPairState, groupByOption);
+            repackAlignments(frame, currentPairState, groupByOption, tag);
         }
     }
 
 
     private void repackAlignments(ReferenceFrame referenceFrame, boolean currentPairState,
-                                  AlignmentTrack.GroupOption groupByOption) {
+                                  AlignmentTrack.GroupOption groupByOption, String tag) {
         if (currentPairState == true) {
             AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
             if (loadedInterval == null) {
@@ -214,12 +214,13 @@ public class AlignmentDataManager {
                     loadedInterval.getEnd(),
                     viewAsPairs,
                     groupByOption,
+                    tag,
                     MAX_ROWS);
 
             loadedInterval.setAlignmentRows(tmp);
 
         } else {
-            repackAlignments(referenceFrame, groupByOption);
+            repackAlignments(referenceFrame, groupByOption, tag);
         }
     }
 
@@ -228,7 +229,7 @@ public class AlignmentDataManager {
      *
      * @param referenceFrame
      */
-    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption groupByOption) {
+    public void repackAlignments(ReferenceFrame referenceFrame, AlignmentTrack.GroupOption groupByOption, String tag) {
 
         AlignmentInterval loadedInterval = loadedIntervalMap.get(referenceFrame.getName());
         if (loadedInterval == null) {
@@ -244,13 +245,15 @@ public class AlignmentDataManager {
                 loadedInterval.getEnd(),
                 viewAsPairs,
                 groupByOption,
+                tag,
                 MAX_ROWS);
 
         loadedInterval.setAlignmentRows(alignmentRows);
     }
 
     public synchronized LinkedHashMap<String, List<AlignmentInterval.Row>> getGroups(RenderContext context,
-                                                                                     AlignmentTrack.GroupOption groupByOption) {
+                                                                                     AlignmentTrack.GroupOption groupByOption,
+                                                                                     String tag) {
 
         final String genomeId = context.getGenomeId();
         final String chr = context.getChr();
@@ -261,7 +264,7 @@ public class AlignmentDataManager {
 
         // If we've moved out of the loaded interval start a new load.
         if (loadedInterval == null || !loadedInterval.contains(chr, start, end)) {
-            loadAlignments(chr, start, end, groupByOption, context);
+            loadAlignments(chr, start, end, groupByOption, tag, context);
         }
 
         // If there is any overlap in the loaded interval and the requested interval return it.
@@ -279,7 +282,9 @@ public class AlignmentDataManager {
     }
 
     public synchronized void loadAlignments(final String chr, final int start, final int end,
-                                            final AlignmentTrack.GroupOption groupByOption, final RenderContext context) {
+                                            final AlignmentTrack.GroupOption groupByOption,
+                                            final String tag,
+                                            final RenderContext context) {
 
         if (isLoading || chr.equals(Globals.CHR_ALL)) {
             return;
@@ -317,7 +322,7 @@ public class AlignmentDataManager {
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
                     LinkedHashMap<String, List<AlignmentInterval.Row>> alignmentRows = alignmentPacker.packAlignments(iter,
-                            intervalEnd, viewAsPairs, groupByOption, maxLevels);
+                            intervalEnd, viewAsPairs, groupByOption, tag, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
                             alignmentRows, counts);

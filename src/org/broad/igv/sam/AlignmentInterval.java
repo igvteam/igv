@@ -123,10 +123,9 @@ public class AlignmentInterval extends Locus {
     }
 
 
-
-    public void sortRows(AlignmentTrack.SortOption option, ReferenceFrame referenceFrame) {
+    public void sortRows(AlignmentTrack.SortOption option, ReferenceFrame referenceFrame, String tag) {
         double center = referenceFrame.getCenter();
-        sortRows(option, center);
+        sortRows(option, center, tag);
     }
 
 
@@ -136,14 +135,14 @@ public class AlignmentInterval extends Locus {
      * @param option
      * @param location
      */
-    public void sortRows(AlignmentTrack.SortOption option, double location) {
+    public void sortRows(AlignmentTrack.SortOption option, double location, String tag) {
         if (groupedAlignmentRows == null) {
             return;
         }
 
         for (List<AlignmentInterval.Row> alignmentRows : groupedAlignmentRows.values()) {
             for (AlignmentInterval.Row row : alignmentRows) {
-                row.updateScore(option, location, this);
+                row.updateScore(option, location, this, tag);
             }
 
             Collections.sort(alignmentRows, new Comparator<Row>() {
@@ -288,7 +287,7 @@ public class AlignmentInterval extends Locus {
 
         }
 
-        public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval) {
+        public void updateScore(AlignmentTrack.SortOption option, double center, AlignmentInterval interval, String tag) {
 
             int adjustedCenter = (int) center;
             Alignment centerAlignment = getFeatureContaining(alignments, adjustedCenter);
@@ -305,7 +304,7 @@ public class AlignmentInterval extends Locus {
                     case FRAGMENT_STRAND:
                         Strand strand = centerAlignment.getFirstOfPairStrand();
                         int score = 2;
-                        if(strand != Strand.NONE) {
+                        if (strand != Strand.NONE) {
                             score = strand == Strand.NEGATIVE ? 1 : -1;
                         }
                         setScore(score);
@@ -322,7 +321,7 @@ public class AlignmentInterval extends Locus {
                         } else {
                             int count = interval.getCount(adjustedCenter, base);
                             byte phred = centerAlignment.getPhred(adjustedCenter);
-                            setScore( -(count + (phred / 100.0f)));
+                            setScore(-(count + (phred / 100.0f)));
                         }
                         break;
                     case QUALITY:
@@ -343,17 +342,22 @@ public class AlignmentInterval extends Locus {
                         break;
                     case MATE_CHR:
                         ReadMate mate = centerAlignment.getMate();
-                        if(mate == null) {
+                        if (mate == null) {
                             setScore(Integer.MAX_VALUE);
-                        }
-                        else {
-                            if(mate.getChr().equals(centerAlignment.getChr())) {
-                                setScore(Integer.MAX_VALUE-1);
-                            }
-                            else {
+                        } else {
+                            if (mate.getChr().equals(centerAlignment.getChr())) {
+                                setScore(Integer.MAX_VALUE - 1);
+                            } else {
                                 setScore(mate.getChr().hashCode());
                             }
                         }
+                        break;
+                    case TAG:
+                        Object tagValue = centerAlignment.getAttribute(tag);
+                        score = tagValue == null ? 0 : tagValue.hashCode();
+                        setScore(score);
+                        break;
+
                 }
             }
         }

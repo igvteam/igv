@@ -24,7 +24,6 @@
 package org.broad.igv.batch;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.sam.AlignmentTrack;
@@ -38,7 +37,6 @@ import org.broad.igv.util.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 
@@ -80,9 +78,12 @@ public class CommandExecutor {
                 String param1 = args.size() > 1 ? args.get(1) : null;
                 String param2 = args.size() > 2 ? args.get(2) : null;
                 String param3 = args.size() > 3 ? args.get(3) : null;
+                String param4 = args.size() > 4 ? args.get(4) : null;
 
                 if (cmd.equals("echo")) {
                     result = cmd;
+                } else if (cmd.equals("gotoimmediate")) {
+                    return gotoImmediate(args);
                 } else if (cmd.equals("goto")) {
                     result = goto1(args);
                 } else if (cmd.equals("snapshotdirectory")) {
@@ -101,9 +102,9 @@ public class CommandExecutor {
                 } else if (cmd.equals("region")) {
                     defineRegion(param1, param2, param3);
                 } else if (cmd.equals("sort")) {
-                    sort(param1, param2, param3);
+                    sort(param1, param2, param3, param4);
                 } else if (cmd.equals("group")) {
-                    sort(param1, param2, param3);
+                    group(param1);
                 } else if (cmd.equals("collapse")) {
                     String trackName = param1 == null ? null : param1.replace("\"", "").replace("'", "");
                     collapse(trackName);
@@ -142,6 +143,10 @@ public class CommandExecutor {
         log.info(result);
 
         return result;
+    }
+
+    private String gotoImmediate(List<String> args) {
+        return goto1(args);
     }
 
     private String setMaxPanelHeight(String param1) {
@@ -368,8 +373,9 @@ public class CommandExecutor {
     }
 
 
-    private void sort(String sortArg, String locusString, String param3) {
+    private void sort(String sortArg, String locusString, String param3, String param4) {
         RegionScoreType regionSortOption = getRegionSortOption(sortArg);
+        String tag = "";
         if (regionSortOption != null) {
             RegionOfInterest roi = null;
             if (locusString != null) {
@@ -386,21 +392,23 @@ public class CommandExecutor {
             if (param3 != null && param3.trim().length() > 0) {
                 try {
                     location = new Double(param3.replace(",", ""));
+                    tag = param4;
                 } catch (NumberFormatException e) {
-                    log.info("Unexpected sort location argument (expected number): " + param3);
+                    tag = param3;
                 }
             } else if (locusString != null && locusString.trim().length() > 0) {
                 try {
                     location = new Double(locusString.replace(",", ""));
+                    tag = param4;
                 } catch (NumberFormatException e) {
-                    log.info("Unexpected sort location argument (expected number): " + param3);
+                    tag = param3;
                 }
 
             }
             if (location == null) {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg));
+                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), tag);
             } else {
-                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location);
+                igv.sortAlignmentTracks(getAlignmentSortOption(sortArg), location, tag);
             }
 
         }

@@ -59,18 +59,20 @@ public class AlignmentPacker {
     /**
      * Allocates each alignment to the rows such that there is no overlap.
      *
+     *
      * @param iter
      * @param end
      * @param pairAlignments
      * @param groupBy
-     * @param maxLevels
-     * @return
+     * @param tag
+     *@param maxLevels  @return
      */
     public LinkedHashMap<String, List<AlignmentInterval.Row>> packAlignments(
             Iterator<Alignment> iter,
             int end,
             boolean pairAlignments,
             AlignmentTrack.GroupOption groupBy,
+            String tag,
             int maxLevels) {
 
         LinkedHashMap<String, List<AlignmentInterval.Row>> packedAlignments = new LinkedHashMap<String, List<Row>>();
@@ -89,7 +91,7 @@ public class AlignmentPacker {
             HashMap<String, List<Alignment>> groupedAlignments = new HashMap();
             while (iter.hasNext()) {
                 Alignment alignment = iter.next();
-                String groupKey = getGroupValue(alignment, groupBy);
+                String groupKey = getGroupValue(alignment, groupBy, tag);
                 if (groupKey == null) nullGroup.add(alignment);
                 else {
                     List<Alignment> group = groupedAlignments.get(groupKey);
@@ -119,7 +121,7 @@ public class AlignmentPacker {
 
     }
 
-    private String getGroupValue(Alignment al, AlignmentTrack.GroupOption groupBy) {
+    private String getGroupValue(Alignment al, AlignmentTrack.GroupOption groupBy, String tag) {
         switch (groupBy) {
 
             case STRAND:
@@ -128,6 +130,9 @@ public class AlignmentPacker {
                 return al.getSample();
             case READ_GROUP:
                 return al.getReadGroup();
+            case TAG:
+                Object tagValue = al.getAttribute(tag);
+                return tagValue == null ? null : tagValue.toString();
             case FRAGMENT_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();

@@ -204,7 +204,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 // further detail would not be seen and just add to drawing overhead
                 // Does the change for Bisulfite kill some machines?
                 double pixelWidth = pixelEnd - pixelStart;
-                if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (pixelWidth >= 1))) {
+                if ((pixelWidth < 4) && !(AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (pixelWidth >= 1))) {
                     Color alignmentColor = getAlignmentColor(alignment, renderOptions);
                     Graphics2D g = context.getGraphic2DForColor(alignmentColor);
                     g.setFont(font);
@@ -480,7 +480,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             }
 
-            if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
+            if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
                 drawBases(context, rect, aBlock, alignmentColor, renderOptions);
             }
@@ -539,7 +539,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                            RenderOptions renderOptions) {
 
         boolean shadeBases = renderOptions.shadeBases;
-        ColorOption colorOption = renderOptions.colorOption;
+        ColorOption colorOption = renderOptions.getColorOption();
 
         // Disable showAllBases in bisulfite mode
         boolean showAllBases = renderOptions.showAllBases &&
@@ -554,7 +554,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         byte[] read = block.getBases();
         boolean isSoftClipped = block.isSoftClipped();
 
-        if ((read != null) && (read.length > 0)) {
+        int start = block.getStart();
+        int end = start + read.length;
+        byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
+
+
+        if (read != null && read.length > 0 && reference != null) {
 
             // Compute bounds, get a graphics to use,  and compute a font
             int pY = (int) rect.getY();
@@ -568,13 +573,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             // Get the base qualities, start/end,  and reference sequence
 
-            int start = block.getStart();
-            int end = start + read.length;
-            byte[] reference = isSoftClipped ? null : genome.getSequence(chr, start, end);
-
             BisulfiteBaseInfo bisinfo = null;
-            boolean nomeseqMode = (renderOptions.colorOption.equals(AlignmentTrack.ColorOption.NOMESEQ));
-            boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.colorOption);
+            boolean nomeseqMode = (renderOptions.getColorOption().equals(AlignmentTrack.ColorOption.NOMESEQ));
+            boolean bisulfiteMode = AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption());
             if (nomeseqMode) {
                 bisinfo = new BisulfiteBaseInfoNOMeseq(reference, block, renderOptions.bisulfiteContext);
             } else if (bisulfiteMode) {
@@ -723,11 +724,11 @@ public class AlignmentRenderer implements FeatureRenderer {
         PEStats peStats = renderOptions.peStats.get(lb);
 
         Color c = alignment.getDefaultColor();
-        switch (renderOptions.colorOption) {
+        switch (renderOptions.getColorOption()) {
             case BISULFITE:
                 // Just a simple forward/reverse strand color scheme that won't clash with the
                 // methylation rectangles.
-                c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ?  bisulfiteColorFw1 :  bisulfiteColorRev1;
+                c = (alignment.getFirstOfPairStrand() == Strand.POSITIVE) ? bisulfiteColorFw1 : bisulfiteColorRev1;
 
 //                if (alignment.isNegativeStrand()) {
 //                    c = (alignment.isSecondOfPair()) ? bisulfiteColorRev2 : bisulfiteColorRev1;
@@ -809,6 +810,19 @@ public class AlignmentRenderer implements FeatureRenderer {
                     if (c == null) {
                         c = ColorUtilities.randomColor(readGroupColors.size() + 1);
                         readGroupColors.put(sample, c);
+                    }
+                }
+                break;
+            case TAG:
+                final String tag = renderOptions.getTagKey();
+                if (tag != null) {
+                    Object tagValue = alignment.getAttribute(tag);
+                    if (tagValue != null) {
+                        c = readGroupColors.get(tagValue);
+                        if (c == null) {
+                            c = ColorUtilities.randomColor(readGroupColors.size() + 1);
+                            readGroupColors.put(tagValue.toString(), c);
+                        }
                     }
                 }
                 break;

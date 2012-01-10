@@ -87,6 +87,7 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_MAX_LEVELS = "SAM.MAX_LEVELS";
     public static final String SAM_MAX_READS = "SAM.MAX_READS";
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
+    public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
@@ -942,6 +943,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_INSERT_SIZE_PERCENTILE, "99.5");
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
+        defaultValues.put(SAM_COLOR_BY_TAG, "");
         defaultValues.put(SAM_BISULFITE_CONTEXT, "CG");
         defaultValues.put(SAM_COMPUTE_ISIZES, "true");
         defaultValues.put(SAM_FLAG_ZERO_QUALITY, "true");

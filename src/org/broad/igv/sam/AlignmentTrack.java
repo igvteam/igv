@@ -63,15 +63,20 @@ import java.util.List;
 public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEventListener {
 
     private static Logger log = Logger.getLogger(AlignmentTrack.class);
-    static final int GROUP_MARGIN = 5; 
+    static final int GROUP_MARGIN = 5;
     static final int TOP_MARGIN = 20;
 
+
+    public enum ColorOption {
+        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
+    }
+
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR, TAG
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FRAGMENT_STRAND, NONE
+        STRAND, SAMPLE, READ_GROUP, FRAGMENT_STRAND, TAG, NONE
     }
 
     public enum BisulfiteContext {
@@ -99,12 +104,6 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         bisulfiteContextToContextString.put(BisulfiteContext.GCH, new Pair<byte[], byte[]>(new byte[]{'G'}, new byte[]{'H'}));
         bisulfiteContextToContextString.put(BisulfiteContext.WCG, new Pair<byte[], byte[]>(new byte[]{'W'}, new byte[]{'G'}));
     }
-
-
-    public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, NONE;
-    }
-
 
     public static final int MIN_ALIGNMENT_SPACING = 10;
     static final ColorOption DEFAULT_COLOR_OPTION = ColorOption.INSERT_SIZE;
@@ -254,7 +253,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     private void renderAlignments(RenderContext context, Rectangle inputRect) {
         try {
             log.debug("Render features");
-            Map<String, List<AlignmentInterval.Row>> groups = dataManager.getGroups(context, renderOptions.groupByOption);
+            Map<String, List<AlignmentInterval.Row>> groups =
+                    dataManager.getGroups(context, renderOptions.groupByOption, renderOptions.getTagKey());
 
             Map<String, PEStats> peStats = dataManager.getPEStats();
             if (peStats != null) {
@@ -336,8 +336,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
      * Sort alignment rows based on alignments that intersent location
      */
 
-    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location) {
-        dataManager.sortRows(option, referenceFrame, location);
+    public void sortRows(SortOption option, ReferenceFrame referenceFrame, double location, String tag) {
+        dataManager.sortRows(option, referenceFrame, location, tag);
     }
 
     /**
@@ -347,13 +347,13 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
     public void groupAlignments(GroupOption option, ReferenceFrame referenceFrame) {
         if (renderOptions.groupByOption != option) {
             renderOptions.groupByOption = (option == GroupOption.NONE ? null : option);
-            dataManager.repackAlignments(referenceFrame, option);
+            dataManager.repackAlignments(referenceFrame, option, renderOptions.getTagKey());
         }
     }
 
 
     public void packAlignments(ReferenceFrame referenceFrame) {
-        dataManager.repackAlignments(referenceFrame, renderOptions.groupByOption);
+        dataManager.repackAlignments(referenceFrame, renderOptions.groupByOption, renderOptions.getTagKey());
     }
 
     /**
@@ -483,7 +483,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
-        Alignment feature = getAlignmentAt(position+1, y, frame);
+        Alignment feature = getAlignmentAt(position + 1, y, frame);
         if (feature == null) {
             return null;
         }
@@ -504,7 +504,8 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 //            return null;
 //        }
 
-        int startY = renderedRect.y;                                               final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
+        int startY = renderedRect.y;
+        final boolean leaveMargin = getDisplayMode() == DisplayMode.EXPANDED;
 
         for (List<AlignmentInterval.Row> rows : groups.values()) {
             int endY = startY + rows.size() * h;
@@ -639,7 +640,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         private int maxInsertSize;
         private double minInsertSizePercentile;
         private double maxInsertSizePercentile;
-        ColorOption colorOption;
+        private ColorOption colorOption;
         GroupOption groupByOption = null;
         BisulfiteContext bisulfiteContext;
         //ContinuousColorScale insertSizeColorScale;
@@ -647,6 +648,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         public boolean flagZeroQualityAlignments = true;
 
         Map<String, PEStats> peStats;
+        private String tagKey;
 
         RenderOptions() {
             PreferenceManager prefs = PreferenceManager.getInstance();
@@ -663,6 +665,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             GroupOption groupByOption = null;
             flagZeroQualityAlignments = prefs.getAsBoolean(PreferenceManager.SAM_FLAG_ZERO_QUALITY);
             bisulfiteContext = DEFAULT_BISULFITE_CONTEXT;
+            tagKey = prefs.get(PreferenceManager.SAM_COLOR_BY_TAG);
 
 
             //updateColorScale();
@@ -811,6 +814,23 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void setMaxInsertSize(int maxInsertSize) {
             this.maxInsertSize = maxInsertSize;
+        }
+
+        public String getTagKey() {
+            return tagKey;
+        }
+
+        public ColorOption getColorOption() {
+            return colorOption;
+        }
+
+        public void setColorOption(ColorOption colorOption) {
+            this.colorOption = colorOption;
+        }
+
+        public void setTagKey(String tagKey) {
+            this.tagKey = tagKey;
+            PreferenceManager.getInstance().put(PreferenceManager.SAM_COLOR_BY_TAG, tagKey);
         }
     }
 
@@ -998,6 +1018,35 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             groupMenu.add(m6);
             group.add(m6);
 
+
+            JCheckBoxMenuItem tagOption = new JCheckBoxMenuItem("by tag");
+            tagOption.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent aEvt) {
+                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getTagKey());
+                    renderOptions.setTagKey(tag);
+                    IGV.getInstance().groupAlignmentTracks(GroupOption.TAG);
+                    refresh();
+
+                }
+            });
+            tagOption.setSelected(renderOptions.groupByOption == GroupOption.TAG);
+            groupMenu.add(tagOption);
+            group.add(tagOption);
+
+
+//            JMenuItem tagOption = new JMenuItem("by tag");
+//            tagOption.addActionListener(new ActionListener() {
+//                public void actionPerformed(ActionEvent aEvt) {
+//                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getTagKey());
+//                    renderOptions.setTagKey(tag);
+//                    IGV.getInstance().sortAlignmentTracks(SortOption.TAG, tag);
+//                    refresh();
+//                }
+//            });
+//            sortMenu.add(tagOption);
+//
+
             add(groupMenu);
         }
 
@@ -1006,12 +1055,14 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
          * Sort menu
          */
         public void addSortMenuItem() {
+
+
             JMenu sortMenu = new JMenu("Sort alignments");
             JMenuItem m1 = new JMenuItem("by start location");
             m1.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.START);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.START, null);
                     refresh();
 
                 }
@@ -1022,7 +1073,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             m2.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.STRAND);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.STRAND, null);
                     refresh();
 
                 }
@@ -1033,7 +1084,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             fragmentStrandOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.FRAGMENT_STRAND);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.FRAGMENT_STRAND, null);
                     refresh();
 
                 }
@@ -1045,7 +1096,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().sortAlignmentTracks(SortOption.NUCELOTIDE);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.NUCELOTIDE, null);
                     refresh();
 
                 }
@@ -1057,7 +1108,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().sortAlignmentTracks(SortOption.QUALITY);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.QUALITY, null);
                     refresh();
 
                 }
@@ -1070,7 +1121,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().sortAlignmentTracks(SortOption.SAMPLE);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.SAMPLE, null);
                     refresh();
 
                 }
@@ -1082,7 +1133,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                 public void actionPerformed(ActionEvent aEvt) {
 
-                    IGV.getInstance().sortAlignmentTracks(SortOption.READ_GROUP);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.READ_GROUP, null);
                     refresh();
 
                 }
@@ -1095,7 +1146,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                     public void actionPerformed(ActionEvent aEvt) {
 
-                        IGV.getInstance().sortAlignmentTracks(SortOption.INSERT_SIZE);
+                        IGV.getInstance().sortAlignmentTracks(SortOption.INSERT_SIZE, null);
                         refresh();
 
                     }
@@ -1109,13 +1160,25 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
                     public void actionPerformed(ActionEvent aEvt) {
 
-                        IGV.getInstance().sortAlignmentTracks(SortOption.MATE_CHR);
+                        IGV.getInstance().sortAlignmentTracks(SortOption.MATE_CHR, null);
                         refresh();
 
                     }
                 });
                 sortMenu.add(m7);
             }
+
+            JMenuItem tagOption = new JMenuItem("by tag");
+            tagOption.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getTagKey());
+                    renderOptions.setTagKey(tag);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.TAG, tag);
+                    refresh();
+                }
+            });
+            sortMenu.add(tagOption);
+
 
             add(sortMenu);
         }
@@ -1219,6 +1282,22 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             colorMenu.add(sampleOption);
             group.add(sampleOption);
 
+
+            JRadioButtonMenuItem tagOption = new JRadioButtonMenuItem("by tag");
+            tagOption.setSelected(renderOptions.colorOption == ColorOption.TAG);
+            tagOption.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    setColorOption(ColorOption.TAG);
+                    String tag = MessageUtils.showInputDialog("Enter tag", renderOptions.getTagKey());
+                    renderOptions.setTagKey(tag);
+                    PreferenceManager.getInstance();
+                    refresh();
+                }
+            });
+            colorMenu.add(tagOption);
+            group.add(tagOption);
+
+
             colorMenu.add(getBisulfiteContextMenuItem(group));
 
 
@@ -1293,7 +1372,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                         }
                     }
 
-                    dataManager.setViewAsPairs(item.isSelected(), renderOptions.groupByOption);
+                    dataManager.setViewAsPairs(item.isSelected(), renderOptions.groupByOption, renderOptions.getTagKey());
                     refresh();
                 }
             });
