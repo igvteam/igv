@@ -43,7 +43,7 @@ public class FTPClientNCBITest {
 
     static String host = "ftp-trace.ncbi.nih.gov";
 
-    private static String dirs = "1000genomes/ftp/data/HG00099/alignment/";
+    private static String dirs = "1000genomes/ftp/phase1/data/HG00099/alignment/";
     private static String filename = "HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam.bai";
     private static String file = dirs + "/" + filename;
     private static byte[] expectedBytes;
