@@ -581,7 +581,7 @@ public class IgvTools {
             File outputFile = new File(outputFileName);
             try {
                 indexer.createSamIndex(outputFile);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 // Delete output file as it is probably corrupt
                 if (outputFile.exists()) {
