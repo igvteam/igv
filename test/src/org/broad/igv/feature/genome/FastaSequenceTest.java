@@ -18,7 +18,7 @@
 
 package org.broad.igv.feature.genome;
 
-import org.junit.Before;
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +62,7 @@ public class FastaSequenceTest {
         String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
         FastaSequence sequence = new FastaSequence(path);
 
-         String chr = "chr02q";
+        String chr = "chr02q";
         int chrLen = 8059593;
         int start = chrLen - 10;
         int end = chrLen + 10;
@@ -79,7 +79,7 @@ public class FastaSequenceTest {
     @Test
     public void testPaddedReference() throws Exception {
 
-        String fasta = "test/data/fasta/ecoli_out.padded.fasta";
+        String fasta = TestUtils.DATA_DIR + "/fasta/ecoli_out.padded.fasta";
         String expectedSequence = "atcaccattaccac******AAcggtgcgggctgacgcgtacaggaaacacagaaaaaag";
         String chr = "NC_000913_bb";
         int start = 240;
@@ -95,24 +95,24 @@ public class FastaSequenceTest {
     @Test
     public void testPaddedReference2() throws Exception {
 
-        String fasta = "test/data/fasta/ecoli_out.padded.fasta";
+        String fasta = TestUtils.DATA_DIR + "/fasta/ecoli_out.padded.fasta";
         String chr = "NC_000913_bb";
         int start = 0;
         int end = 5081;
         FastaSequence sequence = new FastaSequence(fasta);
 
 
-        byte [] bytes = sequence.readSequence(chr, start, end);
+        byte[] bytes = sequence.readSequence(chr, start, end);
 
-        for(int i=60; i<100; i++) {
-            System.out.println(i + "  "  + (char) bytes[i]);
+        for (int i = 60; i < 100; i++) {
+            System.out.println(i + "  " + (char) bytes[i]);
         }
 
         FastaSequence s = new FastaSequence(fasta);
         SequenceHelper sequenceHelper = new SequenceHelper(s);
-          bytes =  sequenceHelper.getSequence(chr, start, end, end);
-        for(int i=60; i<100; i++) {
-            System.out.println(i + "  "  + (char) bytes[i]);
+        bytes = sequenceHelper.getSequence(chr, start, end, end);
+        for (int i = 60; i < 100; i++) {
+            System.out.println(i + "  " + (char) bytes[i]);
         }
 
     }

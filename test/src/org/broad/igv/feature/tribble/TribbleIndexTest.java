@@ -20,6 +20,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public class TribbleIndexTest {
      */
     public void testIntervalTree() throws Exception {
         //chr2:179,222,066-179,262,059<- CONTAINS TTN
-        String bedFile = "test/data/bed/Unigene.sample.bed";
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         String chr = "chr2";
         int start = 179222066;
         int end = 179262059;
@@ -58,7 +59,7 @@ public class TribbleIndexTest {
         indexFile.deleteOnExit();
 
 
-        BasicFeatureSource bfr =  BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
@@ -75,7 +76,7 @@ public class TribbleIndexTest {
         indexFile.deleteOnExit();
 
 
-        bfr =  BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
+        bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
         iter = bfr.query(chr, start, end);
         int countInterval = 0;
         while (iter.hasNext()) {

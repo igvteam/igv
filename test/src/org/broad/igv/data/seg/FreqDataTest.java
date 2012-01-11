@@ -46,7 +46,7 @@ public class FreqDataTest {
 
         Genome genome = TestUtils.loadGenome();
 
-        String segfile = "test/data/seg/canFam2_hg18.seg";
+        String segfile = TestUtils.DATA_DIR + "/seg/canFam2_hg18.seg";
 
 
         SegmentedDataSet sd = new SegmentedAsciiDataSet(new ResourceLocator(segfile), genome);

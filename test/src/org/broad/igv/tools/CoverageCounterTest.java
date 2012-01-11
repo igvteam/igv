@@ -19,8 +19,11 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,9 +45,24 @@ import static org.junit.Assert.assertEquals;
  */
 public class CoverageCounterTest {
 
+    static PreferenceManager preferenceManager;
+    static boolean useByteRange;
+
     @BeforeClass
-    public static void init() {
+    public static void setUpClass() throws Exception {
         Globals.setHeadless(true);
+        preferenceManager = PreferenceManager.getInstance();
+        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
+    }
+
+    @Before
+    public void setUp() {
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
     }
 
     @Test

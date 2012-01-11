@@ -22,7 +22,7 @@
  */
 package org.broad.igv.feature;
 
-import org.broad.igv.TestInformation;
+import org.broad.igv.util.TestUtils;
 import org.junit.*;
 
 import java.io.*;
@@ -60,7 +60,7 @@ public class ProbeToGeneMapTest {
      */
     @Test
     public void testAffy() throws FileNotFoundException, IOException {
-        File f = new File(TestInformation.LARGE_DATA_DIR + "/affy_probe_gene_mapping.txt");
+        File f = new File(TestUtils.LARGE_DATA_DIR + "/affy_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
         while ((nextLine = br.readLine()) != null) {
@@ -83,7 +83,7 @@ public class ProbeToGeneMapTest {
 
     @Test
     public void testAgilent() throws FileNotFoundException, IOException {
-        File f = new File(TestInformation.LARGE_DATA_DIR + "/agilent_probe_gene_mapping.txt");
+        File f = new File(TestUtils.LARGE_DATA_DIR + "/agilent_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
 
@@ -108,7 +108,7 @@ public class ProbeToGeneMapTest {
 
     @Test
     public void testIllumina() throws FileNotFoundException, IOException {
-        File f = new File(TestInformation.LARGE_DATA_DIR + "/illumina_probe_gene_mapping.txt");
+        File f = new File(TestUtils.LARGE_DATA_DIR + "/illumina_probe_gene_mapping.txt");
         BufferedReader br = new BufferedReader(new FileReader(f));
         String nextLine = br.readLine();
 

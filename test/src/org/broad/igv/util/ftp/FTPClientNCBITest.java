@@ -19,6 +19,7 @@
 package org.broad.igv.util.ftp;
 
 
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.util.ftp.FTPClient;
 import org.broad.tribble.util.ftp.FTPReply;
 import org.junit.After;
@@ -50,7 +51,7 @@ public class FTPClientNCBITest {
     FTPClient client;
 
     private void loadLocalFile() throws IOException {
-        String path = "test/data/bam/" + filename;
+        String path = TestUtils.DATA_DIR + "/bam/" + filename;
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(path));
         expectedBytes = new byte[bis.available()];
         bis.read(expectedBytes);

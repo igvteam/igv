@@ -18,7 +18,7 @@
 
 package org.broad.igv.util.ftp;
 
-import org.broad.igv.TestInformation;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.util.ftp.FTPUtils;
 import org.junit.Test;
 
@@ -35,8 +35,8 @@ public class FTPUtilsTest {
 
     @Test
     public void testResourceAvailable() throws Exception {
-        assertTrue(FTPUtils.resourceAvailable(new URL(TestInformation.AVAILABLE_FTP_URL)));
-        assertFalse(FTPUtils.resourceAvailable(new URL(TestInformation.UNAVAILABLE_FTP_URL)));
+        assertTrue(FTPUtils.resourceAvailable(new URL(TestUtils.AVAILABLE_FTP_URL)));
+        assertFalse(FTPUtils.resourceAvailable(new URL(TestUtils.UNAVAILABLE_FTP_URL)));
     }
 
 

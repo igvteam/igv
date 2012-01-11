@@ -22,6 +22,7 @@
  */
 package org.broad.igv.sam;
 
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,7 +54,7 @@ public class AsciiLineReaderTest {
 
     @Test
     public void testContent() throws Exception {
-        File testFile = new File("test/data/igv/recombRate.ens.igv.txt");
+        File testFile = new File(TestUtils.DATA_DIR + "/igv/recombRate.ens.igv.txt");
 
 
         AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));
@@ -71,7 +72,7 @@ public class AsciiLineReaderTest {
 
     @Test
     public void testSpeed() throws Exception {
-        File testFile = new File("test/data/cn/HindForGISTIC.hg16.cn");
+        File testFile = new File(TestUtils.DATA_DIR + "/cn/HindForGISTIC.hg16.cn");
 
 
         AsciiLineReader reader = new AsciiLineReader(new FileInputStream(testFile));

@@ -27,6 +27,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.broad.igv.util.TestUtils.DATA_DIR;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -50,7 +51,7 @@ public class DataUtilsTest {
      */
     @Test
     public void estimateRowCount() {
-        String filename = "test/data/cn/HindForGISTIC.hg16.cn";
+        String filename = DATA_DIR + "/cn/HindForGISTIC.hg16.cn";
         int actualRowCount = 56961;
 
         // looking for estimate within 20$
@@ -61,7 +62,7 @@ public class DataUtilsTest {
 
     @Test
     public void estimateProcessingTime() {
-        String filename = "test/data/cn/HindForGISTIC.hg16.cn";
+        String filename = DATA_DIR + "/cn/HindForGISTIC.hg16.cn";
 
         DataUtils.AsciiFileMetrics metrics = DataUtils.estimateFileMetrics(filename);
 

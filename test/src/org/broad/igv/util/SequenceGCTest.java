@@ -34,13 +34,13 @@ public class SequenceGCTest {
 
         //TODO Remove the Asserts, do a check at a position instead.
         SequenceGC sequence = new SequenceGC(5, 1);
-        sequence.ProcessPath("test/data/SequenceGC/chr1.txt", "test/data/SequenceGC/chr1.wig");
-        assertEquals("e145353e034285330dd9ba303b3796b3", MD5Checksum.getMD5Checksum("test/data/SequenceGC/chr1.wig"));
-        File wigFile1 = new File("test/data/SequenceGC/chr1.wig");
+        sequence.ProcessPath(TestUtils.DATA_DIR + "/SequenceGC/chr1.txt", TestUtils.DATA_DIR + "/SequenceGC/chr1.wig");
+        assertEquals("e145353e034285330dd9ba303b3796b3", MD5Checksum.getMD5Checksum(TestUtils.DATA_DIR + "/SequenceGC/chr1.wig"));
+        File wigFile1 = new File(TestUtils.DATA_DIR + "/SequenceGC/chr1.wig");
         wigFile1.delete();
-        sequence.ProcessPath("test/data/SequenceGC/chr2.txt", "test/data/SequenceGC/chr2.wig");
-        assertEquals("5217101601855f1e1721b0c0fc0ea560", MD5Checksum.getMD5Checksum("test/data/SequenceGC/chr2.wig"));
-        File wigFile2 = new File("test/data/SequenceGC/chr2.wig");
+        sequence.ProcessPath(TestUtils.DATA_DIR + "/SequenceGC/chr2.txt", TestUtils.DATA_DIR + "/SequenceGC/chr2.wig");
+        assertEquals("5217101601855f1e1721b0c0fc0ea560", MD5Checksum.getMD5Checksum(TestUtils.DATA_DIR + "/SequenceGC/chr2.wig"));
+        File wigFile2 = new File(TestUtils.DATA_DIR + "/SequenceGC/chr2.wig");
         wigFile2.delete();
     }
 }

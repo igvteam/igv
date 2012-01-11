@@ -19,11 +19,11 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.Globals;
-import org.broad.igv.TestInformation;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.bed.BEDCodec;
 import org.broad.tribble.bed.BEDFeature;
@@ -64,7 +64,7 @@ public class IGVToolsTest {
     @Test
     public void testLinearIndex() throws IOException {
 
-        String bedFile = "test/data/bed/test.bed";
+        String bedFile = TestUtils.DATA_DIR + "/bed/test.bed";
 
         File idxFile = new File(bedFile + ".idx");
         if (idxFile.exists()) {
@@ -84,14 +84,14 @@ public class IGVToolsTest {
 
     @Test
     public void testIntervalIndex33() throws Exception {
-        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
+        String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
         FeatureCodec codec = new VCF3Codec();
         testIntervalIndex(testFile, codec);
     }
 
     @Test
     public void testIntervalIndex40() throws Exception {
-        String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
+        String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
         FeatureCodec codec = new VCFCodec();
         testIntervalIndex(testFile, codec);
     }
@@ -129,7 +129,7 @@ public class IGVToolsTest {
     @Test
     public void testLargeBed() throws Exception {
         //chr2:178,599,764-179,830,787 <- CONTAINS TTN
-        String bedFile = "test/data/bed/Unigene.sample.sorted.bed";
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
 
         // Interval index
         File indexFile = new File(bedFile + ".idx");
@@ -197,21 +197,21 @@ public class IGVToolsTest {
     @Test
     public void testTileWigFile() throws IOException {
 
-        String inputFile = TestInformation.LARGE_DATA_DIR + "/phastCons_chr1.wig";
+        String inputFile = TestUtils.LARGE_DATA_DIR + "/phastCons_chr1.wig";
         testTile(inputFile, 0, 0);
     }
 
     @Test
     public void testTileCNFile() throws IOException {
 
-        String inputFile = "test/data/cn/HindForGISTIC.hg16.cn";
+        String inputFile = TestUtils.DATA_DIR + "/cn/HindForGISTIC.hg16.cn";
         testTile(inputFile, 5000000, 6000000);
     }
 
     private void testTile(String inputFile, int start, int end) throws IOException {
-        String file1 = "test/data/out/file1.tdf";
-        String file2 = "test/data/out/file2.tdf";
-        String genome = "test/data/genomes/hg18.unittest.genome";
+        String file1 = TestUtils.DATA_DIR + "/out/file1.tdf";
+        String file2 = TestUtils.DATA_DIR + "/out/file2.tdf";
+        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
 
         //todo Compare 2 outputs more meaningfully

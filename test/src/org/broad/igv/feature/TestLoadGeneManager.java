@@ -25,6 +25,7 @@ package org.broad.igv.feature;
 
 import org.broad.igv.Globals;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class TestLoadGeneManager {
     @Test
     public void main() throws IOException {
         Globals.setHeadless(true);
-        IgvTools.loadGenome("test/data/genomes/hg18.unittest.genome", true);
+        IgvTools.loadGenome(TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome", true);
         Feature feature = FeatureDB.getFeature("EGFR");
         assertNotNull(feature);
     }

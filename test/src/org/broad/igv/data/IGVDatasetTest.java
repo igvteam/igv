@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class IGVDatasetTest {
 
-    String cnFile = "test/data/igv/MIP_44.cn";
+    String cnFile = TestUtils.DATA_DIR + "/igv/MIP_44.cn";
     static Genome genome;
 
     public IGVDatasetTest() {

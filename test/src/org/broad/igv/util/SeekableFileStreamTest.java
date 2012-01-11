@@ -39,7 +39,7 @@ public class SeekableFileStreamTest {
     @Test
     public void testSeek() throws Exception {
         String expectedLine = "chr22\t14000000\t15000000\trecombRate\t0.182272\t0.20444\t0.160104\t0\t0\t0\t0\t0\t0";
-        File testFile = new File("test/data/igv/recombRate.igv.txt");
+        File testFile = new File(TestUtils.DATA_DIR + "/igv/recombRate.igv.txt");
         SeekableFileStream is = new SeekableFileStream(testFile);
         is.seek(149247);
         AsciiLineReader reader = new AsciiLineReader(is);

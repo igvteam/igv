@@ -1,5 +1,7 @@
 package org.broad.igv.batch;
 
+import org.broad.igv.util.TestUtils;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -35,8 +37,8 @@ public class TestPortBedgraph {
         }
     }
 
-    public static void main(String [] args) {
-        String testfile = "test/data/wig/jira_1409.bedgraph";
+    public static void main(String[] args) {
+        String testfile = TestUtils.DATA_DIR + "/wig/jira_1409.bedgraph";
         TestPortBedgraph test = new TestPortBedgraph();
         test.importBedGraph(testfile);
     }

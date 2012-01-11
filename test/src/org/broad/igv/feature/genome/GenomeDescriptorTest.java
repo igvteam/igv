@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.genome;
 
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -36,9 +37,9 @@ public class GenomeDescriptorTest {
     public void testSequencePathFix() {
 
         // Test for a directory that does exist
-        String seqLocation = "/test/data";
-        GenomeDescriptor desc = new GenomeZipDescriptor("", 1, false, "", "", "", "", "", seqLocation, null, null,false);
-        assertEquals("test/data", desc.getSequenceLocation());
+        String seqLocation = TestUtils.DATA_DIR;
+        GenomeDescriptor desc = new GenomeZipDescriptor("", 1, false, "", "", "", "", "", seqLocation, null, null, false);
+        assertEquals(TestUtils.DATA_DIR, desc.getSequenceLocation());
 
         // Test for a directory that does not exist
         seqLocation = "/foo/bar";

@@ -18,6 +18,7 @@
 
 package org.broad.igv.synteny;
 
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.util.List;
@@ -32,7 +33,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class SyntenyUtilsTest {
 
-    String testMappings = "test/data/igv/hg18_to_mm8.regions";
+    String testMappings = TestUtils.DATA_DIR + "/igv/hg18_to_mm8.regions";
 
     @Test
     public void testLoadMappings() {

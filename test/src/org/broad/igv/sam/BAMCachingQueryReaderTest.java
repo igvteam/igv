@@ -98,14 +98,12 @@ public class BAMCachingQueryReaderTest {
     }
 
     /**
-     * chr1:44,200,145-44,789,983
      * Test of query method, of class BAMCachingQueryReader.  The test compares
-     * the results of BAMCachingQueryReader with SamRemoteQueryReader, which
+     * the results of CachingQueryReader with BAMRemoteQueryReader, which
      * is assumed to be correct.
      */
     @Test
     public void testQuery() throws IOException {
-        //System.out.println("query");
         boolean contained = false;
 
         ResourceLocator loc = new ResourceLocator(server, testFile);

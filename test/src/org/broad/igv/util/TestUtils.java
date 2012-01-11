@@ -19,7 +19,6 @@
 package org.broad.igv.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.TestInformation;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 
@@ -30,7 +29,11 @@ import java.io.IOException;
  * @date Jul 28, 2010
  */
 public class TestUtils {
-    static String dataFileName = TestInformation.DATA_DIR + "/genomes/hg18.unittest.genome";
+    public static String DATA_DIR = "test/data";
+    static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";
+    public static String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
+    public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
+    public static String LARGE_DATA_DIR = "test/largedata";
 
 
 //    public static Genome loadGenome(String genomeId) throws IOException {

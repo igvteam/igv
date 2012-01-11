@@ -24,6 +24,7 @@ package org.broad.igv.feature;
 
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -76,7 +77,7 @@ public class FeatureUtilsTest {
 
     @Test
     public void testFeatureLookupInSmallVCF() throws IOException {
-        String vcfFile = "test/data/vcf/example4-last-gsnap-2.vcf.gz";
+        String vcfFile = TestUtils.DATA_DIR + "/vcf/example4-last-gsnap-2.vcf.gz";
         FeatureCodec codec = CodecFactory.getCodec(vcfFile);
         boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);

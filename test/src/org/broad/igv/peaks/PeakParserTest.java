@@ -18,13 +18,10 @@
 
 package org.broad.igv.peaks;
 
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -36,7 +33,7 @@ public class PeakParserTest {
     @Test
     public void testLoadPeaksBinary() throws Exception {
 
-        String f = "test/data/ichip/stat6.peak.bin";
+        String f = TestUtils.DATA_DIR + "/ichip/stat6.peak.bin";
         PeakParser parser = new PeakParser(f);
         List<Peak> peaks = parser.loadPeaks("chr1");
         assertEquals(14, peaks.size());

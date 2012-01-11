@@ -24,18 +24,20 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -59,7 +61,7 @@ public class GobyAlignmentQueryReaderTest {
                 "GL000209.1", "GL000202.1", "GL000214.1", "GL000220.1", "GL000198.1", "GL000208.1", "GL000221.1", "GL000213.1", "GL000234.1", "GL000222.1",
                 "GL000206.1", "GL000230.1"));
 
-        String thmFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.tmh";
+        String thmFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.tmh";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
         Set<String> seqs = reader.getSequenceNames();
         for (String name : seqs) {
@@ -74,7 +76,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testIterator() throws Exception {
 
-        String entriesFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.entries";
+        String entriesFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.entries";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
         CloseableIterator<Alignment> iter = reader.iterator();
 
@@ -92,7 +94,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testQueryPE() throws Exception {
 
-        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -112,7 +114,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testQueryNoAlignments() throws Exception {
 
-        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -132,7 +134,7 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testHasNextBug() throws Exception {
 
-        String entriesFile = "test/data/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -152,8 +154,8 @@ public class GobyAlignmentQueryReaderTest {
     @Test
     public void testOrdering() throws Exception {
 
-        String entriesFile = "test/data/goby/GDFQPGI-pickrellNA18486_yale.entries";
-        //   String entriesFile =  "test/data/goby/paired-end/paired-alignment.entries";
+        String entriesFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.entries";
+        //   String entriesFile =  TestUtils.DATA_DIR + "/goby/paired-end/paired-alignment.entries";
 
         GobyAlignmentQueryReader.supportsFileType(entriesFile);
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(entriesFile);
@@ -191,7 +193,7 @@ public class GobyAlignmentQueryReaderTest {
 
 
         Alignments.SequenceVariation mutation = Alignments.SequenceVariation.newBuilder().setFrom("AA").setTo("TC").
-                setPosition(10).setReadIndex(10).build();
+                setPosition(10).setReadIndex(10).build();//.setToQuality(???).build();
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
                 setQueryLength(50).setPosition(1000).setMatchingReverseStrand(false).
                 setQueryIndex(0).setTargetIndex(1).
@@ -202,9 +204,8 @@ public class GobyAlignmentQueryReaderTest {
         assertEquals(50, gAlignment.block[0].getBases().length);
     }
 
-      @Test
+    @Test
     public void testAlignmentLeftPadding() {
-
 
 
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
@@ -218,7 +219,7 @@ public class GobyAlignmentQueryReaderTest {
         assertEquals(30, gAlignment.block[0].getBases().length);
     }
 
-        @Test
+    @Test
     public void testAlignmentRightPadding() {
 
         Alignments.AlignmentEntry entry = Alignments.AlignmentEntry.newBuilder().
@@ -231,6 +232,7 @@ public class GobyAlignmentQueryReaderTest {
         assertEquals(1, gAlignment.block.length);
         assertEquals(30, gAlignment.block[0].getBases().length);
     }
+
     @Test
     public void testAlignmentOneReadInsertion() {
 
@@ -262,8 +264,8 @@ public class GobyAlignmentQueryReaderTest {
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
-         assertEquals(9, gAlignment.block[0].getBases().length);
-         assertEquals(41, gAlignment.block[1].getBases().length);
+        assertEquals(9, gAlignment.block[0].getBases().length);
+        assertEquals(41, gAlignment.block[1].getBases().length);
     }
 
     @Test
@@ -310,8 +312,8 @@ public class GobyAlignmentQueryReaderTest {
                 gAlignment = new GobyAlignment(null, entry);
         gAlignment.buildBlocks(entry);
         assertEquals(2, gAlignment.block.length);
-         assertEquals(24, gAlignment.block[0].getBases().length);
-         assertEquals(16, gAlignment.block[1].getBases().length);
+        assertEquals(24, gAlignment.block[0].getBases().length);
+        assertEquals(16, gAlignment.block[1].getBases().length);
     }
 
 

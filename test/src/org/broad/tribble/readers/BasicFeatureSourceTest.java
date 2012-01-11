@@ -19,7 +19,7 @@
 package org.broad.tribble.readers;
 
 
-import org.broad.igv.TestInformation;
+import org.broad.igv.util.TestUtils;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
@@ -51,7 +51,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BasicFeatureSourceTest {
 
-    static String testFile = TestInformation.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
+    static String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
     static BasicFeatureSource<VariantContext> bfr;
 
     @BeforeClass

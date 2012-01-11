@@ -25,17 +25,16 @@ package org.broad.igv.sam;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.sam.reader.SamQueryTextReader;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -66,7 +65,7 @@ public class SamQueryTextReaderTest {
     @Test
     public void testQuery() throws Exception {
 
-        String testFile = "test/data/sam/test_3.sam";
+        String testFile = TestUtils.DATA_DIR + "/sam/test_3.sam";
         createSamIndex(testFile);
 
         //chr3:125,963,167-125,972,750
@@ -101,7 +100,7 @@ public class SamQueryTextReaderTest {
     @Test
     public void testQuery2() throws Exception {
 
-        String testFile = "test/data/sam/test_2_plus_one_read.sam";
+        String testFile = TestUtils.DATA_DIR + "/sam/test_2_plus_one_read.sam";
         createSamIndex(testFile);
 
         //chr3:125,963,167-125,972,750
@@ -135,7 +134,7 @@ public class SamQueryTextReaderTest {
     @Test
     public void testQuery3() throws Exception {
 
-        String testFile = "test/data/sam/test_minus_converted.sam";
+        String testFile = TestUtils.DATA_DIR + "/sam/test_minus_converted.sam";
         createSamIndex(testFile);
 
         //chr3:125,963,167-125,972,750
