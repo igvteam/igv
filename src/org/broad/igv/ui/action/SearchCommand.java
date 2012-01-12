@@ -21,7 +21,6 @@ package org.broad.igv.ui.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -305,30 +304,31 @@ public class SearchCommand implements Command {
      */
     Set<ResultType> checkTokenType(String token) {
         token = token.trim();
+
         //Regexp for a number with commas in it (no periods)
         String num_withcommas = "(((\\d)+,?)+)";
 
         //chromosome can include anything except whitespace
         String chromo_string = "(\\S)+";
 
-        RE chromo = new RE("^" + chromo_string + "$", RE.MATCH_CASEINDEPENDENT);
+
+        String chromo = chromo_string;
         //This will match chr1:1-100, chr1:1, chr1  1, chr1 1   100
-        RE chromo_range = new RE("^" + chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*$",
-                RE.MATCH_CASEINDEPENDENT);
+        String chromo_range = chromo_string + "(:|(\\s)+)" + num_withcommas + "(-|(\\s)+)?" + num_withcommas + "?(\\s)*";
 
         //Simple feature
-        RE feature = new RE("^" + chromo_string + "$", RE.MATCH_CASEINDEPENDENT);
+        String feature = chromo_string;
         //Mutation notation. e.g. KRAS:G12C
-        RE feature_mut = new RE("^" + chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]$", RE.MATCH_CASEINDEPENDENT);
+        String feature_mut = chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]";
 
         Set<ResultType> possibles = new HashSet<ResultType>();
-        Map<ResultType, RE> matchers = new HashMap<ResultType, RE>();
+        Map<ResultType, String> matchers = new HashMap<ResultType, String>();
         matchers.put(ResultType.CHROMOSOME, chromo);
         matchers.put(ResultType.FEATURE, feature);
         matchers.put(ResultType.LOCUS, chromo_range);
         matchers.put(ResultType.FEATURE_MUT, feature_mut);
         for (ResultType type : matchers.keySet()) {
-            if (matchers.get(type).match(token)) {
+            if (token.matches(matchers.get(type))) { //note: entire string must match
                 possibles.add(type);
             }
         }
