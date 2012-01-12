@@ -75,7 +75,7 @@ public class CodecFactory {
             return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.UCSCGENE);
         } else if (fn.endsWith(".repmask")) {
             return new REPMaskCodec();
-        } else if (fn.endsWith(".gff3")) {
+        } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
             return new GFFCodec(GFFCodec.Version.GFF3);
         } else if (fn.endsWith(".gff") || fn.endsWith(".gtf")) {
             return new GFFCodec();

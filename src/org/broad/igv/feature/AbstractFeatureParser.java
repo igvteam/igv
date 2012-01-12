@@ -81,7 +81,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.GENEPRED);
         } else if (tmp.contains("ucscgene")) {
             return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.UCSCGENE);
-        } else if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3")) {
+        } else if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3") || tmp.endsWith("gvf")) {
             return new GFFParser(path);
         } else if (tmp.endsWith("embl")) {
             return new EmblFeatureTableParser();

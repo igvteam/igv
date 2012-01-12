@@ -47,6 +47,7 @@ import org.broad.igv.track.*;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
+import org.broad.igv.ts.TimeTrack;
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
@@ -1538,6 +1539,7 @@ public class IGV {
         doRefresh();
     }
 
+
     public Set<TrackType> getLoadedTypes() {
         Set<TrackType> types = new HashSet();
         for (Track t : getAllTracks(false)) {
@@ -1592,7 +1594,7 @@ public class IGV {
         if (filename.contains("refflat") || filename.contains("ucscgene") ||
                 filename.contains("genepred") || filename.contains("ensgene") ||
                 filename.contains("refgene") ||
-                filename.endsWith("gff") || filename.endsWith("gtf") ||
+                filename.endsWith("gff") || filename.endsWith("gtf") || filename.endsWith("gvf") ||
                 filename.endsWith("gff3") || filename.endsWith("embl") ||
                 filename.endsWith("bed") || filename.endsWith("gistic") ||
                 filename.endsWith("bedz") || filename.endsWith("repmask") ||
@@ -2367,6 +2369,16 @@ public class IGV {
                 LongRunningTask.submit(new BatchRunner(igvArgs.getBatchFile()));
             }
         }
+    }
+
+
+
+    // Hack for AffecitveComputing test
+    public void addTimeTrack() {
+        TrackPanel panel = getTrackPanel(FEATURE_PANEL_NAME);
+        panel.addTrack(new TimeTrack("Time"));
+
+
     }
 
 

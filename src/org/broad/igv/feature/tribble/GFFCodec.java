@@ -146,7 +146,9 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
      * @return true if potentialInput can be parsed, false otherwise
      */
     public boolean canDecode(String path) {
-        return path.toLowerCase().endsWith(".gff") || path.toLowerCase().endsWith(".gff3");
+        final String pathLowerCase = path.toLowerCase();
+        return pathLowerCase.endsWith(".gff") || pathLowerCase.endsWith(".gff3") ||
+                pathLowerCase.endsWith(".gvf");
     }
 
     public BasicFeature decodeLoc(String line) {

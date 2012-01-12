@@ -123,7 +123,8 @@ public class GFFParser implements FeatureParser {
 
     public GFFParser(String path) {
         // Assume V2 until proven otherwise
-        if (path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz")) {
+        if (path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz") ||
+               path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz") ) {
             helper = new GFF3Helper();
         } else {
             helper = new GFF2Helper();
@@ -140,7 +141,9 @@ public class GFFParser implements FeatureParser {
 
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
-        if (locator.getPath().toLowerCase().endsWith("gff3") || locator.getPath().toLowerCase().endsWith("gff3.gz")) {
+        final String pathLowerCase = locator.getPath().toLowerCase();
+        if (pathLowerCase.endsWith("gff3") || pathLowerCase.endsWith("gff3.gz") ||
+               pathLowerCase.endsWith("gvf") || pathLowerCase.endsWith("gvf.gz") ) {
             helper = new GFF3Helper();
         }
 
