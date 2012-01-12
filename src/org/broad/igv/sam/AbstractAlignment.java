@@ -259,23 +259,21 @@ public abstract class AbstractAlignment implements Alignment {
 
 
     public Strand getFirstOfPairStrand() {
-        Strand strand;
         if (isPaired()) {
             if (isFirstOfPair()) {
-                strand = isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
             } else {
                 // If we have a mate, the mate must be the firstOfPair
                 ReadMate mate = getMate();
                 if (mate != null && mate.isMapped()) {
-                    strand = mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                    return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
                 }
             }
-            strand = Strand.NONE;
         } else {
             // This alignment is not paired -- by definition "firstOfPair" is this alignment
-            strand = isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
         }
-        return strand;
+        return Strand.NONE;
     }
 
     public void setMateSequence(String sequence) {
