@@ -25,8 +25,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
@@ -188,7 +188,7 @@ public class ReferenceFrame {
 
         if (FrameManager.isGeneListMode()) {
             double f = Math.pow(2.0, zoomFactor);
-            locationScale = Math.max(minScale, locationScale/f);
+            locationScale = Math.max(minScale, locationScale / f);
             double newOrigin = Math.round(newCenter - ((widthInPixels / 2) * locationScale));
             setOrigin(newOrigin);
             imputeZoom(origin, setEnd);
@@ -592,11 +592,7 @@ public class ReferenceFrame {
         } else {
 
             Range range = getCurrentRange();
-            String startStr = NUMBER_FORMAT.format(range.getStart());
-            String endStr = NUMBER_FORMAT.format(range.getEnd());
-            String position = range.getChr() + ":" + startStr + "-" + endStr;
-
-            return position;
+            return Locus.getFormattedLocusString(range.getChr(), range.getStart(), range.getEnd());
         }
     }
 
