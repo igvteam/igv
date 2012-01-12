@@ -22,6 +22,7 @@ package org.broad.igv.util;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.renderer.*;
+import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.color.ColorUtilities;
@@ -274,7 +275,7 @@ public class ParsingUtils {
     /**
      * Split the string into tokesn separated by tab or space(s).  This method
      * was added so support wig and bed files, which apparently accept space delimieters.
-     *
+     * <p/>
      * Note:  TODO REGEX expressions are not used for speed.  This should be re-evaluated with JDK 1.5 or later
      *
      * @param aString the string to split
@@ -312,6 +313,7 @@ public class ParsingUtils {
         }
         return nTokens;
     }
+
     /**
      * Method description
      *
@@ -387,130 +389,143 @@ public class ParsingUtils {
                         }
                     } else if (key.equals("description")) {
                         trackProperties.setDescription(value);
-                    } else if (key.equals("itemrgb")) {
-                        trackProperties.setItemRGB(value.toLowerCase().equals("on") || value.equals("1"));
-                    } else if (key.equals("usescore")) {
-                        trackProperties.setUseScore(value.equals("1"));
-                    } else if (key.equals("color")) {
-                        Color color = ColorUtilities.stringToColor(value);
-                        trackProperties.setColor(color);
-                    } else if (key.equals("altcolor")) {
-                        Color color = ColorUtilities.stringToColor(value);
-                        trackProperties.setAltColor(color);
-                    } else if (key.equals("midcolor")) {
-                        Color color = ColorUtilities.stringToColor(value);
-                        trackProperties.setMidColor(color);
-                    } else if (key.equals("autoscale")) {
-                        boolean autoscale = value.equals("on");
-                        trackProperties.setAutoScale(autoscale);
-                    } else if (key.equals("maxheightpixels")) {
-                        // There should be 3 values per UCSC spec,  max:default:min.  In the past we have accepted
-                        // 2 values,  def:min,  so keep this for backwards compatibility.   IGV currently doesn't
-                        // have a "max height"
-                        String[] maxDefMin = value.split(":");
-                        if (maxDefMin.length >= 2) {
-                            int defIDX = (maxDefMin.length == 2 ? 0 : 1);
-                            trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
-                            trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
-                        }
-
-                    } else if (key.equals("url")) {
-                        trackProperties.setUrl(value);
-                    } else if (key.equals("graphtype")) {
-
-                        if (value.equals("bar")) {
-                            trackProperties.setRendererClass(BarChartRenderer.class);
-                        } else if (value.equals("points")) {
-                            trackProperties.setRendererClass(ScatterplotRenderer.class);
-                            trackProperties.setWindowingFunction(WindowFunction.none);
-                        } else if (value.equals("line")) {
-                            trackProperties.setRendererClass(LineplotRenderer.class);
-                        } else if (value.equals("heatmap")) {
-                            trackProperties.setRendererClass(HeatmapRenderer.class);
-                        } else if (value.equals("junctions")) {
-                            //dhmay adding check for graphType=junction.  name is also checked
-                            trackProperties.setRendererClass(SpliceJunctionRenderer.class);
-                        } else if (value.equals("genotype")) {
-                            //dhmay adding check for graphType=junction.  name is also checked
-                            trackProperties.setRendererClass(GenotypeRenderer.class);
-                        }
-                    } else if (key.toLowerCase().equals("viewlimits")) {
-                        String[] limits = value.split(":");
-                        if (limits.length == 2) {
-                            try {
-                                float min = Float.parseFloat(limits[0].trim());
-                                float max = Float.parseFloat(limits[1].trim());
-                                trackProperties.setMinValue(min);
-                                trackProperties.setMaxValue(max);
-                            } catch (NumberFormatException e) {
-                                log.error("viewLimits values must be numeric: " + value);
+                    } else {
+                        final String valueLowerCase = value.toLowerCase();
+                        if (key.equals("itemrgb")) {
+                            trackProperties.setItemRGB(valueLowerCase.equals("on") || value.equals("1"));
+                        } else if (key.equals("usescore")) {
+                            trackProperties.setUseScore(value.equals("1"));
+                        } else if (key.equals("color")) {
+                            Color color = ColorUtilities.stringToColor(value);
+                            trackProperties.setColor(color);
+                        } else if (key.equals("altcolor")) {
+                            Color color = ColorUtilities.stringToColor(value);
+                            trackProperties.setAltColor(color);
+                        } else if (key.equals("midcolor")) {
+                            Color color = ColorUtilities.stringToColor(value);
+                            trackProperties.setMidColor(color);
+                        } else if (key.equals("autoscale")) {
+                            boolean autoscale = value.equals("on");
+                            trackProperties.setAutoScale(autoscale);
+                        } else if (key.equals("maxheightpixels")) {
+                            // There should be 3 values per UCSC spec,  max:default:min.  In the past we have accepted
+                            // 2 values,  def:min,  so keep this for backwards compatibility.   IGV currently doesn't
+                            // have a "max height"
+                            String[] maxDefMin = value.split(":");
+                            if (maxDefMin.length >= 2) {
+                                int defIDX = (maxDefMin.length == 2 ? 0 : 1);
+                                trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
+                                trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
                             }
-                        }
-                    } else if (key.equals("midrange")) {
-                        String[] limits = value.split(":");
-                        if (limits.length == 2) {
-                            try {
-                                float from = Float.parseFloat(limits[0].trim());
-                                float to = Float.parseFloat(limits[1].trim());
-                                trackProperties.setNeutralFromValue(from);
-                                trackProperties.setNeutralToValue(to);
-                            } catch (NumberFormatException e) {
-                                log.error("midrange values must be numeric: " + value);
+
+                        } else if (key.equals("url")) {
+                            trackProperties.setUrl(value);
+                        } else if (key.equals("graphtype")) {
+
+                            if (value.equals("bar")) {
+                                trackProperties.setRendererClass(BarChartRenderer.class);
+                            } else if (value.equals("points")) {
+                                trackProperties.setRendererClass(ScatterplotRenderer.class);
+                                trackProperties.setWindowingFunction(WindowFunction.none);
+                            } else if (value.equals("line")) {
+                                trackProperties.setRendererClass(LineplotRenderer.class);
+                            } else if (value.equals("heatmap")) {
+                                trackProperties.setRendererClass(HeatmapRenderer.class);
+                            } else if (value.equals("junctions")) {
+                                //dhmay adding check for graphType=junction.  name is also checked
+                                trackProperties.setRendererClass(SpliceJunctionRenderer.class);
+                            } else if (value.equals("genotype")) {
+                                //dhmay adding check for graphType=junction.  name is also checked
+                                trackProperties.setRendererClass(GenotypeRenderer.class);
                             }
+                        } else if (key.toLowerCase().equals("viewlimits")) {
+                            String[] limits = value.split(":");
+                            if (limits.length == 2) {
+                                try {
+                                    float min = Float.parseFloat(limits[0].trim());
+                                    float max = Float.parseFloat(limits[1].trim());
+                                    trackProperties.setMinValue(min);
+                                    trackProperties.setMaxValue(max);
+                                } catch (NumberFormatException e) {
+                                    log.error("viewLimits values must be numeric: " + value);
+                                }
+                            }
+                        } else if (key.equals("midrange")) {
+                            String[] limits = value.split(":");
+                            if (limits.length == 2) {
+                                try {
+                                    float from = Float.parseFloat(limits[0].trim());
+                                    float to = Float.parseFloat(limits[1].trim());
+                                    trackProperties.setNeutralFromValue(from);
+                                    trackProperties.setNeutralToValue(to);
+                                } catch (NumberFormatException e) {
+                                    log.error("midrange values must be numeric: " + value);
+                                }
+                            }
+                        } else if (key.equals("ylinemark")) {
+                            try {
+                                float yLine = Float.parseFloat(value);
+                                trackProperties.setyLine(yLine);
+                            } catch (NumberFormatException e) {
+                                log.error("Number format exception in track line (ylinemark): " + nextLine);
+                            }
+                        } else if (key.equals("ylineonoff")) {
+                            trackProperties.setDrawYLine(value.equals("on"));
+                        } else if (key.equals("windowingfunction")) {
+                            if (value.equals("maximum")) {
+                                trackProperties.setWindowingFunction(WindowFunction.max);
+                            } else if (value.equals("minimum")) {
+                                trackProperties.setWindowingFunction(WindowFunction.min);
+
+                            } else if (value.equals("mean")) {
+                                trackProperties.setWindowingFunction(WindowFunction.mean);
+
+                            } else if (value.equals("median")) {
+                                trackProperties.setWindowingFunction(WindowFunction.median);
+
+                            } else if (value.equals("percentile10")) {
+                                trackProperties.setWindowingFunction(WindowFunction.percentile10);
+
+                            } else if (value.equals("percentile90")) {
+                                trackProperties.setWindowingFunction(WindowFunction.percentile90);
+                            } else if (value.equals("none")) {
+                                trackProperties.setWindowingFunction(WindowFunction.none);
+                            }
+                        } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow") ||
+                                key.equals("visibilitywindow")) {
+                            try {
+                                int windowSize = Integer.parseInt(value);
+                                trackProperties.setFeatureVisibilityWindow(windowSize);
+                            } catch (NumberFormatException e) {
+                                log.error(key + " must be numeric: " + nextLine);
+
+                            }
+
+                        } else if (key.equals("scaletype")) {
+                            if (value.equals("log")) {
+                                trackProperties.setLogScale(true);
+                            }
+                        } else if (key.equals("gfftags")) {
+                            // Any value other than 0 or off => on
+                            boolean gffTags = !(value.equals("0") || (valueLowerCase.equals("off")));
+                            trackProperties.setGffTags(gffTags);
+                        } else if (key.equals("sortable")) {
+                            // Any value other than 0 or off => on
+                            boolean sortable = (value.equals("1") || (valueLowerCase.equals("true")));
+                            trackProperties.setSortable(sortable);
+                        } else if (key.equals("alternateexoncolor")) {
+                            trackProperties.setAlternateExonColor(valueLowerCase.equals("on") || value.equals("1"));
+                        } else if (key.equals("visibility")) {
+                            if (valueLowerCase.equals("1") || valueLowerCase.equals("dense")) {
+                                trackProperties.setDisplayMode(Track.DisplayMode.COLLAPSED);
+                            } else if (valueLowerCase.equals("2") || valueLowerCase.equals("3") || valueLowerCase.equals("pack")) {
+                                trackProperties.setDisplayMode(Track.DisplayMode.EXPANDED);
+                            } else if (valueLowerCase.equals("4") || valueLowerCase.equals("squish")) {
+                                trackProperties.setDisplayMode(Track.DisplayMode.SQUISHED);
+                            }
+                        } else if (key.equals("genome") || key.equals("db")) {
+                             trackProperties.setGenome(value);
                         }
-                    } else if (key.equals("ylinemark")) {
-                        try {
-                            float yLine = Float.parseFloat(value);
-                            trackProperties.setyLine(yLine);
-                        } catch (NumberFormatException e) {
-                            log.error("Number format exception in track line (ylinemark): " + nextLine);
-                        }
-                    } else if (key.equals("ylineonoff")) {
-                        trackProperties.setDrawYLine(value.equals("on"));
-                    } else if (key.equals("windowingfunction")) {
-                        if (value.equals("maximum")) {
-                            trackProperties.setWindowingFunction(WindowFunction.max);
-                        } else if (value.equals("minimum")) {
-                            trackProperties.setWindowingFunction(WindowFunction.min);
-
-                        } else if (value.equals("mean")) {
-                            trackProperties.setWindowingFunction(WindowFunction.mean);
-
-                        } else if (value.equals("median")) {
-                            trackProperties.setWindowingFunction(WindowFunction.median);
-
-                        } else if (value.equals("percentile10")) {
-                            trackProperties.setWindowingFunction(WindowFunction.percentile10);
-
-                        } else if (value.equals("percentile90")) {
-                            trackProperties.setWindowingFunction(WindowFunction.percentile90);
-                        } else if (value.equals("none")) {
-                            trackProperties.setWindowingFunction(WindowFunction.none);
-                        }
-                    } else if (key.equals("maxfeaturewindow") || key.equals("featurevisibilitywindow") ||
-                            key.equals("visibilitywindow")) {
-                        try {
-                            int windowSize = Integer.parseInt(value);
-                            trackProperties.setFeatureVisibilityWindow(windowSize);
-                        } catch (NumberFormatException e) {
-                            log.error(key + " must be numeric: " + nextLine);
-
-                        }
-
-                    } else if (key.equals("scaletype")) {
-                        if (value.equals("log")) {
-                            trackProperties.setLogScale(true);
-                        }
-                    } else if (key.equals("gfftags")) {
-                        // Any value other than 0 or off => on
-                        boolean gffTags = !(value.equals("0") || (value.toLowerCase().equals("off")));
-                        trackProperties.setGffTags(gffTags);
-                    } else if (key.equals("sortable")) {
-                        // Any value other than 0 or off => on
-                        boolean sortable = (value.equals("1") || (value.toLowerCase().equals("true")));
-                        trackProperties.setSortable(sortable);
-                    } else if (key.equals("alternateexoncolor")) {
-                        trackProperties.setAlternateExonColor(value.toLowerCase().equals("on") || value.equals("1"));
                     }
                 }
             }

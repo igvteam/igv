@@ -238,21 +238,39 @@ public class CommandListener implements Runnable {
         mainFrame.setAlwaysOnTop(true);
         mainFrame.setAlwaysOnTop(false);
 
+        //track%20type=bigBed%20name=%27hES_HUES1_p28.RRBS_CpG_meth%27%20description=%27RRBS%20CpG%20methylation%20for%20hES_HUES1_p28.RRBS%27%20visibility=4%20useScore=1%20color=0,60,120
+
         if (command.equals("/load")) {
-            if (params.containsKey("file")) {
+            String file = params.get("file");
+            if (file == null) {
+                file = params.get("bigDataURL"); // <- UCSC track line
+            }
+            if(file == null) {
+                file = params.get("sessionURL");  // <- older IGV option
+            }
+            if(file == null) {
+                file = params.get("dataURL"); // <- Another UCSC option
+            }
+
+
+            if (file != null) {
                 String genomeID = params.get("genome");
+                if (genomeID == null) {
+                    genomeID = params.get("db");  // <- UCSC track line param
+                }
                 String mergeValue = params.get("merge");
                 String locus = params.get("locus");
+                String name = params.get("name");
+
                 if (genomeID != null) {
                     IGV.getFirstInstance().selectGenomeFromList(genomeID);
                 }
-                if(genomeID != null) genomeID = URLDecoder.decode(genomeID);
-                if(mergeValue != null) mergeValue = URLDecoder.decode(mergeValue);
-                if(locus != null) locus = URLDecoder.decode(locus);
+                if (genomeID != null) genomeID = URLDecoder.decode(genomeID);
+                if (mergeValue != null) mergeValue = URLDecoder.decode(mergeValue);
+                if (locus != null) locus = URLDecoder.decode(locus);
 
 
                 // Default for merge is "false" for session files,  "true" otherwise
-                String file = params.get("file");
                 boolean merge;
                 if (mergeValue != null) {
                     // Explicit setting
@@ -265,9 +283,8 @@ public class CommandListener implements Runnable {
                     merge = true;
                 }
 
-                String name = params.get("name");
 
-                result = cmdExe.loadFiles(file, locus, merge, name);
+                result = cmdExe.loadFiles(file, locus, merge, name, params);
             } else {
                 return ("ERROR Parameter \"file\" is required");
             }
@@ -289,14 +306,19 @@ public class CommandListener implements Runnable {
      * @return
      */
     private Map<String, String> parseParameters(String parameterString) {
+
+        // Do a partial decoding now (ampersands only)
+        parameterString = parameterString.replace("&amp;", "&");
+
         HashMap<String, String> params = new HashMap();
         String[] kvPairs = parameterString.split("&");
         for (String kvString : kvPairs) {
-            String[] kv = kvString.split("=");
+            // Split on the first "=",  all others are part of the parameter value
+            String[] kv = kvString.split("=", 2);
             if (kv.length == 1) {
                 params.put(kv[0], null);
             } else {
-                String key = kv[0];
+                String key = URLDecoder.decode(kv[0]);
                 // Special treatment of locus string, need to preserve encoding of spaces
                 String value = key.equals("locus") ? kv[1] : URLDecoder.decode(kv[1]);
                 params.put(kv[0], value);

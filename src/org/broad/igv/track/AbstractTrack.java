@@ -557,9 +557,11 @@ public abstract class AbstractTrack implements Track {
                 colorScale = new ContinuousColorScale(neutralFrom, min, neutralTo, max, minColor, midColor, maxColor);
             }
 
-
         }
 
+        if(properties.getDisplayMode() != null) {
+             this.setDisplayMode(properties.getDisplayMode());
+         }
 
         if (properties.getName() != null) {
             name = properties.getName();

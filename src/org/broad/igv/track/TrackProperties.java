@@ -31,17 +31,13 @@ import java.awt.*;
  */
 public class TrackProperties {
 
-    public boolean isAlternateExonColor() {
-        return alternateExonColor;
-    }
-
-    public void setAlternateExonColor(boolean alternateExonColor) {
-        this.alternateExonColor = alternateExonColor;
-    }
 
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
     }
+
+    private Track.DisplayMode displayMode;
+
 
     /**
      * Base coordinate system,  either 0 or 1
@@ -381,5 +377,19 @@ public class TrackProperties {
         return gffTags;
     }
 
+    public boolean isAlternateExonColor() {
+         return alternateExonColor;
+     }
 
+     public void setAlternateExonColor(boolean alternateExonColor) {
+         this.alternateExonColor = alternateExonColor;
+     }
+
+     public void setDisplayMode(Track.DisplayMode displayMode) {
+         this.displayMode = displayMode;
+     }
+
+    public Track.DisplayMode getDisplayMode() {
+        return displayMode;
+    }
 }

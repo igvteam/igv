@@ -220,6 +220,11 @@ public class CommandExecutor {
      * @throws IOException
      */
     String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
+           return loadFiles(fileString, locus, merge, name, null);
+    }
+
+    String loadFiles(final String fileString, final String locus, final boolean merge, String name, Map<String, String> params) throws IOException {
+
 
         log.debug("Run load files");
 
@@ -227,7 +232,7 @@ public class CommandExecutor {
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
         List<String> sessionPaths = new ArrayList<String>();
 
-        if (!merge) {
+         if (!merge) {
             // If this is a session file start fresh without asking, otherwise ask
             boolean unload = !merge;
             if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
@@ -264,6 +269,10 @@ public class CommandExecutor {
                 if (name != null) {
                     rl.setName(name);
                 }
+                if(params != null) {
+                    String trackLine = createTrackLine(params);
+                    rl.setTrackLine(trackLine);
+                }
                 fileLocators.add(rl);
             }
         }
@@ -279,6 +288,24 @@ public class CommandExecutor {
         }
 
         return "OK";
+    }
+
+    /**
+     * Convert the parameter map to a UCSC track line.
+     * @param params
+     * @return
+     */
+    private String createTrackLine(Map<String, String> params) {
+        return params.get("hgt.customText");
+//        StringBuffer buf = new StringBuffer();
+//        buf.append("track ");
+//        for(Map.Entry<String, String> entry : params.entrySet()) {
+//            buf.append(entry.getKey());
+//            buf.append("=");
+//            buf.append(entry.getValue());
+//            buf.append(" ");
+//        }
+//        return buf.toString();
     }
 
 
