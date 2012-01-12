@@ -678,6 +678,9 @@ public class TrackLoader {
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
         TrackType type = reader.getTrackType();
+        if(type == TrackType.AFFECTIVE) {
+            doAffectiveHacks();
+        }
 
         if (log.isDebugEnabled()) {
             log.debug("Parsing track line ");
@@ -1221,6 +1224,14 @@ public class TrackLoader {
         }
 
         return fn.endsWith(".vcf4") || fn.endsWith(".vcf") || fn.endsWith(".bed") || fn.endsWith(".repmask") ||
-                fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx");
+                fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx") ||
+                fn.endsWith(".gvf");
     }
+
+
+
+    private void doAffectiveHacks() {
+         IGV.getInstance().addTimeTrack();
+    }
+
 }
