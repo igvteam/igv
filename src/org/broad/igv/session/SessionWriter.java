@@ -23,8 +23,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.session.SessionReader.SessionAttribute;
-import org.broad.igv.session.SessionReader.SessionElement;
+import org.broad.igv.session.IGVSessionReader.SessionAttribute;
+import org.broad.igv.session.IGVSessionReader.SessionElement;
 import org.broad.igv.track.AttributeManager;
 import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
@@ -253,7 +253,7 @@ public class SessionWriter {
         Element hiddenAttributes = document.createElement(SessionElement.HIDDEN_ATTRIBUTES.getText());
         for (String attribute : session.getHiddenAttributes()) {
              Element regionElement = document.createElement(SessionElement.ATTRIBUTE.getText());
-             regionElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), attribute);
+             regionElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), attribute);
              hiddenAttributes.appendChild(regionElement);
          }
          globalElement.appendChild(hiddenAttributes);
@@ -266,7 +266,7 @@ public class SessionWriter {
         if (geneList != null) {
 
             Element geneListElement = document.createElement(SessionElement.GENE_LIST.getText());
-            geneListElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), geneList.getName());
+            geneListElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), geneList.getName());
 
             StringBuffer genes = new StringBuffer();
             for (String gene : geneList.getLoci()) {
@@ -283,10 +283,10 @@ public class SessionWriter {
             for (ReferenceFrame frame : FrameManager.getFrames()) {
 
                 Element frameElement = document.createElement(SessionElement.FRAME.getText());
-                frameElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), frame.getName());
-                frameElement.setAttribute(SessionReader.SessionAttribute.CHR.getText(), frame.getChrName());
-                frameElement.setAttribute(SessionReader.SessionAttribute.START.getText(), String.valueOf(frame.getOrigin()));
-                frameElement.setAttribute(SessionReader.SessionAttribute.END.getText(), String.valueOf(frame.getEnd()));
+                frameElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), frame.getName());
+                frameElement.setAttribute(IGVSessionReader.SessionAttribute.CHR.getText(), frame.getChrName());
+                frameElement.setAttribute(IGVSessionReader.SessionAttribute.START.getText(), String.valueOf(frame.getOrigin()));
+                frameElement.setAttribute(IGVSessionReader.SessionAttribute.END.getText(), String.valueOf(frame.getEnd()));
 
                 geneListElement.appendChild(frameElement);
 
@@ -374,8 +374,8 @@ public class SessionWriter {
                 for (Track track : tracks) {
 
                     Element trackElement = document.createElement(SessionElement.TRACK.getText());
-                    trackElement.setAttribute(SessionReader.SessionAttribute.ID.getText(), track.getId());
-                    trackElement.setAttribute(SessionReader.SessionAttribute.NAME.getText(), track.getName());
+                    trackElement.setAttribute(IGVSessionReader.SessionAttribute.ID.getText(), track.getId());
+                    trackElement.setAttribute(IGVSessionReader.SessionAttribute.NAME.getText(), track.getName());
                     for (Map.Entry<String, String> attrValue : track.getPersistentState().entrySet()) {
                         trackElement.setAttribute(attrValue.getKey(), attrValue.getValue());
                     }

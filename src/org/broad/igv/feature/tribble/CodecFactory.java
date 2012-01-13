@@ -24,7 +24,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.peaks.PeakCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.bed.BEDCodec;
+import org.broad.tribble.bed.IGVBEDCodec;
 import org.broad.tribble.util.BlockCompressedInputStream;
 import org.broad.tribble.util.SeekableStreamFactory;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
@@ -66,7 +66,7 @@ public class CodecFactory {
         } else if (fn.endsWith(".vcf")) {
             return new VCFWrapperCodec(getVCFCodec(path));
         } else if (fn.endsWith(".bed")) {
-            return new BEDCodec(BEDCodec.StartOffset.ZERO);
+            return new IGVBEDCodec(IGVBEDCodec.StartOffset.ZERO);
         } else if (fn.contains("refflat")) {
             return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.REFFLAT);
         } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {

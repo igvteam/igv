@@ -256,7 +256,7 @@ public class CommandExecutor {
             // Skip already loaded files TODO -- make this optional?  Check for change?
             if (loadedFiles.contains(f)) continue;
 
-            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3")) {
+            if (f.endsWith(".xml") || f.endsWith(".php") || f.endsWith(".php3") || f.endsWith(".session")) {
                 sessionPaths.add(f);
             } else {
                 ResourceLocator rl = new ResourceLocator(f);

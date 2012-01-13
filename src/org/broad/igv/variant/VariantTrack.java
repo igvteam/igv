@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
-import org.broad.igv.session.SessionReader;
+import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -1103,11 +1103,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public Map<String, String> getPersistentState() {
 
         Map<String, String> attributes = super.getPersistentState();
-        attributes.put(SessionReader.SessionAttribute.RENDER_NAME.getText(), String.valueOf(renderID));
+        attributes.put(IGVSessionReader.SessionAttribute.RENDER_NAME.getText(), String.valueOf(renderID));
 
         ColorMode mode = getColorMode();
         if (mode != null) {
-            attributes.put(SessionReader.SessionAttribute.COLOR_MODE.getText(), mode.toString());
+            attributes.put(IGVSessionReader.SessionAttribute.COLOR_MODE.getText(), mode.toString());
         }
 
         if (squishedHeight != DEFAULT_SQUISHED_GENOTYPE_HEIGHT) {
@@ -1121,12 +1121,12 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     public void restorePersistentState(Map<String, String> attributes) {
         super.restorePersistentState(attributes);
 
-        String rendername = attributes.get(SessionReader.SessionAttribute.RENDER_NAME.getText());
+        String rendername = attributes.get(IGVSessionReader.SessionAttribute.RENDER_NAME.getText());
         if (rendername != null) {
             setRenderID(rendername.equalsIgnoreCase("true"));
         }
 
-        String colorModeText = attributes.get(SessionReader.SessionAttribute.COLOR_MODE.getText());
+        String colorModeText = attributes.get(IGVSessionReader.SessionAttribute.COLOR_MODE.getText());
         if (colorModeText != null) {
             try {
                 setColorMode(ColorMode.valueOf(colorModeText));

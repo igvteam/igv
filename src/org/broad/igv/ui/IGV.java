@@ -42,7 +42,9 @@ import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
 import org.broad.igv.session.Session;
+import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.session.SessionReader;
+import org.broad.igv.session.UCSCSessionReader;
 import org.broad.igv.track.*;
 
 import static org.broad.igv.ui.WaitCursorManager.CursorToken;
@@ -1181,8 +1183,13 @@ public class IGV {
         return session;
     }
 
-    final public void doRestoreSession(final File sessionFile,
-                                       final String locus) {
+    /**
+     * Restore a session file, and optionally go to a locus.  Called upon startup and from user action.
+     *
+     * @param sessionFile
+     * @param locus
+     */
+    final public void doRestoreSession(final File sessionFile, final String locus) {
 
         if (sessionFile.exists()) {
 
@@ -1197,8 +1204,7 @@ public class IGV {
     }
 
 
-    final public void doRestoreSession(final URL sessionURL,
-                                       final String locus) throws Exception {
+    final public void doRestoreSession(final URL sessionURL, final String locus) throws Exception {
 
         doRestoreSession(URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
 
@@ -1225,9 +1231,12 @@ public class IGV {
                     }
 
                     setStatusBarMessage("Opening session...");
-                    inputStream = ParsingUtils.openInputStream(new ResourceLocator(sessionPath));
+                    inputStream = new BufferedInputStream(ParsingUtils.openInputStream(new ResourceLocator(sessionPath)));
 
-                    final SessionReader sessionReader = new SessionReader(IGV.this);
+                    boolean isUCSC = sessionPath.endsWith(".session");
+                    final SessionReader sessionReader = isUCSC?
+                            new UCSCSessionReader(IGV.this) :
+                            new IGVSessionReader(IGV.this);
 
                     sessionReader.loadSession(inputStream, session, sessionPath);
 

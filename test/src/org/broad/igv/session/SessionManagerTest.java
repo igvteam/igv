@@ -54,8 +54,8 @@ public class SessionManagerTest {
     @Test
     public void getInstance() {
 
-        SessionReader.SessionElement elem = SessionReader.SessionElement.findEnum("COLOR_SCALE");
-        SessionReader.SessionElement expResult = SessionReader.SessionElement.COLOR_SCALE;
+        IGVSessionReader.SessionElement elem = IGVSessionReader.SessionElement.findEnum("COLOR_SCALE");
+        IGVSessionReader.SessionElement expResult = IGVSessionReader.SessionElement.COLOR_SCALE;
         assertEquals(expResult, elem);
         // TODO review the generated test code and remove the default call to fail.
     }
@@ -68,7 +68,7 @@ public class SessionManagerTest {
         System.out.println("loadSession");
         URL url = null;
         Session session = null;
-        SessionReader instance = null;
+        IGVSessionReader instance = null;
         //instance.loadSession(url, session);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -82,7 +82,7 @@ public class SessionManagerTest {
         System.out.println("saveSession");
         Session session = null;
         File outputFile = null;
-        SessionReader instance = null;
+        IGVSessionReader instance = null;
         //instance.saveSession(session, outputFile);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
@@ -96,7 +96,7 @@ public class SessionManagerTest {
         System.out.println("createXmlFromSession");
         Session session = null;
         File outputFile = null;
-        SessionReader instance = null;
+        IGVSessionReader instance = null;
         String expResult = "";
         //String result = instance.createXmlFromSession(session, outputFile);
         //assertEquals(expResult, result);

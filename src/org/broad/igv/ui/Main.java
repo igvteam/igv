@@ -335,7 +335,8 @@ public class Main {
             if (nonOptionArgs != null && nonOptionArgs.length > 0) {
                 String firstArg = nonOptionArgs[0];
                 if (!firstArg.equals("ignore")) {
-                    if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")) {
+                    if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
+                             || firstArg.endsWith(".session")) {
                         sessionFile = firstArg;
                     } else {
                         dataFileString = firstArg;

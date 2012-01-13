@@ -1231,7 +1231,7 @@ public class TrackLoader {
 
 
     private void doAffectiveHacks() {
-         IGV.getInstance().addTimeTrack();
+         //IGV.getInstance().addTimeTrack();
     }
 
 }

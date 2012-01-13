@@ -25,7 +25,7 @@ import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.renderer.*;
 import org.broad.igv.session.RendererFactory;
-import org.broad.igv.session.SessionReader;
+import org.broad.igv.session.IGVSessionReader;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -663,22 +663,22 @@ public abstract class AbstractTrack implements Track {
 
         // Color scale
         if (colorScale != null && !colorScale.isDefault()) {
-            attributes.put(SessionReader.SessionAttribute.COLOR_SCALE.getText(), colorScale.asString());
+            attributes.put(IGVSessionReader.SessionAttribute.COLOR_SCALE.getText(), colorScale.asString());
         }
 
         attributes.put("showDataRange", String.valueOf(showDataRange));
 
-        attributes.put(SessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(visible));
+        attributes.put(IGVSessionReader.SessionAttribute.VISIBLE.getText(), String.valueOf(visible));
 
         // height
         if (height >= 0) {
             String value = Integer.toString(height);
-            attributes.put(SessionReader.SessionAttribute.HEIGHT.getText(), value);
+            attributes.put(IGVSessionReader.SessionAttribute.HEIGHT.getText(), value);
         }
 
 
         if (name != null) {
-            attributes.put(SessionReader.SessionAttribute.NAME.getText(), name);
+            attributes.put(IGVSessionReader.SessionAttribute.NAME.getText(), name);
         }
 
         if (sortable != true) {
@@ -694,7 +694,7 @@ public abstract class AbstractTrack implements Track {
             stringBuffer.append(posColor.getGreen());
             stringBuffer.append(",");
             stringBuffer.append(posColor.getBlue());
-            attributes.put(SessionReader.SessionAttribute.COLOR.getText(), stringBuffer.toString());
+            attributes.put(IGVSessionReader.SessionAttribute.COLOR.getText(), stringBuffer.toString());
         }
         if (altColor != null) {
             StringBuffer stringBuffer = new StringBuffer();
@@ -703,7 +703,7 @@ public abstract class AbstractTrack implements Track {
             stringBuffer.append(altColor.getGreen());
             stringBuffer.append(",");
             stringBuffer.append(altColor.getBlue());
-            attributes.put(SessionReader.SessionAttribute.ALT_COLOR.getText(), stringBuffer.toString());
+            attributes.put(IGVSessionReader.SessionAttribute.ALT_COLOR.getText(), stringBuffer.toString());
         }
 
         // renderer
@@ -711,21 +711,21 @@ public abstract class AbstractTrack implements Track {
         if (renderer != null) {
             RendererFactory.RendererType type = RendererFactory.getRenderType(renderer);
             if (type != null) {
-                attributes.put(SessionReader.SessionAttribute.RENDERER.getText(), type.name());
+                attributes.put(IGVSessionReader.SessionAttribute.RENDERER.getText(), type.name());
             }
         }
 
         // window function
         WindowFunction wf = getWindowFunction();
         if (wf != null) {
-            attributes.put(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText(), wf.name());
+            attributes.put(IGVSessionReader.SessionAttribute.WINDOW_FUNCTION.getText(), wf.name());
         }
 
         attributes.put("fontSize", String.valueOf(fontSize));
 
-        attributes.put(SessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
+        attributes.put(IGVSessionReader.SessionAttribute.DISPLAY_MODE.getText(), String.valueOf(displayMode));
 
-        attributes.put(SessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
+        attributes.put(IGVSessionReader.SessionAttribute.FEATURE_WINDOW.getText(), String.valueOf(visibilityWindow));
 
 
         return attributes;
@@ -734,18 +734,18 @@ public abstract class AbstractTrack implements Track {
 
     public void restorePersistentState(Map<String, String> attributes) {
 
-        String displayName = attributes.get(SessionReader.SessionAttribute.DISPLAY_NAME.getText());
-        String name = attributes.get(SessionReader.SessionAttribute.NAME.getText());
+        String displayName = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_NAME.getText());
+        String name = attributes.get(IGVSessionReader.SessionAttribute.NAME.getText());
 
-        String isVisible = attributes.get(SessionReader.SessionAttribute.VISIBLE.getText());
-        String height = attributes.get(SessionReader.SessionAttribute.HEIGHT.getText());
-        String colorString = attributes.get(SessionReader.SessionAttribute.COLOR.getText());
-        String altColorString = attributes.get(SessionReader.SessionAttribute.ALT_COLOR.getText());
-        String rendererType = attributes.get(SessionReader.SessionAttribute.RENDERER.getText());
-        String windowFunction = attributes.get(SessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
-        String scale = attributes.get(SessionReader.SessionAttribute.SCALE.getText());
+        String isVisible = attributes.get(IGVSessionReader.SessionAttribute.VISIBLE.getText());
+        String height = attributes.get(IGVSessionReader.SessionAttribute.HEIGHT.getText());
+        String colorString = attributes.get(IGVSessionReader.SessionAttribute.COLOR.getText());
+        String altColorString = attributes.get(IGVSessionReader.SessionAttribute.ALT_COLOR.getText());
+        String rendererType = attributes.get(IGVSessionReader.SessionAttribute.RENDERER.getText());
+        String windowFunction = attributes.get(IGVSessionReader.SessionAttribute.WINDOW_FUNCTION.getText());
+        String scale = attributes.get(IGVSessionReader.SessionAttribute.SCALE.getText());
 
-        String colorScale = attributes.get(SessionReader.SessionAttribute.COLOR_SCALE.getText());
+        String colorScale = attributes.get(IGVSessionReader.SessionAttribute.COLOR_SCALE.getText());
 
         if (colorScale != null) {
             ColorScale cs = ColorScaleFactory.getScaleFromString(colorScale);
@@ -851,7 +851,7 @@ public abstract class AbstractTrack implements Track {
 
 
         // set display mode
-        String displayModeText = attributes.get(SessionReader.SessionAttribute.DISPLAY_MODE.getText());
+        String displayModeText = attributes.get(IGVSessionReader.SessionAttribute.DISPLAY_MODE.getText());
         if (displayModeText != null) {
             try {
                 setDisplayMode(Track.DisplayMode.valueOf(displayModeText));
@@ -859,7 +859,7 @@ public abstract class AbstractTrack implements Track {
                 log.error("Error interpreting display mode: " + displayModeText);
             }
         } else {
-            String isExpanded = attributes.get(SessionReader.SessionAttribute.EXPAND.getText());
+            String isExpanded = attributes.get(IGVSessionReader.SessionAttribute.EXPAND.getText());
             if (isExpanded != null) {
                 if (isExpanded.equalsIgnoreCase("true")) {
                     setDisplayMode(DisplayMode.EXPANDED);
@@ -869,7 +869,7 @@ public abstract class AbstractTrack implements Track {
             }
         }
 
-        String fvw = attributes.get(SessionReader.SessionAttribute.FEATURE_WINDOW.getText());
+        String fvw = attributes.get(IGVSessionReader.SessionAttribute.FEATURE_WINDOW.getText());
         if (fvw != null) {
             try {
                 visibilityWindow = Integer.parseInt(fvw);
