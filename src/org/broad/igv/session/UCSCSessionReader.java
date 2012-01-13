@@ -14,10 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class to parse a UCSC session file
@@ -49,9 +46,10 @@ public class UCSCSessionReader implements SessionReader {
         String nextLine;
 
         final List<String> errors = new ArrayList<String>();
-        final LinkedHashMap<String, List<Track>> loadedTracks = new LinkedHashMap();
+        final HashMap<String, List<Track>> loadedTracks = new HashMap();
         List<ResourceLocator> aSync = new ArrayList();
 
+        List<String> locatorPaths = new ArrayList(); // To keep order of tracks
         while ((nextLine = reader.readLine()) != null) {
             ResourceLocator locator = null;
             try {
@@ -72,6 +70,7 @@ public class UCSCSessionReader implements SessionReader {
                 }
 
                 if (locator != null) {
+                    locatorPaths.add(locator.getPath());
                     locator.setTrackLine(trackLine);
                     // Alignment tracks must be loaded synchronously
                     if (isAlignmentFile(locator.getPath())) {
@@ -90,7 +89,7 @@ public class UCSCSessionReader implements SessionReader {
         }
 
         loadAsynchronous(aSync, loadedTracks, errors);
-        placeTracksInPanels(loadedTracks);
+        placeTracksInPanels(locatorPaths, loadedTracks);
 
         if (errors.size() > 0) {
             displayErrors(errors);
@@ -98,7 +97,8 @@ public class UCSCSessionReader implements SessionReader {
 
     }
 
-    private void loadAsynchronous(List<ResourceLocator> aSync, final LinkedHashMap<String, List<Track>> loadedTracks, final List<String> errors) {
+    private void loadAsynchronous(List<ResourceLocator> aSync, final HashMap<String, List<Track>> loadedTracks,
+                                  final List<String> errors) {
         List<Thread> threads = new ArrayList(aSync.size());
         for (final ResourceLocator locator : aSync) {
             Runnable runnable = new Runnable() {
@@ -133,13 +133,12 @@ public class UCSCSessionReader implements SessionReader {
     }
 
 
-    private void placeTracksInPanels(LinkedHashMap<String, List<Track>> loadedTracks) {
-        for (Map.Entry<String, List<Track>> entry : loadedTracks.entrySet()) {
-            String path = entry.getKey();
+    private void placeTracksInPanels(List<String> locatorPaths, Map<String, List<Track>> loadedTracks) {
+        for (String path : locatorPaths) {
             //TrackPanel panel = IGV.getInstance().getPanelFor(new ResourceLocator(path));
             // If loading from UCSC use a single panel
             TrackPanel panel = igv.getTrackPanel(IGV.DATA_PANEL_NAME);
-            panel.addTracks(entry.getValue());
+            panel.addTracks(loadedTracks.get(path));
         }
     }
 
