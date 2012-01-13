@@ -54,14 +54,8 @@ public class Utilities {
 
     }
 
-    // TODO -- replace use of sun package
     public static String base64Decode(String str) {
-        try {
-            return new String((new sun.misc.BASE64Decoder()).decodeBuffer(str));
-        } catch (IOException e) {
-            log.error("Error decoding string: " + str, e);
-            return str;
-        }
+        return new String(Base64Coder.decode(str));
     }
 
 
