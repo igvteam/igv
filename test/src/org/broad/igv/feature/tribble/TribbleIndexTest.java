@@ -22,6 +22,7 @@ import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.source.BasicFeatureSource;
+import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.Test;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class TribbleIndexTest {
         indexFile.deleteOnExit();
 
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {
@@ -76,7 +77,7 @@ public class TribbleIndexTest {
         indexFile.deleteOnExit();
 
 
-        bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
+        bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
         iter = bfr.query(chr, start, end);
         int countInterval = 0;
         while (iter.hasNext()) {
@@ -88,6 +89,33 @@ public class TribbleIndexTest {
 
         assertEquals(count, countInterval);
         assertEquals(expectedCount, count);
+
+    }
+
+    @Test
+    public void testReadSingleVCF() throws Exception {
+        String bedFile = TestUtils.DATA_DIR + "/vcf/indel_variants_onerow.vcf";
+        String chr = "chr9";
+        // Linear index
+        File indexFile = new File(bedFile + ".idx");
+        if (indexFile.exists()) {
+            indexFile.delete();
+        }
+        igvTools.doIndex(bedFile, IgvTools.LINEAR_INDEX, 1000);
+        indexFile.deleteOnExit();
+
+
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new VCFCodec());
+        Iterator<org.broadinstitute.sting.utils.variantcontext.VariantContext> iter = bfr.query(chr, 5073767 - 5, 5073767 + 5);
+        int count = 0;
+        while (iter.hasNext()) {
+            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            assertEquals("chr9", feat.getChr());
+            assertEquals(feat.getStart(), 5073767);
+            assertTrue(feat.hasAttribute("MapQs"));
+            count++;
+        }
+        assertEquals(1, count);
 
     }
 

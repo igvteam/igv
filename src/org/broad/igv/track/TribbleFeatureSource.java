@@ -19,6 +19,8 @@
 package org.broad.igv.track;
 
 import org.broad.igv.data.DataSource;
+import org.broad.igv.feature.LocusScore;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CachingFeatureReader;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.VCFWrapperCodec;
@@ -29,8 +31,6 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.tribble.Feature;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.LocusScore;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.iterators.CloseableTribbleIterator;
 import org.broad.tribble.source.BasicFeatureSource;
@@ -172,7 +172,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
                 int nSamples = isVCF ? 100 : 1000;
                 org.broad.tribble.Feature firstFeature = iter.next();
-                org.broad.tribble.Feature lastFeature = iter.next();
+                org.broad.tribble.Feature lastFeature = firstFeature;
                 String chr = firstFeature.getChr();
                 int n = 1;
                 long len = 0;
