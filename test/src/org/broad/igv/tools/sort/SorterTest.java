@@ -18,6 +18,7 @@
 
 package org.broad.igv.tools.sort;
 
+import org.broad.igv.util.TestUtils;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -40,17 +41,22 @@ import static org.junit.Assert.assertTrue;
  */
 public class SorterTest {
 
+
     @Test
-    public void testBlankTest() {
-        System.out.println("Test");
+    public void testSortBed() throws Exception {
+        testSort(TestUtils.DATA_DIR + "/bed/Unigene.unsorted.bed");
     }
 
     @Test
-    public void testRun() throws IOException {
-        System.out.println("Test run");
+    public void testSortVCF() throws Exception {
+        testSort(TestUtils.DATA_DIR + "/vcf/SRP32_v4.0.vcf");
+    }
 
-        File ifile = new File("/Users/jrobinso/IGV/hela.txt.bowtie.aligned");
-        File ofile = new File("/Users/jrobinso/IGV/hela.txt.bowtie.sorted.aligned");
+    public void testSort(String infile) throws IOException {
+
+        File ifile = new File(infile);
+        File ofile = new File(infile + ".sorted");
+        ofile.deleteOnExit();
 
         Sorter sorter = Sorter.getSorter(ifile, ofile);
 
@@ -68,14 +74,13 @@ public class SorterTest {
             while ((nextLine = reader.readLine()) != null) {
                 String[] tokens = nextLine.split("\t");
                 String chr = tokens[0];
-                System.out.println(chr);
+
                 int start = Integer.parseInt(tokens[1]);
                 if (chr.equals(lastChr)) {
                     assertTrue(start >= lastStart);
                 } else {
                     assertFalse(chromosomes.contains(chr));
                     chromosomes.add(chr);
-                    System.out.println(chr);
                 }
                 lastChr = chr;
                 lastStart = start;

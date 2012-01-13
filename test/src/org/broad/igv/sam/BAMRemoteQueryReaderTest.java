@@ -23,11 +23,14 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,12 +44,25 @@ public class BAMRemoteQueryReaderTest {
     public BAMRemoteQueryReaderTest() {
     }
 
+    static PreferenceManager preferenceManager;
+    static boolean useByteRange;
+
     @BeforeClass
     public static void setUpClass() throws Exception {
+        Globals.setHeadless(true);
+        preferenceManager = PreferenceManager.getInstance();
+        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
+    }
+
+    @Before
+    public void setUp() {
+        //Web requests don't seem to work with this false
+        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
     }
 
     /**
@@ -63,10 +79,10 @@ public class BAMRemoteQueryReaderTest {
         int end = 2250144;
          * */
 
-        String path = "http://www.broadinstitute.org/igvdata/1KG/DCC_merged/freeze5/NA12878.pilot2.SLX.bam";
-        String serverURL = "http://iwww.broadinstitute.org/webservices/igv";
-//chr1:98,751,004-98,751,046
-        String chr = "1";
+        String path = "/1KG/prod/data/HG00099/alignment/HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam";
+        String serverURL = "http://www.broadinstitute.org/igvdata";
+        String fullpath = serverURL + path;
+        String chr = "chr1";
         int start = 50542554; //557000;  //
         int end = 50542722; //558000; //
         boolean contained = false;
@@ -74,8 +90,7 @@ public class BAMRemoteQueryReaderTest {
         Alignment al = null;
 
 
-        // ResourceLocator rl = new ResourceLocator(serverURL, path);
-        ResourceLocator rl = new ResourceLocator(path);
+        ResourceLocator rl = new ResourceLocator(fullpath);
 
         AlignmentQueryReader samReader = AlignmentReaderFactory.getReader(rl);
         CloseableIterator<Alignment> result2 = samReader.query(chr, start, end, contained);
@@ -93,7 +108,8 @@ public class BAMRemoteQueryReaderTest {
         //System.out.println("Read " + count1 + " records in " + (System.currentTimeMillis() - t1) + " ms");
 
 
-        BAMRemoteQueryReader instance = new BAMRemoteQueryReader(rl);
+        ResourceLocator rlremote = new ResourceLocator(serverURL, path);
+        BAMRemoteQueryReader instance = new BAMRemoteQueryReader(rlremote);
         CloseableIterator<Alignment> result = instance.query(chr, start, end, contained);
         long t0 = System.currentTimeMillis();
         int count = 0;

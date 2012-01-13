@@ -24,7 +24,6 @@ import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-//import org.broad.igv.goby.GobyAlignmentQueryReader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+//import org.broad.igv.goby.GobyAlignmentQueryReader;
 
 /**
  * @author jrobinso
@@ -87,7 +88,9 @@ public class AlignmentReaderFactory {
                 }
 
             } else {
-                reader = new BAMRemoteQueryReader(locator);
+                if (locator.getServerURL() != null) {
+                    reader = new BAMRemoteQueryReader(locator);
+                }
             }
         } else if (pathLowerCase.endsWith(".bam.list")) {
             if (locator.getServerURL() != null) {

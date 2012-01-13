@@ -32,7 +32,6 @@ import org.broad.igv.sam.SamAlignment;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -68,7 +67,7 @@ public class BAMRemoteQueryReader implements AlignmentQueryReader {
 
     public CloseableIterator<Alignment> query(String chr, int start, int end, boolean contained) {
         try {
-            URL url = new URL(serverURL + "?method=samQuery&samFile=" + file + "&chr=" +
+            URL url = new URL(serverURL + "?method=samQuery&samFile=" + "/igv/data/public" + file + "&chr=" +
                     chr + "&start=" + start + "&end=" + end + "&contained=" + contained);
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
             return new RemoteQueryIterator(new GZIPInputStream(is, 8192));
@@ -110,7 +109,7 @@ public class BAMRemoteQueryReader implements AlignmentQueryReader {
             URL url = new URL(serverURL + "?method=samHeader&samFile=" + file);
             is = HttpUtils.getInstance().openConnectionStream(url);
 
-            LineReader reader =  new BufferedLineReader(is);
+            LineReader reader = new BufferedLineReader(is);
             SAMTextHeaderCodec codec = new SAMTextHeaderCodec();
             header = codec.decode(reader, null);
 

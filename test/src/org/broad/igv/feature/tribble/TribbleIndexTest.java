@@ -21,7 +21,6 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.bed.IGVBEDCodec;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.Test;
