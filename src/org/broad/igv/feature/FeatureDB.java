@@ -102,7 +102,7 @@ public class FeatureDB {
             List<NamedFeature> currentList = featureMap.get(key);
             if (currentList == null) {
                 List<NamedFeature> newList = new SortedList<NamedFeature>(
-                        new ArrayList<NamedFeature>(), new FeatureComparator<NamedFeature>(true));
+                        new ArrayList<NamedFeature>(), FeatureComparator.get(true));
                 boolean added = newList.add(feature);
                 if (added) {
                     featureMap.put(key, newList);
@@ -270,12 +270,35 @@ public class FeatureDB {
 
     }
 
-
+    /**
+     * Doubleton class. Can sort forward or descending, at most 2 instances.
+     *
+     * @param <T>
+     */
     private static class FeatureComparator<T extends Feature> implements Comparator {
-        private boolean reverse;
+        private boolean descending;
+        private static FeatureComparator ascending_instance;
+        private static FeatureComparator descending_instance;
 
-        public FeatureComparator(boolean reverse) {
-            this.reverse = reverse;
+        public static FeatureComparator get(boolean descending) {
+            FeatureComparator instance;
+            if (descending) {
+                if (ascending_instance == null) {
+                    ascending_instance = new FeatureComparator(descending);
+                }
+                instance = ascending_instance;
+            } else {
+                if (descending_instance == null) {
+                    descending_instance = new FeatureComparator(descending);
+                }
+                instance = descending_instance;
+            }
+
+            return instance;
+        }
+
+        private FeatureComparator(boolean reverse) {
+            this.descending = reverse;
         }
 
         public int compare(Object o1, Object o2) {
@@ -284,7 +307,7 @@ public class FeatureDB {
             int len1 = (feat1.getEnd() - feat1.getStart());
             int len2 = (feat2.getEnd() - feat2.getStart());
             int toRet;
-            if (!this.reverse) {
+            if (!this.descending) {
                 toRet = len1 - len2;
             } else {
                 toRet = len2 - len1;
