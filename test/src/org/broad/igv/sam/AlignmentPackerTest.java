@@ -24,7 +24,9 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.sam.reader.BAMRemoteQueryReader;
+import org.broad.igv.Globals;
+import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,6 +34,9 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -43,6 +48,7 @@ public class AlignmentPackerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        Globals.setHeadless(true);
     }
 
     @AfterClass
@@ -53,31 +59,36 @@ public class AlignmentPackerTest {
      * Test of packAlignments method, of class AlignmentPacker.
      */
     @Test
-    public void testPackAlignments() {
-        /*
-        String path = "/Users/jrobinso/IGV/Alignments/303KY.8.paired.bam";
-        String serverURL = "http://localhost:8080/webservices/igv";
-        String chr = "chr7";
-        int start = 2244149;
-        int end = 2250144;
-         * */
+    public void testPackAlignments() throws Exception {
 
+        //Retrieve data to pack
         String path = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String chr = "1";
-        int start = 557000;  //98751004; //
-        int end = 558000; //98751046; //
+        int start = 557000;
+        int end = 558000;
         boolean contained = false;
 
         ResourceLocator rl = new ResourceLocator(path);
+        AlignmentQueryReader samReader = AlignmentReaderFactory.getReader(rl);
+        CloseableIterator<Alignment> iter = samReader.query(chr, start, end, contained);
+        ///////////////////////////
 
-        BAMRemoteQueryReader bamReader = new BAMRemoteQueryReader(rl);
-        CloseableIterator<Alignment> iter = bamReader.query(chr, start, end, contained);
         boolean showDuplicates = false;
         int qualityThreshold = 0;
         int maxLevels = 1000;
 
-
         Map<String, List<AlignmentInterval.Row>> result = (new AlignmentPacker()).packAlignments(iter, end, false, null, "", 10000);
+        assertEquals(1, result.size());
+        for (List<AlignmentInterval.Row> alignmentrows : result.values()) {
+            for (AlignmentInterval.Row alignmentrow : alignmentrows) {
+                List<Alignment> alignments = alignmentrow.alignments;
+                for (int ii = 1; ii < alignments.size(); ii++) {
+                    assertTrue(alignments.get(ii).getAlignmentStart() > alignments.get(ii - 1).getAlignmentStart());
+                    assertTrue(alignments.get(ii).getAlignmentStart() - alignments.get(ii - 1).getAlignmentEnd() >= AlignmentPacker.MIN_ALIGNMENT_SPACING);
+                }
+            }
+        }
+
 
     }
 
