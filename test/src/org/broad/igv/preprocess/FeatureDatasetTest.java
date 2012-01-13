@@ -25,46 +25,47 @@ package org.broad.igv.preprocess;
 import org.broad.igv.data.expression.ExpressionDataset;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
  */
 public class FeatureDatasetTest {
 
-    static String file = "/Volumes/xchip_tcga/gbm/visualization/testfiles/expression/WETime.rma.mapped";
+    static String file = TestUtils.DATA_DIR + "/gct/affy_human_mod.gct";
     static ExpressionDataset dataset;
-    static String genomeId = "mm8";
 
     public FeatureDatasetTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Genome genome =   (new GenomeManager()).loadGenome("", null);
+        Genome genome = TestUtils.loadGenome();
         ExpressionFileParser parser = new ExpressionFileParser(new File(file), null, genome);
 
         dataset = parser.createDataset();
-
-
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
+        dataset = null;
     }
 
     /**
      * Test of getDataHeadings method, of class ExpressionDataset.
+     * Excludes probe" and description columns
      */
     @Test
     public void getDataHeadings() {
-        int expectedSize = 16;
+
+        int expectedSize = 7;
         String[] headings = dataset.getTrackNames();
         assertEquals(expectedSize, headings.length);
     }
@@ -75,7 +76,7 @@ public class FeatureDatasetTest {
      */
     @Test
     public void getChromosomes() {
-        int nChromosomes = 22;
+        int nChromosomes = 24;
         String[] chromosomes = dataset.getChromosomes();
         assertEquals(nChromosomes, chromosomes.length);
     }
@@ -85,14 +86,14 @@ public class FeatureDatasetTest {
      */
     @Test
     public void getStartLocations() {
-        int expectedSize = 2698;
+        int expectedSize = 10;
         int[] locations = dataset.getStartLocations("chr1");
         assertEquals(expectedSize, locations.length);
 
-        int firstLoc = 3063333;
+        int firstLoc = 19883202;
         assertEquals(firstLoc, locations[0]);
 
-        int lastLoc = 196841902;
+        int lastLoc = 241359291;
         assertEquals(lastLoc, locations[expectedSize - 1]);
 
     }
@@ -102,14 +103,14 @@ public class FeatureDatasetTest {
      */
     @Test
     public void getEndLocations() {
-        int expectedSize = 2698;
+        int expectedSize = 10;
         int[] locations = dataset.getEndLocations("chr1");
         assertEquals(expectedSize, locations.length);
 
-        int firstLoc = 3064403;
+        int firstLoc = 19883459;
         assertEquals(firstLoc, locations[0]);
 
-        int lastLoc = 196877438;
+        int lastLoc = 241359329;
         assertEquals(lastLoc, locations[expectedSize - 1]);
 
     }
@@ -120,17 +121,17 @@ public class FeatureDatasetTest {
     @Test
     public void getData() {
 
-        String chr = "chr1";
-        String heading = "SG20080102.B02.CEL";
+        String chr = "chr10";
+        String heading = "AML_1";
 
-        int expectedSize = 2698;
+        int expectedSize = 3;
         float[] data = dataset.getData(heading, chr);
         assertEquals(expectedSize, data.length);
 
-        float value = 3.964889866f;
+        float value = 573.0001f;
         assertEquals(value, data[0], 0.0000001f);
 
-        float lastValue = 3.219433646f;
+        float lastValue = 573.0001f;
         assertEquals(lastValue, data[expectedSize - 1], 0.0000001f);
 
 

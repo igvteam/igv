@@ -181,11 +181,6 @@ public class FeatureDBTest {
                 NamedFeature feat2 = data.get(ii + 1);
                 int len1 = feat1.getEnd() - feat1.getStart();
                 int len2 = feat2.getEnd() - feat2.getStart();
-                //We require either the start or end to be different,
-                //which is the same as start or length
-                assertTrue("Coordinates are the same for " + k,
-                        len2 != len1 || feat1.getStart() != feat2.getStart());
-
                 assertTrue("Data for key " + k + " not sorted", len1 >= len2);
             }
         }

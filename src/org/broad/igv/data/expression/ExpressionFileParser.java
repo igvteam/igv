@@ -29,15 +29,16 @@ package org.broad.igv.data.expression;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.MagetabSignalDialog;
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.exceptions.ProbeMappingException;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.StatusMonitor;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.util.MagetabSignalDialog;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -170,7 +171,7 @@ public class ExpressionFileParser {
             type = FileType.MET;
         } else if (fn.endsWith("dchip")) {
             type = FileType.DCHIP;
-        } else if ("mage-tab".equals(dataFileLocator.getType()) || "MAGE_TAB".equals(dataFileLocator.getDescription())){
+        } else if ("mage-tab".equals(dataFileLocator.getType()) || "MAGE_TAB".equals(dataFileLocator.getDescription())) {
             type = FileType.MAGE_TAB;
         } else {
             type = FileType.TAB;
@@ -198,7 +199,7 @@ public class ExpressionFileParser {
             reader = ParsingUtils.openAsciiReader(dataFileLocator);
 
             // Parse the header(s) to determine the precise format.
-            FormatDescriptor formatDescriptor = parseHeader(reader, type,  dataset);
+            FormatDescriptor formatDescriptor = parseHeader(reader, type, dataset);
             final int probeColumn = formatDescriptor.probeColumn;
             final int descriptionColumn = formatDescriptor.descriptionColumn;
             int nDataColumns = formatDescriptor.dataColumns.length;
@@ -303,8 +304,7 @@ public class ExpressionFileParser {
 
 
     public void addRow(String probeId, String description, float[] values) {
-        String genomeId = IGV.getInstance().getGenomeManager().getGenomeId();
-        List<Locus> loci = locusHelper.getLoci(probeId, description, genomeId);
+        List<Locus> loci = locusHelper.getLoci(probeId, description, genome.getId());
         if (loci != null) {
             for (Locus locus : loci) {
                 if ((locus != null) && locus.isValid()) {
@@ -430,7 +430,7 @@ public class ExpressionFileParser {
         Thread.sleep(1);    // <- check for interrupted thread
     }
 
-    public static  FormatDescriptor parseHeader(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
+    public static FormatDescriptor parseHeader(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
 
 
         int descriptionColumn = -1;    // Default - no description column
@@ -564,7 +564,7 @@ public class ExpressionFileParser {
             qCol = "Signal";
         } else if (columnHeaderSet.contains("signal")) {
             qCol = "signal";
-        } else {
+        } else if (!Globals.isHeadless()) {
             // Let user choose the signal column
             HashSet<String> uniqueColumns = new HashSet<String>(Arrays.asList(tokens));
             List<String> qColumns = new ArrayList<String>(uniqueColumns);
