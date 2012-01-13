@@ -135,7 +135,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
                     }
 
                     int h = group.getHeight();
-                    Rectangle groupRect =  new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
+                    Rectangle groupRect = new Rectangle(visibleRect.x, regionY, visibleRect.width, h);
                     Rectangle displayableRect = getDisplayableRect(groupRect, visibleRect);
                     regionY = printTrackNames(group, displayableRect, clipRect, graphics2D, 0, regionY);
 
@@ -292,6 +292,7 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
 
     /**
      * Shift-click,  used to select a range of tracks.
+     *
      * @param e
      */
     protected void shiftSelectTracks(MouseEvent e) {
@@ -596,39 +597,43 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         void tracksDropped(Point startPoint, Point dropPoint, List<Track> tracks) {
 
             // This cast is horrid but we can't fix everything at once.
-            TrackPanel view = ((TrackPanel) getParent());
+            TrackPanel panel = ((TrackPanel) getParent());
             List<MouseableRegion> regions = getMouseRegions();
 
+            if (regions.isEmpty()) {
+                // empty panel,  just add the tracks
+                panel.addTracks(tracks);
+            } else {
+                // Find the regions containing the startPoint and point
+                boolean before = true;
+                MouseableRegion dropRegion = null;
+                MouseableRegion startRegion = null;
+                for (MouseableRegion region : regions) {
+                    if (region.containsPoint(dropPoint.x, dropPoint.y)) {
+                        dropRegion = region;
+                        Rectangle bnds = dropRegion.getBounds();
+                        int dy1 = (dropPoint.y - bnds.y);
+                        int dy2 = bnds.height - dy1;
+                        before = dy1 < dy2;
+                    }
+                    if (region.containsPoint(startPoint.x, startPoint.y)) {
+                        startRegion = region;
+                    }
+                    if (dropRegion != null && startRegion != null) {
+                        break;
+                    }
+                }
 
-            // Find the regions containing the startPoint and point
-            boolean before = true;
-            MouseableRegion dropRegion = null;
-            MouseableRegion startRegion = null;
-            for (MouseableRegion region : regions) {
-                if (region.containsPoint(dropPoint.x, dropPoint.y)) {
-                    dropRegion = region;
-                    Rectangle bnds = dropRegion.getBounds();
-                    int dy1 = (dropPoint.y - bnds.y);
-                    int dy2 = bnds.height - dy1;
-                    before = dy1 < dy2;
+
+                Track dropTrack = null;
+                if (dropRegion != null) {
+                    Iterator<Track> tmp = dropRegion.getTracks().iterator();
+                    if (tmp.hasNext()) {
+                        dropTrack = tmp.next();
+                    }
                 }
-                if (region.containsPoint(startPoint.x, startPoint.y)) {
-                    startRegion = region;
-                }
-                if (dropRegion != null && startRegion != null) {
-                    break;
-                }
+                panel.moveSelectedTracksTo(tracks, dropTrack, before);
             }
-
-
-            Track dropTrack = null;
-            if (dropRegion != null) {
-                Iterator<Track> tmp = dropRegion.getTracks().iterator();
-                if (tmp.hasNext()) {
-                    dropTrack = tmp.next();
-                }
-            }
-            view.moveSelectedTracksTo(tracks, dropTrack, before);
 
 
         }
