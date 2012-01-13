@@ -67,7 +67,7 @@ public class BAMRemoteQueryReader implements AlignmentQueryReader {
 
     public CloseableIterator<Alignment> query(String chr, int start, int end, boolean contained) {
         try {
-            URL url = new URL(serverURL + "?method=samQuery&samFile=" + "/igv/data/public" + file + "&chr=" +
+            URL url = new URL(serverURL + "?method=samQuery&samFile=" + file + "&chr=" +
                     chr + "&start=" + start + "&end=" + end + "&contained=" + contained);
             InputStream is = HttpUtils.getInstance().openConnectionStream(url);
             return new RemoteQueryIterator(new GZIPInputStream(is, 8192));

@@ -24,12 +24,18 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.BAMQueryReader;
+import org.broad.igv.sam.reader.SamQueryTextReader;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -41,6 +47,7 @@ public class BAMQueryReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        Globals.setHeadless(true);
     }
 
     @AfterClass
@@ -52,25 +59,37 @@ public class BAMQueryReaderTest {
      */
     @Test
     public void testClose() throws Exception {
+        assertTrue(false);
     }
 
     /**
      * Test of query method, of class BAMQueryReader.
      */
     @Test
-    public void testQuery() {
+    public void testQueryAgainstSam() throws Exception {
 
-        String file = "/Users/jrobinso/IGV/Sam/303KY.8.paired.bam";
-        String chr = "chr7";
-        int start = 2244149;
-        int end = 2250144;
+        String bamfile = TestUtils.LARGE_DATA_DIR + "/HG00171.hg18.bam";
+        String samfile = TestUtils.LARGE_DATA_DIR + "/HG00171.hg18.sam";
+        String chr = "chr1";
+        int end = 300000000;
+        int start = end / 5;
 
-        BAMQueryReader reader = new BAMQueryReader(new File(file));
-        CloseableIterator<Alignment> iter = reader.query(chr, start, end, true);
-        while (iter.hasNext()) {
-            Alignment record = iter.next();
-            System.out.println(record.getReadName());
+        BAMQueryReader bamreader = new BAMQueryReader(new File(bamfile));
+        SamQueryTextReader samreader = new SamQueryTextReader(samfile);
+        CloseableIterator<Alignment> bamiter = bamreader.query(chr, start, end, true);
+        CloseableIterator<Alignment> samiter = samreader.iterator();
+        int count = 0;
+        while (bamiter.hasNext()) {
+            Alignment bamrecord = bamiter.next();
+            Alignment samrecord = samiter.next();
+            assertTrue(bamrecord.getStart() >= start);
+            assertTrue(bamrecord.getEnd() <= end);
+            assertEquals(bamrecord.getReadName(), samrecord.getReadName());
+            assertEquals(bamrecord.getSample(), samrecord.getSample());
+            count++;
         }
+        assertTrue("No data retrieved", count > 0);
+        System.out.println("Retrieved " + count + " rows");
 
     }
 
