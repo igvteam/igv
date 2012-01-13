@@ -19,7 +19,6 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.jidesoft.utils.SortedList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
@@ -43,11 +42,12 @@ public class FeatureDB {
     //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
     private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
     private static Genome GENOME = null;
+    private static final int MAX_DUPLICATE_COUNT = 20;
 
     public static void addFeature(NamedFeature feature) {
 
         final String name = feature.getName();
-        if (name != null && name.length() > 0) {
+        if (name != null && name.length() > 0 && !name.equals(".")) {
             put(name, feature);
         }
         if (feature instanceof IGVFeature) {
@@ -100,20 +100,24 @@ public class FeatureDB {
         synchronized (featureMap) {
             List<NamedFeature> currentList = featureMap.get(key);
             if (currentList == null) {
-                List<NamedFeature> newList = new SortedList(new ArrayList<NamedFeature>(),
-                        new FeatureComparator<NamedFeature>(true));
+                List<NamedFeature> newList = new ArrayList<NamedFeature>();
                 boolean added = newList.add(feature);
                 if (added) {
                     featureMap.put(key, newList);
                 }
                 return added;
             } else {
-                //Don't want to add exact duplicates.
-                for (NamedFeature f : currentList) {
-                    if ((f.getStart() == feature.getStart()) && (f.getEnd() == feature.getEnd())) {
-                        return false;
-                    }
+                // Don't let list grow without bounds
+                if(currentList.size() > MAX_DUPLICATE_COUNT) {
+                    return false;
                 }
+
+                //Don't want to add exact duplicates. JTR -- why not?
+//                for (NamedFeature f : currentList) {
+//                    if ((f.getStart() == feature.getStart()) && (f.getEnd() == feature.getEnd())) {
+//                        return false;
+//                    }
+//                }
                 return currentList.add(feature);
             }
         }
