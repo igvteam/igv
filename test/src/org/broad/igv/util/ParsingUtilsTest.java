@@ -18,8 +18,14 @@
 
 package org.broad.igv.util;
 
+import junit.framework.Assert;
 import org.broad.igv.Globals;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.WindowFunction;
 import org.junit.Test;
+
+import java.awt.*;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -104,12 +110,6 @@ public class ParsingUtilsTest {
     }
 
     @Test
-    public void testParseTrackLine
-            () {
-        // Add your code here
-    }
-
-    @Test
     public void testGetContentLengthFTP() {
         assertTrue(ParsingUtils.getContentLength(TestUtils.AVAILABLE_FTP_URL) > 0);
 
@@ -129,6 +129,28 @@ public class ParsingUtilsTest {
         String exp_not = "3.5e4";
         expected = 35000;
         assertEquals(expected, ParsingUtils.parseInt(exp_not));
+    }
+
+    @Test
+    public void testParseTrackLine() {
+        String trackLine = "track type=bigWig name=\"Track 196\" visibility=2 " +
+                "description=\" CD34 - H3K27me3 - hg19 - 18.7 M/20.9 M - 61P7DAAXX.6\" " +
+                "maxHeightPixels=70 viewLimits=0:18 windowingFunction=mean autoScale=off " +
+                "bigDataUrl=http://www.broadinstitute.org/epigenomics/dataportal/track_00196.portal.bw " +
+                "color=255,0,0";
+
+        TrackProperties props = new TrackProperties();
+        ParsingUtils.parseTrackLine(trackLine, props);
+        assertEquals("Track 196", props.getName());
+        assertEquals(Track.DisplayMode.EXPANDED, props.getDisplayMode());
+        assertEquals(" CD34 - H3K27me3 - hg19 - 18.7 M/20.9 M - 61P7DAAXX.6", props.getDescription());
+        assertEquals(70, props.getHeight());
+        assertEquals(0, props.getMinValue(), 1.0e-9);
+        assertEquals(18, props.getMaxValue(), 1.0e-9);
+        assertEquals(WindowFunction.mean, props.getWindowingFunction());
+        assertEquals(false, props.isAutoScale());
+        assertEquals(new Color(255, 0, 0), props.getColor());
+        assertEquals("http://www.broadinstitute.org/epigenomics/dataportal/track_00196.portal.bw", props.getDataURL());
     }
 }
 

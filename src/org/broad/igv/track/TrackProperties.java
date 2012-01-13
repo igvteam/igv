@@ -122,6 +122,8 @@ public class TrackProperties {
 
     private boolean alternateExonColor = false;
 
+    private String dataURL;
+
     public TrackProperties() {
 
     }
@@ -391,5 +393,13 @@ public class TrackProperties {
 
     public Track.DisplayMode getDisplayMode() {
         return displayMode;
+    }
+
+    public String getDataURL() {
+        return dataURL;
+    }
+
+    public void setDataURL(String dataURL) {
+        this.dataURL = dataURL;
     }
 }
