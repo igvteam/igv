@@ -42,37 +42,59 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
 
 
     public Object readHeader(LineReader reader) {
-        String nextLine;
-        header = new FeatureFileHeader();
-        int nLines = 0;
+        String line;
 
         try {
-            while ((nextLine = reader.readLine()) != null &&
-                    (nextLine.startsWith("#") || nextLine.startsWith("track")) ||
-                    nextLine.startsWith("browser")) {
-                nLines++;
-                if (nextLine.startsWith("#type")) {
-                    String[] tokens = nextLine.split("=");
-                    if (tokens.length > 1) {
-                        try {
-                            header.setTrackType(TrackType.valueOf(tokens[1]));
-                        } catch (Exception e) {
-                            // log.error("Error converting track type: " + tokens[1]);
-                        }
-                    }
-                } else if (nextLine.startsWith("track")) {
-                    TrackProperties tp = new TrackProperties();
-                    ParsingUtils.parseTrackLine(nextLine, tp);
-                    header.setTrackProperties(tp);
-                    gffTags = tp.isGffTags();
-                } else if (nextLine.startsWith("#gffTags")) {
-                    gffTags = true;
+
+            while ((line = reader.readLine()) != null && (line.startsWith("#") || line.startsWith("track")) ||
+                    line.startsWith("browser")) {
+                readHeaderLine(line);
+                if (line.startsWith("track")) {
+                    //Assume track is the last line before data
+                    //Not a great assumption, decode should have header-handling capability
+                    break;
                 }
             }
             return header;
         } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
+    }
+
+    /**
+     * Extract information from the header line.
+     * Side effects: Calling this will create a new header field
+     * if one is null. In general, should check whether the line
+     * is a header line or not first.
+     *
+     * @param line
+     * @return True iff any information was retrieved.
+     */
+    protected boolean readHeaderLine(String line) {
+        //Header line found, may not have any content
+        if (header == null) {
+            header = new FeatureFileHeader();
+        }
+        if (line.startsWith("#type")) {
+            String[] tokens = line.split("=");
+            if (tokens.length > 1) {
+                try {
+                    header.setTrackType(TrackType.valueOf(tokens[1]));
+                } catch (Exception e) {
+                    // log.error("Error converting track type: " + tokens[1]);
+                }
+            }
+        } else if (line.startsWith("track")) {
+            TrackProperties tp = new TrackProperties();
+            ParsingUtils.parseTrackLine(line, tp);
+            header.setTrackProperties(tp);
+            gffTags = tp.isGffTags();
+        } else if (line.startsWith("#gffTags")) {
+            gffTags = true;
+        } else {
+            return false;
+        }
+        return true;
     }
 
     public Feature decodeLoc(String line) {

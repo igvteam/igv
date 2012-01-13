@@ -42,6 +42,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 
 import static junit.framework.Assert.*;
 
@@ -77,9 +78,14 @@ public class IGVToolsTest {
 
         Index idx = IndexFactory.loadIndex(idxFile.getAbsolutePath());
 
-        Block block = idx.getBlocks("chr1", 100, 200).get(0);
-        assertEquals("Unexpected start position ", 0, block.getStartPosition());
-        assertEquals("Unexpected block size", 100, block.getSize());
+        List<Block> blocks = idx.getBlocks("chr1", 100, 200);
+        Block block = blocks.get(0);
+        assertEquals("Unexpected start position ", 46, block.getStartPosition());
+        assertEquals("Unexpected block size", 54, block.getSize());
+
+        List<Block> allblocks = idx.getBlocks("chr1", 1, Integer.MAX_VALUE);
+        //5 lines, get broken up into 2 blocks
+        assertEquals(2, allblocks.size());
     }
 
     @Test
@@ -127,9 +133,27 @@ public class IGVToolsTest {
 
 
     @Test
-    public void testLargeBed() throws Exception {
+    public void testLargeBedNoHeader() throws Exception {
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.noheader.sorted.bed";
+        testLargeBed(bedFile);
+    }
+
+    @Test
+    public void testLargeBedWithHeader() throws Exception {
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.withheader.sorted.bed";
+        testLargeBed(bedFile);
+    }
+
+    @Test
+    public void testLargeBedWeirdHeader() throws Exception {
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.weirdheader.sorted.bed";
+        testLargeBed(bedFile);
+    }
+
+
+    public void testLargeBed(String bedFile) throws Exception {
         //chr2:178,599,764-179,830,787 <- CONTAINS TTN
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+
 
         // Interval index
         File indexFile = new File(bedFile + ".idx");

@@ -38,8 +38,12 @@ public class IGVBEDCodec extends UCSCCodec {
 
     public BasicFeature decode(String nextLine) {
 
-        if (nextLine.trim().length() == 0 || nextLine.startsWith("#") || nextLine.startsWith("track") ||
-                nextLine.startsWith("browser")) {
+        if (nextLine.trim().length() == 0) {
+            return null;
+        }
+
+        if (nextLine.startsWith("#") || nextLine.startsWith("track") || nextLine.startsWith("browser")) {
+            this.readHeaderLine(nextLine);
             return null;
         }
 
