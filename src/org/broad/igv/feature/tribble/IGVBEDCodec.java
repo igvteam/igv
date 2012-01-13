@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
+ * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
  *
  * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
- * WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+ * WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
  * WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
  * OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
@@ -19,23 +19,20 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.*;
-import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.util.ParsingUtils;
 
-import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 /**
- * @deprecated Use org.broad.tribble.bed.BEDCodec
- *             Created by IntelliJ IDEA.
- *             User: jrobinso
- *             Date: Dec 20, 2009
- *             Time: 10:15:49 PM
- *             To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA.
+ * User: jrobinso
+ * Date: Dec 20, 2009
+ * Time: 10:15:49 PM
+ * To change this template use File | Settings | File Templates.
  */
-@Deprecated
-public class BEDCodec extends UCSCCodec {
+public class IGVBEDCodec extends UCSCCodec {
 
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
 
@@ -68,7 +65,6 @@ public class BEDCodec extends UCSCCodec {
         // The rest of the columns are optional.  Stop parsing upon encountering
         // a non-expected value
 
-        // Name
         // Name
         if (tokenCount > 3) {
             if (gffTags) {
@@ -141,7 +137,7 @@ public class BEDCodec extends UCSCCodec {
 
         if (tokenCount > 8) {
             String colorString = tokens[8];
-            feature.setColor(parseColor(colorString));
+            feature.setColor(ParsingUtils.parseColor(colorString));
         }
 
         // Coding information is optional
@@ -202,31 +198,5 @@ public class BEDCodec extends UCSCCodec {
             }
         }
     }
-
-
-    /**
-     * TODO -- move this to a utility class
-     *
-     * @param colorString
-     * @return
-     */
-    private Color parseColor(String colorString) {
-        String[] rgb = new String[3];
-        int nTokens = ParsingUtils.split(colorString.replaceAll("\"", ""), rgb, ',');
-
-        try {
-            if (nTokens < 3) {
-                // TODO -- is this the right constructor to use?
-                return new Color(Integer.parseInt(rgb[0]));
-            } else {
-                return new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]),
-                        Integer.parseInt(rgb[2]));
-            }
-        } catch (NumberFormatException numberFormatException) {
-            //log.error("Error parsing color from rgb string: " + rgb[0] + rgb[1] + rgb[2]);
-            return null;
-        }
-    }
-
 
 }
