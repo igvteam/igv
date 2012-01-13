@@ -19,6 +19,7 @@ package org.broad.igv.feature;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.jidesoft.utils.SortedList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
@@ -100,7 +101,8 @@ public class FeatureDB {
         synchronized (featureMap) {
             List<NamedFeature> currentList = featureMap.get(key);
             if (currentList == null) {
-                List<NamedFeature> newList = new ArrayList<NamedFeature>();
+                List<NamedFeature> newList = new SortedList<NamedFeature>(
+                        new ArrayList<NamedFeature>(), new FeatureComparator<NamedFeature>(true));
                 boolean added = newList.add(feature);
                 if (added) {
                     featureMap.put(key, newList);
@@ -108,7 +110,7 @@ public class FeatureDB {
                 return added;
             } else {
                 // Don't let list grow without bounds
-                if(currentList.size() > MAX_DUPLICATE_COUNT) {
+                if (currentList.size() > MAX_DUPLICATE_COUNT) {
                     return false;
                 }
 
