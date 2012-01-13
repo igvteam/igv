@@ -93,10 +93,12 @@ public class Exon extends AbstractFeature {
      */
     public void setUTR(boolean utr) {
         this.utr = utr;
-        if (getStrand() == Strand.POSITIVE) {
-            codingStart = codingEnd = getEnd();
-        } else {
-            codingStart = codingEnd = getStart();
+        if (utr) {
+            if (getStrand() == Strand.POSITIVE) {
+                codingStart = codingEnd = getEnd();
+            } else {
+                codingStart = codingEnd = getStart();
+            }
         }
     }
 
