@@ -814,7 +814,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 }
                 break;
             case TAG:
-                final String tag = renderOptions.getTagKey();
+                final String tag = renderOptions.getColorByTag();
                 if (tag != null) {
                     Object tagValue = alignment.getAttribute(tag);
                     if (tagValue != null) {

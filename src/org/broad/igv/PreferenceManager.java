@@ -88,6 +88,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String SAM_MAX_READS = "SAM.MAX_READS";
     public static final String SAM_COLOR_BY = "SAM.COLOR_BY";
     public static final String SAM_COLOR_BY_TAG = "SAM.COLOR_BY_TAG";
+    public static final String SAM_SORT_BY_TAG = "SAM.SORT_BY_TAG";
+    public static final String SAM_GROUP_BY_TAG = "SAM.GROUP_BY_TAG";
     public static final String SAM_BISULFITE_CONTEXT = "SAM.BISULFITE_CONTEXT";
     public static final String SAM_FILTER_FAILED_READS = "SAM.FILTER_FAILED_READS";
     public static final String SAM_COMPUTE_ISIZES = "SAM.COMPUTE_ISIZES";
@@ -186,6 +188,8 @@ public class PreferenceManager implements PropertyManager {
     public static final String GENOME_SPACE_ID_SERVER = "GENOME_SPACE_ID_SERVER";
     public static final String GENOME_SPACE_DM_SERVER = "GENOME_SPACE_DM_SERVER";
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
+
+    public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
 
     public static final String DB_ENABLED = "DB_ENABLED";
     public static final String DB_HOST = "DB_HOST";
@@ -944,6 +948,8 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_VISIBLE_RANGE, "30");
         defaultValues.put(SAM_COLOR_BY, "INSERT_SIZE");
         defaultValues.put(SAM_COLOR_BY_TAG, "");
+        defaultValues.put(SAM_GROUP_BY_TAG, "");
+        defaultValues.put(SAM_SORT_BY_TAG, "");
         defaultValues.put(SAM_BISULFITE_CONTEXT, "CG");
         defaultValues.put(SAM_COMPUTE_ISIZES, "true");
         defaultValues.put(SAM_FLAG_ZERO_QUALITY, "true");
@@ -996,6 +1002,9 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENOME_SPACE_ID_SERVER, "https://identitytest.genomespace.org/identityServer/basic");
         defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dmtest.genomespace.org/datamanager/");
         defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atmtest.genomespace.org/atm/");
+
+        // Affective computing mode
+        defaultValues.put(AFFECTIVE_ENABLE, "false");
 
         defaultValues.put(DB_ENABLED, "false");
         defaultValues.put(DB_HOST, "");
