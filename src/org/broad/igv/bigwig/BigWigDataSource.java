@@ -241,9 +241,8 @@ public class BigWigDataSource extends AbstractDataSource implements FeatureSourc
         IntArrayList endsList = new IntArrayList(100000);
         FloatArrayList valuesList = new FloatArrayList(100000);
 
-        String tmp = chrNameMap.get(chr);
-        String querySeq = tmp == null ? chr : tmp;
-        Iterator<WigItem> iter = reader.getBigWigIterator(querySeq, start, chr, end, false);
+        String chrAlias = chrNameMap.containsKey(chr) ? chrNameMap.get(chr) : chr;
+        Iterator<WigItem> iter = reader.getBigWigIterator(chrAlias, start, chrAlias, end, false);
 
         while (iter.hasNext()) {
             WigItem wi = iter.next();
