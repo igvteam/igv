@@ -33,6 +33,8 @@ public class UCSCSessionReader implements SessionReader {
     }
 
     /**
+     * Load a UCSC session from the given stream.
+     *
      * @param inputStream
      * @param session
      * @param sessionName
@@ -49,8 +51,7 @@ public class UCSCSessionReader implements SessionReader {
         final HashMap<String, List<Track>> loadedTracks = new HashMap();
         List<ResourceLocator> aSync = new ArrayList();
 
-        List<String> locatorPaths = new ArrayList(); // To keep order of tracks
-        while ((nextLine = reader.readLine()) != null) {
+       while ((nextLine = reader.readLine()) != null) {
             ResourceLocator locator = null;
             try {
 
@@ -70,11 +71,11 @@ public class UCSCSessionReader implements SessionReader {
                 }
 
                 if (locator != null) {
-                    locatorPaths.add(locator.getPath());
                     locator.setTrackLine(trackLine);
                     // Alignment tracks must be loaded synchronously
                     if (isAlignmentFile(locator.getPath())) {
-                        loadedTracks.put(nextLine, igv.load(locator));
+                        TrackPanel panel = igv.getPanelFor(locator);
+                        panel.addTracks(igv.load(locator));
                     } else {
                         aSync.add(locator);
                     }
@@ -89,7 +90,6 @@ public class UCSCSessionReader implements SessionReader {
         }
 
         loadAsynchronous(aSync, loadedTracks, errors);
-        placeTracksInPanels(locatorPaths, loadedTracks);
 
         if (errors.size() > 0) {
             displayErrors(errors);
@@ -124,6 +124,8 @@ public class UCSCSessionReader implements SessionReader {
             } catch (InterruptedException ignore) {
             }
         }
+        placeTracksInPanels(aSync, loadedTracks);
+
     }
 
     private String getDataURL(String nextLine) {
@@ -133,12 +135,12 @@ public class UCSCSessionReader implements SessionReader {
     }
 
 
-    private void placeTracksInPanels(List<String> locatorPaths, Map<String, List<Track>> loadedTracks) {
-        for (String path : locatorPaths) {
+    private void placeTracksInPanels(List<ResourceLocator> locatorPaths, Map<String, List<Track>> loadedTracks) {
+        for (ResourceLocator loc : locatorPaths) {
             //TrackPanel panel = IGV.getInstance().getPanelFor(new ResourceLocator(path));
             // If loading from UCSC use a single panel
             TrackPanel panel = igv.getTrackPanel(IGV.DATA_PANEL_NAME);
-            panel.addTracks(loadedTracks.get(path));
+            panel.addTracks(loadedTracks.get(loc.getPath()));
         }
     }
 
@@ -149,7 +151,6 @@ public class UCSCSessionReader implements SessionReader {
 
     /**
      * Browser lines have 2 or 3 tokens,  e.g.
-     * <p/>
      * browser position chr19:11500000-12000000
      *
      * @param line
