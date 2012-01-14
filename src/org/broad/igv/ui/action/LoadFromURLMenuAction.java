@@ -61,7 +61,8 @@ public class LoadFromURLMenuAction extends MenuAction {
             if (url != null && url.trim().length() > 0) {
                 if (url.endsWith(".xml")) {
                     try {
-                        mainFrame.doRestoreSession(new URL(url), null);
+                        boolean merge=false;
+                        mainFrame.doRestoreSession(url, null, merge);
                     } catch (Exception ex) {
                         MessageUtils.showMessage("Error loading url: " + url + " (" + ex.toString() + ")");
                     }

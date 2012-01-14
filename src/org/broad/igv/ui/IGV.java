@@ -1204,12 +1204,6 @@ public class IGV {
     }
 
 
-    final public void doRestoreSession(final URL sessionURL, final String locus) throws Exception {
-
-        doRestoreSession(URLDecoder.decode(sessionURL.toExternalForm(), "UTF-8"), locus, false);
-
-    }
-
     final public void doRestoreSession(final String sessionPath,
                                        final String locus,
                                        final boolean merge) {
@@ -2284,8 +2278,8 @@ public class IGV {
 
                     if (igvArgs.getSessionFile() != null) {
                         if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
-                            URL url = new URL(igvArgs.getSessionFile());
-                            doRestoreSession(url, igvArgs.getLocusString());
+                            boolean merge=false;
+                            doRestoreSession(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
                         } else {
                             File sf = new File(igvArgs.getSessionFile());
                             if (sf.exists()) {

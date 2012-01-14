@@ -57,22 +57,16 @@ public class LoadFilesMenuAction extends MenuAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
                 loadFiles(chooseTrackFiles());
-            }
-        });
+
     }
 
     private File[] chooseTrackFiles() {
 
-        File lastDirectoryFile =
-                PreferenceManager.getInstance().getLastTrackDirectory();
+        File lastDirectoryFile = PreferenceManager.getInstance().getLastTrackDirectory();
 
         // Get Track Files
         final PreferenceManager prefs = PreferenceManager.getInstance();
-        File initDirectory = prefs.getLastTrackDirectory();
 
         // Tracks.  Simulates multi-file select
         File[] trackFiles = FileDialogUtils.chooseMultiple("Select Files", lastDirectoryFile, null);

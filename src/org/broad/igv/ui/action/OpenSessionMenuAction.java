@@ -27,10 +27,12 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.util.FileChooserDialog;
+import org.broad.igv.util.FileUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.net.URL;
 
 /**
  * This menu action classes is used for both "Open Session ..." and load recent
@@ -44,10 +46,10 @@ public class OpenSessionMenuAction extends MenuAction {
 
     private static Logger log = Logger.getLogger(OpenSessionMenuAction.class);
     private IGV mainFrame;
-    private File sessionFile = null;
+    private String sessionFile = null;
     private boolean autoload = false;
 
-    public OpenSessionMenuAction(String label, File sessionFile, IGV mainFrame) {
+    public OpenSessionMenuAction(String label, String sessionFile, IGV mainFrame) {
         super(label);
         this.sessionFile = sessionFile;
         this.mainFrame = mainFrame;
@@ -79,7 +81,7 @@ public class OpenSessionMenuAction extends MenuAction {
             if (dialog.isCanceled()) {
                 return;
             }
-            sessionFile = dialog.getSelectedFile();
+            sessionFile = dialog.getSelectedFile().getAbsolutePath();
         }
         doRestoreSession();
 
@@ -107,7 +109,13 @@ public class OpenSessionMenuAction extends MenuAction {
         }
 
         if (sessionFile != null) {
-            mainFrame.doRestoreSession(sessionFile, null);
+            if (FileUtils.isRemote(sessionFile)) {
+                boolean merge = false;
+                mainFrame.doRestoreSession(sessionFile, null, merge);
+            } else {
+                File f = new File(sessionFile);
+                mainFrame.doRestoreSession(f, null);
+            }
         }
     }
 

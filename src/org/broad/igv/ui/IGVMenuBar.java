@@ -231,23 +231,6 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(IMPORT_REGION_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        //dhmay adding 2010/11/16
-        // Navigate Regions
-
-        // Separator
-        /*menuItems.add(new JSeparator());
-        menuAction =
-                new MenuAction("Preprocess ...", null, KeyEvent.VK_P) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        (new PreprocessorDialog(IGV.IGV.getInstance(), false)).setVisible(true);
-                    }
-                };
-
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        */
-
         // batch script
         menuItems.add(new JSeparator());
 
@@ -257,32 +240,6 @@ public class IGVMenuBar extends JMenuBar {
         // igvtools
 
         menuItems.add(new JSeparator());
-        /*
-        menuAction = new SortTracksMenuAction("Compute coverage...", KeyEvent.VK_T, IGV.getInstance()) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId(), CoverageGui.Mode.COVERAGE);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-        menuAction = new SortTracksMenuAction("Convert to tdf...", KeyEvent.VK_T, IGV.getInstance()) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CoverageGui.launch(false, IGV.getInstance().getGenomeManager().getGenomeId(), CoverageGui.Mode.TILE);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        menuAction = new SortTracksMenuAction("Create index...", KeyEvent.VK_T, IGV.getInstance()) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                IndexGui.launch(false);
-            }
-        };
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        */
 
         menuAction = new SortTracksMenuAction("Run igvtools...", KeyEvent.VK_T, IGV.getInstance()) {
             @Override
@@ -330,7 +287,7 @@ public class IGVMenuBar extends JMenuBar {
 
             // Now add menu items
             for (final String session : IGV.getInstance().getRecentSessionList()) {
-                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, new File(session), IGV.getInstance());
+                OpenSessionMenuAction osMenuAction = new OpenSessionMenuAction(session, session, IGV.getInstance());
                 menuItems.add(MenuAndToolbarUtils.createMenuItem(osMenuAction));
             }
 

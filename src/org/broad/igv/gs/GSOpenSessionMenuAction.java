@@ -93,7 +93,8 @@ public class GSOpenSessionMenuAction extends MenuAction {
                 SwingWorker worker = new SwingWorker() {
                     @Override
                     protected Object doInBackground() throws Exception {
-                        mainFrame.doRestoreSession(new URL(sessionFile), null);
+                        boolean merge=false;
+                        mainFrame.doRestoreSession(sessionFile, null, merge);
                         return null;
                     }
                 };
