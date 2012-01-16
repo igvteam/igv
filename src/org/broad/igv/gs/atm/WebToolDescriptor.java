@@ -25,28 +25,24 @@ import java.util.List;
  * @date Aug 2, 2011
  */
 public class WebToolDescriptor {
-    String name;
-    String id;
-    String version;
-    String author;
-    String description;
-    String help;
-    String baseUrl;
-    List<SubToolDescriptor> subTools;
-    List<FileParameter> fileParameters;
+    private String name;
+    private String id;
+    private String author;
+    private String description;
+    private String baseUrl;
+    private List<FileParameter> fileParameters;
 
-    public WebToolDescriptor(String name, String id, String version, String author, String description, String help,
-                             String baseUrl, List<FileParameter> fileParameters, List<SubToolDescriptor> subTools) {
+    public WebToolDescriptor(String name, String id, String author, String description, String baseUrl,
+                             List<FileParameter> fileParams) {
+
         this.name = name;
         this.id = id;
-        this.version = version;
         this.author = author;
         this.description = description;
-        this.help = help;
-        this.fileParameters = fileParameters;
-        this.subTools = subTools;
+        this.fileParameters = fileParams;
         this.baseUrl = baseUrl;
     }
+
 
     public void print() {
         System.out.println();
@@ -55,9 +51,29 @@ public class WebToolDescriptor {
             fp.print();
         }
 
-        for(SubToolDescriptor st : subTools) {
-            st.print();
-        }
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public List<FileParameter> getFileParameters() {
+        return fileParameters;
+    }
 }

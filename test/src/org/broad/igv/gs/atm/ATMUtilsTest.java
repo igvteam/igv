@@ -22,11 +22,20 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.util.BrowserLauncher;
+import org.broad.igv.util.HttpUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,35 +46,38 @@ import java.util.List;
  */
 public class ATMUtilsTest {
 
+    @BeforeClass
+    public static void setup() {
+        HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
+    }
+
+    @AfterClass
+    public static void teardown() {
+        HttpUtils.getInstance().resetAuthenticator();
+    }
 
     @Test
     public void testGetWebTools() throws Exception {
         List<WebToolDescriptor> webTools = ATMUtils.getWebTools();
+
+        // Build a map of name -> tool
+        Map<String, WebToolDescriptor> toolMap = new HashMap();
         for (WebToolDescriptor wt : webTools) {
-            wt.print();
+            toolMap.put(wt.getName(), wt);
         }
 
-    }
-
-    @Test
-    public void testGetWebtoolLaunchURL() throws Exception {
-
-        String gsPath = URLEncoder.encode("/users/test/Unigene.sample.bed", "UTF-8");
-        String url = ATMUtils.getWebtoolLaunchURL("UCSC_Genome_Browser?file=" + gsPath);
-        System.out.println(url);
+        WebToolDescriptor igvDesc = toolMap.get("IGV");
+        assertNotNull("IGV Descriptor", igvDesc);
 
     }
 
+    static class GSTestAuthenticator extends Authenticator {
 
-    @Test
-    public void testGetSubtoolLaunchURL() throws Exception {
-        URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + "defaultdirectory");
-        System.out.println(DMUtils.getDirectoryListing(defaultURL).getDirectory());
-        String gsPath = URLEncoder.encode("/users/test/259.wgs.muc1.hist.txt", "UTF-8");
-        String url = ATMUtils.getSubtoolLaunchURL("GenePattern", "ConvertLineEndings?input.filename=" + gsPath);
-        System.out.println(url);
-
-        //BrowserLauncher.openURL(url);
-
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication("igvtest", "igvtest".toCharArray());
+        }
     }
+
+
 }

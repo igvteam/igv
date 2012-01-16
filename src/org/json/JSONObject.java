@@ -459,6 +459,21 @@ public class JSONObject {
 
 
     /**
+     * Convenience method.  Added by JTR for IGV.
+     * @param key
+     * @return
+     * @throws JSONException
+     */
+    public String getAsString(String key) throws JSONException {
+        if (key == null) {
+            throw new JSONException("Null key.");
+        }
+        Object obj = opt(key);
+        return obj == null ? null : obj.toString();
+    }
+
+
+    /**
      * Get the boolean value associated with a key.
      *
      * @param key   A key string.

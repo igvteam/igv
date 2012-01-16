@@ -1001,7 +1001,7 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(GENOME_SPACE_ENABLE, "false");
         defaultValues.put(GENOME_SPACE_ID_SERVER, "https://identitytest.genomespace.org/identityServer/basic");
         defaultValues.put(GENOME_SPACE_DM_SERVER, "https://dmtest.genomespace.org/datamanager/");
-        defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atmtest.genomespace.org/atm/");
+        defaultValues.put(GENOME_SPACE_ATM_SERVER, "https://atm.genomespace.org/atm/v1.0/");
 
         // Affective computing mode
         defaultValues.put(AFFECTIVE_ENABLE, "false");

@@ -25,12 +25,12 @@ package org.broad.igv.gs.atm;
 public class GSDataFormat {
 
     String name;//	The name of the format.
-    String version;//		The version of the format
+    String extension;//		The version of the format
     String url;//		An URL to the format definition.
 
-    public GSDataFormat(String name, String version, String url) {
+    public GSDataFormat(String name, String extension, String url) {
         this.name = name;
-        this.version = version;
+        this.extension = extension;
         this.url = url;
     }
 

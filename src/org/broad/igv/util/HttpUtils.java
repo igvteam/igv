@@ -85,7 +85,6 @@ public class HttpUtils {
         Authenticator.setDefault(new IGVAuthenticator());
     }
 
-
     public static boolean isURL(String string) {
         String lcString = string.toLowerCase();
         return lcString.startsWith("http://") || lcString.startsWith("https://") || lcString.startsWith("ftp://")
@@ -617,4 +616,22 @@ public class HttpUtils {
             }
         }
     }
+
+
+    /**
+     * Provide override for unit tests
+     */
+    public void setAuthenticator(Authenticator authenticator) {
+        Authenticator.setDefault(authenticator);
+    }
+
+    /**
+     * For unit tests
+     */
+    public void resetAuthenticator() {
+        Authenticator.setDefault(new IGVAuthenticator());
+
+    }
+
+
 }

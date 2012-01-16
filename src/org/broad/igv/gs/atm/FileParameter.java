@@ -26,20 +26,19 @@ import java.util.List;
 */
 public class FileParameter {
     String name;// 	Name of the parameter.
-    String description;// 	Description of the parameter.
     String required;// 	Boolean flag indicating whether or not the parameter is required.
     String compositeFilename;//  	True means that the value for this parameter can contain multiple filenames.  The filenames are separated by the nameDelimeters below.
     String nameDelimiters;// 	The string used to delimit multiple filenames.  This is only used if compositeFilename is true.
     List<GSDataFormat> formats;// 	A set of GSDataFormats, describing the acceptable file formats for this FileParameter.  See below.
 
-    public FileParameter(String name, String description, String required, String compositeFilename,
-                         String nameDelimiters, List<GSDataFormat> formats) {
-        this.name = name;
-        this.description = description;
-        this.required = required;
-        this.compositeFilename = compositeFilename;
-        this.nameDelimiters = nameDelimiters;
-        this.formats = formats;
+    public FileParameter(String fpName, String fpRequired, String fpCompositeFilename, String fpNameDelimiters,
+                         List<GSDataFormat> dataFormats) {
+
+        this.name = fpName;
+        this.required = fpRequired;
+        this.compositeFilename = fpCompositeFilename;
+        this.nameDelimiters = fpNameDelimiters;
+        this.formats = dataFormats;
     }
 
     public void print() {
