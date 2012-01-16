@@ -168,8 +168,6 @@ public class HttpUtils {
 
         InputStream is = null;
         HttpURLConnection conn = openConnection(url, null);
-
-
         try {
             is = conn.getInputStream();
             return readContents(is);
@@ -177,7 +175,21 @@ public class HttpUtils {
         } finally {
             if (is != null) is.close();
         }
+    }
 
+    public String getContentsAsJSON(URL url) throws IOException {
+
+        InputStream is = null;
+        Map<String, String> reqProperties = new HashMap();
+        reqProperties.put("Accept", "application/json,text/plain");
+        HttpURLConnection conn = openConnection(url, reqProperties);
+        try {
+            is = conn.getInputStream();
+            return readContents(is);
+
+        } finally {
+            if (is != null) is.close();
+        }
     }
 
     /**
@@ -479,7 +491,7 @@ public class HttpUtils {
 
             String token = GSUtils.getGSToken();
             if (token != null) conn.setRequestProperty("Cookie", "gs-token=" + token);
-            conn.setRequestProperty("Accept", "application/json,text/plain");
+            //conn.setRequestProperty("Accept", "application/json,text/plain");
 
         }
 

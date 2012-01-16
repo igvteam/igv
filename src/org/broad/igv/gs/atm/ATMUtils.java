@@ -27,6 +27,7 @@ import org.json.JSONTokener;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,12 +50,25 @@ public class ATMUtils {
      */
     public static List<WebToolDescriptor> getWebTools() throws IOException, JSONException {
         URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) + "webtool/descriptor");
-        String contents = HttpUtils.getInstance().getContentsAsString(url);
+        String contents = HttpUtils.getInstance().getContentsAsJSON(url);
         JSONTokener tk = new JSONTokener(contents);
         JSONArray array = new JSONArray(tk);
        // JSONObject webDescArray = (JSONObject) array.get(1);
         List<WebToolDescriptor> webTools = parseWebtools(array);
         return webTools;
+    }
+
+
+    public static WebToolDescriptor getWebTool(String name) throws IOException, JSONException {
+
+        name = name.replace(" ", "%20");
+
+        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER) + "webtool/" +
+                name + "/descriptor");
+        String contents = HttpUtils.getInstance().getContentsAsJSON(url);
+        JSONTokener tk = new JSONTokener(contents);
+        JSONObject obj = new JSONObject(tk);
+        return parseWebTool(obj);
     }
 
     /**
@@ -71,19 +85,23 @@ public class ATMUtils {
             JSONObject obj = webDescArray.getJSONObject(i);
            //JSONObject obj = ar.getJSONObject(1);
 
-            String name = obj.getAsString("name");
-            String id = obj.getAsString("internalId");
-            String author = obj.getAsString("author");
-            String description = obj.getAsString("description");
-            String baseUrl = obj.getAsString("baseUrl");
+            final WebToolDescriptor webToolDescriptor = parseWebTool(obj);
 
-            JSONArray fileParamArray = obj.getJSONArray("fileParameters");
-            List<FileParameter> fileParams = parseFileParameters(fileParamArray);
-
-
-            webTools.add(new WebToolDescriptor(name, id, author, description, baseUrl, fileParams));
+            webTools.add(webToolDescriptor);
         }
         return webTools;
+    }
+
+    private static WebToolDescriptor parseWebTool(JSONObject obj) throws JSONException {
+        String name = obj.getAsString("name");
+        String id = obj.getAsString("internalId");
+        String author = obj.getAsString("author");
+        String description = obj.getAsString("description");
+        String baseUrl = obj.getAsString("baseUrl");
+
+        JSONArray fileParamArray = obj.getJSONArray("fileParameters");
+        List<FileParameter> fileParams = parseFileParameters(fileParamArray);
+        return new WebToolDescriptor(name, id, author, description, baseUrl, fileParams);
     }
 
     /**
@@ -160,15 +178,30 @@ public class ATMUtils {
         return fileParameters;
     }
 
-    public static String getWebtoolLaunchURL(String webtoolname) throws IOException, JSONException {
-        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER)+ "webtools/" + webtoolname);
-        return HttpUtils.getInstance().getContentsAsString(url);
+    /**
+     * 
+     * Notes:  Currently only a single file parameter is supported, if/when there is a GS client that accepts 
+     * multiple named file parameters we will deal with it then.
+     * 
+     * @param descriptor
+     * @param file
+     * @return
+     */
+    public static String getWebtoolLaunchURL(WebToolDescriptor descriptor, String file) throws IOException {
+
+        String name = descriptor.getName().replace(" ", "%20");
+        String url = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER)+
+                "webtool/" + name + "/launchurl";
+        
+        List<FileParameter> fileParameters = descriptor.getFileParameters();
+        if(file != null && fileParameters != null && fileParameters.size() > 0) {
+           FileParameter param = fileParameters.get(0);
+            url += "?" + param.getName() + "=" + URLEncoder.encode(file);
+        }
+
+        return HttpUtils.getInstance().getContentsAsString(new URL(url));
     }
 
 
-    public static String getSubtoolLaunchURL(String webtoolname, String subtoolname) throws IOException, JSONException {
-        URL url = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_ATM_SERVER + "webtools/"  + webtoolname + "/" + subtoolname));
-        return HttpUtils.getInstance().getContentsAsString(url);
-    }
 
 }

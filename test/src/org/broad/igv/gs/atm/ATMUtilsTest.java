@@ -27,15 +27,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Created by IntelliJ IDEA.
@@ -65,10 +64,49 @@ public class ATMUtilsTest {
         for (WebToolDescriptor wt : webTools) {
             toolMap.put(wt.getName(), wt);
         }
-
         WebToolDescriptor igvDesc = toolMap.get("IGV");
         assertNotNull("IGV Descriptor", igvDesc);
 
+    }
+
+    @Test
+    public void testGetWebTool() throws Exception {
+        String toolname = "IGV";
+        WebToolDescriptor igvDesc = ATMUtils.getWebTool(toolname);
+        assertNotNull("IGV Descriptor", igvDesc);
+        assertEquals(toolname, igvDesc.getName());
+
+    }
+
+    @Test
+    public void testGetIGVLaunchURL() throws Exception {
+
+        String file = "/users/igvtest/Broad.080528.subtypes.seg.gz";
+        String toolname = "IGV";
+        WebToolDescriptor igvDesc = ATMUtils.getWebTool(toolname);
+        String url = URLDecoder.decode(ATMUtils.getWebtoolLaunchURL(igvDesc, file));
+        assertTrue(url.startsWith(igvDesc.getBaseUrl() + "?sessionURL="));
+        assertTrue(url.endsWith(file));
+    }
+
+    @Test
+    public void testGetUCSCLaunchURL() throws Exception {
+
+        List<WebToolDescriptor> webTools = ATMUtils.getWebTools();
+
+        // Build a map of name -> tool
+        Map<String, WebToolDescriptor> toolMap = new HashMap();
+        for (WebToolDescriptor wt : webTools) {
+            toolMap.put(wt.getName(), wt);
+        }
+
+        String file = "/users/igvtest/Broad.080528.subtypes.seg.gz";
+        String toolname =  ("UCSC Genome Browser");
+        WebToolDescriptor ucscDesc =ATMUtils.getWebTool(toolname);
+
+        String url = URLDecoder.decode(ATMUtils.getWebtoolLaunchURL(ucscDesc, file));
+        assertTrue(url.startsWith(ucscDesc.getBaseUrl() + "?file="));
+        assertTrue(url.endsWith(file));
     }
 
     static class GSTestAuthenticator extends Authenticator {

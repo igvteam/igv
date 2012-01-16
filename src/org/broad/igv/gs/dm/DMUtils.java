@@ -68,7 +68,7 @@ public class DMUtils {
      */
     public static GSDirectoryListing getDirectoryListing(URL directoryURL) throws IOException, JSONException {
 
-        String str = HttpUtils.getInstance().getContentsAsString(directoryURL);
+        String str = HttpUtils.getInstance().getContentsAsJSON(directoryURL);
         JSONTokener tk = new JSONTokener(str);
         JSONObject obj = new JSONObject(tk);
 
@@ -131,7 +131,7 @@ public class DMUtils {
                 gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
-        String uploadURL = HttpUtils.getInstance().getContentsAsString(new URL(tmp));
+        String uploadURL = HttpUtils.getInstance().getContentsAsJSON(new URL(tmp));
 
         Map<String, String> headers = new HashMap<String, String>();
         headers.put("Content-MD5", base64String);
