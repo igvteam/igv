@@ -26,6 +26,7 @@ import org.broad.igv.track.WindowFunction;
 import org.junit.Test;
 
 import java.awt.*;
+import java.util.regex.Pattern;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -46,6 +47,7 @@ public class ParsingUtilsTest {
     
     @Test
     public void testSplitSpeed(){
+
         long trials = 100000;
         int jnk= 0;
         long pu_time = 0;
@@ -53,10 +55,11 @@ public class ParsingUtilsTest {
         long tm1, tm2;
         String test_text;
         String[] result;
+        Pattern pattern = Pattern.compile("\t");
         for(int _ =0; _ < trials; _++){
             test_text = genRandString();
             tm1 = System.nanoTime();
-            result = test_text.split("\\s+");
+            result = pattern.split(test_text);
             tm2 = System.nanoTime();
             nrm_time += tm2 - tm1;
 
@@ -67,7 +70,36 @@ public class ParsingUtilsTest {
         }
         //System.out.println("Average ParsingUtils.split time: " + pu_time / trials);
         //System.out.println("Average String.split time: " + nrm_time / trials);
-        assertTrue("ParsingUtils is slowing at splitting strings than string.split", pu_time < nrm_time);
+        assertTrue("ParsingUtils vs pattern.split speed test", pu_time < nrm_time);
+
+    }
+
+        @Test
+    public void testSplitWhitespaceSpeed(){
+
+        long trials = 100000;
+        int jnk= 0;
+        long pu_time = 0;
+        long nrm_time = 0;
+        long tm1, tm2;
+        String test_text;
+        String[] result;
+        Pattern pattern = Pattern.compile("\\s+");
+        for(int _ =0; _ < trials; _++){
+            test_text = genRandString();
+            tm1 = System.nanoTime();
+            result = pattern.split(test_text);
+            tm2 = System.nanoTime();
+            nrm_time += tm2 - tm1;
+
+            tm1 = System.nanoTime();
+            jnk = ParsingUtils.splitWhitespace (test_text,result);
+            tm2 = System.nanoTime();
+            pu_time += tm2 - tm1;
+        }
+        //System.out.println("Average ParsingUtils.split time: " + pu_time / trials);
+        //System.out.println("Average String.split time: " + nrm_time / trials);
+        assertTrue("ParsingUtils vs pattern.split speed test", pu_time < nrm_time);
 
     }
     
