@@ -67,10 +67,9 @@ public class Genome {
         this.displayName = displayName;
         chrAliasTable = new HashMap();
 
-        if(sequencePath == null) {
+        if (sequencePath == null) {
             sequenceHelper = null;
-        }
-        else if (!fasta) {
+        } else if (!fasta) {
             sequenceHelper = new SequenceHelper(sequencePath);
 
         } else {
@@ -152,38 +151,54 @@ public class Genome {
 
         // Update the chromosome alias table with common variations
         for (String name : chromosomeNames) {
-            if (name.endsWith(".fa")) {
-                // Illumina aligner output
-                String alias = name.substring(0, name.length() - 3);
-                chrAliasTable.put(alias, name);
-            }
             if (name.startsWith("gi|")) {
                 // NCBI
                 String alias = getNCBIName(name);
                 chrAliasTable.put(alias, name);
                 Chromosome chromosome = chromosomeMap.get(name);
-            } else if (name.toLowerCase().startsWith("chr")) {
-                // UCSC
-                chrAliasTable.put(name.substring(3), name);
-            } else {
-                chrAliasTable.put("chr" + name, name);
             }
         }
 
-        // These are legacy mappings,  these are now defined in the genomes alias file
-        if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref")) {
-            chrAliasTable.put("23", "chrX");
-            chrAliasTable.put("24", "chrY");
-            chrAliasTable.put("MT", "chrM");
-        } else if (id.startsWith("mm")) {
-            chrAliasTable.put("21", "chrX");
-            chrAliasTable.put("22", "chrY");
-            chrAliasTable.put("MT", "chrM");
-        } else if (id.equals("b37")) {
-            chrAliasTable.put("chrM", "MT");
-            chrAliasTable.put("chrX", "23");
-            chrAliasTable.put("chrY", "24");
+        if (chromosomeNames.size() < 1000) {
+            for (String name : chromosomeNames) {
+                if (name.endsWith(".fa")) {
+                    // Illumina aligner output
+                    String alias = name.substring(0, name.length() - 3);
+                    chrAliasTable.put(alias, name);
+                } else if (name.toLowerCase().startsWith("chr")) {
+                    // UCSC
+                    chrAliasTable.put(name.substring(3), name);
+                    // Illumina
+                    chrAliasTable.put(name + ".fa", name);
+                } else {
+                    chrAliasTable.put("chr" + name, name);
+                    // Illumina
+                    chrAliasTable.put("chr" + name + ".fa", name);
+                }
+            }
 
+
+            // These are legacy mappings,  these are now defined in the genomes alias file
+            if (id.startsWith("hg") || id.equalsIgnoreCase("1kg_ref"))
+
+            {
+                chrAliasTable.put("23", "chrX");
+                chrAliasTable.put("24", "chrY");
+                chrAliasTable.put("MT", "chrM");
+            } else if (id.startsWith("mm"))
+
+            {
+                chrAliasTable.put("21", "chrX");
+                chrAliasTable.put("22", "chrY");
+                chrAliasTable.put("MT", "chrM");
+            } else if (id.equals("b37"))
+
+            {
+                chrAliasTable.put("chrM", "MT");
+                chrAliasTable.put("chrX", "23");
+                chrAliasTable.put("chrY", "24");
+
+            }
         }
 
 
@@ -314,16 +329,16 @@ public class Genome {
 
     public byte[] getSequence(String chr, int start, int end) {
 
-        if(sequenceHelper == null) {
+        if (sequenceHelper == null) {
             return null;
         }
 
         Chromosome c = getChromosome(chr);
-        if(c == null) {
+        if (c == null) {
             return null;
         }
         end = Math.min(end, c.getLength());
-        if(end <= start) {
+        if (end <= start) {
             return null;
         }
         return sequenceHelper.getSequence(chr, start, end, c.getLength());
@@ -334,7 +349,7 @@ public class Genome {
     }
 
     public byte getReference(String chr, int pos) {
-       return sequenceHelper.getBase(chr, pos);
+        return sequenceHelper.getBase(chr, pos);
     }
 
     public static class ChromosomeCoordinate {
