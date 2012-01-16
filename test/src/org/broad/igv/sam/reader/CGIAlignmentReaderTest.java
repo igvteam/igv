@@ -39,22 +39,22 @@ public class CGIAlignmentReaderTest {
 
     }
 
-    @Test
-    public void testQuery() throws Exception {
 
-        String testURL = "http://philtest.batcave.net/query.cgi?file=input.sam";
+    // The following test is disabled until we can write our own CGI scripts to test against.
+    //@Test
+//    public void testQuery() throws Exception {
+//
+//        String testURL = "http://somehost/query.cgi?file=input.sam";
+//
+//        CGIAlignmentReader reader = new CGIAlignmentReader(testURL);
+//
+//        // Assert that we get at least 1 record back.
+//        CloseableIterator<Alignment> iter = reader.iterator();
+//        assertTrue(iter.hasNext());
+//        iter.close();
+//
+//
+//    }
 
-        CGIAlignmentReader reader = new CGIAlignmentReader(testURL);
-
-        // Assert that we get at least 1 record back.
-        CloseableIterator<Alignment> iter = reader.iterator();
-        assertTrue(iter.hasNext());
-        iter.close();
-
-
-    }
-
-
-    //http://localhost/query.cgi?program=downsample_bam.pl&downsampled_coverage=10&file=input.sam
 
 }
