@@ -26,6 +26,8 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReaderFactory;
+import org.broad.igv.sam.reader.BAMQueryReader;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
@@ -42,20 +44,15 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author jrobinso
  */
-public class BAMCachingQueryReaderTest {
+public class CachingQueryReaderTest {
 
-    //String testFile = "/xchip/igv/testfiles/sam/NA12878.chrom1.SRP000032.2009_02.bam";
-    String testFile = "/xchip/igv/data/public/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
-    String server = "http://www.broadinstitute.org/webservices/igv";
+    String testFile = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/50bp/FCA/s_1_1_sequence.bam";
     String sequence = "chr1";
     int start = 44780145 - 100000;
     int end = 44789983;
-    //String testFile = "/Volumes/igv/testfiles/Sam/303KY.8.paired.bam";
-    //String server = null;
-    //String sequence = "chr1";    //int start = 58892867;
-    //int end = 58960732;
+    private boolean contained = false;;
 
-    public BAMCachingQueryReaderTest() {
+    public CachingQueryReaderTest() {
     }
 
     @BeforeClass
@@ -76,19 +73,20 @@ public class BAMCachingQueryReaderTest {
     }
 
     /**
-     * Test of getHeader method, of class BAMCachingQueryReader. The test compares
-     * the results of BAMCachingQueryReader with SamRemoteQueryReader, which
+     * Test of getHeader method, of class CachingQueryReader. The test compares
+     * the results of CachingQueryReader with a non-caching reader which
      * is assumed to be correct.
      */
     @Test
     public void testGetHeader() throws IOException {
-        ResourceLocator loc = new ResourceLocator(server, testFile);
-        AlignmentQueryReader reader = new BAMRemoteQueryReader(loc);
+
+        ResourceLocator loc = new ResourceLocator(testFile);
+        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(loc);
         SAMFileHeader expectedHeader = reader.getHeader();
         reader.close();
 
-
-        CachingQueryReader cachingReader = new CachingQueryReader(new BAMRemoteQueryReader(loc));
+        reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
         SAMFileHeader header = cachingReader.getHeader();
         cachingReader.close();
 
@@ -98,16 +96,15 @@ public class BAMCachingQueryReaderTest {
     }
 
     /**
-     * Test of query method, of class BAMCachingQueryReader.  The test compares
-     * the results of CachingQueryReader with BAMRemoteQueryReader, which
+     * Test of query method, of class CachingQueryReader.  The test compares
+     * the results of CachingQueryReader non-caching reader which
      * is assumed to be correct.
      */
     @Test
     public void testQuery() throws IOException {
-        boolean contained = false;
 
-        ResourceLocator loc = new ResourceLocator(server, testFile);
-        AlignmentQueryReader reader = new BAMRemoteQueryReader(loc);
+        ResourceLocator loc = new ResourceLocator(testFile);
+        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(loc);
         CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
         //TODO the results may be returned in a different order. Not sure if that's a bug or not
         Map<String, Alignment> expectedResult = new HashMap();
@@ -117,7 +114,8 @@ public class BAMCachingQueryReaderTest {
         }
         reader.close();
 
-        CachingQueryReader cachingReader = new CachingQueryReader(new BAMRemoteQueryReader(loc));
+        reader = AlignmentReaderFactory.getReader(loc);
+        CachingQueryReader cachingReader = new CachingQueryReader(reader);
         CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(), 100, null);
         List<Alignment> result = new ArrayList();
 

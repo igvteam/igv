@@ -47,8 +47,6 @@ import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
 import org.broad.igv.lists.VariantListManager;
 import org.broad.igv.maf.MAFTrack;
-import org.broad.igv.maf.conservation.OmegaDataSource;
-import org.broad.igv.maf.conservation.OmegaTrack;
 import org.broad.igv.peaks.PeakTrack;
 import org.broad.igv.renderer.*;
 import org.broad.igv.sam.*;
@@ -190,8 +188,6 @@ public class TrackLoader {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".bedz")) {
                 loadIndexdBedFile(locator, newTracks, genome);
-            } else if (typeString.endsWith(".omega")) {
-                loadOmegaTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
@@ -862,15 +858,6 @@ public class TrackLoader {
     private void loadPeakTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
         PeakTrack t = new PeakTrack(locator, genome);
         newTracks.add(t);
-    }
-
-    private void loadOmegaTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) {
-        OmegaDataSource ds = new OmegaDataSource(genome);
-        OmegaTrack track = new OmegaTrack(locator, ds, genome);
-        track.setName("Conservation (Omega)");
-        track.setHeight(40);
-        track.setPreferredHeight(40);
-        newTracks.add(track);
     }
 
     /**
