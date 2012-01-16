@@ -54,6 +54,11 @@ public class CachingQueryReader {
     private static int MAX_TILE_COUNT = 10;
     private static Set<WeakReference<CachingQueryReader>> activeReaders = Collections.synchronizedSet(new HashSet());
 
+    /**
+     * Flag to mark a corrupt index.  Without this attempted reads will continue in an infinite loop
+     */
+    private static boolean corruptIndex = false;
+
     // Map of read group -> paired end stats
 
     //private PairedEndStats peStats;
@@ -216,7 +221,10 @@ public class CachingQueryReader {
      */
     private boolean loadTiles(String chr, List<AlignmentTile> tiles, Map<String, PEStats> peStats) {
 
-        assert (tiles.size() > 0);
+        //assert (tiles.size() > 0);
+        if(corruptIndex) {
+            return false;
+        }
 
         boolean filterFailedReads = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_FILTER_FAILED_READS);
         ReadGroupFilter filter = ReadGroupFilter.getFilter();
@@ -357,7 +365,16 @@ public class CachingQueryReader {
 
             return true;
 
-        } catch (Throwable e) {
+        } catch(java.nio.BufferUnderflowException e) {
+            // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
+            corruptIndex = true;
+            MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
+                    "<br>This is often caused by a corrupt index file.");
+            return false;
+
+        }
+
+        catch (Throwable e) {
 
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
