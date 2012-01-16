@@ -7,7 +7,7 @@
   ~
   ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
   ~ WARRANTES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
-  ~ WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+  ~ WITH LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
   ~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
   ~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
   ~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
@@ -25,6 +25,7 @@
     <!-- Source and lib directories -->
     <property name="src.dir"       value="${basedir}/src/" />
     <property name="lib.dir"       value="${basedir}/lib/" />
+    <property name="test.dir"      value="${basedir}/out/test/Test/"/>
 
     <!-- Temp directory.  Sources are compiled here prior to archiving -->
     <property name="tmp.dir"       value="${basedir}/tmp/" />
@@ -38,6 +39,49 @@
     <property name="version"       value="${build-number}" />
     <property name="data-server-url"    value="http://www.broadinstitute.org/igvdata/$$_dataServerRegistry.txt" />
 
+    <!-- Create class path for manifest -->
+    <path id="@jars">
+        <pathelement path="${lib.dir}AbsoluteLayout.jar" />
+        <pathelement path="${lib.dir}batik-bridge.jar" />
+        <pathelement path="${lib.dir}batik-codec.jar" />
+        <pathelement path="${lib.dir}batik-awt-util.jar" />
+        <pathelement path="${lib.dir}batik-css.jar" />
+        <pathelement path="${lib.dir}batik-dom.jar" />
+        <pathelement path="${lib.dir}batik-ext.jar" />
+        <pathelement path="${lib.dir}batik-gui-util.jar" />
+        <pathelement path="${lib.dir}batik-gvt.jar" />
+        <pathelement path="${lib.dir}batik-parser.jar" />
+        <pathelement path="${lib.dir}batik-svg-dom.jar" />
+        <pathelement path="${lib.dir}batik-svggen.jar" />
+        <pathelement path="${lib.dir}batik-transcoder.jar" />
+        <pathelement path="${lib.dir}batik-util.jar" />
+        <pathelement path="${lib.dir}batik-xml.jar" />
+        <pathelement path="${lib.dir}commons-logging-1.1.1.jar" />
+        <pathelement path="${lib.dir}commons-math-2.2.jar" />
+        <pathelement path="${lib.dir}concurrent.jar" />
+        <pathelement path="${lib.dir}goby-io-igv.jar" />
+        <pathelement path="${lib.dir}jargs.jar" />
+        <pathelement path="${lib.dir}jide-action.jar" />
+        <pathelement path="${lib.dir}jide-common.jar" />
+        <pathelement path="${lib.dir}jide-components.jar" />
+        <pathelement path="${lib.dir}jide-dialogs.jar" />
+        <pathelement path="${lib.dir}jide-dock.jar" />
+        <pathelement path="${lib.dir}jide-grids.jar" />
+        <pathelement path="${lib.dir}jlfgr-1_0.jar" />
+        <pathelement path="${lib.dir}junit-4.5.jar" />
+        <pathelement path="${lib.dir}log4j-1.2.15.jar" />
+        <pathelement path="${lib.dir}mysql-connector-java-3.1.14-bin.jar" />
+        <pathelement path="${lib.dir}sam-1.57.jar" />
+        <pathelement path="${lib.dir}swing-layout-1.0.jar" />
+        <pathelement path="${lib.dir}tribble-0.1.jar" />
+        <pathelement path="${lib.dir}vcf.jar" />
+        <pathelement path="${lib.dir}xml-apis-ext-1.3.04" />
+        <pathelement path="${lib.dir}xml-apis-1.3.04.jar" />
+        <pathelement path="${lib.dir}Jama-1.0.2.jar" />
+        <pathelement path="${lib.dir}jcommon-1.0.16.jar" />
+        <pathelement path="${lib.dir}jfreechart-1.0.13.jar" />
+        <pathelement path="${lib.dir}commons-httpclient-3.1.jar" />
+    </path>
 
     <!-- Clean all generated artifacts -->
     <target name="clean">
@@ -59,51 +103,6 @@
                 <exclude name="**/manifest.mf"/>
             </fileset>
         </copy>
-
-
-        <!-- Create class path for manifest -->
-        <path id="@jars">
-            <pathelement path="${lib.dir}AbsoluteLayout.jar" />
-            <pathelement path="${lib.dir}batik-bridge.jar" />
-            <pathelement path="${lib.dir}batik-codec.jar" />
-            <pathelement path="${lib.dir}batik-awt-util.jar" />
-			<pathelement path="${lib.dir}batik-css.jar" />
-            <pathelement path="${lib.dir}batik-dom.jar" />
-            <pathelement path="${lib.dir}batik-ext.jar" />
-			<pathelement path="${lib.dir}batik-gui-util.jar" />
-			<pathelement path="${lib.dir}batik-gvt.jar" />
-			<pathelement path="${lib.dir}batik-parser.jar" />
-			<pathelement path="${lib.dir}batik-svg-dom.jar" />
-			<pathelement path="${lib.dir}batik-svggen.jar" />
-			<pathelement path="${lib.dir}batik-transcoder.jar" />
-            <pathelement path="${lib.dir}batik-util.jar" />
-            <pathelement path="${lib.dir}batik-xml.jar" />
-            <pathelement path="${lib.dir}commons-logging-1.1.1.jar" />
-            <pathelement path="${lib.dir}commons-math-2.2.jar" />
-            <pathelement path="${lib.dir}concurrent.jar" />
-            <pathelement path="${lib.dir}goby-io-igv.jar" />
-            <pathelement path="${lib.dir}jargs.jar" />
-            <pathelement path="${lib.dir}jide-action.jar" />
-            <pathelement path="${lib.dir}jide-common.jar" />
-            <pathelement path="${lib.dir}jide-components.jar" />
-            <pathelement path="${lib.dir}jide-dialogs.jar" />
-            <pathelement path="${lib.dir}jide-dock.jar" />
-            <pathelement path="${lib.dir}jide-grids.jar" />
-            <pathelement path="${lib.dir}jlfgr-1_0.jar" />
-            <pathelement path="${lib.dir}junit-4.5.jar" />
-            <pathelement path="${lib.dir}log4j-1.2.15.jar" />
-            <pathelement path="${lib.dir}mysql-connector-java-3.1.14-bin.jar" />
-            <pathelement path="${lib.dir}sam-1.57.jar" />
-            <pathelement path="${lib.dir}swing-layout-1.0.jar" />
-            <pathelement path="${lib.dir}tribble-0.1.jar" />
-            <pathelement path="${lib.dir}vcf.jar" />
-            <pathelement path="${lib.dir}xml-apis-ext-1.3.04" />
-            <pathelement path="${lib.dir}xml-apis-1.3.04.jar" />
-            <pathelement path="${lib.dir}Jama-1.0.2.jar" />
-            <pathelement path="${lib.dir}jcommon-1.0.16.jar" />
-            <pathelement path="${lib.dir}jfreechart-1.0.13.jar" />
-            <pathelement path="${lib.dir}commons-httpclient-3.1.jar" />
-        </path>
 
         <pathconvert property="class-path" pathsep=" " dirsep="/" refid="@jars">
             <map from="${lib.dir}" to="lib/"/>
@@ -133,12 +132,45 @@
     </target>
 
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}"  debug="on" destdir="${tmp.dir}">
+        <javac srcdir="${src.dir}"  debug="on" destdir="${tmp.dir}" includeantruntime="true">
             <classpath refid="@jars" />
         </javac>
     </target>
 
     <target name="all" depends="build, clean"/>
+
+    <!-- Run all tests with ant. Work in progress. -->
+
+    <path id="test.classpath">
+        <path refid="@jars"/>
+        <pathelement location="${test.dir}"/>
+        <pathelement location="${basedir}/out/production/Igv/"/>
+        <pathelement location="${basedir}/out/test/"/>
+    </path>
+
+    <property name="test.reports" value="${basedir}/reports" />
+    <target name="alltests">
+        <junit haltonfailure="no" showoutput="yes" printsummary="yes">
+            <classpath refid="test.classpath" />
+            <formatter type="xml" usefile="true"/>
+            <batchtest fork="yes" todir="${test.reports}">
+                <fileset dir="${test.dir}">
+                    <include name="*.class" />
+                    <include name="*/*.class" />
+                    <include name="*/*/*.class" />
+                    <include name="*/*/*/*.class" />
+                    <include name="*/*/*/*/*.class" />
+                </fileset>
+            </batchtest>
+        </junit>
+
+        <junitreport todir="${test.reports}">
+            <fileset dir="${test.reports}">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report todir="${test.reports}" />
+        </junitreport>
+    </target>
 
 
 </project>
