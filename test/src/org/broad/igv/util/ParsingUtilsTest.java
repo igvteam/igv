@@ -35,9 +35,59 @@ import static org.junit.Assert.assertEquals;
  * Date: Feb 8, 2010
  */
 public class ParsingUtilsTest {
+    
+    public final static String characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+    public final static int numChars = characters.length();
+    
     @Test
     public void testEstimateLineCount() {
         // Add your code here
+    }
+    
+    @Test
+    public void testSplitSpeed(){
+        long trials = 100000;
+        int jnk= 0;
+        long pu_time = 0;
+        long nrm_time = 0;
+        long tm1, tm2;
+        String test_text;
+        String[] result;
+        for(int _ =0; _ < trials; _++){
+            test_text = genRandString();
+            tm1 = System.nanoTime();
+            result = test_text.split("\\s+");
+            tm2 = System.nanoTime();
+            nrm_time += tm2 - tm1;
+
+            tm1 = System.nanoTime();
+            jnk = ParsingUtils.split(test_text,result,'\t');
+            tm2 = System.nanoTime();
+            pu_time += tm2 - tm1;
+        }
+        //System.out.println("Average ParsingUtils.split time: " + pu_time / trials);
+        //System.out.println("Average String.split time: " + nrm_time / trials);
+        assertTrue("ParsingUtils is slowing at splitting strings than string.split", pu_time < nrm_time);
+
+    }
+    
+    private String genRandString(){
+        int numWords = 10;
+        int max_length = 20;
+        String ret = "";
+        for(int _=0; _ < numWords; _++){
+            ret += getRandWord(max_length) + "\t";
+        }
+        return ret;
+    }
+    
+    private String getRandWord(int max_length){
+        int length = (int) Math.random()*max_length + 1;
+        String ret = "";
+        for(int _=0; _ < length; _++){
+            ret += characters.charAt((int) Math.random() * numChars);
+        }
+        return ret;
     }
 
     @Test
