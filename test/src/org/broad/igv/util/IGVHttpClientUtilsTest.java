@@ -49,10 +49,10 @@ public class IGVHttpClientUtilsTest {
     @Test
     public void testExists() throws IOException {
         URL url = new URL(hg18URL);
-        assertTrue(HttpUtils.getInstance().resourceAvailable(url));
+        assertTrue("Resource unexpectedly does not exist", HttpUtils.getInstance().resourceAvailable(url));
 
         url = new URL("http://nosuchserver/genomes/hg18.genome");
-        assertFalse(HttpUtils.getInstance().resourceAvailable(url));
+        assertFalse("Resource unexpectedly found", HttpUtils.getInstance().resourceAvailable(url));
 
         url = new URL("http://igvdata.broadinstitute.org/nosuchfile.txt");
         assertFalse(HttpUtils.getInstance().resourceAvailable(url));
