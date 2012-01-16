@@ -26,6 +26,7 @@ package org.broad.igv.sam;
 import org.broad.igv.sam.reader.GeraldParser;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -36,7 +37,7 @@ import java.io.FileInputStream;
  */
 public class GeraldParserTest {
 
-    String geraldFile = "/Users/jrobinso/IGV/Alignments/s_1_1_sorted.txt";
+    String geraldFile = "test/data/gerald/chr10_s_1_sorted.txt";
 
     public GeraldParserTest() {
     }
@@ -58,46 +59,41 @@ public class GeraldParserTest {
     }
 
     /**
-     * Test of readNextRecord method, of class GeraldParser.
-     * SL-XAT  2       1       53      910     104     0       1
-     * ATCACAGGTCTATCACCCTATTAAACACTCACGGGA
-     * aIXZa]b`\Z`ab`_``^^aaaa]G[a`__`]`__]
-     * Homo_sapiens_assembly18.fasta.0
-     * 2       F       24C11   82      99
-     * 122     R
-     */
+     * Test parsing of Gerald record:
+     *
+     * HWUSI-EAS68R    0013    1       93      15585   5018    0       1       ACAGACTTCAAAAAACCGGAGCTTTTGCTGGGGATA
+     *            fffffffeffeeee^cccccfffffefeffffffff    chr10.fa                50497   R       36      34       */
     @Test
-    public void testReadNextRecord() throws Exception {
+    public void testParse() throws Exception {
 
         FileInputStream is = new FileInputStream(geraldFile);
         AsciiLineReader reader = new AsciiLineReader(is);
         GeraldParser instance = new GeraldParser();
         GeraldAlignment result = instance.readNextRecord(reader);
 
-        String readName = "SL-XAT:2:1:53:910:104:0";
+        String readName = "HWUSI-EAS68R:0013:1:93:15585:5018:0";
         assertEquals(readName, result.getReadName());
         assertTrue(result.isPaired());
 
         AlignmentBlock b = result.getAlignmentBlocks()[0];
 
-        byte[] read = "ATCACAGGTCTATCACCCTATTAAACACTCACGGGA".getBytes();
+
+        System.out.println(new String(b.getBases()));
+
+        byte[] read = AlignmentUtils.reverseComplement("ACAGACTTCAAAAAACCGGAGCTTTTGCTGGGGATA").getBytes();
         for (int i = 0; i < read.length; i++) {
             assertEquals(read[i], b.getBases()[i]);
             byte q = b.getQualities()[i];
             assertTrue(q >= 0 && q <= 255);
         }
 
-        assertEquals("chrM", result.getChr());
+        assertEquals("chr10.fa", result.getChr());
 
-        assertEquals(1, result.getStart());
-        assertEquals(1 + read.length, result.getEnd());
+        assertEquals(50496, result.getStart());
+        assertEquals(50496 + read.length, result.getEnd());
 
-        assertEquals(99, result.getMappingQuality());
+        assertEquals(34, result.getMappingQuality());
 
-        assertEquals(122, result.getInferredInsertSize());
-        assertEquals(result.getStart() + result.getInferredInsertSize(),
-                result.getMate().start);
-        assertTrue(result.getMate().isNegativeStrand());
 
         System.out.println(result.getReadName());
 
