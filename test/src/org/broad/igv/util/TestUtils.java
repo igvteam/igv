@@ -22,6 +22,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -46,5 +47,15 @@ public class TestUtils {
         Globals.setHeadless(true);
         final String genomeFile = dataFileName;
         return IgvTools.loadGenome(genomeFile, true);
+    }
+
+    public static void clearOutputDir() throws IOException {
+        File outputDir = new File(DATA_DIR + "/out/");
+        if (outputDir.isDirectory()) {
+            File[] listFiles = outputDir.listFiles();
+            for (File fi : listFiles) {
+                fi.delete();
+            }
+        }
     }
 }

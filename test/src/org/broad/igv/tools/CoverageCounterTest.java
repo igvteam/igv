@@ -18,10 +18,12 @@
 
 package org.broad.igv.tools;
 
+import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -74,7 +76,7 @@ public class CoverageCounterTest {
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, null, options);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, options);
 
         cc.parse();
 
@@ -84,6 +86,26 @@ public class CoverageCounterTest {
 
     }
 
+
+    @Test
+    public void testSimpleCount() throws Exception {
+        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+
+        String options = null;
+        int windowSize = 1;
+
+        CoverageCounterTest.TestDataConsumer dc = new CoverageCounterTest.TestDataConsumer();
+
+        CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, null, null, options);
+
+        cc.parse();
+
+        String totalCount = dc.attributes.get("totalCount");
+
+        Assert.assertEquals("71", totalCount);
+    }
+
+
     @Test
     public void testIncludeDuplicatesFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
@@ -92,7 +114,7 @@ public class CoverageCounterTest {
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, null, options);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, options);
 
         cc.parse();
 

@@ -22,8 +22,6 @@
  */
 package org.broad.igv.tools;
 
-import org.broad.igv.util.collections.FloatArrayList;
-import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
@@ -32,6 +30,8 @@ import org.broad.igv.tdf.*;
 import org.broad.igv.tools.parsers.*;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
+import org.broad.igv.util.collections.FloatArrayList;
+import org.broad.igv.util.collections.IntArrayList;
 
 import java.io.File;
 import java.io.IOException;
@@ -203,7 +203,7 @@ public class Preprocessor implements DataConsumer {
         if (!(chr.equals("chrM") || chr.equals("M") || chr.equals("MT"))) {
             genomeZoom.addData(gStart, gEnd, data);
             for (int i = 0; i < data.length; i++) {
-                allDataStats.add(gEnd-gStart, data[i]);
+                allDataStats.add(gEnd - gStart, data[i]);
             }
         }
 
@@ -625,7 +625,7 @@ public class Preprocessor implements DataConsumer {
                     if (accumulators[t][b] == null) {
                         accumulators[t][b] = new ListAccumulator(datasets.keySet());
                     }
-                    accumulators[t][b].add(end-start, data[t]);
+                    accumulators[t][b].add(end - start, data[t]);
                 }
             }
         }
@@ -709,7 +709,7 @@ public class Preprocessor implements DataConsumer {
         this.setSkipZeroes(true);
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
-                wigFile, genome, coverageOpt);
+                genome, coverageOpt);
 
         /*if(isize != null) {
            String [] tokens = isize.split(",");
@@ -731,11 +731,10 @@ public class Preprocessor implements DataConsumer {
 
         try {
             aParser.parse();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Delete the output file as its probably corrupt
             e.printStackTrace();
-            if(outputFile.exists()) {
+            if (outputFile.exists()) {
                 outputFile.delete();
             }
 

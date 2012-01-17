@@ -31,10 +31,7 @@ import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +55,11 @@ public class IGVToolsTest {
     @After
     public void tearDown() throws Exception {
         igvTools = null;
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        TestUtils.clearOutputDir();
     }
 
     @Test
