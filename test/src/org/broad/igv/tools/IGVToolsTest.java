@@ -19,14 +19,11 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.Strand;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.bed.BEDCodec;
-import org.broad.tribble.bed.BEDFeature;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
@@ -44,7 +41,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 
 public class IGVToolsTest {
@@ -129,85 +127,6 @@ public class IGVToolsTest {
             count++;
         }
         Assert.assertEquals(15, count);
-    }
-
-
-    @Test
-    public void testLargeBedNoHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.noheader.sorted.bed";
-        testLargeBed(bedFile);
-    }
-
-    @Test
-    public void testLargeBedWithHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.withheader.sorted.bed";
-        testLargeBed(bedFile);
-    }
-
-    @Test
-    public void testLargeBedWeirdHeader() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.weirdheader.sorted.bed";
-        testLargeBed(bedFile);
-    }
-
-
-    public void testLargeBed(String bedFile) throws Exception {
-        //chr2:178,599,764-179,830,787 <- CONTAINS TTN
-
-
-        // Interval index
-        File indexFile = new File(bedFile + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
-        indexFile.deleteOnExit();
-
-
-        String chr = "chr2";
-        int start = 178707289 / 2;
-        int end = 179973464 * 2;
-
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new BEDCodec());
-        Iterator<BEDFeature> iter = bfr.query(chr, start, end);
-        int count = 0;
-        while (iter.hasNext()) {
-            BEDFeature feat = iter.next();
-            check_feat_unigene(feat, chr, start, end);
-            count++;
-        }
-
-        assertEquals(71, count);
-
-        //Re-query with some restrictions
-        count = 0;
-        start = 178709699;
-        end = 179721089;
-        iter = bfr.query(chr, start, end);
-        while (iter.hasNext()) {
-            BEDFeature feat = iter.next();
-            check_feat_unigene(feat, chr, start, end);
-            count++;
-        }
-
-        assertEquals(65, count);
-    }
-
-    /**
-     * Some checking of features queried from a given test file
-     *
-     * @param feat
-     * @param chr
-     * @param start
-     * @param end
-     */
-    private void check_feat_unigene(BEDFeature feat, String chr, int start, int end) {
-        assertEquals(chr, feat.getChr());
-        assertTrue(feat.getEnd() > feat.getStart());
-        assertEquals(0.0f, feat.getScore()); //This particular data set is all 0
-        assertNotSame(Strand.NONE, feat.getStrand());
-        assertTrue("Start out of range", feat.getStart() > start);
-        assertTrue("end out of range", feat.getStart() <= end);
     }
 
 
