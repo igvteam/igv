@@ -22,7 +22,6 @@ package org.broad.igv.gs.dm;
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.gs.GSUtils;
 import org.broad.igv.util.HttpUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -44,14 +43,14 @@ import java.util.*;
 public class DMUtils {
 
     private static Logger log = Logger.getLogger(DMUtils.class);
-    public static final String VERSION = "v1.0";
-    private static final String UPLOADURL =  "/uploadurl";
+    private static final String UPLOAD_SERVICE = "uploadurl";
+    public static final String DIRECTORY_SERVICE = "defaultdirectory";
 
 
     public static GSDirectoryListing listDefaultDirectory() {
         try {
             URL defaultURL = new URL(PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) +
-                    VERSION + "/defaultdirectory");
+                    DIRECTORY_SERVICE);
             return getDirectoryListing(defaultURL);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -123,11 +122,11 @@ public class DMUtils {
 
 
         byte[] md5 = computeMD5(localFile);
-        String base64String = Base64Coder.encodeLines(md5);
+        String base64String = new String(Base64Coder.encode(md5));
         long contentLength = localFile.length();
-        String contentType = "application/octet-stream"; //"text";
+        String contentType = "application/text"; //"text";
 
-        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + VERSION + UPLOADURL +
+        String tmp = PreferenceManager.getInstance().get(PreferenceManager.GENOME_SPACE_DM_SERVER) + UPLOAD_SERVICE +
                 gsPath + "?Content-Length=" + contentLength +
                 "&Content-MD5=" + URLEncoder.encode(base64String, "UTF-8") + "&Content-Type=" + contentType;
 
@@ -137,7 +136,6 @@ public class DMUtils {
         headers.put("Content-MD5", base64String);
         headers.put("Content-Length", String.valueOf(contentLength));
         headers.put("Content-Type", contentType);
-
 
 
         HttpUtils.getInstance().uploadGenomeSpaceFile(uploadURL, localFile, headers);

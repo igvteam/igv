@@ -22,6 +22,7 @@
 package org.broad.igv.feature;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.IGVFeatureRenderer;
@@ -194,9 +195,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                 try {
                     if (nextLine.startsWith("#")) {
                         if (nextLine.startsWith("#type")) {
-                            String[] tokens = nextLine.split("=");
+                            String[] tokens = Globals.equalPattern.split(nextLine);
                             if (tokens.length > 1) {
                                 try {
+                                    // TODO: type is not currently used, is there any reason to keep this?
                                     TrackType type = TrackType.valueOf(tokens[1]);
                                 } catch (Exception e) {
                                     log.error("Error converting track type: " + tokens[1]);
@@ -211,7 +213,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                             }
                         } else if (nextLine.startsWith("#coords")) {
                             try {
-                                String[] tokens = nextLine.split("=");
+                                String[] tokens = Globals.equalPattern.split(nextLine);
                                 startBase = Integer.parseInt(tokens[1]);
                             }
                             catch (Exception e) {

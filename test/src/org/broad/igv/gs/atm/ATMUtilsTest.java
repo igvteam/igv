@@ -23,9 +23,7 @@ import org.broad.igv.gs.GSUtils;
 import org.broad.igv.gs.dm.DMUtils;
 import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import java.net.*;
 import java.util.HashMap;
@@ -45,13 +43,13 @@ import static junit.framework.Assert.assertTrue;
  */
 public class ATMUtilsTest {
 
-    @BeforeClass
-    public static void setup() {
+    @Before
+    public  void setup() {
         HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 
-    @AfterClass
-    public static void teardown() {
+    @After
+    public  void teardown() {
         HttpUtils.getInstance().resetAuthenticator();
     }
 
