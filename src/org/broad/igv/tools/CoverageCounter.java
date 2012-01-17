@@ -27,7 +27,6 @@ import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.ReadMate;
 import org.broad.igv.sam.reader.AlignmentQueryReader;
 import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -57,55 +56,50 @@ import java.util.List;
  */
 public class CoverageCounter {
 
-    private int countThreshold = 0;
+    /**
+     * The path to the alignment file being counted.
+     */
+    private String alignmentFile;
 
-    private int upperExpectedInsertSize = 600;
-    private int lowerExpectedInsertSize = 200;
+    /**
+     * The query interval, usually this is null but can be used to restrict the interval of the alignment file that is
+     * computed.  The file must be indexed (queryable) if this is not null
+     */
     private Locus interval;
 
-
-    enum Event {
-        mismatch, indel, largeISize, smallISize, inversion, duplication, inter, unmappedMate
-    }
-
-    private String alignmentFile;
-    private File tdfFile;
     private DataConsumer consumer;
     private float[] buffer;
     private int windowSize = 1;
-    // TODO -- make mapping qulaity a parameter
     private int minMappingQuality = 0;
     private int strandOption = -1;
     private int extFactor;
     private int totalCount = 0;
     private File wigFile = null;
     private WigWriter wigWriter = null;
-    private boolean keepZeroes = false;
     private boolean includeDuplicates = false;
     private Genome genome;
 
-    private String readGroup; // The read group to count
-
-    Map<Event, WigWriter> writers = new HashMap();
-
     private boolean computeTDF = true;
 
-    private Distribution coverageHistogram;
-    private static final double LOG_1__1 = 0.09531018;
 
-    //private String interval = null;
-
-
+    /**
+     *
+      * @param alignmentFile  - path to the file to count
+     * @param consumer - the data consumer, in this case a TDF preprocessor
+     * @param windowSize - window size in bp, counts are performed over this window
+     * @param extFactor - the extension factor, read is artificially extended by this amount
+     * @param wigFile - path to the wig file (optional)
+     * @param genome - the Genome,  used to size chromosomes
+     * @param options - additional coverage options (optional)
+     */
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
                            int windowSize,
                            int extFactor,
-                           File tdfFile,  // For reference
                            File wigFile,
                            Genome genome,
                            String options) {
         this.alignmentFile = alignmentFile;
-        this.tdfFile = tdfFile;
         this.consumer = consumer;
         this.windowSize = windowSize;
         this.extFactor = extFactor;
@@ -117,104 +111,46 @@ public class CoverageCounter {
             parseOptions(options);
         }
 
+
     }
 
+    /**
+     * Parse command-line options.  Perhaps this should be done in the calling program.
+     * @param options
+     */
     private void parseOptions(String options) {
-        try {
-            String[] opts = options.split(",");
-            for (String opt : opts) {
-                if (opt.startsWith("d")) {
-                    includeDuplicates = true;
-                } else if (opt.startsWith("m=")) {
-                    String[] tmp = opt.split("=");
-                    minMappingQuality = Integer.parseInt(tmp[1]);
-                    System.out.println("Minimum mapping quality = " + minMappingQuality);
-                } else if (opt.startsWith("t=")) {
-                    String[] tmp = opt.split("=");
-                    countThreshold = Integer.parseInt(tmp[1]);
-                    System.out.println("Count threshold = " + countThreshold);
-                } else if (opt.startsWith("l:")) {
-                    String[] tmp = opt.split(":");
-                    readGroup = tmp[1];
-                } else if (opt.startsWith("q")) {
-                    String[] tmp = opt.split("@");
-                    interval = new Locus(tmp[1]);
-                } else if (opt.startsWith("i")) {
-                    writers.put(Event.largeISize, new WigWriter(new File(getFilenameBase() + ".large_isize.wig"), windowSize));
-                    writers.put(Event.smallISize, new WigWriter(new File(getFilenameBase() + ".small_isize.wig"), windowSize));
-
-                    // Optionally specify mean and std dev (todo -- just specify min and max)
-                    String[] tokens = opt.split(":");
-                    if (tokens.length > 2) {
-                        //float median = Float.parseFloat(tokens[1]);
-                        //float mad = Float.parseFloat(tokens[2]);
-                        //upperExpectedInsertSize = (int) (median + 3 * mad);
-                        //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
-                        int min = Integer.parseInt(tokens[1]);
-                        int max = Integer.parseInt(tokens[2]);
-                        upperExpectedInsertSize = min;
-                        lowerExpectedInsertSize = max;
-                    } else {
-                        PairedEndStats stats = PairedEndStats.compute(alignmentFile);
-                        if (stats == null) {
-                            System.out.println("Warning: error computing stats.  Using default insert size settings");
-                        } else {
-                            //double median = stats.getMedianInsertSize();
-                            //double mad = stats.getMadInsertSize();
-                            //upperExpectedInsertSize = (int) (median + 3 * mad);
-                            //lowerExpectedInsertSize = Math.max(50, (int) (median - 3 * mad));
-                            upperExpectedInsertSize = (int) stats.getMaxPercentileInsertSize();
-                            lowerExpectedInsertSize = (int) stats.getMinPercentileInsertSize();
-                            System.out.println(alignmentFile + "  min = " + lowerExpectedInsertSize + " max = " + upperExpectedInsertSize);
-                        }
-                    }
-
-                } else if (opt.equals("o")) {
-                    writers.put(Event.inversion, new WigWriter(new File(getFilenameBase() + ".inversion.wig"), windowSize));
-                    writers.put(Event.duplication, new WigWriter(new File(getFilenameBase() + ".duplication.wig"), windowSize));
-                } else if (opt.equals("m")) {
-                    writers.put(Event.mismatch, new WigWriter(new File(getFilenameBase() + ".mismatch.wig"), windowSize));
-                } else if (opt.equals("d")) {
-                    writers.put(Event.indel, new WigWriter(new File(getFilenameBase() + ".indel.wig"), windowSize));
-                } else if (opt.equals("u")) {
-                    writers.put(Event.unmappedMate, new WigWriter(new File(getFilenameBase() + ".nomate.wig"), windowSize));
-                } else if (opt.equals("r")) {
-                    writers.put(Event.inter, new WigWriter(new File(getFilenameBase() + ".inter.wig"), windowSize));
-                } else if (opt.equals("h")) {
-                    coverageHistogram = new Distribution(200);
-                } else if (opt.equals("z")) {
-                    keepZeroes = true;
-                } else {
-                    System.out.println("Unknown coverage option: " + opt);
-                }
+        String[] opts = options.split(",");
+        for (String opt : opts) {
+            if (opt.startsWith("d")) {
+                includeDuplicates = true;
+            } else if (opt.startsWith("m=")) {
+                String[] tmp = opt.split("=");
+                minMappingQuality = Integer.parseInt(tmp[1]);
+                System.out.println("Minimum mapping quality = " + minMappingQuality);
+            } else if (opt.startsWith("q")) {
+                String[] tmp = opt.split("@");
+                interval = new Locus(tmp[1]);
+            } else {
+                System.out.println("Unknown coverage option: " + opt);
             }
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
     }
 
 
-    private String getFilenameBase() {
-        String tmp = tdfFile.getAbsolutePath();
-        tmp = tmp.substring(0, tmp.length() - 4);
-        if (readGroup != null) {
-            tmp += "." + readGroup;
-        }
-        return tmp;
-    }
 
-
-    // TODO -- options to ovveride all of these checks
-
+    // TODO -- command-line options to ovveride all of these checks
     private boolean passFilter(Alignment alignment) {
-        return (readGroup == null || readGroup.equals(alignment.getReadGroup())) &&
-                alignment.isMapped() &&
+        return alignment.isMapped() &&
                 (includeDuplicates || !alignment.isDuplicate()) &&
                 alignment.getMappingQuality() >= minMappingQuality &&
                 !alignment.isVendorFailedRead();
     }
 
+    /**
+     * Parse and "count" the alignment file.  The main method.
+     * @throws IOException
+     */
     public void parse() throws IOException {
 
         int tolerance = (int) (windowSize * (Math.floor(extFactor / windowSize) + 2));
@@ -227,12 +163,11 @@ public class CoverageCounter {
         ReadCounter counter = null;
 
 
+        if (wigFile != null) {
+            wigWriter = new WigWriter(wigFile, windowSize);
+        }
+
         try {
-
-            if (wigFile != null) {
-                wigWriter = new WigWriter(wigFile, windowSize);
-            }
-
 
             if (interval == null) {
                 reader = getReader(alignmentFile, false);
@@ -263,66 +198,12 @@ public class CoverageCounter {
                         lastChr = alignmentChr;
                     }
 
-                    if (alignment.getMappingQuality() == 0) {
-                        // TODO -- mq zero event
-                    } else if (alignment.isPaired()) {
-
-                        final int start = alignment.getStart();
-                        final int end = alignment.getEnd();
-
-                        counter.incrementPairedCount(start, end);
-
-                        ReadMate mate = alignment.getMate();
-                        boolean mateMapped = mate != null && mate.isMapped();
-                        boolean sameChromosome = mateMapped && mate.getChr().equals(alignment.getChr());
-
-                        if (mateMapped) {
-                            if (sameChromosome) {
-
-                                // Pair orientation
-                                String oStr = alignment.getPairOrientation();
-                                if (oStr.equals("R1F2") || oStr.equals("R2F1")) {
-                                    counter.incrementPairedEvent(start, end, Event.duplication);
-                                } else if (oStr.equals("F1F2") || oStr.equals("F2F1") ||
-                                        oStr.equals("R1R2") || oStr.equals("R2R1")) {
-                                    counter.incrementPairedEvent(start, end, Event.inversion);
-                                }
-
-                                // Insert size
-                                int isize = Math.abs(alignment.getInferredInsertSize());
-                                if (isize > upperExpectedInsertSize) {
-                                    counter.incrementPairedEvent(start, end, Event.largeISize);
-
-                                }
-                                if (isize < lowerExpectedInsertSize) {
-                                    counter.incrementPairedEvent(start, end, Event.smallISize);
-                                }
-
-                            } else {
-                                counter.incrementPairedEvent(start, end, Event.inter);
-                            }
-                        } else {  // unmapped mate
-
-                            counter.incrementPairedEvent(start, end, Event.unmappedMate);
-                        }
-
-
-                    }
-
-
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
                     if (blocks != null) {
                         int lastBlockEnd = -1;
                         for (AlignmentBlock block : blocks) {
 
                             if (!block.isSoftClipped()) {
-                                if (lastBlockEnd >= 0) {
-                                    String c = alignment.getCigarString();
-                                    int s = block.getStart();
-                                    if (s > lastBlockEnd) {
-                                        counter.incrementEvent(lastBlockEnd, Event.indel);
-                                    }
-                                }
 
                                 byte[] bases = block.getBases();
                                 int blockStart = block.getStart();
@@ -376,64 +257,29 @@ public class CoverageCounter {
                         }
                     }
 
-                    if (writers.containsKey(Event.indel)) {
-                        for (AlignmentBlock block : alignment.getInsertions()) {
-                            if (interval == null || (block.getStart() >= interval.getStart() - 1 &&
-                                    block.getStart() <= interval.getEnd())) {
-                                counter.incrementEvent(block.getStart(), Event.indel);
-                            }
-                        }
-
-                    }
                 }
 
             }
-        }
+            consumer.setAttribute("totalCount", String.valueOf(totalCount));
+            consumer.parsingComplete();
 
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-
-        finally {
+        } finally {
 
             if (counter != null) {
                 counter.closeBucketsBefore(Integer.MAX_VALUE);
             }
-
-            consumer.setAttribute("totalCount", String.valueOf(totalCount));
-            consumer.parsingComplete();
-
             if (iter != null) {
                 iter.close();
             }
-
             if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
+                reader.close();
             }
-
-
             if (wigWriter != null) {
                 wigWriter.close();
             }
 
-            for (WigWriter writer : writers.values()) {
-                writer.close();
-            }
-
-
-            if (coverageHistogram != null) {
-                try {
-                    PrintWriter pw = new PrintWriter(new FileWriter(getFilenameBase() + ".hist.txt"));
-                    coverageHistogram.print(pw);
-                    pw.close();
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
         }
     }
 
@@ -466,65 +312,24 @@ public class CoverageCounter {
     class ReadCounter {
 
         String chr;
+        /**
+         * Map of window index -> counter
+         */
         TreeMap<Integer, Counter> counts = new TreeMap();
 
         ReadCounter(String chr) {
             this.chr = chr;
         }
 
+        /**
+         * @param position - genomic poistion
+         * @param base     - nucleotide
+         * @param quality  - base quality of call
+         */
         void incrementCount(int position, byte base, byte quality) {
             final Counter counter = getCounterForPosition(position);
             counter.increment(position, base, quality);
         }
-
-        void incrementEvent(int position, Event type) {
-            final Counter counter = getCounterForPosition(position);
-            counter.incrementEvent(type, 1);
-        }
-
-        void incrementPairedCount(int start, int end) {
-            int startIdx = start / windowSize;
-            int endIdx = end / windowSize;
-            for (int idx = startIdx; idx <= endIdx; idx++) {
-                Counter counter = getCounter(idx);
-                counter.incrementPairedCount(fractionOverlap(counter, start, end));
-            }
-        }
-
-        // frac should be between 0 and 1
-
-        void incrementPairedEvent(int start, int end, Event type) {
-            int startIdx = start / windowSize;
-            int endIdx = end / windowSize;
-            for (int idx = startIdx; idx <= endIdx; idx++) {
-                Counter counter = getCounter(idx);
-                counter.incrementEvent(type, fractionOverlap(counter, start, end));
-            }
-        }
-
-        // todo -- move to counter class?
-
-        float fractionOverlap(Counter counter, int start, int end) {
-            float counterLength = counter.end - counter.start;
-            float overlapLength = Math.min(end, counter.end) - Math.max(start, counter.start);
-            return overlapLength / counterLength;
-
-        }
-
-
-        //public void incrementISize(Alignment alignment) {
-        //    int startBucket = alignment.getStart() / windowSize;
-        //    int endBucket = alignment.getAlignmentEnd() / windowSize;
-        //    for (int bucket = startBucket; bucket <= endBucket; bucket++) {
-        //        int bucketStartPosition = bucket * windowSize;
-        //        int bucketEndPosition = bucketStartPosition + windowSize;
-        //        if (!counts.containsKey(bucket)) {
-        //            counts.put(bucket, new Counter(chr, bucketStartPosition, bucketEndPosition));
-        //        }
-        //        final Counter counter = counts.get(bucket);
-        //        counter.incrementISize(alignment.getInferredInsertSize());
-        //    }
-        //}
 
 
         private Counter getCounterForPosition(int position) {
@@ -543,14 +348,12 @@ public class CoverageCounter {
         }
 
 
-        //void incrementNegCount(int position) {
-        //    Integer bucket = position / windowSize;
-        //    if (!counts.containsKey(bucket)) {
-        //        counts.put(bucket, new Counter());
-        //    }
-        //    counts.get(bucket).incrementNeg();
-        //}
-
+        /**
+         * Close (finalize) all buckets before the given position.  Called when we are sure this position will not be
+         * visited again.
+         *
+         * @param position - genomic position
+         */
         void closeBucketsBefore(int position) {
             List<Integer> bucketsToClose = new ArrayList();
 
@@ -561,64 +364,30 @@ public class CoverageCounter {
                     final Counter counter = entry.getValue();
                     int totalCount = counter.getCount();
 
-                    if (totalCount > countThreshold) {
-
-                        // Divide total count by window size.  This is the average count per
-                        // base over the window,  so 30x coverage remains 30x irrespective of window size.
-                        int bucketStartPosition = entry.getKey() * windowSize;
-                        int bucketEndPosition = bucketStartPosition + windowSize;
-                        if (genome != null) {
-                            Chromosome chromosome = genome.getChromosome(chr);
-                            if (chromosome != null) {
-                                bucketEndPosition = Math.min(bucketEndPosition, chromosome.getLength());
-                            }
+                    // Divide total count by window size.  This is the average count per
+                    // base over the window,  so for example 30x coverage remains 30x irrespective of window size.
+                    int bucketStartPosition = entry.getKey() * windowSize;
+                    int bucketEndPosition = bucketStartPosition + windowSize;
+                    if (genome != null) {
+                        Chromosome chromosome = genome.getChromosome(chr);
+                        if (chromosome != null) {
+                            bucketEndPosition = Math.min(bucketEndPosition, chromosome.getLength());
                         }
-                        int bucketSize = bucketEndPosition - bucketStartPosition;
-
-                        buffer[0] = ((float) totalCount) / bucketSize;
-
-                        if (strandOption > 0) {
-                            buffer[1] = ((float) counter.getCount()) / bucketSize;
-                        }
-
-                        consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
-
-                        for (Map.Entry<Event, WigWriter> entries : writers.entrySet()) {
-                            Event evt = entries.getKey();
-                            WigWriter writer = entries.getValue();
-                            float score = counter.getEventScore(evt);
-                            writer.addData(chr, bucketStartPosition, bucketEndPosition, score);
-                        }
-
-                        if (wigWriter != null) {
-                            wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
-                        }
-
-                        /*
-                        if (coverageHistogram != null) {
-
-                           List<Feature> transcripts = FeatureUtils.getAllFeaturesAt(bucketStartPosition, 10000, 5, genes, false);
-                            if (transcripts != null && !transcripts.isEmpty()) {
-
-                                boolean isCoding = false;
-                                for (Feature t : transcripts) {
-                                    Exon exon = ((IGVFeature) t).getExonAt(bucketStartPosition);
-                                    if (exon != null && !exon.isUTR(bucketStartPosition)) {
-                                        isCoding = true;
-                                        break;
-                                    }
-                                }
-
-                                if (isCoding) {
-                                    int[] baseCounts = counter.getBaseCount();
-                                    for (int i = 0; i < baseCounts.length; i++) {
-                                        coverageHistogram.addDataPoint(baseCounts[i]);
-                                    }
-                                }
-
-                       }
-                        */
                     }
+                    int bucketSize = bucketEndPosition - bucketStartPosition;
+
+                    buffer[0] = ((float) totalCount) / bucketSize;
+
+                    if (strandOption > 0) {
+                        buffer[1] = ((float) counter.getCount()) / bucketSize;
+                    }
+
+                    consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
+
+                    if (wigWriter != null) {
+                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
+                    }
+
 
                     bucketsToClose.add(entry.getKey());
                 }
@@ -650,14 +419,7 @@ public class CoverageCounter {
 
         float pairedCount = 0;
         float mismatchCount = 0;
-        float indelCount = 0;
-        float largeISizeCount = 0;
-        float smallISizeCount = 0;
-        float inversionCount = 0;
-        float duplicationCount = 0;
-        float unmappedMate = 0;
-        float interChrCount = 0;
-        float totalISizeCount = 0;
+
 
         String chr;
         int start;
@@ -665,16 +427,12 @@ public class CoverageCounter {
         byte[] ref;
         int[] baseCount;
 
-        //int isizeCount = 0;
-        //float isizeZScore = 0;
-        //float totalIsize = 0;
 
         Counter(String chr, int start, int end) {
             this.chr = chr;
             this.start = start;
             this.end = end;
             baseCount = new int[end - start];
-            //ref = SequenceHelper.readSequence(genome.getId(), chr, start, end);
         }
 
 
@@ -693,7 +451,6 @@ public class CoverageCounter {
 
 
         // frac should be between 0 znd 1
-
         void incrementPairedCount(float frac) {
             pairedCount += frac;
         }
@@ -724,90 +481,6 @@ public class CoverageCounter {
             qualityCount += quality;
         }
 
-        // frac should be between 0 and 1
-
-        void incrementEvent(Event evt, float frac) {
-            switch (evt) {
-                case indel:
-                    indelCount += frac;
-                    break;
-                case largeISize:
-                    largeISizeCount += frac;
-                    break;
-                case smallISize:
-                    smallISizeCount += frac;
-                    break;
-                case inversion:
-                    inversionCount += frac;
-                    break;
-                case duplication:
-                    duplicationCount += frac;
-                    break;
-                case inter:
-                    interChrCount += frac;
-                    break;
-                case unmappedMate:
-                    unmappedMate += frac;
-                    break;
-            }
-        }
-
-
-        public float getEventScore(Event evt) {
-            switch (evt) {
-                case mismatch:
-                    return qualityCount < 25 ? 0 : mismatchCount / qualityCount;
-                case indel:
-                    return count < 5 ? 0 : indelCount / count;
-                case largeISize:
-                    return pairedCount < 5 ? 0 : largeISizeCount / pairedCount;
-                case smallISize:
-                    return pairedCount < 5 ? 0 : smallISizeCount / pairedCount;
-                case inversion:
-                    return pairedCount < 5 ? 0 : inversionCount / pairedCount;
-                case duplication:
-                    return pairedCount < 5 ? 0 : duplicationCount / pairedCount;
-                case inter:
-                    return (pairedCount < 5 ? 0 : interChrCount / pairedCount);
-                case unmappedMate:
-                    return (pairedCount < 5 ? 0 : unmappedMate / pairedCount);
-            }
-            throw new RuntimeException("Unknown event type: " + evt);
-        }
-
-
-        public void incrementISize(int inferredInsertSize) {
-
-            totalISizeCount++;
-            if (inferredInsertSize > 600) {
-                largeISizeCount++;
-            } else if (inferredInsertSize < 200) {
-                smallISizeCount++;
-            }
-
-            //float zs = Math.min(6, (Math.abs(inferredInsertSize) - meanInsertSize) / stdDevInsertSize);
-            //isizeZScore += zs;
-            //ppCount++;
-            //if (Math.abs(Math.abs(inferredInsertSize) - meanInsertSize) > 2 * stdDevInsertSize) {
-            //    isizeCount++;
-            //}
-            //otalIsize += Math.abs(inferredInsertSize);
-        }
-
-
-        //float getISizeFraction() {
-        //    if (pairedCount < 3) {
-        //        return 0;
-        //    }
-        //    float frac = ((float) isizeCount) / pairedCount;
-        //    return frac;
-        //float avg = isizeZScore / ppCount;
-        //return avg;
-        //}
-
-        //float getAvgIsize() {
-        //    return pairedCount == 0 ? 0 : totalIsize / pairedCount;
-        //}
 
     }
 
@@ -817,7 +490,7 @@ public class CoverageCounter {
      */
     class WigWriter {
 
-        Event event = null;
+
         String lastChr = null;
         int lastPosition = 0;
         int step;
@@ -830,13 +503,6 @@ public class CoverageCounter {
             pw = new PrintWriter(new FileWriter(file));
         }
 
-        WigWriter(File file, int step, Event event) throws IOException {
-            this.step = step;
-            this.span = step;
-            pw = new PrintWriter(new FileWriter(file));
-            this.event = event;
-        }
-
         public void addData(String chr, int start, int end, float data) {
 
             if (Float.isNaN(data)) {
@@ -845,8 +511,7 @@ public class CoverageCounter {
             if (genome.getChromosome(chr) == null) {
                 return;
             }
-
-            if ((!keepZeroes && data == 0) || end <= start) {
+            if (end <= start) {     // Not sure why or how this could happen
                 return;
             }
 
