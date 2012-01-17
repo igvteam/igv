@@ -256,38 +256,35 @@ public class GenomeManager {
     /**
      * Refresh a locally cached genome
      *
-     * @param archiveFile
+     * @param cachedFile
      * @param genomeArchiveURL
      * @throws IOException
      */
-    private void refreshCache(File archiveFile, URL genomeArchiveURL) {
+    private void refreshCache(File cachedFile, URL genomeArchiveURL) {
         // Look in cache first
 
 
         try {
-            if (archiveFile.exists()) {
+            if (cachedFile.exists()) {
 
-                long fileLength = archiveFile.length();
-                long contentLength = HttpUtils.getInstance().getContentLength(genomeArchiveURL);
-
-                if (contentLength <= 0) {
-                    log.info("Skipping genome update of " + archiveFile.getName() + " due to unknown content length");
-                }
+               
+                boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
+                
                 // Force an update of cached genome if file length does not equal remote content length
-                boolean forceUpdate = (contentLength != fileLength) &&
+                boolean forceUpdate = remoteModfied &&
                         PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES);
                 if (forceUpdate) {
                     log.info("Refreshing genome: " + genomeArchiveURL.toString());
-                    File tmpFile = new File(archiveFile.getAbsolutePath() + ".tmp");
+                    File tmpFile = new File(cachedFile.getAbsolutePath() + ".tmp");
                     if (HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), tmpFile)) {
-                        FileUtils.copyFile(tmpFile, archiveFile);
+                        FileUtils.copyFile(tmpFile, cachedFile);
                         tmpFile.deleteOnExit();
                     }
                 }
 
             } else {
                 // Copy file directly from the server to local cache.
-                HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), archiveFile);
+                HttpUtils.getInstance().downloadFile(genomeArchiveURL.toExternalForm(), cachedFile);
             }
         } catch (Exception e) {
             log.error("Error refreshing genome cache. ", e);

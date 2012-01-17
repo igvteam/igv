@@ -20,6 +20,7 @@ package org.broad.igv.util;
 
 import biz.source_code.base64Coder.Base64Coder;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.util.HttpDate;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
@@ -251,6 +252,56 @@ public class HttpUtils {
             return Long.parseLong(contentLengthString);
         }
     }
+
+    /**
+     * Compare a local and remote resource.
+     *
+     * @param file
+     * @param url
+     * @return true if the files are "the same", false if the remote file has been modified wrt the local one.
+     *
+     * @throws IOException
+     */
+    public boolean compareResources(File file, URL url) throws IOException {
+
+
+        if(!file.exists()) {
+            return false;
+        }
+
+        HttpURLConnection conn = openConnection(url, null, "HEAD");
+
+        // Check content-length first
+        long contentLength = -1;
+        String contentLengthString = conn.getHeaderField("Content-Length");
+        if (contentLengthString != null) {
+            try {
+                contentLength = Long.parseLong(contentLengthString);
+            } catch (NumberFormatException e) {
+                log.error("Error parsing content-length string: " + contentLengthString + " from URL: "
+                        + url.toString());
+                contentLength = -1;
+            }
+        }
+        if (contentLength != file.length()) {
+            return false;
+        }
+
+        // Compare last-modified dates
+        String lastModifiedString = conn.getHeaderField("Last-Modified");
+        if (lastModifiedString == null) {
+            return false;
+        } else {
+            HttpDate date = new HttpDate();
+            date.parse(lastModifiedString);
+            long remoteModifiedTime = date.getTime();
+            long localModifiedTime = file.lastModified();
+            return remoteModifiedTime <= localModifiedTime;
+        }
+
+
+    }
+
 
     public void updateProxySettings() {
         boolean useProxy;
