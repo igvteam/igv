@@ -54,6 +54,12 @@ public class TestBEDCodecs {
         igvTools = null;
     }
 
+    @Test
+    public void testIntervalTest() throws Exception {
+        intervalTestFile(new BEDCodec());
+        intervalTestFile(new IGVBEDCodec());
+    }
+
 
     @Test
     public void testLargeBedNoHeader() throws Exception {
@@ -85,6 +91,36 @@ public class TestBEDCodecs {
         testUnigeneBed(bedFile, new BEDCodec());
 
         testUnigeneBed(bedFile, new IGVBEDCodec());
+    }
+
+    public void intervalTestFile(FeatureCodec codec) throws Exception {
+        int startOffset = 0;
+        if (codec instanceof BEDCodec) {
+            startOffset = ((BEDCodec) codec).getStartOffset();
+        }
+
+        String bedFile = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
+
+        // Interval index
+        File indexFile = new File(bedFile + ".idx");
+        if (indexFile.exists()) {
+            indexFile.delete();
+        }
+        igvTools.doIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
+        indexFile.deleteOnExit();
+
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, codec);
+        Iterator<Feature> iter = bfr.query("chr1", 0, Integer.MAX_VALUE);
+        int count = 0;
+        while (iter.hasNext()) {
+            Feature feat = iter.next();
+            if (count == 0) {
+                //Check we don't skip first line
+                assertEquals(1677535, feat.getStart() - startOffset);
+            }
+            count++;
+        }
+        assertEquals(6, count);
     }
 
 

@@ -41,21 +41,20 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     FeatureFileHeader header;
 
 
+    /**
+     * Because the
+     *
+     * @param reader
+     * @return
+     */
     public Object readHeader(LineReader reader) {
         String line;
-
         try {
-
             while ((line = reader.readLine()) != null && (line.startsWith("#") || line.startsWith("track")) ||
                     line.startsWith("browser")) {
                 readHeaderLine(line);
-                if (line.startsWith("track")) {
-                    //Assume track is the last line before data
-                    //Not a great assumption, decode should have header-handling capability
-                    break;
-                }
             }
-            return header;
+            return decode(line);
         } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }

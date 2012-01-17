@@ -78,8 +78,8 @@ public class IGVToolsTest {
 
         List<Block> blocks = idx.getBlocks("chr1", 100, 200);
         Block block = blocks.get(0);
-        assertEquals("Unexpected start position ", 46, block.getStartPosition());
-        assertEquals("Unexpected block size", 54, block.getSize());
+        assertEquals("Unexpected start position ", 0, block.getStartPosition());
+        assertEquals("Unexpected block size", 100, block.getSize());
 
         List<Block> allblocks = idx.getBlocks("chr1", 1, Integer.MAX_VALUE);
         //5 lines, get broken up into 2 blocks
