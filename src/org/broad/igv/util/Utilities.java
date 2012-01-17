@@ -49,13 +49,12 @@ public class Utilities {
     final static int ZIP_ENTRY_CHUNK_SIZE = 64000;
 
     public static String base64Encode(String str) {
-        byte[] bytes = str.getBytes();
-        return Base64Coder.encodeLines(bytes);
+        return Base64Coder.encodeString(str);
 
     }
 
     public static String base64Decode(String str) {
-        return new String(Base64Coder.decode(str));
+        return Base64Coder.decodeString(str);
     }
 
 

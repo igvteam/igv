@@ -72,7 +72,8 @@ public class IGVHttpClientUtilsTest {
         mgr.override(PreferenceManager.PROXY_HOST, "igvdev01.broadinstitute.org");
         mgr.override(PreferenceManager.PROXY_PORT, "3128");
         mgr.override(PreferenceManager.PROXY_USER, "proxytest");
-        mgr.override(PreferenceManager.PROXY_PW, Utilities.base64Encode("test@123"));
+        String enc_pword = Utilities.base64Encode("test@123");
+        mgr.override(PreferenceManager.PROXY_PW, enc_pword);
         mgr.override(PreferenceManager.USE_PROXY, "true");
         mgr.override(PreferenceManager.PROXY_AUTHENTICATE, "true");
         HttpUtils.getInstance().updateProxySettings();
