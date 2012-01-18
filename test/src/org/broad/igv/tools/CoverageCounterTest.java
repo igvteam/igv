@@ -35,16 +35,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * public CoverageCounter(String alignmentFile,
- * DataConsumer consumer,
- * int windowSize,
- * int extFactor,
- * File tdfFile,  // For reference
- * File wigFile,
- * Genome genome,
- * String options)
- */
+
 public class CoverageCounterTest {
 
     static PreferenceManager preferenceManager;
@@ -67,8 +58,10 @@ public class CoverageCounterTest {
         preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
     }
 
+    /**
+     * Test the "mapping quality" flag.  Also indirectly tests the query parameters.
+     */
     @Test
-
     public void testMappingQualityFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String options = "m=30,q@1:16731624-16731624";
@@ -88,6 +81,9 @@ public class CoverageCounterTest {
 
     }
 
+    /**
+     * Test the "include duplicates" flag.  Also indirectly tests the query parameters.
+     */
     @Test
     public void testIncludeDuplicatesFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
