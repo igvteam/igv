@@ -59,7 +59,32 @@ public class BAMQueryReaderTest {
      */
     @Test
     public void testClose() throws Exception {
-        assertTrue(false);
+        String bamfile = TestUtils.LARGE_DATA_DIR + "/HG00171.hg18.bam";
+        String chr = "chr1";
+        int end = 300000000;
+        int start = end / 5;
+        int stopafter = 10;
+        int counter = 0;
+        BAMQueryReader bamreader = new BAMQueryReader(new File(bamfile));
+        CloseableIterator<Alignment> bamiter = bamreader.query(chr, start, end, true);
+        while (bamiter.hasNext()) {
+            Alignment bamrecord = bamiter.next();
+            if (counter >= stopafter) {
+                break;
+            } else {
+                counter++;
+            }
+        }
+        bamreader.close();
+        boolean closeSucceeded = false;
+        try {
+            CloseableIterator<Alignment> bamiter2 = bamreader.query(chr, start, end, true);
+        } catch (NullPointerException npe) {
+            closeSucceeded = true;
+        }
+        assertTrue(closeSucceeded);
+
+
     }
 
     /**
