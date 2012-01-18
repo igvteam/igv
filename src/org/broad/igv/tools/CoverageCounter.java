@@ -78,7 +78,7 @@ public class CoverageCounter {
     /**
      * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
      * count of fragment "coverage", as opposed to read coverage.  If used, the value should be set to
-     *   extFactor = averageFragmentSize - averageReadLength
+     * extFactor = averageFragmentSize - averageReadLength
      */
     private int extFactor;
 
@@ -88,8 +88,11 @@ public class CoverageCounter {
     private boolean includeDuplicates = false;
 
     private Genome genome;
+
+    /**
+     * Optional wig file specifier.  If non-null,  a "wiggle" file is created in addition to the TDF file.
+     */
     private File wigFile = null;
-    private WigWriter wigWriter = null;
 
     /**
      * Total number of alignments that pass filters and are counted.
@@ -193,6 +196,7 @@ public class CoverageCounter {
         String lastChr = "";
         ReadCounter counter = null;
 
+        WigWriter wigWriter = null;
         if (wigFile != null) {
             wigWriter = new WigWriter(wigFile, windowSize);
         }
@@ -218,11 +222,11 @@ public class CoverageCounter {
                     // Close all counters with position < alignment.getStart()
                     if (alignmentChr.equals(lastChr)) {
                         if (counter != null) {
-                            counter.closeBucketsBefore(alignment.getAlignmentStart() - tolerance);
+                            counter.closeBucketsBefore(alignment.getAlignmentStart() - tolerance, wigWriter);
                         }
                     } else {
                         if (counter != null) {
-                            counter.closeBucketsBefore(Integer.MAX_VALUE);
+                            counter.closeBucketsBefore(Integer.MAX_VALUE, wigWriter);
                         }
                         counter = new ReadCounter(alignmentChr);
                         lastChr = alignmentChr;
@@ -298,7 +302,7 @@ public class CoverageCounter {
         } finally {
 
             if (counter != null) {
-                counter.closeBucketsBefore(Integer.MAX_VALUE);
+                counter.closeBucketsBefore(Integer.MAX_VALUE, wigWriter);
             }
             if (iter != null) {
                 iter.close();
@@ -384,7 +388,7 @@ public class CoverageCounter {
          *
          * @param position - genomic position
          */
-        void closeBucketsBefore(int position) {
+        void closeBucketsBefore(int position, WigWriter wigWriter) {
             List<Integer> bucketsToClose = new ArrayList();
 
             Integer bucket = position / windowSize;
@@ -415,7 +419,7 @@ public class CoverageCounter {
                     consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
 
                     if (wigWriter != null) {
-                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer[0]);
+                        wigWriter.addData(chr, bucketStartPosition, bucketEndPosition, buffer);
                     }
 
 
@@ -533,11 +537,14 @@ public class CoverageCounter {
             pw = new PrintWriter(new FileWriter(file));
         }
 
-        public void addData(String chr, int start, int end, float data) {
+        public void addData(String chr, int start, int end, float[] data) {
 
-            if (Float.isNaN(data)) {
-                return;
+            for (int i = 0; i < data.length; i++) {
+                if (Float.isNaN(data[i])) {
+                    return;
+                }
             }
+
             if (genome.getChromosome(chr) == null) {
                 return;
             }
@@ -551,7 +558,13 @@ public class CoverageCounter {
                 span = dataSpan;
                 outputStepLine(chr, start + 1);
             }
-            pw.println((start + 1) + "\t" + data);
+
+            pw.print(start + 1);
+            for (int i = 0; i < data.length; i++) {
+                System.out.print("\t" + data[i]);
+            }
+            pw.println();
+
             lastPosition = start;
             lastChr = chr;
 
