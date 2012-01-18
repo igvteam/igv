@@ -357,4 +357,13 @@ public class Utilities {
 
         return list.toArray(new String[list.size()]);
     }
+
+    final public static int countFlags(int flags) {
+        int count = 0;
+        while (flags > 0) {
+            count += flags & 1;
+            flags = flags >> 1;
+        }
+        return count;
+    }
 }

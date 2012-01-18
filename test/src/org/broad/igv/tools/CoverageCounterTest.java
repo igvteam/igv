@@ -18,18 +18,22 @@
 
 package org.broad.igv.tools;
 
-import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
+import org.broad.igv.util.TestUtils;
+import org.broad.tribble.readers.AsciiLineReader;
+import org.broad.tribble.readers.LineReader;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,10 +44,11 @@ public class CoverageCounterTest {
 
     static PreferenceManager preferenceManager;
     static boolean useByteRange;
+    static Genome genome;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Globals.setHeadless(true);
+        genome = TestUtils.loadGenome();
         preferenceManager = PreferenceManager.getInstance();
         useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
     }
@@ -51,6 +56,7 @@ public class CoverageCounterTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
+        //TestUtils.clearOutputDir();
     }
 
     @Before
@@ -81,9 +87,72 @@ public class CoverageCounterTest {
 
     }
 
-    /**
-     * Test the "include duplicates" flag.  Also indirectly tests the query parameters.
+    /*
+    Test whether we count the number of features correctly.
      */
+    @Test
+    public void testCountStrand() throws Exception {
+        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+
+
+        int expTot = 71;
+        int expPos = 34;
+        int expNeg = 37;
+        int windowSize = 1;
+
+        assertEquals("Test configured incorrectly", expTot, expNeg + expPos);
+
+        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountStrand.wig");
+        Genome genome = this.genome;
+
+
+        String[] options = new String[]{"sc=0x01", "sc=0x04", "sc=0x08", "sc=0xC", "sc=0x1C", "sc=0x05", "sc=0x02"};
+        int[] expectedTotal = new int[]{expTot, expPos, expNeg, expTot, expTot, expTot, 0};
+
+        for (int ii = 0; ii < options.length; ii++) {
+            TestDataConsumer dc = new TestDataConsumer();
+            CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, options[ii]);
+            cc.parse();
+
+            String totalCount = dc.attributes.get("totalCount");
+            int totCount = Integer.valueOf(totalCount);
+            assertEquals(expectedTotal[ii], totCount);
+        }
+    }
+
+    /*
+    Simple test, output all 3 data columns and check that they add up properly (both = positive + negative)
+    */
+    @Test
+    public void testStrandsConsistent() throws Exception {
+        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        int[] windowSizes = new int[]{1, 10, 50, 101, 500, 999};
+        int expected_cols = 4;
+
+        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
+        Genome genome = this.genome;
+
+
+        for (int ii = 0; ii < windowSizes.length; ii++) {
+            TestDataConsumer dc = new TestDataConsumer();
+            CoverageCounter cc = new CoverageCounter(ifile, dc, windowSizes[ii], 0, wigFile, genome, "sc=" + (1 + 4 + 8));
+            cc.parse();
+
+            InputStream is = new FileInputStream(wigFile);
+            LineReader data = new AsciiLineReader(is);
+            //Skip header
+            String line = data.readLine();
+            while ((line = data.readLine()) != null) {
+                String[] tokens = line.split("\\s+");
+                assertEquals(expected_cols, tokens.length);
+                float total = Float.parseFloat(tokens[1]);
+                float subs = Float.parseFloat(tokens[2]) + Float.parseFloat(tokens[3]);
+                assertEquals(total, subs, 1e-2);
+            }
+        }
+    }
+
+
     @Test
     public void testIncludeDuplicatesFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";

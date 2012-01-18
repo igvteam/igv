@@ -24,11 +24,13 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
-import org.broad.igv.affective.TSParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
-import org.broad.igv.tools.parsers.*;
+import org.broad.igv.tools.parsers.CNParser;
+import org.broad.igv.tools.parsers.DataConsumer;
+import org.broad.igv.tools.parsers.UnsortedException;
+import org.broad.igv.tools.parsers.WiggleParser;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.collections.FloatArrayList;
@@ -755,7 +757,7 @@ public class Preprocessor implements DataConsumer {
         } else if (tmp.endsWith(".cn") || tmp.endsWith(".xcn") || tmp.endsWith(".igv") || tmp.endsWith(".snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
-        }  else {
+        } else {
             String extension = getExtension(iFile.getAbsolutePath());
             out.println("Error: cannot 'tile' files of type " + extension);
             out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");
