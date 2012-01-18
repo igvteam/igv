@@ -43,7 +43,8 @@ import java.util.*;
 import java.util.List;
 
 /**
- *
+ * Class to compute coverage on an alignment or feature file.  This class is designed to be instantiated and executed
+ * from a single thread.
  */
 public class CoverageCounter {
 
@@ -53,35 +54,71 @@ public class CoverageCounter {
     private String alignmentFile;
 
     /**
+     * A consumer of data produced by this class,  normally a TDF Preprocessor.
+     */
+    private DataConsumer consumer;
+
+    /**
+     * Window size in base pairs.  Genome is divided into non-overlapping windows of this size.  The counts reported
+     * are averages over the window.
+     */
+    private int windowSize = 1;
+
+    /**
+     * Minimum mapping quality.  Alignments with MQ less than this value are filtered.
+     */
+    private int minMappingQuality = 0;
+
+    /**
+     * Strand option.
+     * TODO -- not currently used,  implement
+     */
+    private int strandOption = -1;
+
+    /**
+     * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
+     * count of fragment "coverage", as opposed to read coverage.  If used, the value should be set to
+     *   extFactor = averageFragmentSize - averageReadLength
+     */
+    private int extFactor;
+
+    /**
+     * Flag to control treatment of duplicates.  If true duplicates are counted.  The default value is false.
+     */
+    private boolean includeDuplicates = false;
+
+    private Genome genome;
+    private File wigFile = null;
+    private WigWriter wigWriter = null;
+
+    /**
+     * Total number of alignments that pass filters and are counted.
+     */
+    private int totalCount = 0;
+
+    /**
      * The query interval, usually this is null but can be used to restrict the interval of the alignment file that is
      * computed.  The file must be indexed (queryable) if this is not null
      */
     private Locus interval;
 
-    private DataConsumer consumer;
+    /**
+     * Data buffer to pass data to the "consumer" (preprocessor).
+     */
     private float[] buffer;
-    private int windowSize = 1;
-    private int minMappingQuality = 0;
-    private int strandOption = -1;
-    private int extFactor;
-    private int totalCount = 0;
-    private File wigFile = null;
-    private WigWriter wigWriter = null;
-    private boolean includeDuplicates = false;
-    private Genome genome;
+
 
     private boolean computeTDF = true;
 
 
     /**
-     *
-      * @param alignmentFile  - path to the file to count
-     * @param consumer - the data consumer, in this case a TDF preprocessor
-     * @param windowSize - window size in bp, counts are performed over this window
-     * @param extFactor - the extension factor, read is artificially extended by this amount
-     * @param wigFile - path to the wig file (optional)
-     * @param genome - the Genome,  used to size chromosomes
-     * @param options - additional coverage options (optional)
+     * @param alignmentFile - path to the file to count
+     * @param consumer      - the data consumer, in this case a TDF preprocessor
+     * @param windowSize    - window size in bp, counts are performed over this window
+     * @param extFactor     - the extension factor, read is artificially extended by this amount
+     * @param wigFile       - path to the wig file (optional)
+     * @param genome        - the Genome,  used to size chromosomes
+     * @param options       - additional coverage options (optional)
      */
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
@@ -107,6 +144,7 @@ public class CoverageCounter {
 
     /**
      * Parse command-line options.  Perhaps this should be done in the calling program.
+     *
      * @param options
      */
     private void parseOptions(String options) {
@@ -129,7 +167,6 @@ public class CoverageCounter {
     }
 
 
-
     // TODO -- command-line options to ovveride all of these checks
     private boolean passFilter(Alignment alignment) {
         return alignment.isMapped() &&
@@ -140,9 +177,12 @@ public class CoverageCounter {
 
     /**
      * Parse and "count" the alignment file.  The main method.
+     * <p/>
+     * This method is not thread safe due to the use of the member variable "buffer".
+     *
      * @throws IOException
      */
-    public void parse() throws IOException {
+    public synchronized void parse() throws IOException {
 
         int tolerance = (int) (windowSize * (Math.floor(extFactor / windowSize) + 2));
         consumer.setSortTolerance(tolerance);
@@ -152,7 +192,6 @@ public class CoverageCounter {
 
         String lastChr = "";
         ReadCounter counter = null;
-
 
         if (wigFile != null) {
             wigWriter = new WigWriter(wigFile, windowSize);

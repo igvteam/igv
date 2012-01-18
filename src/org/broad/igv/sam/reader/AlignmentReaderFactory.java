@@ -34,11 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import org.broad.igv.goby.GobyAlignmentQueryReader;
-
 /**
  * @author jrobinso
- *         TODO consider renaming this class AlignmentQueryReaderFactory now that two alignment formats are supported.
  */
 public class AlignmentReaderFactory {
     private static Logger log = Logger.getLogger(AlignmentReaderFactory.class);
