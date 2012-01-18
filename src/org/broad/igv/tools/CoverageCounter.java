@@ -43,15 +43,6 @@ import java.util.*;
 import java.util.List;
 
 /**
- *   TODO -- normalize option
- *
- -n           Normalize the count by the total number of reads. This option
- multiplies each count by (1,000,000 / total # of reads). It
- is useful when comparing multiple chip-seq experiments when
- the absolute coverage depth is not important.
- */
-
-/**
  *
  */
 public class CoverageCounter {

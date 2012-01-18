@@ -24,6 +24,7 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.affective.TSParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
@@ -708,7 +709,7 @@ public class Preprocessor implements DataConsumer {
         setTrackParameters(TrackType.COVERAGE, trackLine, new String[]{iFile});
         this.setSkipZeroes(true);
 
-        CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, outputFile,
+        CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile,
                 genome, coverageOpt);
 
         /*if(isize != null) {
@@ -754,10 +755,7 @@ public class Preprocessor implements DataConsumer {
         } else if (tmp.endsWith(".cn") || tmp.endsWith(".xcn") || tmp.endsWith(".igv") || tmp.endsWith(".snp")) {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
-        } else if (tmp.endsWith(".ts") || tmp.endsWith(".ts.csv")) {
-            TSParser tsParser = new TSParser(iFile.getAbsolutePath(), this);
-            tsParser.parse();
-        } else {
+        }  else {
             String extension = getExtension(iFile.getAbsolutePath());
             out.println("Error: cannot 'tile' files of type " + extension);
             out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");

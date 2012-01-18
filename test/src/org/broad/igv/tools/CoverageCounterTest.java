@@ -18,17 +18,17 @@
 
 package org.broad.igv.tools;
 
-import junit.framework.Assert;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,11 +72,13 @@ public class CoverageCounterTest {
     public void testMappingQualityFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/1KG/pilot2Bams/NA12878.SLX.bam";
         String options = "m=30,q@1:16731624-16731624";
+        File wigFile = null;
+        Genome genome = null;
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, options);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, options);
 
         cc.parse();
 
@@ -86,35 +88,17 @@ public class CoverageCounterTest {
 
     }
 
-
-    @Test
-    public void testSimpleCount() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
-
-        String options = null;
-        int windowSize = 1;
-
-        CoverageCounterTest.TestDataConsumer dc = new CoverageCounterTest.TestDataConsumer();
-
-        CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, null, null, options);
-
-        cc.parse();
-
-        String totalCount = dc.attributes.get("totalCount");
-
-        Assert.assertEquals("71", totalCount);
-    }
-
-
     @Test
     public void testIncludeDuplicatesFlag() throws IOException {
         String bamURL = "http://www.broadinstitute.org/igvdata/BodyMap/hg18/Merged/HBM.adipose.bam.sorted.bam";
         String options = "d,q@chr1:153425249-153425249";
         int windowSize = 1;
+        File wigFile = null;
+        Genome genome = null;
 
         TestDataConsumer dc = new TestDataConsumer();
 
-        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, null, null, options);
+        CoverageCounter cc = new CoverageCounter(bamURL, dc, windowSize, 0, wigFile, genome, options);
 
         cc.parse();
 
