@@ -23,6 +23,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
+import org.broad.igv.util.Utilities;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -124,11 +125,12 @@ public class CoverageCounterTest {
 
         File wigFile = null;//new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
         Genome genome = this.genome;
+        int strandOptions = CoverageCounter.STRAND_TOTAL + CoverageCounter.STRAND_ZERO + CoverageCounter.STRAND_ONE;
 
 
         for (int ii = 0; ii < windowSizes.length; ii++) {
             TestDataConsumer dc = new TestDataConsumer();
-            CoverageCounter cc = new CoverageCounter(ifile, dc, windowSizes[ii], 0, wigFile, genome, "sc=" + (1 + 4 + 8));
+            CoverageCounter cc = new CoverageCounter(ifile, dc, windowSizes[ii], 0, wigFile, genome, "sc=" + strandOptions);
             cc.parse();
 
             for (TestData tdata : dc.testDatas) {
@@ -144,14 +146,15 @@ public class CoverageCounterTest {
     @Test
     public void testCountBases() throws Exception {
         String ifile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
-        int expected_cols = 6;
+        int expected_cols = 18;
 
         File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountBases.wig");
         Genome genome = this.genome;
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
-        CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + (1 + 16));
+        int strandOptions = CoverageCounter.STRAND_TOTAL + CoverageCounter.STRAND_ZERO + CoverageCounter.STRAND_ONE + CoverageCounter.BASES;
+        CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + strandOptions);
         cc.parse();
 
 
@@ -172,16 +175,70 @@ public class CoverageCounterTest {
             assertEquals(expected_cols, numbers.length);
             float total = numbers[0];
             float subs = 0;
-            for (int ii = 1; ii < numbers.length; ii++) {
+            for (int ii = 1; ii <= 2; ii++) {
                 //Check that they add up total in each row
+                //just looking at strands
                 subs += numbers[ii];
             }
             assertEquals(total, subs, 1e-2);
 
+            //Count up bases for each strand, test
+            //that they add up right
+            subs = 0;
+            for (int ii = 3; ii < 3 + 5; ii++) {
+                assertEquals(numbers[ii], numbers[ii + 5] + numbers[ii + 2 * 5], 1e-2);
+            }
 
             if (tdata.start == check_startpos) {
                 for (int ii = 0; ii < posvals.length; ii++) {
-                    assertEquals(posvals[ii] + negvals[ii], (int) numbers[ii + 1]);
+                    assertEquals(posvals[ii], numbers[ii + 3 + 5], 1e-2);
+                    assertEquals(negvals[ii], numbers[ii + 3 + 2 * 5], 1e-2);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Test different strand options, just count output columns
+     * and make sure we get the right number
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testColumnCounts() throws Exception {
+        String ifile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
+
+        File wigFile = null;
+        Genome genome = this.genome;
+        int[] windowSizes = new int[]{1, 50, 100, 500};
+        //All possible combinations of STRAND_XXX flags
+        int[] strandops = new int[7];
+        strandops[0] = CoverageCounter.STRAND_ZERO;
+        strandops[1] = CoverageCounter.STRAND_ONE;
+        strandops[2] = CoverageCounter.STRAND_TOTAL;
+        strandops[3] = strandops[0] + strandops[1];
+        strandops[4] = strandops[0] + strandops[2];
+        strandops[5] = strandops[1] + strandops[2];
+        strandops[6] = strandops[3] + strandops[2];
+
+        int[] otherflags = new int[]{CoverageCounter.FIRST_IN_PAIR, CoverageCounter.BASES,
+                CoverageCounter.FIRST_IN_PAIR + CoverageCounter.BASES};
+
+        for (int so : strandops) {
+            for (int of : otherflags) {
+                int expectedcols = Utilities.countFlags(so);
+                if ((of & CoverageCounter.BASES) > 0) {
+                    expectedcols *= 6;
+                }
+
+                int strandOptions = so + of;
+                for (int windowSize : windowSizes) {
+                    TestDataConsumer dc = new TestDataConsumer();
+                    CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + strandOptions);
+                    cc.parse();
+
+                    assertEquals(expectedcols, dc.testDatas.get(0).data.length);
                 }
             }
         }
