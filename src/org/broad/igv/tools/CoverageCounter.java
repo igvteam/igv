@@ -35,7 +35,6 @@ import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.ui.filefilters.AlignmentFileFilter;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.Utilities;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -70,40 +69,32 @@ public class CoverageCounter {
      */
     private int minMappingQuality = 0;
 
-    /**
-     * Output total of 2 strands.
-     */
-    static final int STRAND_TOTAL = 0x01;
     /*
-     * Positive/First strand
+     * Output data from each strand separately (as opposed to combining them)
      */
-    static final int STRAND_ZERO = 0x02;
+    static final int STRAND_SEPARATE = 0x01;
     /*
-     * Negative/Second strand
-     */
-    static final int STRAND_ONE = 0x04;
-    /*
-     * Separate strands by first read/second read,
+     * Gather data by first read/second read,
      * instead of by positive/negative (if this flag is unset)
      */
-    static final int FIRST_IN_PAIR = 0x08;
+    static final int FIRST_IN_PAIR = 0x02;
     /**
-     * Counts of each base. Whether the data will be output
-     * for each strand separately is determined
-     * by STRAND_ZERO and STRAND_ONE
+     * Output counts of each base. Whether the data will be output
+     * for each strand separately is determined by STRAND_SEPARATE
+     * by
      */
-    static final int BASES = 0x10;
+    static final int BASES = 0x4;
 
 
-    private int strandOption = STRAND_TOTAL;
+    private int strandOption = 0;
 
-    private static List<Integer> output_strands;
+    private static final int[] output_strands = new int[]{0, 1};
 
-    private static boolean outputTotal;
+    private static boolean outputSeparate;
     private static boolean firstInPair;
     private static boolean outputBases;
 
-    public static final int NUM_STRANDS = 2;
+    public static final int NUM_STRANDS = output_strands.length;
 
     /**
      * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
@@ -181,12 +172,10 @@ public class CoverageCounter {
             parseOptions(options);
         }
 
-        //Count the number of output columns. Flags for each strand
-        //add 1 column, except if the bases column is set,
-        // then they add 6 (strand + 4 bases + unknown)
-        int multiplier = outputBases ? 6 : 1;
-        int datacols = Utilities.countFlags(strandOption & 0x07) * multiplier;
-
+        //Count the number of output columns. 1 or 2 if not outputting bases
+        //5 or 10 if are.
+        int multiplier = outputBases ? 5 : 1;
+        int datacols = ((strandOption & STRAND_SEPARATE) + 1) * multiplier;
 
         buffer = new float[datacols];
 
@@ -216,19 +205,9 @@ public class CoverageCounter {
                 System.out.println("Unknown coverage option: " + opt);
             }
         }
-        output_strands = new ArrayList<Integer>();
-        outputTotal = (strandOption & STRAND_TOTAL) > 0;
+        outputSeparate = (strandOption & STRAND_SEPARATE) > 0;
         firstInPair = (strandOption & FIRST_IN_PAIR) > 0;
         outputBases = (strandOption & BASES) > 0;
-
-        //keep_strands is an array of the strands
-        //we will be outputting individually.
-        if ((strandOption & STRAND_ZERO) > 0) {
-            output_strands.add(0);
-        }
-        if ((strandOption & STRAND_ONE) > 0) {
-            output_strands.add(1);
-        }
     }
 
 
@@ -506,34 +485,37 @@ public class CoverageCounter {
 
                     int col = 0;
 
-                    //Output aggregated information
-                    if (outputTotal) {
-                        buffer[col] = ((float) counter.getTotalCounts()) / bucketSize;
-                        col++;
-                    }
-
-                    //Output strand specific information, if applicable
-                    for (int strandNum : output_strands) {
-                        buffer[col] = ((float) counter.getCount(strandNum)) / bucketSize;
-                        col++;
-                    }
-
-                    //Output counts of each base, if applicable
-                    //First total, then selected strands
-                    if (outputTotal) {
-                        if (outputBases) {
-                            for (byte base : nucleotides) {
-                                buffer[col] = ((float) counter.getBaseCount(base)) / bucketSize;
+                    //Not outputting base info, just totals
+                    if (!outputBases) {
+                        if (outputSeparate) {
+                            //Output strand specific information, if applicable
+                            for (int strandNum : output_strands) {
+                                buffer[col] = ((float) counter.getCount(strandNum)) / bucketSize;
                                 col++;
                             }
+
+                        } else {
+                            buffer[col] = ((float) counter.getTotalCounts()) / bucketSize;
+                            col++;
+                        }
+
+                        //Output counts of each base
+                    } else {
+                        if (outputSeparate) {
                             for (int strandNum : output_strands) {
                                 for (byte base : nucleotides) {
                                     buffer[col] = ((float) counter.getBaseCount(base, strandNum)) / bucketSize;
                                     col++;
                                 }
                             }
+                        } else {
+                            for (byte base : nucleotides) {
+                                buffer[col] = ((float) counter.getBaseCount(base)) / bucketSize;
+                                col++;
+                            }
                         }
                     }
+
 
                     consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
 
@@ -585,9 +567,11 @@ public class CoverageCounter {
             this.start = start;
             this.end = end;
 
-            baseTypeCounts = new HashMap[NUM_STRANDS];
-            for (int ii = 0; ii < NUM_STRANDS; ii++) {
-                baseTypeCounts[ii] = new HashMap<Byte, Integer>();
+            if (outputBases) {
+                baseTypeCounts = new HashMap[NUM_STRANDS];
+                for (int ii = 0; ii < NUM_STRANDS; ii++) {
+                    baseTypeCounts[ii] = new HashMap<Byte, Integer>();
+                }
             }
         }
 
@@ -610,7 +594,9 @@ public class CoverageCounter {
 //            }
             //baseCount[strand][offset]++;
 
-            incrementNucleotide(base, strand);
+            if (outputBases) {
+                incrementNucleotide(base, strand);
+            }
 
             this.strandCount[strand]++;
             this.totalCount++;
