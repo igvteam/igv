@@ -39,8 +39,6 @@ public interface LocusScore  extends org.broad.tribble.Feature {
 
     public float getScore();
 
-    public LocusScore copy();
-
     /**
      * Return a string to be used for popup text.   The WindowFunction is passed
      * in so it can be used t annotate the value.  The LocusScore object itself

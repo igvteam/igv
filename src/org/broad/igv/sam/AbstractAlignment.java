@@ -45,18 +45,6 @@ public abstract class AbstractAlignment implements Alignment {
     public AbstractAlignment() {
     }
 
-    public AbstractAlignment(AbstractAlignment alignment) {
-        this.chr = alignment.chr;
-        this.inferredInsertSize = alignment.inferredInsertSize;
-        this.mappingQuality = alignment.mappingQuality;
-        this.mate = alignment.mate;
-        this.readName = alignment.readName;
-        this.negativeStrand = alignment.negativeStrand;
-        this.alignmentBlocks = alignment.alignmentBlocks;
-        this.insertions = alignment.insertions;
-    }
-
-
     public String getChromosome() {
         return getChr();
     }
@@ -97,16 +85,10 @@ public abstract class AbstractAlignment implements Alignment {
         return insertions;
     }
 
-    /**
-     * @return the negativeStrand
-     */
     public boolean isNegativeStrand() {
         return negativeStrand;
     }
 
-    /**
-     * @param negativeStrand the negativeStrand to set
-     */
     public void setNegativeStrand(boolean negativeStrand) {
         this.negativeStrand = negativeStrand;
     }
@@ -259,22 +241,27 @@ public abstract class AbstractAlignment implements Alignment {
 
 
     public Strand getFirstOfPairStrand() {
+        Strand fopStrand;
         if (isPaired()) {
             if (isFirstOfPair()) {
-                return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                fopStrand = negativeStrand ? Strand.NEGATIVE : Strand.POSITIVE;
             } else {
                 // If we have a mate, the mate must be the firstOfPair
                 ReadMate mate = getMate();
                 if (mate != null && mate.isMapped()) {
-                    return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                    fopStrand = mate.getStrand();
+                } else {
+                    // No Mate, or mate is not mapped, FOP strand is not defined
+                    fopStrand = Strand.NONE;
                 }
             }
         } else {
             // This alignment is not paired -- by definition "firstOfPair" is this alignment
-            return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            fopStrand = negativeStrand ? Strand.NEGATIVE : Strand.POSITIVE;
         }
-        return Strand.NONE;
+        return fopStrand;
     }
+
 
     public void setMateSequence(String sequence) {
         // ignore by default

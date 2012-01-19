@@ -23,6 +23,8 @@
 package org.broad.igv.sam;
 
 
+import org.broad.igv.feature.Strand;
+
 public class ReadMate {
 
     private String chr;
@@ -50,11 +52,12 @@ public class ReadMate {
         return start;
     }
 
-    /**
-     * @return the negativeStrand
-     */
     public boolean isNegativeStrand() {
         return negativeStrand;
+    }
+
+    public Strand getStrand() {
+        return negativeStrand ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
     public String getChr() {

@@ -40,10 +40,6 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
         this.readName = name;
     }
 
-    public GeraldAlignment(GeraldAlignment alignment) {
-        super(alignment);
-    }
-
     public void setReads(String chr, int start, byte[] reads, byte[] qualities) {
         this.chr = chr;
         this.insertions = new AlignmentBlock[0];
@@ -58,11 +54,6 @@ public class GeraldAlignment extends AbstractAlignment implements Alignment {
             readSequence = new String(this.alignmentBlocks[0].getBases());
         }
         return readSequence;
-    }
-
-
-    public LocusScore copy() {
-        return new GeraldAlignment(this);
     }
 
     @Override
