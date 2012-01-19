@@ -518,16 +518,9 @@ public class CoverageCounter {
 
 
     /**
-     * Class for counting occurrences on a set of base-pairs.
-     * <p/>
-     * Events
-     * base mismatch
-     * translocation
-     * insertion (small)
-     * insertion (large, rearrangement)
-     * deletion  (small)
-     * deletion  (large, rearrangement)
+     * Class for counting nucleotides and strands over an interval.
      */
+
     class Counter {
         /**
          * The total number of counts on this Counter. Will
@@ -537,14 +530,10 @@ public class CoverageCounter {
         int totalCount = 0;
         int qualityCount = 0;
 
-        float pairedCount = 0;
-        float mismatchCount = 0;
-
-
         String chr;
         int start;
         int end;
-        byte[] ref;
+        //byte[] ref;
         /**
          * The number of times a particular base has been encountered (ie # of reads of that base)
          */
@@ -562,23 +551,8 @@ public class CoverageCounter {
         int getCount(int strand) {
             return strandCount[strand];
         }
-//
-//        int getNegCount() {
-//            return negCount;
-//        }
-//
-//
-//        void incrementNeg() {
-//            negCount++;
-//        }
-//
-//
-//        // frac should be between 0 and 1
-//        void incrementPairedCount(float frac) {
-//            pairedCount += frac;
-//        }
 
-
+        // TODO -- do we need to expose this implementation detail?
         public int[][] getBaseCount() {
             return baseCount;
         }
@@ -594,12 +568,6 @@ public class CoverageCounter {
 
             incrementNucleotide(base);
 
-            if (ref != null && ref.length > offset) {
-                byte refBase = ref[offset];
-                if (refBase != base) {
-                    mismatchCount += quality;
-                }
-            }
             strandCount[strand]++;
             totalCount++;
             qualityCount += quality;
