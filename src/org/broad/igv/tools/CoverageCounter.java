@@ -77,7 +77,8 @@ public class CoverageCounter {
      * instead of by positive/negative (if this flag is unset)
      * 0x04 - Positive/First strand
      * 0x08 - Negative/Second strand
-     * TODO Make these static constants or enum
+     * 0x10 - Counts of each base
+     * //TODO bases on each strand
      */
     private int strandOption = 0x01;
     private static final int NUM_STRANDS = 2;
@@ -85,11 +86,13 @@ public class CoverageCounter {
     private static final int FIRST_IN_PAIR = 0x02;
     private static final int STRAND_ZERO = 0x04;
     private static final int STRAND_ONE = 0x08;
+    private static final int BASES = 0x10;
 
     private static boolean outputZero;
     private static boolean outputOne;
     private static boolean outputTotal;
     private static boolean firstInPair;
+    private static boolean outputBases;
 
     /**
      * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
@@ -131,10 +134,10 @@ public class CoverageCounter {
 
 
     private final static Set<Byte> nucleotidesKeep = new HashSet<Byte>();
+    private final static byte[] nucleotides = new byte[]{'A', 'C', 'G', 'T', 'N'};
 
     static {
-        byte[] tokeep = new byte[]{'A', 'C', 'G', 'T', 'N'};
-        for (byte b : tokeep) {
+        for (byte b : nucleotides) {
             nucleotidesKeep.add(b);
         }
     }
@@ -167,7 +170,13 @@ public class CoverageCounter {
             parseOptions(options);
         }
 
-        buffer = new float[Utilities.countFlags(strandOption)];
+        //Count the number of output columns. This is the number of
+        //1s in the strandOption flag, except for BASES which represents 5
+        int datacols = Utilities.countFlags(strandOption);
+        if (outputBases) {
+            datacols += 4;
+        }
+        buffer = new float[datacols];
 
     }
 
@@ -199,6 +208,7 @@ public class CoverageCounter {
         outputOne = (strandOption & STRAND_ONE) > 0;
         outputTotal = (strandOption & STRAND_TOTAL) > 0;
         firstInPair = (strandOption & FIRST_IN_PAIR) > 0;
+        outputBases = (strandOption & BASES) > 0;
     }
 
 
@@ -474,7 +484,7 @@ public class CoverageCounter {
 
                     final Counter counter = entry.getValue();
 
-                    boolean[] outCols = new boolean[]{outputZero, outputOne};
+                    boolean[] outStrandCols = new boolean[]{outputZero, outputOne};
                     int col = 0;
 
                     //Output aggregated information
@@ -482,13 +492,22 @@ public class CoverageCounter {
                         buffer[col] = ((float) counter.getTotalCounts()) / bucketSize;
                         col++;
                     }
+
                     //Output strand specific information, if applicable
                     for (int ii = 0; ii < NUM_STRANDS; ii++) {
-                        if (outCols[ii]) {
+                        if (outStrandCols[ii]) {
                             buffer[col] = ((float) counter.getCount(ii)) / bucketSize;
                             col++;
                         }
 
+                    }
+
+                    //Output counts of each base, if applicable
+                    if (outputBases) {
+                        for (byte base : nucleotides) {
+                            buffer[col] = ((float) counter.getBaseCount(base)) / bucketSize;
+                            col++;
+                        }
                     }
 
                     consumer.addData(chr, bucketStartPosition, bucketEndPosition, buffer, null);
@@ -590,6 +609,10 @@ public class CoverageCounter {
 
         public int getTotalCounts() {
             return this.totalCount;
+        }
+
+        public int getBaseCount(byte base) {
+            return baseTypeCounts.containsKey(base) ? baseTypeCounts.get(base) : 0;
         }
     }
 

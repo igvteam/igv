@@ -23,17 +23,14 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.readers.LineReader;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,12 +95,12 @@ public class CoverageCounterTest {
         int expTot = 71;
         int windowSize = 1;
 
-        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountStrand.wig");
+        File wigFile = null;
         Genome genome = this.genome;
 
 
         String[] options = new String[]{"sc=0x01", "sc=0x04", "sc=0x08", "sc=0xC", "sc=0x1C", "sc=0x05", "sc=0x02"};
-        int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, 0};
+        int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, expTot};
 
         for (int ii = 0; ii < options.length; ii++) {
             TestDataConsumer dc = new TestDataConsumer();
@@ -123,9 +120,9 @@ public class CoverageCounterTest {
     public void testStrandsConsistent() throws Exception {
         String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         int[] windowSizes = new int[]{1, 10, 50, 101, 500, 999};
-        int expected_cols = 4;
+        int expected_cols = 3;
 
-        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
+        File wigFile = null;//new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
         Genome genome = this.genome;
 
 
@@ -134,18 +131,61 @@ public class CoverageCounterTest {
             CoverageCounter cc = new CoverageCounter(ifile, dc, windowSizes[ii], 0, wigFile, genome, "sc=" + (1 + 4 + 8));
             cc.parse();
 
-            InputStream is = new FileInputStream(wigFile);
-            LineReader data = new AsciiLineReader(is);
-            //Skip header
-            String line = data.readLine();
-            while ((line = data.readLine()) != null) {
-                String[] tokens = line.split("\\s+");
-                assertEquals(expected_cols, tokens.length);
-                float total = Float.parseFloat(tokens[1]);
-                float subs = Float.parseFloat(tokens[2]) + Float.parseFloat(tokens[3]);
+            for (TestData tdata : dc.testDatas) {
+                float[] numbers = tdata.data;
+                assertEquals(expected_cols, numbers.length);
+                float total = numbers[0];
+                float subs = numbers[1] + numbers[2];
                 assertEquals(total, subs, 1e-2);
             }
         }
+    }
+
+    @Test
+    public void testCountBases() throws Exception {
+        String ifile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
+        int expected_cols = 6;
+
+        File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountBases.wig");
+        Genome genome = this.genome;
+        int windowSize = 1;
+
+        TestDataConsumer dc = new TestDataConsumer();
+        CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + (1 + 16));
+        cc.parse();
+
+
+        int check_startpos = 153426135 - 1;
+        Map<Byte, Integer> posCounts = new HashMap<Byte, Integer>();
+        Map<Byte, Integer> negCounts = new HashMap<Byte, Integer>();
+        byte[] keys = new byte[]{'A', 'C', 'G', 'T', 'N'};
+        int[] posvals = new int[]{9, 0, 0, 2, 0};
+        int[] negvals = new int[]{16, 0, 0, 0, 0};
+        for (int ii = 0; ii < keys.length; ii++) {
+            posCounts.put(keys[ii], posvals[ii]);
+            negCounts.put(keys[ii], negvals[ii]);
+        }
+
+        for (TestData tdata : dc.testDatas) {
+
+            float[] numbers = tdata.data;
+            assertEquals(expected_cols, numbers.length);
+            float total = numbers[0];
+            float subs = 0;
+            for (int ii = 1; ii < numbers.length; ii++) {
+                //Check that they add up total in each row
+                subs += numbers[ii];
+            }
+            assertEquals(total, subs, 1e-2);
+
+
+            if (tdata.start == check_startpos) {
+                for (int ii = 0; ii < posvals.length; ii++) {
+                    assertEquals(posvals[ii] + negvals[ii], (int) numbers[ii + 1]);
+                }
+            }
+        }
+
     }
 
 
@@ -173,13 +213,24 @@ public class CoverageCounterTest {
     static class TestDataConsumer implements DataConsumer {
 
         Map<String, String> attributes = new HashMap<String, String>();
+        public ArrayList<TestData> testDatas = new ArrayList<TestData>();
 
         public void setType(String type) {
 
         }
 
+        /**
+         * Just write all the data a containment object
+         *
+         * @param chr
+         * @param start
+         * @param end
+         * @param data
+         * @param name
+         */
         public void addData(String chr, int start, int end, float[] data, String name) {
-
+            TestData newData = new TestData(chr, start, end, data.clone(), name);
+            this.testDatas.add(newData);
         }
 
         public void parsingComplete() {
@@ -196,6 +247,22 @@ public class CoverageCounterTest {
 
         public void setAttribute(String key, String value) {
             attributes.put(key, value);
+        }
+    }
+
+    private static class TestData {
+        public String chr;
+        public int start;
+        public int end;
+        public float[] data;
+        public String name;
+
+        public TestData(String chr, int start, int end, float[] data, String name) {
+            this.chr = chr;
+            this.start = start;
+            this.end = end;
+            this.data = data;
+            this.name = name;
         }
     }
 }
