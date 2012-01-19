@@ -23,6 +23,7 @@
 package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
+import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentIndexer;
 import org.broad.igv.sam.reader.SamQueryTextReader;
 import org.broad.igv.util.TestUtils;
@@ -46,6 +47,7 @@ public class SamQueryTextReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        Globals.setHeadless(true);
     }
 
     @AfterClass
@@ -59,19 +61,16 @@ public class SamQueryTextReaderTest {
 
     /**
      * Test of query method, of class SamQueryTextReader.
-     * <p/>
-     * Regression test for RT 134403.
      */
     @Test
     public void testQuery() throws Exception {
 
-        String testFile = TestUtils.DATA_DIR + "/sam/test_3.sam";
+        String testFile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam";
         createSamIndex(testFile);
 
-        //chr3:125,963,167-125,972,750
-        String chr = "chr3";
-        int start = 125963167;
-        int end = 125972750;
+        String chr = "chr1";
+        int start = 153426040;
+        int end = 153426154;
 
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
@@ -85,11 +84,9 @@ public class SamQueryTextReaderTest {
             assertTrue(record.getStart() <= end);
             count++;
         }
-        assertEquals(375, count);
+        assertEquals(64, count);
         iter.close();
         reader.close();
-
-
     }
 
     /**
@@ -162,11 +159,7 @@ public class SamQueryTextReaderTest {
 
     @Test
     public void testMoran() throws Exception {
-        String testFile = "http://www.broadinstitute.org/~moran/Mouse/r2.allProb.sorted.sam"; // "/Users/jrobinso/IGV/r2.allProb.sorted.sam";
-        //String testFile = "/Users/jrobinso/IGV/r2.allProb.sorted.sam";
-        //createSamIndex(testFile);
-
-        //chr3:125,963,167-125,972,750
+        String testFile = TestUtils.LARGE_DATA_DIR + "/r2.allProb.sorted.sam";
         String chr = "mm9chrY";
         int start = 799939;
         int end = 800152;
