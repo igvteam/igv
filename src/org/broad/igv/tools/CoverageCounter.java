@@ -25,6 +25,7 @@ package org.broad.igv.tools;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.Locus;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
@@ -81,14 +82,14 @@ public class CoverageCounter {
     private int strandOption = 0x01;
     private static final int NUM_STRANDS = 2;
     private static final int STRAND_TOTAL = 0x01;
-    private static final int READ_ORDER = 0x02;
+    private static final int FIRST_IN_PAIR = 0x02;
     private static final int STRAND_ZERO = 0x04;
     private static final int STRAND_ONE = 0x08;
 
     private static boolean outputZero;
     private static boolean outputOne;
     private static boolean outputTotal;
-    private static boolean readOrder;
+    private static boolean firstInPair;
 
     /**
      * Extension factor.  Reads are extended by this amount before counting.   The purpose is to yield an approximate
@@ -132,7 +133,7 @@ public class CoverageCounter {
     private final static Set<Byte> nucleotidesKeep = new HashSet<Byte>();
 
     static {
-        byte[] tokeep = new byte[]{65, 67, 71, 84};
+        byte[] tokeep = new byte[]{'A', 'C', 'G', 'T', 'N'};
         for (byte b : tokeep) {
             nucleotidesKeep.add(b);
         }
@@ -197,24 +198,15 @@ public class CoverageCounter {
         outputZero = (strandOption & STRAND_ZERO) > 0;
         outputOne = (strandOption & STRAND_ONE) > 0;
         outputTotal = (strandOption & STRAND_TOTAL) > 0;
-        readOrder = (strandOption & READ_ORDER) > 0;
+        firstInPair = (strandOption & FIRST_IN_PAIR) > 0;
     }
 
 
     // TODO -- command-line options to override all of these checks
     private boolean passFilter(Alignment alignment) {
+        boolean pairingInfo = !firstInPair || (alignment.getFirstOfPairStrand() != Strand.NONE);
 
-        boolean relevantStrand = outputTotal;
-        if (!relevantStrand) {
-            if (readOrder) {
-                relevantStrand |= (outputZero && alignment.isFirstOfPair()) ||
-                        (outputOne && alignment.isSecondOfPair());
-            } else {
-                relevantStrand |= outputZero && !alignment.isNegativeStrand() ||
-                        outputOne && alignment.isNegativeStrand();
-            }
-        }
-        return alignment.isMapped() && relevantStrand &&
+        return alignment.isMapped() && pairingInfo &&
                 (includeDuplicates || !alignment.isDuplicate()) &&
                 alignment.getMappingQuality() >= minMappingQuality &&
                 !alignment.isVendorFailedRead();
@@ -256,6 +248,19 @@ public class CoverageCounter {
             while (iter != null && iter.hasNext()) {
                 Alignment alignment = iter.next();
                 if (passFilter(alignment)) {
+                    //Sort into the read strand or first-in-pair strand,
+                    //depending on input flag
+                    Strand strand;
+                    if (firstInPair) {
+                        strand = alignment.getFirstOfPairStrand();
+                    } else {
+                        strand = alignment.getReadStrand();
+                    }
+                    if (strand.equals(Strand.NONE)) {
+                        //TODO move this into passFilter, or move passFilter here
+                        continue;
+                    }
+                    boolean readNegStrand = alignment.isNegativeStrand();
 
                     totalCount++;
 
@@ -275,15 +280,7 @@ public class CoverageCounter {
                     }
 
                     AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                    //Figure out whether we're on the zeroth or first strand,
-                    //the exact meaning of which depends on input flags
-                    boolean negStrand = alignment.isNegativeStrand();
-                    int strandNum = negStrand ? 1 : 0;
-                    if (readOrder) {
-                        //We skip over anything which is neither
-                        //the first nor second of pair earlier in passFilter
-                        strandNum = alignment.isFirstOfPair() ? 0 : 1;
-                    }
+
                     if (blocks != null) {
                         int lastBlockEnd = -1;
                         for (AlignmentBlock block : blocks) {
@@ -295,7 +292,7 @@ public class CoverageCounter {
                                 int adjustedStart = block.getStart();
                                 int adjustedEnd = block.getEnd();
 
-                                if (negStrand) {
+                                if (readNegStrand) {
                                     adjustedStart = Math.max(0, adjustedStart - extFactor);
                                 } else {
                                     adjustedEnd += extFactor;
@@ -315,10 +312,7 @@ public class CoverageCounter {
                                     int idx = pos - blockStart;
                                     byte quality = (idx >= 0 && idx < block.qualities.length) ?
                                             block.qualities[pos - blockStart] : (byte) 0;
-                                    //counter.incrementCount(pos, base, quality);
-                                    //Right now just use the base to check for mismatches
-                                    //can just as easily count each base
-                                    counter.incrementCount(pos, base, quality, strandNum);
+                                    counter.incrementCount(pos, base, quality, strand);
                                 }
 
                                 lastBlockEnd = block.getEnd();
@@ -328,7 +322,7 @@ public class CoverageCounter {
                         int adjustedStart = alignment.getAlignmentStart();
                         int adjustedEnd = alignment.getAlignmentEnd();
 
-                        if (negStrand) {
+                        if (readNegStrand) {
                             adjustedStart = Math.max(0, adjustedStart - extFactor);
                         } else {
                             adjustedEnd += extFactor;
@@ -341,7 +335,7 @@ public class CoverageCounter {
 
 
                         for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-                            counter.incrementCount(pos, (byte) 0, (byte) 0, strandNum);
+                            counter.incrementCount(pos, (byte) 0, (byte) 0, strand);
                         }
                     }
 
@@ -428,11 +422,12 @@ public class CoverageCounter {
          * @param position - genomic position
          * @param base     - nucleotide
          * @param quality  - base quality of call
-         * @param strand   - Index of strand (either positive/negative, or first/second). Should be 0 or 1.
+         * @param strand   - which strand to increment count. Should be POSITIVE or NEGATIVE
          */
-        void incrementCount(int position, byte base, byte quality, int strand) {
+        void incrementCount(int position, byte base, byte quality, Strand strand) {
             final Counter counter = getCounterForPosition(position);
-            counter.increment(position, base, quality, strand);
+            int strandNum = strand.equals(Strand.POSITIVE) ? 0 : 1;
+            counter.increment(position, base, quality, strandNum);
         }
 
 
@@ -537,7 +532,7 @@ public class CoverageCounter {
         /**
          * The number of times a particular base has been encountered (ie # of reads of that base)
          */
-        int[][] baseCount = new int[NUM_STRANDS][];
+        //int[][] baseCount = new int[NUM_STRANDS][];
 
         private Map<Byte, Integer> baseTypeCounts = new HashMap();
 
@@ -553,18 +548,18 @@ public class CoverageCounter {
         }
 
         // TODO -- do we need to expose this implementation detail?
-        public int[][] getBaseCount() {
-            return baseCount;
-        }
+//        public int[][] getBaseCount() {
+//            return baseCount;
+//        }
 
 
         void increment(int position, byte base, byte quality, int strand) {
-            int offset = position - start;
+            //int offset = position - start;
             //Lazy initialization
-            if (baseCount[strand] == null) {
-                baseCount[strand] = new int[this.end - this.start];
-            }
-            baseCount[strand][offset]++;
+//            if (baseCount[strand] == null) {
+//                baseCount[strand] = new int[this.end - this.start];
+//            }
+            //baseCount[strand][offset]++;
 
             incrementNucleotide(base);
 
@@ -576,8 +571,8 @@ public class CoverageCounter {
         /**
          * Increment the nucleotide counts.
          *
-         * @param base 65, 67, 71, 84
-         *             aka A, C, G, T (upper case).
+         * @param base 65, 67, 71, 84, 78
+         *             aka A, C, G, T, N (upper case).
          *             Anything else is stored as 0
          */
         private void incrementNucleotide(byte base) {

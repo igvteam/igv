@@ -96,18 +96,14 @@ public class CoverageCounterTest {
 
 
         int expTot = 71;
-        int expPos = 34;
-        int expNeg = 37;
         int windowSize = 1;
-
-        assertEquals("Test configured incorrectly", expTot, expNeg + expPos);
 
         File wigFile = new File(TestUtils.DATA_DIR + "/out", "testCountStrand.wig");
         Genome genome = this.genome;
 
 
         String[] options = new String[]{"sc=0x01", "sc=0x04", "sc=0x08", "sc=0xC", "sc=0x1C", "sc=0x05", "sc=0x02"};
-        int[] expectedTotal = new int[]{expTot, expPos, expNeg, expTot, expTot, expTot, 0};
+        int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, 0};
 
         for (int ii = 0; ii < options.length; ii++) {
             TestDataConsumer dc = new TestDataConsumer();

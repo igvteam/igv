@@ -133,7 +133,7 @@ public class GobyAlignment implements Alignment {
             } else if (!to.contains("-")) {
                 for (int i = 0; i < toLength; i++) {
                     final int offset = j + var.getPosition() + i - 1 + leftPadding;
-                    if (offset>0 && offset < readBases.length) {
+                    if (offset > 0 && offset < readBases.length) {
                         readBases[offset] = (byte) to.charAt(i);
                         if (i < toQuality.size()) {
                             readQual[offset] = toQuality.byteAt(i);
@@ -666,5 +666,9 @@ public class GobyAlignment implements Alignment {
      */
     public boolean isSecondOfPair() {
         return EntryFlagHelper.isSecondInPair(entry);
+    }
+
+    public Strand getReadStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 }

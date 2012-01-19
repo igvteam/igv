@@ -226,15 +226,19 @@ public class FeatureWrappedAlignment implements Alignment {
         return null;
     }
 
-	public boolean isFirstOfPair() {
-		return false;
-	}
+    public boolean isFirstOfPair() {
+        return false;
+    }
 
-	public boolean isSecondOfPair() {
-		return false;
-	}
+    public boolean isSecondOfPair() {
+        return false;
+    }
 
     public Strand getFirstOfPairStrand() {
         return strand;
+    }
+
+    public Strand getReadStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 }

@@ -23,7 +23,6 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.track.WindowFunction;
 
 import java.awt.*;
-import java.util.Arrays;
 
 /**
  * @author jrobinso
@@ -287,16 +286,20 @@ public class PairedAlignment implements Alignment {
         return secondAlignment;
     }
 
-	public boolean isFirstOfPair() {
-		return false;
-	}
+    public boolean isFirstOfPair() {
+        return false;
+    }
 
-	public boolean isSecondOfPair() {
-		return false;
-	}
+    public boolean isSecondOfPair() {
+        return false;
+    }
 
     public Strand getFirstOfPairStrand() {
         return firstAlignment.getFirstOfPairStrand();
+    }
+
+    public Strand getReadStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
 }

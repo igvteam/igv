@@ -244,7 +244,7 @@ public abstract class AbstractAlignment implements Alignment {
         Strand fopStrand;
         if (isPaired()) {
             if (isFirstOfPair()) {
-                fopStrand = negativeStrand ? Strand.NEGATIVE : Strand.POSITIVE;
+                fopStrand = getReadStrand();
             } else {
                 // If we have a mate, the mate must be the firstOfPair
                 ReadMate mate = getMate();
@@ -278,6 +278,10 @@ public abstract class AbstractAlignment implements Alignment {
 
     public Color getDefaultColor() {
         return AlignmentRenderer.grey1;
+    }
+
+    public Strand getReadStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
 

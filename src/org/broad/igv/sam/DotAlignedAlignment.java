@@ -228,15 +228,19 @@ public class DotAlignedAlignment implements Alignment {
         return null;
     }
 
-	public boolean isFirstOfPair() {
-		return false;
-	}
+    public boolean isFirstOfPair() {
+        return false;
+    }
 
-	public boolean isSecondOfPair() {
-		return false;
-	}
+    public boolean isSecondOfPair() {
+        return false;
+    }
 
     public Strand getFirstOfPairStrand() {
+        return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+    }
+
+    public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 }
