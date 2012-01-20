@@ -1212,7 +1212,7 @@ public class TrackLoader {
 
         return fn.endsWith(".vcf4") || fn.endsWith(".vcf") || fn.endsWith(".bed") || fn.endsWith(".repmask") ||
                 fn.endsWith(".gff3") || fn.endsWith(".gff") || fn.endsWith(".psl") || fn.endsWith(".pslx") ||
-                fn.endsWith(".gvf");
+                fn.endsWith(".gvf") || fn.endsWith(".gtf");
     }
 
 

@@ -78,19 +78,17 @@ public class LoadFromDatabaseAction extends MenuAction {
                 }
                 url += "/" + db;
 
-                String table2 = "SAMPLE_INFO";
+                String table2 = "GMDI_SAMPLE_INFO";
                 ResourceLocator loc2 = new ResourceLocator(url, table2);
                 loc2.setDescription("SELECT * FROM " + table2);
 //
-//                // CNV. Do a join for fun
+
                 String table1 = "CNV";
                 ResourceLocator loc1 = new ResourceLocator(url, table1);
-
-
                 // TODO -- get these mappings from a config table
-                String query = "SELECT  Sample as Sample, `Probe Median` as Value, " +
-                        "Chromosome as chr,  Start as start, Stop as end, " +
-                        "CONCAT('<br>Event: ', Event,'<br>% CNV Overlap = ', `% of CNV Overlap`) as description " +
+                String query = "SELECT  Sample Sample, `Probe Median` Value, " +
+                        "Chromosome chr,  Start start, Stop end, " +
+                        "CONCAT('<br>Event: ', Event,'<br>% CNV Overlap = ', `% of CNV Overlap`) description " +
                         " FROM CNV";
 //                         + "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
 //                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";

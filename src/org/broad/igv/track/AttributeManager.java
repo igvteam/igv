@@ -204,7 +204,7 @@ public class AttributeManager {
      */
     public void addAttribute(String rowId, String attributeName, String attributeValue) {
 
-        if (attributeValue.equals("")) {
+        if (attributeValue == null || attributeValue.equals("")) {
             return;
         }
 
