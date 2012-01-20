@@ -8,9 +8,8 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LoginDialog;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Class for prototyping database connections.  Prototype only -- hardcoded for mysql,  connects to single database,
@@ -23,45 +22,66 @@ public class DBManager {
 
     private static Logger log = Logger.getLogger(DBManager.class);
 
-    static Connection conn;
+    static Collection<ConnectionWrapper> connectionPool =
+            Collections.synchronizedCollection(new ArrayList<ConnectionWrapper>());
     static String username;
     static String password;
 
-
-
-
     public static Connection getConnection() {
 
-        if (conn == null) {
-            String driver = "com.mysql.jdbc.Driver";
+        Iterator<ConnectionWrapper> poolIter = connectionPool.iterator();
+        while(poolIter.hasNext()) {
+            ConnectionWrapper conn = poolIter.next();
             try {
-                Class.forName(driver).newInstance();
-            } catch (Exception e) {
-                e.printStackTrace();
+                if(conn.isReallyClosed()) {
+                    poolIter.remove();
+                }
+                else if (!conn.isClosed()) {
+                    return conn;
+                }
+            } catch (SQLException e) {
+                log.error("Bad connection", e);
+                poolIter.remove();
             }
-
-            final PreferenceManager preferenceManager = PreferenceManager.getInstance();
-            String host = preferenceManager.get(PreferenceManager.DB_HOST);
-            String db = preferenceManager.get(PreferenceManager.DB_NAME);
-            String port = preferenceManager.get(PreferenceManager.DB_PORT);
-
-            String url = "jdbc:mysql://" + host;
-            if (!port.equals("-1")) {
-                url += ":" + port;
-            }
-            url += "/" + db;
-
-            connect(url);
         }
+
+        // No valid connections
+        ConnectionWrapper conn = createConnection();
+        connectionPool.add(conn);
+        log.info("Connection pool size: " + connectionPool.size());
         return conn;
+
     }
 
-    private static void connect(String url) {
+
+    private static ConnectionWrapper createConnection() {
+        String driver = "com.mysql.jdbc.Driver";
         try {
-            conn = DriverManager.getConnection(url, username, password);
+            Class.forName(driver).newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        final PreferenceManager preferenceManager = PreferenceManager.getInstance();
+        String host = preferenceManager.get(PreferenceManager.DB_HOST);
+        String db = preferenceManager.get(PreferenceManager.DB_NAME);
+        String port = preferenceManager.get(PreferenceManager.DB_PORT);
+
+        String url = "jdbc:mysql://" + host;
+        if (!port.equals("-1")) {
+            url += ":" + port;
+        }
+        url += "/" + db;
+
+        return connect(url);
+    }
+
+    private static ConnectionWrapper connect(String url) {
+        try {
+            return new ConnectionWrapper(DriverManager.getConnection(url, username, password));
         } catch (SQLException e) {
             int errorCode = e.getErrorCode();
-            if(errorCode == 1044 || errorCode == 1045) {
+            if (errorCode == 1044 || errorCode == 1045) {
                 String host = PreferenceManager.getInstance().get(PreferenceManager.DB_HOST);
 
                 Frame parent = Globals.isHeadless() ? null : IGV.getMainFrame();
@@ -72,44 +92,247 @@ public class DBManager {
                 }
                 username = dlg.getUsername();
                 password = new String(dlg.getPassword());
-                connect(url);
+                return connect(url);
 
-            }
-            else {
+            } else {
                 MessageUtils.showMessage("<html>Error connecting to database: <br>" + e.getMessage());
+                return null;
             }
 
         }
     }
-
 
     public static void shutdown() {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
+        for (ConnectionWrapper conn : connectionPool) {
+            if (conn != null) {
+                try {
+                    conn.reallyClose();
+                } catch (SQLException e) {
 
+                }
             }
         }
-
+        connectionPool.clear();
     }
 
 
-    /**
-     * Test getting connection
-     */
+    static class ConnectionWrapper implements Connection {
 
-    public static void main(String[] args) {
+        Connection conn;
+        boolean closed;
 
-        Globals.setHeadless(true);
-        PreferenceManager preferenceManager = PreferenceManager.getInstance();
-        preferenceManager.put(PreferenceManager.DB_HOST, "localhost");
-        preferenceManager.put(PreferenceManager.DB_NAME, "nih");
-        preferenceManager.put(PreferenceManager.DB_PORT, "-1");
+        ConnectionWrapper(Connection conn) {
+            this.conn = conn;
+            closed = false;
+        }
 
-        DBManager.getConnection();
-        DBManager.shutdown();
+        public void close() throws SQLException {
+            closed = true;
+        }
 
+        public boolean isClosed() throws SQLException {
+            return closed;
+        }
+
+        public void reallyClose() throws SQLException {
+            closed = true;
+            conn.close();
+        }
+
+        public boolean isReallyClosed() throws SQLException {
+            return conn.isClosed();
+        }
+
+
+
+        public void clearWarnings() throws SQLException {
+            conn.clearWarnings();
+        }
+
+        public void commit() throws SQLException {
+            conn.commit();
+        }
+
+        public Array createArrayOf(String s, Object[] objects) throws SQLException {
+            return conn.createArrayOf(s, objects);
+        }
+
+        public Blob createBlob() throws SQLException {
+            return conn.createBlob();
+        }
+
+        public Clob createClob() throws SQLException {
+            return conn.createClob();
+        }
+
+        public NClob createNClob() throws SQLException {
+            return conn.createNClob();
+        }
+
+        public SQLXML createSQLXML() throws SQLException {
+            return conn.createSQLXML();
+        }
+
+        public Statement createStatement() throws SQLException {
+            return conn.createStatement();
+        }
+
+        public Statement createStatement(int i, int i1) throws SQLException {
+            return conn.createStatement(i, i1);
+        }
+
+        public Statement createStatement(int i, int i1, int i2) throws SQLException {
+            return conn.createStatement(i, i1, i2);
+        }
+
+        public Struct createStruct(String s, Object[] objects) throws SQLException {
+            return conn.createStruct(s, objects);
+        }
+
+        public boolean getAutoCommit() throws SQLException {
+            return conn.getAutoCommit();
+        }
+
+        public String getCatalog() throws SQLException {
+            return conn.getCatalog();
+        }
+
+        public Properties getClientInfo() throws SQLException {
+            return conn.getClientInfo();
+        }
+
+        public String getClientInfo(String s) throws SQLException {
+            return conn.getClientInfo(s);
+        }
+
+        public int getHoldability() throws SQLException {
+            return conn.getHoldability();
+        }
+
+        public DatabaseMetaData getMetaData() throws SQLException {
+            return conn.getMetaData();
+        }
+
+        public int getTransactionIsolation() throws SQLException {
+            return conn.getTransactionIsolation();
+        }
+
+        public Map<String, Class<?>> getTypeMap() throws SQLException {
+            return conn.getTypeMap();
+        }
+
+        public SQLWarning getWarnings() throws SQLException {
+            return conn.getWarnings();
+        }
+
+        public boolean isReadOnly() throws SQLException {
+            return conn.isReadOnly();
+        }
+
+        public boolean isValid(int i) throws SQLException {
+            return conn.isValid(i);
+        }
+
+        public String nativeSQL(String s) throws SQLException {
+            return conn.nativeSQL(s);
+        }
+
+        public CallableStatement prepareCall(String s) throws SQLException {
+            return conn.prepareCall(s);
+        }
+
+        public CallableStatement prepareCall(String s, int i, int i1) throws SQLException {
+            return conn.prepareCall(s, i, i1);
+        }
+
+        public CallableStatement prepareCall(String s, int i, int i1, int i2) throws SQLException {
+            return conn.prepareCall(s, i, i1, i2);
+        }
+
+        public PreparedStatement prepareStatement(String s) throws SQLException {
+            return conn.prepareStatement(s);
+        }
+
+        public PreparedStatement prepareStatement(String s, int i) throws SQLException {
+            return conn.prepareStatement(s, i);
+        }
+
+        public PreparedStatement prepareStatement(String s, int i, int i1) throws SQLException {
+            return conn.prepareStatement(s, i, i1);
+        }
+
+        public PreparedStatement prepareStatement(String s, int i, int i1, int i2) throws SQLException {
+            return conn.prepareStatement(s, i, i1, i2);
+        }
+
+        public PreparedStatement prepareStatement(String s, int[] ints) throws SQLException {
+            return conn.prepareStatement(s, ints);
+        }
+
+        public PreparedStatement prepareStatement(String s, String[] strings) throws SQLException {
+            return conn.prepareStatement(s, strings);
+        }
+
+        public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+            conn.releaseSavepoint(savepoint);
+        }
+
+        public void rollback() throws SQLException {
+            conn.rollback();
+        }
+
+        public void rollback(Savepoint savepoint) throws SQLException {
+            conn.rollback(savepoint);
+        }
+
+        public void setAutoCommit(boolean b) throws SQLException {
+            conn.setAutoCommit(b);
+        }
+
+        public void setCatalog(String s) throws SQLException {
+            conn.setCatalog(s);
+        }
+
+        public void setClientInfo(Properties properties) throws SQLClientInfoException {
+            conn.setClientInfo(properties);
+        }
+
+        public void setClientInfo(String s, String s1) throws SQLClientInfoException {
+            conn.setClientInfo(s, s1);
+        }
+
+        public void setHoldability(int i) throws SQLException {
+            conn.setHoldability(i);
+        }
+
+        public void setReadOnly(boolean b) throws SQLException {
+            conn.setReadOnly(b);
+        }
+
+        public Savepoint setSavepoint() throws SQLException {
+            return conn.setSavepoint();
+        }
+
+        public Savepoint setSavepoint(String s) throws SQLException {
+            return conn.setSavepoint(s);
+        }
+
+        public void setTransactionIsolation(int i) throws SQLException {
+            conn.setTransactionIsolation(i);
+        }
+
+        public void setTypeMap(Map<String, Class<?>> stringClassMap) throws SQLException {
+            conn.setTypeMap(stringClassMap);
+        }
+
+        public boolean isWrapperFor(Class<?> aClass) throws SQLException {
+            return conn.isWrapperFor(aClass);
+        }
+
+        public <T> T unwrap(Class<T> tClass) throws SQLException {
+            return conn.unwrap(tClass);
+        }
     }
+
 
 }

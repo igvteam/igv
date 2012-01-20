@@ -16,7 +16,7 @@ import java.sql.*;
  * @author Jim Robinson
  * @date 10/14/11
  */
-public class SegmentedSQLReader {
+public class SegmentedSQLReader extends DBReader {
 
     private static Logger log = Logger.getLogger(SegmentedSQLReader.class);
 
@@ -27,9 +27,9 @@ public class SegmentedSQLReader {
 
         ResultSet rs = null;
         Statement st = null;
+        Connection conn = null;
         try {
-            Connection conn = DBManager.getConnection();
-
+            conn = DBManager.getConnection();
             String query = locator.getDescription();
             st = conn.createStatement();
             rs = st.executeQuery(query);
@@ -52,20 +52,8 @@ public class SegmentedSQLReader {
             log.error("Database error", e);
             throw new RuntimeException("Database error", e);
         } finally {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-            if (st != null) {
-                try {
-                    st.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
+            closeResources(rs, st, conn);
+
         }
 
         return dataset;

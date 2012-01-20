@@ -89,7 +89,8 @@ public class LoadFromDatabaseAction extends MenuAction {
                 String query = "SELECT  Sample Sample, `Probe Median` Value, " +
                         "Chromosome chr,  Start start, Stop end, " +
                         "CONCAT('<br>Event: ', Event,'<br>% CNV Overlap = ', `% of CNV Overlap`) description " +
-                        " FROM CNV";
+                        " FROM CNV " +
+                        " WHERE Event = 'CN Gain' OR Event = 'CN Loss' OR Event = 'High Copy Gain'";
 //                         + "INNER JOIN SAMPLE_INFO ON SAMPLE_INFO.SAMPLE = CNV.SAMPLE " +
 //                        "WHERE SAMPLE_INFO.SUBTYPE like 'Classical'";
 
