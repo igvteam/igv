@@ -270,6 +270,51 @@ public class FeatureDB {
 
     }
 
+
+    /**
+     * Find features which have refBP as the base pair at the specified genomePosition.
+     *
+     * @param name
+     * @param startPosition 1-based
+     * @param refBP
+     * @return
+     */
+    public static Map<Integer, BasicFeature> getMutationBP(String name, int startPosition, String refBP) {
+        String nm = name.toUpperCase();
+        Genome currentGenome = GENOME;
+        if (!Globals.isHeadless()) {
+            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        }
+
+        Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
+        List<NamedFeature> possibles = featureMap.get(nm);
+        String tempBP;
+        String brefBP = refBP.toUpperCase();
+
+        if (possibles != null) {
+            synchronized (featureMap) {
+                for (NamedFeature f : possibles) {
+                    if (!(f instanceof BasicFeature)) {
+                        continue;
+                    }
+
+                    BasicFeature bf = (BasicFeature) f;
+                    int genomePosition = bf.featureToGenomePosition(new int[]{startPosition - 1})[0];
+                    if (genomePosition <= 0) {
+                        continue;
+                    }
+                    tempBP = new String(currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1));
+                    if (tempBP.toUpperCase().equals(brefBP)) {
+                        results.put(genomePosition, bf);
+                    }
+                }
+
+            }
+        }
+
+        return results;
+    }
+
     /**
      * Doubleton class. Can sort forward or descending, at most 2 instances.
      *

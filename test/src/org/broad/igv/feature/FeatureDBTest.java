@@ -220,6 +220,18 @@ public class FeatureDBTest {
     }
 
     @Test
+    public void testMutationSearchNegStrand() throws Exception {
+        String name = "KRAS";
+        int exp_start = 25249446;
+        Map<Integer, BasicFeature> matches = FeatureDB.getMutation(name, 1, "M", "I");
+        assertEquals(1, matches.size());
+        for (int geneloc : matches.keySet()) {
+            assertEquals(exp_start, matches.get(geneloc).getStart());
+        }
+
+    }
+
+    @Test
     public void testMutationSearchFail() throws Exception {
         String name = "EGFR";
         String[] symbols = "R,P,S,G,M".split(",");
@@ -227,6 +239,28 @@ public class FeatureDBTest {
         for (int ii = 0; ii < symbols.length; ii++) {
             matches = FeatureDB.getMutation(name, ii + 1, symbols[ii], "M");
             assertEquals(0, matches.size());
+        }
+    }
+
+    @Test
+    public void testMutationSearchBP() throws Exception {
+        String name = "EGFR";
+        String[] bps = new String[]{"A", "T", "G"};
+        Map<Integer, BasicFeature> matches;
+        for (int ii = 0; ii < bps.length; ii++) {
+            matches = FeatureDB.getMutationBP(name, ii + 1, bps[ii]);
+            assertEquals(1, matches.size());
+        }
+    }
+
+    @Test
+    public void testMutationSearchBPNegStrand() throws Exception {
+        String name = "KRAS";
+        String[] bps = new String[]{"T", "A", "C"};
+        Map<Integer, BasicFeature> matches;
+        for (int ii = 0; ii < bps.length; ii++) {
+            matches = FeatureDB.getMutationBP(name, ii + 1, bps[ii]);
+            assertEquals(1, matches.size());
         }
     }
 

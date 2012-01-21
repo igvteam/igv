@@ -240,7 +240,37 @@ public class BasicFeature extends AbstractFeature {
      * @return
      */
     public Codon getCodon(Genome genome, int proteinPosition) {
+        // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
+        int startTranscriptPosition = (proteinPosition - 1) * 3;
+        int[] featurePositions = new int[]{startTranscriptPosition, startTranscriptPosition + 1,
+                startTranscriptPosition + 2};
+        int[] genomePositions = featureToGenomePosition(featurePositions);
+        Codon codonInfo = new Codon(getChr(), proteinPosition, getStrand());
+        for (int gp : genomePositions) {
+            codonInfo.setNextGenomePosition(gp);
+        }
+        codonInfo.calcSequence(genome);
+        AminoAcid aa = AminoAcidManager.getAminoAcid(codonInfo.getSequence());
+        if (aa != null) {
+            codonInfo.setAminoAcid(aa);
+            return codonInfo;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Convert a series of feature positions into genomic positions.
+     *
+     * @param featurePositions Must be 0-based.
+     * @return Positions relative to genome. Will contain zeros for
+     *         positions not found. Sorted ascending for positive strand,
+     *         descending for negative strand.
+     */
+    int[] featureToGenomePosition(int[] featurePositions) {
         List<Exon> exons = getExons();
+        int[] genomePositions = new int[featurePositions.length];
+
         if (exons != null) {
 
             if (getStrand() == Strand.NONE) {
@@ -248,48 +278,49 @@ public class BasicFeature extends AbstractFeature {
             }
             boolean positive = getStrand() == Strand.POSITIVE;
 
-            Codon codonInfo = new Codon(getChr(), proteinPosition, getStrand());
-
-            // Nucleotide position on the coding portion of the transcript (the untranslated messenger RNA)
-            int startTranscriptPosition = (proteinPosition - 1) * 3;
-            int genomePosition, iter, tp = 0;
-            Exon exon;
             /*
              We loop over all exons, either from the beginning or the end.
              Increment position only on coding regions.
              */
+
+            int genomePosition, posIndex = 0, all_exon_counter = 0;
+            int current_exon_end = 0;
+            Exon exon;
             for (int exnum = 0; exnum < exons.size(); exnum++) {
+
                 if (positive) {
                     exon = exons.get(exnum);
                 } else {
                     exon = exons.get(exons.size() - 1 - exnum);
                 }
 
-                int distance = exon.getCdEnd() - exon.getCdStart();
+                int exon_length = exon.getCdEnd() - exon.getCdStart();
                 genomePosition = positive ? exon.getCdStart() : exon.getCdEnd() - 1;
+                current_exon_end += exon_length;
                 int incr = positive ? 1 : -1;
-                for (iter = 0; iter < distance; iter++) {
-                    tp++;
-                    if (tp > startTranscriptPosition) {
-                        codonInfo.setNextGenomePosition(genomePosition);
-                    }
-                    if (codonInfo.isGenomePositionsSet()) {
-                        codonInfo.calcSequence(genome);
-                        AminoAcid aa = AminoAcidManager.getAminoAcid(codonInfo.getSequence());
-                        if (aa != null) {
-                            codonInfo.setAminoAcid(aa);
-                        }
-                        return codonInfo;
-                    }
-                    genomePosition += incr;
 
+                int interval;
+                while (featurePositions[posIndex] < current_exon_end) {
+                    //Position of interest is on this exon
+                    //Can happen up to exon_length times
+                    interval = featurePositions[posIndex] - all_exon_counter;
+                    all_exon_counter = featurePositions[posIndex];
+                    genomePosition += interval * incr;
+                    genomePositions[posIndex] = genomePosition;
+                    posIndex++;
+                    if (posIndex >= featurePositions.length) {
+                        return genomePositions;
+                    }
                 }
+                //No more positions of interest on this exon
+                //move up counters to end of exon
+                interval = current_exon_end - featurePositions[posIndex];
+                all_exon_counter = current_exon_end;
+                genomePosition += interval * incr;
             }
         }
 
-        // No codon found
-        return null;
-
+        return genomePositions;
     }
 
 }
