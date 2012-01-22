@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.FontManager;
@@ -467,8 +468,8 @@ public class RulerPanel extends JPanel {
                 String chr = null;
                 if (isWholeGenomeView()) {
                     Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                    GenomeImpl.ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
-                    GenomeImpl.ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
+                    ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
+                    ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
 
                     chr = start.getChr();
                     s = start.getCoordinate();

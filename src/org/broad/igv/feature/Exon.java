@@ -174,7 +174,9 @@ public class Exon extends AbstractFeature {
             int readEnd = Math.min(end, codingEnd);
             if (readEnd > readStart + 3) {
                 byte[] seqBytes = genome.getSequence(chr, readStart, readEnd);
-                aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
+                if (seqBytes != null) {
+                    aminoAcidSequence = AminoAcidManager.getAminoAcidSequence(seqBytes, readStart, getStrand());
+                }
             }
         }
     }

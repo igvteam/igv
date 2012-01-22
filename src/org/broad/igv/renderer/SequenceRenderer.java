@@ -121,6 +121,9 @@ public class SequenceRenderer {
             }
 
             byte[] seq = genome.getSequence(chr, start, end);
+            if(seq == null) {
+                return;
+            }
 
             //The combined height of sequence and (optionally) colorspace bands
             int untranslatedSequenceHeight = (int) trackRectangle.getHeight();

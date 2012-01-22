@@ -303,7 +303,11 @@ public class FeatureDB {
                     if (genomePosition <= 0) {
                         continue;
                     }
-                    tempBP = new String(currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1));
+                    final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
+                    if(nuclSequence == null) {
+                        continue;
+                    }
+                    tempBP = new String(nuclSequence);
                     if (tempBP.toUpperCase().equals(brefBP)) {
                         results.put(genomePosition, bf);
                     }

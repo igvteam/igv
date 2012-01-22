@@ -71,6 +71,9 @@ public class LaneCounter {
         int intervalEnd = Integer.parseInt(tokens2[1]);
 
         byte[] ref = genome.getSequence(chr, intervalStart, intervalEnd);
+        if(ref == null) {
+            return;
+        }
 
 
         String[] tmp = alignmentFileList.split(",");

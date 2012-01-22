@@ -349,24 +349,6 @@ public class GenomeImpl implements Genome {
         return sequenceHelper.getBase(chr, pos);
     }
 
-    public static class ChromosomeCoordinate {
-        private String chr;
-        private int coordinate;
-
-        public ChromosomeCoordinate(String chr, int coordinate) {
-            this.chr = chr;
-            this.coordinate = coordinate;
-        }
-
-        public String getChr() {
-            return chr;
-        }
-
-        public int getCoordinate() {
-            return coordinate;
-        }
-    }
-
     /**
      * Comparator for chromosome names.
      */

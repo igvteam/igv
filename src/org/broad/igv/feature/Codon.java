@@ -81,7 +81,12 @@ class Codon {
         int[] positions = this.getGenomePositions();
         String aas = "";
         for (int start : positions) {
-            aas += new String(genome.getSequence(chr, start, start + 1));
+            final byte[] nucSequence = genome.getSequence(chr, start, start + 1);
+            if (nucSequence == null) {
+                // No sequence.
+            } else {
+                aas += new String(nucSequence);
+            }
         }
 
         if (strand == Strand.NEGATIVE) {

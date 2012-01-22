@@ -20,7 +20,7 @@ package org.broad.igv.gwas;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.feature.genome.GenomeImpl;
+import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.GraphicUtils;
@@ -494,7 +494,7 @@ public class GWASTrack extends AbstractTrack {
         // Convert from All view chr coordinates
         if (chr.equals("All")) {
 
-            GenomeImpl.ChromosomeCoordinate chrCoordinate = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeCoordinate(location);
+            ChromosomeCoordinate chrCoordinate = IGV.getInstance().getGenomeManager().getCurrentGenome().getChromosomeCoordinate(location);
             chr = chrCoordinate.getChr();
             location = chrCoordinate.getCoordinate();
             maxDistance = maxDistance * 1000;
