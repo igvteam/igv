@@ -318,15 +318,20 @@ public class SearchCommand implements Command {
 
         //Simple feature
         String feature = chromo_string;
-        //Mutation notation. e.g. KRAS:G12C
-        String feature_mut = chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]";
+        //Amino acid mutation notation. e.g. KRAS:G12C
+        String featureMutAA = chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]";
+
+        //Nucleotide mutation notation. e.g. KRAS:A123T
+        String nts = "[A,C,G,T,a,c,g,t]";
+        String featureMutNT = chromo_string + ":" + num_withcommas + nts + "\\>" + nts;
 
         Set<ResultType> possibles = new HashSet<ResultType>();
         Map<ResultType, String> matchers = new HashMap<ResultType, String>();
         matchers.put(ResultType.CHROMOSOME, chromo);
         matchers.put(ResultType.FEATURE, feature);
         matchers.put(ResultType.LOCUS, chromo_range);
-        matchers.put(ResultType.FEATURE_MUT, feature_mut);
+        matchers.put(ResultType.FEATURE_MUT_AA, featureMutAA);
+        matchers.put(ResultType.FEATURE_MUT_NT, featureMutNT);
         for (ResultType type : matchers.keySet()) {
             if (token.matches(matchers.get(type))) { //note: entire string must match
                 possibles.add(type);
@@ -359,20 +364,36 @@ public class SearchCommand implements Command {
                 return results;
             }
         }
-        if (types.contains(ResultType.FEATURE_MUT)) {
+        if (types.contains(ResultType.FEATURE_MUT_AA) || types.contains(ResultType.FEATURE_MUT_NT)) {
             //We know it has the right form, but may
             //not be valid feature name or mutation
             //which exists.
             String[] items = token.toUpperCase().split(":");
             String name = items[0].trim().toUpperCase();
             String coords = items[1];
-            String refAASymbol = coords.substring(0, 1);
-            String mutAASymbol = coords.substring(coords.length() - 1);
+            int coordLength = coords.length();
 
-            String strLoc = coords.substring(1, coords.length() - 1);
-            int location = Integer.parseInt(strLoc) - 1;
+            Map<Integer, BasicFeature> genomePosList;
 
-            Map<Integer, BasicFeature> genomePosList = FeatureDB.getMutation(name, location + 1, refAASymbol, mutAASymbol);
+            //Should never match both mutation notations
+            if (types.contains(ResultType.FEATURE_MUT_AA)) {
+                String refSymbol = coords.substring(0, 1);
+                String mutSymbol = coords.substring(coordLength - 1);
+
+                String strLoc = coords.substring(1, coordLength - 1);
+                int location = Integer.parseInt(strLoc) - 1;
+
+                genomePosList = FeatureDB.getMutationAA(name, location + 1, refSymbol, mutSymbol, genome);
+            } else if (types.contains(ResultType.FEATURE_MUT_NT)) {
+                //Exclude the "A>T" at end
+                String strLoc = coords.substring(0, coordLength - 3);
+                String refSymbol = coords.substring(coordLength - 3, coordLength - 2);
+                int location = Integer.parseInt(strLoc) - 1;
+                genomePosList = FeatureDB.getMutationNT(name, location + 1, refSymbol, genome);
+            } else {
+                //This should never happen
+                throw new IllegalArgumentException("Something went wrong parsing input token");
+            }
             askUser |= genomePosList.size() >= 2;
 
             for (int genomePos : genomePosList.keySet()) {
@@ -527,7 +548,8 @@ public class SearchCommand implements Command {
 
     enum ResultType {
         FEATURE,
-        FEATURE_MUT,
+        FEATURE_MUT_AA,
+        FEATURE_MUT_NT,
         LOCUS,
         CHROMOSOME,
         ERROR

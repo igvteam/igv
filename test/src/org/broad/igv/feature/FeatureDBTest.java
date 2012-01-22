@@ -56,7 +56,7 @@ public class FeatureDBTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         genome = TestUtils.loadGenome();
-        FeatureDB.setGenome(genome);
+
         reload = false;
     }
 
@@ -197,7 +197,7 @@ public class FeatureDBTest {
         String[] muts = new String[]{"I", "R", "P", "P", "R"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii], muts[ii]);
+            matches = FeatureDB.getMutationAA(name, ii + 1, symbols[ii], muts[ii], genome);
             assertEquals(1, matches.size());
             for (int pos : matches.keySet()) {
                 assertEquals(name, matches.get(pos).getName());
@@ -206,7 +206,7 @@ public class FeatureDBTest {
 
         name = "EGFLAM";
         int exp_start = 38439399;
-        matches = FeatureDB.getMutation(name, 2, "H", "H");
+        matches = FeatureDB.getMutationAA(name, 2, "H", "H", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
             assertEquals(exp_start, matches.get(geneloc).getStart());
@@ -214,7 +214,7 @@ public class FeatureDBTest {
 
         String[] others = new String[]{"I", "M", "T"};
         for (String c : others) {
-            matches = FeatureDB.getMutation(name, 2, "H", c);
+            matches = FeatureDB.getMutationAA(name, 2, "H", c, genome);
             assertEquals(0, matches.size());
         }
     }
@@ -223,7 +223,7 @@ public class FeatureDBTest {
     public void testMutationSearchNegStrand() throws Exception {
         String name = "KRAS";
         int exp_start = 25249446;
-        Map<Integer, BasicFeature> matches = FeatureDB.getMutation(name, 1, "M", "I");
+        Map<Integer, BasicFeature> matches = FeatureDB.getMutationAA(name, 1, "M", "I", genome);
         assertEquals(1, matches.size());
         for (int geneloc : matches.keySet()) {
             assertEquals(exp_start, matches.get(geneloc).getStart());
@@ -237,7 +237,7 @@ public class FeatureDBTest {
         String[] symbols = "R,P,S,G,M".split(",");
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < symbols.length; ii++) {
-            matches = FeatureDB.getMutation(name, ii + 1, symbols[ii], "M");
+            matches = FeatureDB.getMutationAA(name, ii + 1, symbols[ii], "M", genome);
             assertEquals(0, matches.size());
         }
     }
@@ -248,7 +248,7 @@ public class FeatureDBTest {
         String[] bps = new String[]{"A", "T", "G"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < bps.length; ii++) {
-            matches = FeatureDB.getMutationBP(name, ii + 1, bps[ii]);
+            matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
         }
     }
@@ -259,7 +259,7 @@ public class FeatureDBTest {
         String[] bps = new String[]{"T", "A", "C"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < bps.length; ii++) {
-            matches = FeatureDB.getMutationBP(name, ii + 1, bps[ii]);
+            matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
         }
     }

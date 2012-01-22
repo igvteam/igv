@@ -96,6 +96,31 @@ public class SearchCommandTest {
         tstFeatureTypes(features, SearchCommand.ResultType.FEATURE);
     }
 
+    /**
+     * Test that mutations are parsed correctly. They get returned
+     * as type LOCUS.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFeatureMuts() throws Exception {
+        String[] features = {"EGFR:M1I", "EGFR:G5R"};
+        tstFeatureTypes(features, SearchCommand.ResultType.LOCUS);
+
+        String egfr_seq = "atgcgaccctccgggacggccggggcagcgctcctggcgctgctggctgcgctc";
+        String[] targets = new String[]{"A", "G", "C", "T", "a", "g", "c", "t"};
+        String mut_let, tar_let;
+        for (int let = 0; let < egfr_seq.length(); let++) {
+            mut_let = egfr_seq.substring(let, let + 1);
+            if (Math.random() > 0.5) {
+                mut_let = mut_let.toUpperCase();
+            }
+            tar_let = targets[let % targets.length];
+            String[] features2 = {"EGFR:" + (let + 1) + mut_let + ">" + tar_let};
+            tstFeatureTypes(features2, SearchCommand.ResultType.LOCUS);
+        }
+    }
+
     /*
     Run a bunch of queries, test that they all return the same type
      */
@@ -103,14 +128,22 @@ public class SearchCommandTest {
         SearchCommand cmd;
         for (String f : queries) {
             cmd = new SearchCommand(null, f, genome);
-            SearchCommand.SearchResult result = cmd.runSearch(cmd.searchString).get(0);
+            List<SearchCommand.SearchResult> results = cmd.runSearch(cmd.searchString);
             try {
-                assertEquals(type, result.type);
+                assertTrue(containsType(results, type));
             } catch (AssertionFailedError e) {
-                System.out.println(f + " :" + result.getMessage());
+                System.out.println(f + " :" + results.get(0).getMessage());
                 throw e;
             }
         }
+    }
+
+    private boolean containsType(List<SearchCommand.SearchResult> results, SearchCommand.ResultType check) {
+        boolean contains = false;
+        for (SearchCommand.SearchResult result : results) {
+            contains |= result.type == check;
+        }
+        return contains;
     }
 
     @Test

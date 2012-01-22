@@ -42,7 +42,6 @@ public class FeatureDB {
      */
     //private static Map<String, NamedFeature> featureMap = new HashMap(10000);
     private static Map<String, List<NamedFeature>> featureMap = Collections.synchronizedSortedMap(new TreeMap<String, List<NamedFeature>>());
-    private static Genome GENOME = null;
     private static final int MAX_DUPLICATE_COUNT = 20;
 
     public static void addFeature(NamedFeature feature) {
@@ -90,12 +89,11 @@ public class FeatureDB {
      */
     public static boolean put(String name, NamedFeature feature) {
         String key = name.toUpperCase();
-        Genome currentGenome = GENOME;
         if (!Globals.isHeadless()) {
-            currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-        }
-        if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
-            return false;
+            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            if (currentGenome != null && currentGenome.getChromosome(feature.getChr()) == null) {
+                return false;
+            }
         }
 
         synchronized (featureMap) {
@@ -114,21 +112,10 @@ public class FeatureDB {
                     return false;
                 }
 
-                //Don't want to add exact duplicates. JTR -- why not?
-//                for (NamedFeature f : currentList) {
-//                    if ((f.getStart() == feature.getStart()) && (f.getEnd() == feature.getEnd())) {
-//                        return false;
-//                    }
-//                }
                 return currentList.add(feature);
             }
         }
     }
-
-    static void setGenome(Genome genome) {
-        GENOME = genome;
-    }
-
 
     public static void addFeature(String name, NamedFeature feature) {
         put(name.toUpperCase(), feature);
@@ -229,13 +216,14 @@ public class FeatureDB {
      * @param proteinPosition
      * @param refAA           String symbolizing the desired amino acid
      * @param mutAA           String symbolizing the mutated amino acid
+     * @param currentGenome
      * @return Map from genome position to features found. Feature name
      *         must be exact, but there can be multiple features with the same name
      */
-    public static Map<Integer, BasicFeature> getMutation(String name, int proteinPosition, String refAA, String mutAA) {
+    public static Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA, String mutAA, Genome currentGenome) {
         String nm = name.toUpperCase();
-        Genome currentGenome = GENOME;
-        if (!Globals.isHeadless()) {
+
+        if (!Globals.isHeadless() && currentGenome == null) {
             currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         }
 
@@ -272,24 +260,24 @@ public class FeatureDB {
 
 
     /**
-     * Find features which have refBP as the base pair at the specified genomePosition.
+     * Find features which have refNT as the base pair at the specified genomePosition.
      *
      * @param name
      * @param startPosition 1-based
-     * @param refBP
+     * @param refNT         Nucleotide (A, G, C, T) of reference sequence.
+     * @param currentGenome The genome in which to search
      * @return
      */
-    public static Map<Integer, BasicFeature> getMutationBP(String name, int startPosition, String refBP) {
+    public static Map<Integer, BasicFeature> getMutationNT(String name, int startPosition, String refNT, Genome currentGenome) {
         String nm = name.toUpperCase();
-        Genome currentGenome = GENOME;
-        if (!Globals.isHeadless()) {
+        if (!Globals.isHeadless() && currentGenome == null) {
             currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         }
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
         List<NamedFeature> possibles = featureMap.get(nm);
         String tempBP;
-        String brefBP = refBP.toUpperCase();
+        String brefBP = refNT.toUpperCase();
 
         if (possibles != null) {
             synchronized (featureMap) {
@@ -304,7 +292,7 @@ public class FeatureDB {
                         continue;
                     }
                     final byte[] nuclSequence = currentGenome.getSequence(bf.getChr(), genomePosition, genomePosition + 1);
-                    if(nuclSequence == null) {
+                    if (nuclSequence == null) {
                         continue;
                     }
                     tempBP = new String(nuclSequence);
