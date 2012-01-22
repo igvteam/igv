@@ -19,8 +19,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
+import org.broad.igv.feature.Strand;
 
 /**
  * @author jrobinso
@@ -322,9 +321,12 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
             for (AlignmentBlock b : blocks) {
                 if (b.getEnd() < start) continue;
                 if (b.getStart() > end) break;
+
+                //Strand strand = alignment.getFirstOfPairStrand();
+                 Strand strand = alignment.getReadStrand();
                 // Don't count softclips
-                if (!b.isSoftClipped()) {
-                    incCounts(b, alignment.isNegativeStrand());
+                if (!b.isSoftClipped() && strand != Strand.NONE) {
+                    incCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
 
                     // Count deletions
                     if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&

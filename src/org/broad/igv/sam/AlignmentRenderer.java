@@ -50,13 +50,12 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Color purple = new Color(118, 24, 220);
     private static Color deletionColor = Color.black;
     private static Color skippedColor = new Color(150, 184, 200);
-    private static Color grey2 = new Color(165, 165, 165);
     public static Color grey1 = new Color(200, 200, 200);
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
-    private static final Color negStrandColor = new Color(110, 145, 225);
-    private static final Color posStrandColor = new Color(165, 35, 39);
+    public static final Color negStrandColor = new Color(150, 150, 200);
+    public static final Color posStrandColor = new Color(200, 150, 150);
 
     private static HashMap<String, Color> readGroupColors = new HashMap();
 

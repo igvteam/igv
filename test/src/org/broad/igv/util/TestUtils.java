@@ -19,7 +19,7 @@
 package org.broad.igv.util;
 
 import org.broad.igv.Globals;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.tools.IgvTools;
 
 import java.io.File;
@@ -43,7 +43,7 @@ public class TestUtils {
 //
 //    }
 
-    public static Genome loadGenome() throws IOException {
+    public static GenomeImpl loadGenome() throws IOException {
         Globals.setHeadless(true);
         final String genomeFile = dataFileName;
         return IgvTools.loadGenome(genomeFile, true);

@@ -1,6 +1,7 @@
 package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.util.collections.IntArrayList;
 
 import java.util.ArrayList;
@@ -316,8 +317,13 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
             for (AlignmentBlock b : blocks) {
                 if (b.getEnd() < start) continue;
                 if (b.getStart() > end) break;
+
+                //Strand strand = alignment.getFirstOfPairStrand();
+                Strand strand = alignment.getReadStrand();
+
                 // Don't count softclips
-                if (!b.isSoftClipped()) {
+                if (!b.isSoftClipped() && strand != Strand.NONE) {
+                    incCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
                     incCounts(b, alignment.isNegativeStrand());
 
                     // Count deletions

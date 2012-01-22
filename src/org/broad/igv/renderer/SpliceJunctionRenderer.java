@@ -63,17 +63,16 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      * @param featureList
      * @param context
      * @param trackRectangle
-     * @param track
-     *     public void render(List<IGVFeature> featureList,
-                               RenderContext context,
-                               Rectangle trackRectangle,
-                               Track track) {
+     * @param track          public void render(List<IGVFeature> featureList,
+     *                       RenderContext context,
+     *                       Rectangle trackRectangle,
+     *                       Track track) {
      */
     @Override
     public void render(List<IGVFeature> featureList,
-                               RenderContext context,
-                               Rectangle trackRectangle,
-                               Track track) {
+                       RenderContext context,
+                       Rectangle trackRectangle,
+                       Track track) {
 
         double origin = context.getOrigin();
         double locScale = context.getScale();
@@ -122,7 +121,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
                 int junctionStart = junctionFeature.getJunctionStart();
                 int junctionEnd = junctionFeature.getJunctionEnd();
-                
+
                 double virtualPixelStart = Math.round((flankingStart - origin) / locScale);
                 double virtualPixelEnd = Math.round((flankingEnd - origin) / locScale);
 
@@ -147,9 +146,9 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
             }
 
             //draw a central horizontal line
-                Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
-                g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
-                        (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
+            Graphics2D g2D = context.getGraphic2DForColor(COLOR_CENTERLINE);
+            g2D.drawLine((int) trackRectangleX, (int) trackRectangle.getCenterY(),
+                    (int) trackRectangleMaxX, (int) trackRectangle.getCenterY());
 
         }
     }
@@ -157,6 +156,7 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
     /**
      * Draw depth of coverage for the starting or ending flanking region
+     *
      * @param g2D
      * @param pixelStart
      * @param pixelLength
@@ -167,25 +167,24 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
      */
     protected void drawFlankingRegion(Graphics g2D, int pixelStart, int pixelLength, int[] regionDepthArray,
                                       int maxPossibleArcHeight, Rectangle trackRectangle, boolean isPositiveStrand) {
-        for (int i=0; i<pixelLength; i++)
-        {
+        for (int i = 0; i < pixelLength; i++) {
             float arrayIndicesPerPixel = (float) regionDepthArray.length /
                     (float) pixelLength;
             int flankingRegionArrayPixelMinIndex = (int) (i * arrayIndicesPerPixel);
-            int flankingRegionArrayPixelMaxIndex = (int) ((i+1) * arrayIndicesPerPixel);
+            int flankingRegionArrayPixelMaxIndex = (int) ((i + 1) * arrayIndicesPerPixel);
             flankingRegionArrayPixelMinIndex =
-                    Math.max(0, Math.min(flankingRegionArrayPixelMinIndex, regionDepthArray.length-1));
+                    Math.max(0, Math.min(flankingRegionArrayPixelMinIndex, regionDepthArray.length - 1));
             flankingRegionArrayPixelMaxIndex =
-                    Math.max(0, Math.min(flankingRegionArrayPixelMaxIndex, regionDepthArray.length-1));
+                    Math.max(0, Math.min(flankingRegionArrayPixelMaxIndex, regionDepthArray.length - 1));
 
             int meanDepthThisPixel = 0;
-            for (int j=flankingRegionArrayPixelMinIndex; j<=flankingRegionArrayPixelMaxIndex; j++)
+            for (int j = flankingRegionArrayPixelMinIndex; j <= flankingRegionArrayPixelMaxIndex; j++)
                 meanDepthThisPixel += regionDepthArray[j];
-            meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex-flankingRegionArrayPixelMinIndex+1);
+            meanDepthThisPixel /= (flankingRegionArrayPixelMaxIndex - flankingRegionArrayPixelMinIndex + 1);
             meanDepthThisPixel = Math.min(MAX_DEPTH, meanDepthThisPixel);
             int pixelHeight = Math.max(maxPossibleArcHeight * meanDepthThisPixel / MAX_DEPTH, 2);
-            g2D.fillRect(pixelStart+i,
-                    (int)trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
+            g2D.fillRect(pixelStart + i,
+                    (int) trackRectangle.getCenterY() + (isPositiveStrand ? -pixelHeight : 0),
                     1, pixelHeight);
         }
     }
@@ -193,22 +192,23 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
     /**
      * Draw a filled arc representing a single feature. The thickness and height of the arc are proportional to the
      * depth of coverage.  Some of this gets a bit arcane -- the result of lots of visual tweaking.
-     * @param pixelFeatureStart the starting position of the feature, whether on-screen or not
-     * @param pixelFeatureEnd the ending position of the feature, whether on-screen or not
+     *
+     * @param pixelFeatureStart  the starting position of the feature, whether on-screen or not
+     * @param pixelFeatureEnd    the ending position of the feature, whether on-screen or not
      * @param pixelJunctionStart the starting position of the junction, whether on-screen or not
-     * @param pixelJunctionEnd the ending position of the junction, whether on-screen or not
-     * @param depth coverage depth
+     * @param pixelJunctionEnd   the ending position of the junction, whether on-screen or not
+     * @param depth              coverage depth
      * @param trackRectangle
      * @param context
      * @param strand
      * @param junctionFeature
      * @param shouldHighlight
-     * @param featureColor the color specified for this feature.  May be null.
+     * @param featureColor       the color specified for this feature.  May be null.
      */
-     protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
-                                   int pixelJunctionStart, int pixelJunctionEnd, float depth,
-                                   Rectangle trackRectangle, RenderContext context, Strand strand,
-                                   SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor) {
+    protected void drawFeature(int pixelFeatureStart, int pixelFeatureEnd,
+                               int pixelJunctionStart, int pixelJunctionEnd, float depth,
+                               Rectangle trackRectangle, RenderContext context, Strand strand,
+                               SpliceJunctionFeature junctionFeature, boolean shouldHighlight, Color featureColor) {
 
 
         boolean isPositiveStrand = true;
@@ -216,52 +216,47 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
         if (strand != null && strand.equals(Strand.NEGATIVE))
             isPositiveStrand = false;
 
-         //If the feature color is specified, use it, except that we set our own alpha depending on whether
-         //the feature is highlighted.  Otherwise default based on strand and highlight.
-         Color color;
-         if (featureColor != null) {
-             int r = featureColor.getRed();
-             int g = featureColor.getGreen();
-             int b = featureColor.getBlue();
-             int alpha = shouldHighlight ? 255 : 140;
-             color = new Color(r, g, b, alpha);
-         }
-         else {
-             if (isPositiveStrand)
-                 color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
-             else
-                 color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
-         }
+        //If the feature color is specified, use it, except that we set our own alpha depending on whether
+        //the feature is highlighted.  Otherwise default based on strand and highlight.
+        Color color;
+        if (featureColor != null) {
+            int r = featureColor.getRed();
+            int g = featureColor.getGreen();
+            int b = featureColor.getBlue();
+            int alpha = shouldHighlight ? 255 : 140;
+            color = new Color(r, g, b, alpha);
+        } else {
+            if (isPositiveStrand)
+                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_POS : ARC_COLOR_POS;
+            else
+                color = shouldHighlight ? ARC_COLOR_HIGHLIGHT_NEG : ARC_COLOR_NEG;
+        }
 
         Graphics2D g2D = context.getGraphic2DForColor(color);
-                //Height of top of an arc of maximum depth
-        int maxPossibleArcHeight = (trackRectangle.height - 1)/2;
+        //Height of top of an arc of maximum depth
+        int maxPossibleArcHeight = (trackRectangle.height - 1) / 2;
 
-        if (junctionFeature.hasFlankingRegionDepthArrays())
-        {
+        if (junctionFeature.hasFlankingRegionDepthArrays()) {
             //draw a wigglegram of the splice junction flanking region depth of coverage
 
             int startFlankingRegionPixelLength = pixelJunctionStart - pixelFeatureStart;
-            int endFlankingRegionPixelLength =  pixelFeatureEnd - pixelJunctionEnd;
+            int endFlankingRegionPixelLength = pixelFeatureEnd - pixelJunctionEnd;
 
             drawFlankingRegion(g2D, pixelFeatureStart, startFlankingRegionPixelLength,
                     junctionFeature.getStartFlankingRegionDepthArray(), maxPossibleArcHeight,
                     trackRectangle, isPositiveStrand);
-            drawFlankingRegion(g2D, pixelJunctionEnd+1, endFlankingRegionPixelLength,
+            drawFlankingRegion(g2D, pixelJunctionEnd + 1, endFlankingRegionPixelLength,
                     junctionFeature.getEndFlankingRegionDepthArray(), maxPossibleArcHeight,
                     trackRectangle, isPositiveStrand);
-        }
-        else {
+        } else {
             //Draw rectangles indicating the overlap on each side of the junction
             int overlapRectHeight = 3;
-            int overlapRectTopX = (int)trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
-            if (pixelFeatureStart < pixelJunctionStart)
-            {
+            int overlapRectTopX = (int) trackRectangle.getCenterY() + (isPositiveStrand ? -2 : 0);
+            if (pixelFeatureStart < pixelJunctionStart) {
                 g2D.fillRect(pixelFeatureStart, overlapRectTopX,
                         pixelJunctionStart - pixelFeatureStart, overlapRectHeight);
             }
-            if (pixelJunctionEnd < pixelFeatureEnd)
-            {
+            if (pixelJunctionEnd < pixelFeatureEnd) {
                 g2D.fillRect(pixelJunctionEnd, overlapRectTopX,
                         pixelFeatureEnd - pixelJunctionEnd, overlapRectHeight);
             }
@@ -275,12 +270,12 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
 
         int innerArcHeight = (int) (maxPossibleArcHeight * minArcHeightProportion);
         float depthProportionOfMax = Math.min(1, depth / MAX_DEPTH);
-        int arcWidth = Math.max(1, (int) ((1-minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
+        int arcWidth = Math.max(1, (int) ((1 - minArcHeightProportion) * maxPossibleArcHeight * depthProportionOfMax));
         int outerArcHeight = innerArcHeight + arcWidth;
 
 
         //Height of bottom of the arc
-        int arcBeginY = (int)trackRectangle.getCenterY() +
+        int arcBeginY = (int) trackRectangle.getCenterY() +
                 (isPositiveStrand ? -1 : 1);
         int outerArcPeakY = isPositiveStrand ?
                 arcBeginY - outerArcHeight :
@@ -290,19 +285,19 @@ public class SpliceJunctionRenderer extends IGVFeatureRenderer {
                 arcBeginY + innerArcHeight;
         //dhmay: I don't really understand Bezier curves.  For some reason I have to put the Bezier control
         //points farther up or down than I want the arcs to extend.  This multiplier seems about right
-        int outerBezierY = arcBeginY + (int) (1.5 * (outerArcPeakY - arcBeginY));
-        int innerBezierY = arcBeginY + (int) (1.5 * (innerArcPeakY - arcBeginY));
+        int outerBezierY = arcBeginY + (int) (1.3 * (outerArcPeakY - arcBeginY));
+        int innerBezierY = arcBeginY + (int) (1.3 * (innerArcPeakY - arcBeginY));
 
         //Putting the Bezier control points slightly off to the sides of the arc 
         int bezierXPad = Math.max(1, (pixelJunctionEnd - pixelJunctionStart) / 30);
 
         GeneralPath arcPath = new GeneralPath();
         arcPath.moveTo(pixelJunctionStart, arcBeginY);
-        arcPath.curveTo(pixelJunctionStart-bezierXPad, outerBezierY, //Bezier 1
-                pixelJunctionEnd+bezierXPad, outerBezierY,         //Bezier 2
+        arcPath.curveTo(pixelJunctionStart - bezierXPad, outerBezierY, //Bezier 1
+                pixelJunctionEnd + bezierXPad, outerBezierY,         //Bezier 2
                 pixelJunctionEnd, arcBeginY);        //Arc end
-        arcPath.curveTo(pixelJunctionEnd+bezierXPad, innerBezierY, //Bezier 1
-                pixelJunctionStart-bezierXPad, innerBezierY,         //Bezier 2
+        arcPath.curveTo(pixelJunctionEnd + bezierXPad, innerBezierY, //Bezier 1
+                pixelJunctionStart - bezierXPad, innerBezierY,         //Bezier 2
                 pixelJunctionStart, arcBeginY);        //Arc end
 
         //Draw the arc, to ensure outline is drawn completely (fill won't do it, necessarily). This will also

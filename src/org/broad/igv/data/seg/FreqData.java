@@ -21,10 +21,8 @@ package org.broad.igv.data.seg;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.track.WindowFunction;
-import org.broad.igv.ui.IGV;
 
 import java.util.ArrayList;
 import java.util.HashMap;

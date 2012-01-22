@@ -17,16 +17,12 @@
  */
 package org.broad.igv.data;
 
-//~--- non-JDK imports --------------------------------------------------------
-
-import org.broad.igv.feature.genome.GenomeManager;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackType;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
-import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;

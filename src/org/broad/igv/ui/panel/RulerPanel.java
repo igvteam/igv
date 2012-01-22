@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
@@ -42,7 +43,6 @@ import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -266,7 +266,7 @@ public class RulerPanel extends JPanel {
 
                     String displayName = null;
                     if (chrName.startsWith("gi|")) {
-                        displayName = Genome.getNCBIName(chrName);
+                        displayName = GenomeImpl.getNCBIName(chrName);
                     } else {
                         displayName = chrName.replace("chr", "");
                     }
@@ -467,8 +467,8 @@ public class RulerPanel extends JPanel {
                 String chr = null;
                 if (isWholeGenomeView()) {
                     Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-                    Genome.ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
-                    Genome.ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
+                    GenomeImpl.ChromosomeCoordinate start = genome.getChromosomeCoordinate((int) s);
+                    GenomeImpl.ChromosomeCoordinate end = genome.getChromosomeCoordinate((int) e);
 
                     chr = start.getChr();
                     s = start.getCoordinate();

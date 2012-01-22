@@ -56,7 +56,7 @@ public class GenomeManager {
 
     private static GenomeDescriptor DEFAULT_GENOME;
 
-    public Genome currentGenome;
+    public GenomeImpl currentGenome;
 
     private List<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
@@ -86,7 +86,7 @@ public class GenomeManager {
      * @return Genome
      * @throws FileNotFoundException
      */
-    public Genome loadGenome(
+    public GenomeImpl loadGenome(
             String genomePath,
             ProgressMonitor monitor)
             throws IOException {
@@ -123,7 +123,7 @@ public class GenomeManager {
                 final String id = genomeDescriptor.getId();
                 final String displayName = genomeDescriptor.getName();
                 boolean isFasta = genomeDescriptor.isFasta();
-                currentGenome = new Genome(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
+                currentGenome = new GenomeImpl(id, displayName, genomeDescriptor.getSequenceLocation(), isFasta);
                 log.info("Genome loaded.  id= " + id);
                 currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
                 if (aliases != null) currentGenome.addChrAliases(aliases);
@@ -150,7 +150,7 @@ public class GenomeManager {
                 }
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
-                currentGenome = new Genome(id, name, fastaPath, true);
+                currentGenome = new GenomeImpl(id, name, fastaPath, true);
                 log.info("Genome loaded.  id= " + id);
                 IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
             }
@@ -858,7 +858,7 @@ public class GenomeManager {
         return currentGenome == null ? null : currentGenome.getId();
     }
 
-    public Genome getCurrentGenome() {
+    public GenomeImpl getCurrentGenome() {
         return currentGenome;
     }
 

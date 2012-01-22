@@ -257,7 +257,7 @@ public abstract class AbstractAlignment implements Alignment {
             }
         } else {
             // This alignment is not paired -- by definition "firstOfPair" is this alignment
-            fopStrand = negativeStrand ? Strand.NEGATIVE : Strand.POSITIVE;
+            fopStrand = getReadStrand();
         }
         return fopStrand;
     }

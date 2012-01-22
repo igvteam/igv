@@ -22,7 +22,6 @@
  */
 package org.broad.igv.sam;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
@@ -36,16 +35,10 @@ import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.util.BrowserLauncher;
-import org.broad.tribble.Feature;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.List;
 

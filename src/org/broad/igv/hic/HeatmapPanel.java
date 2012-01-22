@@ -9,7 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
+import java.io.*;
 
 /**
  * @author jrobinso
@@ -356,6 +356,23 @@ public class HeatmapPanel extends JComponent implements Serializable {
                     int centerLocationX = (int) mainWindow.xContext.getChromosomePosition(e.getX());
                     int centerLocationY = (int) mainWindow.yContext.getChromosomePosition(e.getY());
                     mainWindow.setZoom(newZoom, centerLocationX, centerLocationY);
+                } else {
+                    // If IGV is running open on loci
+//                    if (e.isShiftDown()) {
+//                        String chr1 = mainWindow.xContext.getChromosome().getName();
+//                        int leftX = (int) mainWindow.xContext.getChromosomePosition(0);
+//                        int wX = (int) (mainWindow.xContext.getScale() * getWidth());
+//                        int rightX = leftX + wX;
+//
+//                        String chr2 = mainWindow.yContext.getChromosome().getName();
+//                        int leftY = (int) mainWindow.yContext.getChromosomePosition(0);
+//                        int wY = (int) (mainWindow.xContext.getScale() * getHeight());
+//                        int rightY = leftY + wY;
+//
+//                        String locus1 = "chr" + chr1 + ":" + leftX + "-" + rightX;
+//                        String locus2 = "chr" + chr2 + ":" + leftY + "-" + rightY;
+//                        IGVUtils.sendToIGV(locus1, locus2);
+//                    }
                 }
 
             }
@@ -383,6 +400,7 @@ public class HeatmapPanel extends JComponent implements Serializable {
 
                             int leftBoundaryX = xChrom.getIndex() == 1 ? 0 : boundaries[xChrom.getIndex() - 2];
                             int leftBoundaryY = yChrom.getIndex() == 1 ? 0 : boundaries[yChrom.getIndex() - 2];
+
 
                             int xChromPos = (int) ((xGenome - leftBoundaryX) * 1000);
                             int yChromPos = (int) ((yGenome - leftBoundaryY) * 1000);

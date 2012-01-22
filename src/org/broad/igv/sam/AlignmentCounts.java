@@ -1,5 +1,7 @@
 package org.broad.igv.sam;
 
+import java.util.Set;
+
 /**
  * @author Jim Robinson
  * @date 11/22/11
@@ -39,6 +41,8 @@ public interface AlignmentCounts {
     String getValueStringAt(int pos);
 
     PositionIterator getPositionIterator();
+
+    public boolean isMismatch(int pos, char ref, String chr, float snpThreshold);
 
 
     static interface PositionIterator {

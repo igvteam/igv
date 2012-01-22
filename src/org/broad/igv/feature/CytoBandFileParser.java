@@ -62,8 +62,7 @@ public class CytoBandFileParser {
             }
             return true;
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Invalid Cytoband file data : file=" + filename, e);
             return false;
         }
@@ -86,19 +85,20 @@ public class CytoBandFileParser {
                 String chr = data[0].trim();
                 Chromosome chromosome = dataMap.get(chr);
                 if (chromosome == null) {
-                    chromosome = new Chromosome(chr);
+                    chromosome = new ChromosomeImpl(chr);
                     dataMap.put(chr, chromosome);
                 }
-                Cytoband cytoData = new Cytoband(chr);
-                parseData(data, cytoData);
-                chromosome.addCytoband(cytoData);
+                if (chromosome instanceof ChromosomeImpl) {
+                    Cytoband cytoData = new Cytoband(chr);
+                    parseData(data, cytoData);
+                    ((ChromosomeImpl) chromosome).addCytoband(cytoData);
+                }
 
             }
 
             reader.close();
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return dataMap;

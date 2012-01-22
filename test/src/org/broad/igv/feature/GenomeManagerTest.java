@@ -23,7 +23,7 @@
 
 package org.broad.igv.feature;
 
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -59,7 +59,7 @@ public class GenomeManagerTest {
         String[] chrs = {"chr12", "chr10", "chrMT", "chr1", "chrLongName", "chrLongName1"};
         String[] expectedResult = {"chr1", "chr10", "chr12", "chrLongName1", "chrLongName", "chrMT"};
 
-        Arrays.sort(chrs, new Genome.ChromosomeComparator());
+        Arrays.sort(chrs, new GenomeImpl.ChromosomeComparator());
         for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }
@@ -67,7 +67,7 @@ public class GenomeManagerTest {
 
         chrs = new String[]{"scaffold_v2_10414", "scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10415"};
         expectedResult = new String[]{"scaffold_v2_100", "scaffold_v2_101", "scaffold_v2_10414", "scaffold_v2_10415"};
-        Arrays.sort(chrs, new Genome.ChromosomeComparator());
+        Arrays.sort(chrs, new GenomeImpl.ChromosomeComparator());
         for (int i = 0; i < chrs.length; i++) {
             assertEquals(expectedResult[i], chrs[i]);
         }

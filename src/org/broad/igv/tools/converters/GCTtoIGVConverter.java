@@ -35,7 +35,6 @@ import org.broad.tribble.util.ParsingUtils;
 import java.io.*;
 import java.util.Comparator;
 import java.util.List;
-import java.util.StringTokenizer;
 
 
 /**

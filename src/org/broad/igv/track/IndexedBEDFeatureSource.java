@@ -21,7 +21,6 @@ package org.broad.igv.track;
 import org.apache.log4j.Logger;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.ui.IGV;
 import org.broad.tribble.Feature;
 import org.broad.igv.sam.reader.FeatureIndex;

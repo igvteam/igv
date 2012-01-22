@@ -32,8 +32,9 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
-import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.GenomeDescriptor;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
@@ -386,7 +387,7 @@ public class IgvTools {
                       Collection<WindowFunction> windowFunctions, String tmpDirName, int maxRecords)
             throws IOException, PreprocessingException {
 
-        if (!ifile.endsWith(".ts.csv")) validateIsTilable(typeString);
+        if (!ifile.endsWith(".affective.csv")) validateIsTilable(typeString);
 
         System.out.println("Tile.  File = " + ifile);
         System.out.println("Max zoom = " + maxZoomValue);
@@ -674,13 +675,13 @@ public class IgvTools {
     }
 
 
-    public static Genome loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
+    public static GenomeImpl loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
         final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
                 IGV.getInstance().getGenomeManager();
-        Genome genome = genomeManager.getCurrentGenome();
+        GenomeImpl genome = genomeManager.getCurrentGenome();
         if (genome != null && genome.getId().equals(genomeFileOrID)) {
             return genome;
         }

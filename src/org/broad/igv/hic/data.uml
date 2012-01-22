@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.broad.igv.hic.data</OriginalElement>
+  <nodes>
+    <node x="-170.0" y="397.0">org.broad.igv.hic.data.ContactRecord</node>
+    <node x="-180.0" y="43.0">org.broad.igv.hic.data.Matrix</node>
+    <node x="136.0" y="142.0">org.broad.igv.hic.data.DatasetReader</node>
+    <node x="-202.0" y="168.0">org.broad.igv.hic.data.MatrixZoomData</node>
+    <node x="187.0" y="331.0">org.broad.igv.hic.data.DensityFunction</node>
+    <node x="-161.0" y="286.0">org.broad.igv.hic.data.Block</node>
+    <node x="29.0" y="-115.0">org.broad.igv.hic.data.Chromosome</node>
+    <node x="-182.0" y="475.0">org.broad.igv.hic.data.ContactRecordCodec</node>
+    <node x="-164.0" y="-56.0">org.broad.igv.hic.data.Dataset</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.broad.igv.hic.data.Dataset" target="org.broad.igv.hic.data.DatasetReader">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.MatrixZoomData" target="org.broad.igv.hic.data.DatasetReader">
+      <point x="-2.3966253259362844" y="-4.388187216503056" />
+      <point x="-2.3966253259362826" y="-4.388187216503053" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.Dataset" target="org.broad.igv.hic.data.Chromosome">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.Block" target="org.broad.igv.hic.data.ContactRecord">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.Chromosome">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.Block">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.MatrixZoomData">
+      <point x="10.431334313899622" y="0.0" />
+      <point x="10.431334313899598" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.ContactRecord">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.Dataset" target="org.broad.igv.hic.data.Matrix">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.MatrixZoomData" target="org.broad.igv.hic.data.Block">
+      <point x="3.3422220904719495" y="-3.7188104950321588" />
+      <point x="3.3422220904719424" y="-3.7188104950321588" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.Matrix">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.ContactRecordCodec" target="org.broad.igv.hic.data.ContactRecord">
+      <point x="0.0" y="0.0" />
+      <point x="0.0" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.Dataset">
+      <point x="-10.192552057115845" y="0.0" />
+      <point x="-10.192552057115844" y="0.0" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.DatasetReader" target="org.broad.igv.hic.data.DensityFunction">
+      <point x="0.0" y="4.533860312062652" />
+      <point x="0.0" y="4.533860312062647" />
+    </edge>
+    <edge source="org.broad.igv.hic.data.Matrix" target="org.broad.igv.hic.data.MatrixZoomData">
+      <point x="-5.158180303445064" y="0.0" />
+      <point x="-5.158180303445064" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="245.5" y="257.0" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

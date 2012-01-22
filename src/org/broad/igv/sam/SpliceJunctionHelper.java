@@ -31,7 +31,7 @@ import java.util.*;
 
 /**
  * A helper class for computing splice junctions from alignments.
- *
+ * <p/>
  * dhmay 20111014 moving min junction coverage and min alignment flanking width references to preferences
  *
  * @author dhmay, jrobinso
@@ -49,10 +49,8 @@ public class SpliceJunctionHelper {
 
         //we need to keep the positive and negative strand junctions separate, since
         //they don't represent the same thing and are rendered separately
-        Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap =
-                new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
-        Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap =
-                new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
+        Map<Integer, Map<Integer, SpliceJunctionFeature>> posStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
+        Map<Integer, Map<Integer, SpliceJunctionFeature>> negStartEndJunctionsMap = new HashMap<Integer, Map<Integer, SpliceJunctionFeature>>();
 
         //dhmay adding after this was moved from track level to global
         PreferenceManager prefs = PreferenceManager.getInstance();
@@ -70,23 +68,23 @@ public class SpliceJunctionHelper {
             List<Alignment> alignmentsRepresentedByThisAlignment = new ArrayList<Alignment>();
             if (alignmentFromIterator instanceof PairedAlignment) {
                 PairedAlignment alAsPair = (PairedAlignment) alignmentFromIterator;
-                if (alAsPair.getFirstAlignment() != null)
+                if (alAsPair.getFirstAlignment() != null) {
                     alignmentsRepresentedByThisAlignment.add(alAsPair.getFirstAlignment());
-                if (alAsPair.getSecondAlignment() != null)
+                }
+                if (alAsPair.getSecondAlignment() != null) {
                     alignmentsRepresentedByThisAlignment.add(alAsPair.getSecondAlignment());
-            }
-            else alignmentsRepresentedByThisAlignment.add(alignmentFromIterator);
+                }
+            } else alignmentsRepresentedByThisAlignment.add(alignmentFromIterator);
 
             for (Alignment alignment : alignmentsRepresentedByThisAlignment) {
                 AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                if (blocks.length < 2)
+                Object strandAttr = alignment.getAttribute("XS");
+                if (blocks.length < 2 || strandAttr == null) {
                     continue;
+                }
 
                 //there may be other ways in which this is indicated. May have to code for them later
-                boolean isNegativeStrand = false;
-                Object strandAttr = alignment.getAttribute("XS");
-                if (strandAttr != null)
-                    isNegativeStrand = strandAttr.toString().charAt(0) == '-';
+                boolean isNegativeStrand = strandAttr.toString().charAt(0) == '-';
 
                 Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
                         isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;

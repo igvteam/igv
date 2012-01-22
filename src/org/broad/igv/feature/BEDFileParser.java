@@ -25,7 +25,6 @@ import org.broad.igv.renderer.SpliceJunctionRenderer;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

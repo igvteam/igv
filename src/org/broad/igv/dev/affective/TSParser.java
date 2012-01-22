@@ -1,9 +1,11 @@
-package org.broad.igv.tools.parsers;
+package org.broad.igv.dev.affective;
 
+import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -22,25 +24,43 @@ import java.io.IOException;
  *
  * @author Jim Robinson
  * @date 11/25/11
+ *
  */
 public class TSParser {
 
     DataConsumer dataConsumer;
-    String file;
+    File root;
 
 
     public TSParser(String file, DataConsumer dataConsumer) {
-        this.file = file;
+        this.root = new File(file);
         this.dataConsumer = dataConsumer;
     }
 
 
     public void parse() throws IOException {
 
+       for (File dir : root.listFiles()) {
+            final File[] files = dir.listFiles();
+            if (dir.isDirectory()) {
+                String chrName = dir.getName().replace("Day ", "");
+                for (File f : files) {
+                    if (f.getName().endsWith(".csv")) {
+                        parseFile(f, chrName);
+                        break;
+                    }
+                }
+            }
+        }
+
+        dataConsumer.parsingComplete();
+    }
+
+    private void parseFile(File file, String chrName) throws IOException {
         BufferedReader br = null;
 
         try {
-            br = ParsingUtils.openBufferedReader(file);
+            br = ParsingUtils.openBufferedReader(file.getAbsolutePath());
 
             for (int i = 0; i < 6; i++) br.readLine();
 
@@ -49,7 +69,7 @@ public class TSParser {
             for (int i = 0; i < headers.length; i++) {
                 headers[i] = headers[i].trim();
             }
-            dataConsumer.setTrackParameters(TrackType.OTHER, null, headers);
+            dataConsumer.setTrackParameters(TrackType.AFFECTIVE, null, headers);
 
             br.readLine(); // Skip ----------
 
@@ -67,7 +87,7 @@ public class TSParser {
                             for (int i = 0; i < tokens.length; i++) {
                                 values[i] = Float.parseFloat(tokens[i]);
                             }
-                            dataConsumer.addData("TS", step, step + 1, values, null);
+                            dataConsumer.addData(chrName, step, step + 1, values, null);
                         }
                     } catch (Exception e) {
                         System.out.println(nextLine);
@@ -78,11 +98,9 @@ public class TSParser {
 
             }
         } finally {
-            dataConsumer.parsingComplete();
+
             if (br != null) br.close();
         }
-
-
     }
 
 

@@ -22,7 +22,6 @@
  */
 package org.broad.igv.sam;
 
-import com.jidesoft.swing.JidePopupMenu;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.renderer.DataRange;

@@ -22,7 +22,7 @@ package org.broad.igv.ui;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.batch.CommandListener;
-import org.broad.igv.db.DBManager;
+import org.broad.igv.dev.db.DBManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.util.FileUtils;
 

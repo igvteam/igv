@@ -24,8 +24,6 @@ package org.broad.igv.data;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.collections.FloatArrayList;
 import org.broad.igv.util.collections.IntArrayList;
 import org.broad.igv.track.TrackProperties;

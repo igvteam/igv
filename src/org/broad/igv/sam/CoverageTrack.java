@@ -32,8 +32,6 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
-import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.LocusScore;
@@ -47,7 +45,6 @@ import org.broad.igv.track.*;
 import org.broad.igv.ui.DataRangeDialog;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.MessageUtils;
 
 import javax.swing.*;
@@ -64,11 +61,13 @@ import java.util.List;
 public class CoverageTrack extends AbstractTrack {
 
     private static Logger log = Logger.getLogger(CoverageTrack.class);
-    private static Map<String, Set<Integer>> knownSnps;
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
     private static Color coverageGrey = new Color(140, 140, 140);
+    public static final Color negStrandColor = new Color(140, 140, 160);
+    public static final Color posStrandColor = new Color(160, 140, 140);
+
     private static final boolean DEFAULT_AUTOSCALE = true;
     private static final boolean DEFAULT_SHOW_REFERENCE = false;
 
@@ -76,7 +75,6 @@ public class CoverageTrack extends AbstractTrack {
     boolean showReference;
     boolean autoScale = DEFAULT_AUTOSCALE;
     private float snpThreshold;
-    private boolean showAllSnps;
 
     AlignmentDataManager dataManager;
     CoverageDataSource dataSource;
@@ -100,13 +98,9 @@ public class CoverageTrack extends AbstractTrack {
         snpThreshold = prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD);
         autoScale = DEFAULT_AUTOSCALE;
         showReference = DEFAULT_SHOW_REFERENCE;
-        showAllSnps = prefs.getAsBoolean(PreferenceManager.COVERAGE_SHOW_ALL_MISMATCHES);
         //TODO  logScale = prefs.
 
-        String snpsFile = prefs.get(PreferenceManager.KNOWN_SNPS, null);
-        if (snpsFile != null && knownSnps == null) {
-            loadKnownSnps(snpsFile);
-        }
+
     }
 
     public void setDataManager(AlignmentDataManager dataManager) {
@@ -161,21 +155,17 @@ public class CoverageTrack extends AbstractTrack {
         float minVisibleScale = (maxRange * 1000) / 700;
 
         if (context.getScale() < minVisibleScale) {
-
+            //
             AlignmentInterval interval = null;
             if (dataManager != null) {
                 interval = dataManager.getLoadedInterval(context.getReferenceFrame());
-
             }
-
-
             if (interval != null && interval.contains(context.getChr(), (int) context.getOrigin(), (int) context.getEndLocation())) {
                 List<AlignmentCounts> counts = interval.getCounts();
                 intervalRenderer.paint(context, rect, counts);
             }
-        }
-        // Use precomputed data source, if any
-        else if (dataSource != null) {
+        } else if (dataSource != null) {
+            // Use precomputed data source, if any
             String chr = context.getChr();
             int start = (int) context.getOrigin();
             int end = (int) context.getEndLocation();
@@ -187,8 +177,6 @@ public class CoverageTrack extends AbstractTrack {
 
         }
         drawBorder(context, rect);
-
-
     }
 
     private void drawBorder(RenderContext context, Rectangle rect) {
@@ -279,131 +267,17 @@ public class CoverageTrack extends AbstractTrack {
     }
 
 
-    /**
-     * Load the set of known snps from a tab delimited file, format
-     * chr < tab> location
-     * The location is "1 base"  (first nucleotide is position 1).
-     *
-     * @param snpFile
-     */
-    private static synchronized void loadKnownSnps(String snpFile) {
-
-        // This method might get called many times concurrently, but we only want to load these once.
-        if (knownSnps != null) {
-            return;
-        }
-
-        knownSnps = new HashMap();
-        AsciiLineReader reader = null;
-        try {
-            reader = ParsingUtils.openAsciiReader(new ResourceLocator(snpFile));
-            String nextLine = "";
-            while ((nextLine = reader.readLine()) != null) {
-                String[] tokens = nextLine.split("\t");
-                String chr = tokens[0];
-                Set<Integer> snps = knownSnps.get(chr);
-                if (snps == null) {
-                    snps = new HashSet(10000);
-                    knownSnps.put(chr, snps);
-                }
-                snps.add(new Integer(tokens[1]));
-            }
-        } catch (Exception e) {
-            knownSnps = null;
-            log.error("", e);
-            MessageUtils.showMessage("Error loading snps file: " + snpFile + " (" + e.toString() + ")");
-        } finally {
-            reader.close();
-        }
-
-
-    }
-
-    /*
-                           if (plusMinusOption || nonRefOption) {
-
-                            int pY = (int) (rect.getY() + rect.getMaxY()) / 2;
-
-                            int totalNegCount = interval.getNegTotal(pos);
-                            int height = (int) (totalNegCount * rect.getHeight() / getColorScale().getMaximum());
-                            height = Math.min(height, rect.height / 2 - 1);
-                            if (height > 0) {
-
-                                if (!nonRefOption) {
-                                    graphics.fillRect(pX, pY, dX, height);
-
-                                    if (colorBases) {
-                                        for (char c : nucleotides) {
-                                            if (nonRefOption == false || c != ref) {
-                                                pY = drawBar(context, pos, rect, getColorScale().getMaximum(), pY, pX, dX, c,
-                                                        plusMinusOption || nonRefOption, false, interval);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-
-                            pY = (int) (rect.getY() + rect.getMaxY()) / 2;
-                            int totalPosCount = interval.getPosTotal(pos);
-
-                            height = (int) (totalPosCount * rect.getHeight() / getColorScale().getMaximum());
-                            height = Math.min(height, rect.height / 2 - 1);
-                            int topY = (pY - height);
-
-                            if (height > 0) {
-
-                                if (!nonRefOption) {
-                                    graphics.fillRect(pX, topY, dX, height);
-                                }
-
-                                if (colorBases) {
-                                    for (char c : nucleotides) {
-                                        if (nonRefOption == false || c != ref) {
-                                            pY = drawBar(context, pos, rect, getColorScale().getMaximum(), pY, pX, dX, c,
-                                                    plusMinusOption || nonRefOption, true, interval);
-                                        }
-                                    }
-                                }
-                            }
-
-                            pY = (int) (rect.getY() + rect.getMaxY()) / 2;
-                            Graphics2D blackGraphics = context.getGraphic2DForColor(lightBlue);
-                            blackGraphics.drawLine(0, pY, rect.width, pY);
-
-
-                        } else {
-
-                            int totalCount = interval.getTotalCount(pos);
-
-                            int pY = (int) rect.getMaxY() - 1;
-                            int height = (int) (totalCount * rect.getHeight() / getColorScale().getMaximum());
-                            height = Math.min(height, rect.height - 1);
-                            int topY = (pY - height);
-
-                            if (height > 0) {
-                                graphics.fillRect(pX, topY, dX, height);
-
-                                if (colorBases) {
-                                    for (char c : nucleotides) {
-                                        pY = drawBar(context, pos, rect, dataMax, pY, pX, dX, c, plusMinusOption, true, interval);
-                                    }
-                                }
-                            }
-                        }
-     */
-
     class IntervalRenderer {
-
 
         private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
 
             Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
+            Graphics2D posGraphics = context.getGraphic2DForColor(posStrandColor);
+            Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
 
             DataRange range = getDataRange();
             double max = range.isLog() ? Math.log10(range.getMaximum()) : range.getMaximum();
 
-            // Temporary until proper windowing is implemented
             int lastpX = -1;
             final double rectX = rect.getX();
             final double rectMaxX = rect.getMaxX();
@@ -420,7 +294,9 @@ public class CoverageTrack extends AbstractTrack {
                 final int intervalStart = alignmentCounts.getStart();
                 byte[] refBases = null;
 
-                if ((intervalEnd - intervalStart) < 50000) {
+                // Dont try to compute mismatches for intervals > 2 MB
+                final int twoMB = 2000000;
+                if ((intervalEnd - intervalStart) < twoMB) {
                     refBases = genome.getSequence(context.getChr(), intervalStart, intervalEnd);
                 }
 
@@ -446,26 +322,14 @@ public class CoverageTrack extends AbstractTrack {
                         // Skip this test if the position is in the list of known snps or if the reference is unknown
                         boolean mismatch = false;
                         char ref = 0;
-
                         if (refBases != null) {
                             int idx = pos - intervalStart;
                             if (idx >= 0 && idx < refBases.length) {
                                 ref = Character.toLowerCase((char) refBases[idx]);
-
-                                Set<Integer> snps = knownSnps == null ? null : knownSnps.get(context.getChr());
-                                if (snps == null || !snps.contains(pos + 1)) {
-                                    float threshold = snpThreshold * alignmentCounts.getTotalQuality(pos);
-                                    if (ref > 0) {
-                                        for (char c : nucleotides) {
-                                            if (c != ref && c != 'n' && alignmentCounts.getQuality(pos, (byte) c) > threshold) {
-                                                mismatch = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
+                                mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
                             }
                         }
+
 
                         if (pX > lastpX || mismatch) {
 
@@ -473,16 +337,14 @@ public class CoverageTrack extends AbstractTrack {
 
                             if (strandOption) {
 
+                                // Negative strand
                                 int pY = (int) (rectY + rectMaxY) / 2;
-
                                 int totalNegCount = alignmentCounts.getNegTotal(pos);
                                 int height = (int) (totalNegCount * rectHeight / colorScaleMax);
                                 height = Math.min(height, rect.height / 2 - 1);
                                 if (height > 0) {
-
-                                    graphics.fillRect(pX, pY, dX, height);
-
-                                    if (mismatch || showAllSnps) {
+                                    negGraphics.fillRect(pX, pY, dX, height);
+                                    if (mismatch) {
                                         for (char c : nucleotides) {
                                             if (c != ref) {
                                                 pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
@@ -490,21 +352,17 @@ public class CoverageTrack extends AbstractTrack {
                                             }
                                         }
                                     }
-
                                 }
 
+                                // Positive strand
                                 pY = (int) (rectY + rectMaxY) / 2;
                                 int totalPosCount = alignmentCounts.getPosTotal(pos);
-
                                 height = (int) (totalPosCount * rectHeight / colorScaleMax);
                                 height = Math.min(height, rect.height / 2 - 1);
                                 int topY = (pY - height);
-
                                 if (height > 0) {
-
-                                    graphics.fillRect(pX, topY, dX, height);
-
-                                    if (mismatch || showAllSnps) {
+                                    posGraphics.fillRect(pX, topY, dX, height);
+                                    if (mismatch) {
                                         for (char c : nucleotides) {
                                             if (c != ref) {
                                                 pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
@@ -514,9 +372,11 @@ public class CoverageTrack extends AbstractTrack {
                                     }
                                 }
 
+                                // Center line
                                 pY = (int) (rectY + rectMaxY) / 2;
                                 Graphics2D blackGraphics = context.getGraphic2DForColor(lightBlue);
                                 blackGraphics.drawLine(0, pY, rect.width, pY);
+
                             } else {
 
                                 int pY = (int) rectMaxY - 1;
@@ -532,9 +392,9 @@ public class CoverageTrack extends AbstractTrack {
                                 if (height > 0) {
                                     graphics.fillRect(pX, topY, dX, height);
 
-                                    if (mismatch || showAllSnps) {
+                                    if (mismatch) {
                                         for (char c : nucleotides) {
-                                            if (!(c == ref && showAllSnps)) {
+                                            if (c != ref) {
                                                 pY = drawBar(context, pos, rect, totalCount, max,
                                                         pY, pX, dX, c, alignmentCounts, range.isLog());
                                             }
@@ -580,11 +440,6 @@ public class CoverageTrack extends AbstractTrack {
             int count = interval.getCount(pos, (byte) nucleotide);
 
             Color c = AlignmentRenderer.getNucleotideColors().get(nucleotide);
-
-            if (showAllSnps) {
-                int q = interval.getAvgQuality(pos, (byte) nucleotide);
-                c = getShadedColor(q, coverageGrey, c);
-            }
 
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
@@ -694,9 +549,6 @@ public class CoverageTrack extends AbstractTrack {
         if (showReference != DEFAULT_SHOW_REFERENCE) {
             attributes.put("showReference", String.valueOf(showReference));
         }
-        if (showAllSnps != prefs.getAsBoolean(PreferenceManager.COVERAGE_SHOW_ALL_MISMATCHES)) {
-            attributes.put("showAllSnps", String.valueOf(showAllSnps));
-        }
 
         return attributes;
     }
@@ -729,11 +581,6 @@ public class CoverageTrack extends AbstractTrack {
         if (value != null) {
             showReference = Boolean.parseBoolean(value);
         }
-        value = attributes.get("showAllSnps");
-        if (value != null) {
-            showAllSnps = Boolean.parseBoolean(value);
-        }
-
     }
 
     /**

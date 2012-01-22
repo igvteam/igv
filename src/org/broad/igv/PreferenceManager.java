@@ -53,8 +53,6 @@ public class PreferenceManager implements PropertyManager {
 
     public static final String INITIAL_TRACK_HEIGHT = "15";
 
-    public static final String SAM_SHOW_ALL_MISMATCHES = "COVERAGE.SHOW_ALL_MISMATCHES";
-    public static final String COVERAGE_SHOW_ALL_MISMATCHES = SAM_SHOW_ALL_MISMATCHES;
     public static final String CHART_DRAW_TOP_BORDER = "CHART.DRAW_TOP_BORDER";
     public static final String CHART_DRAW_BOTTOM_BORDER = "CHART.DRAW_BOTTOM_BORDER";
     public static final String CHART_COLOR_BORDERS = "CHART.COLOR_BORDERS";
@@ -936,7 +934,6 @@ public class PreferenceManager implements PropertyManager {
         defaultValues.put(SAM_MAX_READS, "500000");
         defaultValues.put(SAM_BASE_QUALITY_MIN, "5");
         defaultValues.put(SAM_BASE_QUALITY_MAX, "20");
-        defaultValues.put(SAM_SHOW_ALL_MISMATCHES, "false");
         defaultValues.put(SAM_FILTER_URL, null);
         defaultValues.put(SAM_QUALITY_THRESHOLD, "0");
         defaultValues.put(SAM_ALLELE_THRESHOLD, "0.2f");

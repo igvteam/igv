@@ -239,7 +239,7 @@ public class GenomeImporter {
 
             List<String> chrNames = new ArrayList(chromSizes.keySet());
             if (!singleFasta) {
-                Collections.sort(chrNames, new Genome.ChromosomeComparator());
+                Collections.sort(chrNames, new GenomeImpl.ChromosomeComparator());
             }
 
             // Generate a single cytoband per chromosome.  Length == chromosome length
