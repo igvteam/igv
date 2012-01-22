@@ -56,7 +56,7 @@ public class GenomeManager {
 
     private static GenomeDescriptor DEFAULT_GENOME;
 
-    public GenomeImpl currentGenome;
+    private Genome currentGenome;
 
     private List<GenomeListItem> userDefinedGenomeArchiveList;
     private List<GenomeListItem> cachedGenomeArchiveList;
@@ -77,6 +77,9 @@ public class GenomeManager {
         this.igv = null;
     }
 
+    public void setCurrentGenome(Genome currentGenome) {
+        this.currentGenome = currentGenome;
+    }
 
     /**
      * Load a genome from the given path.  Could be a .genome, or fasta file
@@ -86,7 +89,7 @@ public class GenomeManager {
      * @return Genome
      * @throws FileNotFoundException
      */
-    public GenomeImpl loadGenome(
+    public Genome loadGenome(
             String genomePath,
             ProgressMonitor monitor)
             throws IOException {
@@ -858,7 +861,7 @@ public class GenomeManager {
         return currentGenome == null ? null : currentGenome.getId();
     }
 
-    public GenomeImpl getCurrentGenome() {
+    public Genome getCurrentGenome() {
         return currentGenome;
     }
 

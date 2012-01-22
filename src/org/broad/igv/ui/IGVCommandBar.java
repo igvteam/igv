@@ -30,9 +30,11 @@ import com.jidesoft.swing.JideToggleButton;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.genome.GenomeServerException;
 import org.broad.igv.session.History;
 import org.broad.igv.ui.action.FitDataToWindowMenuAction;
@@ -193,7 +195,15 @@ public class IGVCommandBar extends javax.swing.JPanel {
                         try {
                             monitor.fireProgressChange(50);
 
-                            Genome genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+                            Genome genome;
+
+                            if(genomeListItem == AffectiveUtils.GENOME_DESCRIPTOR) {
+                                genome =  AffectiveUtils.getGenome();
+                                igv.getGenomeManager().setCurrentGenome(genome);
+                            }
+                            else {
+                                genome = igv.getGenomeManager().loadGenome(genomeListItem.getLocation(), null);
+                            }
 
                             updateGenome(genome);
                             monitor.fireProgressChange(25);
@@ -284,7 +294,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
             }
             userDefinedGenomeItemList = tempItemList;
         }
-        setGenomeItemListModel();
+        genomeComboBox.setModel(getModelForGenomeListComboBox());
 
     }
 
@@ -296,37 +306,44 @@ public class IGVCommandBar extends javax.swing.JPanel {
     public void rebuildGenomeItemList(Set excludedArchivesUrls) {
 
         try {
-
             // Build a single available genome list from both client, server
             // and cached information. This allows us to process
             // everything the same way.
             List<GenomeListItem> serverSideItemList = null;
-
-            try {
-                serverSideItemList =
-                        IGV.getInstance().getGenomeManager().getServerGenomeArchiveList(excludedArchivesUrls);
-            } catch (Exception e) {
-
-                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                    public void run() {
-                        JOptionPane.showMessageDialog(
-                                IGV.getMainFrame(),
-                                UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
-                    }
-                });
-            }
-
             List<GenomeListItem> cacheGenomeItemList = null;
-            if (serverSideItemList == null || serverSideItemList.isEmpty()) {
-                cacheGenomeItemList = IGV.getInstance().getGenomeManager().getCachedGenomeArchiveList();
-            }
+            List<GenomeListItem> clientSideItemList = null;
 
-            List<GenomeListItem> clientSideItemList =
-                    IGV.getInstance().getGenomeManager().getUserDefinedGenomeArchiveList();
+            boolean affectiveMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+            if (affectiveMode) {
+                serverSideItemList = Arrays.asList(AffectiveUtils.GENOME_DESCRIPTOR);
+            } else {
+
+                final GenomeManager genomeManager = IGV.getInstance().getGenomeManager();
+                try {
+                    serverSideItemList = genomeManager.getServerGenomeArchiveList(excludedArchivesUrls);
+                } catch (Exception e) {
+
+                    UIUtilities.invokeOnEventThread(new Runnable() {
+
+                        public void run() {
+                            JOptionPane.showMessageDialog(
+                                    IGV.getMainFrame(),
+                                    UIConstants.CANNOT_ACCESS_SERVER_GENOME_LIST);
+                        }
+                    });
+                }
+
+
+                if (serverSideItemList == null || serverSideItemList.isEmpty()) {
+                    cacheGenomeItemList = genomeManager.getCachedGenomeArchiveList();
+                }
+
+                clientSideItemList = genomeManager.getUserDefinedGenomeArchiveList();
+            }
 
             setGenomeItemList(clientSideItemList, serverSideItemList, cacheGenomeItemList);
-            setGenomeItemListModel();
+
+            genomeComboBox.setModel(getModelForGenomeListComboBox());
 
         } catch (Exception e) {
             log.error("Failed to get genome archive list " + "information from the server!", e);
@@ -663,7 +680,7 @@ public class IGVCommandBar extends javax.swing.JPanel {
     }
 
     /**
-     * Method description
+     * Build a model for the genome combo box
      *
      * @return
      */
@@ -722,20 +739,6 @@ public class IGVCommandBar extends javax.swing.JPanel {
         this.serverGenomeItemList = serverItemList;
     }
 
-    /**
-     * Method description
-     */
-    public void setGenomeItemListModel() {
-        genomeComboBox.setModel(getModelForGenomeListComboBox());
-    }
-
-    private void partialMatchSelected(final Component popup,
-                                      JList list, SearchCommand cmd,
-                                      List<SearchCommand.SearchResult> results) {
-        results.subList(list.getSelectedIndex(), list.getSelectedIndex());
-        popup.setVisible(false);
-        cmd.showSearchResult(results.subList(list.getSelectedIndex(), list.getSelectedIndex() + 1));
-    }
 
     /**
      * This method is called from within the constructor to

@@ -29,10 +29,12 @@ package org.broad.igv.ui.panel;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.affective.AffectiveUtils;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.GenomeImpl;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
@@ -67,6 +69,7 @@ public class RulerPanel extends JPanel {
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat();
 
     // TODO -- get from preferences
+    boolean affective = false;
     boolean drawSpan = true;
     boolean drawEllipsis = false;
     private Font tickFont = FontManager.getFont(Font.BOLD, 9);
@@ -87,6 +90,8 @@ public class RulerPanel extends JPanel {
 
     public RulerPanel(ReferenceFrame frame) {
         this.frame = frame;
+        affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+        drawSpan = !affective;
         init();
     }
 
@@ -99,20 +104,7 @@ public class RulerPanel extends JPanel {
 
         super.paintComponent(g);
 
-        g.setColor(Color.black);
-
-        if (isWholeGenomeView()) {
-            drawChromosomeTicks(g);
-        } else {
-            // Clear panel
-            drawTicks(g);
-            if (drawSpan) {
-                drawSpan(g);
-            }
-            if (drawEllipsis) {
-                drawEllipsis(g);
-            }
-        }
+        render(g);
 
 
         if (dragging) {
@@ -127,6 +119,27 @@ public class RulerPanel extends JPanel {
             g.drawLine(dragEnd, 0, dragEnd, height);
         }
 
+    }
+
+    private void render(Graphics g) {
+        g.setColor(Color.black);
+
+        if (isWholeGenomeView()) {
+            drawChromosomeTicks(g);
+        } else {
+            // Clear panel
+            if (affective) {
+                drawTimeTicks(g);
+            } else {
+                drawTicks(g);
+            }
+            if (drawSpan) {
+                drawSpan(g);
+            }
+            if (drawEllipsis) {
+                drawEllipsis(g);
+            }
+        }
     }
 
     private void drawSpan(Graphics g) {
@@ -209,12 +222,12 @@ public class RulerPanel extends JPanel {
             int strPosition = x - strWidth / 2;
             //if (strPosition > strEnd) {
 
+            final int height = getHeight();
             if (nTick % 2 == 0) {
-                g.drawString(chrPosition, strPosition, getHeight() - 15);
+                g.drawString(chrPosition, strPosition, height - 15);
             }
-            //strEnd = strPosition + strWidth;
-            //}
-            g.drawLine(x, getHeight() - 10, x, getHeight() - 2);
+
+            g.drawLine(x, height - 10, x, height - 2);
             nTick++;
         }
     }
@@ -271,7 +284,7 @@ public class RulerPanel extends JPanel {
                     } else {
                         displayName = chrName.replace("chr", "");
                     }
-                     int strWidth = fontMetrics.stringWidth(displayName);
+                    int strWidth = fontMetrics.stringWidth(displayName);
                     int strPosition = center - strWidth / 2;
 
 
@@ -347,7 +360,7 @@ public class RulerPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 final MouseEvent e = evt;
-                setCursor(Cursor.getDefaultCursor());                
+                setCursor(Cursor.getDefaultCursor());
                 WaitCursorManager.CursorToken token = WaitCursorManager.showWaitCursor();
                 try {
 
@@ -548,4 +561,92 @@ public class RulerPanel extends JPanel {
             this.tooltipText = tooltipText;
         }
     }
+
+
+    /**
+     * Special renderer for "Affective Computing" timescale,  chromosome => day, units are hours, minutes, seconds.
+     *
+     * @param g
+     */
+    private void drawTimeTicks(Graphics g) {
+
+        double timeStep = 1.0 / AffectiveUtils.POINTS_PER_SECOND;
+
+        int w = getWidth();
+        double start = frame.getOrigin();
+        double end = frame.getEnd();
+        double seconds = (start - end) * timeStep;
+
+        // Determine step sizes
+        double secsPerPixel = frame.getScale() * timeStep;
+        double minsPerPixel = secsPerPixel / 60;
+        double hoursPerPixel = minsPerPixel / 60;
+
+        g.setFont(tickFont);
+        FontMetrics fm = g.getFontMetrics();
+
+        int startHour = (int) ((start * timeStep) / 3600);
+        int endHour = (int) ((end * timeStep) / 3600) + 1;
+
+        double originHour = (start * timeStep) / 3600;
+
+
+        // Rectangle rect = getBounds();
+
+        int height = getHeight();
+
+        for (double h = startHour; h < endHour; h++) {
+            double pixel = (int) ((h - originHour) / hoursPerPixel);
+
+            if (pixel > w) {
+                break;
+            }
+            if (pixel > 0) {
+                g.drawLine((int) pixel, height, (int) pixel, height - 15);
+
+                // Label
+                int absoluteHour = AffectiveUtils.START_TIME_HR + (int) h;
+                String label = absoluteHour + ":00";
+                int labelWidth = fm.stringWidth(label);
+                int labelX = (int) pixel - labelWidth / 2;
+                if (labelX > 0) {
+                    g.drawString(label, labelX, height - 20);
+                }
+            }
+
+            // If room for 1/4 hours
+            if (15 / minsPerPixel > 2) {
+                for (int mm = 0; mm < 60; mm += 15) {
+                    double dx = mm / minsPerPixel;
+                    int mPixel = (int) (pixel + dx);
+                    if (mPixel > w) {
+                        break;
+                    }
+                    if (mPixel > 0) {
+                        g.drawLine(mPixel, height,  mPixel, height - 10);
+                    }
+
+                }
+            }
+
+            // If room for minutes do minutes
+            if (1 / minsPerPixel > 2) {
+                for (int m = 1; m < 60; m++) {
+                    double dx = m / minsPerPixel;
+                    int mPixel = (int) (pixel + dx);
+                    if (mPixel > w) {
+                        break;
+                    }
+                    if (mPixel > 0) {
+                        g.drawLine(mPixel, height,  mPixel, height - 5);
+                    }
+
+                }
+            }
+
+
+        }
+    }
+
+
 }

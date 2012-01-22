@@ -675,13 +675,13 @@ public class IgvTools {
     }
 
 
-    public static GenomeImpl loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
+    public static Genome loadGenome(String genomeFileOrID, boolean loadGenes) throws IOException {
 
         String rootDir = FileUtils.getInstallDirectory();
 
         final GenomeManager genomeManager = Globals.isHeadless() ? new GenomeManager() :
                 IGV.getInstance().getGenomeManager();
-        GenomeImpl genome = genomeManager.getCurrentGenome();
+        Genome genome = genomeManager.getCurrentGenome();
         if (genome != null && genome.getId().equals(genomeFileOrID)) {
             return genome;
         }

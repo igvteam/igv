@@ -3,7 +3,9 @@ package org.broad.igv.feature.genome;
 import org.broad.igv.feature.Chromosome;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jim Robinson
@@ -56,4 +58,10 @@ public interface Genome {
     String getDisplayName();
 
     byte getReference(String chr, int pos);
+
+    void addChrAliases(Map<String,String> aliases);
+
+    void setChromosomeMap(LinkedHashMap<String,Chromosome> chromMap, boolean chromosomesAreOrdered);
+
+    void loadUserDefinedAliases();
 }

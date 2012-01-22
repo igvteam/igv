@@ -1,6 +1,10 @@
 package org.broad.igv.dev.affective;
 
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeListItem;
+
 import java.io.*;
+import java.util.Date;
 
 /**
  * @author Jim Robinson
@@ -8,7 +12,16 @@ import java.io.*;
  */
 public class AffectiveUtils {
 
+    public static int POINTS_PER_SECOND = 8;
 
+    // Length of day in hours
+    public static int DAY_LENGTH_HOURS = 8;
+
+    // Start time in "data points" units (8:00 AM)
+    public static int START_TIME_HR = 8;
+    public static int START_TIME = START_TIME_HR * 60 * 60 * POINTS_PER_SECOND;
+    public static final GenomeListItem GENOME_DESCRIPTOR = new GenomeListItem("Affective", "", "affective", false);
+    private static AffectiveGenome genome;
 
 
     public static void createCytoband(String[] args) throws IOException {
@@ -32,5 +45,12 @@ public class AffectiveUtils {
                 }
             }
         }
+    }
+
+    public static Genome getGenome() {
+
+        genome = new AffectiveGenome();
+        genome.addChromosome (new AffectiveChromosome(new Date()));
+        return genome;
     }
 }
