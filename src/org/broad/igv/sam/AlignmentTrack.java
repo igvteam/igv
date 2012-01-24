@@ -635,6 +635,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         boolean shadeCenters;
         boolean flagUnmappedPairs;
         boolean showAllBases;
+        boolean showMismatches = true;
         private boolean computeIsizes;
         private int minInsertSize;
         private int maxInsertSize;
@@ -842,7 +843,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             this.maxInsertSize = maxInsertSize;
         }
 
-       public ColorOption getColorOption() {
+        public ColorOption getColorOption() {
             return colorOption;
         }
 
@@ -901,6 +902,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             addSeparator();
             addShadeBaseMenuItem();
+            addShowMismatchesMenuItem();
             addShowAllBasesMenuItem();
 
             addSeparator();
@@ -1498,6 +1500,21 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             item.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent aEvt) {
                     renderOptions.showAllBases = item.isSelected();
+                    refresh();
+                }
+            });
+            add(item);
+        }
+
+        public void addShowMismatchesMenuItem() {
+            // Change track height by attribute
+            final JMenuItem item = new JCheckBoxMenuItem("Show mismatches");
+
+
+            item.setSelected(renderOptions.showMismatches);
+            item.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent aEvt) {
+                    renderOptions.showMismatches = item.isSelected();
                     refresh();
                 }
             });

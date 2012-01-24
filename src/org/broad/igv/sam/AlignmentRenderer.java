@@ -481,7 +481,9 @@ public class AlignmentRenderer implements FeatureRenderer {
 
             if ((locScale < 5) || (AlignmentTrack.isBisulfiteColorType(renderOptions.getColorOption()) && (locScale < 100))) // Is 100 here going to kill some machines? bpb
             {
-                drawBases(context, rect, aBlock, alignmentColor, renderOptions);
+                if (renderOptions.showMismatches || renderOptions.showAllBases) {
+                    drawBases(context, rect, aBlock, alignmentColor, renderOptions);
+                }
             }
 
             // Draw connecting lines between blocks, if in view
@@ -531,11 +533,13 @@ public class AlignmentRenderer implements FeatureRenderer {
      * @param block
      * @param alignmentColor
      */
+
     private void drawBases(RenderContext context,
                            Rectangle rect,
                            AlignmentBlock block,
                            Color alignmentColor,
                            RenderOptions renderOptions) {
+
 
         boolean shadeBases = renderOptions.shadeBases;
         ColorOption colorOption = renderOptions.getColorOption();
