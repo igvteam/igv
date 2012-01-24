@@ -243,7 +243,7 @@ public class FeatureDBTest {
     }
 
     @Test
-    public void testMutationSearchBP() throws Exception {
+    public void testMutationSearchNT() throws Exception {
         String name = "EGFR";
         String[] bps = new String[]{"A", "T", "G"};
         Map<Integer, BasicFeature> matches;
@@ -254,9 +254,9 @@ public class FeatureDBTest {
     }
 
     @Test
-    public void testMutationSearchBPNegStrand() throws Exception {
+    public void testMutationSearchNTNegStrand() throws Exception {
         String name = "KRAS";
-        String[] bps = new String[]{"T", "A", "C"};
+        String[] bps = new String[]{"A", "T", "G"};
         Map<Integer, BasicFeature> matches;
         for (int ii = 0; ii < bps.length; ii++) {
             matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);

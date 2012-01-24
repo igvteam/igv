@@ -276,8 +276,8 @@ public class FeatureDB {
 
         Map<Integer, BasicFeature> results = new HashMap<Integer, BasicFeature>();
         List<NamedFeature> possibles = featureMap.get(nm);
-        String tempBP;
-        String brefBP = refNT.toUpperCase();
+        String tempNT;
+        String brefNT = refNT.toUpperCase();
 
         if (possibles != null) {
             synchronized (featureMap) {
@@ -287,6 +287,7 @@ public class FeatureDB {
                     }
 
                     BasicFeature bf = (BasicFeature) f;
+
                     int genomePosition = bf.featureToGenomePosition(new int[]{startPosition - 1})[0];
                     if (genomePosition <= 0) {
                         continue;
@@ -295,8 +296,12 @@ public class FeatureDB {
                     if (nuclSequence == null) {
                         continue;
                     }
-                    tempBP = new String(nuclSequence);
-                    if (tempBP.toUpperCase().equals(brefBP)) {
+                    tempNT = new String(nuclSequence);
+                    if (bf.getStrand() == Strand.NEGATIVE) {
+                        tempNT = AminoAcidManager.getNucleotideComplement(tempNT);
+                    }
+
+                    if (tempNT.toUpperCase().equals(brefNT)) {
                         results.put(genomePosition, bf);
                     }
                 }

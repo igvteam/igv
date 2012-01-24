@@ -321,7 +321,7 @@ public class SearchCommand implements Command {
         //Amino acid mutation notation. e.g. KRAS:G12C
         String featureMutAA = chromo_string + ":[A-Z]" + num_withcommas + "[A-Z]";
 
-        //Nucleotide mutation notation. e.g. KRAS:A123T
+        //Nucleotide mutation notation. e.g. KRAS:123A>T
         String nts = "[A,C,G,T,a,c,g,t]";
         String featureMutNT = chromo_string + ":" + num_withcommas + nts + "\\>" + nts;
 
@@ -364,6 +364,8 @@ public class SearchCommand implements Command {
                 return results;
             }
         }
+
+        //2 possible mutation notations, either amino acid (A123B) or nucleotide (123G>C)
         if (types.contains(ResultType.FEATURE_MUT_AA) || types.contains(ResultType.FEATURE_MUT_NT)) {
             //We know it has the right form, but may
             //not be valid feature name or mutation
