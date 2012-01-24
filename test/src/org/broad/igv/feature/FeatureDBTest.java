@@ -262,6 +262,14 @@ public class FeatureDBTest {
             matches = FeatureDB.getMutationNT(name, ii + 1, bps[ii], genome);
             assertEquals(1, matches.size());
         }
+
+        //Exon 3 of KRAS, starting at amino acid 56
+        int startNT = (56 - 1) * 3;
+        char[] bps2 = "CTCGACACAGCAGGT".toCharArray();
+        for (int ii = 0; ii < bps2.length; ii++) {
+            matches = FeatureDB.getMutationNT(name, ii + startNT + 1, String.valueOf(bps2[ii]), genome);
+            assertEquals(1, matches.size());
+        }
     }
 
 }
