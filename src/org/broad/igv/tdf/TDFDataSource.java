@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.data.*;
+import org.broad.igv.dev.affective.AffectiveGenome;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
@@ -108,6 +109,7 @@ public class TDFDataSource implements CoverageDataSource {
 
         boolean normalizeCounts = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.NORMALIZE_COVERAGE);
         setNormalize(normalizeCounts);
+
 
     }
 
@@ -197,7 +199,7 @@ public class TDFDataSource implements CoverageDataSource {
             int startLocation = (int) (tileNumber * tileWidth);
             int endLocation = (int) ((tileNumber + 1) * tileWidth);
 
-            scores = getSummaryScores(querySeq, zoom, startLocation, endLocation);
+            scores = getSummaryScores(querySeq, startLocation, endLocation, zoom);
 
             summaryScoreCache.put(key, scores);
         }
@@ -206,7 +208,7 @@ public class TDFDataSource implements CoverageDataSource {
 
     }
 
-    private List<LocusScore> getSummaryScores(String querySeq, int zoom, int startLocation, int endLocation) {
+    protected List<LocusScore> getSummaryScores(String querySeq, int startLocation, int endLocation, int zoom) {
         List<LocusScore> scores;
         if (zoom <= this.maxPrecomputedZoom) {
 

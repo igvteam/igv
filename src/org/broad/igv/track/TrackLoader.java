@@ -31,6 +31,7 @@ import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
+import org.broad.igv.dev.affective.*;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
@@ -72,10 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * User: jrobinso
@@ -230,6 +228,8 @@ public class TrackLoader {
                 loadGWASFile(locator, newTracks);
             } else if (GobyAlignmentQueryReader.supportsFileType(path)) {
                 loadAlignmentsTrack(locator, newTracks, genome);
+            } else if (path.contains("Participant") && path.endsWith(".csv")) {
+                loadAffectiveAnnotationTrack(locator, newTracks, genome);
             } else if (AttributeManager.isSampleInfoFile(locator)) {
                 // This might be a sample information file.
                 AttributeManager.getInstance().loadSampleInfo(locator);
@@ -271,6 +271,7 @@ public class TrackLoader {
         }
 
     }
+
 
     private void loadGMT(ResourceLocator locator) throws IOException {
         List<GeneList> lists = GeneListManager.getInstance().importGMTFile(locator.getPath());
@@ -565,6 +566,16 @@ public class TrackLoader {
         }
     }
 
+    private void loadAffectiveAnnotationTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        AffectiveAnnotationParser parser = new AffectiveAnnotationParser();
+        Map<String, List<Annotation>> annotMap = parser.parse(locator.getPath());
+        AffectiveAnnotationTrack track = new AffectiveAnnotationTrack("id", "Annotations", annotMap);
+        newTracks.add(track);
+
+    }
+
+
     private boolean checkSize(String file) {
 
         if (!PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SIZE_WARNING)) {
@@ -674,9 +685,6 @@ public class TrackLoader {
 
         TDFReader reader = TDFReader.getReader(locator.getPath());
         TrackType type = reader.getTrackType();
-        if(type == TrackType.AFFECTIVE) {
-            doAffectiveHacks();
-        }
 
         if (log.isDebugEnabled()) {
             log.debug("Parsing track line ");
@@ -702,6 +710,7 @@ public class TrackLoader {
         int trackNumber = 0;
         String path = locator.getPath();
         boolean multiTrack = reader.getTrackNames().length > 1;
+        boolean affective = reader.getTrackType() == TrackType.AFFECTIVE;
 
         for (String heading : reader.getTrackNames()) {
 
@@ -709,7 +718,9 @@ public class TrackLoader {
             String trackName = multiTrack ? heading : name;
             final DataSource dataSource = locator.getPath().endsWith(".counts") ?
                     new GobyCountArchiveDataSource(locator) :
-                    new TDFDataSource(reader, trackNumber, heading, genome);
+                    (affective ?
+                            new AffectiveDataSource(reader, trackNumber, heading, genome) :
+                            new TDFDataSource(reader, trackNumber, heading, genome));
             DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
                     dataSource, genome);
 
@@ -722,6 +733,11 @@ public class TrackLoader {
             newTracks.add(track);
             trackNumber++;
         }
+
+        if (type == TrackType.AFFECTIVE) {
+            AffectiveUtils.doAffectiveHacks(newTracks);
+        }
+
     }
 
     private void loadBWFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
@@ -1215,10 +1231,5 @@ public class TrackLoader {
                 fn.endsWith(".gvf") || fn.endsWith(".gtf");
     }
 
-
-
-    private void doAffectiveHacks() {
-         //IGV.getInstance().addTimeTrack();
-    }
 
 }
