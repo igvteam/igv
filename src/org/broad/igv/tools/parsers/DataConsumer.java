@@ -37,6 +37,8 @@ public interface DataConsumer {
 
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames);
 
+    void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b);
+
     /**
      * Set a tolerance for "sortedness" of the data.  A start position can be less than
      * the immediately previous start position by this amount.  This is needed for
@@ -46,6 +48,5 @@ public interface DataConsumer {
     public void setSortTolerance(int tolerance);
 
     public void setAttribute(String key, String value);
-
 
 }

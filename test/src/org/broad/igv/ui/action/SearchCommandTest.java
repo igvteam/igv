@@ -19,7 +19,7 @@
 package org.broad.igv.ui.action;
 
 import junit.framework.AssertionFailedError;
-import org.broad.igv.feature.genome.GenomeImpl;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class SearchCommandTest {
 
-    private static GenomeImpl genome;
+    private static Genome genome;
 
     @BeforeClass
     public static void setUp() throws Exception {

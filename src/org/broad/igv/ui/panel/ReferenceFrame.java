@@ -560,7 +560,7 @@ public class ReferenceFrame {
         } else {
             if (getChromosome() == null) {
                 log.error("Null chromosome: " + chrName);
-                if (genome == null) {
+                if (genome == null || genome.getChromosomes().size() == 0) {
                     return 1;
                 } else {
                     return genome.getChromosomes().iterator().next().getLength();

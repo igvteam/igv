@@ -668,6 +668,13 @@ public class IGV {
 
                     contentPane.getMainPanel().invalidate();
                     IGV.getInstance().showLoadedTrackCount();
+
+                    boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+                    if (affective) {
+                        contentPane.getCommandBar().updateChromosomeDropdown();
+                    }
+
+
                 }
 
                 public String getName() {
@@ -1228,7 +1235,7 @@ public class IGV {
                     inputStream = new BufferedInputStream(ParsingUtils.openInputStream(new ResourceLocator(sessionPath)));
 
                     boolean isUCSC = sessionPath.endsWith(".session");
-                    final SessionReader sessionReader = isUCSC?
+                    final SessionReader sessionReader = isUCSC ?
                             new UCSCSessionReader(IGV.this) :
                             new IGVSessionReader(IGV.this);
 
@@ -2278,7 +2285,7 @@ public class IGV {
 
                     if (igvArgs.getSessionFile() != null) {
                         if (HttpUtils.getInstance().isURL(igvArgs.getSessionFile())) {
-                            boolean merge=false;
+                            boolean merge = false;
                             doRestoreSession(igvArgs.getSessionFile(), igvArgs.getLocusString(), merge);
                         } else {
                             File sf = new File(igvArgs.getSessionFile());

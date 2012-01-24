@@ -27,14 +27,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.util.FileChooserDialog;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.ui.util.UIUtilities;
 import org.broad.igv.util.ResourceLocator;
 
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -46,11 +42,11 @@ import java.util.List;
 public class LoadFilesMenuAction extends MenuAction {
 
     static Logger log = Logger.getLogger(LoadFilesMenuAction.class);
-    IGV mainFrame;
+    IGV igv;
 
-    public LoadFilesMenuAction(String label, int mnemonic, IGV mainFrame) {
+    public LoadFilesMenuAction(String label, int mnemonic, IGV igv) {
         super(label, null, mnemonic);
-        this.mainFrame = mainFrame;
+        this.igv = igv;
         setToolTipText(UIConstants.LOAD_TRACKS_TOOLTIP);
     }
 
@@ -78,7 +74,7 @@ public class LoadFilesMenuAction extends MenuAction {
                 PreferenceManager.getInstance().setLastTrackDirectory(lastFile);
             }
         }
-        mainFrame.resetStatusMessage();
+        igv.resetStatusMessage();
         return trackFiles;
     }
 
@@ -129,7 +125,7 @@ public class LoadFilesMenuAction extends MenuAction {
                     locators.add(new ResourceLocator(f.getAbsolutePath()));
                 }
 
-                mainFrame.loadTracks(locators);
+                igv.loadTracks(locators);
             }
         }
     }

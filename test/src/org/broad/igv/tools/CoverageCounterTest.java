@@ -286,6 +286,10 @@ public class CoverageCounterTest {
 
         }
 
+        public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b) {
+            //To change body of implemented methods use File | Settings | File Templates.
+        }
+
         public void setSortTolerance(int tolerance) {
 
         }

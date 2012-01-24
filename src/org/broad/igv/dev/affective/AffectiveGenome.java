@@ -4,7 +4,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.ChromosomeCoordinate;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.IGVCommandBar;
 
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -17,26 +20,65 @@ public class AffectiveGenome implements Genome {
     long length;
 
 
-    private Map<String, Date> chrNameMap = new HashMap<String, Date>();
+    private Map<String, Date> chrDateMap = new HashMap<String, Date>();
     private Map<String, Long> cumulativeOffsets = new HashMap();
 
 
     public AffectiveGenome() {
         chromosomeMap = new TreeMap<Date, Chromosome>(new Comparator<Date>() {
             public int compare(Date date, Date date1) {
-                if(date == null || date1 == null) {
+                if (date == null || date1 == null) {
                     return 0;
                 }
                 return date.compareTo(date1);
             }
         });
         length = 0;
+
+        //addChromosome(new AffectiveChromosome("2011-04-06"));
     }
 
-    public void addChromosome(AffectiveChromosome chromosome) {
-        chrNameMap.put(chromosome.getName(), chromosome.date);
+
+    /**
+     * The "AffectiveGenome" represents the calendar, so any valid date string is a chromosome.  If its not
+     * been added yet add it.
+     *
+     * @param chrName
+     * @return
+     */
+    public Chromosome getChromosome(String chrName) {
+
+        if (!chrDateMap.containsKey(chrName)) {
+            // Parse the name to check legality
+            try {
+                AffectiveChromosome.dateFormat.parse(chrName);
+            } catch (ParseException e) {
+                // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                return null;
+            }
+            createChromosome(chrName);
+        }
+
+        Date date = chrDateMap.get(chrName);
+        return chromosomeMap.get(date);
+
+    }
+
+    public void createChromosome(String chrName) {
+
+        if(chrDateMap.containsKey(chrName)) {
+            return; // Already added
+        }
+
+        AffectiveChromosome chromosome = new AffectiveChromosome(chrName);
+        chrDateMap.put(chromosome.getName(), chromosome.date);
         chromosomeMap.put(chromosome.date, chromosome);
         length += chromosome.getLength();
+
+        if(!Globals.isHeadless()) {
+            // Force update of command bar
+
+        }
     }
 
     public String getId() {
@@ -51,10 +93,6 @@ public class AffectiveGenome implements Genome {
         }
     }
 
-    public Chromosome getChromosome(String chrName) {
-        Date date = chrNameMap.get(chrName);
-        return chromosomeMap.get(date);
-    }
 
     public Collection<Chromosome> getChromosomes() {
         return chromosomeMap.values();
@@ -69,7 +107,7 @@ public class AffectiveGenome implements Genome {
     }
 
     public String getChromosomeAlias(String str) {
-        return null;
+        return str;
     }
 
     public long getLength() {

@@ -24,6 +24,8 @@ package org.broad.igv.tools;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
+import org.broad.igv.dev.affective.AffectiveLogParser;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.*;
@@ -109,6 +111,14 @@ public class Preprocessor implements DataConsumer {
      * prior to writing the file
      */
     public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames) {
+        setTrackParameters(trackType, trackLine, trackNames, true);
+    }
+
+    /**
+     * Called to set inital parameters.  It is required that this be called
+     * prior to writing the file
+     */
+    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean computeWholeGenome) {
 
         if (trackLine != null) {
             System.out.println(trackLine);
@@ -119,8 +129,10 @@ public class Preprocessor implements DataConsumer {
             nTracks = trackNames.length;
 
             // Convert genome coordinates from bp to kbp
-            int genomeLength = (int) (genome.getLength() / 1000);
-            genomeZoom = new Zoom(Globals.CHR_ALL, 0, genomeLength);
+            if (computeWholeGenome) {
+                int genomeLength = (int) (genome.getLength() / 1000);
+                genomeZoom = new Zoom(Globals.CHR_ALL, 0, genomeLength);
+            }
 
             TDFGroup rootGroup = writer.getRootGroup();
             rootGroup.setAttribute("genome", genome.getId());
@@ -203,7 +215,7 @@ public class Preprocessor implements DataConsumer {
 
 
         // Don't include "chrM" in the whole genome view or stats
-        if (!(chr.equals("chrM") || chr.equals("M") || chr.equals("MT"))) {
+        if (genomeZoom != null && !(chr.equals("chrM") || chr.equals("M") || chr.equals("MT"))) {
             genomeZoom.addData(gStart, gEnd, data);
             for (int i = 0; i < data.length; i++) {
                 allDataStats.add(gEnd - gStart, data[i]);
@@ -295,7 +307,10 @@ public class Preprocessor implements DataConsumer {
                 zl.close();
             }
         }
-        genomeZoom.close();
+
+        if (genomeZoom != null) {
+            genomeZoom.close();
+        }
 
         if (rawData == null) {
             // TODO -- delete .tdf file?
@@ -748,6 +763,7 @@ public class Preprocessor implements DataConsumer {
 
         setNZoom(maxZoomValue);
 
+
         String tmp = iFile.getAbsolutePath().toLowerCase();
         if (tmp.endsWith(".txt")) tmp = tmp.substring(0, tmp.length() - 4);
         if (tmp.endsWith(".gz")) tmp = tmp.substring(0, tmp.length() - 3);
@@ -758,9 +774,15 @@ public class Preprocessor implements DataConsumer {
             CNParser cnParser = new CNParser(iFile.getAbsolutePath(), this, genome);
             cnParser.parse();
         } else {
-            String extension = getExtension(iFile.getAbsolutePath());
-            out.println("Error: cannot 'tile' files of type " + extension);
-            out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");
+            boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
+            if (affective && (iFile.isDirectory() || tmp.endsWith(".csv"))) {
+                AffectiveLogParser parser = new AffectiveLogParser(iFile.getAbsolutePath(), this);
+                parser.parse();
+            } else {
+                String extension = getExtension(iFile.getAbsolutePath());
+                out.println("Error: cannot 'tile' files of type " + extension);
+                out.println("Valid file extensions are: .cn, .xcn, .cn, .snp, .wig, and .gct");
+            }
         }
     }
 

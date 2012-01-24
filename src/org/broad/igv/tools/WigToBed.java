@@ -125,6 +125,10 @@ public class WigToBed implements DataConsumer {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public void setTrackParameters(TrackType trackType, String trackLine, String[] trackNames, boolean b) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     /**
      * Set a tolerance for "sortedness" of the data.  A start position can be less than
      * the immediately previous start position by this amount.  This is needed for
