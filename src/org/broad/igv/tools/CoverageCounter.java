@@ -421,8 +421,13 @@ public class CoverageCounter {
         }
         int col = 0;
         for (String sA : strandArr) {
-            for (Byte n : nucleotides) {
-                trackNames[col] = prefix + " " + sA + " " + new String(new byte[]{n});
+            if (outputBases) {
+                for (Byte n : nucleotides) {
+                    trackNames[col] += prefix + " " + sA + " " + new String(new byte[]{n});
+                    col++;
+                }
+            } else {
+                trackNames[col] = trackNames[col] = prefix + " " + sA;
                 col++;
             }
         }

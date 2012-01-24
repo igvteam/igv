@@ -197,11 +197,14 @@ public class IGVToolsTest {
         String outputFile = TestUtils.DATA_DIR + "/out/file.tdf";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
-        String[] args = {"count", "-a", "sc=sfb", inputFile, outputFile, genome};
-        igvTools.run(args);
+        String[] opts = new String[]{"s", "sf", "fs", "sb", "bf", "sfb", "bfs", "f", "b"};
+        for (String opt : opts) {
+            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile, genome};
+            igvTools.run(args);
 
-        TDFReader reader = TDFReader.getReader(outputFile);
-        assertTrue(reader.getDatasetNames().size() > 0);
+            TDFReader reader = TDFReader.getReader(outputFile);
+            assertTrue(reader.getDatasetNames().size() > 0);
+        }
     }
 
 }
