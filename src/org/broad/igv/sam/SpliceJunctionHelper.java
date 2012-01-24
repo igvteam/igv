@@ -78,13 +78,18 @@ public class SpliceJunctionHelper {
 
             for (Alignment alignment : alignmentsRepresentedByThisAlignment) {
                 AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-                Object strandAttr = alignment.getAttribute("XS");
-                if (blocks.length < 2 || strandAttr == null) {
+                if (blocks.length < 2) {
                     continue;
                 }
 
                 //there may be other ways in which this is indicated. May have to code for them later
-                boolean isNegativeStrand = strandAttr.toString().charAt(0) == '-';
+                boolean isNegativeStrand;
+                Object strandAttr = alignment.getAttribute("XS");
+                if (strandAttr != null) {
+                    isNegativeStrand = strandAttr.toString().charAt(0) == '-';
+                } else {
+                    isNegativeStrand = alignment.isNegativeStrand(); // <= TODO -- this isn't correct for all libraries.
+                }
 
                 Map<Integer, Map<Integer, SpliceJunctionFeature>> startEndJunctionsMapThisStrand =
                         isNegativeStrand ? negStartEndJunctionsMap : posStartEndJunctionsMap;
