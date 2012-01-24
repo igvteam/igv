@@ -40,7 +40,7 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
     }
 
     public String getAttributeAsString(String key) {
-        return vcfGenotype.getAttributeAsString(key);
+        return vcfGenotype.getAttributeAsString(key, null);
     }
 
     public Map<String, Object> getAttributes() {
@@ -89,6 +89,6 @@ public class VCFGenotype implements org.broad.igv.variant.Genotype {
     }
 
     public Double getAttributeAsDouble(String s) {
-        return vcfGenotype.getAttributeAsDoubleNoException(s);
+        return vcfGenotype.getAttributeAsDouble(s, Double.NaN);
     }
 }

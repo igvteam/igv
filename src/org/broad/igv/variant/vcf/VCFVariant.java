@@ -52,7 +52,7 @@ public class VCFVariant implements Variant {
 
 
     public String getID() {
-        return variantContext.getAttributeAsString(VariantContext.ID_KEY);
+        return variantContext.getID();
     }
 
     public boolean isFiltered() {
@@ -60,7 +60,7 @@ public class VCFVariant implements Variant {
     }
 
     public String getAttributeAsString(String key) {
-        return variantContext.getAttributeAsString(key);
+        return variantContext.getAttributeAsString(key, null);
     }
 
     public String getReference() {
@@ -69,7 +69,7 @@ public class VCFVariant implements Variant {
 
     public Set<Allele> getAlternateAlleles() {
         if (alternateAlleles == null) {
-            Set<org.broadinstitute.sting.utils.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
+            List<org.broadinstitute.sting.utils.variantcontext.Allele> tmp = variantContext.getAlternateAlleles();
             alternateAlleles = new HashSet(tmp.size());
             for (org.broadinstitute.sting.utils.variantcontext.Allele a : tmp) {
                 alternateAlleles.add(new VCFAllele(a.getBases()));
