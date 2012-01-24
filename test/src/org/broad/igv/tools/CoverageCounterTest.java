@@ -23,7 +23,6 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.parsers.DataConsumer;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.TestUtils;
-import org.broad.igv.util.Utilities;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -120,13 +119,13 @@ public class CoverageCounterTest {
     @Test
     public void testStrandsConsistent() throws Exception {
         String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
-        int[] windowSizes = new int[]{1, 10, 50, 101, 500, 999};
+        int[] windowSizes = new int[]{10, 50, 101, 500, 999};
 
         File wigFile = null;//new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
         Genome genome = this.genome;
         //Test that when we run the process twice, with separate and totalled strands, the results add
         //up properly
-        int[] strandOptions = new int[]{0, CoverageCounter.STRAND_SEPARATE};
+        String[] strandOptions = new String[]{"", "s"};
         int[] expected_cols = new int[]{1, 2};
         TestDataConsumer[] tdcs = new TestDataConsumer[2];
 
@@ -162,7 +161,7 @@ public class CoverageCounterTest {
         int windowSize = 1;
 
         TestDataConsumer dc = new TestDataConsumer();
-        int strandOptions = CoverageCounter.STRAND_SEPARATE + CoverageCounter.BASES;
+        String strandOptions = CoverageCounter.STRAND_SEPARATE + CoverageCounter.BASES;
         CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + strandOptions);
         cc.parse();
 
@@ -207,21 +206,21 @@ public class CoverageCounterTest {
         Genome genome = this.genome;
         int[] windowSizes = new int[]{1, 50, 100, 500};
         //All possible combinations of STRAND_XXX flags
-        int[] strandops = new int[2];
-        strandops[0] = 0;
+        String[] strandops = new String[2];
+        strandops[0] = "";
         strandops[1] = CoverageCounter.STRAND_SEPARATE;
 
-        int[] otherflags = new int[]{CoverageCounter.FIRST_IN_PAIR, CoverageCounter.BASES,
+        String[] otherflags = new String[]{CoverageCounter.FIRST_IN_PAIR, CoverageCounter.BASES,
                 CoverageCounter.FIRST_IN_PAIR + CoverageCounter.BASES};
 
-        for (int so : strandops) {
-            for (int of : otherflags) {
-                int expectedcols = Utilities.countFlags(so) + 1;
-                if ((of & CoverageCounter.BASES) > 0) {
+        for (String so : strandops) {
+            for (String of : otherflags) {
+                int expectedcols = so.contains(CoverageCounter.STRAND_SEPARATE) ? 2 : 1;
+                if (of.contains(CoverageCounter.BASES)) {
                     expectedcols *= 5;
                 }
 
-                int strandOptions = so + of;
+                String strandOptions = so + of;
                 for (int windowSize : windowSizes) {
                     TestDataConsumer dc = new TestDataConsumer();
                     CoverageCounter cc = new CoverageCounter(ifile, dc, windowSize, 0, wigFile, genome, "sc=" + strandOptions);

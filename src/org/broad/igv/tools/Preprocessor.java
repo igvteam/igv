@@ -723,11 +723,14 @@ public class Preprocessor implements DataConsumer {
     public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
                       File wigFile, String coverageOpt, String trackLine) throws IOException {
         setNZoom(maxZoomValue);
-        setTrackParameters(TrackType.COVERAGE, trackLine, new String[]{iFile});
+
         this.setSkipZeroes(true);
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile,
                 genome, coverageOpt);
+
+        String[] tracknames = aParser.getTrackNames(iFile + " ");
+        setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
 
         /*if(isize != null) {
            String [] tokens = isize.split(",");

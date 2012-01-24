@@ -72,27 +72,24 @@ public class CoverageCounter {
     /*
      * Output data from each strand separately (as opposed to combining them)
      */
-    static final int STRAND_SEPARATE = 0x01;
+    static final String STRAND_SEPARATE = "s";
     /*
      * Gather data by first read/second read,
      * instead of by positive/negative (if this flag is unset)
      */
-    static final int FIRST_IN_PAIR = 0x02;
+    static final String FIRST_IN_PAIR = "f";
     /**
      * Output counts of each base. Whether the data will be output
      * for each strand separately is determined by STRAND_SEPARATE
      * by
      */
-    static final int BASES = 0x4;
+    static final String BASES = "b";
 
-
-    private int strandOption = 0;
+    private boolean outputSeparate;
+    private boolean firstInPair;
+    private boolean outputBases;
 
     private static final int[] output_strands = new int[]{0, 1};
-
-    private static boolean outputSeparate;
-    private static boolean firstInPair;
-    private static boolean outputBases;
 
     public static final int NUM_STRANDS = output_strands.length;
 
@@ -175,7 +172,7 @@ public class CoverageCounter {
         //Count the number of output columns. 1 or 2 if not outputting bases
         //5 or 10 if are.
         int multiplier = outputBases ? 5 : 1;
-        int datacols = ((strandOption & STRAND_SEPARATE) + 1) * multiplier;
+        int datacols = (outputSeparate ? 2 : 1) * multiplier;
 
         buffer = new float[datacols];
 
@@ -200,14 +197,19 @@ public class CoverageCounter {
                 interval = new Locus(tmp[1]);
             } else if (opt.startsWith("sc=")) {
                 String[] tmp = opt.split("=");
-                strandOption = Integer.decode(tmp[1]);
+                if (tmp.length >= 2) {
+                    String sc_opts = tmp[1];
+                    outputSeparate = sc_opts.contains(STRAND_SEPARATE);
+                    firstInPair = sc_opts.contains(FIRST_IN_PAIR);
+                    outputBases = sc_opts.contains(BASES);
+                } else {
+                    System.out.println("sc= found, but no further options");
+                }
             } else {
                 System.out.println("Unknown coverage option: " + opt);
             }
         }
-        outputSeparate = (strandOption & STRAND_SEPARATE) > 0;
-        firstInPair = (strandOption & FIRST_IN_PAIR) > 0;
-        outputBases = (strandOption & BASES) > 0;
+
     }
 
 
@@ -344,7 +346,7 @@ public class CoverageCounter {
 
 
                         for (int pos = adjustedStart; pos < adjustedEnd; pos++) {
-                            counter.incrementCount(pos, (byte) 0, (byte) 0, strand);
+                            counter.incrementCount(pos, (byte) 'N', (byte) 0, strand);
                         }
                     }
 
@@ -352,21 +354,6 @@ public class CoverageCounter {
 
             }
             consumer.setAttribute("totalCount", String.valueOf(totalCount));
-
-            //TODO Mostly just for testing
-//            int[] strandCounts = new int[NUM_STRANDS];
-//            for(Map.Entry<Integer, Counter> counts: counter.counts.entrySet()){
-//                int[][] baseCount = counts.getValue().getBaseCount();
-//                for(int ii=0; ii < strandCounts.length; ii++){
-//                    int[] tmp = baseCount[ii];
-//                    if( tmp == null) continue;
-//                    for(int jj=0; jj < tmp.length; jj++){
-//                        strandCounts[ii] += tmp[jj];
-//                    }
-//                }
-//            }
-            //consumer.setAttribute("positiveStrandCount", "" + strandCounts[Strand.POSITIVE.ordinal()]);
-            //consumer.setAttribute("negativeStrandCount", "" + strandCounts[Strand.NEGATIVE.ordinal()]);
             consumer.parsingComplete();
 
         } catch (Exception e) {
@@ -413,6 +400,33 @@ public class CoverageCounter {
             return AlignmentReaderFactory.getReader(alignmentFile, b);
         }
 
+    }
+
+    /**
+     * The names of tracks which will be created by this parser
+     *
+     * @param prefix String to be prepended to each track name
+     * @return
+     */
+    public String[] getTrackNames(String prefix) {
+        if (prefix == null) {
+            prefix = "";
+        }
+        String[] trackNames = new String[this.buffer.length];
+        String[] strandArr;
+        if (outputSeparate) {
+            strandArr = new String[]{"Positive Strand", "Negative Strand"};
+        } else {
+            strandArr = new String[]{"Combined Strands"};
+        }
+        int col = 0;
+        for (String sA : strandArr) {
+            for (Byte n : nucleotides) {
+                trackNames[col] = prefix + " " + sA + " " + new String(new byte[]{n});
+                col++;
+            }
+        }
+        return trackNames;
     }
 
     class ReadCounter {
@@ -580,19 +594,7 @@ public class CoverageCounter {
             return strandCount[strand];
         }
 
-        // TODO -- do we need to expose this implementation detail?
-//        public int[][] getBaseCount() {
-//            return baseCount;
-//        }
-
-
         void increment(int position, byte base, byte quality, int strand) {
-            //int offset = position - start;
-            //Lazy initialization
-//            if (baseCount[strand] == null) {
-//                baseCount[strand] = new int[this.end - this.start];
-//            }
-            //baseCount[strand][offset]++;
 
             if (outputBases) {
                 incrementNucleotide(base, strand);

@@ -191,4 +191,17 @@ public class IGVToolsTest {
         (new File(file2)).delete();
     }
 
+    @Test
+    public void testCount() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String outputFile = TestUtils.DATA_DIR + "/out/file.tdf";
+        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+
+        String[] args = {"count", "-a", "sc=sfb", inputFile, outputFile, genome};
+        igvTools.run(args);
+
+        TDFReader reader = TDFReader.getReader(outputFile);
+        assertTrue(reader.getDatasetNames().size() > 0);
+    }
+
 }
