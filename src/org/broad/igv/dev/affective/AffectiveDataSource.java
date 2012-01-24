@@ -66,22 +66,27 @@ public class AffectiveDataSource extends TDFDataSource {
     @Override
     protected List<LocusScore> getSummaryScores(String chr, int startLocation, int endLocation, int zoom) {
 
-        AffectiveChromosome chromosome = (AffectiveChromosome) affectiveGenome.getChromosome(chr);
-        int chrStartTime = chromosome.startTime;
-        int chrSamplingRate = chromosome.samplingRate;
+        if (chr.equals(Globals.CHR_ALL)) {
+            // todo
+            return null;
+        } else {
+            AffectiveChromosome chromosome = (AffectiveChromosome) affectiveGenome.getChromosome(chr);
+            int chrStartTime = chromosome.startTime;
+            int chrSamplingRate = chromosome.samplingRate;
 
-        int dataStartTime = startTimeMap.get(chr);
-        int dataSamplingRate = samplingRateMap.get(chr);
+            int dataStartTime = startTimeMap.get(chr);
+            int dataSamplingRate = samplingRateMap.get(chr);
 
-        // TODO -- if chrSamplingRate != dataSampingRate some adjustments need to be made.
+            // TODO -- if chrSamplingRate != dataSampingRate some adjustments need to be made.
 
-        int offset = (dataStartTime - chrStartTime) * dataSamplingRate;
+            int offset = (dataStartTime - chrStartTime) * dataSamplingRate;
 
-        List<LocusScore> scores = super.getSummaryScores(chr, startLocation, endLocation, zoom);
-        for(LocusScore score : scores) {
-            score.setStart(score.getStart() + offset);
-            score.setEnd(score.getEnd()  + offset);
+            List<LocusScore> scores = super.getSummaryScores(chr, startLocation, endLocation, zoom);
+            for (LocusScore score : scores) {
+                score.setStart(score.getStart() + offset);
+                score.setEnd(score.getEnd() + offset);
+            }
+            return scores;
         }
-        return scores;
     }
 }

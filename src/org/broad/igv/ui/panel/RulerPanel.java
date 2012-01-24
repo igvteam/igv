@@ -52,15 +52,6 @@ import java.util.List;
 
 /**
  * @author jrobinso
- *         <p/>
- *         Lucida Blackletter
- *         Lucida Bright
- *         Lucida Calligraphy
- *         Lucida Fax
- *         Lucida Grande
- *         Lucida Handwriting
- *         Lucida Sans
- *         Lucida Sans Typewriter
  */
 public class RulerPanel extends JPanel {
 

@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
@@ -58,10 +59,7 @@ import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Command line parser for "igvtools".
@@ -441,7 +439,13 @@ public class IgvTools {
         try {
             Preprocessor p = new Preprocessor(outputFile, genome, windowFunctions, nLines, null);
             if (tmp.isDirectory()) {
-                for (File f : tmp.listFiles()) {
+                File [] files =  tmp.listFiles();
+                Arrays.sort(files, new Comparator<File>() {
+                    public int compare(File file, File file1) {
+                        return file.getName().compareTo(file1.getName());
+                    }
+                });
+                for (File f : files) {
                     p.preprocess(f, maxZoomValue);
                 }
             } else {
@@ -730,6 +734,7 @@ public class IgvTools {
      */
     private static void validateIsTilable(String typeString) {
 
+        boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!(typeString.equals(".cn") ||
                 typeString.equals(".igv") ||
                 typeString.equals(".wig") ||
@@ -741,7 +746,8 @@ public class IgvTools {
                 typeString.equals(".gct") ||
                 typeString.equals("mage-tab") ||
                 typeString.equals(".bedgraph") ||
-                Preprocessor.isAlignmentFile(typeString))) {
+                Preprocessor.isAlignmentFile(typeString) ||
+                affective)) {
             throw new PreprocessingException("Tile command not supported for files of type: " + typeString);
         }
     }
