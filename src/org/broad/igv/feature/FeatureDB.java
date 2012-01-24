@@ -260,11 +260,13 @@ public class FeatureDB {
 
 
     /**
-     * Find features which have refNT as the base pair at the specified genomePosition.
+     * Find features with a given name, which have refNT as the base pair at the specified position within the feature.
+     * refNT considered based on the read strand, so a negative strand feature with A at position 1 on the positive strand
+     * would be found only if refNT = T.
      *
-     * @param name
-     * @param startPosition 1-based
-     * @param refNT         Nucleotide (A, G, C, T) of reference sequence.
+     * @param name          Feature name
+     * @param startPosition 1-based location within the feature
+     * @param refNT         Nucleotide (A, G, C, T) of feature.
      * @param currentGenome The genome in which to search
      * @return
      */
