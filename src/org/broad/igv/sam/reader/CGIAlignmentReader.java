@@ -41,7 +41,10 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
     public CGIAlignmentReader(String url) throws MalformedURLException {
 
         URL u = new URL(url);
-        baseURL = u.getProtocol() + "://" + u.getHost() + u.getPath();
+        int port = u.getPort();
+        baseURL = u.getProtocol() + "://" + u.getHost();
+        if (port > 0) baseURL += ":" + port;
+        baseURL += u.getPath();
         query = u.getQuery();
 
         loadHeader();
@@ -61,7 +64,6 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
     String getQueryURL() {
         return baseURL + "?" + query;
     }
-
 
 
     public void close() throws IOException {
@@ -177,8 +179,8 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
         String chr = "gi|66043271|ref|NC_007005.1|";
         int start = 800;
         int end = 900;
-        CloseableIterator<Alignment> iter =  reader.query(chr, start, end, false);
-        while(iter.hasNext()) {
+        CloseableIterator<Alignment> iter = reader.query(chr, start, end, false);
+        while (iter.hasNext()) {
             Alignment a = iter.next();
             System.out.println(a);
         }

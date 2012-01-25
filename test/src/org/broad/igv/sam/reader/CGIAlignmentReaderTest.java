@@ -39,6 +39,23 @@ public class CGIAlignmentReaderTest {
 
     }
 
+    @Test
+     public void testURLsWithPort() throws MalformedURLException {
+
+         String testURL = "http://somehost:8080/cramtools/cgi-bin/query.cgi?program=downsample_bam.pl&downsampled_coverage=10&file=input.sam/";
+         String queryPath = "query.cgi?";
+         String headerPath = "samHeader.cgi?";
+         String seqNamePath = "getSequenceNames.cgi?";
+
+         CGIAlignmentReader reader = new CGIAlignmentReader(testURL);
+
+         assertEquals(testURL, reader.getQueryURL());
+         assertEquals(testURL.replace(queryPath, headerPath), reader.getHeaderURL());
+         assertEquals(testURL .replace(queryPath, seqNamePath), reader.getSequenceNamesURL());
+
+     }
+
+
 
     // The following test is disabled until we can write our own CGI scripts to test against.
     //@Test
