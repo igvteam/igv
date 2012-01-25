@@ -194,28 +194,17 @@ public class IGVToolsTest {
     @Test
     public void testCount() throws Exception {
         String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
-        String outputFile = TestUtils.DATA_DIR + "/out/file.tdf";
+        String outputFile = TestUtils.DATA_DIR + "/out/file_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
         String[] opts = new String[]{"s", "sf", "sfb", "f", "b", ""};
         for (String opt : opts) {
-            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile, genome};
+            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile + opt + ".tdf", genome};
             igvTools.run(args);
 
-            TDFReader reader = TDFReader.getReader(outputFile);
+            TDFReader reader = TDFReader.getReader(outputFile + opt + ".tdf");
             assertTrue(reader.getDatasetNames().size() > 0);
         }
-    }
-
-    //@Ignore
-    @Test
-    public void testMergeTDF() throws Exception {
-        String ddir = TestUtils.DATA_DIR + "/tdf";
-        String[] infiles = new String[]{ddir + "/combined_strands.tdf", ddir + "/separate_strands.tdf"};
-        String outfi = TestUtils.DATA_DIR + "/out/merged.tdf";
-
-        boolean success = IgvTools.mergeTDFs(infiles, outfi);
-        assertTrue(success);
     }
 
 }

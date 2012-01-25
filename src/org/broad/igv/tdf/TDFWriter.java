@@ -339,10 +339,6 @@ public class TDFWriter {
         bytesWritten += bytes.length;
     }
 
-    public boolean hasDataset(String name) {
-        return datasetCache.containsKey(name);
-    }
-
     class IndexEntry {
 
         long position;

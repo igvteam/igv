@@ -38,11 +38,10 @@ import org.broad.igv.feature.genome.GenomeDescriptor;
 import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.sam.reader.AlignmentIndexer;
-import org.broad.igv.tdf.*;
+import org.broad.igv.tdf.TDFUtils;
 import org.broad.igv.tools.converters.ExpressionFormatter;
 import org.broad.igv.tools.converters.GCTtoIGVConverter;
 import org.broad.igv.tools.sort.Sorter;
-import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -785,76 +784,6 @@ public class IgvTools {
 
     private static void launchGUI() {
         IgvToolsGui.main(null);
-    }
-
-    public static boolean mergeTDFs(String[] infiles, String outfi) {
-        File outfile = new File(outfi);
-        boolean success = true;
-
-
-        List<String> trackNames = new ArrayList<String>();
-        String[] trackNameArray;
-        String genomeId = "", trackLine = "";
-        TrackType trackType = TrackType.OTHER;
-        List<WindowFunction> wfs = null;
-
-        boolean set = false;
-        TDFReader reader;
-        //First pass through files, get names and check consistency
-        for (String infile : infiles) {
-            reader = TDFReader.getReader(infile);
-            trackNames.addAll(Arrays.asList(reader.getTrackNames()));
-            if (!set) {
-                trackLine = reader.getTrackLine();
-                genomeId = reader.getGenomeId();
-                trackType = reader.getTrackType();
-                wfs = reader.getWindowFunctions();
-
-            } else {
-                if (!trackLine.equals(reader.getTrackLine())) {
-                    //todo better exception
-                    throw new RuntimeException("Tracklines inconsistent between files");
-                }
-                if (!genomeId.equals(reader.getGenomeId())) {
-                    throw new RuntimeException("genomeId inconsistent between files");
-                }
-                if (!trackType.equals(reader.getTrackType())) {
-                    throw new RuntimeException("TrackType inconsistent between files");
-                }
-            }
-            reader.close();
-        }
-
-        trackNameArray = trackNames.toArray(new String[0]);
-        //Generate header
-        TDFWriter writer = new TDFWriter(outfile, genomeId, trackType, trackLine, trackNameArray, wfs, true);
-        //Second pass, actually copy data
-        for (String infile : infiles) {
-            reader = TDFReader.getReader(infile);
-            Collection<String> names = reader.getDatasetNames();
-            for (String name : names) {
-                TDFDataset ds = reader.getDataset(name);
-                List<TDFTile> tiles = ds.getTiles();
-
-                if (!writer.hasDataset(name)) {
-                    writer.createDataset(name, ds.getDataType(), ds.getTileWidth(), tiles.size());
-                }
-                try {
-                    for (int t = 0; t < tiles.size(); t++) {
-                        writer.writeTile(name, t, tiles.get(t));
-                    }
-                } catch (IOException e) {
-                    outfile.delete();
-                    success = false;
-                    e.printStackTrace();
-                    //Break out of dsname loop
-                    break;
-                }
-            }
-            reader.close();
-        }
-
-        return success;
     }
 
 }
