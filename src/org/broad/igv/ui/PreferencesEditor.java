@@ -49,16 +49,16 @@ import org.jdesktop.layout.LayoutStyle;
 public class PreferencesEditor extends javax.swing.JDialog {
 
     private boolean canceled = false;
-    Map<String, String> updatedPreferenceMap = new Hashtable<String, String>() {
+    Map<String, String> updatedPreferenceMap = Collections.synchronizedMap(new HashMap<String, String>() {
         @Override
         public String put(String k, String v) {
             String oldValue = prefMgr.get(k);
-            if (!v.equals(oldValue)) {
+            if ((v == null && oldValue != null) ||  !v.equals(oldValue)) {
                 return super.put(k, v);
             }
             return v;
         }
-    };
+    });
     PreferenceManager prefMgr = PreferenceManager.getInstance();
     boolean updateOverlays = false;
     boolean inputValidated = true;
