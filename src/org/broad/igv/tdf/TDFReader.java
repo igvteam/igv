@@ -23,7 +23,6 @@
 package org.broad.igv.tdf;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.data.Dataset;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.track.WindowFunction;
@@ -52,6 +51,7 @@ public class TDFReader {
     private TrackType trackType;
     private String trackLine;
     private String[] trackNames;
+    private String genomeId;
     LRUCache<String, TDFGroup> groupCache = new LRUCache(this, 20);
     LRUCache<String, TDFDataset> datasetCache = new LRUCache(this, 20);
 
@@ -163,7 +163,7 @@ public class TDFReader {
 
         // Flags
         if (version > 2) {
-            String genomeId = StringUtils.readString(byteBuffer);
+            genomeId = StringUtils.readString(byteBuffer);
             int flags = byteBuffer.getInt();
             compressed = (flags & GZIP_FLAG) != 0;
         } else {
@@ -355,6 +355,15 @@ public class TDFReader {
      */
     public String[] getTrackNames() {
         return trackNames;
+    }
+
+    /**
+     * Only available for version >= 3.
+     *
+     * @return
+     */
+    public String getGenomeId() {
+        return genomeId;
     }
 
     private Double getValue(WindowFunction wf) {

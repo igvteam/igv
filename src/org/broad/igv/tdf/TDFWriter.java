@@ -38,7 +38,7 @@ import java.util.Map;
  * Assumptions
  * <p/>
  * Little endian is used throughout
- * Strings are null terminated ascii (single byte
+ * Strings are null terminated ascii (single byte)
  *
  * @author jrobinso
  */
@@ -138,7 +138,7 @@ public class TDFWriter {
         }
         buffer.putInt(flags);
 
-        byte [] bytes = buffer.getBytes();
+        byte[] bytes = buffer.getBytes();
 
         writeInt(bytes.length);
         write(buffer.getBytes());
@@ -313,7 +313,6 @@ public class TDFWriter {
     }
 
 
-
     private byte[] bufferString(String str, int bufferSize) throws IOException {
         byte[] buffer = new byte[bufferSize];
         Arrays.fill(buffer, (byte) ' ');
@@ -338,6 +337,10 @@ public class TDFWriter {
     private void write(byte[] bytes) throws IOException {
         fos.write(bytes);
         bytesWritten += bytes.length;
+    }
+
+    public boolean hasDataset(String name) {
+        return datasetCache.containsKey(name);
     }
 
     class IndexEntry {

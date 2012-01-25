@@ -43,7 +43,6 @@ public class TDFDataset extends TDFEntity {
         BYTE, SHORT, INT, FLOAT, DOUBLE, STRING
     }
 
-    ;
     DataType dataType;
     int tileWidth;
     long[] tilePositions;
@@ -129,6 +128,17 @@ public class TDFDataset extends TDFEntity {
 
     }
 
+    public List<TDFTile> getTiles() {
+        List<TDFTile> tiles = new ArrayList<TDFTile>();
+        for (int t = 0; t < nTiles; t++) {
+            TDFTile tile = getTile(t);
+            if (tile != null) {
+                tiles.add(tile);
+            }
+        }
+        return tiles;
+    }
+
     // TDFTile computeTile(TDFDataset ds, int t, List<LocusScore> scores, String chr)
     synchronized TDFTile getTile(int t) {
         String key = getName() + "_" + t;
@@ -142,5 +152,15 @@ public class TDFDataset extends TDFEntity {
         }
         return tile;
     }
+
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public int getTileWidth() {
+        return tileWidth;
+    }
+
 
 }
