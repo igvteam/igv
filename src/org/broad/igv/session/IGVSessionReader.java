@@ -314,6 +314,9 @@ public class IGVSessionReader  implements SessionReader  {
         // Load the genome, which can be an ID, or a path or URL to a .genome or indexed fasta file.
         String genome = getAttribute(element, SessionAttribute.GENOME.getText());
         if (genome != null && genome.length() > 0) {
+            // THis is a hack, and a bad one, but selecting a genome will actually "reset" the session so we have to
+            // save the path and restore it.
+            String sessionPath = session.getPath();
             if (IGV.getInstance().getGenomeIds().contains(genome)) {
                 IGV.getInstance().selectGenomeFromList(genome);
             } else if (ParsingUtils.pathExists(genome)) {
@@ -323,6 +326,7 @@ public class IGVSessionReader  implements SessionReader  {
                     throw new RuntimeException("Error loading genome: " + genome);
                 }
             }
+            session.setPath(sessionPath);
         }
 
 
