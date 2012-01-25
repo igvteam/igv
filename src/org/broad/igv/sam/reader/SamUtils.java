@@ -31,6 +31,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author jrobinso
@@ -68,16 +69,28 @@ public class SamUtils {
             newIdxFile = getUserIdxFile(samFile);
         }
 
-        SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
-        dialog.setLocationRelativeTo(IGV.getMainFrame());
-        dialog.setVisible(true);
-        return dialog.getIndex();
+        if (!Globals.isHeadless()) {
+            SamIndexCreatorDialog dialog = new SamIndexCreatorDialog(IGV.getMainFrame(), true, samFile, newIdxFile);
+            dialog.setLocationRelativeTo(IGV.getMainFrame());
+            dialog.setVisible(true);
+            return dialog.getIndex();
+        } else {
+            AlignmentIndexer indexer = AlignmentIndexer.getInstance(samFile, null, null);
+            FeatureIndex index = null;
+            try {
+                System.out.println("Creating index");
+                index = indexer.createSamIndex(newIdxFile);
+            } catch (IOException e) {
+                e.fillInStackTrace();
+            }
+            return index;
+        }
     }
 
     private static File getUserIdxFile(File samFile) {
         File idxFile;
         File samDir = new File(Globals.getIgvDirectory(), "sam");
-        //Need the path information to distinguish like name indeces in separate
+        //Need the path information to distinguish like name indices in separate
         // directories.
         idxFile = new File(samDir, samFile.getName() + "_" + samFile.getParent().hashCode() + ".sai");
         return idxFile;
