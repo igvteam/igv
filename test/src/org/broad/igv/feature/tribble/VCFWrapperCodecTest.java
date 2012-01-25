@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static junit.framework.Assert.assertEquals;
+
 /**
  * @author Jim Robinson
  * @date 10/12/11
@@ -20,9 +22,13 @@ public class VCFWrapperCodecTest {
         AsciiQuerySource source = new AsciiQuerySource(path, path + ".idx");
         LineReader lineReader = source.query("17", 7569719, 7592864);
         String nextLine;
+        int numlines = 0;
         while ((nextLine = lineReader.readLine()) != null) {
-            System.out.println(nextLine);
+            //System.out.println(nextLine);
+            numlines += 1;
         }
+        //XXX This was determined by running the test once
+        assertEquals(4447017, numlines);
     }
 
 }

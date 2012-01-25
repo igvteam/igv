@@ -27,15 +27,13 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.CachingQueryReader;
 import org.broad.igv.util.ResourceLocator;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.Test;
+import org.broad.igv.util.TestUtils;
+import org.junit.*;
 
 import java.io.IOException;
-import java.net.URL;
+
+import static org.junit.Assert.*;
 
 /**
  * @author jrobinso
@@ -43,55 +41,80 @@ import java.net.URL;
 public class BAMHttpQueryReaderTest {
 
     //private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/test/index_test.bam";
-    private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/DCC_merged/freeze5/NA12891.pilot2.SLX.bam";
+    private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
 
     AlignmentQueryReader reader;
 
-    public BAMHttpQueryReaderTest() {
-
-
-    }
-
-    @Before
-    public void setUpClass() throws Exception {
-        CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true));
-        System.out.println("Index loaded");
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+        //CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true));
+        //System.out.println("Index loaded");
+        TestUtils.setUpTestEnv();
+        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
     }
 
-    @Test
-    public void testClose() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        reader = new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        reader.close();
+        reader = null;
     }
 
     @Test
     public void testGetHeader() throws IOException {
         SAMFileHeader header = reader.getHeader();
-        assertEquals(45, header.getSequenceDictionary().size());
-
+        assertEquals(114, header.getSequenceDictionary().size());
+        assertEquals("1.0", header.getVersion());
     }
 
     @Test
     public void testIterator() {
         CloseableIterator<Alignment> iter = reader.iterator();
+        //This takes a long time. We just look for a minimum number
+        int minnum = 1000000;
+        int actnum = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();
-            System.out.println(a.getReadName());
+            assertNotNull(a);
+            actnum++;
+
+            if (actnum > minnum) {
+                break;
+            }
         }
+        iter.close();
+        assertTrue(actnum > minnum);
 
     }
 
     @Test
-    public void testQuery() throws IOException {
-        SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
-        CloseableIterator<Alignment> iter = reader.query("1", 100000000, 100004000, false);
+    public void testQuery() throws Exception {
+
+        checkNumber("Y", 10000000, 10004000, 6890);
+        checkNumber("Y", 100000000, 100040000, 0);
+        checkNumber("1", 1, 100000000, 0);
+
+    }
+
+    private void checkNumber(String chr, int start, int end, int expected_count) throws IOException {
+        CloseableIterator<Alignment> iter = reader.query(chr, start, end, false);
+        int counted = 0;
         while (iter.hasNext()) {
             Alignment a = iter.next();
-            System.out.println(a.getReadName());
-
+            counted++;
+            assertNotNull(a);
         }
+        iter.close();
+
+        assertEquals(expected_count, counted);
     }
 
 }

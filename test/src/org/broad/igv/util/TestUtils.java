@@ -21,6 +21,7 @@ package org.broad.igv.util;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
+import org.broad.tribble.util.ftp.FTPClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,8 +44,20 @@ public class TestUtils {
 //
 //    }
 
-    public static Genome loadGenome() throws IOException {
+    public static void setUpTestEnv() {
         Globals.setHeadless(true);
+        Globals.READ_TIMEOUT = 30 * 1000;
+        Globals.CONNECT_TIMEOUT = 30 * 1000;
+        FTPClient.READ_TIMEOUT = 30 * 1000;
+    }
+
+    /**
+     * Load a test genome, do some test setup
+     *
+     * @return
+     * @throws IOException
+     */
+    public static Genome loadGenome() throws IOException {
         final String genomeFile = dataFileName;
         return IgvTools.loadGenome(genomeFile, true);
     }
