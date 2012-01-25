@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.  All Rights Reserved.
  *
- * This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+ * This software is licensed under the terms of the GNU Lesser General  License (LGPL),
  * Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
  *
  * THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
@@ -38,9 +38,9 @@ public interface Alignment extends LocusScore {
 
     // For legacy apps
 
-    public String getChromosome();
+    String getChromosome();
 
-    public String getChr();
+    String getChr();
 
     int getAlignmentStart();
 
@@ -72,7 +72,9 @@ public interface Alignment extends LocusScore {
 
     Strand getFirstOfPairStrand();
 
-    public boolean isNegativeStrand();
+    Strand getSecondOfPairStrand();
+
+    boolean isNegativeStrand();
 
     boolean isDuplicate();
 
@@ -89,7 +91,7 @@ public interface Alignment extends LocusScore {
     Object getAttribute(String key);
 
 
-    public void setMateSequence(String sequence);
+    void setMateSequence(String sequence);
 
     String getPairOrientation();
 
@@ -101,7 +103,7 @@ public interface Alignment extends LocusScore {
 
     String getLibrary();
 
-    public String getClipboardString(double location);
+    String getClipboardString(double location);
 
-    public Strand getReadStrand();
+    Strand getReadStrand();
 }

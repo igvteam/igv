@@ -467,13 +467,19 @@ public class GobyAlignment implements Alignment {
         return null;
     }
 
+    /**
+     * Return the strand of the read marked "first-in-pair" for a paired alignment. This method can return
+     * Strand.NONE if the end marked first is unmapped.
+     *
+     * @return strand of first-of-pair
+     */
     public Strand getFirstOfPairStrand() {
         if (isPaired()) {
             if (isFirstOfPair()) {
                 return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
             } else {
                 ReadMate mate = getMate();
-                if (mate.isMapped()) {
+                if (mate.isMapped() && isProperPair()) {
                     return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
                 } else {
                     return Strand.NONE;
@@ -482,6 +488,31 @@ public class GobyAlignment implements Alignment {
 
         } else {
             return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+        }
+    }
+
+    /**
+     * Return the strand of the read marked "second-in-pair" for a paired alignment.  The strand is
+     * undefined (Strand.NONE) for non-paired alignments
+     *
+     * @return strand of second-of-pair
+     */
+    public Strand getSecondOfPairStrand() {
+        if (isPaired()) {
+            if (isSecondOfPair()) {
+                return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+            } else {
+                ReadMate mate = getMate();
+                if (mate.isMapped()  && isProperPair()) {
+                    return mate.isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
+                } else {
+                    return Strand.NONE;
+                }
+            }
+
+        } else {
+            // Undefined for non-paired alignments
+            return Strand.NONE;
         }
     }
 
