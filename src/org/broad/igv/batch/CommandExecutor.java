@@ -37,6 +37,7 @@ import org.broad.igv.util.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
 
@@ -181,6 +182,7 @@ public class CommandExecutor {
      */
     private String load(String fileList, String param2, String param3) throws IOException {
 
+        fileList = URLDecoder.decode(fileList);
         String fileString = fileList.replace("\"", "").replace("'", "");
 
         // Default for merge is "true" for session files,  "false" otherwise

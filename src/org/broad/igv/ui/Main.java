@@ -34,6 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.net.URLDecoder;
 
 
 /**
@@ -337,9 +338,9 @@ public class Main {
                 if (!firstArg.equals("ignore")) {
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
                              || firstArg.endsWith(".session")) {
-                        sessionFile = firstArg;
+                        sessionFile = URLDecoder.decode(firstArg);
                     } else {
-                        dataFileString = firstArg;
+                        dataFileString = URLDecoder.decode(firstArg);
                     }
                 }
                 if (nonOptionArgs.length > 1) {

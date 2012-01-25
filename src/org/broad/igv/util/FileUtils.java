@@ -110,8 +110,10 @@ public class FileUtils {
     }
 
 
-    public static boolean isRemote(String p) {
-        String path = URLDecoder.decode(p);
+    public static boolean isRemote(String path) {
+        if(path == null) {
+            return false;
+        }
         return path.startsWith("http://") || path.startsWith("https://") || path.startsWith("ftp://");
     }
 

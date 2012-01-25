@@ -578,13 +578,19 @@ public class IGVSessionReader  implements SessionReader  {
 
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, path);
         if (relativePaths) {
-            if (FileUtils.isRemote(session.getPath())) {
-                int idx = session.getPath().lastIndexOf("/");
-                String basePath = session.getPath().substring(0, idx);
+            final String sessionPath = session.getPath();
+            if(sessionPath == null) {
+                log.error("Null session path -- this is not expected");
+                MessageUtils.showMessage("Unexpected error loading session: null session path");
+                return;
+            }
+            if (FileUtils.isRemote(sessionPath)) {
+                int idx = sessionPath.lastIndexOf("/");
+                String basePath = sessionPath.substring(0, idx);
                 String resPath = basePath + "/" + path;
                 resourceLocator = new ResourceLocator(serverURL, resPath);
             } else {
-                File parent = (relativePaths ? new File(session.getPath()).getParentFile() : null);
+                File parent = (relativePaths ? new File(sessionPath).getParentFile() : null);
                 File file = new File(parent, path);
                 resourceLocator = new ResourceLocator(serverURL, file.getAbsolutePath());
             }
