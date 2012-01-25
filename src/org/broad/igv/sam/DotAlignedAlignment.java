@@ -240,6 +240,11 @@ public class DotAlignedAlignment implements Alignment {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
 
+
+    public Strand getSecondOfPairStrand() {
+        return Strand.NONE;
+    }
+
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }

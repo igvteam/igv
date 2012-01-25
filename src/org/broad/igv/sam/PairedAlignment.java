@@ -298,6 +298,10 @@ public class PairedAlignment implements Alignment {
         return firstAlignment.getFirstOfPairStrand();
     }
 
+    public Strand getSecondOfPairStrand() {
+        return firstAlignment.getSecondOfPairStrand();
+    }
+
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }

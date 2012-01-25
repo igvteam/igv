@@ -238,6 +238,10 @@ public class FeatureWrappedAlignment implements Alignment {
         return strand;
     }
 
+    public Strand getSecondOfPairStrand() {
+        return Strand.NONE;
+    }
+
     public Strand getReadStrand() {
         return isNegativeStrand() ? Strand.NEGATIVE : Strand.POSITIVE;
     }
