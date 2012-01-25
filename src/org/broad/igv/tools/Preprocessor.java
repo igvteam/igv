@@ -22,6 +22,7 @@
  */
 package org.broad.igv.tools;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -729,7 +730,8 @@ public class Preprocessor implements DataConsumer {
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile,
                 genome, coverageOpt);
 
-        String[] tracknames = aParser.getTrackNames(iFile + " ");
+        String prefix = FilenameUtils.getName(iFile);
+        String[] tracknames = aParser.getTrackNames(prefix + " ");
         setTrackParameters(TrackType.COVERAGE, trackLine, tracknames);
 
         /*if(isize != null) {
