@@ -86,7 +86,10 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             return new GFFParser(path);
         } else if (tmp.endsWith("embl")) {
             return new EmblFeatureTableParser();
-        } else {
+        } else if(tmp.endsWith("psl")) {
+            return new PSLParser(genome);
+        }
+        else {
             return null;
         }
     }
