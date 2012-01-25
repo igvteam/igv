@@ -43,14 +43,7 @@ public class NewSessionMenuAction extends MenuAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        igv.resetSession(null); // Clear everything but the genome
 
-        UIUtilities.invokeOnEventThread(new Runnable() {
-
-            public void run() {
-
-                igv.resetSession(null); // Clear everything but the genome
-
-            }
-        });
     }
 }
