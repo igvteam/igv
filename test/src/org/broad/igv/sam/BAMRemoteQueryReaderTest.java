@@ -22,6 +22,7 @@
  */
 package org.broad.igv.sam;
 
+import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
@@ -129,6 +130,31 @@ public class BAMRemoteQueryReaderTest {
         //System.out.println(al.getAlignmentStart() + " -> " + al.getEnd());
         System.out.println("Read " + count + " records in " + (System.currentTimeMillis() - t0) + " ms");
 
+
+    }
+
+    @Test
+    public void testQuery2() {
+        String path = "/1KG/DCC_merged/freeze4/NA12878.ceu.daughter.bam";
+        String serverURL = "http://www.broadinstitute.org/igvdata";
+
+        String chr = "1";
+        int start = 713700;
+        int end = 714100;
+
+        BAMRemoteQueryReader reader = new BAMRemoteQueryReader(new ResourceLocator(serverURL, path));
+
+        SAMFileHeader header = reader.getHeader();
+
+        CloseableIterator<Alignment> iter = reader.query(chr, start, end, true);
+
+        //SAMRecord firstRecord = iter.next();
+        //assertEquals(expectedFirstRecord, firstRecord.format());
+        while (iter.hasNext()) {
+            Alignment record = iter.next();
+        }
+
+        iter.close();
 
     }
 }
