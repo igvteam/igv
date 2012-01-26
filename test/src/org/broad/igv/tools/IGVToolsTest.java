@@ -207,4 +207,20 @@ public class IGVToolsTest {
         }
     }
 
+    @Test
+    public void testCountBAMList() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        String outputFile = TestUtils.DATA_DIR + "/out/file_";
+        String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
+
+        String[] opts = new String[]{"s", ""};
+        for (String opt : opts) {
+            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile + opt + ".tdf", genome};
+            igvTools.run(args);
+
+            TDFReader reader = TDFReader.getReader(outputFile + opt + ".tdf");
+            assertTrue(reader.getDatasetNames().size() > 0);
+        }
+    }
+
 }

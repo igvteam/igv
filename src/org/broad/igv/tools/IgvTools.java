@@ -71,7 +71,7 @@ public class IgvTools {
 
     static String[] commandDocs = new String[]{
             "version print the version number",
-            "sort    sort an alignment file by start position",
+            "sort    sort an alignment file by start position. ",
             "index   index an alignment file",
             "toTDF    convert an input file (cn, gct, wig) to tiled data format (tdf)",
             "count   compute coverage density for an alignment file",
@@ -96,7 +96,7 @@ public class IgvTools {
         StringBuffer buf = new StringBuffer();
 
         buf.append("\nProgram: igvtools\n\n");
-        buf.append("Usage: igvtools [command] [options] [arguments]\n\n");
+        buf.append("Usage: igvtools [command] [options] [input file/dir] [other arguments]\n\n");
         buf.append("Command:");
         for (String c : commandDocs) {
             buf.append(" " + c + "\n\t");
@@ -183,7 +183,7 @@ public class IgvTools {
         }
 
         boolean help = ((Boolean) parser.getOptionValue(helpOption, false));
-        if (argv.length < 1 || help) {
+        if (help) {
             System.out.println(usageString());
             return;
         }
@@ -202,10 +202,10 @@ public class IgvTools {
         String[] nonOptionArgs = parser.getRemainingArgs();
 
         try {
-            validateArgsLength(nonOptionArgs, 1);
-
+            validateArgsLength(argv, 1, "Error: Must have at least 1 argument");
             // The command
             String command = nonOptionArgs[EXT_FACTOR].toLowerCase();
+            String basic_syntax = "Error in syntax. Expected: " + command + " [options] inputfile outputfile";
 
             // Do "version" now, its the only command with no arguments
             if (command.equals("version")) {
@@ -214,7 +214,7 @@ public class IgvTools {
             }
 
             // All remaining commands require an input file, and most need the file extension.  Do that here.
-            validateArgsLength(nonOptionArgs, 2);
+            validateArgsLength(nonOptionArgs, 2, "Error: No input file provided");
             String ifile = nonOptionArgs[1];
             String typeString = (String) parser.getOptionValue(typeOption);
             if (typeString == null) {
@@ -233,7 +233,7 @@ public class IgvTools {
             if (command.equals("count") || command.equals("totdf") || command.equals("tile")) {
 
                 // Parse out options common to both count and tile
-                validateArgsLength(nonOptionArgs, 4);
+                validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
                 int windowSizeValue = (Integer) parser.getOptionValue(windowSizeOption, WINDOW_SIZE);
                 int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
                 String ofile = nonOptionArgs[2];
@@ -260,8 +260,8 @@ public class IgvTools {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                     toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
                 }
-            } else if (command.toLowerCase().equals("sort")) {
-                validateArgsLength(nonOptionArgs, 3);
+            } else if (command.equals("sort")) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
 
                 String ofile = nonOptionArgs[2];
                 doSort(ifile, ofile, tmpDirName, maxRecords);
@@ -272,18 +272,18 @@ public class IgvTools {
                 String outputDir = (String) parser.getOptionValue(outputDirOption, null);
                 doIndex(ifile, outputDir, indexType, binSize);
             } else if (command.equals("wibtowig")) {
-                validateArgsLength(nonOptionArgs, 4);
+                validateArgsLength(nonOptionArgs, 4, "Error in syntax. Expected: " + command + " [options] txtfile wibfile wigfile");
                 File txtFile = new File(nonOptionArgs[1]);
                 File wibFile = new File(nonOptionArgs[2]);
                 File wigFile = new File(nonOptionArgs[3]);
                 String trackLine = nonOptionArgs.length > 4 ? nonOptionArgs[4] : null;
                 doWIBtoWIG(txtFile, wibFile, wigFile, trackLine);
             } else if (command.equals("splitgff")) {
-                validateArgsLength(nonOptionArgs, 3);
+                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
                 String outputDirectory = nonOptionArgs[2];
                 GFFParser.splitFileByType(ifile, outputDirectory);
             } else if (command.toLowerCase().equals("gcttoigv")) {
-                validateArgsLength(nonOptionArgs, 4);
+                validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
                 String ofile = nonOptionArgs[2];
                 // Output files must have .igv extension
                 if (!ofile.endsWith(".igv")) {
@@ -297,16 +297,16 @@ public class IgvTools {
                 String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                 doGCTtoIGV(typeString, ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
             } else if (command.equals("formatexp")) {
-                validateArgsLength(nonOptionArgs, 3);
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 File inputFile = new File(nonOptionArgs[1]);
                 File outputFile = new File(nonOptionArgs[2]);
                 (new ExpressionFormatter()).convert(inputFile, outputFile);
             } else if (command.toLowerCase().equals("tdftobedgraph")) {
-                validateArgsLength(nonOptionArgs, 3);
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String ofile = nonOptionArgs[2];
                 TDFUtils.tdfToBedgraph(ifile, ofile);
             } else if (command.equals("wigtobed")) {
-                validateArgsLength(nonOptionArgs, 2);
+                validateArgsLength(nonOptionArgs, 2, "Error in syntax. Expected: " + command + " [options] inputfile");
                 String inputFile = nonOptionArgs[1];
                 float hetThreshold = 0.17f;
                 if (nonOptionArgs.length > 2) {
@@ -318,19 +318,21 @@ public class IgvTools {
                 }
                 WigToBed.run(inputFile, hetThreshold, homThreshold);
             } else if (command.equals("vcftobed")) {
-                validateArgsLength(nonOptionArgs, 3);
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
                 String inputFile = nonOptionArgs[1];
                 String outputFile = nonOptionArgs[2];
                 VCFtoBed.convert(inputFile, outputFile);
             } else if (command.equals("lanecounter")) {
-                validateArgsLength(nonOptionArgs, 3);
+                //TODO
+                validateArgsLength(nonOptionArgs, 3, "This command is not documented");
                 Genome genome = loadGenome(nonOptionArgs[1], false);
                 String bamFileList = nonOptionArgs[2];
                 String queryInterval = nonOptionArgs[3];
                 LaneCounter.run(genome, bamFileList, queryInterval);
             } else if (command.equals("sumwigs")) {
                 sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
-            } else if (command.equals("densitytobedgraph")) {
+            } else if (command.equals("densitiestobedgraph")) {
+                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
                 File inputDir = new File(nonOptionArgs[1]);
                 File outputDir = new File(nonOptionArgs[2]);
                 if (inputDir.isDirectory() && outputDir.isDirectory()) {
@@ -671,9 +673,9 @@ public class IgvTools {
     }
 
 
-    private void validateArgsLength(String[] nonOptionArgs, int len) throws PreprocessingException {
+    private void validateArgsLength(String[] nonOptionArgs, int len, String failMessage) throws PreprocessingException {
         if (nonOptionArgs.length < len) {
-            throw new PreprocessingException(usageString());
+            throw new PreprocessingException(failMessage + "\n" + usageString());
         }
     }
 

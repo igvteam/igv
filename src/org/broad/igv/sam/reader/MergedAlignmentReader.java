@@ -79,25 +79,32 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
         PriorityQueue<RecordIterWrapper> iteratorQueue;
 
         public MergedFileIterator() {
-            iteratorQueue = new PriorityQueue(readers.size());
-            for (AlignmentQueryReader reader : readers) {
-                CloseableIterator<Alignment> iter = reader.iterator();
-                allIterators.add(iter);
-                if (iter.hasNext()) {
-                    final RecordIterWrapper wrapper = new RecordIterWrapper(iter);
-                    iteratorQueue.add(wrapper);
-                  }
+            try {
+                create(null, -1, -1, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
             }
         }
 
         public MergedFileIterator(String chr, int start, int end, boolean contained) throws IOException {
+            create(chr, start, end, contained);
+        }
+
+        private void create(String chr, int start, int end, boolean contained) throws IOException {
             iteratorQueue = new PriorityQueue(readers.size(), new FooComparator());
+            boolean iterate = (start == end) && (start == -1);
             for (AlignmentQueryReader reader : readers) {
-                CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
+                CloseableIterator<Alignment> iter;
+                if (iterate) {
+                    iter = reader.iterator();
+                } else {
+                    iter = reader.query(chr, start, end, contained);
+                }
                 allIterators.add(iter);
                 if (iter.hasNext()) {
                     iteratorQueue.add(new RecordIterWrapper(iter));
-                 }
+                }
             }
         }
 
