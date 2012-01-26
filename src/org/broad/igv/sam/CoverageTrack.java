@@ -64,7 +64,7 @@ public class CoverageTrack extends AbstractTrack {
 
     char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     public static Color lightBlue = new Color(0, 0, 150);
-    private static Color coverageGrey = new Color(140, 140, 140);
+    private static Color coverageGrey = new Color(175, 175, 175);
     public static final Color negStrandColor = new Color(140, 140, 160);
     public static final Color posStrandColor = new Color(160, 140, 140);
 
@@ -394,11 +394,10 @@ public class CoverageTrack extends AbstractTrack {
 
                                     if (mismatch) {
                                         for (char c : nucleotides) {
-                                            if (c != ref) {
-                                                pY = drawBar(context, pos, rect, totalCount, max,
-                                                        pY, pX, dX, c, alignmentCounts, range.isLog());
-                                            }
+                                            pY = drawBar(context, pos, rect, totalCount, max,
+                                                    pY, pX, dX, c, alignmentCounts, range.isLog());
                                         }
+
                                     }
                                 }
                             }
