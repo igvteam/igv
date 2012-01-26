@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * @author jrobinso
  */
-public class AttributeHeaderPanel extends JPanel {
+public class AttributeHeaderPanel extends JPanel implements Paintable {
 
     final static int MAXIMUM_FONT_SIZE = 10;
     public final static int ATTRIBUTE_COLUMN_WIDTH = 10;
@@ -174,4 +174,13 @@ public class AttributeHeaderPanel extends JPanel {
         }
     }
 
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+        paintComponent(g);
+
+        Color c = g.getColor();
+        g.setColor(Color.darkGray);
+        g.drawRect(rect.x, rect.y, rect.width, rect.height);
+        g.setColor(c);            //super.paintBorder(g);
+
+    }
 }

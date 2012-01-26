@@ -91,7 +91,12 @@ public class TrackNamePanel extends TrackPanelComponent implements Paintable {
         g.setColor(Color.white);
         g.fill(rect);
         paintImpl(g, rect);
-        super.paintBorder(g);
+
+        Color c = g.getColor();
+        g.setColor(Color.darkGray);
+        g.drawRect(rect.x, rect.y, rect.width, rect.height);
+        g.setColor(c);            //super.paintBorder(g);
+        //super.paintBorder(g);
     }
 
 
