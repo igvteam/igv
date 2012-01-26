@@ -34,7 +34,10 @@ import java.awt.*;
  *
  * @author jrobinso
  */
-public class NameHeaderPanel extends JPanel  {
+public class NameHeaderPanel extends JPanel  implements Paintable {
 
 
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+        paintComponent(g);
+    }
 }

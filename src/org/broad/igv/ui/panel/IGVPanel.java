@@ -26,9 +26,11 @@ import org.apache.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
- * A panel class specific to the IGV batch window.  Lays out its components in a very specific way so that
+ * A panel class that lays out its components in a very specific way so that
  * children (i.e. name, attribute, and data panels) from all instances align vertically
  */
 public class IGVPanel extends JPanel implements Paintable {
@@ -89,7 +91,30 @@ public class IGVPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        paint(g);
+        int h = rect.height;
+
+        Component[] children = getComponents();
+        // name panel starts at offset=0
+
+        g.translate(mainPanel.getNamePanelX(), 0);
+
+        Rectangle nameRect = new Rectangle(children[0].getBounds());
+        nameRect.height = h;
+        g.setClip(nameRect);
+        ((Paintable) children[0]).paintOffscreen(g, nameRect);
+
+        int dx = mainPanel.getAttributePanelX() - mainPanel.getNamePanelX();
+        g.translate(dx, 0);
+        Rectangle attRect = new Rectangle(0, 0, children[1].getWidth(), h);
+        g.setClip(attRect);
+        ((Paintable) children[1]).paintOffscreen(g, attRect);
+
+        dx = mainPanel.getDataPanelX() - mainPanel.getAttributePanelX();
+        g.translate(dx, 0);
+        Rectangle dataRect = new Rectangle(0, 0, mainPanel.getDataPanelWidth(), h);
+        g.setClip(dataRect);
+        ((Paintable) children[2]).paintOffscreen(g, dataRect);
+
 
 
     }

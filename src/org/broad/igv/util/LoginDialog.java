@@ -41,6 +41,7 @@ public class LoginDialog extends JDialog {
     public LoginDialog(Frame owner, boolean isGenomeSpace, String resource, boolean proxyChallenge) {
         super(owner);
         initComponents();
+        getRootPane().setDefaultButton(okButton);
         if (isGenomeSpace) {
             promptLabel.setText("Please login to your GenomeSpace account");
             iconLabel.setVisible(true);

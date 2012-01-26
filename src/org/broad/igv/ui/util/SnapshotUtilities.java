@@ -28,26 +28,17 @@ package org.broad.igv.ui.util;
 import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.MainPanel;
 import org.broad.igv.ui.panel.Paintable;
 import org.broad.igv.ui.svg.SVGGraphics;
-import org.broad.igv.util.Utilities;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.util.LinkedHashMap;
 
 /**
  * Utility methods for supporting saving of images as jpeg, png, and svg files.
@@ -60,146 +51,39 @@ public class SnapshotUtilities {
     /**
      * Class logger
      */
-    private static Logger logger = Logger.getLogger(SnapshotUtilities.class);
+    private static Logger log = Logger.getLogger(SnapshotUtilities.class);
 
-    private static LinkedHashMap<SnapshotFileType, SnapshotFileFilter> SNAPSHOT_TYPE_TO_FILTER = new LinkedHashMap();
 
     /**
      * The maximum height in pixels for snapshots of a panel.
      */
-    public static int MAX_PANEL_HEIGHT = 1000;
-
-
-    static {
-
-        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.JPEG, new SnapshotFileFilter(SnapshotFileType.JPEG));
-        //SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PDF,
-        //    new SnapshotFileFilter(SnapshotFileType.PDF));
-        //SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.EPS,
-        //        new SnapshotFileFilter(SnapshotFileType.EPS));
-        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.SVG, new SnapshotFileFilter(SnapshotFileType.SVG));
-        SNAPSHOT_TYPE_TO_FILTER.put(SnapshotFileType.PNG, new SnapshotFileFilter(SnapshotFileType.PNG));
-    }
-
-    public static FileFilter[] getAllSnapshotFileFilters() {
-        return SNAPSHOT_TYPE_TO_FILTER.values().toArray(new FileFilter[SNAPSHOT_TYPE_TO_FILTER.size()]);
-    }
-
-    public static SnapshotFileFilter getSnapshotFileFilterForType(SnapshotFileType type) {
-        return SNAPSHOT_TYPE_TO_FILTER.get(type);
-    }
+    public static int DEFAULT_MAX_PANEL_HEIGHT = 1000;
 
     /**
-     * Creates a device compatible buffered svg.
-     *
-     * @param width  the svg width in pixels
-     * @param height the svg height in pixels
+     * We need to use a static for max panel height,  or alternatively much refactoring, however this class might
+     * be accessed by multiple threads which set this to different values => use a thread local
      */
-    public static BufferedImage getDeviceCompatibleImage(int width, int height) {
+    private static ThreadLocal<Integer> maxPanelHeight = new ThreadLocal() {
+        @Override
+        protected Object initialValue() {
+            return new Integer(DEFAULT_MAX_PANEL_HEIGHT);
+        }
+    };
 
-        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice screenDevice = graphicsEnvironment.getDefaultScreenDevice();
-        GraphicsConfiguration graphicConfiguration = screenDevice.getDefaultConfiguration();
-        BufferedImage image = graphicConfiguration.createCompatibleImage(width, height);
-
-        return image;
+    public static int getMaxPanelHeight() {
+        return maxPanelHeight.get().intValue();
     }
 
-    /**
-     * Snapshot types
-     */
-    public static enum SnapshotFileType {
-
-        NULL("", ""),
-        EPS(".eps", "Encapsulated Postscript Files (*.eps)"),
-        PDF(".pdf", "Portable Document FormatFles (*.pdf)"),
-        SVG(".svg", "Scalable Vector Graphics Files (*.svg)"),
-        PNG(".png", "Portable Network Graphics Files (*.png)"),
-        JPEG(".jpeg", "Joint Photographic Experts Group Files (*.jpeg)");
-        private String fileExtension;
-        private String fileDescription;
-
-        SnapshotFileType(String extension, String description) {
-            fileExtension = extension;
-            fileDescription = description;
-        }
-
-        public String getExtension() {
-            return fileExtension;
-        }
-
-        public String getDescription() {
-            return fileDescription;
-        }
+    public static void setMaxPanelHeight(int h) {
+        maxPanelHeight.set(h);
     }
 
-    public static String getFileExtension(String filePath) {
-
-        String extension = null;
-
-        int indexOfExtension = filePath.lastIndexOf(".");
-        if (indexOfExtension >= 0) {
-            extension = filePath.substring(indexOfExtension, filePath.length());
-        }
-        return extension;
-    }
-
-    public static SnapshotFileType getSnapshotFileType(String fileExtension) {
-
-        String extension = fileExtension.toLowerCase();
-        SnapshotFileType type = null;
-
-        if (SnapshotFileType.EPS.getExtension().equals(extension)) {
-            type = SnapshotFileType.EPS;
-        } else if (SnapshotFileType.PDF.getExtension().equals(extension)) {
-            type = SnapshotFileType.PDF;
-        } else if (SnapshotFileType.SVG.getExtension().equals(extension)) {
-            type = SnapshotFileType.SVG;
-        } else if (SnapshotFileType.PNG.getExtension().equals(extension)) {
-            type = SnapshotFileType.PNG;
-        } else if (SnapshotFileType.JPEG.getExtension().equals(extension)) {
-            type = SnapshotFileType.JPEG;
-        } else {
-            type = SnapshotFileType.NULL;
-        }
-        return type;
-    }
+    // Treat this class as a singleton, no instances allowed
+    private SnapshotUtilities() {}
 
 
-    /**
-     * Snapshot file filter
-     */
-    public static class SnapshotFileFilter extends FileFilter {
 
-        private SnapshotFileType type = SnapshotFileType.EPS;
-
-        public SnapshotFileFilter(SnapshotFileType type) {
-            this.type = type;
-        }
-
-        public boolean accept(File file) {
-
-            if (file.isDirectory()) {
-                return true;
-            }
-
-            return file.getName().toLowerCase().endsWith(type.getExtension());
-        }
-
-        public String getDescription() {
-            return type.getDescription();
-        }
-
-        public String getExtension() {
-            return type.getExtension();
-        }
-
-        public boolean accept(File file, String name) {
-            return name.toLowerCase().endsWith(type.getExtension());
-        }
-    }
-
-    public static void doComponentSnapshot(Component component, File file, SnapshotFileType type) {
+    public static void doComponentSnapshot(Component component, File file, SnapshotFileChooser.SnapshotFileType type) {
 
         int width = component.getWidth();
         int height = component.getHeight();
@@ -216,7 +100,7 @@ public class SnapshotUtilities {
                 exportScreenShotPNG(component, file, width, height);
                 break;
             case SVG:
-                logger.debug("Exporting svg screenshot");
+                log.debug("Exporting svg screenshot");
                 exportScreenshotSVG(component, file);
                 break;
         }
@@ -251,33 +135,10 @@ public class SnapshotUtilities {
 
 
     private static void exportScreenshotSVG(Component target, File selectedFile) {
-        // Get a DOMImplementation.
-        try {
-            logger.debug("Getting dom");
-            DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
 
-
-            // Create an instance of org.w3c.dom.Document.
-            String svgNS = "http://www.w3.org/2000/svg";
-            Document document = domImpl.createDocument(svgNS, "svg", null);
-
-
-            // Create an instance of the SVG Generator.
-            SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
-            //logger.info("Painting");
-            target.paintAll(svgGenerator);
-
-            // Finally, stream out SVG to the standard output using
-            // UTF-8 encoding.
-            boolean useCSS = true; // we want to use CSS style attributes
-            Writer out = new BufferedWriter(new FileWriter(selectedFile));
-            //logger.info("Writing output");
-            svgGenerator.stream(out, useCSS);
-            //logger.info("Done");
-        } catch (Exception e) {
-            logger.error("Error creating SVG file", e);
-            MessageUtils.showMessage("Error encountered creating SVG file: " + e.toString());
-        }
+        // Disable extending panel height beyond visible area
+        SnapshotUtilities.setMaxPanelHeight(-1);
+        doSnapshotOffscreen(target, selectedFile);
     }
 
     private static void exportScreenShotJPEG(Component target, File selectedFile, int width, int height) {
@@ -340,7 +201,7 @@ public class SnapshotUtilities {
 
             final String filenameLowercase = selectedFile.getName().toLowerCase();
             if (filenameLowercase.endsWith(".svg")) {
-                logger.debug("Getting dom");
+                log.debug("Getting dom");
                 DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
 
 
@@ -376,7 +237,7 @@ public class SnapshotUtilities {
             }
 
         } catch (Exception e) {
-            logger.error("Error creating snapshot", e);
+            log.error("Error creating snapshot", e);
             return "Error: " + e.toString();
         } finally {
             IGV.getInstance().setExportingSnapshot(false);
@@ -389,113 +250,25 @@ public class SnapshotUtilities {
         try {
             ImageIO.write(image, type, f);
         } catch (IOException e) {
-            logger.error(("Error creating: " + f.getAbsolutePath()), e);
+            log.error(("Error creating: " + f.getAbsolutePath()), e);
         }
     }
 
+    /**
+     * Creates a device compatible buffered svg.
+     *
+     * @param width  the svg width in pixels
+     * @param height the svg height in pixels
+     */
+    public static BufferedImage getDeviceCompatibleImage(int width, int height) {
 
-    public static class SnapshotFileChooser extends JFileChooser {
+        GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice screenDevice = graphicsEnvironment.getDefaultScreenDevice();
+        GraphicsConfiguration graphicConfiguration = screenDevice.getDefaultConfiguration();
+        BufferedImage image = graphicConfiguration.createCompatibleImage(width, height);
 
-        boolean accepted = false;
-        File previousFile;
-
-        public SnapshotFileChooser(File directory, File selectedFile) {
-            super(directory);
-            setPreviousFile(selectedFile);
-            init();
-        }
-
-
-        public void approveSelection() {
-            accepted = true;
-            super.approveSelection();
-        }
-
-        public void setPreviousFile(File file) {
-            this.previousFile = file;
-            setSelectedFile(previousFile);
-        }
-
-        public File getPreviousFile() {
-            return previousFile;
-        }
-
-        @Override
-        public void cancelSelection() {
-            setSelectedFile(null);
-            super.cancelSelection();
-        }
-
-
-        @Override
-        protected JDialog createDialog(Component parent) throws HeadlessException {
-            JDialog dialog = super.createDialog(parent);
-            dialog.setLocation(300, 200);
-            dialog.setResizable(false);
-            dialog.addWindowListener(new WindowAdapter() {
-
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    if (!accepted) {
-                        setSelectedFile(null);
-                    }
-                }
-            });
-            return dialog;
-        }
-
-        private void init() {
-
-            FileFilter[] fileFilters = SnapshotUtilities.getAllSnapshotFileFilters();
-            // Setup FileFilters
-            if (fileFilters != null) {
-                for (FileFilter fileFilter : fileFilters) {
-                    addChoosableFileFilter(fileFilter);
-                }
-            }
-
-            addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent e) {
-
-
-                    File oldFile = null;
-                    String property = e.getPropertyName();
-                    if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(property)) {
-                        oldFile = (File) e.getOldValue();
-                    } else if (JFileChooser.FILE_FILTER_CHANGED_PROPERTY.equals(property)) {
-
-                        if (e.getOldValue() instanceof SnapshotFileFilter &&
-                                e.getNewValue() instanceof SnapshotFileFilter) {
-
-                            SnapshotFileFilter newFilter = (SnapshotFileFilter) e.getNewValue();
-
-                            File currentDirectory = getCurrentDirectory();
-                            File previousFile = getPreviousFile();
-                            if (previousFile != null) {
-
-                                File file = null;
-                                if (currentDirectory != null) {
-                                    file = new File(currentDirectory, previousFile.getName());
-                                } else {
-                                    file = previousFile;
-                                }
-
-                                final File selectedFile = Utilities.changeFileExtension(
-                                        file, newFilter.getExtension());
-
-                                UIUtilities.invokeOnEventThread(new Runnable() {
-
-                                    public void run() {
-                                        setPreviousFile(selectedFile);
-                                        validate();
-                                    }
-                                });
-                            }
-
-                        }
-                    }
-                }
-            });
-        }
+        return image;
     }
+
+
 }

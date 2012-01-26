@@ -448,7 +448,7 @@ public class TrackPanel extends IGVPanel {
         ((Paintable) children[2]).paintOffscreen(g, dataRect);
 
 
-        super.paintBorder(g);
+        //super.paintBorder(g);
 
     }
 }

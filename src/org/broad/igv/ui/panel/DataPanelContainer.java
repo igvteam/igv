@@ -126,7 +126,7 @@ public class DataPanelContainer extends TrackPanelComponent implements Paintable
 
             }
         }
-        super.paintBorder(g);
+        //super.paintBorder(g);
     }
 
 

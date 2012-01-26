@@ -153,7 +153,7 @@ public class CommandExecutor {
     private String setMaxPanelHeight(String param1) {
         try {
             Integer h = Integer.parseInt(param1.trim());
-            SnapshotUtilities.MAX_PANEL_HEIGHT = h;
+            SnapshotUtilities.setMaxPanelHeight(h);
             return "OK";
         } catch (NumberFormatException e) {
             return "ERROR - max panel height value ('" + param1 + ".) must be a number";

@@ -516,21 +516,21 @@ public class MainPanel extends JPanel implements Paintable {
 
     public void paintOffscreen(Graphics2D g, Rectangle rect) {
 
-        g.setColor(Color.lightGray);
-        g.fill(rect);
+//        g.setColor(Color.lightGray);
+//        g.fill(rect);
 
 
         // Header
         int width = applicationHeaderPanel.getWidth();
         int height = applicationHeaderPanel.getHeight();
 
+        Graphics2D headerGraphics =  (Graphics2D) g.create();
         Rectangle headerRect = new Rectangle(0, 0, width, height);
-        applicationHeaderPanel.paintOffscreen(g, headerRect);
+        applicationHeaderPanel.paintOffscreen(headerGraphics, headerRect);
+        headerGraphics.dispose();
 
         // Now loop through track panel
         Rectangle r = centerSplitPane.getBounds();
-
-
         g.translate(0, r.y);
 
         // Get the components of the center pane and sort by Y position.
@@ -556,8 +556,7 @@ public class MainPanel extends JPanel implements Paintable {
                     continue;
                 }
 
-                int maxPanelHeight = SnapshotUtilities.MAX_PANEL_HEIGHT;
-                int panelHeight = Math.min(maxPanelHeight, Math.max(tsp.getVisibleRect().height, tsp.getDataPanel().getHeight()));
+                int panelHeight = getOffscreenImagePanelHeight(tsp);
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
                 tspRect.height = panelHeight;
@@ -577,10 +576,16 @@ public class MainPanel extends JPanel implements Paintable {
 
         }
 
-        super.paintBorder(g);
+        //super.paintBorder(g);
 
     }
 
+    /**
+     * Return the image height required to paint this component with current options.  This is used to size bitmap
+     * images for offscreen drawing.
+     *
+     * @return
+     */
     public int getOffscreenImageHeight() {
         int height = centerSplitPane.getBounds().y;
         for (Component c : centerSplitPane.getComponents()) {
@@ -589,8 +594,7 @@ public class MainPanel extends JPanel implements Paintable {
 
                 TrackPanelScrollPane tsp = (TrackPanelScrollPane) c;
 
-                int maxPanelHeight = SnapshotUtilities.MAX_PANEL_HEIGHT;
-                int panelHeight = Math.min(maxPanelHeight, Math.max(tsp.getVisibleRect().height, tsp.getDataPanel().getHeight()));
+                int panelHeight = getOffscreenImagePanelHeight(tsp);
 
                 Rectangle tspRect = new Rectangle(tsp.getBounds());
                 tspRect.height = panelHeight;
@@ -606,6 +610,18 @@ public class MainPanel extends JPanel implements Paintable {
         height += 35;
         return height;
 
+    }
+
+    private int getOffscreenImagePanelHeight(TrackPanelScrollPane tsp) {
+        int panelHeight;
+        int maxPanelHeight = SnapshotUtilities.getMaxPanelHeight();
+        final int visibleHeight = tsp.getVisibleRect().height;
+        if (maxPanelHeight < 0) {
+            panelHeight = visibleHeight;
+        } else {
+            panelHeight = Math.min(maxPanelHeight, Math.max(visibleHeight, tsp.getDataPanel().getHeight()));
+        }
+        return panelHeight;
     }
 
 

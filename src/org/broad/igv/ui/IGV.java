@@ -936,17 +936,17 @@ public class IGV {
 
         log.debug("Creating snapshot: " + file.getName());
 
-        String extension = SnapshotUtilities.getFileExtension(file.getAbsolutePath());
+        String extension = FileUtils.getFileExtension(file.getAbsolutePath());
 
-        SnapshotFileType type = SnapshotUtilities.getSnapshotFileType(extension);
+        SnapshotFileChooser.SnapshotFileType type = SnapshotFileChooser.getSnapshotFileType(extension);
 
         // If valid extension
-        if (type != SnapshotFileType.NULL) {
+        if (type != SnapshotFileChooser.SnapshotFileType.NULL) {
 
             boolean doubleBuffered = RepaintManager.currentManager(contentPane).isDoubleBufferingEnabled();
             try {
                 setExportingSnapshot(true);
-                doComponentSnapshot(target, file, type);
+                SnapshotUtilities.doComponentSnapshot(target, file, type);
 
             } finally {
                 setExportingSnapshot(false);

@@ -83,9 +83,9 @@ public class FileChooserDialog extends javax.swing.JDialog {
                     }
 
                     Object filter = e.getNewValue();
-                    if (filter instanceof SnapshotUtilities.SnapshotFileFilter) {
-                        SnapshotUtilities.SnapshotFileFilter snapshotFilter =
-                                (SnapshotUtilities.SnapshotFileFilter) filter;
+                    if (filter instanceof SnapshotFileChooser.SnapshotFileFilter) {
+                        SnapshotFileChooser.SnapshotFileFilter snapshotFilter =
+                                (SnapshotFileChooser.SnapshotFileFilter) filter;
 
                         File newFile = changeFileExtension(selectedFile, snapshotFilter.getExtension());
                         fileChooser.setSelectedFile(newFile);

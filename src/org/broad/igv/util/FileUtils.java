@@ -519,6 +519,14 @@ public class FileUtils {
 //        searchAndReplace(inputDirectory, outputDirectory, args[2], args[3]);
 //    }
 
+    public static String getFileExtension(String filePath) {
+        String extension = null;
+        int indexOfExtension = filePath.lastIndexOf(".");
+        if (indexOfExtension >= 0) {
+            extension = filePath.substring(indexOfExtension, filePath.length());
+        }
+        return extension;
+    }
 }
 
 

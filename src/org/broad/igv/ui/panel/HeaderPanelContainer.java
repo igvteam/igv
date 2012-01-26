@@ -36,7 +36,7 @@ import java.util.*;
  * @author jrobinso
  * @date Sep 10, 2010
  */
-public class HeaderPanelContainer extends JPanel {
+public class HeaderPanelContainer extends JPanel implements Paintable {
 
     private Collection<ReferenceFrame> frames = new ArrayList();
 
@@ -96,6 +96,9 @@ public class HeaderPanelContainer extends JPanel {
         invalidate();
     }
 
+    public void paintOffscreen(Graphics2D g, Rectangle rect) {
+       paint(g);
+    }
 }
 
 
