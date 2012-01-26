@@ -2,10 +2,12 @@ package org.broad.igv.sam;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Strand;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.collections.IntArrayList;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.util.HashMap;
@@ -24,14 +26,87 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
     private static char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     private static Map<String, Set<Integer>> knownSnps;
 
-    public BaseAlignmentCounts() {
+    private IntArrayList cgPositions;
+    private IntArrayList cgMethylCounts;
+    private IntArrayList cgUnmethylCounts;
+    int start;
+    int end;
+
+    public BaseAlignmentCounts(int start, int end) {
         final PreferenceManager prefs = PreferenceManager.getInstance();
-         String snpsFile = prefs.get(PreferenceManager.KNOWN_SNPS, null);
+        String snpsFile = prefs.get(PreferenceManager.KNOWN_SNPS, null);
         if (snpsFile != null && knownSnps == null) {
             loadKnownSnps(snpsFile);
         }
+        this.start = start;
+        this.end = end;
     }
 
+
+    public int getStart() {
+        return start;
+    }
+
+
+    public int getEnd() {
+        return end;
+    }
+
+    /**
+     * Increment the counts for this alignment.   Does not consider softclips.
+     *
+     * @param alignment
+     */
+    public void incCounts(Alignment alignment) {
+        int alignmentStart = alignment.getAlignmentStart();
+        int alignmentEnd = alignment.getAlignmentEnd();
+
+        AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
+        if (blocks != null) {
+            int lastBlockEnd = -1;
+            int gapIdx = 0;
+            char[] gapTypes = alignment.getGapTypes();
+
+            for (AlignmentBlock b : blocks) {
+                if (b.getEnd() < start) continue;
+                if (b.getStart() > end) break;
+
+                //Strand strand = alignment.getFirstOfPairStrand();
+                Strand strand = alignment.getReadStrand();
+
+                // Don't count softclips
+                if (!b.isSoftClipped() && strand != Strand.NONE) {
+                    incBlockCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
+
+                    // Count deletions
+                    if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&
+                            gapTypes[gapIdx] == SamAlignment.DELETION) {
+                        for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
+                            incrementDeletion(pos);
+                        }
+                        gapIdx++;
+                    }
+                    lastBlockEnd = b.getEnd();
+                }
+            }
+            // Count insertions
+            final AlignmentBlock[] insertions = alignment.getInsertions();
+            if (insertions != null) {
+                for (AlignmentBlock insBlock : insertions) {
+                    if (insBlock.getEnd() < start) continue;
+                    if (insBlock.getStart() > end) break;
+
+                    incrementInsertion(insBlock);
+                }
+            }
+        } else {
+            // No alignment blocks => no bases (e.g. .aln or .aligned files).  Just do total count.
+            for (int pos = alignmentStart; pos < alignmentEnd; pos++) {
+                byte q = 0;
+                incPositionCount(pos, (byte) 'n', q, alignment.isNegativeStrand());
+            }
+        }
+    }
 
     public String getValueStringAt(int pos) {
 
@@ -120,6 +195,15 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
 
     }
+
+
+    protected abstract void incPositionCount(int pos, byte n, byte q, boolean negativeStrand);
+
+    protected abstract void incrementInsertion(AlignmentBlock insBlock);
+
+    protected abstract void incrementDeletion(int pos);
+
+    protected abstract void incBlockCounts(AlignmentBlock b, boolean b1);
 
 
 }

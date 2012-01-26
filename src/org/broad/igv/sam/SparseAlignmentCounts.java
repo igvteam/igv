@@ -48,8 +48,7 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     public SparseAlignmentCounts(int start, int end) {
 
-        this.start = start;
-        this.end = end;
+        super(start, end);
 
         indexMap = new HashMap<Integer, Integer>(1000);
         posA = new IntArrayList(1000);
@@ -299,73 +298,23 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     }
 
 
-    /**
-     * Increment the counts for this alignment.   Does not consider softclips.
-     *
-     * @param alignment
-     */
-    public void incCounts(Alignment alignment) {
-        int alignmentStart = alignment.getAlignmentStart();
-        int alignmentEnd = alignment.getAlignmentEnd();
+    protected void incrementDeletion(int pos) {
+        int idx = getIndex(pos);
+        increment(del, idx, 1);
+    }
 
-        AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-        if (blocks != null) {
-            int lastBlockEnd = -1;
-            int gapIdx = 0;
-            char[] gapTypes = alignment.getGapTypes();
-
-            for (AlignmentBlock b : blocks) {
-                if (b.getEnd() < start) continue;
-                if (b.getStart() > end) break;
-
-                //Strand strand = alignment.getFirstOfPairStrand();
-                Strand strand = alignment.getReadStrand();
-
-                // Don't count softclips
-                if (!b.isSoftClipped() && strand != Strand.NONE) {
-                    incCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
-                    incCounts(b, alignment.isNegativeStrand());
-
-                    // Count deletions
-                    if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&
-                            gapTypes[gapIdx] == SamAlignment.DELETION) {
-                        for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
-                            int idx = getIndex(pos);
-                            increment(del, idx, 1);
-                            gapIdx++;
-                        }
-                        lastBlockEnd = b.getEnd();
-                    }
-                }
-                // Count insertions
-                final AlignmentBlock[] insertions = alignment.getInsertions();
-                if (insertions != null) {
-                    for (AlignmentBlock insBlock : insertions) {
-                        if (insBlock.getEnd() < start) continue;
-                        if (insBlock.getStart() > end) break;
-
-                        int pos = insBlock.getStart();
-                        int idx1 = getIndex(pos);
-                        // Insertions are between bases.  increment count on either side
-                        increment(ins, idx1, 1);
-                        if (pos > 0) {
-                            int idx2 = getIndex(pos - 1);
-                            increment(ins, idx2, 1);
-                        }
-
-                    }
-                } else {
-                    // No alignment blocks => no bases (e.g. .aln or .aligned files).  Just do total count.
-                    for (int pos = alignmentStart; pos < alignmentEnd; pos++) {
-                        byte q = 0;
-                        incCount(pos, (byte) 'n', q, alignment.isNegativeStrand());
-                    }
-                }
-            }
+    protected void incrementInsertion(AlignmentBlock insBlock) {
+        int pos = insBlock.getStart();
+        int idx1 = getIndex(pos);
+        // Insertions are between bases.  increment count on either side
+        increment(ins, idx1, 1);
+        if (pos > 0) {
+            int idx2 = getIndex(pos - 1);
+            increment(ins, idx2, 1);
         }
     }
 
-    private void incCounts(AlignmentBlock block, boolean isNegativeStrand) {
+    protected void incBlockCounts(AlignmentBlock block, boolean isNegativeStrand) {
         int start = block.getStart();
         byte[] bases = block.getBases();
         if (bases != null) {
@@ -375,13 +324,13 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
                 byte q = block.qualities[i];
                 // TODO -- handle "=" in cigar string with no read bases
                 byte n = bases[i];
-                incCount(pos, n, q, isNegativeStrand);
+                incPositionCount(pos, n, q, isNegativeStrand);
             }
         }
     }
 
 
-    private void incCount(int pos, byte b, byte q, boolean isNegativeStrand) {
+    protected void incPositionCount(int pos, byte b, byte q, boolean isNegativeStrand) {
 
         int idx = getIndex(pos);
         switch (b) {

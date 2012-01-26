@@ -29,9 +29,6 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
     private static Logger log = Logger.getLogger(DenseAlignmentCounts.class);
 
-    int start;
-    int end;
-
     // counts
     int[] posA;
     int[] posT;
@@ -57,9 +54,7 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
 
     public DenseAlignmentCounts(int start, int end) {
-
-        this.start = start;
-        this.end = end;
+        super(start, end);
 
         int nPts = end - start;
         posA = new int[nPts];
@@ -303,74 +298,27 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
     }
 
 
-    /**
-     * Increment the counts for this alignment.   Does not consider softclips.
-     *
-     * @param alignment
-     */
-    public void incCounts(Alignment alignment) {
-        int alignmentStart = alignment.getAlignmentStart();
-        int alignmentEnd = alignment.getAlignmentEnd();
+    protected void incrementDeletion(int pos) {
+        int offset = pos - start;
+        if (offset >= 0 && offset < del.length)
+            del[offset] = del[offset] + 1;
+    }
 
-        AlignmentBlock[] blocks = alignment.getAlignmentBlocks();
-        if (blocks != null) {
-            int lastBlockEnd = -1;
-            int gapIdx = 0;
-            char[] gapTypes = alignment.getGapTypes();
-
-            for (AlignmentBlock b : blocks) {
-                if (b.getEnd() < start) continue;
-                if (b.getStart() > end) break;
-
-                //Strand strand = alignment.getFirstOfPairStrand();
-                 Strand strand = alignment.getReadStrand();
-                // Don't count softclips
-                if (!b.isSoftClipped() && strand != Strand.NONE) {
-                    incCounts(b, strand == Strand.NEGATIVE); //alignment.isNegativeStrand());
-
-                    // Count deletions
-                    if (gapTypes != null && lastBlockEnd >= 0 && gapIdx < gapTypes.length &&
-                            gapTypes[gapIdx] == SamAlignment.DELETION) {
-                        for (int pos = lastBlockEnd; pos < b.getStart(); pos++) {
-                            int offset = pos - start;
-                            if (offset >= 0 && offset < del.length)
-                                del[offset] = del[offset] + 1;
-                        }
-                        gapIdx++;
-                    }
-                    lastBlockEnd = b.getEnd();
-                }
-            }
-            // Count insertions
-            final AlignmentBlock[] insertions = alignment.getInsertions();
-            if (insertions != null) {
-                for (AlignmentBlock insBlock : insertions) {
-                    if (insBlock.getEnd() < start) continue;
-                    if (insBlock.getStart() > end) break;
-
-                    int pos = insBlock.getStart();
-                    int offset = pos - start;
-                    // Insertions are between bases.  increment count on either side
-                    if (offset >= 0 && offset < ins.length) {
-                        ins[offset] = ins[offset] + 1;
-                        offset--;
-                        if (offset >= 0) {
-                            ins[offset] = ins[offset] + 1;
-                        }
-                    }
-                }
-            }
-        } else {
-            // No alignment blocks => no bases (e.g. .aln or .aligned files).  Just do total count.
-            for (int pos = alignmentStart; pos < alignmentEnd; pos++) {
-                byte q = 0;
-                incCount(pos, (byte) 'n', q, alignment.isNegativeStrand());
+    protected void incrementInsertion(AlignmentBlock insBlock) {
+        int pos = insBlock.getStart();
+        int offset = pos - start;
+        // Insertions are between bases.  increment count on either side
+        if (offset >= 0 && offset < ins.length) {
+            ins[offset] = ins[offset] + 1;
+            offset--;
+            if (offset >= 0) {
+                ins[offset] = ins[offset] + 1;
             }
         }
     }
 
 
-    private void incCounts(AlignmentBlock block, boolean isNegativeStrand) {
+    protected void incBlockCounts(AlignmentBlock block, boolean isNegativeStrand) {
         int start = block.getStart();
         byte[] bases = block.getBases();
         if (bases != null) {
@@ -380,12 +328,12 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
                 byte q = block.qualities[i];
                 // TODO -- handle "=" in cigar string with no read bases
                 byte n = bases[i];
-                incCount(pos, n, q, isNegativeStrand);
+                incPositionCount(pos, n, q, isNegativeStrand);
             }
         }
     }
 
-    private void incCount(int pos, byte b, byte q, boolean isNegativeStrand) {
+    protected void incPositionCount(int pos, byte b, byte q, boolean isNegativeStrand) {
 
         int offset = pos - start;
         if (offset >= 0 && offset < posA.length) {
@@ -445,20 +393,6 @@ public class DenseAlignmentCounts extends BaseAlignmentCounts {
 
             maxCount = Math.max(posTotal[offset] + negTotal[offset], maxCount);
         }
-    }
-
-    /**
-     * @return the start
-     */
-    public int getStart() {
-        return start;
-    }
-
-    /**
-     * @return the end
-     */
-    public int getEnd() {
-        return end;
     }
 
 
