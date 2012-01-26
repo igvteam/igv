@@ -26,7 +26,6 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.VCFWrapperCodec;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFReader;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVUrlHelper;
@@ -93,7 +92,6 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
     }
 
     private void init() {
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (genome != null) {
             Collection<String> seqNames = reader.getSequenceNames();
             if (seqNames != null)

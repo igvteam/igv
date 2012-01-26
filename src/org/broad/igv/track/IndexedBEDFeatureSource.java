@@ -19,21 +19,24 @@
 package org.broad.igv.track;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BEDFileParser;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.ui.IGV;
-import org.broad.tribble.Feature;
 import org.broad.igv.sam.reader.FeatureIndex;
 import org.broad.igv.sam.reader.SamUtils;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.WaitCursorManager;
+import org.broad.tribble.Feature;
 
 import java.io.*;
 import java.util.*;
 
 /**
- * User: jrobinso
- * Date: Apr 21, 2010
+ * @deprecated User: jrobinso
+ *             Date: Apr 21, 2010
  */
+@Deprecated
 public class IndexedBEDFeatureSource implements FeatureSource {
 
     static Logger log = Logger.getLogger(IndexedBEDFeatureSource.class);
@@ -81,7 +84,7 @@ public class IndexedBEDFeatureSource implements FeatureSource {
     }
 
     public int getFeatureWindowSize() {
-        return 0;  
+        return 0;
     }
 
     public void setFeatureWindowSize(int size) {
@@ -116,9 +119,9 @@ public class IndexedBEDFeatureSource implements FeatureSource {
         if (featureIndex == null) {
             throw new UnsupportedOperationException("SAM files must be indexed to support query methods");
         }
-        
+
         String chrAlias = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
-        
+
         if (!featureIndex.containsChromosome(chrAlias)) {
             return features;
         }
@@ -156,8 +159,7 @@ public class IndexedBEDFeatureSource implements FeatureSource {
 
                 } catch (IOException ex) {
                     log.error("Error opening sam file", ex);
-                }
-                finally {
+                } finally {
                     if (is != null) {
                         try {
                             is.close();

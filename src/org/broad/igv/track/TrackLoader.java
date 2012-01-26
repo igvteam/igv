@@ -31,7 +31,10 @@ import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
-import org.broad.igv.dev.affective.*;
+import org.broad.igv.dev.affective.AffectiveAnnotationParser;
+import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
+import org.broad.igv.dev.affective.AffectiveDataSource;
+import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
@@ -85,17 +88,30 @@ public class TrackLoader {
 
     private IGV igv;
 
+
+    /**
+     * Calls {@linkplain TrackLoader#load(org.broad.igv.util.ResourceLocator, org.broad.igv.feature.genome.Genome)}
+     * with genome from IGV instance (if not null).
+     *
+     * @param locator
+     * @param igv
+     * @return
+     */
+    public List<Track> load(ResourceLocator locator, IGV igv) {
+        this.igv = igv;
+        Genome genome = igv != null ? igv.getGenomeManager().getCurrentGenome() : null;
+        return load(locator, genome);
+    }
+
     /**
      * Switches on various attributes of locator (mainly locator path extension and whether the locator is indexed)
      * to call the appropriate loading method.
      *
      * @param locator
+     * @param genome
      * @return
      */
-    public List<Track> load(ResourceLocator locator, IGV igv) {
-
-        this.igv = igv;
-        Genome genome = igv == null ? null : igv.getGenomeManager().getCurrentGenome();
+    public List<Track> load(ResourceLocator locator, Genome genome) {
 
         final String path = locator.getPath();
         try {
@@ -184,8 +200,8 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-            } else if (typeString.endsWith(".bedz")) {
-                loadIndexdBedFile(locator, newTracks, genome);
+                //} else if (typeString.endsWith(".bedz")) {
+                //    loadIndexedBedFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
@@ -397,7 +413,7 @@ public class TrackLoader {
     }
 
     /**
-     * Load the input file as a feature, muation, or maf (multiple alignment) file.
+     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
      *
      * @param locator
      * @param newTracks
@@ -429,12 +445,12 @@ public class TrackLoader {
     }
 
     /**
-     * Load the input file as a feature, muation, or maf (multiple alignment) file.
+     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
      *
      * @param locator
      * @param newTracks
      */
-    private void loadIndexdBedFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadIndexedBedFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         File featureFile = new File(locator.getPath());
         File indexFile = new File(locator.getPath() + ".sai");
@@ -735,7 +751,7 @@ public class TrackLoader {
         }
 
         if (type == TrackType.AFFECTIVE) {
-            AffectiveUtils.doAffectiveHacks(newTracks);
+            //AffectiveUtils.doAffectiveHacks(newTracks);
         }
 
     }

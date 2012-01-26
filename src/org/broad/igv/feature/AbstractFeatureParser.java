@@ -25,15 +25,17 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.Feature;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -75,7 +77,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         String tmp = getStrippedFilename(path);
 
         if (tmp.endsWith("bed") || tmp.endsWith("map")) {
-            return new BEDFileParser(genome);
+            return new FeatureCodecParser(new IGVBEDCodec(), genome);
+            //} else if (tmp.endsWith("map")){
+            //    return new BEDFileParser(genome);
         } else if (tmp.contains("refflat")) {
             return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.REFFLAT);
         } else if (tmp.contains("genepred") || tmp.contains("ensgene") || tmp.contains("refgene")) {
@@ -86,10 +90,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             return new GFFParser(path);
         } else if (tmp.endsWith("embl")) {
             return new EmblFeatureTableParser();
-        } else if(tmp.endsWith("psl")) {
+        } else if (tmp.endsWith("psl")) {
             return new PSLParser(genome);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -211,15 +214,14 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                             TrackProperties tp = new TrackProperties();
                             ParsingUtils.parseTrackLine(nextLine, tp);
                             setTrackProperties(tp);
-                            if(tp.isGffTags()) {
+                            if (tp.isGffTags()) {
                                 gffTags = true;
                             }
                         } else if (nextLine.startsWith("#coords")) {
                             try {
                                 String[] tokens = Globals.equalPattern.split(nextLine);
                                 startBase = Integer.parseInt(tokens[1]);
-                            }
-                            catch (Exception e) {
+                            } catch (Exception e) {
                                 log.error("Error parsing coords line: " + nextLine, e);
                             }
 
@@ -227,7 +229,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
                             gffTags = true;
                         }
                     } else {
-                        IGVFeature feature = parseLine(nextLine);
+                        Feature feature = parseLine(nextLine);
                         if (feature != null) {
                             features.add(feature);
                         }
@@ -258,12 +260,12 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         return features;
     }
 
-    protected void parsingComplete(List<IGVFeature> features) {
+    protected void parsingComplete(List<Feature> features) {
 
         // Default -- do nothing.
     }
 
-    abstract protected IGVFeature parseLine(String nextLine);
+    abstract protected Feature parseLine(String nextLine);
 
     protected static String getStrippedFilename(String filename) {
         String tmp = filename.toLowerCase();

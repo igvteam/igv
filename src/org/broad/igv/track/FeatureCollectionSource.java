@@ -21,7 +21,10 @@ package org.broad.igv.track;
 import org.broad.igv.Globals;
 import org.broad.igv.data.AbstractDataSource;
 import org.broad.igv.data.DataTile;
-import org.broad.igv.feature.*;
+import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.FeatureUtils;
+import org.broad.igv.feature.IGVFeature;
+import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
@@ -291,18 +294,18 @@ public class FeatureCollectionSource implements FeatureSource {
             float[] values = new float[nBins];
             Arrays.fill(values, 0);
 
-            Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
-            double step = ((double) currentGenome.getLength() / 1000) / nBins;
+
+            double step = ((double) genome.getLength() / 1000) / nBins;
             for (int i = 0; i < nBins; i++) {
                 starts[i] = (int) (i * step);
                 ends[i] = (int) ((i + 1) * step);
             }
 
 
-            for (String chr : currentGenome.getChromosomeNames()) {
+            for (String chr : genome.getChromosomeNames()) {
                 List<Feature> features = featureMap.get(chr);
                 if (features != null) {
-                    long offset = currentGenome.getCumulativeOffset(chr);
+                    long offset = genome.getCumulativeOffset(chr);
                     for (Feature f : features) {
                         int genStart = (int) ((offset + f.getStart()) / 1000);
                         int genEnd = (int) ((offset + f.getEnd()) / 1000);

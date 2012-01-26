@@ -30,6 +30,8 @@ import org.junit.Test;
 
 import java.io.File;
 
+import static junit.framework.Assert.assertTrue;
+
 /**
  * @author jrobinso
  */
@@ -54,7 +56,7 @@ public class SamIndexTest {
     @Test
     public void testGetIndexedChromosomes() {
         FeatureIndex idx = new FeatureIndex(f);
-        System.out.println(idx.getTileWidth());
+        assertTrue(idx.getIndexedChromosomes().size() > 0);
     }
 
     /**
