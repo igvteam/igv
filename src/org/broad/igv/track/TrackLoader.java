@@ -200,8 +200,8 @@ public class TrackLoader {
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
                     typeString.endsWith(".bai")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
-                //} else if (typeString.endsWith(".bedz")) {
-                //    loadIndexedBedFile(locator, newTracks, genome);
+            } else if (typeString.endsWith(".bedz")) {
+                loadIndexedBedzFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".wig") || (typeString.endsWith(".bedgraph")) ||
                     typeString.endsWith("cpg.txt") || typeString.endsWith(".expr")) {
                 loadWigFile(locator, newTracks, genome);
@@ -450,7 +450,7 @@ public class TrackLoader {
      * @param locator
      * @param newTracks
      */
-    private void loadIndexedBedFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+    private void loadIndexedBedzFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         File featureFile = new File(locator.getPath());
         File indexFile = new File(locator.getPath() + ".sai");
