@@ -23,7 +23,7 @@ public class TrackLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        TestUtils.setUpTestEnv();
+        TestUtils.setUpHeadless();
         trackLoader = new TrackLoader();
     }
 

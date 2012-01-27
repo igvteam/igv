@@ -21,8 +21,11 @@ package org.broad.igv.util;
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.Main;
 import org.broad.tribble.util.ftp.FTPClient;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -44,11 +47,17 @@ public class TestUtils {
 //
 //    }
 
-    public static void setUpTestEnv() {
+    public static void setUpHeadless() {
         Globals.setHeadless(true);
         Globals.READ_TIMEOUT = 30 * 1000;
         Globals.CONNECT_TIMEOUT = 30 * 1000;
         FTPClient.READ_TIMEOUT = 30 * 1000;
+    }
+
+    public static IGV startGUI() {
+        JFrame frame = new JFrame();
+        Main.open(frame);
+        return IGV.getInstance();
     }
 
     /**

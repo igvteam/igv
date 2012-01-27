@@ -49,7 +49,7 @@ public class BAMHttpQueryReaderTest {
     public static void setUpClass() throws Exception {
         //CachingQueryReader reader = new CachingQueryReader(new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true));
         //System.out.println("Index loaded");
-        TestUtils.setUpTestEnv();
+        TestUtils.setUpHeadless();
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
     }
 
