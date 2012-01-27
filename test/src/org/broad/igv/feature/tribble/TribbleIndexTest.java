@@ -20,6 +20,9 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.tools.IgvTools;
+import org.broad.igv.track.Track;
+import org.broad.igv.ui.IGV;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
@@ -27,6 +30,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -94,18 +98,18 @@ public class TribbleIndexTest {
 
     @Test
     public void testReadSingleVCF() throws Exception {
-        String bedFile = TestUtils.DATA_DIR + "/vcf/indel_variants_onerow.vcf";
+        String file = TestUtils.DATA_DIR + "/vcf/indel_variants_onerow.vcf";
         String chr = "chr9";
         // Linear index
-        File indexFile = new File(bedFile + ".idx");
+        File indexFile = new File(file + ".idx");
         if (indexFile.exists()) {
             indexFile.delete();
         }
-        igvTools.doIndex(bedFile, IgvTools.LINEAR_INDEX, 1000);
+        igvTools.doIndex(file, IgvTools.LINEAR_INDEX, 1000);
         indexFile.deleteOnExit();
 
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new VCFCodec());
+        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
         Iterator<org.broadinstitute.sting.utils.variantcontext.VariantContext> iter = bfr.query(chr, 5073767 - 5, 5073767 + 5);
         int count = 0;
         while (iter.hasNext()) {
@@ -117,6 +121,42 @@ public class TribbleIndexTest {
         }
         assertEquals(1, count);
 
+        //Do similar as above, but have a different test file
+        file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
+        chr = "AE005174v2-2";
+        // Linear index
+        indexFile = new File(file + ".idx");
+        if (indexFile.exists()) {
+            indexFile.delete();
+        }
+        igvTools.doIndex(file, IgvTools.LINEAR_INDEX, 1000);
+        indexFile.deleteOnExit();
+
+
+        bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
+        iter = bfr.query(chr, 984163 - 5, 984163 + 5);
+        count = 0;
+        while (iter.hasNext()) {
+            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            assertEquals(chr, feat.getChr());
+            if (count == 0) {
+                assertEquals(984163, feat.getStart());
+            }
+            count++;
+        }
+        assertEquals(1, count);
+
+    }
+
+    @Test
+    public void testReadVCFGui() throws Exception {
+        IGV igv = TestUtils.startGUI();
+
+        ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf");
+        //For files with 1 record, this threw a null pointer exception prior to r1595
+        List<Track> tracks = igv.load(locator);
+
+        assertEquals(1, tracks.size());
     }
 
 }
