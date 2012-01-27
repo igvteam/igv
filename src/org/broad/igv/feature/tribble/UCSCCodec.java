@@ -54,7 +54,7 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
                     line.startsWith("browser")) {
                 readHeaderLine(line);
             }
-            return decode(line);
+            return header;
         } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
