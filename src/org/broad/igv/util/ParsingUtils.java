@@ -229,89 +229,29 @@ public class ParsingUtils {
     }
 
     /**
-     * Split the string into tokesn separated by the given delimiter.  Profiling has
-     * revealed that the standard string.split() method typically takes > 1/2
-     * the total time when used for parsing ascii files.
+     * Helper to call through to Tribble ParsingUtils
      *
      * @param aString the string to split
      * @param tokens  an array to hold the parsed tokens
      * @param delim   character that delimits tokens
      * @return the number of tokens parsed
+     * @see org.broad.tribble.util.ParsingUtils
      */
+
     public static int split(String aString, String[] tokens, char delim) {
-
-        int maxTokens = tokens.length;
-        int nTokens = 0;
-        int start = 0;
-        int end = aString.indexOf(delim);
-        if (end == 0) {
-            if (aString.length() > 1) {
-                start = 1;
-                end = aString.indexOf(delim, start);
-            } else {
-                return 0;
-            }
-        }
-        if (end < 0) {
-            tokens[nTokens++] = aString;
-            return nTokens;
-        }
-        while ((end > 0) && (nTokens < maxTokens)) {
-            //tokens[nTokens++] = new String(aString.toCharArray(), start, end-start); //  aString.substring(start, end);
-            tokens[nTokens++] = aString.substring(start, end);
-            start = end + 1;
-            end = aString.indexOf(delim, start);
-
-        }
-
-        // Add the trailing string 
-        if (nTokens < maxTokens) {
-            String trailingString = aString.substring(start);
-            tokens[nTokens++] = trailingString;
-        }
-        return nTokens;
+        return org.broad.tribble.util.ParsingUtils.split(aString, tokens, delim);
     }
 
     /**
-     * Split the string into tokesn separated by tab or space(s).  This method
-     * was added so support wig and bed files, which apparently accept space delimieters.
-     * <p/>
-     * Note:  TODO REGEX expressions are not used for speed.  This should be re-evaluated with JDK 1.5 or later
+     * Helper to call through to Tribble ParsingUtils
      *
      * @param aString the string to split
      * @param tokens  an array to hold the parsed tokens
      * @return the number of tokens parsed
+     * @see org.broad.tribble.util.ParsingUtils
      */
     public static int splitWhitespace(String aString, String[] tokens) {
-
-        int maxTokens = tokens.length;
-        int nTokens = 0;
-        int start = 0;
-        int tabEnd = aString.indexOf('\t');
-        int spaceEnd = aString.indexOf(' ');
-        int end = tabEnd < 0 ? spaceEnd : spaceEnd < 0 ? tabEnd : Math.min(spaceEnd, tabEnd);
-        while ((end > 0) && (nTokens < maxTokens)) {
-            //tokens[nTokens++] = new String(aString.toCharArray(), start, end-start); //  aString.substring(start, end);
-            tokens[nTokens++] = aString.substring(start, end);
-
-            start = end + 1;
-            // Gobble up any whitespace before next token -- don't gobble tabs, consecutive tabs => empty cell
-            while (start < aString.length() && aString.charAt(start) == ' ') {
-                start++;
-            }
-
-            tabEnd = aString.indexOf('\t', start);
-            spaceEnd = aString.indexOf(' ', start);
-            end = tabEnd < 0 ? spaceEnd : spaceEnd < 0 ? tabEnd : Math.min(spaceEnd, tabEnd);
-
-        }
-
-        // Add the trailing string
-        if (nTokens < maxTokens) {
-            String trailingString = aString.substring(start).trim();
-            tokens[nTokens++] = trailingString;
-        }
-        return nTokens;
+        return org.broad.tribble.util.ParsingUtils.splitWhitespace(aString, tokens);
     }
 
     /**
@@ -416,7 +356,7 @@ public class ParsingUtils {
                                 int defIDX = (maxDefMin.length == 2 ? 0 : 1);
                                 trackProperties.setHeight(Integer.parseInt(maxDefMin[defIDX].trim()));
                                 trackProperties.setMinHeight(Integer.parseInt(maxDefMin[defIDX + 1].trim()));
-                            }  else {
+                            } else {
                                 // Single value
                                 trackProperties.setHeight(Integer.parseInt(value));
                             }
@@ -527,8 +467,8 @@ public class ParsingUtils {
                                 trackProperties.setDisplayMode(Track.DisplayMode.SQUISHED);
                             }
                         } else if (key.equals("genome") || key.equals("db")) {
-                             trackProperties.setGenome(value);
-                        }   else if(key.equals("bigdataurl") || key.equals("dataurl")) {
+                            trackProperties.setGenome(value);
+                        } else if (key.equals("bigdataurl") || key.equals("dataurl")) {
                             trackProperties.setDataURL(value);
                         }
                     }
