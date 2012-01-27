@@ -77,23 +77,21 @@ public class FeatureUtilsTest {
 
     @Test
     public void testFeatureLookupInSmallVCF() throws IOException {
-        String vcfFile = TestUtils.DATA_DIR + "/vcf/example4-last-gsnap-2.vcf.gz";
+        String vcfFile = TestUtils.DATA_DIR + "/vcf/example4-last-gsnap-2_fixed.vcf";
         FeatureCodec codec = CodecFactory.getCodec(vcfFile);
         boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
         BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);
         CloseableTribbleIterator it = basicReader.iterator();
         List<VCFVariant> features = new ArrayList<VCFVariant>();
-        System.out.println("Showing all variants:");
         while (it.hasNext()) {
             VCFVariant next = (VCFVariant) it.next();
             features.add(next);
-            System.out.println(next);
         }
-        System.out.println("Now looking up closest to..");
+        //System.out.println("Now looking up closest to..");
         VCFVariant a_6321739 = (VCFVariant) FeatureUtils.getFeatureClosest(6321739d, features);
         VCFVariant a_6321740 = (VCFVariant) FeatureUtils.getFeatureClosest(6321740d, features);
-        System.out.println(a_6321739);
-        System.out.println(a_6321739);
+        //System.out.println(a_6321739);
+        //System.out.println(a_6321739);
         assertEquals("variant closest to 6321739 must be found with position=6321739", 6321739, a_6321739.getStart());
         assertEquals("variant closest to 6321740 must be found with position=6321740", 6321740, a_6321740.getStart());
 
