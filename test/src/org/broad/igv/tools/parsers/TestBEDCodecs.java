@@ -30,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Iterator;
 
 import static junit.framework.Assert.assertEquals;
@@ -102,12 +101,7 @@ public class TestBEDCodecs {
         String bedFile = TestUtils.DATA_DIR + "/bed/intervalTest.bed";
 
         // Interval index
-        File indexFile = new File(bedFile + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
-        indexFile.deleteOnExit();
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
 
         BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, codec);
         Iterator<Feature> iter = bfr.query("chr1", 0, Integer.MAX_VALUE);
@@ -132,12 +126,7 @@ public class TestBEDCodecs {
         }
 
         // Interval index
-        File indexFile = new File(bedFile + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
-        indexFile.deleteOnExit();
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
 
 
         String chr = "chr2";

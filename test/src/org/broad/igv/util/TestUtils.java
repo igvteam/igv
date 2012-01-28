@@ -54,10 +54,39 @@ public class TestUtils {
         FTPClient.READ_TIMEOUT = 30 * 1000;
     }
 
-    public static IGV startGUI() {
+    public static IGV startGUI() throws IOException {
         JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Main.open(frame);
         return IGV.getInstance();
+    }
+
+    /**
+     * See TestUtils.createIndex(file, indexType, binSize)
+     *
+     * @param file
+     * @throws IOException
+     */
+    public static void createIndex(String file) throws IOException {
+        createIndex(file, IgvTools.LINEAR_INDEX, 1000);
+    }
+
+    /**
+     * Destroys index file if it exists, and creates new one under
+     * the specified parameters
+     *
+     * @param file
+     * @param indexType
+     * @param binSize
+     * @throws IOException
+     */
+    public static void createIndex(String file, int indexType, int binSize) throws IOException {
+        File indexFile = new File(file + ".idx");
+        if (indexFile.exists()) {
+            indexFile.delete();
+        }
+        (new IgvTools()).doIndex(file, indexType, binSize);
+        indexFile.deleteOnExit();
     }
 
     /**

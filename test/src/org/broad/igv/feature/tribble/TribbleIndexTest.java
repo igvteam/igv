@@ -28,7 +28,6 @@ import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,13 +55,7 @@ public class TribbleIndexTest {
         int expectedCount = 3;
 
         // Linear index
-        File indexFile = new File(bedFile + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(bedFile, IgvTools.LINEAR_INDEX, 1000);
-        indexFile.deleteOnExit();
-
+        TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 1000);
 
         BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
@@ -74,12 +67,7 @@ public class TribbleIndexTest {
 
 
         // Interval index
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(bedFile, IgvTools.INTERVAL_INDEX, 5);
-        indexFile.deleteOnExit();
-
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 5);
 
         bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
         iter = bfr.query(chr, start, end);
@@ -101,12 +89,7 @@ public class TribbleIndexTest {
         String file = TestUtils.DATA_DIR + "/vcf/indel_variants_onerow.vcf";
         String chr = "chr9";
         // Linear index
-        File indexFile = new File(file + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(file, IgvTools.LINEAR_INDEX, 1000);
-        indexFile.deleteOnExit();
+        TestUtils.createIndex(file);
 
 
         BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
@@ -125,13 +108,7 @@ public class TribbleIndexTest {
         file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
         chr = "AE005174v2-2";
         // Linear index
-        indexFile = new File(file + ".idx");
-        if (indexFile.exists()) {
-            indexFile.delete();
-        }
-        igvTools.doIndex(file, IgvTools.LINEAR_INDEX, 1000);
-        indexFile.deleteOnExit();
-
+        TestUtils.createIndex(file);
 
         bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
         iter = bfr.query(chr, 984163 - 5, 984163 + 5);
@@ -148,15 +125,27 @@ public class TribbleIndexTest {
 
     }
 
-    @Test
+    //@Test
     public void testReadVCFGui() throws Exception {
         IGV igv = TestUtils.startGUI();
 
-        ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf");
+        String file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
+        TestUtils.createIndex(file);
+        ResourceLocator locator = new ResourceLocator(file);
         //For files with 1 record, this threw a null pointer exception prior to r1595
         List<Track> tracks = igv.load(locator);
 
         assertEquals(1, tracks.size());
+
+        //todo FIND a way to do this. We don't actually need/want to close IGV properly, just kill it
+        //Also this doesn't work
+        IGV.getMainFrame().setVisible(false);
+        IGV.getMainFrame().dispose();
+
+        //IGV.getRootPane().setVisible(false);
+        //IGV.getRootPane().dispatchEvent(new WindowEvent(IGV.getMainFrame(), WindowEvent.WINDOW_CLOSING));
+        //igv.doExitApplication();
+        System.out.println(IGV.getMainFrame());
     }
 
 }

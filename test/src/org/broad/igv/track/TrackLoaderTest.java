@@ -1,7 +1,6 @@
 package org.broad.igv.track;
 
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
@@ -30,10 +29,7 @@ public class TrackLoaderTest {
     @Test
     public void testLoadBEDIndexed() throws Exception {
         ResourceLocator locator = new ResourceLocator(TestUtils.DATA_DIR + "/bed/intervalTest.bed");
-        if (!TrackLoader.isIndexed(locator.getPath())) {
-            IgvTools igvTools = new IgvTools();
-            igvTools.doIndex(locator.getPath(), IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
-        }
+        TestUtils.createIndex(locator.getPath());
         Genome genome = TestUtils.loadGenome();
         List<Track> tracks = trackLoader.load(locator, genome);
         assertEquals(1, tracks.size());
