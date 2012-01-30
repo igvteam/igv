@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.tribble.IGVBEDCodec;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
@@ -35,6 +35,7 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileWriter;
@@ -56,7 +57,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     /* An object to collection track properties, if specified in the feature file. */
     protected TrackProperties trackProperties = null;
 
-    TrackType trackType;
+    //TrackType trackType;
     boolean gffTags = false;
 
     public AbstractFeatureParser(Genome genome) {
@@ -76,22 +77,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     public static FeatureParser getInstanceFor(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
 
-        if (tmp.endsWith("bed") || tmp.endsWith("map")) {
-            return new FeatureCodecParser(new IGVBEDCodec(), genome);
-            //} else if (tmp.endsWith("map")){
-            //    return new BEDFileParser(genome);
-        } else if (tmp.contains("refflat")) {
-            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.REFFLAT);
-        } else if (tmp.contains("genepred") || tmp.contains("ensgene") || tmp.contains("refgene")) {
-            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.GENEPRED);
-        } else if (tmp.contains("ucscgene")) {
-            return new UCSCGeneTableParser(genome, UCSCGeneTableParser.Type.UCSCGENE);
-        } else if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3") || tmp.endsWith("gvf")) {
+        if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3") || tmp.endsWith("gvf")) {
             return new GFFParser(path);
-        } else if (tmp.endsWith("embl")) {
-            return new EmblFeatureTableParser();
-        } else if (tmp.endsWith("psl")) {
-            return new PSLParser(genome);
+        }
+
+        FeatureCodec codec = CodecFactory.getCodec(tmp);
+        if (codec != null) {
+            return new FeatureCodecParser(codec, genome);
         } else {
             return null;
         }
@@ -123,7 +115,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         if (features.size() == 0) {
             //MessageUtils.showMessage("<html>Warning.  No features were found in " + locator.getPath() + ".<br>Track not loaded.");
         }
-        return loadTracks(features, locator, genome);
+        return loadTracks(features, locator, genome, trackProperties);
     }
 
     private List<FeatureTrack> loadTracks(List<Feature> features, ResourceLocator locator, Genome genome) {
@@ -131,12 +123,31 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         FeatureTrack track = new FeatureTrack(locator, source);
         track.setName(locator.getTrackName());
         track.setRendererClass(IGVFeatureRenderer.class);
-        //track.setMinimumHeight(35);
         track.setHeight(45);
-        //track.setRendererClass(GeneTrackRenderer.class);
-        if (trackType != null) {
-            track.setTrackType(trackType);
+
+        //Nothing writes to trackType as far as I can tell -Jacob S
+        //if (trackType != null) {
+        //    track.setTrackType(trackType);
+        //}
+        if (trackProperties != null) {
+            track.setProperties(trackProperties);
         }
+
+        List<FeatureTrack> tracks = new ArrayList();
+        tracks.add(track);
+        return tracks;
+    }
+
+    public static List<FeatureTrack> loadTracks(Iterable<Feature> features, ResourceLocator locator, Genome genome,
+                                                TrackProperties trackProperties) {
+
+
+        FeatureCollectionSource source = new FeatureCollectionSource(features, genome);
+        FeatureTrack track = new FeatureTrack(locator, source);
+        track.setName(locator.getTrackName());
+        track.setRendererClass(IGVFeatureRenderer.class);
+        track.setHeight(45);
+
         if (trackProperties != null) {
             track.setProperties(trackProperties);
         }

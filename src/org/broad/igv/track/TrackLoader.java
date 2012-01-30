@@ -41,6 +41,7 @@ import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.dranger.DRangerParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.feature.tribble.FeatureFileHeader;
 import org.broad.igv.goby.GobyAlignmentQueryReader;
 import org.broad.igv.goby.GobyCountArchiveDataSource;
@@ -67,6 +68,9 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
+import org.broad.tribble.Feature;
+import org.broad.tribble.FeatureCodec;
+import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.SeekableBufferedStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
@@ -429,9 +433,21 @@ public class TrackLoader {
             }
         }
 
-        FeatureParser featureParser = AbstractFeatureParser.getInstanceFor(locator, genome);
-        if (featureParser != null) {
-            List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
+        FeatureCodec codec = CodecFactory.getCodec(locator.getPath());
+        if (codec != null) {
+            BasicFeatureSource<Feature> bfs = BasicFeatureSource.getFeatureSource(locator.getPath(), codec, false);
+            Iterable<Feature> iter = bfs.iterator();
+            Object header = bfs.getHeader();
+            TrackProperties trackProperties = null;
+            try {
+                FeatureFileHeader ffHeader = (FeatureFileHeader) header;
+                if (ffHeader != null) {
+                    trackProperties = ffHeader.getTrackProperties();
+                }
+            } catch (ClassCastException e) {
+                //Header is some other type, just don't include it
+            }
+            List<FeatureTrack> tracks = AbstractFeatureParser.loadTracks(iter, locator, genome, trackProperties);
             newTracks.addAll(tracks);
         } else if (MutationParser.isMutationAnnotationFile(locator)) {
             this.loadMutFile(locator, newTracks, genome);
@@ -440,8 +456,6 @@ public class TrackLoader {
         } else if (locator.getPath().toLowerCase().contains(".maf")) {
             loadMAFTrack(locator, newTracks);
         }
-
-
     }
 
     /**

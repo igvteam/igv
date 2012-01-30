@@ -39,6 +39,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
     public UCSCGeneTableCodec(Genome genome, Type type) {
 
         this.genome = genome;
+        this.type = type;
         switch (type) {
             case REFFLAT:
                 break;
@@ -70,7 +71,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
      */
     public Feature decode(String line) {
 
-
+        line = line.replaceAll("\"", "");
         int tokenCount = ParsingUtils.split(line, tokens, '\t');
 
         if (tokenCount <= strandColumn) {
@@ -128,7 +129,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
      * @return true if potentialInput can be parsed, false otherwise
      */
     public boolean canDecode(String path) {
-        return  true;
+        return true;
     }
 
 

@@ -294,7 +294,7 @@ public class BasicFeature extends AbstractFeature {
                     exon = exons.get(exons.size() - 1 - exnum);
                 }
 
-                int exon_length = exon.getCdEnd() - exon.getCdStart();
+                int exon_length = exon.getCodingLength();
                 genomePosition = positive ? exon.getCdStart() : exon.getCdEnd() - 1;
                 current_exon_end += exon_length;
                 int incr = positive ? 1 : -1;

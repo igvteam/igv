@@ -50,7 +50,7 @@ public class FeatureCollectionSource implements FeatureSource {
 
     Genome genome;
 
-    public FeatureCollectionSource(List<Feature> allFeatures, Genome genome) {
+    public FeatureCollectionSource(Iterable<Feature> allFeatures, Genome genome) {
         this.genome = genome;
         initFeatures(allFeatures);
         coverageData = new CoverageDataSource(genome);
@@ -109,7 +109,7 @@ public class FeatureCollectionSource implements FeatureSource {
     }
 
 
-    private void initFeatures(List<Feature> allFeatures) {
+    private void initFeatures(Iterable<Feature> allFeatures) {
         // Separate features by chromosome
 
         featureMap = new HashMap();

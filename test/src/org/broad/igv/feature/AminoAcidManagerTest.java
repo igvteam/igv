@@ -48,6 +48,7 @@ public class AminoAcidManagerTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
         genome = TestUtils.loadGenome();
     }
 

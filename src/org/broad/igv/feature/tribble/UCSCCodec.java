@@ -83,7 +83,7 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
                     // log.error("Error converting track type: " + tokens[1]);
                 }
             }
-        } else if (line.startsWith("track")) {
+        } else if (line.startsWith("#track") || line.startsWith("track")) {
             TrackProperties tp = new TrackProperties();
             ParsingUtils.parseTrackLine(line, tp);
             header.setTrackProperties(tp);
