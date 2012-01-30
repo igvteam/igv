@@ -326,7 +326,7 @@ public class IGVSessionReader implements SessionReader {
                 }
                 if (ParsingUtils.pathExists(genomePath)) {
                     try {
-                        IGV.getInstance().loadGenome(genome, null);
+                        IGV.getInstance().loadGenome(genomePath, null);
                     } catch (IOException e) {
                         throw new RuntimeException("Error loading genome: " + genome);
                     }
