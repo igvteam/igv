@@ -43,6 +43,7 @@ public class SearchCommandTest {
     @BeforeClass
     public static void setUp() throws Exception {
         genome = TestUtils.loadGenome();
+        TestUtils.setUpHeadless();
     }
 
     @Test

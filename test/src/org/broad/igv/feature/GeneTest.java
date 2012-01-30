@@ -62,6 +62,7 @@ public class GeneTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
         genome = TestUtils.loadGenome();
         egfr = (BasicFeature) FeatureDB.getFeature("egfr");
         GTPBP6 = (BasicFeature) FeatureDB.getFeature("GTPBP6");

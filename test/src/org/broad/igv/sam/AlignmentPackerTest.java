@@ -49,6 +49,8 @@ public class AlignmentPackerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         Globals.setHeadless(true);
+        Globals.READ_TIMEOUT = 2 * 60 * 1000;
+        Globals.CONNECT_TIMEOUT = 2 * 60 * 1000;
     }
 
     @AfterClass

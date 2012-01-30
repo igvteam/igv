@@ -34,6 +34,8 @@ import java.io.IOException;
 public class FreqDataTest {
     @Before
     public void setUp() throws Exception {
+
+        TestUtils.setUpHeadless();
     }
 
     @After

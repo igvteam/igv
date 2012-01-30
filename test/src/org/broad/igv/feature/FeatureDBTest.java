@@ -45,8 +45,6 @@ public class FeatureDBTest {
     private static boolean reload = false;
     private static Genome genome;
 
-
-    //Not a unit test
     public static void main(String[] args) {
 
 
@@ -55,8 +53,8 @@ public class FeatureDBTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
         genome = TestUtils.loadGenome();
-
         reload = false;
     }
 

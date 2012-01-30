@@ -45,6 +45,7 @@ public class CoverageCounterTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
         genome = TestUtils.loadGenome();
         preferenceManager = PreferenceManager.getInstance();
         useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
