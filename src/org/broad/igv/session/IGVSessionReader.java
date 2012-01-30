@@ -54,7 +54,7 @@ import java.util.List;
 /**
  * Class to parse an IGV session file
  */
-public class IGVSessionReader  implements SessionReader  {
+public class IGVSessionReader implements SessionReader {
 
     private static Logger log = Logger.getLogger(IGVSessionReader.class);
     private static String INPUT_FILE_KEY = "INPUT_FILE_KEY";
@@ -319,11 +319,19 @@ public class IGVSessionReader  implements SessionReader  {
             String sessionPath = session.getPath();
             if (IGV.getInstance().getGenomeIds().contains(genome)) {
                 IGV.getInstance().selectGenomeFromList(genome);
-            } else if (ParsingUtils.pathExists(genome)) {
-                try {
-                    IGV.getInstance().loadGenome(genome, null);
-                } catch (IOException e) {
-                    throw new RuntimeException("Error loading genome: " + genome);
+            } else {
+                String genomePath = genome;
+                if (!ParsingUtils.pathExists(genomePath)) {
+                    genomePath = getAbsolutePath(genome, session.getPath());
+                }
+                if (ParsingUtils.pathExists(genomePath)) {
+                    try {
+                        IGV.getInstance().loadGenome(genome, null);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error loading genome: " + genome);
+                    }
+                } else {
+                    MessageUtils.showMessage("Warning: Could not locate genome: " + genome);
                 }
             }
             session.setPath(sessionPath);
@@ -435,7 +443,7 @@ public class IGVSessionReader  implements SessionReader  {
             processPanelLayout(session, (Element) element, additionalInformation);
         } else if (nodeName.equalsIgnoreCase(SessionElement.HIDDEN_ATTRIBUTES.getText())) {
             processHiddenAttributes(session, (Element) element, additionalInformation);
-        }  else if (nodeName.equalsIgnoreCase(SessionElement.VISIBLE_ATTRIBUTES.getText())) {
+        } else if (nodeName.equalsIgnoreCase(SessionElement.VISIBLE_ATTRIBUTES.getText())) {
             processVisibleAttributes(session, (Element) element, additionalInformation);
         }
 
@@ -509,7 +517,7 @@ public class IGVSessionReader  implements SessionReader  {
                         locator.getPath().endsWith(".sam");
 
 
-               // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
+                // Run synchronously if in batch mode or if there are no "track" elments, or if this is an alignment file
                 if (isAlignment || Globals.isBatch() || !hasTrackElments) {
                     synchronousLoads.add(runnable);
                 } else {
@@ -528,9 +536,8 @@ public class IGVSessionReader  implements SessionReader  {
             }
 
 
-
             // Now load data that must be loaded synchronously
-            for(Runnable runnable : synchronousLoads) {
+            for (Runnable runnable : synchronousLoads) {
                 runnable.run();
             }
 
@@ -565,39 +572,34 @@ public class IGVSessionReader  implements SessionReader  {
         String colorString = getAttribute(element, SessionAttribute.COLOR.getText());
 
         String relPathValue = getAttribute(element, SessionAttribute.RELATIVE_PATH.getText());
-        boolean relativePaths = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
+        boolean isRelativePath = ((relPathValue != null) && relPathValue.equalsIgnoreCase("true"));
         String serverURL = getAttribute(element, SessionAttribute.SERVER_URL.getText());
 
         // Older sessions used the "name" attribute for the path.
         String path = getAttribute(element, SessionAttribute.PATH.getText());
 
-        if(oldSession && name != null) {
+        if (oldSession && name != null) {
             path = name;
             int idx = name.lastIndexOf("/");
-            if(idx > 0 && idx + 1 < name.length()) {
+            if (idx > 0 && idx + 1 < name.length()) {
                 name = name.substring(idx + 1);
             }
         }
 
 
         ResourceLocator resourceLocator = new ResourceLocator(serverURL, path);
-        if (relativePaths) {
+        if (isRelativePath) {
             final String sessionPath = session.getPath();
-            if(sessionPath == null) {
+
+            String absolutePath;
+            if (sessionPath == null) {
                 log.error("Null session path -- this is not expected");
                 MessageUtils.showMessage("Unexpected error loading session: null session path");
                 return;
             }
-            if (FileUtils.isRemote(sessionPath)) {
-                int idx = sessionPath.lastIndexOf("/");
-                String basePath = sessionPath.substring(0, idx);
-                String resPath = basePath + "/" + path;
-                resourceLocator = new ResourceLocator(serverURL, resPath);
-            } else {
-                File parent = (relativePaths ? new File(sessionPath).getParentFile() : null);
-                File file = new File(parent, path);
-                resourceLocator = new ResourceLocator(serverURL, file.getAbsolutePath());
-            }
+            absolutePath = getAbsolutePath(path, sessionPath);
+            resourceLocator = new ResourceLocator(serverURL, absolutePath);
+
         }
 
 
@@ -648,6 +650,20 @@ public class IGVSessionReader  implements SessionReader  {
 
     }
 
+    private String getAbsolutePath(String path, String sessionPath) {
+        String absolutePath;
+        if (FileUtils.isRemote(sessionPath)) {
+            int idx = sessionPath.lastIndexOf("/");
+            String basePath = sessionPath.substring(0, idx);
+            absolutePath = basePath + "/" + path;
+        } else {
+            File parent = new File(sessionPath).getParentFile();
+            File file = new File(parent, path);
+            absolutePath = file.getAbsolutePath();
+        }
+        return absolutePath;
+    }
+
     private void processRegions(Session session, Element element, HashMap additionalInformation) {
 
         session.clearRegionsOfInterest();
@@ -694,7 +710,7 @@ public class IGVSessionReader  implements SessionReader  {
      * @param element
      * @param additionalInformation
      */
-        private void processVisibleAttributes(Session session, Element element, HashMap additionalInformation) {
+    private void processVisibleAttributes(Session session, Element element, HashMap additionalInformation) {
 
 //        session.clearRegionsOfInterest();
         NodeList elements = element.getChildNodes();
