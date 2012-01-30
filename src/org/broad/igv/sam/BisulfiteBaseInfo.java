@@ -25,9 +25,10 @@ public class BisulfiteBaseInfo {
     }
 
     // Constants
-    public static Color CYTOSINE_MISMATCH_COLOR = Color.orange; //Color.black;
-    public static Color NONCYTOSINE_MISMATCH_COLOR = Color.orange;
-    public static Color DEAMINATION_COLOR = new Color(139, 94, 60);
+    public static Color CYTOSINE_MISMATCH_COLOR = new Color(139, 94, 60); // Brown 
+    public static Color NONCYTOSINE_MISMATCH_COLOR = new Color(139, 94, 60); // Brown 
+    public static Color DEAMINATION_COLOR = new Color(139, 94, 60); // Brown 
+    // Color.BLACK; // Like to make this brown but it doesn't scale with quality // 
     public static Color METHYLATED_COLOR = Color.red;
     public static Color UNMETHYLATED_COLOR = Color.blue;
 
@@ -97,12 +98,16 @@ public class BisulfiteBaseInfo {
             switch (refbase) {
                 case 'T':
                 case 'A':
-                    if (!AlignmentUtils.compareBases(readbase, refbase)) out = NONCYTOSINE_MISMATCH_COLOR;
+                case 'G':
+                	if (AlignmentUtils.compareBases((byte) 'C', readbase)) out = METHYLATED_COLOR;
+                	else if (!AlignmentUtils.compareBases(readbase, refbase)) out = NONCYTOSINE_MISMATCH_COLOR;
                     break;
                 case 'C':
                     if (!AlignmentUtils.compareBases((byte) 'C', readbase) && !AlignmentUtils.compareBases((byte) 'T', readbase)) {
                         out = CYTOSINE_MISMATCH_COLOR;
                     } else {
+                    	// If we had information about whether this position was a SNP or not, we could
+                    	// show cytosines in any context when they are a SNP.
                         BisulfiteContext matchingContext = contextIsMatching(reference, read, idx, bisulfiteContext);
                         matchesContext = (matchingContext != null);
                         if (matchesContext) {
@@ -110,8 +115,15 @@ public class BisulfiteBaseInfo {
                         }
                     }
                     break;
-                case 'G':
-                    if (AlignmentUtils.compareBases((byte) 'A', readbase)) out = DEAMINATION_COLOR;
+//                case 'G':
+//                    if (AlignmentUtils.compareBases((byte) 'A', readbase))
+//                    {
+//                    	out = DEAMINATION_COLOR;
+//                    }
+//                    else if (!AlignmentUtils.compareBases(readbase, refbase))
+//                    {
+//                    	out = NONCYTOSINE_MISMATCH_COLOR;
+//                    }
             }
 
             // Remember, the output should be relative to the FW strand (use idxFw)
