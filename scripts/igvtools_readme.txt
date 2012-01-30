@@ -170,12 +170,6 @@ listed below.  Genome definitions corresponding to these files are in the
 "genomes" subdirectory of the igvtools install.  The id is derived by removing
 the .extension from the filename.
 
-Current genome list: Current genome list: hg18, 1kg_ref, hg19, hg17, hg16,
-mm9, mm8, mm7, mm6, mm5, canFam2, btaurus_3.0, galGal3, cavPor3,
-Plasmodium_3D7_v2.1, Plasmodium_3D7_v5.5, Plasmodium_6.1, sacCer1,
-spombe_709, spombe_1.55, zebrafish, ce6, ce4, dm3, dm2, dmel_5.9,
-Aplysia, tcas_2.0, tcas_3.0, ncrassa_v3, Glamblia_2.0, me49, A_thaliana,
-O_Sativa_r6, ppatens_1.2
 
 ---------------------------------------------------------------------------
 Command "sort"
