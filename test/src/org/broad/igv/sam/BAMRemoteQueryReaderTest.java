@@ -22,20 +22,20 @@
  */
 package org.broad.igv.sam;
 
-import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author jrobinso
@@ -50,7 +50,9 @@ public class BAMRemoteQueryReaderTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        Globals.setHeadless(true);
+        TestUtils.setUpHeadless();
+        Globals.READ_TIMEOUT = 5 * 30 * 1000;
+        Globals.CONNECT_TIMEOUT = 5 * 30 * 1000;
         preferenceManager = PreferenceManager.getInstance();
         useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
     }
@@ -88,49 +90,12 @@ public class BAMRemoteQueryReaderTest {
         int end = 50542722; //558000; //
         boolean contained = false;
 
-        Alignment al = null;
-
 
         ResourceLocator rl = new ResourceLocator(fullpath);
-
-        AlignmentQueryReader samReader = AlignmentReaderFactory.getReader(rl);
-        CloseableIterator<Alignment> result2 = samReader.query(chr, start, end, contained);
-        long t1 = System.currentTimeMillis();
-        int count1 = 0;
-        while (result2.hasNext()) {
-            al = result2.next();
-            al.getAlignmentStart();
-            if (count1 == 0) {
-                System.out.println(al.getAlignmentStart() + " -> " + al.getEnd() + " " + al.getReadName());
-            }
-            count1++;
-        }
-        //System.out.println(al.getAlignmentStart() + " -> " + al.getEnd());
-        //System.out.println("Read " + count1 + " records in " + (System.currentTimeMillis() - t1) + " ms");
-
+        checkReader(rl, chr, start, end, contained);
 
         ResourceLocator rlremote = new ResourceLocator(serverURL, path);
-        BAMRemoteQueryReader instance = new BAMRemoteQueryReader(rlremote);
-        CloseableIterator<Alignment> result = instance.query(chr, start, end, contained);
-        long t0 = System.currentTimeMillis();
-        int count = 0;
-        int lastStart = -1;
-        while (result.hasNext()) {
-            al = result.next();
-            int s = al.getAlignmentStart();
-            if (s < lastStart) {
-                System.out.println("Sort problem: " + s);
-            }
-            lastStart = s;
-            //if (count == 0) {
-            System.out.println(al.getAlignmentStart() + " -> " + al.getEnd() + " " + al.getReadName());
-            //}
-            count++;
-        }
-        //System.out.println(al.getAlignmentStart() + " -> " + al.getEnd());
-        System.out.println("Read " + count + " records in " + (System.currentTimeMillis() - t0) + " ms");
-
-
+        checkReader(rlremote, chr, start, end, contained);
     }
 
     @Test
@@ -142,19 +107,27 @@ public class BAMRemoteQueryReaderTest {
         int start = 713700;
         int end = 714100;
 
-        BAMRemoteQueryReader reader = new BAMRemoteQueryReader(new ResourceLocator(serverURL, path));
+        ResourceLocator locator = new ResourceLocator(serverURL, path);
+        checkReader(locator, chr, start, end, true);
 
-        SAMFileHeader header = reader.getHeader();
+    }
 
-        CloseableIterator<Alignment> iter = reader.query(chr, start, end, true);
-
-        //SAMRecord firstRecord = iter.next();
-        //assertEquals(expectedFirstRecord, firstRecord.format());
-        while (iter.hasNext()) {
-            Alignment record = iter.next();
+    private void checkReader(ResourceLocator locator, String chr, int start, int end, boolean contained) {
+        Alignment al = null;
+        BAMRemoteQueryReader instance = new BAMRemoteQueryReader(locator);
+        CloseableIterator<Alignment> result = instance.query(chr, start, end, contained);
+        //long t0 = System.currentTimeMillis();
+        int count = 0;
+        int lastStart = -1;
+        while (result.hasNext()) {
+            al = result.next();
+            int s = al.getAlignmentStart();
+            assertTrue("Returned data not sorted", s >= lastStart);
+            lastStart = s;
+            count++;
         }
 
-        iter.close();
+        assertTrue("No data received", count > 0);
 
     }
 }

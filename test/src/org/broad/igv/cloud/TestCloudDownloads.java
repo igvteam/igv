@@ -19,8 +19,18 @@
 package org.broad.igv.cloud;
 
 
+import org.broad.igv.util.HttpUtils;
+import org.junit.Test;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: jrobinso
@@ -28,44 +38,45 @@ import java.util.Arrays;
  */
 public class TestCloudDownloads {
 
-    public static void main(String[] args) throws IOException {
-        testSequenceByteRange();
+    public TestCloudDownloads() {
     }
 
-    static void testSequenceByteRange() throws IOException {
+    @Test
+    public void testSequenceByteRange() throws IOException {
 
         String broadURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/chr1.txt";
         String s3URL = "http://igv.broadinstitute.org/genomes/seq/hg18/chr1.txt";
         String cfURL = "http://igvdata.broadinstitute.org/genomes/seq/hg18/chr1.txt";
         int nTries = 3;
 
-        System.out.println("# bytes\tBroad\tS3\tCloudFront");
+        //System.out.println("# bytes\tBroad\tS3\tCloudFront");
         int size = 100000;
         int start = Math.max(1, (int) (Math.random() * 2000000));
-        System.out.print(String.valueOf(size));
+        //System.out.print(String.valueOf(size));
+        int bytes = 0;
         for (String url : Arrays.asList(broadURL, s3URL, cfURL)) {
             long averageTime = 0;
             for (int i = 0; i < nTries; i++) {
                 long t0 = System.currentTimeMillis();
-                readByteRange(url, start, start + size);
+                bytes += readByteRange(url, start, start + size);
                 long dt = System.currentTimeMillis() - t0;
                 averageTime += dt;
             }
             averageTime /= nTries;
-            System.out.print("\t" + averageTime);
         }
-        System.out.println();
+
+        assertTrue("Did not get any data", bytes > 0);
 
 
     }
 
-    static void readByteRange(String urlString, int start, int end) throws IOException {
-     /*
+    public int readByteRange(String urlString, int start, int end) throws IOException {
+
         URL url = new URL(urlString);
         Map<String, String> reqProps = new HashMap();
         String byteRange = "bytes=" + start + "-" + end;
         reqProps.put("Range", byteRange);
-        InputStream is = IGVHttpUtils.openHttpStream(url, reqProps);
+        InputStream is = HttpUtils.getInstance().openConnectionStream(url, reqProps);
         BufferedInputStream bis = new BufferedInputStream(is);
         int b;
         int n = 0;
@@ -76,7 +87,7 @@ public class TestCloudDownloads {
         //System.out.println("Read " + n + " bytes");
 
         is.close();
-        */
+        return n;
     }
 
 }
