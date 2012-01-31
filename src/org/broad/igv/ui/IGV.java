@@ -30,25 +30,25 @@ import com.jidesoft.swing.JideSplitPane;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.batch.BatchRunner;
+import org.broad.igv.batch.CommandListener;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.*;
-import org.broad.igv.feature.genome.*;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeBuilderDialog;
+import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.lists.GeneList;
 import org.broad.igv.lists.GeneListManager;
-import org.broad.igv.batch.BatchRunner;
 import org.broad.igv.lists.Preloader;
-import org.broad.igv.batch.CommandListener;
 import org.broad.igv.peaks.PeakCommandBar;
 import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.sam.AlignmentTrack;
-import org.broad.igv.session.Session;
 import org.broad.igv.session.IGVSessionReader;
+import org.broad.igv.session.Session;
 import org.broad.igv.session.SessionReader;
 import org.broad.igv.session.UCSCSessionReader;
 import org.broad.igv.track.*;
-
-import static org.broad.igv.ui.WaitCursorManager.CursorToken;
-
 import org.broad.igv.ui.dnd.GhostGlassPane;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
@@ -56,12 +56,7 @@ import org.broad.igv.ui.event.TrackGroupEvent;
 import org.broad.igv.ui.event.TrackGroupEventListener;
 import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.*;
-
-import static org.broad.igv.ui.util.SnapshotUtilities.*;
-
 import org.broad.igv.ui.util.ProgressMonitor;
-
-
 import org.broad.igv.util.*;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -74,9 +69,12 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.net.*;
+import java.net.NoRouteToHostException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.ui.WaitCursorManager.CursorToken;
 
 /**
  * Represents an IGV instance, consisting of a main window and associated model.
@@ -2306,7 +2304,7 @@ public class IGV {
                         int idx = 0;
                         for (String p : tokens) {
                             if (FileUtils.isRemote(p)) {
-                                p = URLDecoder.decode(p);
+                                p = URLDecoder.decode(p, "UTF-8");
                             }
                             ResourceLocator rl = new ResourceLocator(p);
                             if (names != null && idx < names.length) {

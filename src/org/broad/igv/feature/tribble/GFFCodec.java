@@ -26,13 +26,11 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.StringUtils;
-import org.broad.tribble.*;
+import org.broad.tribble.Feature;
 import org.broad.tribble.exception.CodecLineParsingException;
 import org.broad.tribble.readers.LineReader;
 
-
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -126,8 +124,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
             }
 
             return header;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new CodecLineParsingException("Error parsing header", e);
         }
     }
@@ -187,15 +184,13 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         int end;
         try {
             start = Integer.parseInt(tokens[3]) - 1;
-        }
-        catch (NumberFormatException ne) {
+        } catch (NumberFormatException ne) {
             throw new DataLoadException("Column 4 must contain a numeric value", line);
         }
 
         try {
             end = Integer.parseInt(tokens[4]);
-        }
-        catch (NumberFormatException ne) {
+        } catch (NumberFormatException ne) {
             throw new DataLoadException("Column 5 must contain a numeric value", line);
         }
 
@@ -234,7 +229,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         return Feature.class;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public Object getHeader()  {
+    public Object getHeader() {
         return header;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -253,7 +248,7 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
 
     String getName(Map<String, String> attributes) {
 
-        if(attributes == null || attributes.size() == 0) {
+        if (attributes == null || attributes.size() == 0) {
             return null;
         }
         for (String nf : nameFields) {
@@ -392,8 +387,8 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
                     String value = ((nValues == 1) ? "" : tmp.get(1).trim());
 
                     if (useUrlDecoding) {
-                        key = URLDecoder.decode(key);
-                        value = URLDecoder.decode(value);
+                        key = StringUtils.decodeURL(key);
+                        value = StringUtils.decodeURL(value);
                     }
                     kvalues.put(key, value);
                 } else {

@@ -32,7 +32,10 @@ import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.SnapshotUtilities;
-import org.broad.igv.util.*;
+import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.RuntimeUtils;
+import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
 import java.io.File;
@@ -182,7 +185,7 @@ public class CommandExecutor {
      */
     private String load(String fileList, String param2, String param3) throws IOException {
 
-        fileList = URLDecoder.decode(fileList);
+        fileList = URLDecoder.decode(fileList, "UTF-8");
         String fileString = fileList.replace("\"", "").replace("'", "");
 
         // Default for merge is "true" for session files,  "false" otherwise
@@ -222,7 +225,7 @@ public class CommandExecutor {
      * @throws IOException
      */
     String loadFiles(final String fileString, final String locus, final boolean merge, String name) throws IOException {
-           return loadFiles(fileString, locus, merge, name, null);
+        return loadFiles(fileString, locus, merge, name, null);
     }
 
     String loadFiles(final String fileString, final String locus, final boolean merge, String name, Map<String, String> params) throws IOException {
@@ -234,7 +237,7 @@ public class CommandExecutor {
         List<ResourceLocator> fileLocators = new ArrayList<ResourceLocator>();
         List<String> sessionPaths = new ArrayList<String>();
 
-         if (!merge) {
+        if (!merge) {
             // If this is a session file start fresh without asking, otherwise ask
             boolean unload = !merge;
             if (fileString.endsWith(".xml") || fileString.endsWith(".php") || fileString.endsWith(".php3")) {
@@ -271,7 +274,7 @@ public class CommandExecutor {
                 if (name != null) {
                     rl.setName(name);
                 }
-                if(params != null) {
+                if (params != null) {
                     String trackLine = createTrackLine(params);
                     rl.setTrackLine(trackLine);
                 }
@@ -294,6 +297,7 @@ public class CommandExecutor {
 
     /**
      * Convert the parameter map to a UCSC track line.
+     *
      * @param params
      * @return
      */

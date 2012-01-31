@@ -18,21 +18,19 @@
 
 package org.broad.igv.gs.atm;
 
-import org.broad.igv.PreferenceManager;
-import org.broad.igv.gs.GSUtils;
-import org.broad.igv.gs.dm.DMUtils;
-import org.broad.igv.util.BrowserLauncher;
 import org.broad.igv.util.HttpUtils;
-import org.junit.*;
+import org.broad.igv.util.StringUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.net.*;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -44,12 +42,12 @@ import static junit.framework.Assert.assertTrue;
 public class ATMUtilsTest {
 
     @Before
-    public  void setup() {
+    public void setup() {
         HttpUtils.getInstance().setAuthenticator(new GSTestAuthenticator());
     }
 
     @After
-    public  void teardown() {
+    public void teardown() {
         HttpUtils.getInstance().resetAuthenticator();
     }
 
@@ -82,7 +80,7 @@ public class ATMUtilsTest {
         String file = "/users/igvtest/Broad.080528.subtypes.seg.gz";
         String toolname = "IGV";
         WebToolDescriptor igvDesc = ATMUtils.getWebTool(toolname);
-        String url = URLDecoder.decode(ATMUtils.getWebtoolLaunchURL(igvDesc, file));
+        String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(igvDesc, file));
         assertTrue(url.startsWith(igvDesc.getBaseUrl() + "?sessionURL="));
         assertTrue(url.endsWith(file));
     }
@@ -99,10 +97,10 @@ public class ATMUtilsTest {
         }
 
         String file = "/users/igvtest/Broad.080528.subtypes.seg.gz";
-        String toolname =  ("UCSC Genome Browser");
-        WebToolDescriptor ucscDesc =ATMUtils.getWebTool(toolname);
+        String toolname = ("UCSC Genome Browser");
+        WebToolDescriptor ucscDesc = ATMUtils.getWebTool(toolname);
 
-        String url = URLDecoder.decode(ATMUtils.getWebtoolLaunchURL(ucscDesc, file));
+        String url = StringUtils.decodeURL(ATMUtils.getWebtoolLaunchURL(ucscDesc, file));
         assertTrue(url.startsWith(ucscDesc.getBaseUrl() + "?file="));
         assertTrue(url.endsWith(file));
     }

@@ -20,6 +20,7 @@ package org.broad.igv.batch;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.util.StringUtils;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -245,10 +246,10 @@ public class CommandListener implements Runnable {
             if (file == null) {
                 file = params.get("bigDataURL"); // <- UCSC track line
             }
-            if(file == null) {
+            if (file == null) {
                 file = params.get("sessionURL");  // <- older IGV option
             }
-            if(file == null) {
+            if (file == null) {
                 file = params.get("dataURL"); // <- Another UCSC option
             }
 
@@ -265,9 +266,9 @@ public class CommandListener implements Runnable {
                 if (genomeID != null) {
                     IGV.getFirstInstance().selectGenomeFromList(genomeID);
                 }
-                if (genomeID != null) genomeID = URLDecoder.decode(genomeID);
-                if (mergeValue != null) mergeValue = URLDecoder.decode(mergeValue);
-                if (locus != null) locus = URLDecoder.decode(locus);
+                if (genomeID != null) genomeID = URLDecoder.decode(genomeID, "UTF-8");
+                if (mergeValue != null) mergeValue = URLDecoder.decode(mergeValue, "UTF-8");
+                if (locus != null) locus = URLDecoder.decode(locus, "UTF-8");
 
 
                 // Default for merge is "false" for session files,  "true" otherwise
@@ -318,9 +319,9 @@ public class CommandListener implements Runnable {
             if (kv.length == 1) {
                 params.put(kv[0], null);
             } else {
-                String key = URLDecoder.decode(kv[0]);
+                String key = StringUtils.decodeURL(kv[0]);
                 // Special treatment of locus string, need to preserve encoding of spaces
-                String value = key.equals("locus") ? kv[1] : URLDecoder.decode(kv[1]);
+                String value = key.equals("locus") ? kv[1] : StringUtils.decodeURL(kv[1]);
                 params.put(kv[0], value);
             }
         }

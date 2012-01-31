@@ -21,18 +21,19 @@ package org.broad.igv.feature;
 import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.renderer.GeneTrackRenderer;
+import org.broad.igv.renderer.IGVFeatureRenderer;
 import org.broad.igv.track.FeatureCollectionSource;
 import org.broad.igv.track.FeatureTrack;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.color.ColorUtilities;
-import org.broad.igv.util.*;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.StringUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
-import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -54,7 +55,6 @@ public class GFFParser implements FeatureParser {
     static HashSet<String> ignoredTypes = new HashSet();
 
     //static String[] nameFields = {"gene", "Name", "name", "primary_name", "Locus", "locus","Alias", "alias", "systematic_id", "ID"};
-
 
 
     static {
@@ -124,7 +124,7 @@ public class GFFParser implements FeatureParser {
     public GFFParser(String path) {
         // Assume V2 until proven otherwise
         if (path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz") ||
-               path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz") ) {
+                path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz")) {
             helper = new GFF3Helper();
         } else {
             helper = new GFF2Helper();
@@ -143,7 +143,7 @@ public class GFFParser implements FeatureParser {
 
         final String pathLowerCase = locator.getPath().toLowerCase();
         if (pathLowerCase.endsWith("gff3") || pathLowerCase.endsWith("gff3.gz") ||
-               pathLowerCase.endsWith("gvf") || pathLowerCase.endsWith("gvf.gz") ) {
+                pathLowerCase.endsWith("gvf") || pathLowerCase.endsWith("gvf.gz")) {
             helper = new GFF3Helper();
         }
 
@@ -181,7 +181,6 @@ public class GFFParser implements FeatureParser {
     }
 
 
-
     public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {
         List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
@@ -210,12 +209,11 @@ public class GFFParser implements FeatureParser {
                             featuresToHide.addAll(Arrays.asList(kv[1].split(",")));
                         }
                     } else if (line.startsWith("#displayName") || line.startsWith("##displayName")) {
-                        String [] nameTokens = line.split("=");
-                        if(nameTokens.length < 2) {
+                        String[] nameTokens = line.split("=");
+                        if (nameTokens.length < 2) {
                             helper.setNameFields(null);
-                        }
-                        else {
-                            String [] fields = nameTokens[1].split(",");
+                        } else {
+                            String[] fields = nameTokens[1].split(",");
                             helper.setNameFields(fields);
                         }
 
@@ -254,15 +252,13 @@ public class GFFParser implements FeatureParser {
                 int end;
                 try {
                     start = Integer.parseInt(tokens[3]) - 1;
-                }
-                catch (NumberFormatException ne) {
+                } catch (NumberFormatException ne) {
                     throw new ParserException("Column 4 must contain a numeric value", reader.getCurrentLineNumber(), line);
                 }
 
                 try {
                     end = Integer.parseInt(tokens[4]);
-                }
-                catch (NumberFormatException ne) {
+                } catch (NumberFormatException ne) {
                     throw new ParserException("Column 5 must contain a numeric value", reader.getCurrentLineNumber(), line);
                 }
 
@@ -281,7 +277,7 @@ public class GFFParser implements FeatureParser {
                 String[] parentIds = helper.getParentIds(attributes, attributeString);
 
 
-                 if (featureType.equals("CDS_parts")) {
+                if (featureType.equals("CDS_parts")) {
                     for (String pid : parentIds) {
                         getGFF3Transcript(pid).addCDSParts(chromosome, start, end);
                     }
@@ -384,11 +380,9 @@ public class GFFParser implements FeatureParser {
 
             FeatureDB.addFeatures(features);
 
-        }
-        catch (ParserException e) {
+        } catch (ParserException e) {
             throw e;
-        }
-        catch (Exception
+        } catch (Exception
                 ex) {
             log.error("Error parsing GFF file", ex);
             if (line != null && reader.getCurrentLineNumber() != 0) {
@@ -477,7 +471,7 @@ public class GFFParser implements FeatureParser {
         String ext = "." + gffFile.substring(gffFile.length() - 4);
 
         Map<String, PrintWriter> writers = new HashMap();
-        String [] tokens = new String[20];
+        String[] tokens = new String[20];
 
         while ((nextLine = br.readLine()) != null) {
             nextLine = nextLine.trim();
@@ -605,10 +599,9 @@ public class GFFParser implements FeatureParser {
             }
             description += desc;
 
-            if(attributes == null) {
+            if (attributes == null) {
                 attributes = atts;
-            }
-            else {
+            } else {
                 attributes.putAll(atts);
             }
         }
@@ -873,10 +866,10 @@ public class GFFParser implements FeatureParser {
                     String value = ((nValues == 1) ? "" : tmp.get(1).trim());
 
                     if (useUrlDecoding) {
-                        key = URLDecoder.decode(key);
-                        value = URLDecoder.decode(value);
+                        key = StringUtils.decodeURL(key);
+                        value = StringUtils.decodeURL(value);
                         // Limit values to 50 characters
-                        if(value.length() > 50) {
+                        if (value.length() > 50) {
                             value = value.substring(0, 50) + " ...";
                         }
                     }

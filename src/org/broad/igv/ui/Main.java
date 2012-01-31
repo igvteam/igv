@@ -29,12 +29,13 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.ui.event.GlobalKeyDispatcher;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
-import java.net.URLDecoder;
 
 
 /**
@@ -152,7 +153,7 @@ public class Main {
                 if (IGV.hasInstance() && !IGV.getInstance().isSuppressTooltip()) {
                     ToolTipManager.sharedInstance().setEnabled(true);
                 }
-              }
+            }
 
             @Override
             public void windowGainedFocus(WindowEvent windowEvent) {
@@ -269,8 +270,7 @@ public class Main {
             if (!logFile.exists()) {
                 logFile.createNewFile();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error creating log file: " + logFile.getAbsolutePath());
             e.printStackTrace();
         }
@@ -337,10 +337,10 @@ public class Main {
                 String firstArg = nonOptionArgs[0];
                 if (!firstArg.equals("ignore")) {
                     if (firstArg.endsWith(".xml") || firstArg.endsWith(".php") || firstArg.endsWith(".php3")
-                             || firstArg.endsWith(".session")) {
-                        sessionFile = URLDecoder.decode(firstArg);
+                            || firstArg.endsWith(".session")) {
+                        sessionFile = StringUtils.decodeURL(firstArg);
                     } else {
-                        dataFileString = URLDecoder.decode(firstArg);
+                        dataFileString = StringUtils.decodeURL(firstArg);
                     }
                 }
                 if (nonOptionArgs.length > 1) {

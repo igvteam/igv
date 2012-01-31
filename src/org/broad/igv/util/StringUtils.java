@@ -20,6 +20,8 @@ package org.broad.igv.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +86,7 @@ public class StringUtils {
         int m = (Math.max(1, (maxLength - nDots) / 2));
         StringBuffer newString = new StringBuffer(maxLength);
         newString.append(string.substring(0, m));
-        for(int i=0; i<nDots; i++) {
+        for (int i = 0; i < nDots; i++) {
             newString.append('.');
         }
         newString.append(string.substring(string.length() - m));
@@ -122,5 +124,23 @@ public class StringUtils {
         }
         return new String(bytes.toByteArray());
     }
+
+    /**
+     * Decode according to UTF-8. In the extremely unlikely
+     * event that we are running on a platform which does not
+     * support UTF-8 (it's part of the Java spec), URLDecoder.decode
+     * is used.
+     *
+     * @param s
+     * @return
+     */
+    public static String decodeURL(String s) {
+        try {
+            return URLDecoder.decode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return URLDecoder.decode(s);
+        }
+    }
+
 
 }
