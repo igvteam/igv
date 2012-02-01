@@ -1,12 +1,15 @@
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.Globals;
+import org.broad.igv.data.BasicScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.TDFDataSource;
 import org.broad.igv.tdf.TDFGroup;
 import org.broad.igv.tdf.TDFReader;
 
+import java.io.StreamCorruptedException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +25,9 @@ public class AffectiveDataSource extends TDFDataSource {
     Map<String, Integer> startTimeMap = new HashMap<String, Integer>();
     Map<String, Integer> samplingRateMap = new HashMap<String, Integer>();
     AffectiveGenome affectiveGenome;
+
+    // TODO -- invalidate when new data is loaded (genome changes)
+    List<LocusScore> wholeGenomeScores = null;
 
     public AffectiveDataSource(TDFReader reader, int trackNumber, String trackName, Genome genome) {
 
@@ -68,7 +74,7 @@ public class AffectiveDataSource extends TDFDataSource {
 
         if (chr.equals(Globals.CHR_ALL)) {
             // todo
-            return null;
+            return getWholeGenomeScores();
         } else {
             AffectiveChromosome chromosome = (AffectiveChromosome) affectiveGenome.getChromosome(chr);
             int chrStartTime = chromosome.startTime;
@@ -83,10 +89,54 @@ public class AffectiveDataSource extends TDFDataSource {
 
             List<LocusScore> scores = super.getSummaryScores(chr, startLocation, endLocation, zoom);
             for (LocusScore score : scores) {
-                score.setStart(score.getStart() + offset);
-                score.setEnd(score.getEnd() + offset);
+                score.setStart(score.getStart());
+                score.setEnd(score.getEnd());
             }
             return scores;
         }
+    }
+
+    List<LocusScore> getWholeGenomeScores() {
+
+        if (wholeGenomeScores == null && affectiveGenome.getChromosomeNames().size() > 1) {
+            wholeGenomeScores = new ArrayList<LocusScore>(1000);
+            for (String chr : affectiveGenome.getChromosomeNames()) {
+                wholeGenomeScores.addAll(getWholeGenomeScoresForChromosome(chr));
+            }
+
+        }
+        return wholeGenomeScores;
+    }
+
+    List<LocusScore> getWholeGenomeScoresForChromosome(String chr) {
+
+        long offset = affectiveGenome.getCumulativeOffset(chr);
+        ArrayList<LocusScore> scores = new ArrayList<LocusScore>();
+        List<LocusScore> tmp = getSummaryScores(chr, 0, Integer.MAX_VALUE, 0);
+        if (tmp != null) {
+            float value = 0;
+            int lastWGStart = (int) ((tmp.get(0).getStart() + offset) / 1000);
+            int lastWGEnd = (int) ((tmp.get(0).getEnd() + offset) / 1000);
+            int numPoints = 0;
+            for (LocusScore s : tmp) {
+                int wgStart = (int) ((s.getStart() + offset) / 1000);
+                int wgEnd = (int) ((s.getEnd() + offset) / 1000);
+                if (Float.isNaN(s.getScore())) {
+
+                }
+                if (wgEnd > lastWGEnd) {
+                    scores.add(new BasicScore(lastWGStart, lastWGEnd, value / numPoints));
+                    lastWGStart = wgStart;
+                    lastWGEnd = wgEnd;
+                    value = 0;
+                    numPoints = 0;
+                }
+                value += s.getScore();
+                numPoints++;
+
+
+            }
+        }
+        return scores;
     }
 }

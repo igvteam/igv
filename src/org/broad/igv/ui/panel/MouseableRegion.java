@@ -54,7 +54,7 @@ public class MouseableRegion {
     public MouseableRegion(Shape region, String name, String value) {
 
         this.region = region;
-        this.text = name + " = " + value;
+        this.text = (name.length() > 0 ? name + " = " : "") + value;
         trackCltn = new AttributePanelRegion(name, value);
     }
 

@@ -108,7 +108,7 @@ public class AffectiveAnnotationTrack extends AbstractTrack {
                 Graphics2D g = context.getGraphic2DForColor(c);
                 g.fillRect(px, py, w, h);
 
-                MouseableRegion mr = new MouseableRegion(new Rectangle(ts, py, (te-ts), h), "Annotation", annot.descriptiveText);
+                MouseableRegion mr = new MouseableRegion(new Rectangle(ts, py, (te-ts), h), "", annot.descriptiveText);
                 mouseRegions.add(mr);
             }
             rowTop += rowHeight;

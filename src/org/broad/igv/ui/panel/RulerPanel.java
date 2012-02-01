@@ -147,7 +147,7 @@ public class RulerPanel extends JPanel {
         // TODO -- hack, assumes location unit for whole genome is kilo-base
         boolean scaleInKB = frame.getChrName().equals(Globals.CHR_ALL);
 
-        TickSpacing ts = findSpacing(range,scaleInKB);
+        TickSpacing ts = findSpacing(range, scaleInKB);
         String rangeString = formatNumber((double) range / ts.getUnitMultiplier()) + " " + ts.getMajorUnit();
         int strWidth = g.getFontMetrics().stringWidth(rangeString);
         int strHeight = g.getFontMetrics().getAscent();
@@ -607,6 +607,7 @@ public class RulerPanel extends JPanel {
 
             // If room for 1/4 hours
             if (15 / minsPerPixel > 2) {
+                pixel = (int) ((h - originHour) / hoursPerPixel);
                 for (int mm = 0; mm < 60; mm += 15) {
                     double dx = mm / minsPerPixel;
                     int mPixel = (int) (pixel + dx);
@@ -614,14 +615,15 @@ public class RulerPanel extends JPanel {
                         break;
                     }
                     if (mPixel > 0) {
-                        g.drawLine(mPixel, height,  mPixel, height - 10);
+                        g.drawLine(mPixel, height, mPixel, height - 10);
                     }
 
                 }
             }
 
             // If room for minutes do minutes
-            if (1 / minsPerPixel > 2) {
+            pixel = (int) ((h - originHour) / hoursPerPixel);
+            if (1 / minsPerPixel > 4) {
                 for (int m = 1; m < 60; m++) {
                     double dx = m / minsPerPixel;
                     int mPixel = (int) (pixel + dx);
@@ -629,9 +631,22 @@ public class RulerPanel extends JPanel {
                         break;
                     }
                     if (mPixel > 0) {
-                        g.drawLine(mPixel, height,  mPixel, height - 5);
+                        g.drawLine(mPixel, height, mPixel, height - 5);
                     }
+                }
 
+                // Seconds
+                if (1 / secsPerPixel > 4) {
+                    for (int s = 1; s < 60; s++) {
+                        double dx = s / secsPerPixel;
+                        int sPixel = (int) (pixel + dx);
+                        if (sPixel > w) {
+                            break;
+                        }
+                        if (sPixel > 0) {
+                            g.drawLine(sPixel, height, sPixel, height - 5);
+                        }
+                    }
                 }
             }
 
