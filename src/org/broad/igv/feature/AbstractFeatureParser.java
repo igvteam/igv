@@ -65,15 +65,17 @@ public abstract class AbstractFeatureParser implements FeatureParser {
     }
 
     /**
-     * Return an parser instance appropriate the the file type.  Currently the filename
-     * is used to determine file type, this is fragile obviously but what is the alternative?
+     * @deprecated Return an parser instance appropriate the the file type.  Currently the filename
+     *             is used to determine file type, this is fragile obviously but what is the alternative?
      */
+    @Deprecated
     public static FeatureParser getInstanceFor(ResourceLocator locator, Genome genome) {
 
         final String path = locator.getPath();
         return getInstanceFor(path, genome);
     }
 
+    @Deprecated
     public static FeatureParser getInstanceFor(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
 
