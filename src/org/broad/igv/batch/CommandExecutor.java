@@ -478,26 +478,29 @@ public class CommandExecutor {
 
 
     //START, STRAND, NUCLEOTIDE, QUALITY, SAMPLE, READ_GROUP
+    // START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP,
+    //     INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR, TAG
+
     private static AlignmentTrack.SortOption getAlignmentSortOption(String str) {
         String option = str.toLowerCase();
-        if (str == null || option.equals("base")) {
-            return AlignmentTrack.SortOption.NUCELOTIDE;
+        if (option.equals("start") || option.equals("position")) {
+            return AlignmentTrack.SortOption.START;
         } else if (option.equals("strand")) {
             return AlignmentTrack.SortOption.STRAND;
-
-        } else if (option.equals("start") || option.equals("position")) {
-            return AlignmentTrack.SortOption.START;
-
+        } else if (str == null || option.equals("base")) {
+            return AlignmentTrack.SortOption.NUCELOTIDE;
         } else if (option.equals("quality")) {
             return AlignmentTrack.SortOption.QUALITY;
-
         } else if (option.equals("sample")) {
             return AlignmentTrack.SortOption.SAMPLE;
-
         } else if (option.equals("readGroup") || option.equals("read_group")) {
             return AlignmentTrack.SortOption.READ_GROUP;
         } else if (option.equals("insertSize") || option.equals("insert_size")) {
             return AlignmentTrack.SortOption.INSERT_SIZE;
+        } else if (option.equals("firstOfPairStrand")) {
+            return AlignmentTrack.SortOption.FIRST_OF_PAIR_STRAND;
+        } else if (option.equals("mateChr")) {
+            return AlignmentTrack.SortOption.MATE_CHR;
         }
         return AlignmentTrack.SortOption.NUCELOTIDE;
     }
