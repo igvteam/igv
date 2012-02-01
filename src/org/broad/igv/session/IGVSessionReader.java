@@ -74,6 +74,13 @@ public class IGVSessionReader implements SessionReader {
      * the use of LinkedHashMap.
      */
     Map<String, List<Track>> trackDictionary = Collections.synchronizedMap(new LinkedHashMap());
+
+
+    /**
+     * Map of full path -> relative path.
+     */
+    Map<String, String> fullToRelPathMap = new HashMap<String, String>();
+
     private Track geneTrack = null;
     private Track seqTrack = null;
     private boolean hasTrackElments;
@@ -489,15 +496,31 @@ public class IGVSessionReader implements SessionReader {
             int i = 0;
             List<Runnable> synchronousLoads = new ArrayList<Runnable>();
             for (final ResourceLocator locator : dataFiles) {
+
+                final String suppliedPath = locator.getPath();
+                final String relPath = fullToRelPathMap.get(suppliedPath);
+
                 Runnable runnable = new Runnable() {
                     public void run() {
                         List<Track> tracks = null;
                         try {
                             tracks = igv.load(locator);
                             for (Track track : tracks) {
-                                if (track == null) log.info("Null track for resource " + locator.getPath());
+                                if (track == null) {
+                                    log.info("Null track for resource " + locator.getPath());
+                                    continue;
+                                }
+
                                 String id = track.getId();
-                                if (id == null) log.info("Null track id for resource " + locator.getPath());
+                                if (id == null) {
+                                    log.info("Null track id for resource " + locator.getPath());
+                                    continue;
+                                }
+
+                                if (relPath != null) {
+                                    id = id.replace(suppliedPath, relPath);
+                                }
+
                                 List<Track> trackList = trackDictionary.get(id);
                                 if (trackList == null) {
                                     trackList = new ArrayList();
@@ -586,8 +609,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-
-        ResourceLocator resourceLocator = new ResourceLocator(serverURL, path);
+        ResourceLocator resourceLocator;
         if (isRelativePath) {
             final String sessionPath = session.getPath();
 
@@ -598,10 +620,18 @@ public class IGVSessionReader implements SessionReader {
                 return;
             }
             absolutePath = getAbsolutePath(path, sessionPath);
+            fullToRelPathMap.put(absolutePath, path);
             resourceLocator = new ResourceLocator(serverURL, absolutePath);
 
+            // If the resourceLocator is relative, we assume coverage is as well
+            if (coverage != null) {
+                String absoluteCoveragePath = getAbsolutePath(coverage, sessionPath);
+                resourceLocator.setCoverage(absoluteCoveragePath);
+            }
+        } else {
+            resourceLocator = new ResourceLocator(serverURL, path);
+            resourceLocator.setCoverage(coverage);
         }
-
 
         String url = getAttribute(element, SessionAttribute.URL.getText());
         if (url == null) {
@@ -935,7 +965,7 @@ public class IGVSessionReader implements SessionReader {
             }
         }
 
-        // Get matching tracks.  The trackNameDictionary is used for pre V 2 files, where ID was loosely defined
+        // Get matching tracks.
         List<Track> matchedTracks = trackDictionary.get(id);
 
         if (matchedTracks == null) {

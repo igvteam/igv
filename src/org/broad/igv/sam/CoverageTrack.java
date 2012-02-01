@@ -537,9 +537,6 @@ public class CoverageTrack extends AbstractTrack {
     @Override
     public Map<String, String> getPersistentState() {
         Map<String, String> attributes = super.getPersistentState();
-        if (dataSource != null) {
-            attributes.put("path", dataSource.getPath());
-        }
         prefs = PreferenceManager.getInstance();
         if (snpThreshold != prefs.getAsFloat(PreferenceManager.SAM_ALLELE_THRESHOLD)) {
             attributes.put("snpThreshold", String.valueOf(snpThreshold));
@@ -562,12 +559,6 @@ public class CoverageTrack extends AbstractTrack {
         super.restorePersistentState(attributes);    //To change body of overridden methods use File | Settings | File Templates.
 
         String value;
-        value = attributes.get("path");
-        if (value != null) {
-            TDFReader reader = TDFReader.getReader(value);
-            TDFDataSource ds = new TDFDataSource(reader, 0, "", genome);
-            setDataSource(ds);
-        }
         value = attributes.get("snpThreshold");
         if (value != null) {
             snpThreshold = Float.parseFloat(value);
