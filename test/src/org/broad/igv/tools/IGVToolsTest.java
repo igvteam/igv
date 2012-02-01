@@ -22,6 +22,9 @@ import org.broad.igv.Globals;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Block;
@@ -192,18 +195,37 @@ public class IGVToolsTest {
     }
 
     @Test
-    public void testCount() throws Exception {
+    public void testCountTDF() throws Exception {
+        tstCount("testtdf", "tdf");
+    }
+
+    @Test
+    public void testCountWIG() throws Exception {
+        tstCount("testwig", "wig");
+    }
+
+    public void tstCount(String outputBase, String outputExt) throws Exception {
         String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
-        String outputFile = TestUtils.DATA_DIR + "/out/file_";
+        String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
         String[] opts = new String[]{"s", "sf", "sfb", "f", "b", ""};
         for (String opt : opts) {
-            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile + opt + ".tdf", genome};
+            String fullout = outputFile + opt + "." + outputExt;
+            String[] args = {"count", "-a", "sc=" + opt, inputFile, fullout, genome};
             igvTools.run(args);
 
-            TDFReader reader = TDFReader.getReader(outputFile + opt + ".tdf");
-            assertTrue(reader.getDatasetNames().size() > 0);
+            if (outputExt.equals("tdf")) {
+                TDFReader reader = TDFReader.getReader(fullout);
+                assertTrue(reader.getDatasetNames().size() > 0);
+            } else {
+                File outFile = new File(fullout);
+                assertTrue(outFile.exists());
+                assertTrue(outFile.canRead());
+                TrackLoader trackLoader = new TrackLoader();
+                List<Track> tracks = trackLoader.load(new ResourceLocator(fullout), TestUtils.loadGenome());
+                assertTrue(tracks.size() > 0);
+            }
         }
     }
 

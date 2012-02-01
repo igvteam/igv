@@ -423,11 +423,11 @@ public class CoverageCounter {
         for (String sA : strandArr) {
             if (outputBases) {
                 for (Byte n : nucleotides) {
-                    trackNames[col] += prefix + " " + sA + " " + new String(new byte[]{n});
+                    trackNames[col] = prefix + " " + sA + " " + new String(new byte[]{n});
                     col++;
                 }
             } else {
-                trackNames[col] = trackNames[col] = prefix + " " + sA;
+                trackNames[col] = prefix + " " + sA;
                 col++;
             }
         }
@@ -707,7 +707,12 @@ public class CoverageCounter {
         }
 
         private void outputStepLine(String chr, int start) {
-            pw.println("variableStep chrom=" + chr + " span=" + span);
+            //Write label column
+            String labels = "Pos";
+            for (String s : getTrackNames("")) {
+                labels += "," + s;
+            }
+            pw.println("variableStep chrom=" + chr + " span=" + span + " labels: " + labels);
         }
 
     }
