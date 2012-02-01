@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * UUID: AFQ441000BU
  * Sampling Rate: 8
  * Start Time: 2011-03-22 08:52:57 Offset:-04
- * Z-axis | Y-axis | X-axis | Battery | °Celsius | EDA(uS)
+ * Z-axis | Y-axis | X-axis | Battery | Celsius | EDA(uS)
  * ---------------------------------------------------------
  * -0.050,-0.100,-1.150,-1,27.400,0.001
  *
@@ -95,7 +95,7 @@ public class AffectiveLogParser {
                         for (int i = 0; i < tokens.length; i++) {
                             float v;
                             try {
-                                v = Float.parseFloat(tokens[i]);
+                                v = Math.abs(Float.parseFloat(tokens[i]));
                             } catch (NumberFormatException e) {
                                 v = Float.NaN;
                             }

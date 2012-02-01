@@ -24,7 +24,7 @@ public class Annotation {
         this.type = type;
 
         StringBuffer buf = new StringBuffer();
-        buf.append(buf);
+        buf.append("<b>" + description + "</b><br>");
         for(int i=1; i<attributes.length; i++) {
             buf.append(attributes[i] + ": " + values[i] + "<br>");
         }

@@ -73,7 +73,7 @@ public class AlignmentReaderFactory {
                 || pathLowerCase.endsWith("psl")
                 || pathLowerCase.endsWith("pslx")) {
             reader = new GeraldQueryReader(samFile, requireIndex);
-        } else if (pathLowerCase.endsWith(".bam") || pathLowerCase.endsWith(".bam.hg19")) {
+        } else if (pathLowerCase.endsWith(".bam")) {
             if (locator.isLocal()) {
                 reader = new BAMQueryReader(new File(samFile));
             } else if (HttpUtils.getInstance().isURL(locator.getPath().toLowerCase())) {
