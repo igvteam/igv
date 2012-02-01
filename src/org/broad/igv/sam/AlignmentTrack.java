@@ -68,15 +68,15 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
 
     public enum ColorOption {
-        INSERT_SIZE, READ_STRAND, FRAGMENT_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
+        INSERT_SIZE, READ_STRAND, FIRST_OF_PAIR_STRAND, PAIR_ORIENTATION, SAMPLE, READ_GROUP, BISULFITE, NOMESEQ, TAG, NONE;
     }
 
     public enum SortOption {
-        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FRAGMENT_STRAND, MATE_CHR, TAG
+        START, STRAND, NUCELOTIDE, QUALITY, SAMPLE, READ_GROUP, INSERT_SIZE, FIRST_OF_PAIR_STRAND, MATE_CHR, TAG
     }
 
     public enum GroupOption {
-        STRAND, SAMPLE, READ_GROUP, FRAGMENT_STRAND, TAG, NONE
+        STRAND, SAMPLE, READ_GROUP, FIRST_OF_PAIR_STRAND, TAG, NONE
     }
 
     public enum BisulfiteContext {
@@ -1025,12 +1025,12 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             fragmentStrandOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().groupAlignmentTracks(GroupOption.FRAGMENT_STRAND);
+                    IGV.getInstance().groupAlignmentTracks(GroupOption.FIRST_OF_PAIR_STRAND);
                     refresh();
 
                 }
             });
-            fragmentStrandOption.setSelected(renderOptions.groupByOption == GroupOption.FRAGMENT_STRAND);
+            fragmentStrandOption.setSelected(renderOptions.groupByOption == GroupOption.FIRST_OF_PAIR_STRAND);
             groupMenu.add(fragmentStrandOption);
             group.add(fragmentStrandOption);
 
@@ -1128,7 +1128,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
             fragmentStrandOption.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent aEvt) {
-                    IGV.getInstance().sortAlignmentTracks(SortOption.FRAGMENT_STRAND, null);
+                    IGV.getInstance().sortAlignmentTracks(SortOption.FIRST_OF_PAIR_STRAND, null);
                     refresh();
 
                 }
@@ -1293,10 +1293,10 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
             if (dataManager.isPairedEnd()) {
                 JRadioButtonMenuItem fragmentStrandOption = new JRadioButtonMenuItem("by first-of-pair strand");
-                fragmentStrandOption.setSelected(renderOptions.colorOption == ColorOption.FRAGMENT_STRAND);
+                fragmentStrandOption.setSelected(renderOptions.colorOption == ColorOption.FIRST_OF_PAIR_STRAND);
                 fragmentStrandOption.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent aEvt) {
-                        setColorOption(ColorOption.FRAGMENT_STRAND);
+                        setColorOption(ColorOption.FIRST_OF_PAIR_STRAND);
                         refresh();
                     }
                 });
@@ -1508,7 +1508,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
         public void addShowMismatchesMenuItem() {
             // Change track height by attribute
-            final JMenuItem item = new JCheckBoxMenuItem("Show mismatches");
+            final JMenuItem item = new JCheckBoxMenuItem("Show mismatched bases");
 
 
             item.setSelected(renderOptions.showMismatches);

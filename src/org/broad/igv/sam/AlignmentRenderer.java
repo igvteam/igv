@@ -54,10 +54,21 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
-    public static final Color negStrandColor = new Color(150, 150, 200);
-    public static final Color posStrandColor = new Color(200, 150, 150);
+    // Bisulfite constants
+    private static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorRev1 = new Color(195, 210, 195); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
+    private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
+    private static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+
+    public static final Color negStrandColor = bisulfiteColorRev1; //new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
+    public static final Color posStrandColor = bisulfiteColorFw1; //new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
+    //public static final Color negStrandColor = new Color(150, 150, 200);
+   // public static final Color posStrandColor = new Color(200, 150, 150);
 
     private static HashMap<String, Color> readGroupColors = new HashMap();
+    private static HashMap<String, Color> sampleColors = new HashMap();
+    private static HashMap<String, Color> tagValueColors = new HashMap();
 
     private static final Color LR_COLOR = grey1; // "Normal" alignment color
     private static final Color RL_COLOR = new Color(0, 150, 0);
@@ -70,12 +81,6 @@ public class AlignmentRenderer implements FeatureRenderer {
     static Map<String, Color> ffOrientationColors;
     static Map<String, Color> rfOrientationColors;
 
-    // Bisulfite constants
-    private static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorRev1 = new Color(195, 222, 195); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
-    private static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
 
     PreferenceManager prefs;
 
@@ -788,7 +793,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                     c = posStrandColor;
                 }
                 break;
-            case FRAGMENT_STRAND:
+            case FIRST_OF_PAIR_STRAND:
                 final Strand fragmentStrand = alignment.getFirstOfPairStrand();
                 if (fragmentStrand == Strand.NEGATIVE) {
                     c = negStrandColor;
@@ -801,7 +806,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (rg != null) {
                     c = readGroupColors.get(rg);
                     if (c == null) {
-                        c = ColorUtilities.randomColor(readGroupColors.size() + 1);
+                        c = ColorUtilities.randomColor(rg.hashCode());
                         readGroupColors.put(rg, c);
                     }
                 }
@@ -809,10 +814,10 @@ public class AlignmentRenderer implements FeatureRenderer {
             case SAMPLE:
                 String sample = alignment.getSample();
                 if (sample != null) {
-                    c = readGroupColors.get(sample);
+                    c = sampleColors.get(sample);
                     if (c == null) {
-                        c = ColorUtilities.randomColor(readGroupColors.size() + 1);
-                        readGroupColors.put(sample, c);
+                        c = ColorUtilities.randomColor(sample.hashCode());
+                        sampleColors.put(sample, c);
                     }
                 }
                 break;
@@ -821,10 +826,10 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (tag != null) {
                     Object tagValue = alignment.getAttribute(tag);
                     if (tagValue != null) {
-                        c = readGroupColors.get(tagValue);
+                        c = tagValueColors.get(tagValue);
                         if (c == null) {
-                            c = ColorUtilities.randomColor(readGroupColors.size() + 1);
-                            readGroupColors.put(tagValue.toString(), c);
+                            c = ColorUtilities.randomColor(tagValue.hashCode());
+                            tagValueColors.put(tagValue.toString(), c);
                         }
                     }
                 }

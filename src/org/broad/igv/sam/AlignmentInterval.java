@@ -301,7 +301,7 @@ public class AlignmentInterval extends Locus {
                     case STRAND:
                         setScore(centerAlignment.isNegativeStrand() ? -1 : 1);
                         break;
-                    case FRAGMENT_STRAND:
+                    case FIRST_OF_PAIR_STRAND:
                         Strand strand = centerAlignment.getFirstOfPairStrand();
                         int score = 2;
                         if (strand != Strand.NONE) {

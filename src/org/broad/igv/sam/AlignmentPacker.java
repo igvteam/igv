@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.feature.Strand;
 import org.broad.igv.sam.AlignmentInterval.Row;
 
-import javax.sound.midi.SysexMessage;
 import java.util.*;
 
 /**
@@ -133,7 +132,7 @@ public class AlignmentPacker {
             case TAG:
                 Object tagValue = al.getAttribute(tag);
                 return tagValue == null ? null : tagValue.toString();
-            case FRAGMENT_STRAND:
+            case FIRST_OF_PAIR_STRAND:
                 Strand strand = al.getFirstOfPairStrand();
                 String strandString = strand == Strand.NONE ? null : strand.toString();
                 return strandString;
