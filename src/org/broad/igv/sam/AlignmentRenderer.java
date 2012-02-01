@@ -61,8 +61,8 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
     private static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
 
-    public static final Color negStrandColor = bisulfiteColorRev1; //new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
-    public static final Color posStrandColor = bisulfiteColorFw1; //new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
+    public static final Color negStrandColor = new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
+    public static final Color posStrandColor = new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
     //public static final Color negStrandColor = new Color(150, 150, 200);
    // public static final Color posStrandColor = new Color(200, 150, 150);
 

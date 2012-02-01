@@ -87,7 +87,7 @@ public class CodecFactory {
             return new PeakCodec();
 
         } else {
-            throw new DataLoadException("Unknown file type", path);
+            return null;
         }
 
     }
