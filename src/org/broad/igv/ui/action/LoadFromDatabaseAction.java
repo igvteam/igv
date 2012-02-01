@@ -78,7 +78,7 @@ public class LoadFromDatabaseAction extends MenuAction {
                 }
                 url += "/" + db;
 
-                String table2 = "GMDI_SAMPLE_INFO";
+                String table2 = "SAMPLE_INFO";
                 ResourceLocator loc2 = new ResourceLocator(url, table2);
                 loc2.setDescription("SELECT * FROM " + table2);
 //
