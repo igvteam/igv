@@ -36,22 +36,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Exports an org.jgrapht.graph into graphml format.
- * The fields on each graph and node object are written (using reflection)
- * to data elements.
+ * We require the use of BaseElement, which stores data in
+ * a format such that the type is easy to access.
  * <p/>
  * User: jacob
  * Date: 2012/02/01
  */
-public class GraphMLExporter<V, E extends BaseEdge> {
-
-    private Class<V> vertexClass;
-    private Class<E> edgeClass;
+public class GraphMLExporter<V extends BaseElement, E extends Edge> {
 
     /*
      * Provider which generates a unique ID (not name, ID) for each vertex.
@@ -72,28 +68,23 @@ public class GraphMLExporter<V, E extends BaseEdge> {
     };
 
 
-    public GraphMLExporter(Class<V> vertexClass, Class<E> edgeClass) {
-        this.vertexClass = vertexClass;
-        this.edgeClass = edgeClass;
+    public GraphMLExporter() {
     }
 
     /**
-     * @param vertexClass
-     * @param edgeClass
      * @param vIDprovider Provider used to generate IDs for each vertex. IDs must
      *                    be unique. Default implementation is hashCode of v
      * @param eIDprovider Provider used to generate IDs for each edge. IDs must
      *                    be unique. Default implementation is hashCode of v
      */
-    public GraphMLExporter(Class<V> vertexClass, Class<E> edgeClass,
-                           VertexNameProvider<V> vIDprovider,
-                           EdgeNameProvider<E> eIDprovider) {
-        this(vertexClass, edgeClass);
+    public GraphMLExporter(
+            VertexNameProvider<V> vIDprovider,
+            EdgeNameProvider<E> eIDprovider) {
         this.vIDprovider = vIDprovider;
         this.eIDprovider = eIDprovider;
     }
 
-    public void exportGraph(String outputFile, Graph<V, E> graph) {
+    public void exportGraph(String outputFile, Graph<V, E> graph, List<KeyFactory> factoryList) {
         try {
             // Create a DOM document
             DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -103,8 +94,9 @@ public class GraphMLExporter<V, E extends BaseEdge> {
             // Global root element
             Element globalElement = document.createElement("graphml");
 
-            Field[] edgeFields = edgeClass.getFields();
-            addSchema(document, globalElement, edgeFields, "edge");
+            for (KeyFactory factory : factoryList) {
+                addSchema(document, globalElement, factory.getKeySet(), factory.getFor());
+            }
 
             Element graphEl = document.createElement("graph");
             String edgedefault = getEdgeDefault(graph);
@@ -116,7 +108,7 @@ public class GraphMLExporter<V, E extends BaseEdge> {
             for (V v : graph.vertexSet()) {
                 docNode = document.createElement("node");
                 docNode.setAttribute("id", vIDprovider.getVertexName(v));
-                addData(document, vertexClass.getFields(), v, docNode);
+                addData(document, v, docNode);
                 graphEl.appendChild(docNode);
             }
 
@@ -206,19 +198,15 @@ public class GraphMLExporter<V, E extends BaseEdge> {
      *
      * @param document
      * @param topElement
-     * @param fields     Fields to add to schema. Only primitive types will be included
      * @param typeFor    Which element this schema is for. Legal values: "graph", "all", "node", "edge", null (will not
      *                   be applied.
      */
-    private void addSchema(Document document, Element topElement, Field[] fields, String typeFor) {
+    private void addSchema(Document document, Element topElement, Iterable<DataKey> dataKeys, String typeFor) {
         Element key;
-        for (Field field : fields) {
-            if (!includeField(field)) {
-                continue;
-            }
+        for (DataKey dataKey : dataKeys) {
             key = document.createElement("key");
-            key.setAttribute("id", field.getName());
-            key.setAttribute("type", field.getType().getSimpleName().toLowerCase());
+            key.setAttribute("id", dataKey.getKey());
+            key.setAttribute("type", dataKey.getType().toLowerCase());
 
             if (typeFor != null) {
                 key.setAttribute("for", typeFor);
@@ -234,48 +222,48 @@ public class GraphMLExporter<V, E extends BaseEdge> {
      * @param sourceData
      * @param dest
      */
-    private void addData(Document document, Map<String, GraphMLData> sourceData, Element dest) {
+    private void addData(Document document, Map<DataKey, String> sourceData, Element dest) {
         Element data;
-        for (String s : sourceData.keySet()) {
+        for (DataKey s : sourceData.keySet()) {
             data = document.createElement("data");
-            data.setAttribute(s, sourceData.get(s).getValue());
+            data.setAttribute(s.getKey(), sourceData.get(s));
             dest.appendChild(data);
         }
     }
-
-    /**
-     * Add data from source to DOM Element dest. Each field is retrieved from the source object iff
-     * it's primitive.
-     *
-     * @param document
-     * @param fields
-     * @param source
-     * @param dest
-     * @throws IllegalAccessException
-     */
-    private void addData(Document document, Field[] fields, Object source, Element dest) throws IllegalAccessException {
-        Element data;
-        for (Field field : fields) {
-            if (!includeField(field)) {
-                continue;
-            }
-            data = document.createElement("data");
-            data.setAttribute(field.getName(), "" + field.get(source));
-            dest.appendChild(data);
-        }
-    }
-
-    /**
-     * Whether field should be included in output. By default we
-     * take primitives + string, non-static, and accessible
-     *
-     * @param field
-     * @return
-     */
-    protected boolean includeField(Field field) {
-        return (field.getType().isPrimitive() || field.getType().equals(String.class)) &&
-                !Modifier.isStatic(field.getModifiers());
-    }
+//
+//    /**
+//     * Add data from source to DOM Element dest. Each field is retrieved from the source object iff
+//     * it's primitive.
+//     *
+//     * @param document
+//     * @param fields
+//     * @param source
+//     * @param dest
+//     * @throws IllegalAccessException
+//     */
+//    private void addData(Document document, Field[] fields, Object source, Element dest) throws IllegalAccessException {
+//        Element data;
+//        for (Field field : fields) {
+//            if (!includeField(field)) {
+//                continue;
+//            }
+//            data = document.createElement("data");
+//            data.setAttribute(field.getName(), "" + field.get(source));
+//            dest.appendChild(data);
+//        }
+//    }
+//
+//    /**
+//     * Whether field should be included in output. By default we
+//     * take primitives + string, non-static, and accessible
+//     *
+//     * @param field
+//     * @return
+//     */
+//    protected boolean includeField(Field field) {
+//        return (field.getType().isPrimitive() || field.getType().equals(String.class)) &&
+//                !Modifier.isStatic(field.getModifiers());
+//    }
 
 
 }

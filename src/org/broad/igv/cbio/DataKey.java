@@ -19,61 +19,46 @@
 package org.broad.igv.cbio;
 
 /**
- * And individual datapoint in a GraphML file
- * We allow only those types allowed by GraphML:
- * boolean, int, long, double, float, String.
+ * A data key which also stores the type of data.
+ * We override hashCode and equals so 2 keys are
+ * equal if their "key" fields are equal.
+ * <p/>
+ * This class intended to be used by GraphMLExporter,
+ * to store data in edges and nodes, and help generate schema.
  * User: jacob
  * Date: 2012/02/01
  */
-public class GraphMLData {
+public class DataKey {
 
-    //private String key;
-    private String value;
+    protected String key;
     protected String type;
-    //protected String defaultValue;
 
-    private GraphMLData(Object value) {
-        Class clazz = value.getClass();
-        if (!clazz.isPrimitive() && !clazz.equals(String.class)) {
-            throw new IllegalArgumentException("Value must be primitive or string");
+    public DataKey(String key, String type) {
+        this.key = key;
+        this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o1) {
+        try {
+            DataKey okey = (DataKey) o1;
+            return this.key.equals(okey.getKey());
+        } catch (ClassCastException e) {
+            return false;
         }
-        //this.key = key;
-        this.value = "" + value;
-        this.type = clazz.getSimpleName().toLowerCase();
     }
 
-    //We use these constructors for compile-time type safety
-    //may get rid of them in the future
-    public GraphMLData(String value) {
-        this((Object) value);
+    @Override
+    public int hashCode() {
+        return this.key.hashCode();
     }
 
-    public GraphMLData(long value) {
-        this((Object) value);
-    }
-
-    public GraphMLData(int value) {
-        this((Object) value);
-    }
-
-    public GraphMLData(double value) {
-        this((Object) value);
-    }
-
-    public GraphMLData(float value) {
-        this((Object) value);
-    }
-
-    public GraphMLData(boolean value) {
-        this((Object) value);
-    }
-
-    public String getValue() {
-        return this.value;
+    public String getKey() {
+        return key;
     }
 
     public String getType() {
-        return this.type;
+        return type;
     }
 
 }

@@ -25,8 +25,12 @@ import java.util.Set;
  * User: jacob
  * Date: 2012/02/01
  */
-public class Edge extends BaseEdge {
+public class Edge extends BaseElement {
     private static Set<String> directed_types = new HashSet<String>();
+
+    public Edge(KeyFactory factory) {
+        super(null, factory);
+    }
 
     static {
         directed_types.add("STATE_CHANGE");
@@ -34,8 +38,7 @@ public class Edge extends BaseEdge {
 
     }
 
-    @Override
     public boolean isDirected() {
-        return this.containsKey("type") && directed_types.contains(this.get("type").getValue());
+        return this.containsKey("type") && directed_types.contains(this.get("type"));
     }
 }

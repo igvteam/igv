@@ -22,11 +22,11 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.readers.LineReader;
 import org.jgrapht.EdgeFactory;
-import org.jgrapht.Graph;
-import org.jgrapht.graph.Pseudograph;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -37,50 +37,31 @@ import java.net.URLEncoder;
  */
 public class GeneNetwork {
 
-    private static final String BASE_URL = "http://www.cbioportal.org/public-portal/webservice.do";
-    private static final String CMD = "getNetwork";
-    private static final String GENE_LIST_KEY = "gene_list";
-    private static final String BASIC_URL = BASE_URL + "?cmd=" + CMD + "&" + GENE_LIST_KEY + "=";
+    static final String BASE_URL = "http://www.cbioportal.org/public-portal/webservice.do";
+    static final String CMD = "getNetwork";
+    static final String GENE_LIST_KEY = "gene_list";
+    static final String BASIC_URL = BASE_URL + "?cmd=" + CMD + "&" + GENE_LIST_KEY + "=";
 
-    public static void main(String[] args) throws IOException {
+    LineReader getCBioData(String[] gene_list) throws IOException {
 
-        //String[] gene_list = new String[]{"TP53", "BRCA1", "KRAS"};
-        String filepath = "test/data/out/test_cbio.graphml";
-        String[] gene_list = new String[]{"EGFR", "BRCA1"};
-        String string_gl = URLEncoder.encode(gene_list[0], "UTF-8");
-        for (int gi = 1; gi < gene_list.length; gi++) {
-            string_gl += "," + URLEncoder.encode(gene_list[gi], "UTF-8");
-        }
-
-        Graph<String, BaseEdge> graph = new Pseudograph<String, BaseEdge>(BaseEdge.class);
-
-        String url = BASIC_URL + string_gl;
-        InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(url));
-        LineReader reader = new AsciiLineReader(is);
-        //Skip header
-        String line = reader.readLine();
-
-        while ((line = reader.readLine()) != null) {
-            String[] tokens = line.split("\\t");
-            if (tokens.length != 3) {
-                System.out.println("Bad line: " + line);
-                continue;
-            }
-            String[] stringinfo = tokens[1].split(":");
-            //TODO Validate line
-            String[] names = new String[]{"type", "pubmed_id", "datasource", "experimental_type"};
-            BaseEdge edge = new Edge();
-            for (int ii = 0; ii < names.length; ii++) {
-                edge.put(names[ii], new GraphMLData(stringinfo[ii]));
+        try {
+            String string_gl = URLEncoder.encode(gene_list[0], "UTF-8");
+            for (int gi = 1; gi < gene_list.length; gi++) {
+                string_gl += "," + URLEncoder.encode(gene_list[gi], "UTF-8");
             }
 
-            graph.addVertex(tokens[0]);
-            graph.addVertex(tokens[2]);
-            graph.addEdge(tokens[0], tokens[2], edge);
+            String url = GeneNetwork.BASIC_URL + string_gl;
+            System.out.println(url);
+            InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(url));
+            LineReader reader = new AsciiLineReader(is);
+            return reader;
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Bad argument in genelist: " + e.getMessage());
+        } catch (MalformedURLException e) {
+            //It's not a malformed URL. There's essentially no way it could be,
+            //unless the encoding malfunctions but throws no exception
+            return null;
         }
-
-        GraphMLExporter<String, BaseEdge> exporter = new GraphMLExporter<String, BaseEdge>(String.class, BaseEdge.class);
-        exporter.exportGraph(filepath, graph);
     }
 
     public class testEdgeFactory implements EdgeFactory {

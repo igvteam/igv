@@ -18,17 +18,13 @@
 
 package org.broad.igv.cbio;
 
-import java.util.HashMap;
-
 /**
  * User: jacob
- * Date: 2012/02/01
+ * Date: 2012/02/02
  */
-
-public abstract class BaseEdge extends HashMap<String, GraphMLData> {
-
-    public BaseEdge() {
+public class Vertex extends BaseElement {
+    public Vertex(String name, KeyFactory factory) {
+        super(name, factory);
+        this.put("label", name);
     }
-
-    public abstract boolean isDirected();
 }
