@@ -85,8 +85,7 @@ public abstract class Sorter {
         if (maxRecordsOption != null) {
             try {
                 mr = Integer.parseInt(maxRecordsString);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("Warning: max records is not an integer: (" + maxRecordsString + ").  Setting" +
                         "max records to " + MAX_RECORDS_IN_RAM);
                 mr = MAX_RECORDS_IN_RAM;
@@ -126,6 +125,8 @@ public abstract class Sorter {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
         this.tmpDir = new File(System.getProperty("java.io.tmpdir"), System.getProperty("user.name"));
+        // Disable "Snappy"
+        System.setProperty("snappy.disable", "true");
         if (!tmpDir.exists()) {
             tmpDir.mkdir();
         }

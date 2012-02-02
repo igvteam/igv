@@ -59,7 +59,7 @@ public class SorterTest {
         ofile.deleteOnExit();
 
         Sorter sorter = Sorter.getSorter(ifile, ofile);
-
+        sorter.setMaxRecords(10);  // <= force text of serialization
         sorter.run();
 
 
