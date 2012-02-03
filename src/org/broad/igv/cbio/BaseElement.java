@@ -21,7 +21,7 @@ package org.broad.igv.cbio;
 import java.util.HashMap;
 
 /**
- * Element to be used in a graph. If not null,
+ * Named element to be used in a graph. If not null,
  * we use the name field as a unique identifier.
  * User: jacob
  * Date: 2012/02/01
@@ -33,6 +33,7 @@ public abstract class BaseElement extends HashMap<DataKey, String> {
     private String name;
 
     public BaseElement(String name, KeyFactory factory) {
+        super();
         this.name = name;
         this.factory = factory;
     }
@@ -80,7 +81,7 @@ public abstract class BaseElement extends HashMap<DataKey, String> {
     @Override
     public boolean equals(Object o1) {
         if (this.name == null) {
-            return this.equals(o1);
+            return super.equals(o1);
         }
         try {
             BaseElement okey = (BaseElement) o1;
@@ -92,6 +93,9 @@ public abstract class BaseElement extends HashMap<DataKey, String> {
 
     @Override
     public int hashCode() {
+        if (this.name == null) {
+            return super.hashCode();
+        }
         return this.name.hashCode();
     }
 

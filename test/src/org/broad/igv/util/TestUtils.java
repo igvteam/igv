@@ -54,11 +54,34 @@ public class TestUtils {
         FTPClient.READ_TIMEOUT = 30 * 1000;
     }
 
+    /**
+     * Start GUI with default genome file
+     *
+     * @return
+     * @throws IOException
+     */
     public static IGV startGUI() throws IOException {
+        return startGUI(dataFileName);
+    }
+
+    /**
+     * Load a gui with the specified genome file.
+     * No genome is loaded if null
+     *
+     * @param genomeFile
+     * @return
+     * @throws IOException
+     */
+    public static IGV startGUI(String genomeFile) throws IOException {
+        Globals.setHeadless(false);
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Main.open(frame);
-        return IGV.getInstance();
+        IGV igv = IGV.getInstance();
+        if (genomeFile != null) {
+            igv.loadGenome(genomeFile, null);
+        }
+        return igv;
     }
 
     /**

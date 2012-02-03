@@ -18,84 +18,129 @@
 
 package org.broad.igv.cbio;
 
-import org.broad.tribble.readers.LineReader;
+import org.apache.commons.collections.Predicate;
+import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.TestUtils;
 import org.jgrapht.Graph;
+import org.jgrapht.generate.WheelGraphGenerator;
 import org.jgrapht.graph.Pseudograph;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import static junit.framework.Assert.*;
 
 /**
+ * Test our GeneNetwork class, which implements jgraphT graph interface.
+ * {@see http://www.jgrapht.org/}.
+ * <p/>
+ * Notes:
+ * Modification methods tend to return true for any modification,
+ * and false for none. So graph.removeAll(nodeSet) would return
+ * true if only half of the nodes were actually removed, although
+ * odds are an exception would be thrown for any which could
+ * not be removed.
+ * <p/>
  * User: jacob
  * Date: 2012/02/02
  */
 public class GeneNetworkTest {
 
+
+    Genome genome;
     Graph<Vertex, BaseElement> graph;
+    GraphMLExporter exporter;
 
     @Before
     public void setUp() throws Exception {
+        TestUtils.setUpHeadless();
+        genome = TestUtils.loadGenome();
         graph = new Pseudograph<Vertex, BaseElement>(BaseElement.class);
+        exporter = new GraphMLExporter();
     }
 
     @After
     public void tearDown() throws Exception {
         graph = null;
+        exporter = null;
     }
 
-    public void testGetCBioData() throws Exception {
+    @Test
+    public void testExportGraph() throws Exception {
+        String filepath = TestUtils.DATA_DIR + "/out/test_cbio.graphml";
+        String[] gene_list = new String[]{"EGFR", "BRCA1"};
 
+        GeneNetwork geneNetwork = new GeneNetwork();
+        geneNetwork.loadCBioLines(gene_list);
+
+        exporter.exportGraph(filepath, geneNetwork, geneNetwork.factoryList);
     }
 
-
-    public static void main(String[] args) throws IOException {
+    @Test
+    public void testLoadMutations() throws Exception {
 
         //String[] gene_list = new String[]{"TP53", "BRCA1", "KRAS"};
         String filepath = "test/data/out/test_cbio.graphml";
         String[] gene_list = new String[]{"EGFR", "BRCA1"};
 
-        LineReader reader = new GeneNetwork().getCBioData(gene_list);
-        //Skip header
-        String line = reader.readLine();
+        GeneNetwork geneNetwork = new GeneNetwork();
+        //TODO We have defined loadCBioLines to return the number of vertices added
+        //which is a bit arbitrary. may remove this later
+        int initSize = geneNetwork.loadCBioLines(gene_list);
 
-        Graph<Vertex, BaseElement> graph = new Pseudograph<Vertex, BaseElement>(BaseElement.class);
-        KeyFactory edgeKeyFactory = new KeyFactory("edge");
-        KeyFactory vertexKeyFactory = new KeyFactory("node");
-        List<KeyFactory> factoryList = Arrays.asList(edgeKeyFactory, vertexKeyFactory);
+        //Load some mutation data
+        String path = TestUtils.DATA_DIR + "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz";
+        ResourceLocator locator = new ResourceLocator(path);
 
-        while ((line = reader.readLine()) != null) {
-            String[] tokens = line.split("\\t");
-            if (tokens.length != 3) {
-                System.out.println("Bad line: " + line);
-                continue;
-            }
-            String[] stringinfo = tokens[1].split(":");
-            //TODO Validate line
-            //Line labels, IN ORDER
-            String[] names = new String[]{"type", "datasource", "evidence_codes", "pubmed_ids", "entrez_id_a", "entrez_id_b"};
-            BaseElement edge = new Edge(edgeKeyFactory);
-            for (int ii = 0; ii < names.length; ii++) {
-                edge.put(names[ii], stringinfo[ii]);
-            }
+        //IGV igv = TestUtils.startGUI();
+        List<Track> tracks = new TrackLoader().load(locator, genome);
 
-            Vertex v1 = new Vertex(tokens[0], vertexKeyFactory);
-            Vertex v2 = new Vertex(tokens[2], vertexKeyFactory);
-
-            graph.addVertex(v1);
-            graph.addVertex(v2);
-            graph.addEdge(v1, v2, edge);
+        for (Vertex v : geneNetwork.vertexSet()) {
+            assertFalse(v.containsKey(GeneNetwork.FRACTION_MUTATED));
         }
 
-        GraphMLExporter exporter = new GraphMLExporter();
-        exporter.exportGraph(filepath, graph, factoryList);
+        geneNetwork.collectMutationData(tracks);
+
+        for (Vertex v : geneNetwork.vertexSet()) {
+            assertTrue(v.containsKey(GeneNetwork.FRACTION_MUTATED));
+        }
+
+        exporter.exportGraph(filepath, geneNetwork, geneNetwork.factoryList);
     }
+
+    @Test
+    public void testFilterGraph() throws Exception {
+        String filepath = "test/data/out/test_cbio.graphml";
+        String[] gene_list = new String[]{"EGFR", "BRCA1"};
+        final String key = GeneNetwork.COLUMN_NAMES[2];
+        final String badval = "NA";
+
+        GeneNetwork geneNetwork = new GeneNetwork();
+        int initSize = geneNetwork.loadCBioLines(gene_list);
+
+        Predicate has_evidence = new Predicate<BaseElement>() {
+            public boolean evaluate(BaseElement object) {
+                return object.containsKey(key)
+                        && !badval.equals(object.get(key));
+            }
+        };
+
+
+        assertTrue(geneNetwork.filterEdges(has_evidence));
+
+        for (BaseElement e : geneNetwork.edgeSet()) {
+            assertFalse(badval.equals(e.get(key)));
+        }
+    }
+
 
     /**
      * Test that graph is consistent (no duplicate vertices or edges).
@@ -112,7 +157,7 @@ public class GeneNetworkTest {
         int numv = 20;
         String[] vertex_labels = new String[numv];
         String[] seed_attribs = new String[]{"attr1", "score", "squizzle", "thenadierwalzoftreachery"};
-        String[] test_attribs = new String[]{"attr1", "score", "squizzle", "thenadierwalzoftreachery"};
+        String[] test_attribs = seed_attribs.clone();
 
         for (int ii = 0; ii < numv; ii++) {
             vertex_labels[ii] = "v" + ii;
@@ -133,10 +178,90 @@ public class GeneNetworkTest {
             }
             assertFalse(graph.addVertex(v));
         }
-
         assertEquals(numv, graph.vertexSet().size());
+    }
 
+    @Test
+    public void testPruneGraph() throws Exception {
+        int size = 10;
+        int exp_edges = size - 1 + size - 1;
+        KeyFactory nodeKF = new KeyFactory("testPruneGraph");
+        KeyFactory edgeKF = new KeyFactory("testPruneGraphEdge");
+        GeneNetwork.SimpleVertexFactory vFactory = new GeneNetwork.SimpleVertexFactory(nodeKF);
+        GeneNetwork.SimpleEdgeFactory eFactory = new GeneNetwork.SimpleEdgeFactory(edgeKF);
+        GeneNetwork graph = new GeneNetwork(eFactory);
+
+
+        //Bicycle wheel. Hub node is connected to all elements, outer elements
+        //conected in ring.
+        WheelGraphGenerator<Vertex, BaseElement> wgg = new WheelGraphGenerator<Vertex, BaseElement>(size);
+        wgg.generateGraph(graph, vFactory, null);
+        assertEquals(size, graph.vertexSet().size());
+        assertEquals(exp_edges, graph.edgeSet().size());
+
+        //Find first spoke vertex, isolate it.
+        Vertex toRem = null;
+        for (Vertex v : graph.vertexSet()) {
+            if (graph.edgesOf(v).size() < size && graph.edgesOf(v).size() == 3) {
+                //Spoke vertex
+                toRem = v;
+                break;
+            }
+        }
+
+        Set<BaseElement> edges = new HashSet<BaseElement>();
+        for (BaseElement e : graph.edgesOf(toRem)) {
+            edges.add(e);
+        }
+        assertTrue(graph.removeAllEdges(edges));
+
+        //At this point, toRem should be isolated
+        assertEquals(0, graph.edgesOf(toRem).size());
+        assertTrue(graph.pruneGraph());
+
+        assertEquals(size - 1, graph.vertexSet().size());
+        assertEquals(exp_edges - 3, graph.edgeSet().size());
+        assertFalse(graph.containsVertex(toRem));
+
+        int trials = 10;
+        for (int ii = 0; ii < trials; ii++) {
+            assertFalse(graph.pruneGraph());
+        }
 
     }
+
+
+    /*
+    for(Vertex v: rejected){
+        assertTrue(geneNetwork.removeVertex(v));
+    }
+    //assertTrue(rejected.size() > 0);
+    assertEquals(initSize - rejected.size(), geneNetwork.vertexSet().size());
+
+
+
+    List<Track> tracks = IGV.getInstance().getAllTracks(false);
+    for(Track track: tracks){
+        if (track.getTrackType() == TrackType.MUTATION) {
+            track.getRegionScore()?
+        }
+    }
+
+
+    MutationParser parser = new MutationParser();
+    Map<String, List<org.broad.tribble.Feature>> mutations =  parser.loadMutations(locator, genome);
+    System.out.println(mutations.size());
+
+    for(String s: mutations.keySet()){
+        List<Feature> features = mutations.get(s);
+        for(Feature f: features){
+            System.out.println(f.getClass());
+            //This doesn't work for obvious reasons, but the flow should be clear.
+            //Load the list of features from FeatureDB
+            //FeatureUtils.getFeatureAt(f.getStart(), f.getEnd() - f.getStart(), graph.vertexSet());
+        }
+
+    }
+    */
 
 }

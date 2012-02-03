@@ -206,7 +206,10 @@ public class GraphMLExporter<V extends BaseElement, E extends Edge> {
         for (DataKey dataKey : dataKeys) {
             key = document.createElement("key");
             key.setAttribute("id", dataKey.getKey());
-            key.setAttribute("type", dataKey.getType().toLowerCase());
+            //TODO id is supposed to unique, attr.name human readable.
+            //Not quite sure of any reason they can't be the same.
+            //key.setAttribute("attr.name", dataKey.getKey());
+            key.setAttribute("attr.type", dataKey.getType().toLowerCase());
 
             if (typeFor != null) {
                 key.setAttribute("for", typeFor);
@@ -226,7 +229,8 @@ public class GraphMLExporter<V extends BaseElement, E extends Edge> {
         Element data;
         for (DataKey s : sourceData.keySet()) {
             data = document.createElement("data");
-            data.setAttribute(s.getKey(), sourceData.get(s));
+            data.setAttribute("key", s.getKey());
+            data.setTextContent(sourceData.get(s));
             dest.appendChild(data);
         }
     }
