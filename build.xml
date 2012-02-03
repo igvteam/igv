@@ -40,6 +40,7 @@
 
     <!-- Create class path for manifest -->
     <path id="@jars">
+
         <pathelement path="${lib.dir}AbsoluteLayout.jar"/>
         <pathelement path="${lib.dir}batik-bridge.jar"/>
         <pathelement path="${lib.dir}batik-codec.jar"/>
@@ -66,11 +67,12 @@
         <pathelement path="${lib.dir}jide-dialogs.jar"/>
         <pathelement path="${lib.dir}jide-dock.jar"/>
         <pathelement path="${lib.dir}jide-grids.jar"/>
+        <pathelement path="${lib.dir}jgrapht-jdk1.6.jar"/>
         <pathelement path="${lib.dir}jlfgr-1_0.jar"/>
         <pathelement path="${lib.dir}junit-4.5.jar"/>
         <pathelement path="${lib.dir}log4j-1.2.15.jar"/>
         <pathelement path="${lib.dir}mysql-connector-java-3.1.14-bin.jar"/>
-        <pathelement path="${lib.dir}sam-1.57.jar"/>
+        <pathelement path="${lib.dir}sam-1.61.jar"/>
         <pathelement path="${lib.dir}swing-layout-1.0.jar"/>
         <pathelement path="${lib.dir}tribble-0.1.jar"/>
         <pathelement path="${lib.dir}vcf.jar"/>
