@@ -123,31 +123,12 @@ public class WiggleParser {
      */
     public static boolean isWiggle(ResourceLocator file) {
 
-        if (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr")) {
+        if (file.getPath().endsWith("CpG.txt") || file.getPath().endsWith(".expr") || file.getPath().endsWith(".wig")) {
             return true;
-        }
-        AsciiLineReader reader = null;
-        try {
-            reader = ParsingUtils.openAsciiReader(file);
-            String nextLine = null;
-            int lineNo = 0;
-            while ((nextLine = reader.readLine()) != null && (nextLine.trim().length() > 0)) {
-                if (nextLine.startsWith("track") && nextLine.contains("wiggle_0")) {
-                    return true;
-                }
-                if (lineNo++ > 100) {
-                    break;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
             return false;
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
+
         }
-        return false;
     }
 
     public WiggleDataset parse() {
@@ -277,8 +258,7 @@ public class WiggleParser {
                                     endLocations.add(endPosition);
                                     int length = endPosition - startPosition;
                                     updateLongestFeature(length);
-                                }
-                                catch (NumberFormatException numberFormatException) {
+                                } catch (NumberFormatException numberFormatException) {
                                     log.error("Column " + (endColumn + 1) + " is not a number");
 
                                     throw new ParserException("Column " + (endColumn + 1) +
@@ -327,11 +307,9 @@ public class WiggleParser {
             // The last chromosome
             changedChromosome(dataset, lastChr);
 
-        }
-        catch (ParserException pe) {
+        } catch (ParserException pe) {
             throw (pe);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (nextLine != null && reader.getCurrentLineNumber() != 0) {
                 throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
             } else {

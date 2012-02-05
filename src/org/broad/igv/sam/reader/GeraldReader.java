@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,9 +40,9 @@ import java.util.Set;
  *
  * @author jrobinso
  */
-public class GeraldQueryReader implements AlignmentQueryReader {
+public class GeraldReader implements AlignmentReader {
 
-    private static Logger log = Logger.getLogger(GeraldQueryReader.class);
+    private static Logger log = Logger.getLogger(GeraldReader.class);
     static int MAX_READ_LENGTH = 100;
     static int maxTileCount = 20;
     String alignmentFile;
@@ -51,7 +50,7 @@ public class GeraldQueryReader implements AlignmentQueryReader {
     FileInputStream is;
     AlignmentParser parser;
 
-    public GeraldQueryReader(String alignmentFile, boolean requireIndex) {
+    public GeraldReader(String alignmentFile, boolean requireIndex) {
         this.alignmentFile = alignmentFile;
         parser = getParserFor(alignmentFile);
         try {

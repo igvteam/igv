@@ -29,7 +29,7 @@ import org.broad.igv.feature.Strand;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.sam.reader.MergedAlignmentReader;
 import org.broad.igv.tools.parsers.DataConsumer;
@@ -235,7 +235,7 @@ public class CoverageCounter {
         int tolerance = (int) (windowSize * (Math.floor(extFactor / windowSize) + 2));
         consumer.setSortTolerance(tolerance);
 
-        AlignmentQueryReader reader = null;
+        AlignmentReader reader = null;
         CloseableIterator<Alignment> iter = null;
 
         String lastChr = "";
@@ -376,12 +376,12 @@ public class CoverageCounter {
         }
     }
 
-    private AlignmentQueryReader getReader(String alignmentFile, boolean b) throws IOException {
+    private AlignmentReader getReader(String alignmentFile, boolean b) throws IOException {
 
         boolean isList = alignmentFile.indexOf(",") > 0;
         if (isList) {
             String[] tokens = alignmentFile.split(",");
-            List<AlignmentQueryReader> readers = new ArrayList(tokens.length);
+            List<AlignmentReader> readers = new ArrayList(tokens.length);
             for (String f : tokens) {
                 readers.add(AlignmentReaderFactory.getReader(f, b));
             }
@@ -390,7 +390,7 @@ public class CoverageCounter {
             if (!FileUtils.isRemote(alignmentFile)) {
                 File f = new File(alignmentFile);
                 if (f.isDirectory()) {
-                    List<AlignmentQueryReader> readers = new ArrayList();
+                    List<AlignmentReader> readers = new ArrayList();
                     for (File file : f.listFiles(new AlignmentFileFilter())) {
                         readers.add(AlignmentReaderFactory.getReader(file.getAbsolutePath(), b));
                     }

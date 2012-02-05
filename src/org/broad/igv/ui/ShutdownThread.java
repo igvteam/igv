@@ -48,9 +48,16 @@ public class ShutdownThread extends Thread {
 
         DBManager.shutdown();
         CommandListener.halt();
+        cleanupBamIndexCache();
         IGV.getInstance().doExitApplication();
     }
 
+    private static void cleanupBamIndexCache() {
+        File dir = Globals.getBamIndexCacheDirectory();
+        for(File f : dir.listFiles()) {
+            f.delete();
+        }
+    }
 
     private static void writeRegionsOfInterestFile(File roiFile) {
 

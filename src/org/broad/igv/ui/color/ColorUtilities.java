@@ -327,4 +327,18 @@ public class ColorUtilities {
         }
     }
 
+    public static ColorPalette getDefaultPalette() {
+        try {
+            if (palettes == null) {
+                loadPalettes();
+            }
+            if (palettes.isEmpty()) {
+                return null;
+            }
+            return palettes.values().iterator().next();
+        } catch (IOException e) {
+            log.error("Error loading color palletes", e);
+            return null;
+        }
+    }
 }

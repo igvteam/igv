@@ -47,22 +47,25 @@ import java.util.*;
  * Time: 2:21:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BAMHttpQueryReader implements AlignmentQueryReader {
+public class BAMHttpReader implements AlignmentReader {
 
-    static Logger log = Logger.getLogger(BAMHttpQueryReader.class);
+    static Logger log = Logger.getLogger(BAMHttpReader.class);
 
-    static Properties cachedEtags;
+    // Length of day in milliseconds
+    static final long oneDay = 24 * 60 * 60 * 1000;
+
+    static Hashtable<String, File> indexFileCache = new Hashtable<String, File>();
 
     URL url;
     SAMFileHeader header;
     File indexFile;
     SAMFileReader reader;
 
-    public BAMHttpQueryReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+    public BAMHttpReader(ResourceLocator locator, boolean requireIndex) throws IOException {
         this.url = new URL(locator.getPath());
         if (requireIndex) {
             indexFile = getIndexFile(url, locator.getIndexPath());
-            if(indexFile == null) {
+            if (indexFile == null) {
                 throw new RuntimeException("Could not load index file for file: " + url.getPath());
             }
             SeekableStream ss = new SeekableBufferedStream(getSeekableStream(url));
@@ -167,24 +170,33 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
         String urlString = url.toString();
 
         // Create a filename unique for this url;
-        String idxFilename = getTmpIndexFilename(urlString);
+        indexFile = getTmpIndexFile(urlString);
 
-        indexFile = new File(this.getCacheDirectory(), idxFilename);
-        if (indexFile.exists()) {
+        // Crude staleness check -- if more than a day old discard
+        long age = System.currentTimeMillis() - indexFile.lastModified();
+        if (age > oneDay) {
             indexFile.delete();
         }
-        loadIndexFile(urlString, indexPath, indexFile);
-        indexFile.deleteOnExit();
+
+        if (!indexFile.exists()) {
+            loadIndexFile(urlString, indexPath, indexFile);
+            indexFile.deleteOnExit();
+        }
 
         return indexFile;
 
     }
 
-    private String getTmpIndexFilename(String bamURL) {
-        int tmp = bamURL.lastIndexOf("/");
-        String prefix = tmp > 0 ? bamURL.substring(tmp + 1) : "index_";
-        String indexName = prefix + System.currentTimeMillis() + ".bai";
-        return indexName;
+    private File getTmpIndexFile(String bamURL) {
+        File indexFile = indexFileCache.get(bamURL);
+        if (indexFile == null) {
+            int tmp = bamURL.lastIndexOf("/");
+            String prefix = tmp > 0 ? bamURL.substring(tmp + 1) : "index_";
+            String indexName = prefix + System.currentTimeMillis() + ".bai";
+            indexFile = new File(Globals.getBamIndexCacheDirectory(), indexName);
+            indexFileCache.put(bamURL, indexFile);
+        }
+        return indexFile;
     }
 
     private void loadIndexFile(String path, String indexPath, File indexFile) throws IOException {
@@ -235,81 +247,4 @@ public class BAMHttpQueryReader implements AlignmentQueryReader {
     }
 
 
-    // TODO -- move everything below to a utility class
-    static File cacheDirectory = null;
-
-    static synchronized File getCacheDirectory() {
-        if (cacheDirectory == null) {
-            File defaultDir = Globals.getIgvDirectory();
-            if (defaultDir.exists()) {
-                cacheDirectory = new File(defaultDir, "bam");
-                if (!cacheDirectory.exists()) {
-                    cacheDirectory.mkdir();
-                }
-            }
-        }
-        return cacheDirectory;
-    }
-
-    static Properties tagCache = null;
-    static Properties indexLookup = null;
-
-    static synchronized Properties getTagCache() {
-        if (tagCache == null) {
-            tagCache = loadCachedProperties("etags");
-        }
-        return tagCache;
-    }
-
-    static synchronized Properties getIndexCache() {
-        if (indexLookup == null) {
-            indexLookup = loadCachedProperties("index");
-        }
-        return indexLookup;
-    }
-
-    private static Properties loadCachedProperties(String name) {
-        File propFile = new File(getCacheDirectory(), name);
-        Properties props = new Properties();
-        if (propFile.exists()) {
-            InputStream reader = null;
-            try {
-                reader = new FileInputStream(propFile);
-                props.load(reader);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-        return props;
-    }
-
-
-    private static void writeCachedProperties(Properties props, String name) {
-        OutputStream os = null;
-        try {
-            File propFile = new File(getCacheDirectory(), name);
-            os = new FileOutputStream(propFile);
-            props.store(os, null);
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } finally {
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-        }
-    }
 }

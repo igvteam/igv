@@ -40,6 +40,7 @@ import javax.swing.*;
 import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -654,6 +655,15 @@ menuAction =
         };
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
+        final JCheckBoxMenuItem cb1 = new JCheckBoxMenuItem("VCF->BAM Enabled  *EXPERIMENTAL*");
+        cb1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                PreferenceManager.getInstance().put(PreferenceManager.VCF_TO_BAM_ENABLED, String.valueOf(cb1.isSelected()));
+            }
+        });
+        cb1.setSelected(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.VCF_TO_BAM_ENABLED));
+
+        menuItems.add(cb1);
 
         menuItems.add(new JSeparator());
 

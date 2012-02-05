@@ -25,8 +25,8 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.reader.BAMQueryReader;
-import org.broad.igv.sam.reader.SamQueryTextReader;
+import org.broad.igv.sam.reader.BAMFileReader;
+import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -65,7 +65,7 @@ public class BAMQueryReaderTest {
         int start = end / 5;
         int stopafter = 10;
         int counter = 0;
-        BAMQueryReader bamreader = new BAMQueryReader(new File(bamfile));
+        BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
         CloseableIterator<Alignment> bamiter = bamreader.query(chr, start, end, true);
         while (bamiter.hasNext()) {
             Alignment bamrecord = bamiter.next();
@@ -99,8 +99,8 @@ public class BAMQueryReaderTest {
         int end = 300000000;
         int start = end / 5;
 
-        BAMQueryReader bamreader = new BAMQueryReader(new File(bamfile));
-        SamQueryTextReader samreader = new SamQueryTextReader(samfile);
+        BAMFileReader bamreader = new BAMFileReader(new File(bamfile));
+        SAMReader samreader = new SAMReader(samfile);
         CloseableIterator<Alignment> bamiter = bamreader.query(chr, start, end, true);
         CloseableIterator<Alignment> samiter = samreader.iterator();
         int count = 0;

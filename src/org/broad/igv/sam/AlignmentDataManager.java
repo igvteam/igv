@@ -24,8 +24,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.SamListReader;
-import org.broad.igv.track.MultiFileWrapper;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.FrameManager;
@@ -67,18 +65,15 @@ public class AlignmentDataManager {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
         maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
-
-        if (locator.getPath().endsWith(".sam.list")) {
-            MultiFileWrapper mfw = MultiFileWrapper.parse(locator);
-            reader = new CachingQueryReader(new SamListReader(mfw.getLocators()));
-        } else {
-            reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
-        }
+        reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
         initChrMap();
     }
 
-
+    /**
+     * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
+     * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
+     */
     private void initChrMap() {
         Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
         if (genome != null) {

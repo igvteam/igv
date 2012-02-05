@@ -25,7 +25,7 @@ package org.broad.igv.sam;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.broad.igv.sam.reader.BAMRemoteQueryReader;
+import org.broad.igv.sam.reader.BAMWebserviceReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
@@ -114,7 +114,7 @@ public class BAMRemoteQueryReaderTest {
 
     private void checkReader(ResourceLocator locator, String chr, int start, int end, boolean contained) {
         Alignment al = null;
-        BAMRemoteQueryReader instance = new BAMRemoteQueryReader(locator);
+        BAMWebserviceReader instance = new BAMWebserviceReader(locator);
         CloseableIterator<Alignment> result = instance.query(chr, start, end, contained);
         //long t0 = System.currentTimeMillis();
         int count = 0;

@@ -63,7 +63,7 @@ public class MergedAlignmentReaderTest {
         int num_sep = 0;
         Alignment align;
 
-        AlignmentQueryReader mergedReader = AlignmentReaderFactory.getMergedReader(file, false);
+        AlignmentReader mergedReader = AlignmentReaderFactory.getBamListReader(file, false);
         SAMFileHeader mergedHeader = mergedReader.getHeader();
         CloseableIterator<Alignment> combData = mergedReader.query("chr1", start, end, false);
 
@@ -80,7 +80,7 @@ public class MergedAlignmentReaderTest {
 
         BufferedReader in = new BufferedReader(new FileReader(file));
         String singfile = in.readLine();
-        AlignmentQueryReader singReader = AlignmentReaderFactory.getReader(singfile, false);
+        AlignmentReader singReader = AlignmentReaderFactory.getReader(singfile, false);
         SAMFileHeader singHeader = singReader.getHeader();
 
         //Compare the headers

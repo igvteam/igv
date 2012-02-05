@@ -19,15 +19,12 @@
 package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMFileHeader;
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMRecord;
 import net.sf.samtools.util.CloseableIterator;
 
 import java.io.IOException;
 import java.util.*;
-import net.sf.samtools.SAMFileReader.ValidationStringency;
+
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
 
 /**
  * Performs a logical merge of bam files.
@@ -38,11 +35,11 @@ import org.broad.igv.sam.reader.AlignmentQueryReader;
  * User: jrobinso
  * Date: Apr 25, 2010
  */
-public class MergedAlignmentReader2 implements AlignmentQueryReader {
+public class MergedAlignmentReader2 implements AlignmentReader {
 
-    Collection<AlignmentQueryReader> readers;
+    Collection<AlignmentReader> readers;
 
-    public MergedAlignmentReader2(Collection<AlignmentQueryReader> readers) {
+    public MergedAlignmentReader2(Collection<AlignmentReader> readers) {
         this.readers = readers;
     }
 
@@ -55,7 +52,7 @@ public class MergedAlignmentReader2 implements AlignmentQueryReader {
     }
 
     public void close() throws IOException {
-        for (AlignmentQueryReader reader : readers) {
+        for (AlignmentReader reader : readers) {
             reader.close();
         }
     }
@@ -85,7 +82,7 @@ public class MergedAlignmentReader2 implements AlignmentQueryReader {
 
         public MergedFileIterator() {
             iterators = new PriorityQueue(readers.size());
-            for (AlignmentQueryReader reader : readers) {
+            for (AlignmentReader reader : readers) {
                 CloseableIterator<Alignment> iter = reader.iterator();
                 if (iter.hasNext()) {
                     iterators.add(new RecordIterWrapper(iter));
@@ -96,7 +93,7 @@ public class MergedAlignmentReader2 implements AlignmentQueryReader {
 
         public MergedFileIterator(String chr, int start, int end, boolean contained) throws IOException {
             iterators = new PriorityQueue(readers.size(), new FooComparator());
-            for (AlignmentQueryReader reader : readers) {
+            for (AlignmentReader reader : readers) {
                 CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
                 if (iter.hasNext()) {
                     ArrayList<Alignment> records = new ArrayList();

@@ -35,13 +35,11 @@ public class LongRunningTask implements Callable {
     private static ExecutorService threadExecutor = Executors.newFixedThreadPool(10);
     private static ScheduledExecutorService schedule = Executors.newScheduledThreadPool(1);
 
-    NamedRunnable runnable;
+    Runnable runnable;
 
-    public static Future submit(NamedRunnable runnable) {
+    public static Future submit(Runnable runnable) {
         if (Globals.isBatch() || !IGV.getInstance().isStartupComplete()) {
-            log.debug("Running: " + runnable.getName());
             runnable.run();
-            log.debug("Finished : " + runnable.getName());
             return null;
         } else {
 
@@ -57,11 +55,11 @@ public class LongRunningTask implements Callable {
      * @param time
      * @return
      */
-    public static Future schedule(NamedRunnable runnable, long time) {
+    public static Future schedule(Runnable runnable, long time) {
         return schedule.schedule(new LongRunningTask(runnable), time, TimeUnit.MILLISECONDS);
     }
 
-    public LongRunningTask(NamedRunnable runnable) {
+    public LongRunningTask(Runnable runnable) {
         this.runnable = runnable;
     }
 
@@ -69,19 +67,12 @@ public class LongRunningTask implements Callable {
 
         CursorToken token = WaitCursorManager.showWaitCursor();
         try {
-            //log.info("Running " + runnable.getName());
-            long t0 = System.currentTimeMillis();
             runnable.run();
-            if (log.isDebugEnabled()) {
-                long dt = System.currentTimeMillis() - t0;
-                log.debug(runnable.getName() + "  time= " + dt);
-            }
             return null;
-        } catch(Exception e) {
-            log.error("Exception running task: " + runnable.getName(), e);
+        } catch (Exception e) {
+            log.error("Exception running task", e);
             return null;
-        }
-        finally {
+        } finally {
             //log.info("Removing wait cursor " + runnable.getName());
             WaitCursorManager.removeWaitCursor(token);
         }

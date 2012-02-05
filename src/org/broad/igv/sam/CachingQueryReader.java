@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
@@ -78,13 +78,13 @@ public class CachingQueryReader {
     private float visibilityWindow = 16;    // Visibility window,  in KB
     private String cachedChr = "";
     private int tileSize;
-    private AlignmentQueryReader reader;
+    private AlignmentReader reader;
     private boolean cancel = false;
     private LRUCache<Integer, AlignmentTile> cache;
     private boolean pairedEnd = false;
 
 
-    public CachingQueryReader(AlignmentQueryReader reader) {
+    public CachingQueryReader(AlignmentReader reader) {
         this.reader = reader;
         activeReaders.add(new WeakReference<CachingQueryReader>(this));
         updateCache();
@@ -112,7 +112,7 @@ public class CachingQueryReader {
         }
     }
 
-    public AlignmentQueryReader getWrappedReader() {
+    public AlignmentReader getWrappedReader() {
         return reader;
     }
 

@@ -31,11 +31,11 @@ import java.util.*;
  * User: jrobinso
  * Date: Apr 25, 2010
  */
-public class MergedAlignmentReader implements AlignmentQueryReader {
+public class MergedAlignmentReader implements AlignmentReader {
 
-    Collection<AlignmentQueryReader> readers;
+    Collection<AlignmentReader> readers;
 
-    public MergedAlignmentReader(Collection<AlignmentQueryReader> readers) {
+    public MergedAlignmentReader(Collection<AlignmentReader> readers) {
         this.readers = readers;
     }
 
@@ -48,7 +48,7 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
     }
 
     public void close() throws IOException {
-        for (AlignmentQueryReader reader : readers) {
+        for (AlignmentReader reader : readers) {
             reader.close();
         }
     }
@@ -94,7 +94,7 @@ public class MergedAlignmentReader implements AlignmentQueryReader {
         private void create(String chr, int start, int end, boolean contained) throws IOException {
             iteratorQueue = new PriorityQueue(readers.size(), new FooComparator());
             boolean iterate = (start == end) && (start == -1);
-            for (AlignmentQueryReader reader : readers) {
+            for (AlignmentReader reader : readers) {
                 CloseableIterator<Alignment> iter;
                 if (iterate) {
                     iter = reader.iterator();

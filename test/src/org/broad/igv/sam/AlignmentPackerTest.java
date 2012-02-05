@@ -25,7 +25,7 @@ package org.broad.igv.sam;
 
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.AfterClass;
@@ -71,7 +71,7 @@ public class AlignmentPackerTest {
         boolean contained = false;
 
         ResourceLocator rl = new ResourceLocator(path);
-        AlignmentQueryReader samReader = AlignmentReaderFactory.getReader(rl);
+        AlignmentReader samReader = AlignmentReaderFactory.getReader(rl);
         CloseableIterator<Alignment> iter = samReader.query(chr, start, end, contained);
         ///////////////////////////
 

@@ -1534,13 +1534,8 @@ public class IGV {
 
     /**
      * Load the data file into the specified panel.   Triggered via drag and drop.
-     *
-     * @param file
-     * @param panel
-     * @return
      */
-    public void load(File file, TrackPanel panel) {
-        ResourceLocator locator = new ResourceLocator(file.getAbsolutePath());
+    public void load(ResourceLocator locator, TrackPanel panel) {
         List<Track> tracks = load(locator);
         panel.addTracks(tracks);
         doRefresh();
@@ -1565,9 +1560,12 @@ public class IGV {
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+        if("alist".equals(locator.getType())) {
+            return getVcfBamPanel();
+        }
+        else if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
-        } else if (path.endsWith(".sam") || path.endsWith(".bam") || path.endsWith(".bam.hg19") ||
+        } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
                 path.endsWith(".aligned") || path.endsWith(".sorted.txt")) {
 
@@ -1579,6 +1577,21 @@ public class IGV {
             //    return igv.addDataPanel(newPanelName).getTrackPanel();
         } else {
             return getDefaultPanel(locator);
+        }
+    }
+
+    /**
+     * Experimental method to support VCF -> BAM coupling
+     *
+     * @return
+     */
+    public TrackPanel getVcfBamPanel() {
+        String panelName = "VCF_BAM";
+        TrackPanel panel = getTrackPanel(panelName);
+        if (panel != null) {
+            return panel;
+        } else {
+            return addDataPanel(panelName).getTrackPanel();
         }
     }
 

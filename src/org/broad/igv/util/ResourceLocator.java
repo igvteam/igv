@@ -46,6 +46,10 @@ public class ResourceLocator {
     String infolink; // A hyperlink to general information about the track.
     String url; //A URL pattern (UCSC convention) to a specific URL applicable to each feature
     String description; //Descriptive text
+
+    /**
+     * The type of resource
+     */
     String type;
 
     /**

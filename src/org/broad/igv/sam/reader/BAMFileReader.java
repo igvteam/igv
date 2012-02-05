@@ -38,16 +38,15 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public class BAMQueryReader implements AlignmentQueryReader {
+public class BAMFileReader implements AlignmentReader {
 
-    private static Logger log = Logger.getLogger(BAMQueryReader.class);
+    private static Logger log = Logger.getLogger(BAMFileReader.class);
     SAMFileReader reader;
-    BAMIndex index;
     SAMFileHeader header;
 
-    public BAMQueryReader(File samFile) {
+    public BAMFileReader(File bamFile) {
         try {
-            reader = new SAMFileReader(samFile);
+            reader = new SAMFileReader(bamFile);
             reader.setValidationStringency(ValidationStringency.SILENT);
             loadHeader();
         } catch (Exception e) {

@@ -23,7 +23,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.hic.data.Chromosome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.File;
@@ -93,7 +93,7 @@ public class HiCTools {
     public static void filterBam(String inputBam, String outputFile) throws IOException {
 
         CloseableIterator<Alignment> iter = null;
-        AlignmentQueryReader reader = null;
+        AlignmentReader reader = null;
         PrintWriter pw = null;
 
         HashSet allChroms = new HashSet(Arrays.asList(chromosomes));

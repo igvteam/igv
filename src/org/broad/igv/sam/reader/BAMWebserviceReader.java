@@ -41,16 +41,18 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 /**
+ * Reader for querying a "bam" webservice.
+ *
  * @author jrobinso
  */
-public class BAMRemoteQueryReader implements AlignmentQueryReader {
+public class BAMWebserviceReader implements AlignmentReader {
 
-    Logger log = Logger.getLogger(BAMRemoteQueryReader.class);
+    Logger log = Logger.getLogger(BAMWebserviceReader.class);
     String serverURL;
     String file;
     SAMFileHeader header;
 
-    public BAMRemoteQueryReader(ResourceLocator locator) {
+    public BAMWebserviceReader(ResourceLocator locator) {
         this.serverURL = locator.getServerURL();
         this.file = locator.getPath();
         loadHeader();

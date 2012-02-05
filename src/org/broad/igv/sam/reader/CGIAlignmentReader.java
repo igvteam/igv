@@ -12,22 +12,22 @@ import org.broad.igv.util.HttpUtils;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Reader for querying a CGI service for SAM (note not BAM) files.
+ *
  * @author Jim Robinson
  * @date 12/15/11
- * <p/>
- * http://philtest.batcave.net/query.cgi?file=input.sam&start=800&end=900&contained=true
- * http://philtest.batcave.net/samHeader.cgi?file=input.sam
- * http://philtest.batcave.net/getSequenceNames.cgi?file=input.sam
- * <p/>
- * host: philtest.batcave.net
- * query: file=input.sam&start=800&end=900&contained=true
- */
-public class CGIAlignmentReader implements AlignmentQueryReader {
+ *
+ * Example URLs:
+ * http://host/query.cgi?file=input.sam&start=800&end=900&contained=true
+ * http://host/samHeader.cgi?file=input.sam
+ * http://phhost/getSequenceNames.cgi?file=input.sam
+*/
+
+public class CGIAlignmentReader implements AlignmentReader {
 
     private static Logger log = Logger.getLogger(CGIAlignmentReader.class);
 
@@ -70,9 +70,7 @@ public class CGIAlignmentReader implements AlignmentQueryReader {
         //Nothing to do.  Could notify server that we are done, if that is useful
     }
 
-    // TODO -- nearly exact copy of BAMRemoteQueryReader, only url differs. -- refactor
-
-    /**
+     /**
      * Try to load header, if there are any errors just set to null and continue.  The header is optional
      */
     private void loadHeader() {

@@ -20,9 +20,13 @@ package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackLoader;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.util.LongRunningTask;
+import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -41,7 +45,7 @@ public class VariantMenu extends IGVPopupMenu {
 
     private static Logger log = Logger.getLogger(VariantMenu.class);
     private VariantTrack track;
-
+    private List<String> selectedSamples;
     static boolean depthSortingDirection;
     static boolean genotypeSortingDirection;
     static boolean sampleSortingDirection;
@@ -50,6 +54,10 @@ public class VariantMenu extends IGVPopupMenu {
     public VariantMenu(final VariantTrack variantTrack, Variant variant) {
 
         this.track = variantTrack;
+
+        if (track.isVcfToBamMode()) {
+            selectedSamples = track.getSelectedSamples();
+        }
 
         this.addPopupMenuListener(new PopupMenuListener() {
             public void popupMenuWillBecomeVisible(PopupMenuEvent popupMenuEvent) {
@@ -131,6 +139,12 @@ public class VariantMenu extends IGVPopupMenu {
 
         add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
+
+        if (track.isVcfToBamMode()) {
+            addSeparator();
+            add(getLoadBamsItem());
+        }
+
 
         addSeparator();
         add(TrackMenuUtils.getRemoveMenuItem(Arrays.asList(new Track[]{this.track})));
@@ -356,6 +370,44 @@ public class VariantMenu extends IGVPopupMenu {
         return items;
     }
 
+    /**
+     * Load bam files associated with the selected samples (experimental).
+     * @return
+     */
+    private JMenuItem getLoadBamsItem() {
+        final JMenuItem item = new JMenuItem("Load bams");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        // Use a set to enforce uniqueness
+                        Set<String> bams = new HashSet<String>(selectedSamples.size());
+                        for (String sample : selectedSamples) {
+                            bams.add(track.getBamFileForSample(sample));
+                        }
+                        String bamList = "";
+                        for(String bam : bams) {
+                            bamList += bam + ",";
+                        }
+                        ResourceLocator loc = new ResourceLocator(bamList);
+                        loc.setType("alist");
+                        loc.setName(bamList);
+                        List<Track> tracks = IGV.getInstance().load(loc);
+
+                        TrackPanel panel = IGV.getInstance().getVcfBamPanel();
+                        panel.clearTracks();
+                        panel.addTracks(tracks);
+                    }
+                };
+
+                LongRunningTask.submit(runnable);
+            }
+        });
+        item.setEnabled(selectedSamples != null && selectedSamples.size() > 0);
+        return item;
+    }
+
 
     static class GenotypeComparator implements Comparator<String> {
 
@@ -407,11 +459,11 @@ public class VariantMenu extends IGVPopupMenu {
         public int compare(String s1, String s2) {
 
 
-            Double readDepth1 = variant.getGenotype(s1).  getAttributeAsDouble("DP");
+            Double readDepth1 = variant.getGenotype(s1).getAttributeAsDouble("DP");
             Double readDepth2 = variant.getGenotype(s2).getAttributeAsDouble("DP");
 
             double depth1 = readDepth1 == null ? -1 : readDepth1.doubleValue();
-            double depth2  = readDepth2 == null ? -1 : readDepth2.doubleValue();
+            double depth2 = readDepth2 == null ? -1 : readDepth2.doubleValue();
             if (depth2 == depth1) {
                 return 0;
             } else if (depth2 < depth1) {

@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * @author jrobinso
  */
-public interface AlignmentQueryReader {
+public interface AlignmentReader {
 
     void close() throws IOException;
 

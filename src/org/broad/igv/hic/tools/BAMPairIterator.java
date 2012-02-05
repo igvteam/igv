@@ -21,13 +21,10 @@ package org.broad.igv.hic.tools;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.ReadMate;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
 
 /**
  * @author Jim Robinson
@@ -37,7 +34,7 @@ public class BAMPairIterator implements PairIterator {
 
     AlignmentPair nextPair = null;
     CloseableIterator<Alignment> iterator;
-    private AlignmentQueryReader reader;
+    private AlignmentReader reader;
 
     public BAMPairIterator(String path) throws IOException {
 

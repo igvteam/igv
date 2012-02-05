@@ -20,8 +20,7 @@
 package org.broad.igv.goby;
 
 import org.broad.igv.sam.Alignment;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
-import org.broad.igv.goby.GobyAlignmentIterator;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.util.Set;
 
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
-import edu.cornell.med.icb.goby.alignments.AlignmentReader;
 import edu.cornell.med.icb.goby.alignments.AlignmentReaderImpl;
 import edu.cornell.med.icb.identifier.DoubleIndexedIdentifier;
 import edu.cornell.med.icb.identifier.IndexedIdentifier;
@@ -46,7 +44,7 @@ import it.unimi.dsi.lang.MutableString;
  *         Date: Jun 29, 2010
  *         Time: 11:43:18 AM
  */
-public class GobyAlignmentQueryReader implements AlignmentQueryReader {
+public class GobyAlignmentQueryReader implements AlignmentReader {
     private static final Logger LOG = Logger.getLogger(GobyAlignmentQueryReader.class);
 
     private AlignmentReaderImpl reader = null;

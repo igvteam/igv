@@ -45,19 +45,19 @@ import java.util.Set;
  *
  * @author jrobinso
  */
-public class SamQueryTextReader implements AlignmentQueryReader {
+public class SAMReader implements AlignmentReader {
 
-    static Logger log = Logger.getLogger(SamQueryTextReader.class);
+    static Logger log = Logger.getLogger(SAMReader.class);
     String samFile;
     FeatureIndex featureIndex;
     SAMFileHeader header;
 
 
-    public SamQueryTextReader(String samFile) throws IOException {
+    public SAMReader(String samFile) throws IOException {
         this(samFile, true);
     }
 
-    public SamQueryTextReader(String samFile, boolean requireIndex) throws IOException {
+    public SAMReader(String samFile, boolean requireIndex) throws IOException {
         this.samFile = samFile;
         loadHeader();
 

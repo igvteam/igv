@@ -36,6 +36,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -44,6 +45,8 @@ import java.util.zip.GZIPInputStream;
 public class ParsingUtils {
 
     private static Logger log = Logger.getLogger(ParsingUtils.class);
+    public static final Pattern TAB_PATTERN = Pattern.compile("\t");
+    public static final Pattern COMMA_PATTERN = Pattern.compile(",");
 
 
     /**

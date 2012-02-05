@@ -198,11 +198,11 @@ public class TrackLoader {
                 loadGeneFile(locator, newTracks, genome);
             } else if (typeString.contains(".tabblastn") || typeString.endsWith(".orthologs")) {
                 loadSyntentyMapping(locator, newTracks);
-            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") || typeString.endsWith(".bam.hg19") ||
+            } else if (typeString.endsWith(".sam") || typeString.endsWith(".bam") ||
                     typeString.endsWith(".sam.list") || typeString.endsWith(".bam.list") ||
                     typeString.endsWith("_sorted.txt") ||
                     typeString.endsWith(".aligned") || typeString.endsWith(".sai") ||
-                    typeString.endsWith(".bai")) {
+                    typeString.endsWith(".bai") || typeString.equals("alist")) {
                 loadAlignmentsTrack(locator, newTracks, genome);
             } else if (typeString.endsWith(".bedz")) {
                 loadIndexedBedzFile(locator, newTracks, genome);
@@ -906,12 +906,7 @@ public class TrackLoader {
         newTracks.add(t);
     }
 
-    /**
-     * Load a rnai gene score file and create a datasource and track.
-     *
-     * @param locator
-     * @param newTracks
-     */
+
     private void loadAlignmentsTrack(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         try {

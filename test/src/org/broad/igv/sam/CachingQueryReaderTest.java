@@ -25,10 +25,8 @@ package org.broad.igv.sam;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
-import org.broad.igv.sam.reader.BAMQueryReader;
-import org.broad.igv.sam.reader.BAMRemoteQueryReader;
 import org.broad.igv.util.ResourceLocator;
 import org.junit.*;
 
@@ -81,7 +79,7 @@ public class CachingQueryReaderTest {
     public void testGetHeader() throws IOException {
 
         ResourceLocator loc = new ResourceLocator(testFile);
-        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(loc);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
         SAMFileHeader expectedHeader = reader.getHeader();
         reader.close();
 
@@ -104,7 +102,7 @@ public class CachingQueryReaderTest {
     public void testQuery() throws IOException {
 
         ResourceLocator loc = new ResourceLocator(testFile);
-        AlignmentQueryReader reader = AlignmentReaderFactory.getReader(loc);
+        AlignmentReader reader = AlignmentReaderFactory.getReader(loc);
         CloseableIterator<Alignment> iter = reader.query(sequence, start, end, contained);
         //TODO the results may be returned in a different order. Not sure if that's a bug or not
         Map<String, Alignment> expectedResult = new HashMap();

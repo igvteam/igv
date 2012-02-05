@@ -29,10 +29,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author jrobinso
@@ -44,26 +41,28 @@ public class AlignmentReaderFactory {
         SAMFileReader.setDefaultValidationStringency(SAMFileReader.ValidationStringency.SILENT);
     }
 
-    public static AlignmentQueryReader getReader(String path, boolean requireIndex) throws IOException {
+    public static AlignmentReader getReader(String path, boolean requireIndex) throws IOException {
         return getReader(new ResourceLocator(path), requireIndex);
     }
 
-    public static AlignmentQueryReader getReader(ResourceLocator locator) throws IOException {
+    public static AlignmentReader getReader(ResourceLocator locator) throws IOException {
         return getReader(locator, true);
     }
 
-    public static AlignmentQueryReader getReader(ResourceLocator locator, boolean requireIndex) throws IOException {
+    public static AlignmentReader getReader(ResourceLocator locator, boolean requireIndex) throws IOException {
 
         String pathLowerCase = locator.getPath().toLowerCase();
 
-        AlignmentQueryReader reader = null;
+        AlignmentReader reader = null;
 
         String samFile = locator.getPath();
 
-        if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
+        if ("alist".equals(locator.getType())) {
+            reader = getMergedReader(locator.getPath(), true);
+        } else if (pathLowerCase.startsWith("http") && pathLowerCase.contains("/query.cgi?")) {
             reader = new CGIAlignmentReader(samFile);
         } else if (pathLowerCase.endsWith(".sam")) {
-            reader = new SamQueryTextReader(samFile, requireIndex);
+            reader = new SAMReader(samFile, requireIndex);
 
         } else if (pathLowerCase.endsWith("sorted.txt")
                 || pathLowerCase.endsWith(".aligned")
@@ -72,13 +71,13 @@ public class AlignmentReaderFactory {
                 || pathLowerCase.endsWith("bed")
                 || pathLowerCase.endsWith("psl")
                 || pathLowerCase.endsWith("pslx")) {
-            reader = new GeraldQueryReader(samFile, requireIndex);
+            reader = new GeraldReader(samFile, requireIndex);
         } else if (pathLowerCase.endsWith(".bam")) {
             if (locator.isLocal()) {
-                reader = new BAMQueryReader(new File(samFile));
+                reader = new BAMFileReader(new File(samFile));
             } else if (HttpUtils.getInstance().isURL(locator.getPath().toLowerCase())) {
                 try {
-                    reader = new BAMHttpQueryReader(locator, requireIndex);
+                    reader = new BAMHttpReader(locator, requireIndex);
                 } catch (MalformedURLException e) {
                     log.error("", e);
                     throw new DataLoadException("Error loading BAM file: " + e.toString(), locator.getPath());
@@ -86,14 +85,14 @@ public class AlignmentReaderFactory {
 
             } else {
                 if (locator.getServerURL() != null) {
-                    reader = new BAMRemoteQueryReader(locator);
+                    reader = new BAMWebserviceReader(locator);
                 }
             }
         } else if (pathLowerCase.endsWith(".bam.list")) {
             if (locator.getServerURL() != null) {
-                reader = new BAMRemoteQueryReader(locator);
+                reader = new BAMWebserviceReader(locator);
             } else {
-                reader = getMergedReader(locator.getPath(), requireIndex);
+                reader = getBamListReader(locator.getPath(), requireIndex);
             }
         } else if (locator.isLocal() && GobyAlignmentQueryReader.supportsFileType(locator.getPath())) {
             try {
@@ -109,9 +108,9 @@ public class AlignmentReaderFactory {
         return reader;
     }
 
-    static MergedAlignmentReader getMergedReader(String listFile, boolean requireIndex) {
+    static AlignmentReader getBamListReader(String listFile, boolean requireIndex) {
 
-        List<AlignmentQueryReader> readers = new ArrayList();
+        List<AlignmentReader> readers = new ArrayList();
         BufferedReader reader = null;
         try {
             reader = ParsingUtils.openBufferedReader(listFile);
@@ -134,7 +133,11 @@ public class AlignmentReaderFactory {
                     readers.add(AlignmentReaderFactory.getReader(f, requireIndex));
                 }
             }
-            return new MergedAlignmentReader(readers);
+            if (readers.size() == 1) {
+                return readers.get(0);
+            } else {
+                return new MergedAlignmentReader(readers);
+            }
         } catch (IOException e) {
             log.error("Error parsing " + listFile, e);
             throw new RuntimeException("Error parsing: " + listFile + " (" + e.toString() + ")");
@@ -146,6 +149,27 @@ public class AlignmentReaderFactory {
 
                 }
             }
+        }
+    }
+
+    public static AlignmentReader getMergedReader(String alignmentFileList, boolean requireIndex) {
+
+        String aFile = null;
+        try {
+            String[] alignmentFiles = ParsingUtils.COMMA_PATTERN.split(alignmentFileList);
+            List<AlignmentReader> readers = new ArrayList(alignmentFiles.length);
+            for (String f : alignmentFiles) {
+                aFile = f;
+                readers.add(AlignmentReaderFactory.getReader(aFile, requireIndex));
+            }
+            if (readers.size() == 1) {
+                return readers.get(0);
+            } else {
+                return new MergedAlignmentReader(readers);
+            }
+        } catch (IOException e) {
+            log.error("Error instantiating reader for: " + aFile, e);
+            throw new RuntimeException("Error instantiating reader for : " + aFile + " (" + e.toString() + ")");
         }
 
     }

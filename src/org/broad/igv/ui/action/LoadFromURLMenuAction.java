@@ -59,7 +59,7 @@ public class LoadFromURLMenuAction extends MenuAction {
         if (e.getActionCommand().equalsIgnoreCase(LOAD_FROM_URL)) {
             String url = JOptionPane.showInputDialog(IGV.getMainFrame(), ta, "Enter URL (http or ftp)", JOptionPane.QUESTION_MESSAGE);
             if (url != null && url.trim().length() > 0) {
-                if (url.endsWith(".xml")) {
+                if (url.endsWith(".xml") || url.endsWith(".session")) {
                     try {
                         boolean merge=false;
                         String locus = null;

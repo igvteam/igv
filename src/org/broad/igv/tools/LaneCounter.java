@@ -23,7 +23,7 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.AlignmentBlock;
-import org.broad.igv.sam.reader.AlignmentQueryReader;
+import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
 
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class LaneCounter {
 
             System.out.println(alignmentFile + "   " + queryInterval);
 
-            AlignmentQueryReader reader = null;
+            AlignmentReader reader = null;
             CloseableIterator<Alignment> iter = null;
 
             try {

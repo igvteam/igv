@@ -25,7 +25,7 @@ package org.broad.igv.sam;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.reader.AlignmentIndexer;
-import org.broad.igv.sam.reader.SamQueryTextReader;
+import org.broad.igv.sam.reader.SAMReader;
 import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -74,7 +74,7 @@ public class SamQueryTextReaderTest {
 
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
-        SamQueryTextReader reader = new SamQueryTextReader(testFile);
+        SAMReader reader = new SAMReader(testFile);
         CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
@@ -107,7 +107,7 @@ public class SamQueryTextReaderTest {
 
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
-        SamQueryTextReader reader = new SamQueryTextReader(testFile);
+        SAMReader reader = new SAMReader(testFile);
         CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
@@ -141,7 +141,7 @@ public class SamQueryTextReaderTest {
 
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
-        SamQueryTextReader reader = new SamQueryTextReader(testFile);
+        SAMReader reader = new SAMReader(testFile);
         CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {
@@ -167,7 +167,7 @@ public class SamQueryTextReaderTest {
         // Test posA query that includes overlaps (contained == false)
         boolean contained = false;
 
-        SamQueryTextReader reader = new SamQueryTextReader(testFile);
+        SAMReader reader = new SAMReader(testFile);
         CloseableIterator<Alignment> iter = reader.query(chr, start, end, contained);
         int count = 0;
         while (iter.hasNext()) {

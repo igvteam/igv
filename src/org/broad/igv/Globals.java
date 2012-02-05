@@ -109,6 +109,8 @@ public class Globals {
     final public static boolean IS_LINUX =
             System.getProperty("os.name").toLowerCase().startsWith("linux");
     final public static String GENOME_CACHE_FOLDER_NAME = "genomes";
+    // TODO -- move everything below to a utility class
+    public static File cacheDirectory = null;
 
 
     static {
@@ -318,5 +320,18 @@ public class Globals {
 
     public static void setBatch(boolean batch) {
         Globals.batch = batch;
+    }
+
+    public static synchronized File getBamIndexCacheDirectory() {
+        if (cacheDirectory == null) {
+            File defaultDir = getIgvDirectory();
+            if (defaultDir.exists()) {
+                cacheDirectory = new File(defaultDir, "bam");
+                if (!cacheDirectory.exists()) {
+                    cacheDirectory.mkdir();
+                }
+            }
+        }
+        return cacheDirectory;
     }
 }

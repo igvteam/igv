@@ -23,15 +23,9 @@
 
 package org.broad.igv.sam;
 
-import net.sf.samtools.util.CloseableIterator;
-import org.broad.igv.sam.reader.AlignmentIndexer;
-import org.broad.igv.sam.reader.FeatureIndex;
-import org.broad.igv.sam.reader.SamQueryTextReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.File;
 
 /**
  * @author jrobinso

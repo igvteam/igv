@@ -43,7 +43,7 @@ public class BAMHttpQueryReaderTest {
     //private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/test/index_test.bam";
     private final String BAM_URL_STRING = "http://www.broadinstitute.org/igvdata/1KG/freeze5_merged/low_coverage_CEU.Y.bam";
 
-    AlignmentQueryReader reader;
+    AlignmentReader reader;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -59,7 +59,7 @@ public class BAMHttpQueryReaderTest {
 
     @Before
     public void setUp() throws Exception {
-        reader = new BAMHttpQueryReader(new ResourceLocator(BAM_URL_STRING), true);
+        reader = new BAMHttpReader(new ResourceLocator(BAM_URL_STRING), true);
     }
 
     @After

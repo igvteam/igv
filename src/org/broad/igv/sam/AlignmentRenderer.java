@@ -28,7 +28,10 @@ import org.broad.igv.sam.BisulfiteBaseInfo.DisplayStatus;
 import org.broad.igv.track.RenderContext;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
+import org.broad.igv.ui.color.ColorPalette;
+import org.broad.igv.ui.color.ColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.util.ChromosomeColors;
 
 import java.awt.*;
@@ -64,11 +67,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     public static final Color negStrandColor = new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
     public static final Color posStrandColor = new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
     //public static final Color negStrandColor = new Color(150, 150, 200);
-   // public static final Color posStrandColor = new Color(200, 150, 150);
+    // public static final Color posStrandColor = new Color(200, 150, 150);
 
-    private static HashMap<String, Color> readGroupColors = new HashMap();
-    private static HashMap<String, Color> sampleColors = new HashMap();
-    private static HashMap<String, Color> tagValueColors = new HashMap();
+    private static ColorTable readGroupColors;
+    private static ColorTable sampleColors;
+    private static ColorTable tagValueColors;
 
     private static final Color LR_COLOR = grey1; // "Normal" alignment color
     private static final Color RL_COLOR = new Color(0, 150, 0);
@@ -159,6 +162,12 @@ public class AlignmentRenderer implements FeatureRenderer {
         //RL
         ffOrientationColors.put("R1R2", RL_COLOR);
         ffOrientationColors.put("F2F1", RL_COLOR);
+
+        ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
+        readGroupColors = new PaletteColorTable(palette);
+        sampleColors = new PaletteColorTable(palette);
+        tagValueColors = new PaletteColorTable(palette);
+
     }
 
 
@@ -805,20 +814,12 @@ public class AlignmentRenderer implements FeatureRenderer {
                 String rg = alignment.getReadGroup();
                 if (rg != null) {
                     c = readGroupColors.get(rg);
-                    if (c == null) {
-                        c = ColorUtilities.randomColor(rg.hashCode());
-                        readGroupColors.put(rg, c);
-                    }
                 }
                 break;
             case SAMPLE:
                 String sample = alignment.getSample();
                 if (sample != null) {
                     c = sampleColors.get(sample);
-                    if (c == null) {
-                        c = ColorUtilities.randomColor(sample.hashCode());
-                        sampleColors.put(sample, c);
-                    }
                 }
                 break;
             case TAG:
@@ -826,11 +827,7 @@ public class AlignmentRenderer implements FeatureRenderer {
                 if (tag != null) {
                     Object tagValue = alignment.getAttribute(tag);
                     if (tagValue != null) {
-                        c = tagValueColors.get(tagValue);
-                        if (c == null) {
-                            c = ColorUtilities.randomColor(tagValue.hashCode());
-                            tagValueColors.put(tagValue.toString(), c);
-                        }
+                        c = tagValueColors.get(tagValue.toString());
                     }
                 }
                 break;

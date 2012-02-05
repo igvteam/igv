@@ -22,6 +22,8 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -35,10 +37,16 @@ import org.broad.igv.ui.panel.AttributeHeaderPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.MouseableRegion;
 import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.util.MessageUtils;
+import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -74,7 +82,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * methylation data. This will enable the "Color By/Methylation Rate" menu item.
      */
     private boolean enableMethylationRateSupport;
-
 
     /**
      * Top (y) position of this track.  This is updated whenever the track is drawn.
@@ -139,7 +146,22 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * would be faster.
      */
     private List<SampleBounds> sampleBounds = new ArrayList<SampleBounds>();
-//    private ZygosityCount zygosityCount;
+
+    /**
+     * List of selected samples.
+     */
+    private List<String> selectedSamples = new ArrayList<String>();
+
+    /**
+     * Experimental "mode" to couple VCF & BAM files
+     */
+
+    private boolean vcfToBamMode = false;
+
+    /**
+     * Map of sample name -> associated bam file
+     */
+    Map<String, String> bamFiles;
 
 
     public VariantTrack(ResourceLocator locator, FeatureSource source, List<String> samples,
@@ -151,6 +173,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             // also set the default color mode to Methylation rate:
             coloring = ColorMode.METHYLATION_RATE;
         }
+
+        vcfToBamMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.VCF_TO_BAM_ENABLED);
 
         this.allSamples = samples;
 
@@ -172,6 +196,47 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
         IGV.getInstance().addGroupEventListener(this);
 
+        if (vcfToBamMode) {
+            String bamListPath = locator.getPath() + ".bams";
+            if (!ParsingUtils.pathExists(bamListPath)) {
+                MessageUtils.showMessage("Bam mapping file not found (" + bamListPath + ")");
+            } else {
+                loadBamMappings(bamListPath);
+            }
+        }
+
+    }
+
+    private void loadBamMappings(String bamListPath) {
+        bamFiles = new HashMap<String, String>();
+        BufferedReader br = null;
+
+        try {
+            br = ParsingUtils.openBufferedReader(bamListPath);
+            String nextLine;
+            while ((nextLine = br.readLine()) != null) {
+                String[] tokens = ParsingUtils.TAB_PATTERN.split(nextLine);
+                if (tokens.length < 2) {
+                    log.info("Skipping bam mapping file line: " + nextLine);
+                } else {
+                    bamFiles.put(tokens[0], tokens[1]);
+                }
+            }
+        } catch (IOException e) {
+            MessageUtils.showMessage("<html>Error loading bam mapping file: " + bamListPath + "<br>" + e.getMessage());
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+    }
+
+    String getBamFileForSample(String sample) {
+        return bamFiles == null ? null : bamFiles.get(sample);
     }
 
 
@@ -468,7 +533,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             g2D.drawLine(left, top + 1, right, top + 1);
         }
 
-
         g2D.setColor(Color.black);
         rect.height = variantBandHeight;
         if (rect.intersects(visibleRectangle)) {
@@ -478,7 +542,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         rect.y += rect.height;
         rect.height = getGenotypeBandHeight();
         if (getDisplayMode() != Track.DisplayMode.COLLAPSED) {
-
             // The sample bounds list will get reset when  the names are drawn.
             sampleBounds.clear();
             drawBackground(g2D, rect, visibleRectangle, BackgroundType.NAME);
@@ -611,7 +674,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         }
     }
 
-
+    /**
+     * Draws the "greenbar" type background.  Also, rather bizzarely, draws the sample names.
+     *
+     * @param g2D
+     * @param bandRectangle
+     * @param visibleRectangle
+     * @param type
+     */
     private void drawBackground(Graphics2D g2D, Rectangle bandRectangle, Rectangle visibleRectangle,
                                 BackgroundType type) {
 
@@ -655,7 +725,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
         } else {
             coloredLast = colorBand(g2D, bandRectangle, visibleRectangle, coloredLast, textRectangle, allSamples, type);
-
         }
         g2D.setFont(oldFont);
     }
@@ -685,11 +754,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 if (type == BackgroundType.NAME) {
                     sampleBounds.add(new SampleBounds(bandRectangle.y, bandRectangle.y + bandRectangle.height, sample));
                     if (bandRectangle.height >= 3) {
-
                         String printName = sample;
                         textRectangle.y = bandRectangle.y + 1;
                         g2D.setColor(Color.black);
                         GraphicUtils.drawWrappedText(printName, bandRectangle, g2D, false);
+                    }
+                    if (selectedSamples.contains(sample)) {
+                        g2D.setColor(Color.green);
+                        int d = bandRectangle.height;
+                        g2D.fillRect(bandRectangle.x + bandRectangle.width - 17, bandRectangle.y, 15, d);
                     }
 
                 } else if (type == BackgroundType.ATTRIBUTE) {
@@ -730,75 +803,34 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      *
      * @param chr
      * @param zeroBasePosition - position in UCSC "0 based"  genomic coordinates
-     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param y                - pixel position in panel coordinates (i.e. not track coordinates)
      * @param frame
      * @return
      */
     public String getValueStringAt(String chr, double zeroBasePosition, int y, ReferenceFrame frame) {
 
-
         // VariantContext is in 1-based coordinates,  IGV is 0-based (UCSC style).
         double position = zeroBasePosition + 1;
 
         try {
-            Variant variant = getFeatureClosest(position, frame); //getVariantAtPosition(chr, (int) position, frame);
-            if (variant != null) {
-                boolean fullyContained = false;
-                int pos=(int)position;
-                if (pos >= variant.getStart() && pos <= variant.getEnd()) {
-                    log.debug("cursor is fully contained in closest element "+variant);
-                    fullyContained = true;
-                }
-                if (!fullyContained) {
-                    long pixelDist = Math.round(Math.abs((Math.min(position - variant.getStart(),
-                            position - variant.getEnd())) / frame.getScale()));
-                    //log.info(String.format("distance to closest element [variant=%d-%d] is %d %n", variant.getStart(),
-                    //        variant.getEnd(), pixelDist));
-                    if (pixelDist > 10) {
-                        // the feature is more than 10 pixels away from the closest feature. Don't show a tooltip since
-                        // this can be misleading.
-                        return null;
-                    }
-                }
-
+            double maxDistance = 10 * frame.getScale();
+            Variant variant = getFeatureClosest(position, maxDistance, frame); //getVariantAtPosition(chr, (int) position, frame);
+            if (variant == null) {
+                return null;
+            } else {
                 if (y < top + variantBandHeight) {
                     return getVariantToolTip(variant);
                 } else {
-                    final int sampleCount = sampleBounds.size();
-                    if (sampleCount == 0) return null;
-
-                    String sample = null;
-
-                    // Estimate the sample index
-                    int firstSampleY = sampleBounds.get(0).top;
-                    int idx = Math.min((y - firstSampleY) / getGenotypeBandHeight(), sampleCount - 1);
-
-                    SampleBounds bounds = sampleBounds.get(idx);
-                    if (bounds.contains(y)) {
-                        sample = bounds.sample;
-                    } else if (bounds.top > y) {
-                        while (idx > 0) {
-                            idx--;
-                            bounds = sampleBounds.get(idx);
-                            if (bounds.contains(y)) {
-                                sample = bounds.sample;
-                            }
-                        }
-                    } else {
-                        while (idx < sampleCount - 1) {
-                            idx++;
-                            bounds = sampleBounds.get(idx);
-                            if (bounds.contains(y)) {
-                                sample = bounds.sample;
-                            }
-                        }
-                    }
-
-                    if (sample != null)
+                    if (sampleBounds == null && sampleBounds.isEmpty()) return null;
+                    String sample = getSampleAtPosition(y);
+                    if (sample != null) {
                         return getSampleToolTip(sample, variant);
+                    } else {
+                        return null;
+                    }
                 }
             }
-            return null;
+
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             return null;
@@ -806,13 +838,55 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     }
 
     /**
-     * Return the variant closest to the genomic position in the given reference frame
+     * Return the sample at the give pixel position
+     *
+     * @param y - screen position in pixels
+     * @return
+     */
+    private String getSampleAtPosition(int y) {
+
+        if (sampleBounds.isEmpty()) {
+            return null;
+        }
+        String sample = null;
+
+        // Estimate the index of the sample, then do a linear search
+        final int sampleCount = sampleBounds.size();
+
+        int firstSampleY = sampleBounds.get(0).top;
+        int idx = Math.max(0, Math.min((y - firstSampleY) / getGenotypeBandHeight(), sampleCount - 1));
+
+        SampleBounds bounds = sampleBounds.get(idx);
+        if (bounds.contains(y)) {
+            sample = bounds.sample;
+        } else if (bounds.top > y) {
+            while (idx > 0) {
+                idx--;
+                bounds = sampleBounds.get(idx);
+                if (bounds.contains(y)) {
+                    sample = bounds.sample;
+                }
+            }
+        } else {
+            while (idx < sampleCount - 1) {
+                idx++;
+                bounds = sampleBounds.get(idx);
+                if (bounds.contains(y)) {
+                    sample = bounds.sample;
+                }
+            }
+        }
+        return sample;
+    }
+
+    /**
+     * Return the variant closest to the genomic position in the given reference frame, within the prescribed tolerance
      *
      * @param position
      * @param frame
      * @return
      */
-    protected Variant getFeatureClosest(double position, ReferenceFrame frame) {
+    protected Variant getFeatureClosest(double position, double maxDistance, ReferenceFrame frame) {
 
         PackedFeatures<IGVFeature> packedFeatures = packedFeaturesMap.get(frame.getName());
 
@@ -825,11 +899,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Note that we use the full features to search here because (1) we expect to retrieve one element at most
         // (2) searching packed features would miss the features we are looking for despite them being in the full set.
         List<IGVFeature> features = packedFeatures.getFeatures();
-
         if (features != null) {
             feature = FeatureUtils.getFeatureClosest(position, features);
         }
-        return (Variant) feature;     // TODO -- don't like this cast
+        if (feature == null ||
+                ((position < feature.getStart() - maxDistance) || (position > feature.getEnd() + maxDistance))) {
+            return null;
+        } else {
+            return (Variant) feature;     // TODO -- don't like this cast
+        }
     }
 
 
@@ -943,6 +1021,14 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     public void onTrackGroupEvent(TrackGroupEvent e) {
         setupGroupsFromAttributes();
+    }
+
+    public boolean isVcfToBamMode() {
+        return vcfToBamMode;
+    }
+
+    public List<String> getSelectedSamples() {
+        return selectedSamples;
     }
 
     public static enum ColorMode {
@@ -1079,17 +1165,73 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         selectedVariant = null;
         if (referenceFrame != null && referenceFrame.getName() != null) {
             final double position = te.getChromosomePosition();
-            Variant f = getFeatureClosest(position,  referenceFrame);
+            double maxDistance = 10 * referenceFrame.getScale();
+            Variant f = getFeatureClosest(position, maxDistance, referenceFrame);
             // If more than ~ 20 pixels distance reject
             if (f != null) {
-                double pixelDist = Math.abs((position - f.getStart()) / referenceFrame.getScale());
-                if (pixelDist < 20) {
-                    selectedVariant = f;
-                    IGV.getInstance().doRefresh();
+                selectedVariant = f;
+                IGV.getInstance().doRefresh();
+            }
+        }
+
+        return new VariantMenu(this, selectedVariant);
+    }
+
+
+    /**
+     * Handle a mouse click from the name panel.
+     *
+     * @param e
+     */
+    @Override
+    public void handleNameClick(MouseEvent e) {
+        // Do nothing
+    }
+
+
+    /**
+     * Handle a mouse click from the data panel.
+     *
+     * @param te - wraps the MouseClickEvent and reference frame.
+     * @return true if the click is handled, false otherwise
+     */
+    @Override
+    public boolean handleDataClick(TrackClickEvent te) {
+
+        if (!vcfToBamMode) {
+            return false;
+        }
+
+        final ReferenceFrame referenceFrame = te.getFrame();
+        final double position = te.getChromosomePosition();
+        double maxDistance = 10 * referenceFrame.getScale();
+
+        Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
+
+        if (f == null) {
+            // Unselect everything
+            selectedSamples.clear();
+        } else {
+            String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());
+            if (selectedSample != null) {
+                // If shift down add selections, else replace
+                if (!te.getMouseEvent().isShiftDown()) {
+                    selectedSamples.clear();
+                }
+
+                // Select clicked sample and all others with the same genotype
+                Genotype genotype = f.getGenotype(selectedSample);
+                String type = genotype.getType();
+                for (String sample : allSamples) {
+                    if (type.equals(f.getGenotype(sample).getType())) {
+                        selectedSamples.add(sample);
+                    }
                 }
             }
         }
-        return new VariantMenu(this, selectedVariant);
+        IGV.getInstance().doRefresh();
+
+        return true;
     }
 
 
