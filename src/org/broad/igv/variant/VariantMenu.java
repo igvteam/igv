@@ -372,6 +372,7 @@ public class VariantMenu extends IGVPopupMenu {
 
     /**
      * Load bam files associated with the selected samples (experimental).
+     *
      * @return
      */
     private JMenuItem getLoadBamsItem() {
@@ -382,17 +383,33 @@ public class VariantMenu extends IGVPopupMenu {
                 Runnable runnable = new Runnable() {
                     public void run() {
                         // Use a set to enforce uniqueness
-                        Set<String> bams = new HashSet<String>(selectedSamples.size());
+                        final int nSamples = selectedSamples.size();
+                        Set<String> bams = new HashSet<String>(nSamples);
+                        String name = "";
+                        int n = 0;
                         for (String sample : selectedSamples) {
                             bams.add(track.getBamFileForSample(sample));
+                            n++;
+                            if (n < 7) {
+                                if (n == 6) {
+                                    name += "...";
+                                } else {
+                                    name += sample;
+                                    if (n < nSamples) name += ", ";
+                                }
+                            }
                         }
+                        // Remove trailing comma
+
+
                         String bamList = "";
-                        for(String bam : bams) {
+                        for (String bam : bams) {
                             bamList += bam + ",";
+
                         }
                         ResourceLocator loc = new ResourceLocator(bamList);
                         loc.setType("alist");
-                        loc.setName(bamList);
+                        loc.setName(name);
                         List<Track> tracks = IGV.getInstance().load(loc);
 
                         TrackPanel panel = IGV.getInstance().getVcfBamPanel();
