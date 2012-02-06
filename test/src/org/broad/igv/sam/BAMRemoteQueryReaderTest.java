@@ -91,8 +91,8 @@ public class BAMRemoteQueryReaderTest {
         boolean contained = false;
 
 
-        ResourceLocator rl = new ResourceLocator(fullpath);
-        checkReader(rl, chr, start, end, contained);
+        //ResourceLocator rl = new ResourceLocator(fullpath);
+        //checkReader(rl, chr, start, end, contained);
 
         ResourceLocator rlremote = new ResourceLocator(serverURL, path);
         checkReader(rlremote, chr, start, end, contained);

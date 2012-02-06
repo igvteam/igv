@@ -50,6 +50,7 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.converters.DensitiesToBedGraph;
 import org.broad.igv.variant.util.VCFtoBed;
+import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
@@ -720,7 +721,9 @@ public class IgvTools {
                 FeatureParser parser = AbstractFeatureParser.getInstanceFor(geneFileName, genome);
                 InputStream is = descriptor.getGeneStream();
                 AsciiLineReader reader = new AsciiLineReader(is);
-                parser.loadFeatures(reader);
+                //Right now the parser adds these to the FeatureDB map
+                //May want to move that someplace else
+                List<Feature> features = parser.loadFeatures(reader);
                 is.close();
             }
         }

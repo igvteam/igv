@@ -57,7 +57,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static boolean canParse(String path) {
-        return  getCodec(path) != null;
+        return getCodec(path) != null;
     }
 
     /**
@@ -256,7 +256,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
 
         //parsingComplete(features);
-        if (IGV.hasInstance()) {
+        if (IGV.hasInstance() || Globals.isTesting()) {
             FeatureDB.addFeatures(features);
         }
         return features;

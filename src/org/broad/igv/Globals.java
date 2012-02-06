@@ -44,9 +44,10 @@ public class Globals {
      * CONSTANTS
      */
     final public static String CHR_ALL = "All";
-    public static boolean headless = false;
-    public static boolean suppressMessages = false;
+    private static boolean headless = false;
+    private static boolean suppressMessages = false;
     private static boolean batch = false;
+    private static boolean testing = false;
     public static int CONNECT_TIMEOUT = 10000;        // 10 seconds
     public static int READ_TIMEOUT = 1000 * 3 * 60;   // 3 minutes
     /**
@@ -131,6 +132,14 @@ public class Globals {
 
     public static boolean isHeadless() {
         return headless;
+    }
+
+    public static void setTesting(boolean testing) {
+        Globals.testing = testing;
+    }
+
+    public static boolean isTesting() {
+        return testing;
     }
 
     public static void setSuppressMessages(boolean bool) {

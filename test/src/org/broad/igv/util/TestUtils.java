@@ -20,6 +20,7 @@ package org.broad.igv.util;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
@@ -40,6 +41,8 @@ public class TestUtils {
     public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
     public static String LARGE_DATA_DIR = "test/largedata";
 
+    private static GenomeManager genomeManager;
+
 
 //    public static Genome loadGenome(String genomeId) throws IOException {
 //        Globals.setHeadless(true);
@@ -49,6 +52,7 @@ public class TestUtils {
 
     public static void setUpHeadless() {
         Globals.setHeadless(true);
+        Globals.setTesting(true);
         Globals.READ_TIMEOUT = 30 * 1000;
         Globals.CONNECT_TIMEOUT = 30 * 1000;
         FTPClient.READ_TIMEOUT = 30 * 1000;
@@ -121,6 +125,10 @@ public class TestUtils {
     public static Genome loadGenome() throws IOException {
         final String genomeFile = dataFileName;
         return IgvTools.loadGenome(genomeFile, true);
+//        if(genomeManager == null){
+//            genomeManager = new GenomeManager();
+//        }
+        //return genomeManager.loadGenome(genomeFile, null);
     }
 
     public static void clearOutputDir() throws IOException {
