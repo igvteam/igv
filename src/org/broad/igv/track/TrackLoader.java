@@ -443,8 +443,7 @@ public class TrackLoader {
     private void loadFeatureFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
         if (locator.isLocal() && (locator.getPath().endsWith(".bed") ||
-                locator.getPath().endsWith(".bed.txt") ||
-                locator.getPath().endsWith(".bed.gz"))) {
+                locator.getPath().endsWith(".bed.txt"))) {
             //checkSize takes care of warning the user
             if (!checkSize(locator.getPath())) {
                 return;

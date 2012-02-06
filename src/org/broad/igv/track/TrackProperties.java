@@ -21,7 +21,13 @@ package org.broad.igv.track;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import org.apache.log4j.Logger;
+import org.broad.igv.util.ParsingUtils;
+
 import java.awt.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 
 /**
@@ -31,6 +37,7 @@ import java.awt.*;
  */
 public class TrackProperties {
 
+    private static Logger log = Logger.getLogger(TrackProperties.class);
 
     public enum BaseCoord {
         ZERO, ONE, UNSPECIFIED
@@ -123,6 +130,12 @@ public class TrackProperties {
     private boolean alternateExonColor = false;
 
     private String dataURL;
+
+    /**
+     * Track attributes (meta data)
+     */
+    private Map<String, String> attributes;
+
 
     public TrackProperties() {
 
@@ -380,16 +393,16 @@ public class TrackProperties {
     }
 
     public boolean isAlternateExonColor() {
-         return alternateExonColor;
-     }
+        return alternateExonColor;
+    }
 
-     public void setAlternateExonColor(boolean alternateExonColor) {
-         this.alternateExonColor = alternateExonColor;
-     }
+    public void setAlternateExonColor(boolean alternateExonColor) {
+        this.alternateExonColor = alternateExonColor;
+    }
 
-     public void setDisplayMode(Track.DisplayMode displayMode) {
-         this.displayMode = displayMode;
-     }
+    public void setDisplayMode(Track.DisplayMode displayMode) {
+        this.displayMode = displayMode;
+    }
 
     public Track.DisplayMode getDisplayMode() {
         return displayMode;
@@ -401,5 +414,35 @@ public class TrackProperties {
 
     public void setDataURL(String dataURL) {
         this.dataURL = dataURL;
+    }
+
+
+    public Map<String,String> getAttributes() {
+        return attributes;
+    }
+
+
+    /**
+     * example:
+     * Library=DNA_Lib 1387;Sample=NH-Osteoblast;Antibody=H3K4me3
+     *
+     * @param value
+     */
+    public void setMetaData(String value) {
+
+        if (attributes == null) {
+            attributes = new LinkedHashMap<String, String>();   // <= maintain order
+        }
+
+        String[] attStrings = ParsingUtils.SEMI_COLON_PATTERN.split(value);
+        for (String att : attStrings) {
+            String[] kv = ParsingUtils.EQ_PATTERN.split(att, 2);
+            if (kv.length == 2) {
+                attributes.put(kv[0], kv[1]);
+            } else {
+                log.info("Skipping meta value: " + value + ".  Missing '=' token?");
+            }
+        }
+
     }
 }

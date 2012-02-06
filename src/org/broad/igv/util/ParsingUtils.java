@@ -47,6 +47,8 @@ public class ParsingUtils {
     private static Logger log = Logger.getLogger(ParsingUtils.class);
     public static final Pattern TAB_PATTERN = Pattern.compile("\t");
     public static final Pattern COMMA_PATTERN = Pattern.compile(",");
+    public static final Pattern SEMI_COLON_PATTERN = Pattern.compile(";");
+    public static final Pattern EQ_PATTERN = Pattern.compile("=");
 
 
     /**
@@ -473,6 +475,8 @@ public class ParsingUtils {
                             trackProperties.setGenome(value);
                         } else if (key.equals("bigdataurl") || key.equals("dataurl")) {
                             trackProperties.setDataURL(value);
+                        } else if(key.equals("meta")) {
+                            trackProperties.setMetaData(value);
                         }
                     }
                 }
@@ -489,6 +493,7 @@ public class ParsingUtils {
         return foundProperties;
 
     }
+
 
 
     public static boolean pathExists(String covPath) {

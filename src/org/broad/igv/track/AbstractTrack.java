@@ -559,9 +559,9 @@ public abstract class AbstractTrack implements Track {
 
         }
 
-        if(properties.getDisplayMode() != null) {
-             this.setDisplayMode(properties.getDisplayMode());
-         }
+        if (properties.getDisplayMode() != null) {
+            this.setDisplayMode(properties.getDisplayMode());
+        }
 
         if (properties.getName() != null) {
             name = properties.getName();
@@ -589,6 +589,13 @@ public abstract class AbstractTrack implements Track {
         }
         if (properties.getUrl() != null) {
             setUrl(properties.getUrl());
+        }
+
+        Map<String, String> attributes = properties.getAttributes();
+        if (attributes != null) {
+            for (Map.Entry<String, String> entry : attributes.entrySet()) {
+                this.setAttributeValue(entry.getKey(), entry.getValue());
+            }
         }
 
     }
