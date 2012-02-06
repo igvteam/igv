@@ -1027,7 +1027,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         return vcfToBamMode;
     }
 
-    public List<String> getSelectedSamples() {
+    public Collection<String> getSelectedSamples() {
         return selectedSamples;
     }
 
@@ -1180,14 +1180,67 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
     /**
      * Handle a mouse click from the name panel.
+     * <p/>
+     * if (e.isMetaDown() || e.isControlDown()) {
+     * toggleTrackSelections(e);
+     * } else if (e.isShiftDown()) {
+     * shiftSelectTracks(e);
+     * } else if (!isTrackSelected(e)) {
+     * clearTrackSelections();
+     * selectTracks(e);
+     * }
      *
      * @param e
      */
     @Override
     public void handleNameClick(MouseEvent e) {
-        // Do nothing
+        String sampleAtPosition = getSampleAtPosition(e.getY());
+
+        if (e.isMetaDown() || e.isControlDown()) {
+            if (sampleAtPosition != null) {
+                if (selectedSamples.contains(sampleAtPosition)) {
+                    selectedSamples.remove(sampleAtPosition);
+                } else {
+                    selectedSamples.add(sampleAtPosition);
+                }
+            }
+        } else if (e.isShiftDown() && !selectedSamples.isEmpty()) {
+            int idx = getSampleIndex(sampleAtPosition);
+            int lastIDX = getSampleIndex(selectedSamples.get(selectedSamples.size() - 1));
+            if (idx >= 0 && lastIDX >= 0) {
+                selectedSamples.clear();
+                for (int i = Math.min(idx, lastIDX); i <= (Math.max(idx, lastIDX)); i++) {
+                    String s = sampleBounds.get(i).sample;
+                    selectedSamples.add(s);
+                }
+            }
+
+        } else {
+            selectedSamples.clear();
+            if (sampleAtPosition != null) {
+                selectedSamples.add(sampleAtPosition);
+            }
+        }
+        IGV.getInstance().repaint();
+
     }
 
+
+    /**
+     * Return the index for the sample.  This is a very inefficient implementation, but we don't care because
+     * these lists are tiny.
+     *
+     * @param sample
+     * @return
+     */
+    private int getSampleIndex(String sample) {
+        for (int i = 0; i < sampleBounds.size(); i++) {
+            if (sample.equals(sampleBounds.get(i).sample)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     /**
      * Handle a mouse click from the data panel.
@@ -1207,24 +1260,33 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         double maxDistance = 10 * referenceFrame.getScale();
 
         Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
-
-        if (f == null) {
-            // Unselect everything
-            selectedSamples.clear();
-        } else {
+         selectedSamples.clear();
+        if (f != null) {
             String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());
             if (selectedSample != null) {
-                // If shift down add selections, else replace
-                if (!te.getMouseEvent().isShiftDown()) {
-                    selectedSamples.clear();
-                }
-
-                // Select clicked sample and all others with the same genotype
+                // Select clicked sample and all other adjacent with the same genotype
                 Genotype genotype = f.getGenotype(selectedSample);
                 String type = genotype.getType();
-                for (String sample : allSamples) {
-                    if (type.equals(f.getGenotype(sample).getType())) {
-                        selectedSamples.add(sample);
+
+                int idx = getSampleIndex(selectedSample);
+                for (int i = idx; i < sampleBounds.size(); i++) {
+                    String s = sampleBounds.get(i).sample;
+                    Genotype gt = f.getGenotype(s);
+                    if (gt != null && type.equals(gt.getType())) {
+                        selectedSamples.add(s);
+                    }
+                    else {
+                        break;
+                    }
+                }
+                for (int i = idx-1; i >= 0; i--) {
+                    String s = sampleBounds.get(i).sample;
+                    Genotype gt = f.getGenotype(s);
+                    if (gt != null && type.equals(gt.getType())) {
+                        selectedSamples.add(s);
+                    }
+                    else {
+                        break;
                     }
                 }
             }

@@ -25,6 +25,7 @@ import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.TrackPanel;
+import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ResourceLocator;
 
@@ -45,7 +46,7 @@ public class VariantMenu extends IGVPopupMenu {
 
     private static Logger log = Logger.getLogger(VariantMenu.class);
     private VariantTrack track;
-    private List<String> selectedSamples;
+    private Collection<String> selectedSamples;
     static boolean depthSortingDirection;
     static boolean genotypeSortingDirection;
     static boolean sampleSortingDirection;
@@ -384,6 +385,7 @@ public class VariantMenu extends IGVPopupMenu {
                     public void run() {
                         // Use a set to enforce uniqueness
                         final int nSamples = selectedSamples.size();
+
                         Set<String> bams = new HashSet<String>(nSamples);
                         String name = "";
                         int n = 0;
@@ -399,7 +401,12 @@ public class VariantMenu extends IGVPopupMenu {
                                 }
                             }
                         }
-                        // Remove trailing comma
+
+                        if (bams.size() > 20) {
+                            boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
+                            if (!proceed) return;
+                        }
+
 
 
                         String bamList = "";
