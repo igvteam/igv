@@ -256,7 +256,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
 
         //parsingComplete(features);
-        FeatureDB.addFeatures(features);
+        if (IGV.hasInstance()) {
+            FeatureDB.addFeatures(features);
+        }
         return features;
     }
 

@@ -19,10 +19,13 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.*;
+import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.tribble.util.ParsingUtils;
 
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 
 /**
@@ -34,7 +37,18 @@ import java.util.Map;
  */
 public class IGVBEDCodec extends UCSCCodec {
 
+    static final Pattern BR_PATTERN = Pattern.compile("<br>");
+    static final Pattern EQ_PATTERN = Pattern.compile("=");
+
+    boolean gffTags = false;
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+
+    public IGVBEDCodec() {
+    }
+
+    public IGVBEDCodec(boolean gffTags) {
+        this.gffTags = gffTags;
+    }
 
     public BasicFeature decode(String nextLine) {
 
@@ -139,12 +153,15 @@ public class IGVBEDCodec extends UCSCCodec {
             }
         }
 
+        // Color
         if (tokenCount > 8) {
             String colorString = tokens[8];
-            feature.setColor(ParsingUtils.parseColor(colorString));
+            if (colorString.trim().length() > 0 && !colorString.equals(".")) {
+                feature.setColor(ParsingUtils.parseColor(colorString));
+            }
         }
 
-        // Coding information is optional
+        // Exons
         if (tokenCount > 11) {
             createExons(start, tokens, feature, chr, feature.getStrand());
         }
@@ -203,4 +220,111 @@ public class IGVBEDCodec extends UCSCCodec {
         }
     }
 
+    /**
+     * Encode a feature as a BED string.
+     *
+     * @param feature - feature to encode
+     * @return the encodec string
+     */
+    public String encode(BasicFeature feature) {
+
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append(feature.getChr());
+        buffer.append("\t");
+        final int featureStart = feature.getStart();
+        buffer.append(String.valueOf(featureStart));
+        buffer.append("\t");
+        buffer.append(String.valueOf(feature.getEnd()));
+
+        if (feature.getName() != null || (gffTags && feature.getDescription() != null)) {
+
+            buffer.append("\t");
+
+            if (gffTags && feature.getDescription() != null) {
+                // mRNA<br>ID = LOC_Os01g01010.2<br>Name = LOC_Os01g01010.2<br>Parent = LOC_Os01g01010<br>
+                //ID=LOC_Os01g01010.1:exon_1;Parent=LOC_Os01g01010.1
+                String[] attrs = BR_PATTERN.split(feature.getDescription());
+                for (String att : attrs) {
+                    String [] kv = EQ_PATTERN.split(att,2);
+                    if(kv.length > 1) {
+                        buffer.append(kv[0].trim());
+                        buffer.append("=");
+                        String value = kv[1].trim();
+                        buffer.append(URLEncoder.encode(value));
+                        buffer.append(";");
+                    }
+                }
+            } else {
+                buffer.append(feature.getName());
+            }
+
+            boolean more = !Float.isNaN(feature.getScore()) || feature.getStrand() != Strand.NONE ||
+                    feature.getColor() != null || feature.getExonCount() > 0;
+
+            if (more) {
+                buffer.append("\t");
+                // UCSC scores are integers between 0 and 1000, but
+                float score = feature.getScore();
+                if (Float.isNaN(score)) {
+                    buffer.append("1000");
+
+                } else {
+                    boolean isInt = (Math.floor(score) == score);
+                    buffer.append(String.valueOf(isInt ? (int) score : score));
+                }
+
+
+                more = feature.getStrand() != Strand.NONE || feature.getColor() != null || feature.getExonCount() > 0;
+                if (more) {
+                    buffer.append("\t");
+                    Strand strand = feature.getStrand();
+                    if (strand == Strand.NONE) buffer.append(" ");
+                    else if (strand == Strand.POSITIVE) buffer.append("+");
+                    else if (strand == Strand.NEGATIVE) buffer.append("-");
+
+                    more = feature.getColor() != null || feature.getExonCount() > 0;
+
+                    if (more) {
+                        // Must continue if feature has color or exons
+                        java.util.List<Exon> exons = feature.getExons();
+                        if (feature.getColor() != null || exons != null) {
+                            buffer.append("\t");
+                            buffer.append(String.valueOf(feature.getThickStart()));
+                            buffer.append("\t");
+                            buffer.append(String.valueOf(feature.getThickEnd()));
+                            buffer.append("\t");
+
+                            java.awt.Color c = feature.getColor();
+                            buffer.append(c == null ? "." : ColorUtilities.colorToString(c));
+                            buffer.append("\t");
+
+                            if (exons != null && exons.size() > 0) {
+                                buffer.append(String.valueOf(exons.size()));
+                                buffer.append("\t");
+
+                                for (Exon exon : exons) {
+                                    buffer.append(String.valueOf(exon.getLength()));
+                                    buffer.append(",");
+                                }
+                                buffer.append("\t");
+                                for (Exon exon : exons) {
+                                    int exonStart = exon.getStart() - featureStart;
+                                    buffer.append(String.valueOf(exonStart));
+                                    buffer.append(",");
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return buffer.toString();
+    }
+
+
 }
+
+

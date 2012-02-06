@@ -361,7 +361,7 @@ public class GFFParser implements FeatureParser {
                         if (featureType.equals("gene")) {
                             geneCache.put(id, f);
                             if (featuresToHide.contains(featureType)) {
-                                FeatureDB.addFeature(f);
+                               if (IGV.hasInstance()) FeatureDB.addFeature(f);
                             } else {
                                 features.add(f);
                             }
@@ -372,7 +372,7 @@ public class GFFParser implements FeatureParser {
                             }
                             getGFF3Transcript(id).transcript(f, pid);
                         } else if (featuresToHide.contains(featureType)) {
-                            FeatureDB.addFeature(f);
+                            if (IGV.hasInstance()) FeatureDB.addFeature(f);
                         } else {
                             features.add(f);
                         }
@@ -398,7 +398,6 @@ public class GFFParser implements FeatureParser {
                 ex) {
             log.error("Error parsing GFF file", ex);
             if (line != null && reader.getCurrentLineNumber() != 0) {
-
                 throw new ParserException(ex.getMessage(), ex, reader.getCurrentLineNumber(), line);
             } else {
                 throw new RuntimeException(ex);
