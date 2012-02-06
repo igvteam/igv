@@ -37,7 +37,8 @@ import static org.junit.Assert.assertEquals;
 public class IGVHttpClientUtilsTest {
 
     private static String hg18URL = "http://www.broadinstitute.org/igvdata/genomes/hg18.genome";
-    private static int hg18bytes = 3617644;
+    //private static int hg18bytes = 3617644;
+    private static int hg18bytes = 4164559;
 
     @Test
     public void testGetContentLength() throws IOException {
