@@ -28,7 +28,7 @@ import org.broad.igv.feature.genome.Genome;
 public class SnpFileParser extends AbstractFeatureParser {
 
     public SnpFileParser(Genome genome) {
-        super(genome);
+
     }
 
     protected IGVFeature parseLine(String line) throws NumberFormatException {

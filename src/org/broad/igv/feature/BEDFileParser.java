@@ -41,26 +41,13 @@ public class BEDFileParser extends UCSCParser {
 
     private GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
 
+    Genome genome ;
+
     public BEDFileParser(Genome genome) {
-        super(genome);
-    }
-
-    @Override
-    /**
-     * Test the contents of this file for the presence of features.  The first
-     * 20 lines are parsed and if any features are found the method returns
-     * true.  This is an imperfect test.  Other file type possibilities
-     * should be eliminated before using this method
-     *
-     *
-     * @param locator
-     * @return true if a feature file
-     */
-    public boolean isFeatureFile(ResourceLocator locator) {
-        String ext = getStrippedFilename(locator.getPath());
-        return ext.endsWith("bed");
+        this.genome = genome;
 
     }
+
 
     public BasicFeature parseLine(String[] tokens, int tokenCount) {
 

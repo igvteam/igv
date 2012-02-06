@@ -120,6 +120,13 @@ public class GFFParser implements FeatureParser {
 
     static StringBuffer buf = new StringBuffer();
 
+    public static boolean isGFF(String path) {
+        return path.toLowerCase().endsWith("gff3") || path.toLowerCase().endsWith("gff3.gz") ||
+                path.toLowerCase().endsWith("gvf") || path.toLowerCase().endsWith("gvf.gz") ||
+                path.toLowerCase().endsWith("gff") || path.toLowerCase().endsWith("gff.gz") ||
+                path.toLowerCase().endsWith("gtf") || path.toLowerCase().endsWith("gtf.gz");
+    }
+
 
     public GFFParser(String path) {
         // Assume V2 until proven otherwise
@@ -186,7 +193,10 @@ public class GFFParser implements FeatureParser {
         String line = null;
         try {
 
-            Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+            Genome genome = null;
+            if (IGV.hasInstance()) {
+                IGV.getInstance().getGenomeManager().getCurrentGenome();
+            }
             Set<String> featuresToHide = new HashSet();
             String[] tokens = new String[200];
 
@@ -378,7 +388,9 @@ public class GFFParser implements FeatureParser {
                 }
             }
 
-            FeatureDB.addFeatures(features);
+            if (IGV.hasInstance()) {
+                FeatureDB.addFeatures(features);
+            }
 
         } catch (ParserException e) {
             throw e;

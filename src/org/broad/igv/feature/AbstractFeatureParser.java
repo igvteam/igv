@@ -50,40 +50,29 @@ import java.util.List;
 public abstract class AbstractFeatureParser implements FeatureParser {
 
     private static Logger log = Logger.getLogger(IGV.class);
-    private String filePath;
-    protected Genome genome;
     protected int startBase = 0;
 
     /* An object to collection track properties, if specified in the feature file. */
     protected TrackProperties trackProperties = null;
 
-    //TrackType trackType;
-    boolean gffTags = false;
 
-    public AbstractFeatureParser(Genome genome) {
-        this.genome = genome;
+    public static boolean canParse(String path) {
+        return  getCodec(path) != null;
     }
 
     /**
-     * @deprecated Return an parser instance appropriate the the file type.  Currently the filename
-     *             is used to determine file type, this is fragile obviously but what is the alternative?
+     * Return an parser instance appropriate the the file type.  Currently the filename
+     * is used to determine file type, this is fragile obviously but what is the alternative?
      */
-    @Deprecated
     public static FeatureParser getInstanceFor(ResourceLocator locator, Genome genome) {
 
         final String path = locator.getPath();
         return getInstanceFor(path, genome);
     }
 
-    @Deprecated
+
     public static FeatureParser getInstanceFor(String path, Genome genome) {
-        String tmp = getStrippedFilename(path);
-
-        if (tmp.endsWith("gtf") || tmp.endsWith("gff") || tmp.endsWith("gff3") || tmp.endsWith("gvf")) {
-            return new GFFParser(path);
-        }
-
-        FeatureCodec codec = CodecFactory.getCodec(tmp);
+        FeatureCodec codec = getCodec(path);
         if (codec != null) {
             return new FeatureCodecParser(codec, genome);
         } else {
@@ -91,19 +80,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
     }
 
-
-    /**
-     * Return true if the file represented by the locator contains feature.  This method
-     * returns true by default.  It can be overriden by subclasses representing ambiguous
-     * file content.
-     *
-     * @param locator
-     * @return true if a feature file
-     */
-    public boolean isFeatureFile(ResourceLocator locator) {
-        return true;
-
+    private static FeatureCodec getCodec(String path) {
+        String tmp = getStrippedFilename(path);
+        return CodecFactory.getCodec(tmp);
     }
+
+    boolean gffTags = false;
+
 
     /**
      * Load all features in this file.

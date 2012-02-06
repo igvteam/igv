@@ -55,16 +55,6 @@ import org.broad.igv.util.ResourceLocator;
  */
 public class PSLParser extends UCSCParser {
 
-    public PSLParser(Genome genome) {
-        super(genome);
-    }
-
-    @Override
-    public boolean isFeatureFile(ResourceLocator locator) {
-        String path = locator.getPath();
-        return path.endsWith(".psl") || path.endsWith(".psl.gz")  ||
-                path.endsWith(".pslx") || path.endsWith(".pslx.gz");
-    }
 
     @Override
     protected BasicFeature parseLine(String[] tokens, int nTokens) {

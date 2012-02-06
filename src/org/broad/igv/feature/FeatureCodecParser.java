@@ -37,7 +37,6 @@ public class FeatureCodecParser extends AbstractFeatureParser {
     private FeatureCodec codec;
 
     public FeatureCodecParser(FeatureCodec codec, Genome genome) {
-        super(genome);
         this.codec = codec;
     }
 

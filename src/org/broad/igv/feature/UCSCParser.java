@@ -34,10 +34,6 @@ abstract public class UCSCParser extends AbstractFeatureParser {
 
     String[] tokens = new String[25];
 
-    protected UCSCParser(Genome genome) {
-        super(genome);
-    }
-
     protected IGVFeature parseLine(String nextLine) {
 
         if (nextLine.startsWith("#")) {

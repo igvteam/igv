@@ -51,13 +51,6 @@ public interface FeatureParser {
      */
     List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader);
 
-    /**
-     * Method description
-     *
-     * @param locator
-     * @return
-     */
-    public boolean isFeatureFile(ResourceLocator locator);
 
     public TrackProperties getTrackProperties();
 

@@ -153,7 +153,6 @@ public class TrackLoader {
             //This list will hold all new tracks created for this locator
             List<Track> newTracks = new ArrayList<Track>();
 
-            // TODO -- hack for testing/development of database support.  Test DB only has segmented files
             String serverURL = locator.getServerURL();
             if (serverURL != null && serverURL.startsWith("jdbc:")) {
                 this.loadFromDatabase(locator, newTracks, genome);
@@ -164,7 +163,7 @@ public class TrackLoader {
             } else if (isIndexed(path)) {
                 loadIndexed(locator, newTracks, genome);
             } else if (typeString.endsWith(".vcf") || typeString.endsWith(".vcf4")) {
-                // TODO This is a hack,  vcf files must be indexed.  Fix in next release.
+                // VCF files must be indexed.
                 throw new IndexNotFoundException(path);
             } else if (typeString.endsWith(".trio")) {
                 loadTrioData(locator);
@@ -225,8 +224,9 @@ public class TrackLoader {
             } else if (typeString.endsWith(".psl") || typeString.endsWith(".psl.gz") ||
                     typeString.endsWith(".pslx") || typeString.endsWith(".pslx.gz")) {
                 loadPslFile(locator, newTracks, genome);
-                //TODO AbstractFeatureParser.getInstanceFor() is called twice.  Wasteful
-            } else if (AbstractFeatureParser.getInstanceFor(locator, genome) != null) {
+            } else if (GFFParser.isGFF(locator.getPath())) {
+                loadGFFfile(locator, newTracks, genome);
+            } else if (AbstractFeatureParser.canParse(locator.getPath())) {
                 loadFeatureFile(locator, newTracks, genome);
             } else if (typeString.endsWith(".mut")) { //  MutationParser.isMutationAnnotationFile(locator)) {
                 this.loadMutFile(locator, newTracks, genome);
@@ -402,7 +402,7 @@ public class TrackLoader {
      */
     private void loadPslFile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
 
-        PSLParser featureParser = new PSLParser(genome);
+        PSLParser featureParser = new PSLParser();
         List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
         newTracks.addAll(tracks);
         for (FeatureTrack t : tracks) {
@@ -413,6 +413,24 @@ public class TrackLoader {
 
         }
 
+    }
+
+    /**
+     * Load the input file as a feature, mutation, or maf (multiple alignment) file.
+     *
+     * @param locator
+     * @param newTracks
+     */
+    private void loadGFFfile(ResourceLocator locator, List<Track> newTracks, Genome genome) throws IOException {
+
+        GFFParser featureParser = new GFFParser(locator.getPath());
+        List<FeatureTrack> tracks = featureParser.loadTracks(locator, genome);
+        newTracks.addAll(tracks);
+        for (FeatureTrack track : tracks) {
+            track.setName(locator.getTrackName());
+            track.setRendererClass(IGVFeatureRenderer.class);
+            track.setHeight(45);
+        }
 
     }
 
