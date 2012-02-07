@@ -85,6 +85,8 @@ public class CoverageTrack extends AbstractTrack {
     JMenuItem autoscaleItem;
     Genome genome;
 
+    boolean bisulfiteMode = false;
+
 
     public CoverageTrack(ResourceLocator locator, String name, Genome genome) {
         super(locator, locator.getPath() + "_coverage", name);
@@ -271,6 +273,8 @@ public class CoverageTrack extends AbstractTrack {
 
         private void paint(RenderContext context, Rectangle rect, List<AlignmentCounts> countList) {
 
+
+
             Graphics2D graphics = context.getGraphic2DForColor(coverageGrey);
             Graphics2D posGraphics = context.getGraphic2DForColor(posStrandColor);
             Graphics2D negGraphics = context.getGraphic2DForColor(negStrandColor);// Use precomputed data source, if anyR
@@ -326,7 +330,14 @@ public class CoverageTrack extends AbstractTrack {
                             int idx = pos - intervalStart;
                             if (idx >= 0 && idx < refBases.length) {
                                 ref = Character.toLowerCase((char) refBases[idx]);
-                                mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
+                                if (bisulfiteMode) {
+                                    // TODO -- extend for all contexts
+                                    mismatch = true; //ref == 'c' && (idx + 1 < refBases.length) &&
+                                           // Character.toLowerCase(idx + 1) == 'g';
+                                } else {
+
+                                    mismatch = alignmentCounts.isMismatch(pos, ref, context.getChr(), snpThreshold);
+                                }
                             }
                         }
 
@@ -345,13 +356,11 @@ public class CoverageTrack extends AbstractTrack {
                                 if (height > 0) {
                                     negGraphics.fillRect(pX, pY, dX, height);
                                     if (mismatch) {
-                                        for (char c : nucleotides) {
-                                            if (c != ref) {
-                                                pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
-                                                        false, alignmentCounts);
-                                            }
-                                        }
+
+                                        drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX,
+                                                false, alignmentCounts);
                                     }
+
                                 }
 
                                 // Positive strand
@@ -363,14 +372,11 @@ public class CoverageTrack extends AbstractTrack {
                                 if (height > 0) {
                                     posGraphics.fillRect(pX, topY, dX, height);
                                     if (mismatch) {
-                                        for (char c : nucleotides) {
-                                            if (c != ref) {
-                                                pY = drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX, c,
-                                                        true, alignmentCounts);
-                                            }
-                                        }
+                                        drawStrandBar(context, pos, rect, colorScaleMax, pY, pX, dX,
+                                                true, alignmentCounts);
                                     }
                                 }
+
 
                                 // Center line
                                 pY = (int) (rectY + rectMaxY) / 2;
@@ -393,12 +399,21 @@ public class CoverageTrack extends AbstractTrack {
                                     graphics.fillRect(pX, topY, dX, height);
 
                                     if (mismatch) {
-                                        for (char c : nucleotides) {
-                                            pY = drawBar(context, pos, rect, totalCount, max,
-                                                    pY, pX, dX, c, alignmentCounts, range.isLog());
-                                        }
 
+                                        if (bisulfiteMode) {
+                                            BisulfiteCounts bc = alignmentCounts.getBisulfiteCounts();
+                                            BisulfiteCounts.Count cnt = bc.getCount(pos);
+                                            if (cnt != null) {
+                                                drawBarBisulfite(context, pos, rect, totalCount, max,
+                                                        pY, pX, dX, cnt, range.isLog());
+                                            }
+
+                                        } else {
+                                            drawBar(context, pos, rect, totalCount, max,
+                                                    pY, pX, dX, alignmentCounts, range.isLog());
+                                        }
                                     }
+
                                 }
                             }
                             lastpX = pX;
@@ -419,41 +434,87 @@ public class CoverageTrack extends AbstractTrack {
          * @param pY
          * @param pX
          * @param dX
-         * @param nucleotide
          * @param interval
          * @return
          */
 
-        int drawBar(RenderContext context,
-                    int pos,
-                    Rectangle rect,
-                    double totalCount,
-                    double max,
-                    int pY,
-                    int pX,
-                    int dX,
-                    char nucleotide,
-                    AlignmentCounts interval,
-                    boolean isLog) {
+        void drawBar(RenderContext context,
+                     int pos,
+                     Rectangle rect,
+                     double totalCount,
+                     double max,
+                     int pY,
+                     int pX,
+                     int dX,
+                     AlignmentCounts interval,
+                     boolean isLog) {
 
-            int count = interval.getCount(pos, (byte) nucleotide);
+            for (char nucleotide : nucleotides) {
 
-            Color c = AlignmentRenderer.getNucleotideColors().get(nucleotide);
+                int count = interval.getCount(pos, (byte) nucleotide);
 
+                Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+
+                Graphics2D tGraphics = context.getGraphic2DForColor(c);
+
+                double tmp = isLog ?
+                        (count / totalCount) * Math.log10(totalCount) / max :
+                        count / max;
+                int height = (int) (tmp * rect.getHeight());
+
+                height = Math.min(pY - rect.y, height);
+                int baseY = pY - height;
+
+                if (height > 0) {
+                    tGraphics.fillRect(pX, baseY, dX, height);
+                }
+
+                pY = baseY;
+            }
+        }
+
+        void drawBarBisulfite(RenderContext context,
+                              int pos,
+                              Rectangle rect,
+                              double totalCount,
+                              double max,
+                              int pY,
+                              int pX,
+                              int dX,
+                              BisulfiteCounts.Count count,
+                              boolean isLog) {
+
+
+            int nMethylated = count.methylatedCount;
+            Color c = Color.red;
             Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
             double tmp = isLog ?
-                    (count / totalCount) * Math.log10(totalCount) / max :
-                    count / max;
+                    (nMethylated / totalCount) * Math.log10(totalCount) / max :
+                    nMethylated / max;
             int height = (int) (tmp * rect.getHeight());
 
             height = Math.min(pY - rect.y, height);
             int baseY = pY - height;
-
             if (height > 0) {
                 tGraphics.fillRect(pX, baseY, dX, height);
             }
-            return baseY;
+            pY = baseY;
+
+            int unMethylated = count.unmethylatedCount;
+            c = Color.blue;
+            tGraphics = context.getGraphic2DForColor(c);
+
+            tmp = isLog ?
+                    (unMethylated / totalCount) * Math.log10(totalCount) / max :
+                    unMethylated / max;
+            height = (int) (tmp * rect.getHeight());
+
+            height = Math.min(pY - rect.y, height);
+            baseY = pY - height;
+            if (height > 0) {
+                tGraphics.fillRect(pX, baseY, dX, height);
+            }
         }
 
 
@@ -467,43 +528,41 @@ public class CoverageTrack extends AbstractTrack {
          * @param pY
          * @param pX
          * @param dX
-         * @param nucleotide
          * @param isPositive
          * @param interval
          * @return
          */
-        int drawStrandBar(RenderContext context,
-                          int pos,
-                          Rectangle rect,
-                          double maxCount,
-                          int pY,
-                          int pX,
-                          int dX,
-                          char nucleotide,
-                          boolean isPositive,
-                          AlignmentCounts interval) {
+        void drawStrandBar(RenderContext context,
+                           int pos,
+                           Rectangle rect,
+                           double maxCount,
+                           int pY,
+                           int pX,
+                           int dX,
+                           boolean isPositive,
+                           AlignmentCounts interval) {
 
 
-            Color c = AlignmentRenderer.getNucleotideColors().get(nucleotide);
-            Graphics2D tGraphics = context.getGraphic2DForColor(c);
+            for (char nucleotide : nucleotides) {
 
+                Color c = AlignmentRenderer.nucleotideColors.get(nucleotide);
+                Graphics2D tGraphics = context.getGraphic2DForColor(c);
 
-            int count = isPositive ? interval.getPosCount(pos, (byte) nucleotide) :
-                    interval.getNegCount(pos, (byte) nucleotide);
+                int count = isPositive ? interval.getPosCount(pos, (byte) nucleotide) :
+                        interval.getNegCount(pos, (byte) nucleotide);
 
-            int height = (int) Math.round(count * rect.getHeight() / maxCount);
-            height = isPositive ? Math.min(pY - rect.y, height) :
-                    Math.min(rect.y + rect.height - pY, height);
-            int baseY = (int) (isPositive ? (pY - height) : pY);
+                int height = (int) Math.round(count * rect.getHeight() / maxCount);
+                height = isPositive ? Math.min(pY - rect.y, height) :
+                        Math.min(rect.y + rect.height - pY, height);
+                int baseY = (int) (isPositive ? (pY - height) : pY);
 
-            if (height > 0) {
-                tGraphics.fillRect(pX, baseY, dX, height);
+                if (height > 0) {
+                    tGraphics.fillRect(pX, baseY, dX, height);
+                }
+                pY = isPositive ? baseY : baseY + height;
             }
-            return isPositive ? baseY : baseY + height;
         }
-
     }
-
 
     static float[] colorComps = new float[3];
 

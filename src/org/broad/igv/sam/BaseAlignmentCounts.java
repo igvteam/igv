@@ -3,6 +3,7 @@ package org.broad.igv.sam;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.ParsingUtils;
@@ -25,12 +26,13 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
 
     private static char[] nucleotides = {'a', 'c', 'g', 't', 'n'};
     private static Map<String, Set<Integer>> knownSnps;
-
-    private IntArrayList cgPositions;
-    private IntArrayList cgMethylCounts;
-    private IntArrayList cgUnmethylCounts;
     int start;
     int end;
+
+
+    private BisulfiteCounts bisulfiteCounts;
+
+
 
     public BaseAlignmentCounts(int start, int end) {
         final PreferenceManager prefs = PreferenceManager.getInstance();
@@ -40,6 +42,9 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         }
         this.start = start;
         this.end = end;
+
+        // TODO -- experiment
+       // bisulfiteCounts = new BisulfiteCounts(AlignmentTrack.BisulfiteContext.CG, IGV.getInstance().getGenomeManager().getCurrentGenome());
     }
 
 
@@ -52,12 +57,22 @@ abstract public class BaseAlignmentCounts implements AlignmentCounts {
         return end;
     }
 
+
+    public BisulfiteCounts getBisulfiteCounts() {
+        return bisulfiteCounts;
+    }
+
     /**
      * Increment the counts for this alignment.   Does not consider softclips.
      *
      * @param alignment
      */
     public void incCounts(Alignment alignment) {
+
+        if(bisulfiteCounts != null) {
+            bisulfiteCounts.incrementCounts(alignment);
+        }
+
         int alignmentStart = alignment.getAlignmentStart();
         int alignmentEnd = alignment.getAlignmentEnd();
 

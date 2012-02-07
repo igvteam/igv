@@ -44,6 +44,8 @@ public interface AlignmentCounts {
 
     public boolean isMismatch(int pos, char ref, String chr, float snpThreshold);
 
+    BisulfiteCounts getBisulfiteCounts();
+
 
     static interface PositionIterator {
         int nextPosition();

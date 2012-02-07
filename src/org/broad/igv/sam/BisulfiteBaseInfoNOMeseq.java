@@ -17,10 +17,11 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 	public static Color GC_METH_COLOR = new Color(0,204,153);
 	public static Color GC_UNMETH_COLOR = new Color(255,127,191);
 	public static Color CG_METH_COLOR = Color.black;
-	public static Color CG_UNMETH_COLOR = Color.white;
-	
-	
-	/**
+    public static Color CG_UNMETH_COLOR = Color.white;
+    public static final BisulfiteContext[] BISULFITE_CONTEXTS = new BisulfiteContext[]{BisulfiteContext.HCG, BisulfiteContext.GCH};
+
+
+    /**
 	 * @param inReference
 	 * @param block
 	 * @param bisulfiteContext
@@ -52,7 +53,7 @@ public class BisulfiteBaseInfoNOMeseq extends BisulfiteBaseInfo {
 	protected BisulfiteContext contextIsMatching(byte[] reference, byte[] read, int idx,
 			BisulfiteContext bisulfiteContext) {
 
-		for (BisulfiteContext context : new BisulfiteContext[]{ BisulfiteContext.HCG, BisulfiteContext.GCH })
+		for (BisulfiteContext context : BISULFITE_CONTEXTS)
 		{
 			if (super.contextIsMatching(reference, read, idx,context) != null) return context;
 		}

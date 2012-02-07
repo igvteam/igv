@@ -19,8 +19,14 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
 
     int start;
     int end;
-    //byte[] reference;
-    // counts
+
+    private int maxCount = 0;
+
+    /**
+     * Map of genomic position -> index of count arrays
+     */
+    HashMap<Integer, Integer> indexMap;
+
     IntArrayList posA;
     IntArrayList posT;
     IntArrayList posC;
@@ -41,9 +47,6 @@ public class SparseAlignmentCounts extends BaseAlignmentCounts {
     IntArrayList del;
     IntArrayList ins;
     private IntArrayList totalQ;
-    private int maxCount = 0;
-
-    HashMap<Integer, Integer> indexMap;
 
 
     public SparseAlignmentCounts(int start, int end) {

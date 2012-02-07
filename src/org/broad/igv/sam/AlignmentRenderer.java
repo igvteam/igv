@@ -46,7 +46,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     private static Logger log = Logger.getLogger(AlignmentRenderer.class);
 
-    private static Map<Character, Color> nucleotideColors;
+    public static Map<Character, Color> nucleotideColors;
 
     private static Color smallISizeColor = new Color(0, 0, 150);
     private static Color largeISizeColor = new Color(150, 0, 0);
@@ -58,11 +58,11 @@ public class AlignmentRenderer implements FeatureRenderer {
     private static Stroke thickStroke = new BasicStroke(2.0f);
 
     // Bisulfite constants
-    private static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorRev1 = new Color(195, 210, 195); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
-    private static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
-    private static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+    public static final Color bisulfiteColorFw1 = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
+    public static final Color bisulfiteColorRev1 = new Color(195, 210, 195); // A bit lighter than normal LR_COLOR
+    public static final Color bisulfiteColorRev2 = new Color(210, 210, 210); // A bit lighter than normal LR_COLOR
+    public static final Color bisulfiteColorFw2 = new Color(210, 222, 210); // A bit lighter than normal LR_COLOR
+    public static final Color nomeseqColor = new Color(195, 195, 195); // A bit lighter than normal LR_COLOR
 
     public static final Color negStrandColor = new Color(190, 190, 205); // A bit lighter than normal LR_COLOR
     public static final Color posStrandColor = new Color(205, 190, 190); // A bit lighter than normal LR_COLOR
@@ -894,12 +894,4 @@ public class AlignmentRenderer implements FeatureRenderer {
 
     }
 
-    /**
-     * @return
-     */
-
-
-    public static Map<Character, Color> getNucleotideColors() {
-        return nucleotideColors;
-    }
 }

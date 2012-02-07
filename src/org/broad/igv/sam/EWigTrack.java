@@ -153,7 +153,7 @@ public class EWigTrack extends AbstractTrack {
                     float count = ns.getScore() * totalCount;
 
                     //pY = drawBar(context, idx, rect, dataMax, pY, pX, dX, c, count);
-                    Graphics2D tGraphics = context.getGraphic2DForColor(AlignmentRenderer.getNucleotideColors().get(c));
+                    Graphics2D tGraphics = context.getGraphic2DForColor(AlignmentRenderer.nucleotideColors.get(c));
 
                     int h = (int) Math.round(count * height / totalCount);
                     h = Math.min(pY - rect.y, h);
