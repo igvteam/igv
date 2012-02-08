@@ -403,7 +403,7 @@ public class TDFDataSource implements CoverageDataSource {
         // If we are in gene list view bypass caching.
         if (FrameManager.isGeneListMode()) {
 
-            return getSummaryScores(querySeq, zoom, startLocation, endLocation);
+            return getSummaryScores(querySeq, startLocation, endLocation, zoom);
 
         } else {
 
