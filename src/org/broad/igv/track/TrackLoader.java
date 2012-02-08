@@ -31,10 +31,7 @@ import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
-import org.broad.igv.dev.affective.AffectiveAnnotationParser;
-import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
-import org.broad.igv.dev.affective.AffectiveDataSource;
-import org.broad.igv.dev.affective.Annotation;
+import org.broad.igv.dev.affective.*;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
@@ -725,16 +722,14 @@ public class TrackLoader {
     private void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome) {
 
 
-        if (log.isDebugEnabled()) {
-            log.debug("Loading TDFFile: " + locator.toString());
-        }
-
         TDFReader reader = TDFReader.getReader(locator.getPath());
         TrackType type = reader.getTrackType();
 
-        if (log.isDebugEnabled()) {
-            log.debug("Parsing track line ");
+        if (reader.getTrackType() == TrackType.AFFECTIVE) {
+            AffectiveUtils.loadTDFFile(locator, newTracks, genome, reader);
+            return;
         }
+
         TrackProperties props = null;
         String trackLine = reader.getTrackLine();
         if (trackLine != null && trackLine.length() > 0) {
@@ -756,7 +751,6 @@ public class TrackLoader {
         int trackNumber = 0;
         String path = locator.getPath();
         boolean multiTrack = reader.getTrackNames().length > 1;
-        boolean affective = reader.getTrackType() == TrackType.AFFECTIVE;
 
         for (String heading : reader.getTrackNames()) {
 
@@ -764,11 +758,8 @@ public class TrackLoader {
             String trackName = multiTrack ? heading : name;
             final DataSource dataSource = locator.getPath().endsWith(".counts") ?
                     new GobyCountArchiveDataSource(locator) :
-                    (affective ?
-                            new AffectiveDataSource(reader, trackNumber, heading, genome) :
-                            new TDFDataSource(reader, trackNumber, heading, genome));
-            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName,
-                    dataSource, genome);
+                    new TDFDataSource(reader, trackNumber, heading, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
 
             String displayName = (name == null || multiTrack) ? heading : name;
             track.setName(displayName);
@@ -780,9 +771,6 @@ public class TrackLoader {
             trackNumber++;
         }
 
-        if (type == TrackType.AFFECTIVE) {
-            //AffectiveUtils.doAffectiveHacks(newTracks);
-        }
 
     }
 
