@@ -2,17 +2,14 @@ package org.broad.igv.dev.affective;
 
 import org.broad.igv.Globals;
 import org.broad.igv.data.BasicScore;
+import org.broad.igv.data.NamedScore;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.tdf.TDFDataSource;
-import org.broad.igv.tdf.TDFGroup;
-import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.tdf.*;
+import org.broad.igv.track.WindowFunction;
 
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -76,23 +73,7 @@ public class AffectiveDataSource extends TDFDataSource {
             // todo
             return getWholeGenomeScores();
         } else {
-            AffectiveChromosome chromosome = (AffectiveChromosome) affectiveGenome.getChromosome(chr);
-            int chrStartTime = chromosome.startTime;
-            int chrSamplingRate = chromosome.samplingRate;
-
-            int dataStartTime = startTimeMap.get(chr);
-            int dataSamplingRate = samplingRateMap.get(chr);
-
-            // TODO -- if chrSamplingRate != dataSampingRate some adjustments need to be made.
-
-            int offset = (dataStartTime - chrStartTime) * dataSamplingRate;
-
-            List<LocusScore> scores = super.getSummaryScores(chr, startLocation, endLocation, zoom);
-            for (LocusScore score : scores) {
-                score.setStart(score.getStart());
-                score.setEnd(score.getEnd());
-            }
-            return scores;
+            return super.getSummaryScores(chr, startLocation, endLocation, zoom);
         }
     }
 
@@ -133,10 +114,11 @@ public class AffectiveDataSource extends TDFDataSource {
                 }
                 value += s.getScore();
                 numPoints++;
-
-
             }
         }
         return scores;
     }
+
+
+
 }

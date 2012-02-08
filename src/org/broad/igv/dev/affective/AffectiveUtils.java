@@ -1,11 +1,21 @@
 package org.broad.igv.dev.affective;
 
+import org.broad.igv.data.DataSource;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.genome.GenomeListItem;
+import org.broad.igv.goby.GobyCountArchiveDataSource;
 import org.broad.igv.renderer.DataRange;
 import org.broad.igv.renderer.LineplotRenderer;
+import org.broad.igv.renderer.ScatterplotRenderer;
 import org.broad.igv.renderer.XYPlotRenderer;
+import org.broad.igv.tdf.TDFDataSource;
+import org.broad.igv.tdf.TDFReader;
+import org.broad.igv.track.DataSourceTrack;
 import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackProperties;
+import org.broad.igv.track.TrackType;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
 
 import java.awt.*;
 import java.io.*;
@@ -60,24 +70,65 @@ public class AffectiveUtils {
         return genome;
     }
 
-    public static void doAffectiveHacks(List<Track> newTracks) {
-         for(Track track : newTracks) {
-             String name = track.getName();
-             if(name.endsWith("-axis")) {
-                 track.setDataRange(new DataRange(-1.5f, 0, 1.5f));
-             }
-             else if(name.equals("Battery")) {
-                 track.setDataRange(new DataRange(-1, 1));
-             }
-             else if(name.endsWith("Celsius")) {
-                 track.setDataRange(new DataRange(20, 30));
-                 track.setRendererClass(LineplotRenderer.class);
-             }
-             else if(name.startsWith("EDA")) {
-                 track.setDataRange(new DataRange(0, 10));
-                 track.setColor(new Color(0, 150, 0));
-             }
 
-         }
+    public static void loadTDFFile(ResourceLocator locator, List<Track> newTracks, Genome genome, TDFReader reader) {
+
+        TrackType type = reader.getTrackType();
+        TrackProperties props = null;
+        String trackLine = reader.getTrackLine();
+        if (trackLine != null && trackLine.length() > 0) {
+            props = new TrackProperties();
+            ParsingUtils.parseTrackLine(trackLine, props);
+        }
+
+        // In case of conflict between the resource locator display name and the track properties name,
+        // use the resource locator
+        String name = locator.getName();
+        if (name != null && props != null) {
+            props.setName(name);
+        }
+
+        if (name == null) {
+            name = props == null ? locator.getTrackName() : props.getName();
+        }
+
+        int trackNumber = 0;
+        String path = locator.getPath();
+        boolean multiTrack = reader.getTrackNames().length > 1;
+
+        for (String heading : reader.getTrackNames()) {
+
+            String trackId = multiTrack ? path + "_" + heading : path;
+            String trackName = multiTrack ? heading : name;
+            final DataSource dataSource = new AffectiveDataSource(reader, trackNumber, heading, genome);
+            DataSourceTrack track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
+
+            String displayName = (name == null || multiTrack) ? heading : name;
+            track.setName(displayName);
+            track.setTrackType(type);
+            if (props != null) {
+                track.setProperties(props);
+            }
+
+            if (trackName.endsWith("-axis")) {
+                track.setDataRange(new DataRange(0, 1.5f));
+            } else if (trackName.equals("Battery")) {
+                track.setDataRange(new DataRange(-1, 0, 1));
+                track.setRendererClass(ScatterplotRenderer.class);
+            } else if (trackName.endsWith("Celsius")) {
+                track.setDataRange(new DataRange(20, 30));
+                track.setRendererClass(ScatterplotRenderer.class);
+            } else if (trackName.startsWith("EDA")) {
+                track.setDataRange(new DataRange(0, 10));
+                track.setColor(new Color(0, 150, 0));
+            }
+
+
+            newTracks.add(track);
+            trackNumber++;
+        }
+
+
+
     }
 }

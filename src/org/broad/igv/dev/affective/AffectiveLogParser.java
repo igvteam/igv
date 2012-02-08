@@ -1,6 +1,7 @@
 package org.broad.igv.dev.affective;
 
 import org.broad.igv.tools.parsers.DataConsumer;
+import org.broad.igv.tools.parsers.UnsortedException;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
 
@@ -33,6 +34,10 @@ import java.util.regex.Pattern;
  * @date 11/25/11
  */
 public class AffectiveLogParser {
+
+
+    static int CHR_SAMPLING_RATE = 8; // 8 points per second
+    static int CHR_START_TIME = (AffectiveUtils.START_TIME_HR * 60) * 60;
 
     DataConsumer dataConsumer;
     File root;
@@ -81,11 +86,14 @@ public class AffectiveLogParser {
             String prefix = "ATTR:" + chrName + ":";
             dataConsumer.setAttribute(prefix + "uuid", header.getUuid());
             dataConsumer.setAttribute(prefix + "samplingRate", String.valueOf(header.getSamplingRate()));
-            dataConsumer.setAttribute(prefix + "startTime", String.valueOf(header.getStartTime()));
+            dataConsumer.setAttribute(prefix + "startTime", String.valueOf(CHR_START_TIME)); //    header.getStartTime()));
 
+            int stepSize = (int) (Math.round((double) CHR_SAMPLING_RATE) / header.getSamplingRate());
+            int startOffset = (header.getStartTime() - CHR_START_TIME) * CHR_SAMPLING_RATE;
 
             String nextLine;
-            int step = 0;
+
+            int startTime = startOffset;
             while ((nextLine = br.readLine()) != null) {
 
                 try {
@@ -95,13 +103,19 @@ public class AffectiveLogParser {
                         for (int i = 0; i < tokens.length; i++) {
                             float v;
                             try {
-                                v = Math.abs(Float.parseFloat(tokens[i]));
+                                v = Float.parseFloat(tokens[i]);
+                                if(i < 3) v = Math.abs(v);
                             } catch (NumberFormatException e) {
                                 v = Float.NaN;
                             }
                             values[i] = v;
                         }
-                        dataConsumer.addData(chrName, step, step + 1, values, null);
+
+                        try {
+                            dataConsumer.addData(chrName, startTime, startTime + stepSize, values, null);
+                        } catch (UnsortedException e) {
+                            // Ignore
+                        }
                     } else {
                         System.out.println("Skipping line: " + nextLine);
                     }
@@ -110,7 +124,7 @@ public class AffectiveLogParser {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
 
-                step++;
+                startTime += stepSize;
 
             }
         } finally {

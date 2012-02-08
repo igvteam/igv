@@ -94,11 +94,11 @@ public class AffectiveAnnotationTrack extends AbstractTrack {
                 int ts = annot.startTime * samplingRate;
                 int te = annot.endTime * samplingRate;
 
-                if (te < startTime) {
-                    continue;
-                } else if (ts > endTime) {
-                    break;
-                }
+//                if (te < startTime) {
+//                    continue;
+//                } else if (ts > endTime) {
+//                    break;
+//                }
 
                 int px = (int) ((ts - origin) / scale);
                 int w = (int) Math.max(3, (te - ts) / scale);
