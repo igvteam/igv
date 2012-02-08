@@ -20,14 +20,14 @@ package org.broad.igv.tools;
 
 import org.broad.igv.Globals;
 import org.broad.igv.data.Dataset;
+import org.broad.igv.data.WiggleDataset;
+import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.tools.sort.SorterTest;
-import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.FeatureCodec;
@@ -200,22 +200,29 @@ public class IGVToolsTest {
 
     @Test
     public void testCountTDF() throws Exception {
-        tstCount("testtdf", "tdf");
+        tstCount("testtdf", "tdf", null, -1, -1);
     }
 
     @Test
     public void testCountWIG() throws Exception {
-        tstCount("testwig", "wig");
+        tstCount("testwig", "wig", null, -1, -1);
+        tstCount("testwig", "wig", "chr2", 178709699, 179008373);
     }
 
-    public void tstCount(String outputBase, String outputExt) throws Exception {
+    public void tstCount(String outputBase, String outputExt, String chr, int start, int end) throws Exception {
         String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
+        boolean query = chr != null && start >= 0 && end >= start + 1;
+
         String[] opts = new String[]{"", "--bases", "--strand=read", "--strand=first", "--strand=read --bases"};
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
+            int winsize = 5;
+            if (query) {
+                opt += " --windowSize " + winsize + " --query " + chr + ":" + start + "-" + end;
+            }
 
             String fullout = outputFile + ind + "." + outputExt;
             String input = "count " + opt + " " + inputFile + " " + fullout + " " + genome;
@@ -225,13 +232,32 @@ public class IGVToolsTest {
             if (outputExt.equals("tdf")) {
                 TDFReader reader = TDFReader.getReader(fullout);
                 assertTrue(reader.getDatasetNames().size() > 0);
+                if (query) {
+                    for (String name : reader.getDatasetNames()) {
+                        TDFDataset ds = reader.getDataset(name);
+                        List<TDFTile> tiles = ds.getTiles();
+                        for (TDFTile tile : tiles) {
+                            assertTrue(tile.getTileStart() >= start);
+                        }
+                    }
+                }
             } else {
                 File outFile = new File(fullout);
                 assertTrue(outFile.exists());
                 assertTrue(outFile.canRead());
-                TrackLoader trackLoader = new TrackLoader();
-                List<Track> tracks = trackLoader.load(new ResourceLocator(fullout), TestUtils.loadGenome());
-                assertTrue(tracks.size() > 0);
+
+                ResourceLocator locator = new ResourceLocator(fullout);
+                WiggleDataset ds = (new WiggleParser(locator, IgvTools.loadGenome(genome, true))).parse();
+
+                if (query) {
+                    assertEquals(1, ds.getChromosomes().length);
+                    assertEquals(chr, ds.getChromosomes()[0]);
+
+                    int[] starts = ds.getStartLocations(chr);
+                    for (Integer act_start : starts) {
+                        assertTrue(act_start + " is outside range", act_start >= start - winsize && act_start < end + winsize);
+                    }
+                }
             }
         }
     }
