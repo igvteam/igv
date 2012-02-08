@@ -546,7 +546,7 @@ public class TrackLoader {
 
         // TODO -- handle remote resource
         try {
-            parser = new ExpressionFileParser(locator, null, igv.getGenomeManager().getCurrentGenome());
+            parser = new ExpressionFileParser(locator, null, genome);
         } catch (IOException e) {
             log.error("Error creating GCT parser.", e);
             throw new DataLoadException("Error creating GCT parser: " + e, locator.getPath());
@@ -568,8 +568,7 @@ public class TrackLoader {
         TrackProperties trackProperties = ds.getTrackProperties();
         String path = locator.getPath();
         for (String trackName : ds.getTrackNames()) {
-            Genome currentGenome = igv.getGenomeManager().getCurrentGenome();
-            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, currentGenome);
+            DatasetDataSource dataSource = new DatasetDataSource(trackName, ds, genome);
             String trackId = path + "_" + trackName;
             Track track = new DataSourceTrack(locator, trackId, trackName, dataSource, genome);
             track.setRendererClass(HeatmapRenderer.class);

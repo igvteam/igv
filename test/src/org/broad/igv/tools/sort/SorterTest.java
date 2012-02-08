@@ -62,9 +62,12 @@ public class SorterTest {
         sorter.setMaxRecords(10);  // <= force text of serialization
         sorter.run();
 
+        checkBedSorted(ofile);
+    }
 
+    public static int checkBedSorted(File ofile) {
         BufferedReader reader = null;
-
+        int numlines = 0;
         try {
             reader = new BufferedReader(new FileReader(ofile));
             String nextLine = "";
@@ -72,6 +75,9 @@ public class SorterTest {
             int lastStart = 0;
             Set<String> chromosomes = new HashSet();
             while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("track")) {
+                    continue;
+                }
                 String[] tokens = nextLine.split("\t");
                 String chr = tokens[0];
 
@@ -82,11 +88,12 @@ public class SorterTest {
                     assertFalse(chromosomes.contains(chr));
                     chromosomes.add(chr);
                 }
+                numlines++;
                 lastChr = chr;
                 lastStart = start;
             }
         } catch (Exception e) {
-
+            throw new AssertionError("Exception during checking: " + e);
         } finally {
             try {
                 reader.close();
@@ -94,6 +101,6 @@ public class SorterTest {
 
             }
         }
-
+        return numlines;
     }
 }

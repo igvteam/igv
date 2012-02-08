@@ -72,18 +72,20 @@ public class CoverageCounter {
     /*
      * Output data from each strand separately (as opposed to combining them)
      */
-    static final String STRAND_SEPARATE = "s";
+    static final int STRAND_SEPARATE = 0x01;
     /*
      * Gather data by first read/second read,
      * instead of by positive/negative (if this flag is unset)
      */
-    static final String FIRST_IN_PAIR = "f";
+    static final int FIRST_IN_PAIR = 0x02;
     /**
      * Output counts of each base. Whether the data will be output
      * for each strand separately is determined by STRAND_SEPARATE
      * by
      */
-    static final String BASES = "b";
+    static final int BASES = 0x04;
+
+    public static final Integer INCLUDE_DUPS = 0x10;
 
     private boolean outputSeparate;
     private boolean firstInPair;
@@ -141,7 +143,6 @@ public class CoverageCounter {
         }
     }
 
-
     /**
      * @param alignmentFile - path to the file to count
      * @param consumer      - the data consumer, in this case a TDF preprocessor
@@ -149,7 +150,9 @@ public class CoverageCounter {
      * @param extFactor     - the extension factor, read is artificially extended by this amount
      * @param wigFile       - path to the wig file (optional)
      * @param genome        - the Genome,  used to size chromosomes
-     * @param options       - additional coverage options (optional)
+     * @param queryString   - Locus query string, such as 1:1-1000. Only count the queried region. Set to null for entire genome
+     * @param minMapQual    - Minimum mapping quality to include
+     * @param countFlags    - Combination of flags for BASES, STRAND_SEPARATE, INCLUDE_DUPES, FIRST_IN_PAIR
      */
     public CoverageCounter(String alignmentFile,
                            DataConsumer consumer,
@@ -157,7 +160,8 @@ public class CoverageCounter {
                            int extFactor,
                            File wigFile,
                            Genome genome,
-                           String options) {
+                           String queryString,
+                           int minMapQual, int countFlags) {
         this.alignmentFile = alignmentFile;
         this.consumer = consumer;
         this.windowSize = windowSize;
@@ -165,9 +169,7 @@ public class CoverageCounter {
         this.wigFile = wigFile;
         this.genome = genome;
 
-        if (options != null) {
-            parseOptions(options);
-        }
+        parseOptions(queryString, minMapQual, countFlags);
 
         //Count the number of output columns. 1 or 2 if not outputting bases
         //5 or 10 if are.
@@ -175,41 +177,23 @@ public class CoverageCounter {
         int datacols = (outputSeparate ? 2 : 1) * multiplier;
 
         buffer = new float[datacols];
-
     }
 
     /**
-     * Parse command-line options.  Perhaps this should be done in the calling program.
+     * Take additional optional command line arguments and parse them
      *
-     * @param options
+     * @param queryString
+     * @param minMapQual
+     * @param countFlags
      */
-    private void parseOptions(String options) {
-        String[] opts = options.split(",");
-        for (String opt : opts) {
-            if (opt.startsWith("d")) {
-                includeDuplicates = true;
-            } else if (opt.startsWith("m=")) {
-                String[] tmp = opt.split("=");
-                minMappingQuality = Integer.parseInt(tmp[1]);
-                System.out.println("Minimum mapping quality = " + minMappingQuality);
-            } else if (opt.startsWith("q")) {
-                String[] tmp = opt.split("@");
-                interval = new Locus(tmp[1]);
-            } else if (opt.startsWith("sc=")) {
-                String[] tmp = opt.split("=");
-                if (tmp.length >= 2) {
-                    String sc_opts = tmp[1];
-                    outputSeparate = sc_opts.contains(STRAND_SEPARATE);
-                    firstInPair = sc_opts.contains(FIRST_IN_PAIR);
-                    outputBases = sc_opts.contains(BASES);
-                } else {
-                    System.out.println("sc= found, but no further options");
-                }
-            } else {
-                System.out.println("Unknown coverage option: " + opt);
-            }
+    private void parseOptions(String queryString, int minMapQual, int countFlags) {
+        if (queryString != null) {
+            this.interval = new Locus(queryString);
         }
-
+        this.minMappingQuality = minMapQual;
+        outputSeparate = (countFlags & STRAND_SEPARATE) > 0;
+        firstInPair = (countFlags & FIRST_IN_PAIR) > 0;
+        outputBases = (countFlags & BASES) > 0;
     }
 
 

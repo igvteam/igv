@@ -70,14 +70,70 @@ public class IgvTools {
 
     static String version = "@VERSION";
 
+    static final String CMD_TILE = "tile";
+    static final String CMD_TOTDF = "totdf";
+    static final String CMD_COUNT = "count";
+    static final String CMD_SORT = "sort";
+    static final String CMD_INDEX = "index";
+    static final String CMD_FORMATEXP = "formatexp";
+    static final String CMD_VERSION = "version";
+    static final String CMD_GUI = "gui";
+    static final String CMD_HELP = "help";
+
+    static Map<String, String> commandList = new HashMap<String, String>(9);
+
+    static {
+        String typ_end = "[options] inputFile outputFile genome\n";
+
+        String tstring = "Usage: igvtools totdf " + typ_end;
+        String zoom = "-z, --maxZoom \tMaximum zoom levels to precompute. Default 7\n";
+        String wfunc = "-f, --windowFunctions \tComma-separated list of window functions. Possible values are min, mean, max\n";
+        String probFile = "-p, --probeFile \tSpecifies a \"bed\" file to be used to map probe identifiers to locations.\n";
+        tstring += zoom += wfunc += probFile;
+        commandList.put(CMD_TOTDF, tstring);
+        tstring = "Note: This command is deprecated and being renamed to totdf\n" + tstring;
+        commandList.put(CMD_TILE, tstring);
+
+        String countstring = "Usage: igvtools count " + typ_end;
+        String wsize = "-w, --windowSize \tThe window size over which coverage is averaged. Defaults to 25 bp.\n";
+        String ext = "-e, --extFactor \tThe read or feature is extended by the specified distance in bp prior to counting\n";
+        //TODO MORE OPTIONS
+        countstring += zoom += wfunc += wsize += ext;
+        commandList.put(CMD_COUNT, countstring);
+
+        String indexstring = "Usage: igvtools index inputFile\n";
+        indexstring += "Index an alignment file.\n";
+        indexstring += "Supported input file formats are: .sam, .aligned, .vcf, .psl, and .bed.\n";
+        commandList.put(CMD_INDEX, indexstring);
+
+
+        String sortstring = "Usage: igvtools sort [options] inputFile outputFile";
+        String tmpDir = "-t, --tmpdir \tSpecify a temporary working directory. Default is users temp directory\n";
+        String maxRec = "-m, --maxRecords \tThe maximum number of records to keep in memory during the sort\n";
+        sortstring += tmpDir += maxRec;
+        commandList.put(CMD_SORT, sortstring);
+
+        String fexpstring = "Usage: igvtools formatexp inputFile outputFile\n";
+        fexpstring += "Format GCT or RES files for display";
+        commandList.put(CMD_FORMATEXP, fexpstring);
+
+        commandList.put(CMD_VERSION, "Print igvtools version number");
+
+        commandList.put(CMD_GUI, "Start the IGVtools GUI");
+        commandList.put(CMD_HELP, "Usage: igvtools help [command]\n Displays a list of commands."
+                + " If [command] is provided, displays help on that command");
+    }
+
     static String[] commandDocs = new String[]{
             "version print the version number",
             "sort    sort an alignment file by start position. ",
             "index   index an alignment file",
             "toTDF    convert an input file (cn, gct, wig) to tiled data format (tdf)",
             "count   compute coverage density for an alignment file",
-            "formatExp  center, scale, and log2 normalize an expression file",
-            "densitiesToBedgraph convert densities.txt.gz file to a bedgraph file"
+            "formatexp  center, scale, and log2 normalize an expression file",
+            "gui      Start the gui",
+            "help     display this help message, or help on a specific command",
+            "See http://www.broadinstitute.org/software/igv/igvtools_commandline for more detailed help"
     };
     public static final int MAX_RECORDS_IN_RAM = 500000;
     public static final int MAX_ZOOM = 7;
@@ -88,6 +144,37 @@ public class IgvTools {
     public static final int INTERVAL_SIZE = 1000;
     public static final int LINEAR_INDEX = 1;
     public static final int INTERVAL_INDEX = 2;
+
+    //Options common to all
+    private static CmdLineParser.Option windowFunctions = null;
+    private static CmdLineParser.Option tmpDirOption = null;
+    private static CmdLineParser.Option maxZoomOption = null;
+    private static CmdLineParser.Option typeOption = null;
+
+    // options for sort
+    private static CmdLineParser.Option maxRecordsOption = null;
+
+    // options for gct files
+    private static CmdLineParser.Option probeFileOption = null;
+
+    // options for coverage
+    private static CmdLineParser.Option windowSizeOption = null;
+    private static CmdLineParser.Option extFactorOption = null;
+
+
+    private static CmdLineParser.Option separateBasesOption = null;
+    private static CmdLineParser.Option strandOption = null;
+    private static CmdLineParser.Option queryStringOpt = null;
+    private static CmdLineParser.Option minMapQualityOpt = null;
+    private static CmdLineParser.Option includeDupsOpt = null;
+
+    // options for index
+    private static CmdLineParser.Option indexTypeOption = null;
+    private static CmdLineParser.Option binSizeOption = null;
+    private static CmdLineParser.Option outputDirOption = null;
+
+    // Trackline
+    private static CmdLineParser.Option colorOption = null;
 
 
     /**
@@ -101,9 +188,27 @@ public class IgvTools {
         buf.append("Command:");
         for (String c : commandDocs) {
             buf.append(" " + c + "\n\t");
-
         }
         return buf.toString();
+    }
+
+    /**
+     * Help on a specific command
+     *
+     * @param command
+     * @return
+     */
+    static String usageString(String command) {
+        command = command.toLowerCase();
+        StringBuffer buf = new StringBuffer();
+        if (!commandList.containsKey(command)) {
+            buf.append("Command " + command + " not recognized\n");
+            buf.append(usageString());
+            return buf.toString();
+        } else {
+            buf.append(commandList.get(command));
+            return buf.toString();
+        }
     }
 
     private static void initLogger() {
@@ -141,6 +246,262 @@ public class IgvTools {
     }
 
     void run(String[] argv) {
+        String command = argv[0].toLowerCase();
+
+        if (command.equals(CMD_HELP)) {
+            if (argv.length > 1) {
+                System.out.println(usageString(argv[1]));
+            } else {
+                System.out.println(usageString());
+            }
+        }
+
+        if (command.equals(CMD_GUI)) {
+            launchGUI();
+            Runtime.getRuntime().halt(0);
+        }
+
+        // Do "version" now, its the only command with no arguments
+        if (command.equals(CMD_VERSION)) {
+            System.out.println("Version " + version);
+            return;
+        }
+
+
+        CmdLineParser parser = initParser(command);
+
+        // Parse optional arguments (switches, etc)
+        try {
+            parser.parse(argv);
+        } catch (CmdLineParser.OptionException e) {
+            System.err.println(e.getMessage());
+            System.out.println(usageString(command));
+            return;
+        }
+
+        String tmpDirName = null;
+        if (tmpDirOption != null) {
+            tmpDirName = (String) parser.getOptionValue(tmpDirOption, null);
+        }
+        int maxRecords = MAX_RECORDS_IN_RAM;
+        if (maxRecordsOption != null) {
+            maxRecords = (Integer) parser.getOptionValue(maxRecordsOption, MAX_RECORDS_IN_RAM);
+        }
+        String[] nonOptionArgs = parser.getRemainingArgs();
+
+        try {
+            String basic_syntax = "Error in syntax. Expected: " + command + " [options] inputfile outputfile";
+
+            // All remaining commands require an input file, and most need the file extension.  Do that here.
+            validateArgsLength(nonOptionArgs, 2, "Error: No input file provided");
+            String ifile = nonOptionArgs[1];
+
+            boolean isList = ifile.indexOf(",") > 0;
+            if (!isList && !FileUtils.resourceExists(ifile)) {
+                throw new PreprocessingException("File not found: " + ifile);
+            }
+
+            String typeString = null;
+            if (typeOption != null) {
+                typeString = (String) parser.getOptionValue(typeOption);
+            }
+            if (typeString == null || typeString.length() == 0) {
+                typeString = Preprocessor.getExtension(ifile).toLowerCase();
+            } else {
+                typeString = typeString.toLowerCase();
+            }
+
+
+            if (command.equals(CMD_COUNT) || command.equals(CMD_TILE) || command.equals(CMD_TOTDF)) {
+                // Parse out options common to both count and tile
+                validateArgsLength(nonOptionArgs, 4, commandList.get(command));
+                int maxZoomValue = (Integer) parser.getOptionValue(maxZoomOption, MAX_ZOOM);
+                String ofile = nonOptionArgs[2];
+                String genomeId = nonOptionArgs[3];
+
+                boolean isGCT = typeString.endsWith("gct") || typeString.equals("mage-tab");
+                String wfsString = (String) parser.getOptionValue(windowFunctions);
+                Collection<WindowFunction> wfList = parseWFS(wfsString, isGCT);
+
+
+                if (command.equals(CMD_COUNT)) {
+
+                    String trackLine = null;
+                    String color = (String) parser.getOptionValue(colorOption);
+
+                    if (color != null) {
+                        trackLine = "track color=\"" + color + "\"";
+                    }
+
+                    int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
+
+                    int countFlags = parseCountFlags(parser);
+                    String queryString = (String) parser.getOptionValue(queryStringOpt);
+                    int minMapQuality = (Integer) parser.getOptionValue(minMapQualityOpt, 0);
+
+                    int windowSizeValue = (Integer) parser.getOptionValue(windowSizeOption, WINDOW_SIZE);
+                    doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
+                            trackLine, queryString, minMapQuality, countFlags);
+                } else {
+                    String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
+                    toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
+                }
+
+            } else if (command.equals(CMD_SORT)) {
+                validateArgsLength(nonOptionArgs, 3, commandList.get(command));
+                String ofile = nonOptionArgs[2];
+                doSort(ifile, ofile, tmpDirName, maxRecords);
+            } else if (command.equals(CMD_INDEX)) {
+                int indexType = (Integer) parser.getOptionValue(indexTypeOption, LINEAR_INDEX);
+                int defaultBinSize = indexType == LINEAR_INDEX ? LINEAR_BIN_SIZE : INTERVAL_SIZE;
+                int binSize = (Integer) parser.getOptionValue(binSizeOption, defaultBinSize);
+                String outputDir = (String) parser.getOptionValue(outputDirOption, null);
+                doIndex(ifile, outputDir, indexType, binSize);
+            } else if (command.equals(CMD_FORMATEXP)) {
+                validateArgsLength(nonOptionArgs, 3, commandList.get(command));
+                File inputFile = new File(nonOptionArgs[1]);
+                File outputFile = new File(nonOptionArgs[2]);
+                (new ExpressionFormatter()).convert(inputFile, outputFile);
+            } else if (command.equals("wibtowig")) {
+                validateArgsLength(nonOptionArgs, 4, "Error in syntax. Expected: " + command + " [options] txtfile wibfile wigfile");
+                File txtFile = new File(nonOptionArgs[1]);
+                File wibFile = new File(nonOptionArgs[2]);
+                File wigFile = new File(nonOptionArgs[3]);
+                String trackLine = nonOptionArgs.length > 4 ? nonOptionArgs[4] : null;
+                doWIBtoWIG(txtFile, wibFile, wigFile, trackLine);
+            } else if (command.equals("splitgff")) {
+                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputfile outputdir");
+                String outputDirectory = nonOptionArgs[2];
+                GFFParser.splitFileByType(ifile, outputDirectory);
+            } else if (command.toLowerCase().equals("gcttoigv")) {
+                validateArgsLength(nonOptionArgs, 4, basic_syntax + " genomeId");
+                String ofile = nonOptionArgs[2];
+                // Output files must have .igv extension
+                if (!ofile.endsWith(".igv")) {
+                    ofile = ofile + ".igv";
+                }
+                String genomeId = nonOptionArgs[3];
+                Genome genome = loadGenome(genomeId, true);
+                if (genome == null) {
+                    throw new PreprocessingException("Genome could not be loaded: " + genomeId);
+                }
+                String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
+                doGCTtoIGV(typeString, ifile, new File(ofile), probeFile, maxRecords, tmpDirName, genome);
+            } else if (command.equals("formatexp")) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
+                File inputFile = new File(nonOptionArgs[1]);
+                File outputFile = new File(nonOptionArgs[2]);
+                (new ExpressionFormatter()).convert(inputFile, outputFile);
+            } else if (command.toLowerCase().equals("tdftobedgraph")) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
+                String ofile = nonOptionArgs[2];
+                TDFUtils.tdfToBedgraph(ifile, ofile);
+            } else if (command.equals("wigtobed")) {
+                validateArgsLength(nonOptionArgs, 2, "Error in syntax. Expected: " + command + " [options] inputfile");
+                String inputFile = nonOptionArgs[1];
+                float hetThreshold = 0.17f;
+                if (nonOptionArgs.length > 2) {
+                    hetThreshold = Float.parseFloat(nonOptionArgs[2]);
+                }
+                float homThreshold = 0.55f;
+                if (nonOptionArgs.length > 3) {
+                    homThreshold = Float.parseFloat(nonOptionArgs[3]);
+                }
+                WigToBed.run(inputFile, hetThreshold, homThreshold);
+            } else if (command.equals("vcftobed")) {
+                validateArgsLength(nonOptionArgs, 3, basic_syntax);
+                String inputFile = nonOptionArgs[1];
+                String outputFile = nonOptionArgs[2];
+                VCFtoBed.convert(inputFile, outputFile);
+            } else if (command.equals("lanecounter")) {
+                validateArgsLength(nonOptionArgs, 3, "This command is not documented");
+                Genome genome = loadGenome(nonOptionArgs[1], false);
+                String bamFileList = nonOptionArgs[2];
+                String queryInterval = nonOptionArgs[3];
+                LaneCounter.run(genome, bamFileList, queryInterval);
+            } else if (command.equals("sumwigs")) {
+                sumWigs(nonOptionArgs[1], nonOptionArgs[2]);
+            } else if (command.equals("densitiestobedgraph")) {
+                validateArgsLength(nonOptionArgs, 3, "Error in syntax. Expected: " + command + " [options] inputdir outputdir");
+                File inputDir = new File(nonOptionArgs[1]);
+                File outputDir = new File(nonOptionArgs[2]);
+                if (inputDir.isDirectory() && outputDir.isDirectory()) {
+                    DensitiesToBedGraph.convert(inputDir, outputDir);
+                } else if (inputDir.isFile() && outputDir.isFile()) {
+                    DensitiesToBedGraph.convert(inputDir, outputDir);
+                }
+
+            } else {
+                throw new PreprocessingException("Unknown command: " + argv[EXT_FACTOR]);
+            }
+        } catch (PreprocessingException e) {
+            System.err.println(e.getMessage());
+            System.out.println(usageString());
+        } catch (IOException e) {
+            throw new PreprocessingException("Unexpected IO error: ", e);
+        }
+    }
+
+
+    private CmdLineParser initParser(String command) {
+        command = command.toLowerCase();
+        CmdLineParser parser = new CmdLineParser();
+        if (command.equals(CMD_SORT) || command.equals(CMD_TOTDF) || command.equals(CMD_TILE)) {
+            maxRecordsOption = parser.addIntegerOption('m', "maxRecords");
+            tmpDirOption = parser.addStringOption('t', "tmpDir");
+        }
+
+        if (command.equals(CMD_COUNT) || command.equals(CMD_TOTDF) || command.equals(CMD_TILE)) {
+
+            // general options
+            windowFunctions = parser.addStringOption('f', "windowFunctions");
+            maxZoomOption = parser.addIntegerOption('z', "maxZoom");
+
+            // extended options for coverage
+            if (command.equals(CMD_COUNT)) {
+
+                extFactorOption = parser.addIntegerOption('e', "extFactor");
+                windowSizeOption = parser.addIntegerOption('w', "windowSize");
+
+                separateBasesOption = parser.addBooleanOption("bases");
+                strandOption = parser.addStringOption("strand");
+                queryStringOpt = parser.addStringOption("query");
+                minMapQualityOpt = parser.addStringOption("minMapQuality");
+                includeDupsOpt = parser.addStringOption("includeDuplicates");
+
+                // Trackline
+                colorOption = parser.addStringOption("color");
+            } else {
+                // options for gct files
+                probeFileOption = parser.addStringOption('p', "probeFile");
+                typeOption = parser.addStringOption("fileType");
+            }
+        }
+
+        if (command.equals(CMD_INDEX)) {
+            indexTypeOption = parser.addIntegerOption("indexType");
+            binSizeOption = parser.addIntegerOption("binSize");
+            outputDirOption = parser.addStringOption("outputDir");
+        }
+
+        return parser;
+    }
+
+    private int parseCountFlags(CmdLineParser parser) {
+
+        int countFlags = 0;
+        countFlags += (Boolean) parser.getOptionValue(separateBasesOption, false) ? CoverageCounter.BASES : 0;
+        countFlags += (Boolean) parser.getOptionValue(includeDupsOpt, false) ? CoverageCounter.INCLUDE_DUPS : 0;
+        String strandopt = (String) parser.getOptionValue(strandOption, "");
+        if (strandopt.equals("read")) {
+            countFlags += CoverageCounter.STRAND_SEPARATE;
+        } else if (strandopt.equals("first")) {
+            countFlags += CoverageCounter.FIRST_IN_PAIR;
+        }
+        return countFlags;
+    }
+
+    void run_old(String[] argv) {
 
         CmdLineParser parser = new CmdLineParser();
         CmdLineParser.Option helpOption = parser.addBooleanOption('h', "help");
@@ -150,7 +511,6 @@ public class IgvTools {
         CmdLineParser.Option windowFunctions = parser.addStringOption('f', "windowFunctions");
         CmdLineParser.Option tmpDirOption = parser.addStringOption('t', "tmpDir");
         CmdLineParser.Option maxZoomOption = parser.addIntegerOption('z', "maxZoom");
-        CmdLineParser.Option typeOption = parser.addStringOption('q', "type");
 
         // options for sort
         CmdLineParser.Option maxRecordsOption = parser.addIntegerOption('m', "maxRecords");
@@ -167,8 +527,8 @@ public class IgvTools {
         CmdLineParser.Option binSizeOption = parser.addIntegerOption('b', "binSize");
         CmdLineParser.Option outputDirOption = parser.addStringOption('o', "outputDir");
 
-
         // extended options for coverage
+        //  q, t, .....
         CmdLineParser.Option coverageOptions = parser.addStringOption('a', "coverageOptions");
 
         // Trackline
@@ -255,8 +615,8 @@ public class IgvTools {
                 if (command.equals("count")) {
                     int extFactorValue = (Integer) parser.getOptionValue(extFactorOption, EXT_FACTOR);
 
-                    doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
-                            coverageOpt, trackLine);
+                    //doCount(ifile, ofile, genomeId, maxZoomValue, wfList, windowSizeValue, extFactorValue,
+                    //coverageOpt, trackLine);
                 } else {
                     String probeFile = (String) parser.getOptionValue(probeFileOption, PROBE_FILE);
                     toTDF(typeString, ifile, ofile, probeFile, genomeId, maxZoomValue, wfList, tmpDirName, maxRecords);
@@ -490,7 +850,7 @@ public class IgvTools {
      */
     public void doCount(String ifile, String ofile, String genomeId, int maxZoomValue,
                         Collection<WindowFunction> windowFunctions, int windowSizeValue, int extFactorValue,
-                        String coverageOpt, String trackLine) throws IOException {
+                        String trackLine, String queryString, int minMapQuality, int countFlags) throws IOException {
 
 
         System.out.println("Computing coverage.  File = " + ifile);
@@ -531,7 +891,10 @@ public class IgvTools {
         }
 
         Preprocessor p = new Preprocessor(tdfFile, genome, windowFunctions, -1, null);
-        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, coverageOpt, trackLine);
+        //p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, coverageOpt, trackLine);
+        p.count(ifile, windowSizeValue, extFactorValue, maxZoomValue, wigFile, trackLine,
+                queryString, minMapQuality, countFlags);
+
         p.finish();
 
         System.out.flush();

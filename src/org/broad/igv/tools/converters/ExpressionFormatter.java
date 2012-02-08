@@ -29,7 +29,7 @@ import java.util.Arrays;
  * Scales and centers expression data for display in IGV.
  * <p/>
  * 1.  take log2 of data
- * 2.  compute median and subtact from each log2 probe value (i.e. center on the median)
+ * 2.  compute median and subtract from each log2 probe value (i.e. center on the median)
  * 3.  compute the MAD (mean absolute deviation)  -- http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
  * 4.  divide each log2 probe value by the MAD
  *
@@ -129,8 +129,7 @@ public class ExpressionFormatter {
                 }
                 writer.println();
             }
-        }
-        finally {
+        } finally {
             if (reader != null) {
                 reader.close();
             }
@@ -177,7 +176,7 @@ public class ExpressionFormatter {
                     try {
                         data[dataIdx] = Double.parseDouble(tokens[i]);
 
-                        if(data[dataIdx] < 0) {
+                        if (data[dataIdx] < 0) {
                             throw new RuntimeException("Negative value detected in input file: " + line);
                         }
 
@@ -185,8 +184,7 @@ public class ExpressionFormatter {
                         scaledData[dataIdx] = v;
                         nonNullData[nNonNull] = v;
                         nNonNull++;
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                     }
                 }
                 if (type == FileType.RES) {
@@ -218,7 +216,7 @@ public class ExpressionFormatter {
             }
 
             // MAD, as defined at http://stat.ethz.ch/R-manual/R-devel/library/stats/html/mad.html
-            mad = 1.4826 *  StatUtils.percentile(deviations, 50);
+            mad = 1.4826 * StatUtils.percentile(deviations, 50);
 
             // Scale data by MAD
             for (int i = 0; i < scaledData.length; i++) {

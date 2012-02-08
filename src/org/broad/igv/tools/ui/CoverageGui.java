@@ -23,10 +23,14 @@
 package org.broad.igv.tools.ui;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.tools.CoverageCounter;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.tools.Preprocessor;
 import org.broad.igv.track.WindowFunction;
 
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -35,8 +39,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.*;
-import javax.swing.border.*;
 
 /**
  * @author Stan Diamond
@@ -542,21 +544,15 @@ public class CoverageGui extends JDialog {
                     runButton.setEnabled(false);
 
                     // Check user prefs for duplicates and min mapping quality
-                    String options = null;
+                    int countFlags = 0;
                     boolean includeDuplicates = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_DUPLICATES);
                     int minMappingQuality = PreferenceManager.getInstance().getAsInt(PreferenceManager.SAM_QUALITY_THRESHOLD);
                     if (includeDuplicates) {
-                        options = "d";
-                    }
-                    if (minMappingQuality > 0) {
-                        String tmp = "m=" + minMappingQuality;
-                        if (options == null)
-                            options = tmp;
-                        else
-                            options += tmp;
+                        countFlags += CoverageCounter.INCLUDE_DUPS;
                     }
 
-                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, options, null);
+                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, null,
+                            null, minMappingQuality, countFlags);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }

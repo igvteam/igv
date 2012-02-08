@@ -722,13 +722,13 @@ public class Preprocessor implements DataConsumer {
     }
 
     public void count(String iFile, int windowSizeValue, int extFactorValue, int maxZoomValue,
-                      File wigFile, String coverageOpt, String trackLine) throws IOException {
+                      File wigFile, String trackLine, String queryString, int minMapQual, int countFlags) throws IOException {
         setNZoom(maxZoomValue);
 
         this.setSkipZeroes(true);
 
         CoverageCounter aParser = new CoverageCounter(iFile, this, windowSizeValue, extFactorValue, wigFile,
-                genome, coverageOpt);
+                genome, queryString, minMapQual, countFlags);
 
         String prefix = FilenameUtils.getName(iFile);
         String[] tracknames = aParser.getTrackNames(prefix + " ");

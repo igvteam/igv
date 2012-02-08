@@ -19,9 +19,13 @@
 package org.broad.igv.tools;
 
 import org.broad.igv.Globals;
+import org.broad.igv.data.Dataset;
+import org.broad.igv.data.expression.ExpressionFileParser;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
+import org.broad.igv.tools.sort.SorterTest;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackLoader;
 import org.broad.igv.util.ResourceLocator;
@@ -209,10 +213,13 @@ public class IGVToolsTest {
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
-        String[] opts = new String[]{"s", "sf", "sfb", "f", "b", ""};
-        for (String opt : opts) {
-            String fullout = outputFile + opt + "." + outputExt;
-            String[] args = {"count", "-a", "sc=" + opt, inputFile, fullout, genome};
+        String[] opts = new String[]{"", "--bases", "--strand=read", "--strand=first", "--strand=read --bases"};
+        for (int ind = 0; ind < opts.length; ind++) {
+            String opt = opts[ind];
+
+            String fullout = outputFile + ind + "." + outputExt;
+            String input = "count " + opt + " " + inputFile + " " + fullout + " " + genome;
+            String[] args = input.split("\\s+");
             igvTools.run(args);
 
             if (outputExt.equals("tdf")) {
@@ -235,14 +242,57 @@ public class IGVToolsTest {
         String outputFile = TestUtils.DATA_DIR + "/out/file_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
-        String[] opts = new String[]{"s", ""};
-        for (String opt : opts) {
-            String[] args = {"count", "-a", "sc=" + opt, inputFile, outputFile + opt + ".tdf", genome};
+        String[] opts = new String[]{"--strand=read", "--strand=first", ""};
+
+        for (int ind = 0; ind < opts.length; ind++) {
+            String opt = opts[ind];
+            String fullout = outputFile + ind + ".tdf";
+            String input = "count " + opt + " " + inputFile + " " + fullout + " " + genome;
+            String[] args = input.split("\\s+");
             igvTools.run(args);
 
-            TDFReader reader = TDFReader.getReader(outputFile + opt + ".tdf");
+            TDFReader reader = TDFReader.getReader(fullout);
             assertTrue(reader.getDatasetNames().size() > 0);
         }
+    }
+
+    @Test
+    public void testSort() throws Exception {
+        String inputFiname = "Unigene.unsorted.bed";
+        String inputFile = TestUtils.DATA_DIR + "/bed/" + inputFiname;
+        String outputFile = TestUtils.DATA_DIR + "/out/" + inputFiname + ".sorted";
+        File oFile = new File(outputFile);
+        oFile.deleteOnExit();
+
+        String input = "sort --tmpDir=./ --maxRecords=50 " + inputFile + " " + outputFile;
+        igvTools.run(input.split("\\s+"));
+        int numlines = SorterTest.checkBedSorted(oFile);
+        assertEquals(71, numlines);
+    }
+
+    /**
+     * This test could stand to be improved, but it's difficult to test math.
+     * So we just check that file is about the right size (and well formed).
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testFormatexp() throws Exception {
+        String inputFiname = "igv_test2";
+        String ext = ".gct";
+        String inputFile = TestUtils.DATA_DIR + "/gct/" + inputFiname + ext;
+        String outputFile = TestUtils.DATA_DIR + "/out/" + inputFiname + "_formatted" + ext;
+        File oFile = new File(outputFile);
+        oFile.deleteOnExit();
+
+        String input = "formatexp " + inputFile + " " + outputFile;
+        igvTools.run(input.split("\\s+"));
+        Genome genome = TestUtils.loadGenome();
+
+        ExpressionFileParser parser = new ExpressionFileParser(new ResourceLocator(outputFile), null, genome);
+        Dataset ds = parser.createDataset();
+        assertEquals(10, ds.getChromosomes().length);
+
     }
 
 }

@@ -17,15 +17,18 @@
  */
 package org.broad.igv.tools;
 
-import javax.swing.border.*;
-
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.track.WindowFunction;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -429,7 +432,7 @@ public class IgvToolsGui extends JDialog {
                     int strandOption = -1;
 
                     runButton.setEnabled(false);
-                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, null, null);
+                    igvTools.doCount(ifile, ofile, genomeId, maxZoomValue, wfs, windowSize, extFactor, null, null, 0, 0);
                 } catch (Exception e) {
                     showMessage("Error: " + e.getMessage());
                 }
@@ -557,17 +560,16 @@ public class IgvToolsGui extends JDialog {
 
         //TODO Override so you can specify the file type with a string array ex: {".wig", ".tdf"}
 
-       // if (fileDialog == null) {
-            fileDialog = new JFileChooser();
-       // }
+        // if (fileDialog == null) {
+        fileDialog = new JFileChooser();
+        // }
 
         fileDialog.setMultiSelectionEnabled(false);
 
         boolean affective = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AFFECTIVE_ENABLE);
         if (!affective) {
             fileDialog.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        }
-        else {
+        } else {
             fileDialog.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         }
 
