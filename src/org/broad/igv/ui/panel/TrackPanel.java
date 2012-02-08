@@ -19,15 +19,11 @@ package org.broad.igv.ui.panel;
 
 
 import org.apache.log4j.Logger;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.track.RegionScoreType;
 import org.broad.igv.track.Track;
 import org.broad.igv.track.TrackGroup;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.UIConstants;
-import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.util.UIUtilities;
 
 import java.awt.*;
 import java.util.*;
@@ -316,10 +312,10 @@ public class TrackPanel extends IGVPanel {
                     float s1 = group1.getRegionScore(chr, start, end, zoom, type, frame);
                     float s2 = group2.getRegionScore(chr, start, end, zoom, type, frame);
 
-                    if (s2 > s1) {
-                        return 1;
-                    } else if (s1 < s2) {
+                    if (s1 < s2) {
                         return -1;
+                    } else if (s1 > s2) {
+                        return +1;
                     } else {
                         return 0;
                     }

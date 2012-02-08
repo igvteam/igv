@@ -29,7 +29,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.renderer.GraphicUtils;
 import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
-import org.broad.igv.feature.RegionOfInterest;
 import org.broad.igv.ui.panel.ReferenceFrame;
 
 import java.awt.*;
@@ -275,7 +274,6 @@ public class TrackGroup {
     /**
      * Sorts the entire group, including tracks for the given score type as well as other tracks, by
      * the specified sample order
-     *
      */
     public void sortGroup(final RegionScoreType type,
                           List<String> sortedSamples) {
@@ -320,46 +318,6 @@ public class TrackGroup {
 
     }
 
-    private void sortByRegionScore(List<Track> tracks,
-                                   final RegionOfInterest region,
-                                   final RegionScoreType type,
-                                   final ReferenceFrame frame) {
-        if ((tracks != null) && (region != null) && !tracks.isEmpty()) {
-            final int zoom = Math.max(0, frame.getZoom());
-            final String chr = region.getChr();
-            final int start = region.getStart();
-            final int end = region.getEnd();
-
-            Comparator<Track> c = new Comparator<Track>() {
-
-                public int compare(Track t1, Track t2) {
-                    try {
-                        if (t1 == null && t2 == null) return 0;
-                        if (t1 == null) return 1;
-                        if (t2 == null) return -1;
-
-                        float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
-                        float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
-
-                        if (s2 > s1) {
-                            return 1;
-                        } else if (s1 < s2) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
-                    } catch (Exception e) {
-                        log.error("Error sorting tracks. Sort might not be accurate.", e);
-                        return 0;
-                    }
-
-                }
-            };
-            Collections.sort(tracks, c);
-
-        }
-    }
-
     /**
      * @param sortedSamples
      */
@@ -369,7 +327,7 @@ public class TrackGroup {
 
             // Create a rank hash.  Loop backwards so that the lowest index for an attribute
             final HashMap<String, Integer> rankMap = new HashMap(sortedSamples.size() * 2);
-            for (int i = sortedSamples.size() - 1; i >=0; i--) {
+            for (int i = sortedSamples.size() - 1; i >= 0; i--) {
                 rankMap.put(sortedSamples.get(i), i);
             }
             // Comparator for sorting in ascending order
