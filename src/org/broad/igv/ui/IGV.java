@@ -1560,10 +1560,9 @@ public class IGV {
      */
     public TrackPanel getPanelFor(ResourceLocator locator) {
         String path = locator.getPath().toLowerCase();
-        if("alist".equals(locator.getType())) {
+        if ("alist".equals(locator.getType())) {
             return getVcfBamPanel();
-        }
-        else if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
+        } else if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SHOW_SINGLE_TRACK_PANE_KEY)) {
             return getTrackPanel(DATA_PANEL_NAME);
         } else if (path.endsWith(".sam") || path.endsWith(".bam") ||
                 path.endsWith(".sam.list") || path.endsWith(".bam.list") ||
@@ -2046,6 +2045,7 @@ public class IGV {
      *
      * @param region
      * @param type
+     * @param frame
      */
     public void sortByRegionScore(RegionOfInterest region,
                                   final RegionScoreType type,
@@ -2055,7 +2055,7 @@ public class IGV {
                 (int) frame.getEnd() + 1, frame.getName()) : region;
 
         // Create a rank order of samples.  This is done globally so sorting is consistent across groups and panels.
-        final List<String> sortedSamples = sortSamplesByRegionScore(region, type, frame);
+        final List<String> sortedSamples = sortSamplesByRegionScore(r, type, frame);
 
         for (TrackPanel trackPanel : getTrackPanels()) {
             trackPanel.sortByRegionsScore(r, type, frame, sortedSamples);
@@ -2121,10 +2121,10 @@ public class IGV {
                         float s1 = t1.getRegionScore(chr, start, end, zoom, type, frame);
                         float s2 = t2.getRegionScore(chr, start, end, zoom, type, frame);
 
-                        if (s2 > s1) {
-                            return 1;
-                        } else if (s1 < s2) {
+                        if (s1 < s2) {
                             return -1;
+                        } else if (s1 > s2) {
+                            return +1;
                         } else {
                             return 0;
                         }

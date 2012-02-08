@@ -1,0 +1,2024 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2007-2011 by The Broad Institute of MIT and Harvard.All Rights Reserved.
+  ~
+  ~ This software is licensed under the terms of the GNU Lesser General Public License (LGPL),
+  ~ Version 2.1 which is available at http://www.opensource.org/licenses/lgpl-2.1.php.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS." THE BROAD AND MIT MAKE NO REPRESENTATIONS OR
+  ~ WARRANTIES OF ANY KIND CONCERNING THE SOFTWARE, EXPRESS OR IMPLIED, INCLUDING,
+  ~ WITHOUT LIMITATION, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+  ~ PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER
+  ~ OR NOT DISCOVERABLE.  IN NO EVENT SHALL THE BROAD OR MIT, OR THEIR RESPECTIVE
+  ~ TRUSTEES, DIRECTORS, OFFICERS, EMPLOYEES, AND AFFILIATES BE LIABLE FOR ANY DAMAGES
+  ~ OF ANY KIND, INCLUDING, WITHOUT LIMITATION, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+  ~ ECONOMIC DAMAGES OR INJURY TO PROPERTY AND LOST PROFITS, REGARDLESS OF WHETHER
+  ~ THE BROAD OR MIT SHALL BE ADVISED, SHALL HAVE OTHER REASON TO KNOW, OR IN FACT
+  ~ SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
+  -->
+
+<Session genome="hg18" locus="chr20:1-62435963" version="4">
+    <Resources>
+        <Resource name="TCGA-BH-A0E1-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E1-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08O-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08O-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HO-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HO-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J8-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J8-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08S-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08S-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T0-01A-22D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T0-01A-22D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J3-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J3-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JM-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JM-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0H0-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H0-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RP-01A-21D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RP-01A-21D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FY-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FY-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A03R-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03R-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07L-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07L-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J9-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J9-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0B1-01A-12D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B1-01A-12D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SK-01A-12D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SK-01A-12D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J6-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J6-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FG-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FG-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TV-01A-21D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TV-01A-21D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0C0-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0C0-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FJ-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FJ-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J7-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J7-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AJ-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AJ-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A04V-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04V-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0AD-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0AD-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07F-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07F-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AT-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AT-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0B4-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B4-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JJ-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JJ-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EU-01A-22D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EU-01A-22D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0A1-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A1-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09V-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09V-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0AY-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0AY-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09Z-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09Z-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HP-01A-12D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HP-01A-12D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A093-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A093-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06N-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06N-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EX-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EX-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A095-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A095-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A03L-01A-41D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03L-01A-41D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TZ-01A-12D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TZ-01A-12D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0B8-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B8-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RO-01A-22D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RO-01A-22D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JG-01A-31D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JG-01A-31D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A046-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A046-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A03O-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03O-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FF-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FF-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06U-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06U-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HK-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HK-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0D1-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D1-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CP-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CP-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IJ-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IJ-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SH-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SH-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HQ-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HQ-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07R-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07R-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IK-01A-12D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IK-01A-12D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0ER-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0ER-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09N-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09N-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A041-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A041-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BJ-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BJ-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0A7-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A7-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RG-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RG-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A090-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A090-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0SY-01A-31D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SY-01A-31D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A096-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A096-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CU-01A-12D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CU-01A-12D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0H9-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H9-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RE-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RE-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RL-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RL-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FV-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FV-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0E2-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E2-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08F-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08F-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09B-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09B-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0AB-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0AB-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BD-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BD-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RV-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RV-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0A6-01A-12D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A6-01A-12D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07Z-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07Z-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EV-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EV-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JD-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JD-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0D4-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D4-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A04X-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04X-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0B9-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B9-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0GY-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0GY-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A081-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A081-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07P-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07P-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08G-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08G-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06Y-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Y-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JE-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JE-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A094-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A094-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TT-01A-31D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TT-01A-31D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HI-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HI-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A092-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A092-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A04D-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04D-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0I2-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I2-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FL-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FL-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HF-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HF-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SE-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SE-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A075-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A075-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BC-01A-22D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BC-01A-22D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DZ-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DZ-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FN-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FN-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0I9-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I9-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0A9-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A9-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TX-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TX-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TP-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TP-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09E-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09E-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0DB-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0DB-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0ET-01A-31D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0ET-01A-31D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EY-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EY-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09Q-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09Q-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J5-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J5-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IP-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IP-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T2-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T2-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09T-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09T-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A03P-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03P-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A0A4-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A4-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06O-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06O-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07I-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07I-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A04C-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04C-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HU-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HU-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EN-01A-13D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EN-01A-13D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0EB-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0EB-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08A-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08A-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09D-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09D-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0E0-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E0-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A082-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A082-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07G-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07G-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A086-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A086-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IE-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IE-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A04T-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04T-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09A-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09A-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DQ-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DQ-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TQ-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TQ-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FE-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FE-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0E7-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E7-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HB-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HB-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A085-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A085-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JB-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JB-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07U-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07U-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0CG-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CG-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0D9-01A-31D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0D9-01A-31D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AM-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AM-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0CH-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CH-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TW-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TW-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T1-01A-21D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T1-01A-21D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AR-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AR-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0I5-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I5-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06Q-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Q-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A03X-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A03X-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A049-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A049-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BM-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BM-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IQ-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IQ-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IO-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IO-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FT-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FT-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JA-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JA-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SM-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SM-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0SU-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SU-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T6-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T6-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RS-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RS-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08C-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08C-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09C-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09C-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0CD-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CD-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IB-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IB-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IM-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IM-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FK-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FK-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08J-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08J-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0H6-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H6-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SP-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SP-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FS-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FS-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FZ-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FZ-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A083-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A083-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DH-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DH-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09R-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09R-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A099-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A099-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06R-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06R-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0D2-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D2-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CQ-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CQ-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07B-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07B-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CM-01A-31D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CM-01A-31D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EO-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EO-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RU-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RU-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T5-01A-21D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T5-01A-21D-A087-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IG-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IG-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07S-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07S-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0B3-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B3-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AN-A03Y-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A03Y-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BA-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BA-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DS-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DS-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AO-A03T-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03T-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IN-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IN-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AK-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AK-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A091-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A091-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0D0-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D0-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07E-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07E-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AQ-A04J-01A-02D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AQ-A04J-01A-02D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A04A-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04A-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08L-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08L-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T7-01A-21D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T7-01A-21D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0CE-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CE-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AL-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AL-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DP-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DP-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A097-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A097-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0AS-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AS-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06X-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06X-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09W-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09W-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0HW-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HW-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09I-01A-22D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09I-01A-22D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07O-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07O-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0SV-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SV-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A2-A04P-01A-31D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04P-01A-31D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08I-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08I-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0EE-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0EE-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08T-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08T-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JI-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JI-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09G-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09G-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JF-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JF-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0EM-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EM-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-AR-A0TR-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TR-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FW-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FW-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A07J-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07J-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CX-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CX-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0JL-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JL-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08Z-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08Z-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0T4-01A-31D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T4-01A-31D-A087-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0RI-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RI-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A8-A084-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A084-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06T-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06T-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-AO-A0J2-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J2-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0BV-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BV-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A8-A09X-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09X-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0DK-01A-21D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DK-01A-21D-A059-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0SW-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SW-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0E6-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E6-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A7-A0CJ-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CJ-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IA-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IA-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0GZ-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0GZ-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-BH-A0AW-01A-11D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0AW-01A-11D-A059-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FD-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FD-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0SX-01A-12D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SX-01A-12D-A087-01_loh.seg"/>
+        <Resource name="TCGA-AN-A0FX-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FX-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A08B-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08B-01A-11D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A04Y-01A-21D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04Y-01A-21D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A8-A076-01A-21D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A076-01A-21D-A011-01_loh.seg"/>
+        <Resource name="TCGA-A2-A0CT-01A-31D-A059-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CT-01A-31D-A059-01_loh.seg"/>
+        <Resource name="TCGA-B6-A0IC-01A-11D-A036-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IC-01A-11D-A036-01_loh.seg"/>
+        <Resource name="TCGA-A1-A0SJ-01A-11D-A087-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SJ-01A-11D-A087-01_loh.seg"/>
+        <Resource name="TCGA-A8-A06Z-01A-11D-A011-01"
+                  path="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Z-01A-11D-A011-01_loh.seg"/>
+        <Resource name="SIF" path="http://www.broadinstitute.org/gcc/pipeline/SIF/BRCA_sif.txt"/>
+    </Resources>
+    <Panel height="3720" name="DataPanel" width="1281">
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SE-01A-11D-A087-01_loh.seg_TCGA-A1-A0SE-01A-11D-A087-01"
+               name="TCGA-A1-A0SE-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SH-01A-11D-A087-01_loh.seg_TCGA-A1-A0SH-01A-11D-A087-01"
+               name="TCGA-A1-A0SH-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SJ-01A-11D-A087-01_loh.seg_TCGA-A1-A0SJ-01A-11D-A087-01"
+               name="TCGA-A1-A0SJ-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SK-01A-12D-A087-01_loh.seg_TCGA-A1-A0SK-01A-12D-A087-01"
+               name="TCGA-A1-A0SK-01A-12D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SM-01A-11D-A087-01_loh.seg_TCGA-A1-A0SM-01A-11D-A087-01"
+               name="TCGA-A1-A0SM-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A1-A0SP-01A-11D-A087-01_loh.seg_TCGA-A1-A0SP-01A-11D-A087-01"
+               name="TCGA-A1-A0SP-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04P-01A-31D-A036-01_loh.seg_TCGA-A2-A04P-01A-31D-A036-01"
+               name="TCGA-A2-A04P-01A-31D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04T-01A-21D-A036-01_loh.seg_TCGA-A2-A04T-01A-21D-A036-01"
+               name="TCGA-A2-A04T-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04V-01A-21D-A036-01_loh.seg_TCGA-A2-A04V-01A-21D-A036-01"
+               name="TCGA-A2-A04V-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04X-01A-21D-A036-01_loh.seg_TCGA-A2-A04X-01A-21D-A036-01"
+               name="TCGA-A2-A04X-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A04Y-01A-21D-A036-01_loh.seg_TCGA-A2-A04Y-01A-21D-A036-01"
+               name="TCGA-A2-A04Y-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CM-01A-31D-A036-01_loh.seg_TCGA-A2-A0CM-01A-31D-A036-01"
+               name="TCGA-A2-A0CM-01A-31D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CP-01A-11D-A036-01_loh.seg_TCGA-A2-A0CP-01A-11D-A036-01"
+               name="TCGA-A2-A0CP-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CQ-01A-21D-A036-01_loh.seg_TCGA-A2-A0CQ-01A-21D-A036-01"
+               name="TCGA-A2-A0CQ-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CT-01A-31D-A059-01_loh.seg_TCGA-A2-A0CT-01A-31D-A059-01"
+               name="TCGA-A2-A0CT-01A-31D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CU-01A-12D-A036-01_loh.seg_TCGA-A2-A0CU-01A-12D-A036-01"
+               name="TCGA-A2-A0CU-01A-12D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0CX-01A-21D-A011-01_loh.seg_TCGA-A2-A0CX-01A-21D-A011-01"
+               name="TCGA-A2-A0CX-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D0-01A-11D-A011-01_loh.seg_TCGA-A2-A0D0-01A-11D-A011-01"
+               name="TCGA-A2-A0D0-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D1-01A-11D-A036-01_loh.seg_TCGA-A2-A0D1-01A-11D-A036-01"
+               name="TCGA-A2-A0D1-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D2-01A-21D-A036-01_loh.seg_TCGA-A2-A0D2-01A-21D-A036-01"
+               name="TCGA-A2-A0D2-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0D4-01A-11D-A011-01_loh.seg_TCGA-A2-A0D4-01A-11D-A011-01"
+               name="TCGA-A2-A0D4-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EM-01A-11D-A036-01_loh.seg_TCGA-A2-A0EM-01A-11D-A036-01"
+               name="TCGA-A2-A0EM-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EN-01A-13D-A087-01_loh.seg_TCGA-A2-A0EN-01A-13D-A087-01"
+               name="TCGA-A2-A0EN-01A-13D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EO-01A-11D-A036-01_loh.seg_TCGA-A2-A0EO-01A-11D-A036-01"
+               name="TCGA-A2-A0EO-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0ER-01A-21D-A036-01_loh.seg_TCGA-A2-A0ER-01A-21D-A036-01"
+               name="TCGA-A2-A0ER-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0ET-01A-31D-A036-01_loh.seg_TCGA-A2-A0ET-01A-31D-A036-01"
+               name="TCGA-A2-A0ET-01A-31D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EU-01A-22D-A059-01_loh.seg_TCGA-A2-A0EU-01A-22D-A059-01"
+               name="TCGA-A2-A0EU-01A-22D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EV-01A-11D-A036-01_loh.seg_TCGA-A2-A0EV-01A-11D-A036-01"
+               name="TCGA-A2-A0EV-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EX-01A-21D-A036-01_loh.seg_TCGA-A2-A0EX-01A-21D-A036-01"
+               name="TCGA-A2-A0EX-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0EY-01A-11D-A036-01_loh.seg_TCGA-A2-A0EY-01A-11D-A036-01"
+               name="TCGA-A2-A0EY-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SU-01A-11D-A087-01_loh.seg_TCGA-A2-A0SU-01A-11D-A087-01"
+               name="TCGA-A2-A0SU-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SV-01A-11D-A087-01_loh.seg_TCGA-A2-A0SV-01A-11D-A087-01"
+               name="TCGA-A2-A0SV-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SW-01A-11D-A087-01_loh.seg_TCGA-A2-A0SW-01A-11D-A087-01"
+               name="TCGA-A2-A0SW-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SX-01A-12D-A087-01_loh.seg_TCGA-A2-A0SX-01A-12D-A087-01"
+               name="TCGA-A2-A0SX-01A-12D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0SY-01A-31D-A087-01_loh.seg_TCGA-A2-A0SY-01A-31D-A087-01"
+               name="TCGA-A2-A0SY-01A-31D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T0-01A-22D-A087-01_loh.seg_TCGA-A2-A0T0-01A-22D-A087-01"
+               name="TCGA-A2-A0T0-01A-22D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T1-01A-21D-A087-01_loh.seg_TCGA-A2-A0T1-01A-21D-A087-01"
+               name="TCGA-A2-A0T1-01A-21D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T2-01A-11D-A087-01_loh.seg_TCGA-A2-A0T2-01A-11D-A087-01"
+               name="TCGA-A2-A0T2-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T4-01A-31D-A087-01_loh.seg_TCGA-A2-A0T4-01A-31D-A087-01"
+               name="TCGA-A2-A0T4-01A-31D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T5-01A-21D-A087-01_loh.seg_TCGA-A2-A0T5-01A-21D-A087-01"
+               name="TCGA-A2-A0T5-01A-21D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T6-01A-11D-A087-01_loh.seg_TCGA-A2-A0T6-01A-11D-A087-01"
+               name="TCGA-A2-A0T6-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A2-A0T7-01A-21D-A087-01_loh.seg_TCGA-A2-A0T7-01A-21D-A087-01"
+               name="TCGA-A2-A0T7-01A-21D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CD-01A-11D-A011-01_loh.seg_TCGA-A7-A0CD-01A-11D-A011-01"
+               name="TCGA-A7-A0CD-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CE-01A-11D-A011-01_loh.seg_TCGA-A7-A0CE-01A-11D-A011-01"
+               name="TCGA-A7-A0CE-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CG-01A-11D-A011-01_loh.seg_TCGA-A7-A0CG-01A-11D-A011-01"
+               name="TCGA-A7-A0CG-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CH-01A-21D-A011-01_loh.seg_TCGA-A7-A0CH-01A-21D-A011-01"
+               name="TCGA-A7-A0CH-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0CJ-01A-21D-A011-01_loh.seg_TCGA-A7-A0CJ-01A-21D-A011-01"
+               name="TCGA-A7-A0CJ-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0D9-01A-31D-A059-01_loh.seg_TCGA-A7-A0D9-01A-31D-A059-01"
+               name="TCGA-A7-A0D9-01A-31D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A7-A0DB-01A-11D-A011-01_loh.seg_TCGA-A7-A0DB-01A-11D-A011-01"
+               name="TCGA-A7-A0DB-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06N-01A-11D-A011-01_loh.seg_TCGA-A8-A06N-01A-11D-A011-01"
+               name="TCGA-A8-A06N-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06O-01A-11D-A011-01_loh.seg_TCGA-A8-A06O-01A-11D-A011-01"
+               name="TCGA-A8-A06O-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Q-01A-11D-A036-01_loh.seg_TCGA-A8-A06Q-01A-11D-A036-01"
+               name="TCGA-A8-A06Q-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06R-01A-11D-A011-01_loh.seg_TCGA-A8-A06R-01A-11D-A011-01"
+               name="TCGA-A8-A06R-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06T-01A-11D-A011-01_loh.seg_TCGA-A8-A06T-01A-11D-A011-01"
+               name="TCGA-A8-A06T-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06U-01A-11D-A011-01_loh.seg_TCGA-A8-A06U-01A-11D-A011-01"
+               name="TCGA-A8-A06U-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06X-01A-21D-A011-01_loh.seg_TCGA-A8-A06X-01A-21D-A011-01"
+               name="TCGA-A8-A06X-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Y-01A-21D-A011-01_loh.seg_TCGA-A8-A06Y-01A-21D-A011-01"
+               name="TCGA-A8-A06Y-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A06Z-01A-11D-A011-01_loh.seg_TCGA-A8-A06Z-01A-11D-A011-01"
+               name="TCGA-A8-A06Z-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A075-01A-11D-A087-01_loh.seg_TCGA-A8-A075-01A-11D-A087-01"
+               name="TCGA-A8-A075-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A076-01A-21D-A011-01_loh.seg_TCGA-A8-A076-01A-21D-A011-01"
+               name="TCGA-A8-A076-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07B-01A-11D-A011-01_loh.seg_TCGA-A8-A07B-01A-11D-A011-01"
+               name="TCGA-A8-A07B-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07E-01A-11D-A036-01_loh.seg_TCGA-A8-A07E-01A-11D-A036-01"
+               name="TCGA-A8-A07E-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07F-01A-11D-A011-01_loh.seg_TCGA-A8-A07F-01A-11D-A011-01"
+               name="TCGA-A8-A07F-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07G-01A-11D-A036-01_loh.seg_TCGA-A8-A07G-01A-11D-A036-01"
+               name="TCGA-A8-A07G-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07I-01A-11D-A011-01_loh.seg_TCGA-A8-A07I-01A-11D-A011-01"
+               name="TCGA-A8-A07I-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07J-01A-11D-A011-01_loh.seg_TCGA-A8-A07J-01A-11D-A011-01"
+               name="TCGA-A8-A07J-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07L-01A-11D-A011-01_loh.seg_TCGA-A8-A07L-01A-11D-A011-01"
+               name="TCGA-A8-A07L-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07O-01A-11D-A011-01_loh.seg_TCGA-A8-A07O-01A-11D-A011-01"
+               name="TCGA-A8-A07O-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07P-01A-11D-A011-01_loh.seg_TCGA-A8-A07P-01A-11D-A011-01"
+               name="TCGA-A8-A07P-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07R-01A-21D-A036-01_loh.seg_TCGA-A8-A07R-01A-21D-A036-01"
+               name="TCGA-A8-A07R-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07S-01A-11D-A036-01_loh.seg_TCGA-A8-A07S-01A-11D-A036-01"
+               name="TCGA-A8-A07S-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07U-01A-11D-A036-01_loh.seg_TCGA-A8-A07U-01A-11D-A036-01"
+               name="TCGA-A8-A07U-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A07Z-01A-11D-A011-01_loh.seg_TCGA-A8-A07Z-01A-11D-A011-01"
+               name="TCGA-A8-A07Z-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A081-01A-11D-A011-01_loh.seg_TCGA-A8-A081-01A-11D-A011-01"
+               name="TCGA-A8-A081-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A082-01A-11D-A011-01_loh.seg_TCGA-A8-A082-01A-11D-A011-01"
+               name="TCGA-A8-A082-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A083-01A-21D-A011-01_loh.seg_TCGA-A8-A083-01A-21D-A011-01"
+               name="TCGA-A8-A083-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A084-01A-21D-A011-01_loh.seg_TCGA-A8-A084-01A-21D-A011-01"
+               name="TCGA-A8-A084-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A085-01A-11D-A011-01_loh.seg_TCGA-A8-A085-01A-11D-A011-01"
+               name="TCGA-A8-A085-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A086-01A-11D-A011-01_loh.seg_TCGA-A8-A086-01A-11D-A011-01"
+               name="TCGA-A8-A086-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08A-01A-11D-A011-01_loh.seg_TCGA-A8-A08A-01A-11D-A011-01"
+               name="TCGA-A8-A08A-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08B-01A-11D-A011-01_loh.seg_TCGA-A8-A08B-01A-11D-A011-01"
+               name="TCGA-A8-A08B-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08C-01A-11D-A011-01_loh.seg_TCGA-A8-A08C-01A-11D-A011-01"
+               name="TCGA-A8-A08C-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08F-01A-11D-A011-01_loh.seg_TCGA-A8-A08F-01A-11D-A011-01"
+               name="TCGA-A8-A08F-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08G-01A-11D-A011-01_loh.seg_TCGA-A8-A08G-01A-11D-A011-01"
+               name="TCGA-A8-A08G-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08I-01A-11D-A011-01_loh.seg_TCGA-A8-A08I-01A-11D-A011-01"
+               name="TCGA-A8-A08I-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08J-01A-11D-A011-01_loh.seg_TCGA-A8-A08J-01A-11D-A011-01"
+               name="TCGA-A8-A08J-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08L-01A-11D-A011-01_loh.seg_TCGA-A8-A08L-01A-11D-A011-01"
+               name="TCGA-A8-A08L-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08O-01A-21D-A059-01_loh.seg_TCGA-A8-A08O-01A-21D-A059-01"
+               name="TCGA-A8-A08O-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08S-01A-11D-A036-01_loh.seg_TCGA-A8-A08S-01A-11D-A036-01"
+               name="TCGA-A8-A08S-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08T-01A-21D-A011-01_loh.seg_TCGA-A8-A08T-01A-21D-A011-01"
+               name="TCGA-A8-A08T-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A08Z-01A-21D-A011-01_loh.seg_TCGA-A8-A08Z-01A-21D-A011-01"
+               name="TCGA-A8-A08Z-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A090-01A-11D-A011-01_loh.seg_TCGA-A8-A090-01A-11D-A011-01"
+               name="TCGA-A8-A090-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A091-01A-11D-A011-01_loh.seg_TCGA-A8-A091-01A-11D-A011-01"
+               name="TCGA-A8-A091-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A092-01A-11D-A011-01_loh.seg_TCGA-A8-A092-01A-11D-A011-01"
+               name="TCGA-A8-A092-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A093-01A-11D-A011-01_loh.seg_TCGA-A8-A093-01A-11D-A011-01"
+               name="TCGA-A8-A093-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A094-01A-11D-A011-01_loh.seg_TCGA-A8-A094-01A-11D-A011-01"
+               name="TCGA-A8-A094-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A095-01A-11D-A011-01_loh.seg_TCGA-A8-A095-01A-11D-A011-01"
+               name="TCGA-A8-A095-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A096-01A-11D-A011-01_loh.seg_TCGA-A8-A096-01A-11D-A011-01"
+               name="TCGA-A8-A096-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A097-01A-11D-A036-01_loh.seg_TCGA-A8-A097-01A-11D-A036-01"
+               name="TCGA-A8-A097-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A099-01A-11D-A011-01_loh.seg_TCGA-A8-A099-01A-11D-A011-01"
+               name="TCGA-A8-A099-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09A-01A-11D-A011-01_loh.seg_TCGA-A8-A09A-01A-11D-A011-01"
+               name="TCGA-A8-A09A-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09B-01A-11D-A011-01_loh.seg_TCGA-A8-A09B-01A-11D-A011-01"
+               name="TCGA-A8-A09B-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09C-01A-11D-A011-01_loh.seg_TCGA-A8-A09C-01A-11D-A011-01"
+               name="TCGA-A8-A09C-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09D-01A-11D-A011-01_loh.seg_TCGA-A8-A09D-01A-11D-A011-01"
+               name="TCGA-A8-A09D-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09E-01A-11D-A011-01_loh.seg_TCGA-A8-A09E-01A-11D-A011-01"
+               name="TCGA-A8-A09E-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09G-01A-21D-A011-01_loh.seg_TCGA-A8-A09G-01A-21D-A011-01"
+               name="TCGA-A8-A09G-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09I-01A-22D-A036-01_loh.seg_TCGA-A8-A09I-01A-22D-A036-01"
+               name="TCGA-A8-A09I-01A-22D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09N-01A-11D-A011-01_loh.seg_TCGA-A8-A09N-01A-11D-A011-01"
+               name="TCGA-A8-A09N-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09Q-01A-11D-A011-01_loh.seg_TCGA-A8-A09Q-01A-11D-A011-01"
+               name="TCGA-A8-A09Q-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09R-01A-11D-A011-01_loh.seg_TCGA-A8-A09R-01A-11D-A011-01"
+               name="TCGA-A8-A09R-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09T-01A-11D-A011-01_loh.seg_TCGA-A8-A09T-01A-11D-A011-01"
+               name="TCGA-A8-A09T-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09V-01A-11D-A036-01_loh.seg_TCGA-A8-A09V-01A-11D-A036-01"
+               name="TCGA-A8-A09V-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09W-01A-11D-A011-01_loh.seg_TCGA-A8-A09W-01A-11D-A011-01"
+               name="TCGA-A8-A09W-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09X-01A-11D-A011-01_loh.seg_TCGA-A8-A09X-01A-11D-A011-01"
+               name="TCGA-A8-A09X-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A09Z-01A-11D-A011-01_loh.seg_TCGA-A8-A09Z-01A-11D-A011-01"
+               name="TCGA-A8-A09Z-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A1-01A-11D-A011-01_loh.seg_TCGA-A8-A0A1-01A-11D-A011-01"
+               name="TCGA-A8-A0A1-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A4-01A-11D-A011-01_loh.seg_TCGA-A8-A0A4-01A-11D-A011-01"
+               name="TCGA-A8-A0A4-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A6-01A-12D-A059-01_loh.seg_TCGA-A8-A0A6-01A-12D-A059-01"
+               name="TCGA-A8-A0A6-01A-12D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A7-01A-11D-A011-01_loh.seg_TCGA-A8-A0A7-01A-11D-A011-01"
+               name="TCGA-A8-A0A7-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0A9-01A-11D-A011-01_loh.seg_TCGA-A8-A0A9-01A-11D-A011-01"
+               name="TCGA-A8-A0A9-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0AB-01A-11D-A036-01_loh.seg_TCGA-A8-A0AB-01A-11D-A036-01"
+               name="TCGA-A8-A0AB-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-A8-A0AD-01A-11D-A059-01_loh.seg_TCGA-A8-A0AD-01A-11D-A059-01"
+               name="TCGA-A8-A0AD-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A03X-01A-21D-A011-01_loh.seg_TCGA-AN-A03X-01A-21D-A011-01"
+               name="TCGA-AN-A03X-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A03Y-01A-21D-A011-01_loh.seg_TCGA-AN-A03Y-01A-21D-A011-01"
+               name="TCGA-AN-A03Y-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A041-01A-11D-A036-01_loh.seg_TCGA-AN-A041-01A-11D-A036-01"
+               name="TCGA-AN-A041-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A046-01A-21D-A036-01_loh.seg_TCGA-AN-A046-01A-21D-A036-01"
+               name="TCGA-AN-A046-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A049-01A-21D-A011-01_loh.seg_TCGA-AN-A049-01A-21D-A011-01"
+               name="TCGA-AN-A049-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04A-01A-21D-A036-01_loh.seg_TCGA-AN-A04A-01A-21D-A036-01"
+               name="TCGA-AN-A04A-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04C-01A-21D-A036-01_loh.seg_TCGA-AN-A04C-01A-21D-A036-01"
+               name="TCGA-AN-A04C-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A04D-01A-21D-A036-01_loh.seg_TCGA-AN-A04D-01A-21D-A036-01"
+               name="TCGA-AN-A04D-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AJ-01A-11D-A011-01_loh.seg_TCGA-AN-A0AJ-01A-11D-A011-01"
+               name="TCGA-AN-A0AJ-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AK-01A-21D-A011-01_loh.seg_TCGA-AN-A0AK-01A-21D-A011-01"
+               name="TCGA-AN-A0AK-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AL-01A-11D-A011-01_loh.seg_TCGA-AN-A0AL-01A-11D-A011-01"
+               name="TCGA-AN-A0AL-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AM-01A-11D-A036-01_loh.seg_TCGA-AN-A0AM-01A-11D-A036-01"
+               name="TCGA-AN-A0AM-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AR-01A-11D-A011-01_loh.seg_TCGA-AN-A0AR-01A-11D-A011-01"
+               name="TCGA-AN-A0AR-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AS-01A-11D-A011-01_loh.seg_TCGA-AN-A0AS-01A-11D-A011-01"
+               name="TCGA-AN-A0AS-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0AT-01A-11D-A036-01_loh.seg_TCGA-AN-A0AT-01A-11D-A036-01"
+               name="TCGA-AN-A0AT-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FD-01A-11D-A036-01_loh.seg_TCGA-AN-A0FD-01A-11D-A036-01"
+               name="TCGA-AN-A0FD-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FE-01A-11D-A011-01_loh.seg_TCGA-AN-A0FE-01A-11D-A011-01"
+               name="TCGA-AN-A0FE-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FF-01A-11D-A036-01_loh.seg_TCGA-AN-A0FF-01A-11D-A036-01"
+               name="TCGA-AN-A0FF-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FG-01A-11D-A011-01_loh.seg_TCGA-AN-A0FG-01A-11D-A011-01"
+               name="TCGA-AN-A0FG-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FJ-01A-11D-A011-01_loh.seg_TCGA-AN-A0FJ-01A-11D-A011-01"
+               name="TCGA-AN-A0FJ-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FK-01A-11D-A036-01_loh.seg_TCGA-AN-A0FK-01A-11D-A036-01"
+               name="TCGA-AN-A0FK-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FL-01A-11D-A036-01_loh.seg_TCGA-AN-A0FL-01A-11D-A036-01"
+               name="TCGA-AN-A0FL-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FN-01A-11D-A036-01_loh.seg_TCGA-AN-A0FN-01A-11D-A036-01"
+               name="TCGA-AN-A0FN-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FS-01A-11D-A036-01_loh.seg_TCGA-AN-A0FS-01A-11D-A036-01"
+               name="TCGA-AN-A0FS-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FT-01A-11D-A036-01_loh.seg_TCGA-AN-A0FT-01A-11D-A036-01"
+               name="TCGA-AN-A0FT-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FV-01A-11D-A011-01_loh.seg_TCGA-AN-A0FV-01A-11D-A011-01"
+               name="TCGA-AN-A0FV-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FW-01A-11D-A036-01_loh.seg_TCGA-AN-A0FW-01A-11D-A036-01"
+               name="TCGA-AN-A0FW-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FX-01A-11D-A036-01_loh.seg_TCGA-AN-A0FX-01A-11D-A036-01"
+               name="TCGA-AN-A0FX-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FY-01A-11D-A036-01_loh.seg_TCGA-AN-A0FY-01A-11D-A036-01"
+               name="TCGA-AN-A0FY-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AN-A0FZ-01A-11D-A036-01_loh.seg_TCGA-AN-A0FZ-01A-11D-A036-01"
+               name="TCGA-AN-A0FZ-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03L-01A-41D-A059-01_loh.seg_TCGA-AO-A03L-01A-41D-A059-01"
+               name="TCGA-AO-A03L-01A-41D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03O-01A-11D-A011-01_loh.seg_TCGA-AO-A03O-01A-11D-A011-01"
+               name="TCGA-AO-A03O-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03P-01A-11D-A011-01_loh.seg_TCGA-AO-A03P-01A-11D-A011-01"
+               name="TCGA-AO-A03P-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03R-01A-21D-A036-01_loh.seg_TCGA-AO-A03R-01A-21D-A036-01"
+               name="TCGA-AO-A03R-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A03T-01A-21D-A036-01_loh.seg_TCGA-AO-A03T-01A-21D-A036-01"
+               name="TCGA-AO-A03T-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J2-01A-11D-A036-01_loh.seg_TCGA-AO-A0J2-01A-11D-A036-01"
+               name="TCGA-AO-A0J2-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J3-01A-11D-A036-01_loh.seg_TCGA-AO-A0J3-01A-11D-A036-01"
+               name="TCGA-AO-A0J3-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J5-01A-11D-A036-01_loh.seg_TCGA-AO-A0J5-01A-11D-A036-01"
+               name="TCGA-AO-A0J5-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J6-01A-11D-A036-01_loh.seg_TCGA-AO-A0J6-01A-11D-A036-01"
+               name="TCGA-AO-A0J6-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J7-01A-11D-A036-01_loh.seg_TCGA-AO-A0J7-01A-11D-A036-01"
+               name="TCGA-AO-A0J7-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J8-01A-21D-A036-01_loh.seg_TCGA-AO-A0J8-01A-21D-A036-01"
+               name="TCGA-AO-A0J8-01A-21D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0J9-01A-11D-A036-01_loh.seg_TCGA-AO-A0J9-01A-11D-A036-01"
+               name="TCGA-AO-A0J9-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JA-01A-11D-A059-01_loh.seg_TCGA-AO-A0JA-01A-11D-A059-01"
+               name="TCGA-AO-A0JA-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JB-01A-11D-A059-01_loh.seg_TCGA-AO-A0JB-01A-11D-A059-01"
+               name="TCGA-AO-A0JB-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JD-01A-11D-A059-01_loh.seg_TCGA-AO-A0JD-01A-11D-A059-01"
+               name="TCGA-AO-A0JD-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JE-01A-11D-A059-01_loh.seg_TCGA-AO-A0JE-01A-11D-A059-01"
+               name="TCGA-AO-A0JE-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JF-01A-11D-A059-01_loh.seg_TCGA-AO-A0JF-01A-11D-A059-01"
+               name="TCGA-AO-A0JF-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JG-01A-31D-A087-01_loh.seg_TCGA-AO-A0JG-01A-31D-A087-01"
+               name="TCGA-AO-A0JG-01A-31D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JI-01A-21D-A059-01_loh.seg_TCGA-AO-A0JI-01A-21D-A059-01"
+               name="TCGA-AO-A0JI-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JJ-01A-11D-A059-01_loh.seg_TCGA-AO-A0JJ-01A-11D-A059-01"
+               name="TCGA-AO-A0JJ-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JL-01A-11D-A059-01_loh.seg_TCGA-AO-A0JL-01A-11D-A059-01"
+               name="TCGA-AO-A0JL-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AO-A0JM-01A-21D-A059-01_loh.seg_TCGA-AO-A0JM-01A-21D-A059-01"
+               name="TCGA-AO-A0JM-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AQ-A04J-01A-02D-A036-01_loh.seg_TCGA-AQ-A04J-01A-02D-A036-01"
+               name="TCGA-AQ-A04J-01A-02D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TP-01A-11D-A087-01_loh.seg_TCGA-AR-A0TP-01A-11D-A087-01"
+               name="TCGA-AR-A0TP-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TQ-01A-11D-A087-01_loh.seg_TCGA-AR-A0TQ-01A-11D-A087-01"
+               name="TCGA-AR-A0TQ-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TR-01A-11D-A087-01_loh.seg_TCGA-AR-A0TR-01A-11D-A087-01"
+               name="TCGA-AR-A0TR-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TT-01A-31D-A087-01_loh.seg_TCGA-AR-A0TT-01A-31D-A087-01"
+               name="TCGA-AR-A0TT-01A-31D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TV-01A-21D-A087-01_loh.seg_TCGA-AR-A0TV-01A-21D-A087-01"
+               name="TCGA-AR-A0TV-01A-21D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TW-01A-11D-A087-01_loh.seg_TCGA-AR-A0TW-01A-11D-A087-01"
+               name="TCGA-AR-A0TW-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TX-01A-11D-A087-01_loh.seg_TCGA-AR-A0TX-01A-11D-A087-01"
+               name="TCGA-AR-A0TX-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-AR-A0TZ-01A-12D-A087-01_loh.seg_TCGA-AR-A0TZ-01A-12D-A087-01"
+               name="TCGA-AR-A0TZ-01A-12D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I2-01A-11D-A036-01_loh.seg_TCGA-B6-A0I2-01A-11D-A036-01"
+               name="TCGA-B6-A0I2-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I5-01A-11D-A036-01_loh.seg_TCGA-B6-A0I5-01A-11D-A036-01"
+               name="TCGA-B6-A0I5-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0I9-01A-11D-A036-01_loh.seg_TCGA-B6-A0I9-01A-11D-A036-01"
+               name="TCGA-B6-A0I9-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IA-01A-11D-A036-01_loh.seg_TCGA-B6-A0IA-01A-11D-A036-01"
+               name="TCGA-B6-A0IA-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IB-01A-11D-A036-01_loh.seg_TCGA-B6-A0IB-01A-11D-A036-01"
+               name="TCGA-B6-A0IB-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IC-01A-11D-A036-01_loh.seg_TCGA-B6-A0IC-01A-11D-A036-01"
+               name="TCGA-B6-A0IC-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IE-01A-11D-A036-01_loh.seg_TCGA-B6-A0IE-01A-11D-A036-01"
+               name="TCGA-B6-A0IE-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IG-01A-11D-A036-01_loh.seg_TCGA-B6-A0IG-01A-11D-A036-01"
+               name="TCGA-B6-A0IG-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IJ-01A-11D-A036-01_loh.seg_TCGA-B6-A0IJ-01A-11D-A036-01"
+               name="TCGA-B6-A0IJ-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IK-01A-12D-A059-01_loh.seg_TCGA-B6-A0IK-01A-12D-A059-01"
+               name="TCGA-B6-A0IK-01A-12D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IM-01A-11D-A036-01_loh.seg_TCGA-B6-A0IM-01A-11D-A036-01"
+               name="TCGA-B6-A0IM-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IN-01A-11D-A036-01_loh.seg_TCGA-B6-A0IN-01A-11D-A036-01"
+               name="TCGA-B6-A0IN-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IO-01A-11D-A036-01_loh.seg_TCGA-B6-A0IO-01A-11D-A036-01"
+               name="TCGA-B6-A0IO-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IP-01A-11D-A036-01_loh.seg_TCGA-B6-A0IP-01A-11D-A036-01"
+               name="TCGA-B6-A0IP-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0IQ-01A-11D-A036-01_loh.seg_TCGA-B6-A0IQ-01A-11D-A036-01"
+               name="TCGA-B6-A0IQ-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RE-01A-11D-A059-01_loh.seg_TCGA-B6-A0RE-01A-11D-A059-01"
+               name="TCGA-B6-A0RE-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RG-01A-11D-A059-01_loh.seg_TCGA-B6-A0RG-01A-11D-A059-01"
+               name="TCGA-B6-A0RG-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RI-01A-11D-A059-01_loh.seg_TCGA-B6-A0RI-01A-11D-A059-01"
+               name="TCGA-B6-A0RI-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RL-01A-11D-A087-01_loh.seg_TCGA-B6-A0RL-01A-11D-A087-01"
+               name="TCGA-B6-A0RL-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RO-01A-22D-A087-01_loh.seg_TCGA-B6-A0RO-01A-22D-A087-01"
+               name="TCGA-B6-A0RO-01A-22D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RP-01A-21D-A087-01_loh.seg_TCGA-B6-A0RP-01A-21D-A087-01"
+               name="TCGA-B6-A0RP-01A-21D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RS-01A-11D-A087-01_loh.seg_TCGA-B6-A0RS-01A-11D-A087-01"
+               name="TCGA-B6-A0RS-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RU-01A-11D-A087-01_loh.seg_TCGA-B6-A0RU-01A-11D-A087-01"
+               name="TCGA-B6-A0RU-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-B6-A0RV-01A-11D-A087-01_loh.seg_TCGA-B6-A0RV-01A-11D-A087-01"
+               name="TCGA-B6-A0RV-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0AW-01A-11D-A059-01_loh.seg_TCGA-BH-A0AW-01A-11D-A059-01"
+               name="TCGA-BH-A0AW-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0AY-01A-21D-A011-01_loh.seg_TCGA-BH-A0AY-01A-21D-A011-01"
+               name="TCGA-BH-A0AY-01A-21D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B1-01A-12D-A059-01_loh.seg_TCGA-BH-A0B1-01A-12D-A059-01"
+               name="TCGA-BH-A0B1-01A-12D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B3-01A-11D-A059-01_loh.seg_TCGA-BH-A0B3-01A-11D-A059-01"
+               name="TCGA-BH-A0B3-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B4-01A-11D-A011-01_loh.seg_TCGA-BH-A0B4-01A-11D-A011-01"
+               name="TCGA-BH-A0B4-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B8-01A-21D-A059-01_loh.seg_TCGA-BH-A0B8-01A-21D-A059-01"
+               name="TCGA-BH-A0B8-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0B9-01A-11D-A059-01_loh.seg_TCGA-BH-A0B9-01A-11D-A059-01"
+               name="TCGA-BH-A0B9-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BA-01A-11D-A059-01_loh.seg_TCGA-BH-A0BA-01A-11D-A059-01"
+               name="TCGA-BH-A0BA-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BC-01A-22D-A087-01_loh.seg_TCGA-BH-A0BC-01A-22D-A087-01"
+               name="TCGA-BH-A0BC-01A-22D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BD-01A-11D-A036-01_loh.seg_TCGA-BH-A0BD-01A-11D-A036-01"
+               name="TCGA-BH-A0BD-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BJ-01A-11D-A059-01_loh.seg_TCGA-BH-A0BJ-01A-11D-A059-01"
+               name="TCGA-BH-A0BJ-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BM-01A-11D-A059-01_loh.seg_TCGA-BH-A0BM-01A-11D-A059-01"
+               name="TCGA-BH-A0BM-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0BV-01A-11D-A011-01_loh.seg_TCGA-BH-A0BV-01A-11D-A011-01"
+               name="TCGA-BH-A0BV-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0C0-01A-21D-A059-01_loh.seg_TCGA-BH-A0C0-01A-21D-A059-01"
+               name="TCGA-BH-A0C0-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DH-01A-11D-A087-01_loh.seg_TCGA-BH-A0DH-01A-11D-A087-01"
+               name="TCGA-BH-A0DH-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DK-01A-21D-A059-01_loh.seg_TCGA-BH-A0DK-01A-21D-A059-01"
+               name="TCGA-BH-A0DK-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DP-01A-21D-A059-01_loh.seg_TCGA-BH-A0DP-01A-21D-A059-01"
+               name="TCGA-BH-A0DP-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DQ-01A-11D-A087-01_loh.seg_TCGA-BH-A0DQ-01A-11D-A087-01"
+               name="TCGA-BH-A0DQ-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DS-01A-11D-A059-01_loh.seg_TCGA-BH-A0DS-01A-11D-A059-01"
+               name="TCGA-BH-A0DS-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0DZ-01A-11D-A011-01_loh.seg_TCGA-BH-A0DZ-01A-11D-A011-01"
+               name="TCGA-BH-A0DZ-01A-11D-A011-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E0-01A-11D-A059-01_loh.seg_TCGA-BH-A0E0-01A-11D-A059-01"
+               name="TCGA-BH-A0E0-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E1-01A-11D-A059-01_loh.seg_TCGA-BH-A0E1-01A-11D-A059-01"
+               name="TCGA-BH-A0E1-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E2-01A-11D-A059-01_loh.seg_TCGA-BH-A0E2-01A-11D-A059-01"
+               name="TCGA-BH-A0E2-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E6-01A-11D-A036-01_loh.seg_TCGA-BH-A0E6-01A-11D-A036-01"
+               name="TCGA-BH-A0E6-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0E7-01A-11D-A036-01_loh.seg_TCGA-BH-A0E7-01A-11D-A036-01"
+               name="TCGA-BH-A0E7-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="0.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0EB-01A-11D-A036-01_loh.seg_TCGA-BH-A0EB-01A-11D-A036-01"
+               name="TCGA-BH-A0EB-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0EE-01A-11D-A036-01_loh.seg_TCGA-BH-A0EE-01A-11D-A036-01"
+               name="TCGA-BH-A0EE-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0GY-01A-11D-A059-01_loh.seg_TCGA-BH-A0GY-01A-11D-A059-01"
+               name="TCGA-BH-A0GY-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0GZ-01A-11D-A059-01_loh.seg_TCGA-BH-A0GZ-01A-11D-A059-01"
+               name="TCGA-BH-A0GZ-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H0-01A-11D-A059-01_loh.seg_TCGA-BH-A0H0-01A-11D-A059-01"
+               name="TCGA-BH-A0H0-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H6-01A-21D-A059-01_loh.seg_TCGA-BH-A0H6-01A-21D-A059-01"
+               name="TCGA-BH-A0H6-01A-21D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0H9-01A-11D-A059-01_loh.seg_TCGA-BH-A0H9-01A-11D-A059-01"
+               name="TCGA-BH-A0H9-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HB-01A-11D-A059-01_loh.seg_TCGA-BH-A0HB-01A-11D-A059-01"
+               name="TCGA-BH-A0HB-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HF-01A-11D-A059-01_loh.seg_TCGA-BH-A0HF-01A-11D-A059-01"
+               name="TCGA-BH-A0HF-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HI-01A-11D-A087-01_loh.seg_TCGA-BH-A0HI-01A-11D-A087-01"
+               name="TCGA-BH-A0HI-01A-11D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HK-01A-11D-A059-01_loh.seg_TCGA-BH-A0HK-01A-11D-A059-01"
+               name="TCGA-BH-A0HK-01A-11D-A059-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HO-01A-11D-A036-01_loh.seg_TCGA-BH-A0HO-01A-11D-A036-01"
+               name="TCGA-BH-A0HO-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HP-01A-12D-A087-01_loh.seg_TCGA-BH-A0HP-01A-12D-A087-01"
+               name="TCGA-BH-A0HP-01A-12D-A087-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HQ-01A-11D-A036-01_loh.seg_TCGA-BH-A0HQ-01A-11D-A036-01"
+               name="TCGA-BH-A0HQ-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HU-01A-11D-A036-01_loh.seg_TCGA-BH-A0HU-01A-11D-A036-01"
+               name="TCGA-BH-A0HU-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+        <Track altColor="0,0,178" autoscale="true" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1"
+               fontSize="10"
+               id="http://www.broadinstitute.org/gcc/pipeline/SEG/BRCA/TCGA-BH-A0HW-01A-11D-A036-01_loh.seg_TCGA-BH-A0HW-01A-11D-A036-01"
+               name="TCGA-BH-A0HW-01A-11D-A036-01" renderer="HEATMAP" showDataRange="true" visible="true">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="1.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <Panel height="44" name="FeaturePanel" width="1281">
+        <Track altColor="0,0,178" color="0,0,178" displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10"
+               id="Reference sequence" name="Reference sequence" showDataRange="true" sortable="false" visible="true"/>
+        <Track altColor="0,0,178" color="0,0,178" colorScale="ContinuousColorScale;0.0;226.0;255,255,255;0,0,178"
+               displayMode="COLLAPSED" featureVisibilityWindow="-1" fontSize="10" height="35" id="hg18_genes"
+               name="RefSeq genes" renderer="BASIC_FEATURE" showDataRange="true" sortable="false" visible="true"
+               windowFunction="count">
+            <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="226.0" minimum="0.0" type="LINEAR"/>
+        </Track>
+    </Panel>
+    <PanelLayout dividerFractions="0.8682795698924731"/>
+    <Regions>
+        <Region chromosome="chr20" end="36031032" start="14104912"/>
+    </Regions>
+</Session>

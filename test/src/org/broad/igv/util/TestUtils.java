@@ -69,6 +69,15 @@ public class TestUtils {
     }
 
     /**
+     * This closes the IGV window. Rather, is supposed to.
+     * Doesn't seem to work.
+     */
+    public static void stopGUI() {
+        IGV.getMainFrame().setVisible(false);
+        IGV.getMainFrame().dispose();
+    }
+
+    /**
      * Load a gui with the specified genome file.
      * No genome is loaded if null
      *
