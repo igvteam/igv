@@ -91,8 +91,6 @@ public class IGVTest {
         final int start = (int) frame.getOrigin();
         final int end = (int) frame.getEnd();
 
-        //List<Track> befSort = igv.getAllTracks(false);
-
         igv.sortByRegionScore(null, type, frame);
 
         //Need to wait for GUI to repaint
@@ -101,28 +99,26 @@ public class IGVTest {
         //Check sort
         List<Track> tracks = igv.getAllTracks(false);
 
-//        int equal=0;
-//        for(int ii=0; ii < befSort.size(); ii++){
-//            if(befSort.get(ii).equals(tracks.get(ii))){
-//                equal++;
-//            }
-//        }
-//        System.out.println(equal);
-
-
         Track lastTrack = null;
         int count = 0;
         for (int ii = 0; ii < tracks.size(); ii++) {
             Track track = tracks.get(ii);
             if (track.isRegionScoreType(type)) {
+                String name = track.getName().toLowerCase();
+                if (name.contains("reference")
+                        || name.contains("refseq")) {
+                    Thread.sleep(100);
+                    continue;
+                }
                 count++;
                 if (lastTrack == null) {
                     lastTrack = track;
                     continue;
                 }
+
                 float s2 = track.getRegionScore(chr, start, end, zoom, type, frame);
                 float s1 = lastTrack.getRegionScore(chr, start, end, zoom, type, frame);
-                assertTrue("Tracks " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type,
+                assertTrue("Track named " + track.getName() + ", " + s2 + " and " + lastTrack.getName() + ", " + s1 + " out of order type " + type,
                         s2 >= s1);
 
                 lastTrack = track;
