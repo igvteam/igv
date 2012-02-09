@@ -398,7 +398,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
             final double locScale = context.getScale();
             final double origin = context.getOrigin();
-            ;
+
             int lastPX = -1;
             final double pXMin = rect.getMinX();
             final double pXMax = rect.getMaxX();
@@ -406,14 +406,17 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             for (Feature feature : features) {
 
                 Variant variant = (Variant) feature;
+
+                boolean isIndel = variant.getType().toLowerCase().equals("indel");
+
                 //char ref = getReference(variant, windowStart, reference);
 
                 if (hideFiltered && variant.isFiltered()) {
                     continue;
                 }
 
-                // 1 -> 0 based coordinates
-                int start = variant.getStart() - 1;
+                // 1 -> 0 based coordinates.  Shift indels to the right by 1 base.
+                int start = isIndel ? variant.getStart() : variant.getStart() - 1;
                 int end = variant.getEnd();
                 int pX = (int) ((start - origin) / locScale);
                 int dX = (int) Math.max(2, (end - start) / locScale);
@@ -813,7 +816,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         double position = zeroBasePosition + 1;
 
         try {
-            double maxDistance = 10 * frame.getScale();
+            double maxDistance = Math.max(1, 10 * frame.getScale());
             Variant variant = getFeatureClosest(position, maxDistance, frame); //getVariantAtPosition(chr, (int) position, frame);
             if (variant == null) {
                 return null;
