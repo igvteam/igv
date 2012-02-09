@@ -25,11 +25,15 @@ import org.broad.tribble.util.SeekableStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Class to support a single logical file split into multiple parts.  Introduced to support Amazon cloud files that
+ * might be split, but not used thus far.
+ *
  * @author jrobinso
  * @date Jul 28, 2010
  */
@@ -113,7 +117,7 @@ public class SeekableSplitStream extends SeekableStream {
         BufferedReader br = null;
         descriptors = new ArrayList();
         try {
-            br = org.broad.tribble.util.ParsingUtils.openBufferedReader(path);
+            br = new BufferedReader(new InputStreamReader(org.broad.tribble.util.ParsingUtils.openInputStream(path)));
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
                 String[] tokens = nextLine.split(" ");

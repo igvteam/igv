@@ -191,12 +191,13 @@ public class ExpressionFileParser {
 
         dataset.setType(TrackType.GENE_EXPRESSION);
 
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         String nextLine = null;
+        int lineCount = 0;
         //String[] columnHeadings = null;
         try {
 
-            reader = ParsingUtils.openAsciiReader(dataFileLocator);
+            reader = ParsingUtils.openBufferedReader(dataFileLocator);
 
             // Parse the header(s) to determine the precise format.
             FormatDescriptor formatDescriptor = parseHeader(reader, type, dataset);
@@ -212,7 +213,7 @@ public class ExpressionFileParser {
             }
 
             // Loop through the data rows
-            int lineCount = 0;
+
             String[] tokens = new String[formatDescriptor.totalColumnCount];
             while ((nextLine = reader.readLine()) != null) {
 
@@ -289,14 +290,18 @@ public class ExpressionFileParser {
             throw new RuntimeException("Operation cancelled");
         } catch (Exception e) {
             e.printStackTrace();
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && lineCount != 0) {
+                throw new ParserException(e.getMessage(), e, lineCount, nextLine);
             } else {
                 throw new RuntimeException(e);
             }
         } finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
             }
         }
 
@@ -430,7 +435,7 @@ public class ExpressionFileParser {
         Thread.sleep(1);    // <- check for interrupted thread
     }
 
-    public static FormatDescriptor parseHeader(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
+    public static FormatDescriptor parseHeader(BufferedReader reader, FileType type, ExpressionDataset dataset) throws IOException {
 
 
         int descriptionColumn = -1;    // Default - no description column
@@ -524,7 +529,7 @@ public class ExpressionFileParser {
         return new FormatDescriptor(probeColumn, descriptionColumn, dataColumns, dataHeaders, firstHeaderRowTokens.length);
     }
 
-    private static String findHeaderLine(AsciiLineReader reader, FileType type, ExpressionDataset dataset) throws IOException {
+    private static String findHeaderLine(BufferedReader reader, FileType type, ExpressionDataset dataset) throws IOException {
         String nextLine;
         String headerLine;
         if (type == FileType.GCT) {

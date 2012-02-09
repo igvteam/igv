@@ -59,25 +59,14 @@ public class ParsingUtils {
      * @throws IOException
      */
     public static BufferedReader openBufferedReader(String pathOrUrl) throws IOException {
-
-        BufferedReader reader;
-
-        if (HttpUtils.getInstance().isURL(pathOrUrl)) {
-            URL url = new URL(pathOrUrl);
-            reader = new BufferedReader(new InputStreamReader(HttpUtils.getInstance().openConnectionStream(url)));
-        } else {
-            File file = new File(pathOrUrl);
-
-            FileInputStream fileInput = new FileInputStream(file);
-            if (file.getName().endsWith("gz")) {
-                GZIPInputStream in = new GZIPInputStream(fileInput);
-                reader = new BufferedReader(new InputStreamReader(in));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(fileInput));
-            }
-        }
-
+        BufferedReader reader = new BufferedReader(new InputStreamReader(openInputStream(pathOrUrl)));
         return reader;
+    }
+
+    public static BufferedReader openBufferedReader(ResourceLocator locator) throws IOException {
+        InputStream stream = openInputStream(locator);
+        return new BufferedReader(new InputStreamReader(stream));
+
     }
 
 
@@ -86,7 +75,6 @@ public class ParsingUtils {
         return new AsciiLineReader(stream);
 
     }
-
 
     public static InputStream openInputStream(String path) throws IOException {
         return openInputStream(new ResourceLocator(path));
@@ -475,7 +463,7 @@ public class ParsingUtils {
                             trackProperties.setGenome(value);
                         } else if (key.equals("bigdataurl") || key.equals("dataurl")) {
                             trackProperties.setDataURL(value);
-                        } else if(key.equals("meta")) {
+                        } else if (key.equals("meta")) {
                             trackProperties.setMetaData(value);
                         }
                     }
@@ -493,7 +481,6 @@ public class ParsingUtils {
         return foundProperties;
 
     }
-
 
 
     public static boolean pathExists(String covPath) {

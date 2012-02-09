@@ -1,8 +1,8 @@
 package org.broad.igv.data.seg;
 
 import org.broad.igv.feature.LocusScore;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.util.ParsingUtils;
 
 import java.awt.image.SampleModel;
 import java.io.*;
@@ -91,7 +91,7 @@ public class DBSegUtils {
 
     static Map<String, String> loadSampleMappings(String file) throws IOException {
 
-        BufferedReader reader = ParsingUtils.openBufferedReader(file);
+        BufferedReader reader = ParsingUtils. openBufferedReader(file);
         Map<String, String> map = new HashMap<String, String>();
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {

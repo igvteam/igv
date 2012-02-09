@@ -61,12 +61,12 @@ public class GCTtoIGVConverter {
         GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
 
 
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         PrintWriter writer = null;
 
         SortingCollection cltn = getSortingCollection(maxRecords, tmpDir);
         try {
-            reader = ParsingUtils.openAsciiReader(resourceLocator.getPath());
+            reader = new BufferedReader(new InputStreamReader(ParsingUtils.openInputStream(resourceLocator.getPath())));
             writer = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
 
             ExpressionFileParser.FormatDescriptor formatDescriptor = ExpressionFileParser.parseHeader (reader, type, null);
