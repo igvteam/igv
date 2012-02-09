@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_26" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -29,12 +29,10 @@
         <void method="setProperty"> 
          <string>border</string> 
          <object class="javax.swing.border.EmptyBorder"> 
-          <object class="java.awt.Insets"> 
-           <int>12</int> 
-           <int>12</int> 
-           <int>12</int> 
-           <int>12</int> 
-          </object> 
+          <int>12</int> 
+          <int>12</int> 
+          <int>12</int> 
+          <int>12</int> 
          </object> 
         </void> 
         <void property="name"> 
@@ -84,12 +82,10 @@
               <void method="setProperty"> 
                <string>border</string> 
                <object class="javax.swing.border.EmptyBorder"> 
-                <object class="java.awt.Insets"> 
-                 <int>5</int> 
-                 <int>5</int> 
-                 <int>5</int> 
-                 <int>0</int> 
-                </object> 
+                <int>5</int> 
+                <int>5</int> 
+                <int>5</int> 
+                <int>0</int> 
                </object> 
               </void> 
               <void method="setProperty"> 
@@ -147,12 +143,10 @@
                 <void method="setProperty"> 
                  <string>border</string> 
                  <object class="javax.swing.border.EmptyBorder"> 
-                  <object class="java.awt.Insets"> 
-                   <int>0</int> 
-                   <int>0</int> 
-                   <int>0</int> 
-                   <int>10</int> 
-                  </object> 
+                  <int>0</int> 
+                  <int>0</int> 
+                  <int>0</int> 
+                  <int>10</int> 
                  </object> 
                 </void> 
                 <void property="name"> 
@@ -790,14 +784,6 @@
             </void> 
             <void property="name"> 
              <string>loadButton</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>goButtonActionPerformed</string> 
-              <boolean>true</boolean> 
-             </object> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 

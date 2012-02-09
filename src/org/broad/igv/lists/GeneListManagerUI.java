@@ -409,6 +409,7 @@ public class GeneListManagerUI extends JDialog {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         createUIComponents();
+
         dialogPane = new JPanel();
         contentPanel = new JPanel();
         panel2 = new JPanel();
@@ -697,7 +698,6 @@ public class GeneListManagerUI extends JDialog {
                 loadButton.setEnabled(false);
                 loadButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        goButtonActionPerformed(e);
                         loadButtonActionPerformed(e);
                     }
                 });
