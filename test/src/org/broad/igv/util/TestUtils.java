@@ -20,7 +20,6 @@ package org.broad.igv.util;
 
 import org.broad.igv.Globals;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.feature.genome.GenomeManager;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
@@ -39,16 +38,13 @@ public class TestUtils {
     static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";
     public static String AVAILABLE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/igv/TEST/test.txt";
     public static String UNAVAILABLE_FTP_URL = "ftp://www.example.com/file.txt";
+    //This is so ant can set the large data directory
+    private static String LARGE_DATA_DIR_KEY = "LARGE_DATA_DIR";
     public static String LARGE_DATA_DIR = "test/largedata";
 
-    private static GenomeManager genomeManager;
-
-
-//    public static Genome loadGenome(String genomeId) throws IOException {
-//        Globals.setHeadless(true);
-//        return IgvTools.loadGenome(genomeId, true);
-//
-//    }
+    static {
+        LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY);
+    }
 
     public static void setUpHeadless() {
         Globals.setHeadless(true);
@@ -87,6 +83,7 @@ public class TestUtils {
      */
     public static IGV startGUI(String genomeFile) throws IOException {
         Globals.setHeadless(false);
+        Globals.setTesting(true);
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Main.open(frame);
@@ -134,10 +131,6 @@ public class TestUtils {
     public static Genome loadGenome() throws IOException {
         final String genomeFile = dataFileName;
         return IgvTools.loadGenome(genomeFile, true);
-//        if(genomeManager == null){
-//            genomeManager = new GenomeManager();
-//        }
-        //return genomeManager.loadGenome(genomeFile, null);
     }
 
     public static void clearOutputDir() throws IOException {
