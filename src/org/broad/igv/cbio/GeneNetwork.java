@@ -66,7 +66,7 @@ public class GeneNetwork extends Pseudograph<Vertex, BaseElement> {
     static final int B_KEY = 2;
     static final int DATA_COL = 1;
 
-    public static final String FRACTION_MUTATED = "FRACTION_MUTATED";
+    public static final String PERCENT_MUTATED = "PERCENT_MUTATED";
 
     protected KeyFactory edgeKeyFactory;
     protected KeyFactory vertexKeyFactory;
@@ -122,29 +122,27 @@ public class GeneNetwork extends Pseudograph<Vertex, BaseElement> {
     }
 
     public void collectMutationData(List<Track> tracks) {
-        this.collectScoreData(tracks, RegionScoreType.MUTATION_COUNT, FRACTION_MUTATED);
+        this.collectScoreData(tracks, RegionScoreType.MUTATION_COUNT, PERCENT_MUTATED);
     }
 
     public void collectScoreData(List<Track> tracks, RegionScoreType type, String data_label) {
-        int zoom = -1;
-        //Each vertex represents a gene feature.
-        //We loop over them all, get the mutations in the region that
-        //gene represents. TODO coding region only?
+        int zoom;
+
         Set<Vertex> rejected = new HashSet<Vertex>();
         for (Vertex v : this.vertexSet()) {
             List<NamedFeature> features = FeatureDB.getFeaturesList(v.getName(), Integer.MAX_VALUE);
-            double total = 0;
-            double mutated = 0;
+            double total_tracks = 0;
+            double total_score = 0;
             for (Feature feat : features) {
                 for (Track track : tracks) {
                     float score = track.getRegionScore(feat.getChr(), feat.getStart(), feat.getEnd(), zoom = -1,
                             type, Globals.isHeadless() ? null : FrameManager.getDefaultFrame());
-                    total++;
-                    mutated += score > 0 ? score : 0;
+                    total_tracks++;
+                    total_score += score > 0 ? score : 0;
                 }
             }
-            double frac_mutated = mutated / total;
-            v.put(data_label, frac_mutated);
+            double perc_score = 100.0 * total_score / total_tracks;
+            v.put(data_label, perc_score);
         }
     }
 
@@ -188,7 +186,7 @@ public class GeneNetwork extends Pseudograph<Vertex, BaseElement> {
             }
 
             String url = GeneNetwork.BASIC_URL + string_gl;
-            System.out.println(url);
+            //System.out.println(url);
             InputStream is = HttpUtils.getInstance().openConnectionStream(new URL(url));
             LineReader reader = new AsciiLineReader(is);
             return reader;

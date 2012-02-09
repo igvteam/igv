@@ -1,0 +1,1862 @@
+<graphml>
+    <key id="label" for="node" attr.name="label" attr.type="string"/>
+    <key id="type" for="all" attr.name="type" attr.type="string"/>
+    <key id="PERCENT_MRNA_WAY_UP" for="node" attr.name="PERCENT_MRNA_WAY_UP" attr.type="double"/>
+    <key id="PERCENT_MUTATED" for="node" attr.name="PERCENT_MUTATED" attr.type="double"/>
+    <key id="RELATIONSHIP_XREF" for="node" attr.name="RELATIONSHIP_XREF" attr.type="string"/>
+    <key id="PERCENT_ALTERED" for="node" attr.name="PERCENT_ALTERED" attr.type="double"/>
+    <key id="PERCENT_CNA_HOMOZYGOUSLY_DELETED" for="node" attr.name="PERCENT_CNA_HOMOZYGOUSLY_DELETED"
+         attr.type="double"/>
+    <key id="PERCENT_MRNA_WAY_DOWN" for="node" attr.name="PERCENT_MRNA_WAY_DOWN" attr.type="double"/>
+    <key id="IN_MEDIUM" for="node" attr.name="IN_MEDIUM" attr.type="string"/>
+    <key id="PERCENT_CNA_AMPLIFIED" for="node" attr.name="PERCENT_CNA_AMPLIFIED" attr.type="double"/>
+    <key id="IN_QUERY" for="node" attr.name="IN_QUERY" attr.type="string"/>
+    <key id="EXPERIMENTAL_TYPE" for="edge" attr.name="EXPERIMENTAL_TYPE" attr.type="string"/>
+    <key id="INTERACTION_DATA_SOURCE" for="edge" attr.name="INTERACTION_DATA_SOURCE" attr.type="string"/>
+    <key id="INTERACTION_PUBMED_ID" for="edge" attr.name="INTERACTION_PUBMED_ID" attr.type="string"/>
+    <graph edgedefault="undirected">
+        <node id="7337">
+            <data key="label">UBE3A</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:UBE3A;Entrez Gene:7337</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.08196721311475409</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="6362">
+            <data key="label">CCL18</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CCL18;Entrez Gene:6362</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.10655737704918032</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_ALTERED">0.10655737704918032</data>
+        </node>
+        <node id="1434">
+            <data key="label">CSE1L</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CSE1L;Entrez Gene:1434</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.07377049180327869</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="8445">
+            <data key="label">DYRK2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:DYRK2;Entrez Gene:8445</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.05737704918032787</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="7321">
+            <data key="label">UBE2D1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:UBE2D1;Entrez Gene:7321</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.14754098360655737</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.16393442622950818</data>
+        </node>
+        <node id="580">
+            <data key="label">BARD1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:BARD1;Entrez Gene:580</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.06557377049180328</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="581">
+            <data key="label">BAX</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:BAX;Entrez Gene:581</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.04918032786885246</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.01639344262295082</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.07377049180327869</data>
+        </node>
+        <node id="306">
+            <data key="label">ANXA3</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:ANXA3;Entrez Gene:306</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.09016393442622951</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="5925">
+            <data key="label">RB1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:RB1;Entrez Gene:5925</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.09016393442622951</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.10655737704918032</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.16393442622950818</data>
+        </node>
+        <node id="28984">
+            <data key="label">C13ORF15</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:C13ORF15;Entrez Gene:28984</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.08196721311475409</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="29102">
+            <data key="label">DROSHA</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:DROSHA;Entrez Gene:29102</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.07377049180327869</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="3276">
+            <data key="label">PRMT1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:PRMT1;Entrez Gene:3276</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.08196721311475409</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.01639344262295082</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.10655737704918032</data>
+        </node>
+        <node id="10848">
+            <data key="label">PPP1R13L</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:PPP1R13L;Entrez Gene:10848</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.07377049180327869</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="4194">
+            <data key="label">MDM4</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MDM4;Entrez Gene:4194</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.06557377049180328</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.05737704918032787</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="4193">
+            <data key="label">MDM2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MDM2;Entrez Gene:4193</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.09836065573770492</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.10655737704918032</data>
+            <data key="PERCENT_ALTERED">0.13114754098360656</data>
+        </node>
+        <node id="8295">
+            <data key="label">TRRAP</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:TRRAP;Entrez Gene:8295</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.040983606557377046</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.03278688524590164</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="6285">
+            <data key="label">S100B</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:S100B;Entrez Gene:6285</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.10655737704918032</data>
+            <data key="PERCENT_ALTERED">0.10655737704918032</data>
+        </node>
+        <node id="3313">
+            <data key="label">HSPA9</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:HSPA9;Entrez Gene:3313</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.09016393442622951</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="4802">
+            <data key="label">NFYC</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:NFYC;Entrez Gene:4802</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.08196721311475409</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.01639344262295082</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="3320">
+            <data key="label">HSP90AA1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:HSP90AA1;Entrez Gene:3320</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.04918032786885246</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.07377049180327869</data>
+        </node>
+        <node id="1509">
+            <data key="label">CTSD</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CTSD;Entrez Gene:1509</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.07377049180327869</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="6275">
+            <data key="label">S100A4</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:S100A4;Entrez Gene:6275</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.06557377049180328</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.01639344262295082</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="2810">
+            <data key="label">SFN</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:SFN;Entrez Gene:2810</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.09016393442622951</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="23411">
+            <data key="label">SIRT1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:SIRT1;Entrez Gene:23411</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.13114754098360656</data>
+            <data key="PERCENT_ALTERED">0.13114754098360656</data>
+        </node>
+        <node id="2033">
+            <data key="label">EP300</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:EP300;Entrez Gene:2033</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.10655737704918032</data>
+            <data key="PERCENT_ALTERED">0.13934426229508196</data>
+        </node>
+        <node id="3164">
+            <data key="label">NR4A1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:NR4A1;Entrez Gene:3164</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.07377049180327869</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.01639344262295082</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="5747">
+            <data key="label">PTK2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:PTK2;Entrez Gene:5747</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.040983606557377046</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.04918032786885246</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="3093">
+            <data key="label">UBE2K</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:UBE2K;Entrez Gene:3093</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.040983606557377046</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.040983606557377046</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="25">
+            <data key="label">ABL1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:ABL1;Entrez Gene:25</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.06557377049180328</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.01639344262295082</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="4233">
+            <data key="label">MET</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MET;Entrez Gene:4233</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.22131147540983606</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.04918032786885246</data>
+            <data key="PERCENT_ALTERED">0.23770491803278687</data>
+        </node>
+        <node id="10498">
+            <data key="label">CARM1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CARM1;Entrez Gene:10498</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.06557377049180328</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="150094">
+            <data key="label">SIK1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:SIK1;Entrez Gene:150094</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.08196721311475409</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="4149">
+            <data key="label">MAX</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MAX;Entrez Gene:4149</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.06557377049180328</data>
+            <data key="PERCENT_ALTERED">0.07377049180327869</data>
+        </node>
+        <node id="4087">
+            <data key="label">SMAD2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:SMAD2;Entrez Gene:4087</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.09836065573770492</data>
+            <data key="PERCENT_ALTERED">0.11475409836065574</data>
+        </node>
+        <node id="11200">
+            <data key="label">CHEK2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CHEK2;Entrez Gene:11200</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.03278688524590164</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.05737704918032787</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="5728">
+            <data key="label">PTEN</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:PTEN;Entrez Gene:5728</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.26229508196721313</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.02459016393442623</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.10655737704918032</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.03278688524590164</data>
+            <data key="PERCENT_ALTERED">0.36065573770491804</data>
+        </node>
+        <node id="4487">
+            <data key="label">MSX1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MSX1;Entrez Gene:4487</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.11475409836065574</data>
+            <data key="PERCENT_ALTERED">0.11475409836065574</data>
+        </node>
+        <node id="6696">
+            <data key="label">SPP1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:SPP1;Entrez Gene:6696</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.10655737704918032</data>
+            <data key="PERCENT_ALTERED">0.10655737704918032</data>
+        </node>
+        <node id="7421">
+            <data key="label">VDR</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:VDR;Entrez Gene:7421</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.07377049180327869</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="7528">
+            <data key="label">YY1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:YY1;Entrez Gene:7528</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.03278688524590164</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.05737704918032787</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="54541">
+            <data key="label">DDIT4</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:DDIT4;Entrez Gene:54541</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.03278688524590164</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.05737704918032787</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="1147">
+            <data key="label">CHUK</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CHUK;Entrez Gene:1147</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.09016393442622951</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="10301">
+            <data key="label">DLEU1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:DLEU1;Entrez Gene:10301</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.08196721311475409</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="30008">
+            <data key="label">EFEMP2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:EFEMP2;Entrez Gene:30008</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.0</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.09836065573770492</data>
+            <data key="PERCENT_ALTERED">0.09836065573770492</data>
+        </node>
+        <node id="5594">
+            <data key="label">MAPK1</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:MAPK1;Entrez Gene:5594</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.06557377049180328</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.00819672131147541</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="1956">
+            <data key="label">EGFR</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:EGFR;Entrez Gene:1956</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.1557377049180328</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.29508196721311475</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.4262295081967213</data>
+            <data key="PERCENT_ALTERED">0.45901639344262296</data>
+        </node>
+        <node id="8797">
+            <data key="label">TNFRSF10A</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:TNFRSF10A;Entrez Gene:8797</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.02459016393442623</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.040983606557377046</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.01639344262295082</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="1017">
+            <data key="label">CDK2</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CDK2;Entrez Gene:1017</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.05737704918032787</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.00819672131147541</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.01639344262295082</data>
+            <data key="PERCENT_ALTERED">0.08196721311475409</data>
+        </node>
+        <node id="7155">
+            <data key="label">TOP2B</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:TOP2B;Entrez Gene:7155</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.01639344262295082</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.07377049180327869</data>
+            <data key="PERCENT_ALTERED">0.09016393442622951</data>
+        </node>
+        <node id="7157">
+            <data key="label">TP53</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:TP53;Entrez Gene:7157</data>
+            <data key="IN_QUERY">true</data>
+            <data key="IN_MEDIUM">true</data>
+            <data key="PERCENT_ALTERED">0.32786885245901637</data>
+            <data key="PERCENT_MUTATED">0.30327868852459017</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.02459016393442623</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.00819672131147541</data>
+            <data key="PERCENT_CNA_HOMOZYGOUSLY_DELETED">0.01639344262295082</data>
+        </node>
+        <node id="1020">
+            <data key="label">CDK5</data>
+            <data key="type">Protein</data>
+            <data key="RELATIONSHIP_XREF">HGNC:CDK5;Entrez Gene:1020</data>
+            <data key="IN_QUERY">false</data>
+            <data key="PERCENT_MUTATED">0.0</data>
+            <data key="PERCENT_MRNA_WAY_UP">0.09016393442622951</data>
+            <data key="PERCENT_MRNA_WAY_DOWN">0.0</data>
+            <data key="PERCENT_CNA_AMPLIFIED">0.03278688524590164</data>
+            <data key="PERCENT_ALTERED">0.11475409836065574</data>
+        </node>
+        <edge source="581" target="23411" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="10498" target="3276" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1956" target="4233" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10722725</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="1509" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8295" target="4149" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10611234</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7321" target="7337" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10066826</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7157" target="3276" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="1020" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2033" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11264182,11371641</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="4802" target="4149" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7157" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="580" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="306" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16169070</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">yeast 2-hybrid</data>
+        </edge>
+        <edge source="1147" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11805286</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="1017" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10884347,12064478,10747897,10348343</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="10848" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12524540</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="4194" target="4193" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="5925" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="23411" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="54541" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="3320" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11507088,12427754</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="8295" target="7157" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="4193" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8295" target="4193" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="7321" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7337" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">9369221,9143503</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="8295" target="4149" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8445" target="10848" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="581" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="5925" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="10301" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16169070</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">yeast 2-hybrid</data>
+        </edge>
+        <edge source="7157" target="4233" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="7157" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3276" target="10498" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5925" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">7791904</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7528" target="7321" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="5925" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">8756624,9315635,9139732,8626527,10207050,16326706</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7157" target="4193" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="11200" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">17157788</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="2033" target="23411" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="4193" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4194" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10218570,12393902,12483531,10608892,17159902</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo;yeast 2-hybrid</data>
+        </edge>
+        <edge source="4149" target="3320" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5747" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15855171</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="7421" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="5728" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="5925" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4087" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="4149" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="580" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="581" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="8797" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11409876,15116093,12091386</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="3276" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7528" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7528" target="4193" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="10498" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7528" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4194" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12483531</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="4193" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="1020" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2033" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="5925" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="2033" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="23411" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="2033" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8295" target="4149" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="3164" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11883936</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="6285" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11527429,10876243</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="5925" target="25" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5747" target="1956" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10806474</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="5925" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11433299</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="25" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16648821</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="4149" target="8295" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="1020" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10896159</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2810" target="3320" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="2033" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4194" target="2810" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16511572</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="1017" target="5925" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3276" target="10498" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7337" target="3320" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="2810" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="30008" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10380882</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="7157" target="4802" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="4802" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="3320" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11748628</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="10498" target="3276" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="4802" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1434" target="7157" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="5925" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15489336</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="10498" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15616592</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="25" target="4193" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="4802" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="1017" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="6362" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16169070</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">yeast 2-hybrid</data>
+        </edge>
+        <edge source="4149" target="581" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="29102" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11672523</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7321" target="1017" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2810" target="581" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11574543</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="4194" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">8895579,9226370,12393902,11528400,15604276,17110929</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7321" target="4193" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="580" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5925" target="4233" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="1956" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12023901</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="7157" target="25" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10713716,10629029</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="23411" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="7155" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10666337</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="7321" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3276" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="580" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5925" target="25" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3320" target="1147" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10197981</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="4149" target="8295" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8445" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="1020" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12110584</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7528" target="4193" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="4802" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="8295" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="2810" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15696159</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="5925" target="1017" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4087" target="4802" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12732139</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="7528" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">7758944</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="2033" target="3164" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12082103</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="581" target="23411" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2810" target="3320" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5594" target="4087" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="25" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3313" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11900485</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16438982,12724314,9288740,9744860,9809062,10942770,9194564,11907332</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="7157" target="581" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2033" target="4087" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="10848" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4087" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3320" target="1956" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="2033" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">9809062</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="1017" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10330164</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="10848" target="8445" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="4149" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3276" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15186775</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="1020" target="25" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7528" target="7321" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7321" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1147" target="3320" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="8295" target="4149" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="4193" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3320" target="2810" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="10498" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="581" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4802" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3320" target="1147" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="4193" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="29102" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="2033" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="7157" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="11200" target="4194" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16163388</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7157" target="3164" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">17139261</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo;yeast 2-hybrid</data>
+        </edge>
+        <edge source="5728" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12620407</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="4149" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="1956" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4487" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15705871</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo;yeast 2-hybrid</data>
+        </edge>
+        <edge source="7157" target="6275" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11527429,15116098,12942774,11278647</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="7157" target="28984" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="580" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15782130</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="3320" target="2810" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1147" target="3320" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7321" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7321" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="7528" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="7321" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="4087" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="150094" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="25" target="5925" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">8242749,7828850</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="23411" target="2033" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15632193</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="29102" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="7321" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="5925" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="5925" target="1017" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1956" target="5594" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1017" target="5925" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4194" target="5925" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16510145</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="7157" target="580" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="11200" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">15862297</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="2033" target="23411" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="4193" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">
+                16432196,12867035,7686617,12842086,9278461,15604276,17159902,18309296,18451149,17936559,18815136,17879958
+            </data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo;yeast 2-hybrid</data>
+        </edge>
+        <edge source="3320" target="1147" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="7528" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4193" target="7528" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1147" target="3320" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">CELLMAP</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="4194" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12393902</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro</data>
+        </edge>
+        <edge source="29102" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1147" target="3320" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11864612</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="1020" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">11483158,12064478,10884347</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="10498" target="7157" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="4149" target="8295" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3093" target="7157" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">10634809</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="10498" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7321" target="7157" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1956" target="2810" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">16799092</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vivo</data>
+        </edge>
+        <edge source="7321" target="1017" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="1434" directed="false">
+            <data key="type">CO_CONTROL</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="23411" target="5925" directed="true">
+            <data key="type">STATE_CHANGE</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1956" target="5594" directed="false">
+            <data key="type">INTERACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">12556561</data>
+            <data key="INTERACTION_DATA_SOURCE">HPRD</data>
+            <data key="EXPERIMENTAL_TYPE">in vitro;in vivo</data>
+        </edge>
+        <edge source="5925" target="1017" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1956" target="3320" directed="false">
+            <data key="type">REACTS_WITH</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="7157" target="6696" directed="true">
+            <data key="type">METABOLIC_CATALYSIS</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="3276" target="7157" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">NCI_NATURE</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+        <edge source="1020" target="25" directed="false">
+            <data key="type">IN_SAME_COMPONENT</data>
+            <data key="INTERACTION_PUBMED_ID">NA</data>
+            <data key="INTERACTION_DATA_SOURCE">REACTOME</data>
+            <data key="EXPERIMENTAL_TYPE">NA</data>
+        </edge>
+    </graph>
+</graphml>

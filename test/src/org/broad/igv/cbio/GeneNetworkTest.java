@@ -104,13 +104,13 @@ public class GeneNetworkTest {
         List<Track> tracks = new TrackLoader().load(locator, genome);
 
         for (Vertex v : geneNetwork.vertexSet()) {
-            assertFalse(v.containsKey(GeneNetwork.FRACTION_MUTATED));
+            assertFalse(v.containsKey(GeneNetwork.PERCENT_MUTATED));
         }
 
         geneNetwork.collectMutationData(tracks);
 
         for (Vertex v : geneNetwork.vertexSet()) {
-            assertTrue(v.containsKey(GeneNetwork.FRACTION_MUTATED));
+            assertTrue(v.containsKey(GeneNetwork.PERCENT_MUTATED));
         }
 
         exporter.exportGraph(filepath, geneNetwork, geneNetwork.factoryList);
