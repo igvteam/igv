@@ -19,10 +19,13 @@
 package org.broad.igv.ui.panel;
 
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.Locus;
 import org.broad.igv.feature.NamedFeature;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.lists.GeneList;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 
 import java.util.ArrayList;
@@ -107,13 +110,12 @@ public class FrameManager {
     }
 
     /**
-     *
      * @return The minimum scale among all active frames
-     * TODO -- track this with "rescale" events, rather than compute on the fly
+     *         TODO -- track this with "rescale" events, rather than compute on the fly
      */
     public static double getMinimumScale() {
         double minScale = Double.MAX_VALUE;
-        for(ReferenceFrame frame : frames) {
+        for (ReferenceFrame frame : frames) {
             minScale = Math.min(minScale, frame.getScale());
         }
         return minScale;
@@ -127,21 +129,30 @@ public class FrameManager {
 
     public static Locus getLocus(String searchString, int flankingRegion) {
 
+        Locus locus = null;
         NamedFeature feature = FeatureDB.getFeature(searchString.toUpperCase().trim());
         if (feature != null) {
-            return new Locus(
+            locus = new Locus(
                     feature.getChr(),
                     feature.getStart() - flankingRegion,
                     feature.getEnd() + flankingRegion);
         } else {
-            Locus locus = new Locus(searchString);
+            locus = new Locus(searchString);
             String chr = locus.getChr();
             if (chr != null) {
                 return locus;
             } else {
-                return null;
+                if (IGV.hasInstance()) {
+                    Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+                    if (genome != null) {
+                        Chromosome chromsome = genome.getChromosome(searchString);
+                        locus = new Locus(chromsome.getName(), 0, chromsome.getLength());
+
+                    }
+                }
             }
         }
+        return locus;
     }
 
     public static void removeFrame(ReferenceFrame frame) {
