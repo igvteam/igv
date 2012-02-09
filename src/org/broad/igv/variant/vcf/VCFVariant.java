@@ -35,9 +35,11 @@ public class VCFVariant implements Variant {
     VariantContext variantContext;
     Set<Allele> alternateAlleles;
     private ZygosityCount zygosityCount;
+    private boolean isIndel;
 
     public VCFVariant(VariantContext variantContext) {
         this.variantContext = variantContext;
+        isIndel = variantContext.getType() == VariantContext.Type.INDEL;
         init();
     }
 
@@ -87,7 +89,7 @@ public class VCFVariant implements Variant {
     }
 
 
-    /**
+    /**                         1503292
      * Return the allele frequency as annotated with an AF or GMAF attribute.  A value of -1 indicates
      * no annotation (unknown allele frequency).
      */
@@ -151,7 +153,7 @@ public class VCFVariant implements Variant {
     }
 
     public int getStart() {
-        return variantContext.getStart();
+        return isIndel ? variantContext.getStart(): variantContext.getStart() - 1;
     }
 
     public int getEnd() {

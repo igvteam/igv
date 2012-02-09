@@ -407,16 +407,13 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
 
                 Variant variant = (Variant) feature;
 
-                boolean isIndel = variant.getType().toLowerCase().equals("indel");
-
                 //char ref = getReference(variant, windowStart, reference);
 
                 if (hideFiltered && variant.isFiltered()) {
                     continue;
                 }
 
-                // 1 -> 0 based coordinates.  Shift indels to the right by 1 base.
-                int start = isIndel ? variant.getStart() : variant.getStart() - 1;
+                int start = variant.getStart();
                 int end = variant.getEnd();
                 int pX = (int) ((start - origin) / locScale);
                 int dX = (int) Math.max(2, (end - start) / locScale);
@@ -805,18 +802,15 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Return popup text for the given position
      *
      * @param chr
-     * @param zeroBasePosition - position in UCSC "0 based"  genomic coordinates
+     * @param position - position in UCSC "0 based"  genomic coordinates
      * @param y                - pixel position in panel coordinates (i.e. not track coordinates)
      * @param frame
      * @return
      */
-    public String getValueStringAt(String chr, double zeroBasePosition, int y, ReferenceFrame frame) {
-
-        // VariantContext is in 1-based coordinates,  IGV is 0-based (UCSC style).
-        double position = zeroBasePosition + 1;
+    public String getValueStringAt(String chr, double position, int y, ReferenceFrame frame) {
 
         try {
-            double maxDistance = Math.max(1, 10 * frame.getScale());
+            double maxDistance = 10 * frame.getScale();
             Variant variant = getFeatureClosest(position, maxDistance, frame); //getVariantAtPosition(chr, (int) position, frame);
             if (variant == null) {
                 return null;
