@@ -82,29 +82,6 @@ public class Utilities {
         return new File(newPath);
     }
 
-
-    /**
-     * Reads an xml from an input file and creates DOM document.
-     *
-     * @param file
-     * @return
-     * @throws ParserConfigurationException
-     * @throws IOException
-     * @throws SAXException
-     */
-    public static Document createDOMDocumentFromXmlFile(File file)
-            throws ParserConfigurationException, IOException, SAXException {
-
-        if (!file.exists()) {
-            throw new RuntimeException("Could not find XML file: " + file.getAbsolutePath());
-        }
-
-        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document xmlDocument = documentBuilder.parse(file);
-
-        return xmlDocument;
-    }
-
     /**
      * Reads an xml from an input stream and creates DOM document.
      *

@@ -26,7 +26,9 @@ import org.broad.igv.renderer.ColorScale;
 import org.broad.igv.renderer.ColorScaleFactory;
 import org.broad.igv.renderer.ContinuousColorScale;
 import org.broad.igv.renderer.DataRange;
-import org.broad.igv.track.*;
+import org.broad.igv.track.AttributeManager;
+import org.broad.igv.track.Track;
+import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.TrackFilter;
 import org.broad.igv.ui.TrackFilterElement;
@@ -35,15 +37,14 @@ import org.broad.igv.ui.panel.FrameManager;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.panel.TrackPanel;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.*;
+import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.FilterElement.BooleanOperator;
 import org.broad.igv.util.FilterElement.Operator;
+import org.broad.igv.util.ParsingUtils;
+import org.broad.igv.util.ResourceLocator;
+import org.broad.igv.util.Utilities;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -267,7 +268,7 @@ public class IGVSessionReader implements SessionReader {
 
         Document document = null;
         try {
-            document = createDOMDocumentFromXmlFile(inputStream);
+            document = Utilities.createDOMDocumentFromXmlStream(inputStream);
         } catch (Exception e) {
             log.error("Session Management Error", e);
             throw new RuntimeException(e);
@@ -1040,24 +1041,6 @@ public class IGVSessionReader implements SessionReader {
             process(session, childNode, additionalInformation);
         }
     }
-
-
-    /**
-     * Reads an xml from an input file and creates DOM document.
-     *
-     * @param
-     * @return
-     * @throws ParserConfigurationException
-     * @throws IOException
-     * @throws SAXException
-     */
-    private Document createDOMDocumentFromXmlFile(InputStream inputStream)
-            throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        Document xmlDocument = documentBuilder.parse(inputStream);
-        return xmlDocument;
-    }
-
 
     public void setColorScaleSet(Session session, String type, String value) {
 
