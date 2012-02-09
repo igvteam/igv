@@ -97,10 +97,10 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
     }
 
     public Feature decodeLoc(String line) {
-        return decode(line);  //To change body of implemented methods use File | Settings | File Templates.
+        return decode(line);
     }
 
     public Class getFeatureType() {
-        return BasicFeature.class;  //To change body of implemented methods use File | Settings | File Templates.
+        return BasicFeature.class;
     }
 }

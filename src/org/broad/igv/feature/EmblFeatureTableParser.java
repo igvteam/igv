@@ -74,16 +74,6 @@ public class EmblFeatureTableParser implements FeatureParser {
         }
     }
 
-    /**
-     * By definition this is a feature file
-     *
-     * @param locator
-     * @return
-     */
-    public boolean isFeatureFile(ResourceLocator locator) {
-        return true;
-    }
-
     public TrackProperties getTrackProperties() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -96,9 +86,9 @@ public class EmblFeatureTableParser implements FeatureParser {
      */
     public List<FeatureTrack> loadTracks(ResourceLocator locator, Genome genome) {
 
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         try {
-            reader = ParsingUtils.openAsciiReader(locator);
+            reader = ParsingUtils.openBufferedReader(locator);
 
             List<org.broad.tribble.Feature> features = loadFeatures(reader);
 
@@ -124,7 +114,11 @@ public class EmblFeatureTableParser implements FeatureParser {
             return null;
         } finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
             }
         }
     }
@@ -135,7 +129,7 @@ public class EmblFeatureTableParser implements FeatureParser {
      * @param reader
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader) {
 
         List<BasicFeature> features = new ArrayList();
 
@@ -280,7 +274,7 @@ public class EmblFeatureTableParser implements FeatureParser {
      * @return
      * @throws IOException
      */
-    public static String parseJoinString(String joinString, AsciiLineReader reader)
+    public static String parseJoinString(String joinString, BufferedReader reader)
             throws IOException {
 
         if (joinString.startsWith("join") || joinString.startsWith("complement")) {

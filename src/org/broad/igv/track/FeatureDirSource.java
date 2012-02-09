@@ -29,6 +29,7 @@ import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
 import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +75,7 @@ public class FeatureDirSource implements FeatureSource {
         if (features == null) {
             final String filename = fileMap.getProperty(chr);
             if (filename != null) {
-                AsciiLineReader reader = null;
+                BufferedReader reader = null;
                 String path = rootDir + "/" + filename;
                 try {
                     log.info("Loading " + path);
@@ -82,7 +83,7 @@ public class FeatureDirSource implements FeatureSource {
                     ResourceLocator loc = new ResourceLocator(rootLocator.getServerURL(), path);
 
                     FeatureParser fp = AbstractFeatureParser.getInstanceFor(loc, genome);
-                    reader = ParsingUtils.openAsciiReader(loc);
+                    reader = ParsingUtils.openBufferedReader(loc);
                     features = fp.loadFeatures(reader);
                     featureCache.put(chr, features);
                 } catch (IOException ex) {
@@ -90,7 +91,11 @@ public class FeatureDirSource implements FeatureSource {
                     log.info("Error loading feature file: " + filename, ex);
                 } finally {
                     if (reader != null) {
-                        reader.close();
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+
+                        }
                     }
                 }
 

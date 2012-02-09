@@ -25,6 +25,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -44,7 +45,7 @@ public class GeneToLocusHelper {
         if (probeResource != null && probeResource.trim().length() > 0) {
             BEDFileParser parser = new BEDFileParser(genome);
             ResourceLocator rl = new ResourceLocator(probeResource);
-            AsciiLineReader reader = ParsingUtils.openAsciiReader(rl);
+            BufferedReader reader = ParsingUtils.openBufferedReader(rl);
             List<Feature> features = parser.loadFeatures(reader);
             reader.close();
             probeLocusMap = new HashMap(features.size() * 2);

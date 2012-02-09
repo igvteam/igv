@@ -33,6 +33,7 @@ import org.broad.igv.track.TrackProperties;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ResourceLocator;
 
+import java.io.BufferedReader;
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public interface FeatureParser {
      * @param reader
      * @return
      */
-    List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader);
+    List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader);
 
 
     public TrackProperties getTrackProperties();

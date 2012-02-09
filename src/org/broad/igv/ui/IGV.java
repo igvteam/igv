@@ -1936,7 +1936,7 @@ public class IGV {
      * @param geneFileName
      * @param geneTrackName
      */
-    public void createGeneTrack(Genome genome, AsciiLineReader reader, String geneFileName, String geneTrackName,
+    public void createGeneTrack(Genome genome, BufferedReader reader, String geneFileName, String geneTrackName,
                                 String annotationURL) {
 
         FeatureDB.clearFeatures();

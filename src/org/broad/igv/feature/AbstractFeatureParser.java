@@ -38,6 +38,7 @@ import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.readers.AsciiLineReader;
 
+import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -57,7 +58,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static boolean canParse(String path) {
-        return getCodec(path) != null;
+        return getCodec(path, null) != null;
     }
 
     /**
@@ -72,7 +73,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
     public static FeatureParser getInstanceFor(String path, Genome genome) {
-        FeatureCodec codec = getCodec(path);
+        FeatureCodec codec = getCodec(path, genome);
         if (codec != null) {
             return new FeatureCodecParser(codec, genome);
         } else {
@@ -80,9 +81,9 @@ public abstract class AbstractFeatureParser implements FeatureParser {
         }
     }
 
-    private static FeatureCodec getCodec(String path) {
+    private static FeatureCodec getCodec(String path, Genome genome) {
         String tmp = getStrippedFilename(path);
-        return CodecFactory.getCodec(tmp);
+        return CodecFactory.getCodec(tmp, genome);
     }
 
     boolean gffTags = false;
@@ -151,17 +152,19 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      */
     public List<org.broad.tribble.Feature> loadFeatures(ResourceLocator locator, int maxLines) {
 
-        // File file = new File(locator.getPath());
-        int nLines = 0;
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         try {
-            reader = ParsingUtils.openAsciiReader(locator);
+            reader = ParsingUtils.openBufferedReader(locator);
             return loadFeatures(reader, maxLines);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
             }
         }
     }
@@ -172,7 +175,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param reader
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader) {
         return loadFeatures(reader, -1);
     }
 
@@ -183,13 +186,13 @@ public abstract class AbstractFeatureParser implements FeatureParser {
      * @param maxLines
      * @return
      */
-    public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader, int maxLines) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader, int maxLines) {
 
         List<org.broad.tribble.Feature> features = new ArrayList<org.broad.tribble.Feature>();
         String nextLine = null;
 
+        int nLines = 0;
         try {
-            int nLines = 0;
             while ((nextLine = reader.readLine()) != null) {
                 nextLine = nextLine.trim();
                 if (nextLine.length() == 0) continue;
@@ -248,8 +251,8 @@ public abstract class AbstractFeatureParser implements FeatureParser {
             // event.
             return features;
         } catch (Exception e) {
-            if (nextLine != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(e.getMessage(), e, reader.getCurrentLineNumber(), nextLine);
+            if (nextLine != null && nLines != 0) {
+                throw new ParserException(e.getMessage(), e, nLines, nextLine);
             } else {
                 throw new RuntimeException(e);
             }

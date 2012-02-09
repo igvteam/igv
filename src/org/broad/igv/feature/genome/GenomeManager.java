@@ -177,7 +177,7 @@ public class GenomeManager {
         InputStream geneStream = null;
         try {
             geneStream = genomeDescriptor.getGeneStream();
-            AsciiLineReader reader = geneStream == null ? null : new AsciiLineReader(geneStream);
+            BufferedReader reader = geneStream == null ? null : new BufferedReader(new InputStreamReader(geneStream));
             IGV.getInstance().createGeneTrack(currentGenome, reader,
                     genomeDescriptor.getGeneFileName(), genomeDescriptor.getGeneTrackName(),
                     genomeDescriptor.getUrl());

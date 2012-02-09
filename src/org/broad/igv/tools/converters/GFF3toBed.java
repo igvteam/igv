@@ -25,10 +25,10 @@ public class GFF3toBed {
 
         GFFParser parser = new GFFParser(inputFile.getPath());
 
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         PrintWriter pw = null;
         try {
-            reader = ParsingUtils.openAsciiReader(new ResourceLocator(inputFile.getAbsolutePath()));
+            reader = ParsingUtils.openBufferedReader(new ResourceLocator(inputFile.getAbsolutePath()));
             List<Feature> features = parser.loadFeatures(reader);
 
             pw = new PrintWriter(new BufferedWriter(new FileWriter(outputFile)));
@@ -44,7 +44,13 @@ public class GFF3toBed {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (reader != null) reader.close();
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
+            }
             try {
                 if (pw != null) pw.close();
             } catch (Exception e) {

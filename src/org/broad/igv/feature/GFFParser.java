@@ -154,9 +154,9 @@ public class GFFParser implements FeatureParser {
             helper = new GFF3Helper();
         }
 
-        AsciiLineReader reader = null;
+        BufferedReader reader = null;
         try {
-            reader = ParsingUtils.openAsciiReader(locator);
+            reader = ParsingUtils.openBufferedReader(locator);
 
             List<org.broad.tribble.Feature> features = loadFeatures(reader);
 
@@ -181,16 +181,21 @@ public class GFFParser implements FeatureParser {
 
         } finally {
             if (reader != null) {
-                reader.close();
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
 
             }
         }
     }
 
 
-    public List<org.broad.tribble.Feature> loadFeatures(AsciiLineReader reader) {
+    public List<org.broad.tribble.Feature> loadFeatures(BufferedReader reader) {
         List<org.broad.tribble.Feature> features = new ArrayList();
         String line = null;
+        int lineNumber=0;
         try {
 
             Genome genome = null;
@@ -201,6 +206,8 @@ public class GFFParser implements FeatureParser {
             String[] tokens = new String[200];
 
             while ((line = reader.readLine()) != null) {
+
+                lineNumber++;
 
                 if (line.startsWith("##gff-version") && line.endsWith("3")) {
                     helper = new GFF3Helper();
@@ -263,13 +270,13 @@ public class GFFParser implements FeatureParser {
                 try {
                     start = Integer.parseInt(tokens[3]) - 1;
                 } catch (NumberFormatException ne) {
-                    throw new ParserException("Column 4 must contain a numeric value", reader.getCurrentLineNumber(), line);
+                    throw new ParserException("Column 4 must contain a numeric value", lineNumber, line);
                 }
 
                 try {
                     end = Integer.parseInt(tokens[4]);
                 } catch (NumberFormatException ne) {
-                    throw new ParserException("Column 5 must contain a numeric value", reader.getCurrentLineNumber(), line);
+                    throw new ParserException("Column 5 must contain a numeric value", lineNumber, line);
                 }
 
                 Strand strand = convertStrand(tokens[6]);
@@ -397,8 +404,8 @@ public class GFFParser implements FeatureParser {
         } catch (Exception
                 ex) {
             log.error("Error parsing GFF file", ex);
-            if (line != null && reader.getCurrentLineNumber() != 0) {
-                throw new ParserException(ex.getMessage(), ex, reader.getCurrentLineNumber(), line);
+            if (line != null && lineNumber != 0) {
+                throw new ParserException(ex.getMessage(), ex, lineNumber, line);
             } else {
                 throw new RuntimeException(ex);
             }

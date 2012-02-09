@@ -1083,7 +1083,7 @@ public class IgvTools {
             if (geneFileName != null && geneFileName.trim().length() > 0) {
                 FeatureParser parser = AbstractFeatureParser.getInstanceFor(geneFileName, genome);
                 InputStream is = descriptor.getGeneStream();
-                AsciiLineReader reader = new AsciiLineReader(is);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 //Right now the parser adds these to the FeatureDB map
                 //May want to move that someplace else
                 List<Feature> features = parser.loadFeatures(reader);
