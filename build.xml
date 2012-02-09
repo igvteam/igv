@@ -24,10 +24,11 @@
     <!-- Source and lib directories -->
     <property name="src.dir" value="${basedir}/src/"/>
     <property name="lib.dir" value="${basedir}/lib/"/>
-    <property name="test.dir" value="${basedir}/out/test/igv/"/>
+    <property name="testsrc.dir" value="${basedir}/test/src"/>
 
     <!-- Temp directory.  Sources are compiled here prior to archiving -->
     <property name="tmp.dir" value="${basedir}/tmp/"/>
+    <property name="testtmp.dir" value="${basedir}/testtmp/"/>
     <property name="resource.dir" value="${tmp.dir}resources/"/>
 
     <!-- Distribution directory.  Binary distribution is placed here -->
@@ -87,13 +88,18 @@
     <!-- Clean all generated artifacts -->
     <target name="clean">
         <delete dir="${tmp.dir}"/>
+
+        <delete dir="${testtmp.dir}"/>
+        <delete dir="${test.reports}"/>
     </target>
 
 
     <target name="init" depends="clean">
 
-        <delete dir="${tmp.dir}"/>
         <mkdir dir="${tmp.dir}"/>
+
+        <mkdir dir="${testtmp.dir}"/>
+        <mkdir dir="${test.reports}"/>
 
         <!-- Copy resource files to the tmp directory -->
         <copy todir="${tmp.dir}" overwrite="true">
@@ -122,6 +128,15 @@
 
     </target>
 
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" includeantruntime="true">
+            <classpath refid="@jars"/>
+        </javac>
+        <javac srcdir="${testsrc.dir}" debug="on" destdir="${testtmp.dir}" includeantruntime="true">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+
     <target name="build" depends="compile">
         <jar destfile="${basedir}/${jar.name}" basedir="${tmp.dir}">
 
@@ -133,33 +148,25 @@
         </jar>
     </target>
 
-    <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" debug="on" destdir="${tmp.dir}" includeantruntime="true">
-            <classpath refid="@jars"/>
-        </javac>
-    </target>
-
     <target name="all" depends="build, clean"/>
 
     <!-- Run all tests with ant. Work in progress. -->
-
     <path id="test.classpath">
         <path refid="@jars"/>
-        <pathelement location="${test.dir}"/>
-        <pathelement location="${basedir}/out/production/Igv/"/>
-        <pathelement location="${basedir}/out/test/"/>
+        <pathelement location="${testtmp.dir}"/>
+        <pathelement location="${tmp.dir}"/>
     </path>
 
-    <property name="test.reports" value="${basedir}/out/reports"/>
+    <property name="test.reports" value="${basedir}/reports"/>
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
     <property name="testsfailed" value="0"/>
-    <target name="alltests">
-        <junit haltonfailure="no" showoutput="yes" printsummary="yes" failureproperty="testsfailed">
+    <target name="alltests" depends="compile">
+        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed">
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">
-                <fileset dir="${test.dir}">
+                <fileset dir="${testtmp.dir}">
                     <include name="*.class"/>
                     <include name="*/*.class"/>
                     <include name="*/*/*.class"/>
