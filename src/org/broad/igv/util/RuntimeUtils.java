@@ -22,13 +22,16 @@
  */
 package org.broad.igv.util;
 
+import java.lang.instrument.Instrumentation;
+
 /**
  * @author jrobinso
  */
 public class RuntimeUtils {
 
-    public static long getAvailableMemory() {
+    private static Instrumentation instrumentation;
 
+    public static long getAvailableMemory() {
         Runtime runtime = Runtime.getRuntime();
         long maxMemory = runtime.maxMemory();
         long allocatedMemory = runtime.totalMemory();
@@ -44,4 +47,23 @@ public class RuntimeUtils {
         return (double) ((freeMemory + (maxMemory - allocatedMemory))) / maxMemory;
 
     }
+
+    public static void premain(String args, Instrumentation inst) {
+        instrumentation = inst;
+    }
+
+    /**
+     * Must invoke with instrumentation on command line
+     * Note: Not recursive, so of somewhat limited utility
+     *
+     * @param o
+     * @return
+     */
+    public static long getObjectSize(Object o) {
+        if (instrumentation == null) {
+            throw new IllegalStateException("No instrumentation available. Need to launch width -javaagent=path/to/RuntimeUtils.jar");
+        }
+        return instrumentation.getObjectSize(o);
+    }
+
 }

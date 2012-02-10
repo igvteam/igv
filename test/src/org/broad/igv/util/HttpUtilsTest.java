@@ -44,7 +44,7 @@ public class HttpUtilsTest {
     @Test
     public void testCompareResources() throws Exception {
 
-        File localFile = new File("test/data/bed/test.bed");
+        File localFile = new File(TestUtils.DATA_DIR + "/bed/test.bed");
         assertTrue(localFile.exists());
 
         // To make this test robust we must compare the local file time to the known remote one

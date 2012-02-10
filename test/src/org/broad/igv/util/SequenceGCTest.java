@@ -23,24 +23,26 @@
 
 package org.broad.igv.util;
 
+import org.junit.Test;
+
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SequenceGCTest {
 
-    //@Test
+    @Test
     public void testSequenceGC() throws Exception {
 
+        String outfile = TestUtils.DATA_DIR + "/out/ecoli.wig";
         //TODO Remove the Asserts, do a check at a position instead.
+        //todo This test is not very meaningful
         SequenceGC sequence = new SequenceGC(5, 1);
-        sequence.ProcessPath(TestUtils.DATA_DIR + "/SequenceGC/chr1.txt", TestUtils.DATA_DIR + "/SequenceGC/chr1.wig");
-        assertEquals("e145353e034285330dd9ba303b3796b3", MD5Checksum.getMD5Checksum(TestUtils.DATA_DIR + "/SequenceGC/chr1.wig"));
-        File wigFile1 = new File(TestUtils.DATA_DIR + "/SequenceGC/chr1.wig");
-        wigFile1.delete();
-        sequence.ProcessPath(TestUtils.DATA_DIR + "/SequenceGC/chr2.txt", TestUtils.DATA_DIR + "/SequenceGC/chr2.wig");
-        assertEquals("5217101601855f1e1721b0c0fc0ea560", MD5Checksum.getMD5Checksum(TestUtils.DATA_DIR + "/SequenceGC/chr2.wig"));
-        File wigFile2 = new File(TestUtils.DATA_DIR + "/SequenceGC/chr2.wig");
-        wigFile2.delete();
+        sequence.ProcessPath(TestUtils.DATA_DIR + "/fasta/ecoli_out.padded.fasta.txt", outfile);
+
+        File wigFile1 = new File(outfile);
+        assertTrue(wigFile1.exists());
+        assertTrue(wigFile1.getTotalSpace() > 1);
+        wigFile1.deleteOnExit();
     }
 }

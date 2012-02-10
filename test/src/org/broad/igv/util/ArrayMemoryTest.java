@@ -19,8 +19,12 @@
 package org.broad.igv.util;
 
 import org.broad.igv.util.collections.IntArrayList;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.IOException;
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,30 +34,45 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public class ArrayMemoryTest {
+    private static final int size = 10000000;
 
+    @Before
+    public void setUp() throws Exception {
+        System.gc();
+        Runtime.getRuntime().gc();
+    }
 
-    public static void main(String[] args) throws IOException {
+    @Test
+    public void compareMemory() throws Exception {
 
-        char c;
+        IntArrayList tmp = makeIntArrayList();
+        ArrayList<Integer> tmp2 = makeArrayList();
+        long memIntArrList = 0;
+        long memArrList = 0;
 
-        do {
-            IntArrayList tmp = makeList();
-            Runtime.getRuntime().gc();
-            System.out.println(RuntimeUtils.getAvailableMemory());
-            c = (char) System.in.read();
-
+        for (int ii = 0; ii < size; ii++) {
+            memArrList += RuntimeUtils.getObjectSize(tmp2.get(ii));
+            memIntArrList += RuntimeUtils.getObjectSize(tmp.get(ii));
         }
-        while (c != 'x');
-
+        assertTrue(memIntArrList < memArrList);
 
     }
 
 
-    public static IntArrayList makeList() {
+    public static IntArrayList makeIntArrayList() {
         IntArrayList list = new IntArrayList();
-        for (int i = 0; i < 10000000; i++) {
+        for (int i = 0; i < size; i++) {
             list.add(i);
         }
         return list;
     }
+
+    public static ArrayList<Integer> makeArrayList() {
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        for (int i = 0; i < size; i++) {
+            list.add(i);
+        }
+        return list;
+    }
+
 }

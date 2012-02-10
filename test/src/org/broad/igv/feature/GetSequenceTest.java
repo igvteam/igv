@@ -24,10 +24,13 @@ package org.broad.igv.feature;
 
 import org.broad.igv.exceptions.HttpResponseException;
 import org.broad.igv.util.HttpUtils;
+import org.junit.Test;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.URL;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author jrobinso
@@ -37,19 +40,19 @@ public class GetSequenceTest {
     static String sequenceURL = "http://www.broadinstitute.org/igv/sequence/hg18";
 
 
-    public static void main(String[] args) throws HttpResponseException {
-        byte[] sequence = getSequence("hg18", "chr1", 1000000, 1000020);
+    @Test
+    public void testGet() throws HttpResponseException {
+        byte[] sequence = getSequence("chr1", 1000000, 1000020);
 
         // Convert bytes to a string for convenience
         String sequenceString = new String(sequence);
 
-        System.out.println(sequenceString);
-
         // Returned value should be  ACGTGGCTGCTCTCACACAT
+        assertEquals("ACGTGGCTGCTCTCACACAT", sequenceString);
     }
 
 
-    public static byte[] getSequence(String genome, String chr, int start, int end) throws HttpResponseException {
+    public static byte[] getSequence(String chr, int start, int end) throws HttpResponseException {
 
 
         try {

@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.source.BasicFeatureSource;
@@ -38,7 +39,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class CachingFeatureReaderTest {
 
-    String path = "test/largedata/CEU.SRP000032.2010_03.genotypes.vcf.gz";
+    String path = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.vcf.gz";
     BasicFeatureSource baseReader;
     CachingFeatureReader cacheReader;
 
