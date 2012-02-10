@@ -22,8 +22,6 @@
 package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
-import org.broad.igv.Globals;
-import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.FeatureUtils;
 import org.broad.igv.feature.IGVFeature;
 import org.broad.igv.renderer.GraphicUtils;
@@ -33,12 +31,9 @@ import org.broad.igv.ui.FontManager;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.TrackGroupEvent;
 import org.broad.igv.ui.event.TrackGroupEventListener;
-import org.broad.igv.ui.panel.AttributeHeaderPanel;
-import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.MouseableRegion;
-import org.broad.igv.ui.panel.ReferenceFrame;
+import org.broad.igv.ui.panel.*;
 import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.FileUtils;
+import org.broad.igv.util.LongRunningTask;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -156,7 +151,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      * Experimental "mode" to couple VCF & BAM files
      */
 
-    private boolean vcfToBamMode = false;
+    //private boolean vcfToBamMode = false;
 
     /**
      * Map of sample name -> associated bam file
@@ -174,7 +169,6 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
             coloring = ColorMode.METHYLATION_RATE;
         }
 
-        vcfToBamMode = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.VCF_TO_BAM_ENABLED);
 
         this.allSamples = samples;
 
@@ -196,13 +190,11 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         // Listen for "group by" events.  TODO -- "this" should be removed when track is disposed of
         IGV.getInstance().addGroupEventListener(this);
 
-        if (vcfToBamMode) {
-            String bamListPath = locator.getPath() + ".bams";
-            if (!ParsingUtils.pathExists(bamListPath)) {
-                MessageUtils.showMessage("Bam mapping file not found (" + bamListPath + ")");
-            } else {
-                loadBamMappings(bamListPath);
-            }
+        // If sample->bam list file is supplied enable vcfToBamMode.
+        String bamListPath = locator.getPath() + ".bams";
+        if (ParsingUtils.pathExists(bamListPath)) {
+            loadBamMappings(bamListPath);
+
         }
 
     }
@@ -803,7 +795,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
      *
      * @param chr
      * @param position - position in UCSC "0 based"  genomic coordinates
-     * @param y                - pixel position in panel coordinates (i.e. not track coordinates)
+     * @param y        - pixel position in panel coordinates (i.e. not track coordinates)
      * @param frame
      * @return
      */
@@ -1020,8 +1012,8 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         setupGroupsFromAttributes();
     }
 
-    public boolean isVcfToBamMode() {
-        return vcfToBamMode;
+    public boolean hasBamFiles() {
+        return bamFiles != null && !bamFiles.isEmpty();
     }
 
     public Collection<String> getSelectedSamples() {
@@ -1248,7 +1240,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
 
-        if (!vcfToBamMode) {
+        if (!hasBamFiles()) {
             return false;
         }
 
@@ -1257,7 +1249,7 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
         double maxDistance = 10 * referenceFrame.getScale();
 
         Variant f = getFeatureClosest(position, maxDistance, te.getFrame());
-         selectedSamples.clear();
+        selectedSamples.clear();
         if (f != null) {
             String selectedSample = getSampleAtPosition(te.getMouseEvent().getY());
             if (selectedSample != null) {
@@ -1271,18 +1263,16 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                     Genotype gt = f.getGenotype(s);
                     if (gt != null && type.equals(gt.getType())) {
                         selectedSamples.add(s);
-                    }
-                    else {
+                    } else {
                         break;
                     }
                 }
-                for (int i = idx-1; i >= 0; i--) {
+                for (int i = idx - 1; i >= 0; i--) {
                     String s = sampleBounds.get(i).sample;
                     Genotype gt = f.getGenotype(s);
                     if (gt != null && type.equals(gt.getType())) {
                         selectedSamples.add(s);
-                    }
-                    else {
+                    } else {
                         break;
                     }
                 }
@@ -1344,6 +1334,53 @@ public class VariantTrack extends FeatureTrack implements TrackGroupEventListene
                 log.error("Error restoring squished height: " + squishedHeightText);
             }
         }
+    }
+
+
+    public void loadSelectedBams() {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                // Use a set to enforce uniqueness
+                final int nSamples = selectedSamples.size();
+
+                Set<String> bams = new HashSet<String>(nSamples);
+                String name = "";
+                int n = 0;
+                for (String sample : selectedSamples) {
+                    bams.add(getBamFileForSample(sample));
+                    n++;
+                    if (n < 7) {
+                        if (n == 6) {
+                            name += "...";
+                        } else {
+                            name += sample;
+                            if (n < nSamples) name += ", ";
+                        }
+                    }
+                }
+
+                if (bams.size() > 20) {
+                    boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
+                    if (!proceed) return;
+                }
+
+                String bamList = "";
+                for (String bam : bams) {
+                    bamList += bam + ",";
+
+                }
+                ResourceLocator loc = new ResourceLocator(bamList);
+                loc.setType("alist");
+                loc.setName(name);
+                List<Track> tracks = IGV.getInstance().load(loc);
+
+                TrackPanel panel = IGV.getInstance().getVcfBamPanel();
+                panel.clearTracks();
+                panel.addTracks(tracks);
+            }
+        };
+
+        LongRunningTask.submit(runnable);
     }
 
 

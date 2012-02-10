@@ -20,14 +20,9 @@ package org.broad.igv.variant;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.track.Track;
-import org.broad.igv.track.TrackLoader;
 import org.broad.igv.track.TrackMenuUtils;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.panel.IGVPopupMenu;
-import org.broad.igv.ui.panel.TrackPanel;
-import org.broad.igv.ui.util.MessageUtils;
-import org.broad.igv.util.LongRunningTask;
-import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -56,7 +51,7 @@ public class VariantMenu extends IGVPopupMenu {
 
         this.track = variantTrack;
 
-        if (track.isVcfToBamMode()) {
+        if (track.hasBamFiles()) {
             selectedSamples = track.getSelectedSamples();
         }
 
@@ -141,7 +136,7 @@ public class VariantMenu extends IGVPopupMenu {
         add(getHideFilteredItem());
         add(getFeatureVisibilityItem());
 
-        if (track.isVcfToBamMode()) {
+        if (track.hasBamFiles()) {
             addSeparator();
             add(getLoadBamsItem());
         }
@@ -380,52 +375,7 @@ public class VariantMenu extends IGVPopupMenu {
         final JMenuItem item = new JMenuItem("Load bams");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        // Use a set to enforce uniqueness
-                        final int nSamples = selectedSamples.size();
-
-                        Set<String> bams = new HashSet<String>(nSamples);
-                        String name = "";
-                        int n = 0;
-                        for (String sample : selectedSamples) {
-                            bams.add(track.getBamFileForSample(sample));
-                            n++;
-                            if (n < 7) {
-                                if (n == 6) {
-                                    name += "...";
-                                } else {
-                                    name += sample;
-                                    if (n < nSamples) name += ", ";
-                                }
-                            }
-                        }
-
-                        if (bams.size() > 20) {
-                            boolean proceed = MessageUtils.confirm("Are you sure you want to load " + nSamples + " bams?");
-                            if (!proceed) return;
-                        }
-
-
-
-                        String bamList = "";
-                        for (String bam : bams) {
-                            bamList += bam + ",";
-
-                        }
-                        ResourceLocator loc = new ResourceLocator(bamList);
-                        loc.setType("alist");
-                        loc.setName(name);
-                        List<Track> tracks = IGV.getInstance().load(loc);
-
-                        TrackPanel panel = IGV.getInstance().getVcfBamPanel();
-                        panel.clearTracks();
-                        panel.addTracks(tracks);
-                    }
-                };
-
-                LongRunningTask.submit(runnable);
+                track.loadSelectedBams();
             }
         });
         item.setEnabled(selectedSamples != null && selectedSamples.size() > 0);

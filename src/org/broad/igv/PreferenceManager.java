@@ -187,7 +187,6 @@ public class PreferenceManager implements PropertyManager {
     public static final String GENOME_SPACE_ATM_SERVER = "GENOME_SPACE_ATM_SERVER";
 
     public static final String AFFECTIVE_ENABLE = "AFFECTIVE_ENABLE";
-    public static final String VCF_TO_BAM_ENABLED = "VCF_TO_BAM_ENABLED";
 
 
     public static final String DB_ENABLED = "DB_ENABLED";
@@ -1002,8 +1001,6 @@ public class PreferenceManager implements PropertyManager {
 
         // Affective computing mode
         defaultValues.put(AFFECTIVE_ENABLE, "false");
-
-        defaultValues.put(VCF_TO_BAM_ENABLED, "false");
 
         defaultValues.put(DB_ENABLED, "false");
         defaultValues.put(DB_HOST, "");
