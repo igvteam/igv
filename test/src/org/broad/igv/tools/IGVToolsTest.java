@@ -24,6 +24,8 @@ import org.broad.igv.data.WiggleDataset;
 import org.broad.igv.data.WiggleParser;
 import org.broad.igv.data.expression.ExpressionFileParser;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.sam.reader.FeatureIndex;
+import org.broad.igv.sam.reader.SamUtils;
 import org.broad.igv.tdf.TDFDataset;
 import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.tdf.TDFTile;
@@ -45,8 +47,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 
 public class IGVToolsTest {
@@ -67,6 +68,27 @@ public class IGVToolsTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         TestUtils.clearOutputDir();
+    }
+
+    @Test
+    public void testIndexSam() throws Exception {
+        String samFile = TestUtils.DATA_DIR + "/sam/NA12878.muc1.test2.sam";
+        String indPath = samFile + ".sai";
+        File indFile = new File(indPath);
+        indFile.delete();
+        indFile.deleteOnExit();
+
+
+        igvTools.doIndex(samFile, indPath, IgvTools.LINEAR_INDEX, IgvTools.LINEAR_BIN_SIZE);
+
+        //Check that only the index file we intended exists
+        assertTrue(indFile.exists());
+        assertFalse((new File(samFile + ".idx").exists()));
+        assertFalse((new File(indPath + ".idx").exists()));
+
+        FeatureIndex idx = SamUtils.getIndexFor(samFile);
+        assertTrue(idx.containsChromosome("chr1"));
+        assertEquals(1, idx.getIndexedChromosomes().size());
     }
 
     @Test

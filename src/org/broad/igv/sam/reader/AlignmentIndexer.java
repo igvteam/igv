@@ -18,8 +18,8 @@
 package org.broad.igv.sam.reader;
 
 import org.broad.igv.ui.util.UIUtilities;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import javax.swing.*;
 import java.io.*;
@@ -184,21 +184,21 @@ public abstract class AlignmentIndexer {
         // Record last partial tile
         featureIndex.add(lastChr, filePosition, recordCount, longestFeature);
 
-
         is.close();
 
         if (idxFile != null) {
             featureIndex.store(idxFile);
         }
-
-        if (progressBar != null) {
-            progressBar.setValue(100);
+        //Done now
+        updateProgress(100, startTime);
+        if (progressBar == null) {
+            System.out.println("Done indexing " + samFile.getName());
         }
 
         return featureIndex;
 
     }
- 
+
     abstract int getAlignmentStart(String[] fields) throws NumberFormatException;
 
     abstract int getAlignmentLength(String[] fields) throws NumberFormatException;

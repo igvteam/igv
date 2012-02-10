@@ -30,6 +30,7 @@ import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
@@ -55,7 +56,6 @@ import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.TribbleException;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;
@@ -926,27 +926,18 @@ public class IgvTools {
             outputFileName = ifile;
         }
 
-        FeatureCodec codec = CodecFactory.getCodec(ifile);
-        if (codec != null) {
 
-            if (!outputFileName.endsWith(".idx")) {
-                outputFileName = outputFileName + ".idx";
-            }
-            try {
-                createTribbleIndex(ifile, new File(outputFileName), indexType, binSize, codec);
-            } catch (TribbleException.MalformedFeatureFile e) {
-                StringBuffer buf = new StringBuffer();
-                buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
-                buf.append(e.getMessage());
-                buf.append("<br><br>Note: igvtools can be used to sort the file, select \"File > Run igvtools...\".");
-                MessageUtils.showMessage(buf.toString());
-            }
+        //We have different naming conventions for different index files
+        if (ifile.endsWith(".sam") && !outputFileName.endsWith(".sai")) {
+            outputFileName += ".sai";
+        } else if (ifile.endsWith(".bam") && !outputFileName.endsWith(".bai")) {
+            outputFileName += ".bai";
+        } else if (!ifile.endsWith(".sam") && !ifile.endsWith(".bam") && !outputFileName.endsWith(".idx")) {
+            outputFileName += ".idx";
+        }
 
-
-        } else {
-            if (!outputFileName.endsWith(".sai")) {
-                outputFileName = outputFileName + ".sai";
-            }
+        //Sam files are special
+        if (ifile.endsWith(".sam")) {
             AlignmentIndexer indexer = AlignmentIndexer.getInstance(new File(ifile), null, null);
             File outputFile = new File(outputFileName);
             try {
@@ -958,6 +949,22 @@ public class IgvTools {
                     outputFile.delete();
                 }
             }
+            return;
+        }
+
+        FeatureCodec codec = CodecFactory.getCodec(ifile);
+        if (codec != null) {
+            try {
+                createTribbleIndex(ifile, new File(outputFileName), indexType, binSize, codec);
+            } catch (TribbleException.MalformedFeatureFile e) {
+                StringBuffer buf = new StringBuffer();
+                buf.append("<html>Files must be sorted by start position prior to indexing.<br>");
+                buf.append(e.getMessage());
+                buf.append("<br><br>Note: igvtools can be used to sort the file, select \"File > Run igvtools...\".");
+                MessageUtils.showMessage(buf.toString());
+            }
+        } else {
+            throw new DataLoadException("Unknown File Type", ifile);
         }
         System.out.flush();
 
