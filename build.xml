@@ -169,7 +169,7 @@
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">
                 <fileset dir="${testtmp.dir}">
-                    <include name="**/Array*.class"/>
+                    <include name="**/*.class"/>
                     <exclude name="**/*$*.class"/>
                 </fileset>
             </batchtest>
