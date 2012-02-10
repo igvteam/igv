@@ -24,6 +24,7 @@ import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.Main;
 import org.broad.tribble.util.ftp.FTPClient;
+import org.junit.Ignore;
 
 import javax.swing.*;
 import java.io.File;
@@ -33,6 +34,7 @@ import java.io.IOException;
  * @author jrobinso
  * @date Jul 28, 2010
  */
+@Ignore
 public class TestUtils {
     public static String DATA_DIR = "test/data";
     static String dataFileName = DATA_DIR + "/genomes/hg18.unittest.genome";

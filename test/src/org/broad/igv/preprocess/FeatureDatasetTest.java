@@ -47,6 +47,7 @@ public class FeatureDatasetTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
+        TestUtils.setUpHeadless();
         Genome genome = TestUtils.loadGenome();
         ExpressionFileParser parser = new ExpressionFileParser(new File(file), null, genome);
 
