@@ -24,6 +24,7 @@
 package org.broad.igv.sam;
 
 import org.broad.igv.sam.reader.FeatureIndex;
+import org.broad.igv.util.TestUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,7 +38,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class SamIndexTest {
 
-    File f = new File("test/largedata/snp130.bedz.sai");
+    File f = new File(TestUtils.LARGE_DATA_DIR + "/snp130.bedz.sai");
 
     public SamIndexTest() {
     }

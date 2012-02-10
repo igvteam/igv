@@ -75,7 +75,7 @@ public class SorterTest {
             int lastStart = 0;
             Set<String> chromosomes = new HashSet();
             while ((nextLine = reader.readLine()) != null) {
-                if (nextLine.startsWith("track")) {
+                if (nextLine.startsWith("track") || nextLine.startsWith(("#"))) {
                     continue;
                 }
                 String[] tokens = nextLine.split("\t");
