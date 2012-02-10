@@ -41,6 +41,7 @@ public class GCTtoIGVConverterTest {
 
     @Before
     public void setUp() throws IOException {
+        TestUtils.setUpHeadless();
         genome = loadGenome();
     }
 

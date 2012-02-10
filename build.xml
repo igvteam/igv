@@ -161,17 +161,14 @@
     <property name="LARGE_DATA_DIR" value="${basedir}/test/largedata"/>
     <property name="testsfailed" value="0"/>
     <target name="alltests" depends="compile">
-        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed">
+        <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">
                 <fileset dir="${testtmp.dir}">
-                    <include name="*.class"/>
-                    <include name="*/*.class"/>
-                    <include name="*/*/*.class"/>
-                    <include name="*/*/*/*.class"/>
-                    <include name="*/*/*/*/*.class"/>
+                    <include name="**/*.class"/>
+                    <exclude name="**/*$*.class"/>
                 </fileset>
             </batchtest>
         </junit>

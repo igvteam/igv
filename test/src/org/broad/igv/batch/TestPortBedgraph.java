@@ -1,11 +1,13 @@
 package org.broad.igv.batch;
 
 import org.broad.igv.util.TestUtils;
+import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jim Robinson
@@ -13,34 +15,28 @@ import java.net.Socket;
  */
 public class TestPortBedgraph {
 
-    private PrintWriter out;
     private BufferedReader in;
 
-    TestPortBedgraph() {
-        try {
-            Socket socket = new Socket("127.0.0.1", 60151);
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (Exception E) {
-            System.out.println("IO exception");
-        }
+    public TestPortBedgraph() {
     }
 
-    public void importBedGraph(String filename) {
-        try {
 
-            out.println("load " + filename);
-            String response = in.readLine();
-            System.out.println(response);
-        } catch (Exception E) {
-            System.out.println("IO exception");
+    public int importBedGraph(String filename) throws Exception {
+        in = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        String line = "";
+        int count = 0;
+        while ((line = in.readLine()) != null) {
+            count++;
         }
+        return count;
     }
 
-    public static void main(String[] args) {
+    @Test
+    public void test1409() throws Exception {
         String testfile = TestUtils.DATA_DIR + "/wig/jira_1409.bedgraph";
-        TestPortBedgraph test = new TestPortBedgraph();
-        test.importBedGraph(testfile);
+        int count = importBedGraph(testfile);
+        assertTrue(count > 0);
     }
+
 
 }

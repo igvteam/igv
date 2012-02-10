@@ -43,15 +43,15 @@ public class TestUtils {
     public static String LARGE_DATA_DIR = "test/largedata";
 
     static {
-        LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY);
+        LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY, LARGE_DATA_DIR);
     }
 
     public static void setUpHeadless() {
         Globals.setHeadless(true);
         Globals.setTesting(true);
-        Globals.READ_TIMEOUT = 30 * 1000;
-        Globals.CONNECT_TIMEOUT = 30 * 1000;
-        FTPClient.READ_TIMEOUT = 30 * 1000;
+        Globals.READ_TIMEOUT = 60 * 1000;
+        Globals.CONNECT_TIMEOUT = 60 * 1000;
+        FTPClient.READ_TIMEOUT = 60 * 1000;
     }
 
     /**
