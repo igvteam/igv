@@ -43,6 +43,7 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.*;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -286,7 +287,22 @@ public class IGVToolsTest {
 
     @Test
     public void testCountBAMList() throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        String listPath = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        File listFile = new File(listPath);
+        listFile.delete();
+        listFile.deleteOnExit();
+        //We generate the file on each test, because largedata dir can change
+        String[] largebams = new String[]{"HG00171.hg18.bam", "HG00171.hg18.bam"};
+        for (int ii = 0; ii < largebams.length; ii++) {
+            largebams[ii] = TestUtils.LARGE_DATA_DIR + "/" + largebams[ii];
+        }
+        FileWriter writer = new FileWriter(listFile);
+        for (String s : largebams) {
+            writer.write(s + "\n");
+        }
+        writer.close();
+
+
         String outputFile = TestUtils.DATA_DIR + "/out/file_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
@@ -295,7 +311,7 @@ public class IGVToolsTest {
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             String fullout = outputFile + ind + ".tdf";
-            String input = "count " + opt + " " + inputFile + " " + fullout + " " + genome;
+            String input = "count " + opt + " " + listPath + " " + fullout + " " + genome;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
