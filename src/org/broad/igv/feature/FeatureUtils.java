@@ -218,17 +218,18 @@ public class FeatureUtils {
 
     /**
      * Return a feature whose position is exactly 'position'.
+     *
      * @param position Query position.
      * @param features List of features.
      * @return The feature whose start overlaps with position, or null.
      */
     private static Feature getFeatureAt(double position, List<? extends Feature> features) {
-        Feature key = new BasicFeature("", (int) position, (int) position);
+        Feature key = new BasicFeature("", (int) position, (int) position + 1);
         int r = Collections.binarySearch(features, key, new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
                 Feature f1 = (Feature) o1;
                 Feature f2 = (Feature) o2;
-                return f1.getEnd() - f2.getEnd();
+                return f1.getStart() - f2.getStart();
             }
         });
 
