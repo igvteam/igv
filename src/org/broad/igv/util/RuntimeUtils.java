@@ -61,7 +61,7 @@ public class RuntimeUtils {
      */
     public static long getObjectSize(Object o) {
         if (instrumentation == null) {
-            throw new IllegalStateException("No instrumentation available. Need to launch width -javaagent=path/to/RuntimeUtils.jar");
+            throw new IllegalStateException("No instrumentation available. Need to launch width -javaagent:path/to/RuntimeUtils.jar");
         }
         return instrumentation.getObjectSize(o);
     }

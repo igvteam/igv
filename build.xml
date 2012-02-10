@@ -25,6 +25,7 @@
     <property name="src.dir" value="${basedir}/src/"/>
     <property name="lib.dir" value="${basedir}/lib/"/>
     <property name="testsrc.dir" value="${basedir}/test/src"/>
+    <property name="testlib.dir" value="${basedir}/test/lib"/>
 
     <!-- Temp directory.  Sources are compiled here prior to archiving -->
     <property name="tmp.dir" value="${basedir}/tmp/"/>
@@ -162,12 +163,13 @@
     <property name="testsfailed" value="0"/>
     <target name="alltests" depends="compile">
         <junit haltonfailure="no" showoutput="no" printsummary="yes" failureproperty="testsfailed" maxmemory="512m">
+            <jvmarg value="-javaagent:${testlib.dir}/RuntimeUtils.jar"/>
             <sysproperty key="LARGE_DATA_DIR" value="${LARGE_DATA_DIR}"/>
             <classpath refid="test.classpath"/>
             <formatter type="xml" usefile="true"/>
             <batchtest fork="yes" todir="${test.reports}">
                 <fileset dir="${testtmp.dir}">
-                    <include name="**/*.class"/>
+                    <include name="**/Array*.class"/>
                     <exclude name="**/*$*.class"/>
                 </fileset>
             </batchtest>
