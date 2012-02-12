@@ -17,8 +17,8 @@
  */
 package org.broad.igv.repeats;
 
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.HashMap;

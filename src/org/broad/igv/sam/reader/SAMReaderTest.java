@@ -22,8 +22,8 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.*;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.sam.Alignment;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 

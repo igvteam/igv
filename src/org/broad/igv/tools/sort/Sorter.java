@@ -19,9 +19,9 @@
 package org.broad.igv.tools.sort;
 
 import jargs.gnu.CmdLineParser;
-import org.broad.tribble.readers.AsciiLineReader;
 import net.sf.samtools.util.CloseableIterator;
 import net.sf.samtools.util.SortingCollection;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.Comparator;

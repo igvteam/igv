@@ -24,11 +24,11 @@ package org.broad.igv.sam.reader;
 
 import net.sf.samtools.SAMFileHeader;
 import org.broad.igv.exceptions.DataLoadException;
-import org.broad.tribble.readers.AsciiLineReader;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

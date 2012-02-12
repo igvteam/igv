@@ -18,8 +18,8 @@
 
 package org.broad.igv.tools.sort;
 
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 

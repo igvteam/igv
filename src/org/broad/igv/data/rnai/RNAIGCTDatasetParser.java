@@ -24,9 +24,9 @@ import org.broad.igv.exceptions.LoadResourceFromServerException;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.HttpUtils;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.io.InputStream;

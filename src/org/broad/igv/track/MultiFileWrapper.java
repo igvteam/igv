@@ -18,9 +18,9 @@
 
 package org.broad.igv.track;
 
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

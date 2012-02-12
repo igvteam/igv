@@ -20,8 +20,8 @@ package org.broad.igv.data.rnai;
 //~--- non-JDK imports --------------------------------------------------------
 
 import org.apache.log4j.Logger;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

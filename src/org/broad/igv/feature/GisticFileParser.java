@@ -32,9 +32,9 @@ import org.broad.igv.exceptions.ParserException;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.GisticTrack;
 import org.broad.igv.ui.IGV;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

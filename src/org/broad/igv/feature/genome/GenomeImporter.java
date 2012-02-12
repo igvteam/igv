@@ -28,8 +28,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.MaximumContigGenomeException;
 import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.*;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.igv.util.ZipArchiveWrapper.ZipIterator;
+import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.*;
