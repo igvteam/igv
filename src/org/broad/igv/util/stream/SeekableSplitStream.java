@@ -20,6 +20,7 @@ package org.broad.igv.util.stream;
 
 
 import org.broad.igv.util.HttpUtils;
+import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.util.SeekableStream;
 
 import java.io.BufferedReader;
@@ -117,7 +118,7 @@ public class SeekableSplitStream extends SeekableStream {
         BufferedReader br = null;
         descriptors = new ArrayList();
         try {
-            br = new BufferedReader(new InputStreamReader(org.broad.tribble.util.ParsingUtils.openInputStream(path)));
+            br = new BufferedReader(new InputStreamReader(ParsingUtils.openInputStream(path)));
             String nextLine;
             while ((nextLine = br.readLine()) != null) {
                 String[] tokens = nextLine.split(" ");

@@ -1,18 +1,14 @@
 package org.broad.igv.tools.converters;
 
-import org.broad.igv.feature.AbstractFeatureParser;
 import org.broad.igv.feature.BasicFeature;
-import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.GFFParser;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author Jim Robinson

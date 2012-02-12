@@ -65,9 +65,9 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.variant.VariantTrack;
 import org.broad.igv.variant.util.PedigreeUtils;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.SeekableBufferedStream;
 import org.broad.tribble.util.SeekableStream;
 import org.broad.tribble.util.SeekableStreamFactory;
@@ -449,7 +449,7 @@ public class TrackLoader {
 
         FeatureCodec codec = CodecFactory.getCodec(locator.getPath());
         if (codec != null) {
-            BasicFeatureSource<Feature> bfs = BasicFeatureSource.getFeatureSource(locator.getPath(), codec, false);
+            AbstractFeatureReader<Feature> bfs = AbstractFeatureReader.getFeatureReader(locator.getPath(), codec, false);
             Iterable<Feature> iter = bfs.iterator();
             Object header = bfs.getHeader();
             TrackProperties trackProperties = null;
@@ -1079,7 +1079,7 @@ public class TrackLoader {
         if (ds.getSampleNames().size() > 1) {
             FreqData fd = new FreqData(ds, genome);
             String freqTrackId = path;
-            String freqTrackName = (new File(path)).getName();
+            String freqTrackName = "CNV Summary";
             CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
             newTracks.add(freqTrack);
         }
@@ -1113,7 +1113,7 @@ public class TrackLoader {
             if (ds.getSampleNames().size() > 1) {
                 FreqData fd = new FreqData(ds, genome);
                 String freqTrackId = path;
-                String freqTrackName = (new File(path)).getName();
+                String freqTrackName = "CNV Summary";
                 CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
                 newTracks.add(freqTrack);
             }
@@ -1145,7 +1145,7 @@ public class TrackLoader {
         // The "freq" track.  Make this optional?
         FreqData fd = new FreqData(ds, genome);
         String freqTrackId = path;
-        String freqTrackName = (new File(path)).getName();
+        String freqTrackName = "CNV Summary";
         CNFreqTrack freqTrack = new CNFreqTrack(locator, freqTrackId, freqTrackName, fd);
         newTracks.add(freqTrack);
 

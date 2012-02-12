@@ -31,7 +31,6 @@ import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.StringUtils;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.util.*;

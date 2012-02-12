@@ -38,7 +38,6 @@ import org.broad.igv.ui.util.ProgressMonitor;
 import org.broad.igv.util.FileUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;
 import java.net.*;

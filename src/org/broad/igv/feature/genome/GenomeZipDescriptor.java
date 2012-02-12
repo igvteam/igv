@@ -18,9 +18,6 @@
 
 package org.broad.igv.feature.genome;
 
-import org.broad.tribble.readers.AsciiLineReader;
-
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;

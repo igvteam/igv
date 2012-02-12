@@ -22,9 +22,6 @@ import org.broad.igv.tdf.BufferedByteWriter;
 import org.broad.igv.tools.sort.Sorter;
 import org.broad.igv.util.CompressionUtils;
 import org.broad.igv.util.FileUtils;
-import org.broad.igv.util.ParsingUtils;
-import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
 import org.broad.tribble.util.LittleEndianOutputStream;
 
 import java.io.*;

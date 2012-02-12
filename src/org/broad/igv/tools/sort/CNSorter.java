@@ -22,7 +22,6 @@
  */
 package org.broad.igv.tools.sort;
 
-import org.broad.igv.ui.util.MessageUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.*;

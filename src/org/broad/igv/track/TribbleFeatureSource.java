@@ -29,10 +29,8 @@ import org.broad.igv.tdf.TDFReader;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVUrlHelper;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.iterators.CloseableTribbleIterator;
-import org.broad.tribble.source.BasicFeatureSource;
+import org.broad.tribble.*;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.IOException;
@@ -72,7 +70,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
         this.genome = genome;
         isVCF = codec.getClass() == VCFWrapperCodec.class;
         featureClass = codec.getFeatureType();
-        BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(path, codec, true);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(path, codec, true);
         header = basicReader.getHeader();
         initFeatureWindowSize(basicReader);
         reader = new CachingFeatureReader(basicReader, 5, getFeatureWindowSize());
@@ -159,7 +157,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
      *
      * @param reader
      */
-    private void initFeatureWindowSize(org.broad.tribble.FeatureSource reader) {
+    private void initFeatureWindowSize(FeatureReader reader) {
 
         CloseableTribbleIterator<org.broad.tribble.Feature> iter = null;
 

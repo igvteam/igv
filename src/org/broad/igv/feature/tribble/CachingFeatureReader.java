@@ -21,9 +21,9 @@ package org.broad.igv.feature.tribble;
 
 import org.apache.log4j.Logger;
 import org.broad.igv.util.LRUCache;
+import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureSource;
-import org.broad.tribble.iterators.CloseableTribbleIterator;
+import org.broad.tribble.FeatureReader;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,23 +33,23 @@ import java.util.*;
  * @author jrobinso
  * @date Jun 24, 2010
  */
-public class CachingFeatureReader implements org.broad.tribble.FeatureSource {
+public class CachingFeatureReader implements FeatureReader {
 
     private static Logger log = Logger.getLogger(CachingFeatureReader.class);
     private static int maxBinCount = 1000;
     private static int defaultBinSize = 16000; // <= 16 kb
 
     private int binSize;
-    FeatureSource reader;
+    FeatureReader reader;
     LRUCache<String, Bin> cache;
 
 
-    public CachingFeatureReader(FeatureSource reader) {
+    public CachingFeatureReader(FeatureReader reader) {
         this(reader, maxBinCount, defaultBinSize);
     }
 
 
-    public CachingFeatureReader(FeatureSource reader, int binCount, int binSize) {
+    public CachingFeatureReader(FeatureReader reader, int binCount, int binSize) {
         this.reader = reader;
         this.cache = new LRUCache(this, binCount);
         this.binSize = binSize;

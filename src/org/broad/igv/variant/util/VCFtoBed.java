@@ -19,8 +19,8 @@
 package org.broad.igv.variant.util;
 
 import org.broad.igv.feature.tribble.CodecFactory;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 
@@ -45,13 +45,13 @@ public class VCFtoBed {
 
     public static void convert(String vcfFile, String bedFile) throws IOException {
 
-        BasicFeatureSource basicReader = null;
+        AbstractFeatureReader basicReader = null;
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
             FeatureCodec codec = CodecFactory.getCodec(vcfFile);
             boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
-            basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);
+            basicReader = AbstractFeatureReader.getFeatureReader(vcfFile, codec, true);
 
             Iterator<VariantContext> iter = basicReader.iterator();
 

@@ -21,7 +21,6 @@ package org.broad.igv.data.expression;
 import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.LoadResourceFromServerException;
-import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.tribble.readers.AsciiLineReader;

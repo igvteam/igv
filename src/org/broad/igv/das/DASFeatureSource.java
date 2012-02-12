@@ -26,8 +26,9 @@ import org.broad.igv.ui.WaitCursorManager;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.broad.tribble.CloseableTribbleIterator;
 import org.broad.tribble.Feature;
-import org.broad.tribble.iterators.CloseableTribbleIterator;
+import org.broad.tribble.FeatureReader;
 import org.w3c.dom.*;
 import org.w3c.dom.traversal.DocumentTraversal;
 import org.w3c.dom.traversal.NodeFilter;
@@ -124,7 +125,7 @@ public class DASFeatureSource implements FeatureSource {
     }
 
 
-    class DasReader implements org.broad.tribble.FeatureSource {
+    class DasReader implements FeatureReader {
 
 
         public CloseableTribbleIterator query(String chr, int start, int end, boolean contained) throws IOException {

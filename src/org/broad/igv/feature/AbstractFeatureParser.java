@@ -36,7 +36,6 @@ import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.FileWriter;

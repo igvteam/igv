@@ -29,8 +29,7 @@ import org.broad.igv.tools.sort.SortableRecord;
 import org.broad.igv.tools.sort.SortableRecordCodec;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ResourceLocator;
-import org.broad.tribble.readers.AsciiLineReader;
-import org.broad.tribble.util.ParsingUtils;
+import org.broad.igv.util.ParsingUtils;
 
 import java.io.*;
 import java.util.Comparator;

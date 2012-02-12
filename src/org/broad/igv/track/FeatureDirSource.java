@@ -27,7 +27,6 @@ import org.broad.igv.feature.FeatureParser;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.*;
-import org.broad.tribble.readers.AsciiLineReader;
 
 import java.io.BufferedReader;
 import java.io.File;
