@@ -63,7 +63,7 @@ public class TribbleIndexTest {
         int expectedCount = 5;
 
         // Interval index
-        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 500);
+        TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 500);
 
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, new IGVBEDCodec());
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
