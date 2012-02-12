@@ -26,10 +26,9 @@ import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
-import org.broad.tribble.Feature;
-import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.iterators.CloseableTribbleIterator;
-import org.broad.tribble.source.BasicFeatureSource;
+import org.broad.tribble.*;
+import org.broad.tribble.CloseableTribbleIterator;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.*;
 
@@ -80,7 +79,7 @@ public class FeatureUtilsTest {
         String vcfFile = TestUtils.DATA_DIR + "/vcf/example4-last-gsnap-2_fixed.vcf";
         FeatureCodec codec = CodecFactory.getCodec(vcfFile);
         boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
-        BasicFeatureSource basicReader = BasicFeatureSource.getFeatureSource(vcfFile, codec, true);
+        AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(vcfFile, codec, true);
         CloseableTribbleIterator it = basicReader.iterator();
         List<VCFVariant> features = new ArrayList<VCFVariant>();
         while (it.hasNext()) {

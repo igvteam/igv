@@ -32,11 +32,11 @@ import org.broad.igv.tdf.TDFTile;
 import org.broad.igv.tools.sort.SorterTest;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Block;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.broadinstitute.sting.utils.codecs.vcf.VCF3Codec;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
@@ -149,7 +149,7 @@ public class IGVToolsTest {
         int[] expectedStarts = {1718547, 1718829, 1723079, 1724830, 1731376, 1733967, 1735586, 1736016, 1738594,
                 1739272, 1741124, 1742815, 1743224, 1748886, 1748914};
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(testFile, codec);
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(testFile, codec);
         Iterator<VariantContext> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {

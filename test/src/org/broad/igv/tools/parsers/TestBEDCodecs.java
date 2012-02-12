@@ -22,10 +22,10 @@ import org.broad.igv.Globals;
 import org.broad.igv.feature.tribble.IGVBEDCodec;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.util.TestUtils;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.bed.BEDCodec;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,7 +103,7 @@ public class TestBEDCodecs {
         // Interval index
         TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, codec);
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
         Iterator<Feature> iter = bfr.query("chr1", 0, Integer.MAX_VALUE);
         int count = 0;
         while (iter.hasNext()) {
@@ -133,7 +133,7 @@ public class TestBEDCodecs {
         int start = 178707289 / 2;
         int end = 179973464 * 2;
 
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, codec);
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, codec);
         Iterator<Feature> iter = bfr.query(chr, start, end);
         int count = 0;
         while (iter.hasNext()) {

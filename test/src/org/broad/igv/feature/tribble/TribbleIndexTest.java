@@ -24,7 +24,7 @@ import org.broad.igv.track.Track;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.source.BasicFeatureSource;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.junit.Test;
 
@@ -42,35 +42,31 @@ public class TribbleIndexTest {
 
     IgvTools igvTools = new IgvTools();
 
+
     @Test
     /**
-     * Compare linear and interval tree index
+     * Test linear  index
+     *
+     * chr2	179098961	179380395	Hs.134602
+     * chr2	179209546	179287210	Hs.620337
+     * chr2	179266309	179266748	Hs.609465
+     * chr2	179296428	179300012	Hs.623987
+     * chr2	179302952	179303488	Hs.594545
+     *
      */
-    public void testIntervalTree() throws Exception {
+    public void testLinearIndex() throws Exception {
         //chr2:179,222,066-179,262,059<- CONTAINS TTN
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         String chr = "chr2";
-        int start = 179222066;
-        int end = 179262059;
-        int expectedCount = 3;
-
-        // Linear index
-        TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 1000);
-
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
-        Iterator<BasicFeature> iter = bfr.query(chr, start, end);
-        int count = 0;
-        while (iter.hasNext()) {
-            BasicFeature feat = iter.next();
-            count++;
-        }
-
+        int start = 179266309 - 1;
+        int end = 179303488 + 1;
+        int expectedCount = 5;
 
         // Interval index
-        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 5);
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 500);
 
-        bfr = BasicFeatureSource.getFeatureSource(bedFile, new IGVBEDCodec());
-        iter = bfr.query(chr, start, end);
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, new IGVBEDCodec());
+        Iterator<BasicFeature> iter = bfr.query(chr, start, end);
         int countInterval = 0;
         while (iter.hasNext()) {
             BasicFeature feat = iter.next();
@@ -79,8 +75,42 @@ public class TribbleIndexTest {
             countInterval++;
         }
 
-        assertEquals(count, countInterval);
-        assertEquals(expectedCount, count);
+        assertEquals(expectedCount, countInterval);
+
+    }
+
+    @Test
+    /**
+     * Test interval tree index
+     * chr2	179098961	179380395	Hs.134602
+     * chr2	179209546	179287210	Hs.620337
+     * chr2	179266309	179266748	Hs.609465
+     * chr2	179296428	179300012	Hs.623987
+     * chr2	179302952	179303488	Hs.594545
+     *
+     */
+    public void testIntervalTree() throws Exception {
+        //chr2:179,222,066-179,262,059<- CONTAINS TTN
+        String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String chr = "chr2";
+        int start = 179266309 - 1;
+        int end = 179303488 + 1;
+        int expectedCount = 5;
+
+        // Interval index
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 5);
+
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, new IGVBEDCodec());
+        Iterator<BasicFeature> iter = bfr.query(chr, start, end);
+        int countInterval = 0;
+        while (iter.hasNext()) {
+            BasicFeature feat = iter.next();
+            String tmp = "" + feat.getStart() + " " + feat.getEnd();
+            assertTrue(tmp, feat.getStart() <= end && feat.getEnd() >= (start - 1));
+            countInterval++;
+        }
+
+        assertEquals(expectedCount, countInterval);
 
     }
 
@@ -91,10 +121,22 @@ public class TribbleIndexTest {
         // Linear index
         TestUtils.createIndex(file);
 
-
-        BasicFeatureSource bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
+        // First test query
+        AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(file, new VCFCodec());
         Iterator<org.broadinstitute.sting.utils.variantcontext.VariantContext> iter = bfr.query(chr, 5073767 - 5, 5073767 + 5);
         int count = 0;
+        while (iter.hasNext()) {
+            org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
+            assertEquals("chr9", feat.getChr());
+            assertEquals(feat.getStart(), 5073767);
+            assertTrue(feat.hasAttribute("MapQs"));
+            count++;
+        }
+        assertEquals(1, count);
+
+        // Test non-indexed access (iterator)
+        iter = bfr.iterator();
+        count = 0;
         while (iter.hasNext()) {
             org.broadinstitute.sting.utils.variantcontext.VariantContext feat = iter.next();
             assertEquals("chr9", feat.getChr());
@@ -110,7 +152,7 @@ public class TribbleIndexTest {
         // Linear index
         TestUtils.createIndex(file);
 
-        bfr = BasicFeatureSource.getFeatureSource(file, new VCFCodec());
+        bfr = AbstractFeatureReader.getFeatureReader(file, new VCFCodec());
         iter = bfr.query(chr, 984163 - 5, 984163 + 5);
         count = 0;
         while (iter.hasNext()) {

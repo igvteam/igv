@@ -16,14 +16,12 @@
  * SHALL KNOW OF THE POSSIBILITY OF THE FOREGOING.
  */
 
-package org.broad.tribble.readers;
+package org.broad.tribble;
 
 
 import org.broad.igv.util.TestUtils;
-import org.broad.tribble.FeatureCodec;
 import org.broad.tribble.index.Index;
 import org.broad.tribble.index.IndexFactory;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.broad.tribble.util.LittleEndianOutputStream;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
@@ -49,10 +47,10 @@ import static org.junit.Assert.assertEquals;
  * Date: Jul 17, 2010
  * Time: 9:28:49 PM
  */
-public class BasicFeatureSourceTest {
+public class TribbleFeatureReaderTest {
 
     static String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
-    static BasicFeatureSource<VariantContext> bfr;
+    static AbstractFeatureReader<VariantContext> bfr;
 
     @BeforeClass
     public static void setUp() throws IOException {
@@ -60,7 +58,7 @@ public class BasicFeatureSourceTest {
         FeatureCodec codec = new VCFCodec();
         createIndex(idxFile, codec);
 
-        bfr = BasicFeatureSource.getFeatureSource(testFile, codec);
+        bfr = AbstractFeatureReader.getFeatureReader(testFile, codec);
     }
 
     @AfterClass

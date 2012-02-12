@@ -20,8 +20,8 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
+import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
-import org.broad.tribble.source.BasicFeatureSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,13 +40,13 @@ import static junit.framework.Assert.assertTrue;
 public class CachingFeatureReaderTest {
 
     String path = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03.genotypes.vcf.gz";
-    BasicFeatureSource baseReader;
+    AbstractFeatureReader baseReader;
     CachingFeatureReader cacheReader;
 
     @Before
     public void setUp() throws IOException {
         FeatureCodec codec = CodecFactory.getCodec(path);
-        baseReader = BasicFeatureSource.getFeatureSource(path, codec);
+        baseReader = AbstractFeatureReader.getFeatureReader(path, codec);
         cacheReader = new CachingFeatureReader(baseReader);
 
     }
