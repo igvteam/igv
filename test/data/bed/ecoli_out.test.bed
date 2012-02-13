@@ -1,0 +1,7 @@
+track name="junk" description="Test alignments for use with ecoli_out.padded."
+NC_000913_bb	5082	5084
+NC_000913_bb	5082	5090
+NC_000913_bb	5089	6000
+NC_000913_bb	5090	6100
+NC_000913_bb	5092	6010
+NC_000913_bb	5100	6000

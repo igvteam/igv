@@ -66,7 +66,7 @@ public class IGVToolsTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        TestUtils.clearOutputDir();
+        //TestUtils.clearOutputDir();
     }
 
     @Test
@@ -400,6 +400,27 @@ public class IGVToolsTest {
         }
 
 
+    }
+
+    @Test
+    public void testIndexedFasta() throws Exception {
+        String fasta_file = TestUtils.DATA_DIR + "/fasta/ecoli_out.padded.fasta";
+        String infile = TestUtils.DATA_DIR + "/bed/ecoli_out.test.bed";
+        String outfile = TestUtils.DATA_DIR + "/out/findextest.wig";
+        String end_command = infile + " " + outfile + " " + fasta_file;
+        String count_command = "count " + end_command;
+        igvTools.run(count_command.split("\\s"));
+        File outFi = new File(outfile);
+        assertTrue(outFi.exists());
+        outFi.delete();
+
+        igvTools = new IgvTools();
+        String index_command = "index " + end_command;
+        igvTools.run(index_command.split("\\s"));
+        String indexFile = infile + ".idx";
+        File idxFi = new File(indexFile);
+        assertTrue(idxFi.exists());
+        idxFi.deleteOnExit();
     }
 
 }
