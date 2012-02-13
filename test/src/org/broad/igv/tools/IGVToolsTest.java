@@ -300,7 +300,19 @@ public class IGVToolsTest {
         }
         writer.close();
 
+        //Test list file
+        tstCountBamList(listPath);
 
+        //Test comma-separated list
+        String listArg = largebams[0];
+        for (int ss = 1; ss < largebams.length; ss++) {
+            listArg += "," + largebams[ss];
+        }
+        tstCountBamList(listArg);
+
+    }
+
+    private void tstCountBamList(String listArg) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/file_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
@@ -309,7 +321,7 @@ public class IGVToolsTest {
         for (int ind = 0; ind < opts.length; ind++) {
             String opt = opts[ind];
             String fullout = outputFile + ind + ".tdf";
-            String input = "count " + opt + " " + listPath + " " + fullout + " " + genome;
+            String input = "count " + opt + " " + listArg + " " + fullout + " " + genome;
             String[] args = input.split("\\s+");
             igvTools.run(args);
 
