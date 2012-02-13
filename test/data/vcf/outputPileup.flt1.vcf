@@ -24,4 +24,4 @@
 ##FORMAT=<ID=SP,Number=1,Type=Integer,Description="Phred-scaled strand bias P-value">
 ##FORMAT=<ID=PL,Number=-1,Type=Integer,Description="List of Phred-scaled genotype likelihoods, number of values is (#ALT+1)*(#ALT+2)/2">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	/data/prototyping/DNA-Seq/work_area/dir6mDQ0r/1/1_aligned_soap_sorted.bam	/data/prototyping/DNA-Seq/work_area/dir6mDQ0r/2/2_aligned_soap_sorted.bam
-AE005174v2-2	984163	.	G	A	23.8	.	DP=2;AF1=1;AC1=4;DP4=0,0,1,1;MQ=30;FQ=-28.7	GT:PL:GQ	1/1:0,0,0:3	1/1:55,6,0:7
+1	984163	.	G	A	23.8	.	DP=2;AF1=1;AC1=4;DP4=0,0,1,1;MQ=30;FQ=-28.7	GT:PL:GQ	1/1:0,0,0:3	1/1:55,6,0:7
