@@ -538,8 +538,9 @@ public class CachingQueryReader {
                 this.counts = new DenseAlignmentCounts(start, end);
             }
 
-            this.maxDepth = maxDepth;
+            this.maxDepth = Math.max(1, maxDepth);
             e1 = -1;
+
             currentBucket = new HashMap((int) (3 * maxDepth));
             currentMates = new HashMap((int) (3 * maxDepth));
             pairedReadNames = new HashSet(5 * maxDepth);
