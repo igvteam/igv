@@ -42,9 +42,7 @@ import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
 import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.*;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 
@@ -356,6 +354,51 @@ public class IGVToolsTest {
         ExpressionFileParser parser = new ExpressionFileParser(new ResourceLocator(outputFile), null, genome);
         Dataset ds = parser.createDataset();
         assertEquals(10, ds.getChromosomes().length);
+
+    }
+
+    @Test
+    public void testCountAliased() throws Exception {
+        tstCountAliased(TestUtils.DATA_DIR + "/sam/NA12878.muc1.test.sam",
+                TestUtils.DATA_DIR + "/sam/NA12878.muc1.test_modchr.sam");
+    }
+
+
+    /**
+     * Test count when using a custom alias file.
+     * Should supply a file using normal chromosome names, and aliases
+     * which are defined in the genome file. These files are expected to
+     * match exactly
+     */
+    public void tstCountAliased(String normfile, String aliasedfile) throws Exception {
+        String genfile = TestUtils.DATA_DIR + "/genomes/hg18_truncated_aliased.genome";
+        String outfile = TestUtils.DATA_DIR + "/out/tmpcount1.wig";
+        File outFi = new File(outfile);
+        outFi.delete();
+        //Count aliased file
+        String command = "count " + normfile + " " + outfile + " " + genfile;
+        igvTools.run(command.split("\\s+"));
+
+        //Count non-aliased file
+        String outfile2 = TestUtils.DATA_DIR + "/out/tmpcount2.wig";
+        File outFi2 = new File(outfile2);
+        outFi2.delete();
+        //Count aliased file
+        command = "count " + aliasedfile + " " + outfile2 + " " + genfile;
+
+        igvTools = new IgvTools();
+        igvTools.run(command.split("\\s+"));
+
+        BufferedReader reader1 = new BufferedReader(new FileReader(outfile));
+        BufferedReader reader2 = new BufferedReader(new FileReader(outfile2));
+        String line1, line2;
+        line1 = reader1.readLine();
+        line2 = reader2.readLine();
+        while ((line1 = reader1.readLine()) != null) {
+            line2 = reader2.readLine();
+            assertEquals(line1, line2);
+        }
+
 
     }
 
