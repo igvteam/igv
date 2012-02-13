@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_26" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -37,6 +37,82 @@
           </object> 
           <void property="name"> 
            <string>contentPanel</string> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JPanel</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>java.awt.FlowLayout</class> 
+             <void method="setProperty"> 
+              <string>alignment</string> 
+              <int>0</int> 
+             </void> 
+            </object> 
+            <void method="setProperty"> 
+             <string>componentOrientation</string> 
+             <object class="java.awt.ComponentOrientation" field="LEFT_TO_RIGHT"/> 
+            </void> 
+            <void method="setProperty"> 
+             <string>border</string> 
+             <object id="LineBorder0" class="javax.swing.border.LineBorder"> 
+              <object class="java.awt.Color" field="black"/> 
+              <int>1</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>panel3</string> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>action</string> 
+               <object class="com.jformdesigner.model.FormReference"> 
+                <string>showAllChromosomesCheckboxAction</string> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>View regions from all chromosomes (othrwise, current chromosome only)</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>selected</string> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>checkBoxShowAllChrs</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Zoom to Region</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>toolTipText</string> 
+               <string>When navigating to a region, change zoom level?</string> 
+              </void> 
+              <void method="setProperty"> 
+               <string>selected</string> 
+               <boolean>true</boolean> 
+              </void> 
+              <void property="name"> 
+               <string>checkBoxZoomWhenNav</string> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
+           <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+            <class>java.lang.String</class> 
+            <void method="setProperty"> 
+             <string>value</string> 
+             <string>North</string> 
+            </void> 
+           </object> 
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormContainer"> 
@@ -175,80 +251,29 @@
            <object class="com.jformdesigner.model.FormContainer"> 
             <string>javax.swing.JPanel</string> 
             <object class="com.jformdesigner.model.FormLayoutManager"> 
-             <class>java.awt.BorderLayout</class> 
+             <class>javax.swing.BoxLayout</class> 
+             <void method="setProperty"> 
+              <string>axis</string> 
+              <int>1</int> 
+             </void> 
             </object> 
             <void property="name"> 
              <string>panel1</string> 
             </void> 
             <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JTextField</string> 
-              <void method="setProperty"> 
-               <string>toolTipText</string> 
-               <string>Search for regions containing the specified description text.</string> 
-              </void> 
-              <void property="name"> 
-               <string>textFieldSearch</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>Center</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Search</string> 
-              </void> 
-              <void property="name"> 
-               <string>label1</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>West</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JButton</string> 
-              <void method="setProperty"> 
-               <string>action</string> 
-               <object class="com.jformdesigner.model.FormReference"> 
-                <string>cancelAction</string> 
-               </object> 
-              </void> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Clear Search</string> 
-              </void> 
-              <void property="name"> 
-               <string>button1</string> 
-              </void> 
-             </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
-              <void method="setProperty"> 
-               <string>value</string> 
-               <string>East</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
              <object class="com.jformdesigner.model.FormContainer"> 
               <string>javax.swing.JPanel</string> 
               <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>java.awt.BorderLayout</class> 
+               <class>java.awt.FlowLayout</class> 
+               <void method="setProperty"> 
+                <string>alignment</string> 
+                <int>0</int> 
+               </void> 
               </object> 
+              <void method="setProperty"> 
+               <string>border</string> 
+               <object idref="LineBorder0"/> 
+              </void> 
               <void property="name"> 
                <string>panel2</string> 
               </void> 
@@ -266,14 +291,7 @@
                  <string>Add</string> 
                 </void> 
                 <void property="name"> 
-                 <string>buttonAddRegion</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>java.lang.String</class> 
-                <void method="setProperty"> 
-                 <string>value</string> 
-                 <string>West</string> 
+                 <string>addRegionButton</string> 
                 </void> 
                </object> 
               </void> 
@@ -291,97 +309,95 @@
                  <string>Remove Selected</string> 
                 </void> 
                 <void property="name"> 
-                 <string>button2</string> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>java.lang.String</class> 
-                <void method="setProperty"> 
-                 <string>value</string> 
-                 <string>Center</string> 
+                 <string>removeSelectedButton</string> 
                 </void> 
                </object> 
               </void> 
               <void method="add"> 
-               <object class="com.jformdesigner.model.FormContainer"> 
-                <string>javax.swing.JPanel</string> 
-                <object class="com.jformdesigner.model.FormLayoutManager"> 
-                 <class>java.awt.BorderLayout</class> 
-                </object> 
-                <void property="name"> 
-                 <string>panel3</string> 
-                </void> 
-                <void method="add"> 
-                 <object class="com.jformdesigner.model.FormComponent"> 
-                  <string>javax.swing.JCheckBox</string> 
-                  <void method="setProperty"> 
-                   <string>text</string> 
-                   <string>Zoom to Region</string> 
-                  </void> 
-                  <void method="setProperty"> 
-                   <string>toolTipText</string> 
-                   <string>When navigating to a region, change zoom level?</string> 
-                  </void> 
-                  <void method="setProperty"> 
-                   <string>selected</string> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="name"> 
-                   <string>checkBoxZoomWhenNav</string> 
-                  </void> 
-                 </object> 
-                 <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                  <class>java.lang.String</class> 
-                  <void method="setProperty"> 
-                   <string>value</string> 
-                   <string>Center</string> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="com.jformdesigner.model.FormComponent"> 
-                  <string>javax.swing.JCheckBox</string> 
-                  <void method="setProperty"> 
-                   <string>action</string> 
-                   <object class="com.jformdesigner.model.FormReference"> 
-                    <string>showAllChromosomesCheckboxAction</string> 
-                   </object> 
-                  </void> 
-                  <void method="setProperty"> 
-                   <string>toolTipText</string> 
-                   <string>View regions from all chromosomes (othrwise, current chromosome only)</string> 
-                  </void> 
-                  <void method="setProperty"> 
-                   <string>selected</string> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="name"> 
-                   <string>checkBoxShowAllChrs</string> 
-                  </void> 
-                 </object> 
-                 <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                  <class>java.lang.String</class> 
-                  <void method="setProperty"> 
-                   <string>value</string> 
-                   <string>West</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-               <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-                <class>java.lang.String</class> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JButton</string> 
                 <void method="setProperty"> 
-                 <string>value</string> 
-                 <string>East</string> 
+                 <string>text</string> 
+                 <string>View Selected</string> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>action</string> 
+                 <object class="com.jformdesigner.model.FormReference"> 
+                  <string>viewSelectedAction</string> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>viewSelectedButton</string> 
                 </void> 
                </object> 
               </void> 
              </object> 
-             <object class="com.jformdesigner.model.FormLayoutConstraints"> 
-              <class>java.lang.String</class> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormContainer"> 
+              <string>javax.swing.JPanel</string> 
+              <object class="com.jformdesigner.model.FormLayoutManager"> 
+               <class>java.awt.FlowLayout</class> 
+               <void method="setProperty"> 
+                <string>alignment</string> 
+                <int>0</int> 
+               </void> 
+              </object> 
               <void method="setProperty"> 
-               <string>value</string> 
-               <string>North</string> 
+               <string>border</string> 
+               <object idref="LineBorder0"/> 
+              </void> 
+              <void property="name"> 
+               <string>panel4</string> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JLabel</string> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Search</string> 
+                </void> 
+                <void property="name"> 
+                 <string>label1</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JTextField</string> 
+                <void method="setProperty"> 
+                 <string>toolTipText</string> 
+                 <string>Search for regions containing the specified description text.</string> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>preferredSize</string> 
+                 <object class="java.awt.Dimension"> 
+                  <int>200</int> 
+                  <int>28</int> 
+                 </object> 
+                </void> 
+                <void property="name"> 
+                 <string>textFieldSearch</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="add"> 
+               <object class="com.jformdesigner.model.FormComponent"> 
+                <string>javax.swing.JButton</string> 
+                <void method="setProperty"> 
+                 <string>action</string> 
+                 <object class="com.jformdesigner.model.FormReference"> 
+                  <string>cancelAction</string> 
+                 </object> 
+                </void> 
+                <void method="setProperty"> 
+                 <string>text</string> 
+                 <string>Clear Search</string> 
+                </void> 
+                <void property="name"> 
+                 <string>clearSearchButton</string> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -428,7 +444,7 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>400</int> 
+        <int>480</int> 
         <int>295</int> 
        </object> 
       </void> 
@@ -554,6 +570,34 @@
        <object class="java.awt.Point"> 
         <int>0</int> 
         <int>467</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.AbstractAction</string> 
+      <void method="setProperty"> 
+       <string>$action.Name</string> 
+       <string>View Selected</string> 
+      </void> 
+      <void method="auxiliary"> 
+       <void method="setProperty"> 
+        <string>JavaCodeGenerator.className</string> 
+        <string>ViewSelectedAction</string> 
+       </void> 
+      </void> 
+      <void property="name"> 
+       <string>viewSelectedAction</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>10</int> 
+        <int>540</int> 
        </object> 
       </void> 
      </object> 

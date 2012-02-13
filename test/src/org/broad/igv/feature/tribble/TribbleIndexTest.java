@@ -148,7 +148,7 @@ public class TribbleIndexTest {
 
         //Do similar as above, but have a different test file
         file = TestUtils.DATA_DIR + "/vcf/outputPileup.flt1.vcf";
-        chr = "AE005174v2-2";
+        chr = "1";
         // Linear index
         TestUtils.createIndex(file);
 

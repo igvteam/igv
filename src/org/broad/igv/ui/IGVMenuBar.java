@@ -82,6 +82,7 @@ public class IGVMenuBar extends JMenuBar {
         menus.add(createFileMenu());
         menus.add(createViewMenu());
         menus.add(createTracksMenu());
+        menus.add(createRegionsMenu());
         menus.add(createGenomeSpaceMenu());
         extrasMenu = createExtrasMenu();
         //extrasMenu.setVisible(false);
@@ -119,7 +120,7 @@ public class IGVMenuBar extends JMenuBar {
         menuAction = new LoadFromURLMenuAction(LoadFromURLMenuAction.LOAD_FROM_DAS, KeyEvent.VK_D, IGV.getInstance());
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        if(PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.DB_ENABLED)) {
             menuAction = new LoadFromDatabaseAction("Load from Database...", 0, IGV.getInstance());
             menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
         }
@@ -466,10 +467,26 @@ public class IGVMenuBar extends JMenuBar {
         //menuAction.setToolTipText("");
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-
         menuItems.add(new JSeparator());
+        menuItems.add(new HistoryMenu("Go to"));
 
-        //
+
+        // Add to IGVPanel menu
+        MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
+        viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
+        return viewMenu;
+    }
+
+    private JMenu createRegionsMenu() {
+
+        List<JComponent> menuItems = new ArrayList<JComponent>();
+        MenuAction menuAction = null;
+
+
+        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGV.getInstance());
+        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
+        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
+
         menuAction =
                 new MenuAction("Gene Lists...", null, KeyEvent.VK_S) {
 
@@ -481,48 +498,10 @@ public class IGVMenuBar extends JMenuBar {
         menuAction.setToolTipText(SELECT_DISPLAYABLE_ATTRIBUTES_TOOLTIP);
         menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
 
-        menuAction = new NavigateRegionsMenuAction("Region Navigator ...", IGV.getInstance());
-        menuAction.setToolTipText(UIConstants.NAVIGATE_REGION_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-
-
-        /*
-menuAction =
-        new MenuAction("Show Region Bars", null, KeyEvent.VK_A) {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) e.getSource();
-                PreferenceManager.getInstance().setShowRegionBars(menuItem.isSelected());
-                repaintDataPanels();
-            }
-        };
-
-
-        menuItems.add(new JSeparator());
-        menuAction =
-                new MenuAction("Refresh", null, KeyEvent.VK_R) {
-
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        IGV.getInstance().doRefresh();
-                    }
-                };
-        menuAction.setToolTipText(REFRESH_TOOLTIP);
-        menuItems.add(MenuAndToolbarUtils.createMenuItem(menuAction));
-        */
-
-        menuItems.add(new JSeparator());
-        menuItems.add(new HistoryMenu("Go to"));
-
-
-        // Add to IGVPanel menu
-        MenuAction dataMenuAction = new MenuAction("View", null, KeyEvent.VK_V);
+        MenuAction dataMenuAction = new MenuAction("Regions", null, KeyEvent.VK_V);
         viewMenu = MenuAndToolbarUtils.createMenu(menuItems, dataMenuAction);
         return viewMenu;
     }
-
 
     private JMenu createHelpMenu() {
 
@@ -695,7 +674,7 @@ menuAction =
             public void actionPerformed(ActionEvent e) {
                 final ReferenceFrame defaultFrame = FrameManager.getDefaultFrame();
                 String chr = defaultFrame.getChrName();
-                int  start = (int) defaultFrame.getOrigin();
+                int start = (int) defaultFrame.getOrigin();
                 int end = (int) defaultFrame.getEnd();
                 int zoom = defaultFrame.getZoom();
                 ScatterPlotUtils.openPlot(chr, start, end, zoom);
