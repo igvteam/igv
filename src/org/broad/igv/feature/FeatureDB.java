@@ -117,6 +117,41 @@ public class FeatureDB {
         }
     }
 
+    /*
+        String key = name.toUpperCase();
+
+        Genome currentGenome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+        if (currentGenome == null || currentGenome.getChromosome(feature.getChr()) != null) {
+            NamedFeature currentFeature = featureMap.get(key);
+            if (currentFeature == null) {
+                featureMap.put(key, feature);
+            } else {
+                // If there are multiple features, prefer the one that is NOT on a "random" chromosome.
+                // This is a hack, but an important one for the human assemblies
+                String featureChr = feature.getChr().toLowerCase();
+                String currentFeatureChr = currentFeature.getChr();
+                if (featureChr.contains("random") || featureChr.contains("chrun") || featureChr.contains("hap")) {
+                    return;
+                } else if (currentFeatureChr.contains("random") || currentFeatureChr.contains("chrun") ||
+                        currentFeatureChr.contains("hap")) {
+                    featureMap.put(key, feature);
+                    return;
+                }
+
+                // If there are multiple features, use or keep the longest one
+                int w1 = currentFeature.getEnd() - currentFeature.getStart();
+                int w2 = feature.getEnd() - feature.getStart();
+                if (w2 > w1) {
+                    featureMap.put(key, feature);
+                }
+
+            }
+
+        }
+
+     */
+
+
     public static void addFeature(String name, NamedFeature feature) {
         put(name.toUpperCase(), feature);
     }
@@ -220,7 +255,8 @@ public class FeatureDB {
      * @return Map from genome position to features found. Feature name
      *         must be exact, but there can be multiple features with the same name
      */
-    public static Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA, String mutAA, Genome currentGenome) {
+    public static Map<Integer, BasicFeature> getMutationAA(String name, int proteinPosition, String refAA,
+                                                           String mutAA, Genome currentGenome) {
         String nm = name.toUpperCase();
 
         if (!Globals.isHeadless() && currentGenome == null) {
@@ -317,9 +353,8 @@ public class FeatureDB {
     /**
      * Doubleton class. Can sort forward or descending, at most 2 instances.
      *
-     * @param <T>
      */
-    private static class FeatureComparator<T extends Feature> implements Comparator {
+    private static class FeatureComparator implements Comparator<Feature> {
         private boolean descending;
         private static FeatureComparator ascending_instance;
         private static FeatureComparator descending_instance;
@@ -345,9 +380,17 @@ public class FeatureDB {
             this.descending = reverse;
         }
 
-        public int compare(Object o1, Object o2) {
-            T feat1 = (T) o1;
-            T feat2 = (T) o2;
+        public int compare(Feature feat1, Feature feat2) {
+
+            // Prefer the shortest chromosome name.  Longer names are most likely "weird"
+            // e.g.  chr1_gl000191_random
+            int nameLen1 = feat1.getChr().length();
+            int nameLen2 = feat2.getChr().length();
+            if(nameLen1 != nameLen2) {
+                return nameLen1 - nameLen2;
+            }
+
+
             int len1 = (feat1.getEnd() - feat1.getStart());
             int len2 = (feat2.getEnd() - feat2.getStart());
             int toRet;
@@ -361,6 +404,5 @@ public class FeatureDB {
 
         }
     }
-
 
 }
