@@ -19,6 +19,7 @@
 package org.broad.igv.ui;
 
 import com.jidesoft.plaf.LookAndFeelFactory;
+import com.sun.java.swing.plaf.gtk.GTKLookAndFeel;
 import jargs.gnu.CmdLineParser;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -97,7 +98,6 @@ public class Main {
         initializeLog();
         log.info("Startup  " + Globals.applicationString());
         log.info("Default User Directory: " + Globals.getUserDirectory());
-
         System.setProperty("http.agent", Globals.applicationString());
 
         Runtime.getRuntime().addShutdownHook(new ShutdownThread());

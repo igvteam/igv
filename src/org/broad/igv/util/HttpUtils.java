@@ -550,6 +550,7 @@ public class HttpUtils {
         conn.setReadTimeout(Globals.READ_TIMEOUT);
         conn.setRequestMethod(method);
         conn.setRequestProperty("Connection", "close");
+        conn.setRequestProperty("User-Agent", Globals.applicationString());
 
         if (requestProperties != null) {
             for (Map.Entry<String, String> prop : requestProperties.entrySet()) {
