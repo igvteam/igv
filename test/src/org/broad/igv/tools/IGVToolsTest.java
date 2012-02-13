@@ -43,6 +43,7 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 import org.junit.*;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -283,22 +284,30 @@ public class IGVToolsTest {
         }
     }
 
-    @Test
-    public void testCountBAMList() throws Exception {
-        String listPath = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+    public static String[] generateRepLargebamsList(String listPath, String bamFiName, int reps) throws IOException {
+
         File listFile = new File(listPath);
         listFile.delete();
         listFile.deleteOnExit();
         //We generate the file on each test, because largedata dir can change
-        String[] largebams = new String[]{"HG00171.hg18.bam", "HG00171.hg18.bam"};
-        for (int ii = 0; ii < largebams.length; ii++) {
-            largebams[ii] = TestUtils.LARGE_DATA_DIR + "/" + largebams[ii];
+        List<String> largebams = new ArrayList<String>(reps);
+        for (int ii = 0; ii < reps; ii++) {
+            largebams.add(TestUtils.LARGE_DATA_DIR + "/" + bamFiName);
         }
         FileWriter writer = new FileWriter(listFile);
         for (String s : largebams) {
             writer.write(s + "\n");
         }
         writer.close();
+
+        return largebams.toArray(new String[0]);
+    }
+
+    @Test
+    public void testCountBAMList() throws Exception {
+        String listPath = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        String bamFiName = "HG00171.hg18.bam";
+        String[] largebams = generateRepLargebamsList(listPath, bamFiName, 2);
 
         //Test list file
         tstCountBamList(listPath);

@@ -22,6 +22,7 @@ import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.util.CloseableIterator;
 import org.broad.igv.Globals;
 import org.broad.igv.sam.Alignment;
+import org.broad.igv.tools.IGVToolsTest;
 import org.broad.igv.util.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -57,6 +58,7 @@ public class MergedAlignmentReaderTest {
         //This test file is 2 lines of the same file.
         //Check that we get the same results twice
         String file = TestUtils.DATA_DIR + "/bam/2largebams.bam.list";
+        IGVToolsTest.generateRepLargebamsList(file, "HG00171.hg18.bam", 2);
         int start = 151667156;
         int end = start + 10000;
         int num_combined = 0;
