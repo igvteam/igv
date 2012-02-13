@@ -23,6 +23,7 @@ import org.broad.tribble.util.URLHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,10 @@ public class IGVUrlHelper implements URLHelper {
 
     public long getContentLength() throws IOException {
         return HttpUtils.getInstance().getContentLength(url);
+    }
+
+    public InputStream openInputStream() throws IOException {
+        return HttpUtils.getInstance().openConnectionStream(url);
     }
 
     public InputStream openInputStreamForRange(long start, long end) throws IOException {

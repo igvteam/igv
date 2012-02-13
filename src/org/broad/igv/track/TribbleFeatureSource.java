@@ -31,7 +31,6 @@ import org.broad.igv.util.RuntimeUtils;
 import org.broad.igv.util.stream.IGVUrlHelper;
 import org.broad.tribble.*;
 import org.broad.tribble.AbstractFeatureReader;
-import org.broad.tribble.util.SeekableStreamFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -60,7 +59,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     static {
         // Register a helper class with tribble
-        SeekableStreamFactory.registerHelperClass(IGVUrlHelper.class);
+        org.broad.tribble.util.ParsingUtils.registerHelperClass(IGVUrlHelper.class);
     }
 
 
