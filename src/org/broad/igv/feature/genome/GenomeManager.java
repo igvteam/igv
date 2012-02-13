@@ -31,7 +31,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.Chromosome;
 import org.broad.igv.feature.CytoBandFileParser;
 import org.broad.igv.ui.IGV;
-
 import org.broad.igv.ui.util.ConfirmDialog;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.ProgressMonitor;
@@ -40,9 +39,14 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.Utilities;
 
 import java.io.*;
-import java.net.*;
+import java.net.SocketException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /**
  * @author jrobinso
@@ -129,7 +133,7 @@ public class GenomeManager {
                 log.info("Genome loaded.  id= " + id);
                 currentGenome.setChromosomeMap(chromMap, genomeDescriptor.isChromosomesAreOrdered());
                 if (aliases != null) currentGenome.addChrAliases(aliases);
-                if(!Globals.isHeadless()) {
+                if (!Globals.isHeadless()) {
                     updateGeneTrack(genomeDescriptor);
                 }
 
@@ -154,7 +158,9 @@ public class GenomeManager {
                 String name = (new File(fastaPath)).getName();
                 currentGenome = new GenomeImpl(id, name, fastaPath, true);
                 log.info("Genome loaded.  id= " + id);
-                IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
+                if (!Globals.isHeadless()) {
+                    IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
+                }
             }
 
             if (monitor != null) {
@@ -269,9 +275,9 @@ public class GenomeManager {
         try {
             if (cachedFile.exists()) {
 
-               
+
                 boolean remoteModfied = !HttpUtils.getInstance().compareResources(cachedFile, genomeArchiveURL);
-                
+
                 // Force an update of cached genome if file length does not equal remote content length
                 boolean forceUpdate = remoteModfied &&
                         PreferenceManager.getInstance().getAsBoolean(PreferenceManager.AUTO_UPDATE_GENOMES);
@@ -574,7 +580,7 @@ public class GenomeManager {
                     if (fields.length < 3) {
                         if (mightBeProperties && fields[0].contains("=")) {
                             fields = nextLine.split("\\\\t");
-                            if(fields.length < 3) {
+                            if (fields.length < 3) {
                                 continue;
                             }
                             int idx = fields[0].indexOf("=");
