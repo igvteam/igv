@@ -109,7 +109,7 @@ public class CodecFactory {
             // If the file ends with ".gz" assume it is a tabix indexed file
             if (path.toLowerCase().endsWith(".gz")) {
                 reader = new BufferedReader(new InputStreamReader(new BlockCompressedInputStream(
-                        ParsingUtils.openInputStream(path))));
+                        org.broad.tribble.util.ParsingUtils.openInputStream(path))));
             } else {
                 reader = ParsingUtils.openBufferedReader(path);
             }
