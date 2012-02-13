@@ -556,7 +556,7 @@ public class DataPanel extends JComponent implements Paintable {
             if (!frame.getChrName().equals(Globals.CHR_ALL)) {
                 int location = (int) frame.getChromosomePosition(e.getX()) + 1;
                 position = frame.getChrName() + ":" + locationFormatter.format(location);
-                IGV.getInstance().setStatusBarMessage(position);
+                IGV.getInstance().setStatusBarPosition(position);
             }
             updateTooltipText(e.getX(), e.getY());
 

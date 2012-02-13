@@ -41,6 +41,7 @@ public class ApplicationStatusBar extends StatusBar {
     static Logger log = Logger.getLogger(ApplicationStatusBar.class);
     private LabelStatusBarItem messageBox;
     private LabelStatusBarItem messageBox2;
+    private LabelStatusBarItem messageBox3;
     private MemoryStatusBarItem memoryBox;
 
     public ApplicationStatusBar() {
@@ -51,12 +52,17 @@ public class ApplicationStatusBar extends StatusBar {
 
         messageBox = new LabelStatusBarItem("Line");
         messageBox.setAlignment(JLabel.LEFT);
-        messageBox.setMinimumSize(new Dimension(170, 10));
+        messageBox.setMinimumSize(new Dimension(165, 10));
         add(messageBox, JideBoxLayout.FLEXIBLE);
 
         messageBox2 = new LabelStatusBarItem("Line");
-        messageBox2.setHorizontalAlignment(SwingConstants.RIGHT);
-        add(messageBox2, JideBoxLayout.VARY);
+        messageBox2.setAlignment(JLabel.LEFT);
+        messageBox2.setMinimumSize(new Dimension(165, 10));
+        add(messageBox2, JideBoxLayout.FLEXIBLE);
+
+        messageBox3 = new LabelStatusBarItem("Line");
+        messageBox3.setHorizontalAlignment(SwingConstants.RIGHT);
+        add(messageBox3, JideBoxLayout.VARY);
 
         memoryBox = new MemoryStatusBarItem();
 

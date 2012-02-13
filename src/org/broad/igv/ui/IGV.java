@@ -1095,8 +1095,18 @@ public class IGV {
         if (message.equals("Done.")) {
             resetStatusMessage();
         }
-
         contentPane.getStatusBar().setMessage(message);
+    }
+
+        /**
+     * Set the status bar message.  If the message equals "Done." intercept
+     * and reset to the default "quite" message,  currently the number of tracks
+     * loaded.
+     *
+     * @param message
+     */
+    public void setStatusBarPosition(String message) {
+        contentPane.getStatusBar().setMessage2(message);
     }
 
     /**
