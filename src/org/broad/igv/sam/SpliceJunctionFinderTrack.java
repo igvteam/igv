@@ -35,6 +35,7 @@ import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.renderer.DataRange;
+import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,8 +61,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
     DataPanel parent;
 
 
-    public SpliceJunctionFinderTrack(String id, String name, AlignmentDataManager dataManager, Genome genome) {
-        super(id, name);
+    public SpliceJunctionFinderTrack(ResourceLocator locator, String name, AlignmentDataManager dataManager, Genome genome) {
+        super(locator, locator.getPath() + "_junctions", name);
+
         super.setDataRange(new DataRange(0, 0, 60));
         this.genome = genome;
         setRendererClass(SpliceJunctionRenderer.class);

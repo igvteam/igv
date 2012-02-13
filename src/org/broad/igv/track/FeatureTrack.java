@@ -104,6 +104,11 @@ public class FeatureTrack extends AbstractTrack {
         setSortable(false);
     }
 
+    public FeatureTrack(ResourceLocator locator, String id, String name) {
+        super(locator, id, name);
+        setSortable(false);
+     }
+
     /**
      * Constructor with no ResourceLocator.  Note:  tracks using this constructor will not be recorded in the
      * "Resources" section of session files.   Currently only used for the default gene track.
