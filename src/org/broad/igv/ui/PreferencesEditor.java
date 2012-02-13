@@ -53,7 +53,7 @@ public class PreferencesEditor extends javax.swing.JDialog {
         @Override
         public String put(String k, String v) {
             String oldValue = prefMgr.get(k);
-            if ((v == null && oldValue != null) ||  !v.equals(oldValue)) {
+            if ((v == null && oldValue != null) || !v.equals(oldValue)) {
                 return super.put(k, v);
             }
             return v;
@@ -2383,11 +2383,16 @@ public class PreferencesEditor extends javax.swing.JDialog {
     private void samMaxLevelFieldActionPerformed(java.awt.event.ActionEvent evt) {
         String maxLevelString = samMaxDepthField.getText().trim();
         try {
-            Integer.parseInt(maxLevelString);
-            updatedPreferenceMap.put(PreferenceManager.SAM_MAX_LEVELS, maxLevelString);
+            int maxLevel = Integer.parseInt(maxLevelString);
+            if (maxLevel <= 0) {
+                inputValidated = false;
+                MessageUtils.showMessage("Maximum read count must be a positive integer.");
+            } else {
+                updatedPreferenceMap.put(PreferenceManager.SAM_MAX_LEVELS, maxLevelString);
+            }
         } catch (NumberFormatException numberFormatException) {
             inputValidated = false;
-            MessageUtils.showMessage("Maximum read count must be an integer.");
+            MessageUtils.showMessage("Maximum read count must be a positive integer.");
         }
     }//GEN-LAST:event_samMaxLevelFieldActionPerformed
 
