@@ -20,6 +20,7 @@ package org.broad.igv.util;
 
 import org.broad.igv.util.collections.IntArrayList;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -42,6 +43,9 @@ public class ArrayMemoryTest {
         Runtime.getRuntime().gc();
     }
 
+    //GetObjectSize is not particularly accurate, because it's not recursive
+    //TODO 3rd party implementations of things like IntArrayList exist. Use them?
+    @Ignore
     @Test
     public void compareMemory() throws Exception {
 

@@ -26,6 +26,7 @@ import org.broad.igv.util.TestUtils;
 import org.broad.tribble.readers.AsciiLineReader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -70,6 +71,10 @@ public class AsciiLineReaderTest {
         assertTrue(count > 0);
     }
 
+    //AsciiLineReader used to be faster than BufferedReader, no longer.
+    //Still may be faster over HTTP
+    //TODO Check over HTTP
+    @Ignore
     @Test
     public void testSpeed() throws Exception {
         File testFile = new File(TestUtils.DATA_DIR + "/cn/HindForGISTIC.hg16.cn");

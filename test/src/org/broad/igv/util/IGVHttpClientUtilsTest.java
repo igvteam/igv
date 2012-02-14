@@ -20,6 +20,7 @@ package org.broad.igv.util;
 
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.HttpResponseException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -63,6 +64,7 @@ public class IGVHttpClientUtilsTest {
      *
      * @throws IOException
      */
+    @Ignore
     @Test
     public void testProxy() throws IOException {
 
