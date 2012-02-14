@@ -54,7 +54,7 @@ public class CoverageCounterTest {
     @AfterClass
     public static void tearDownClass() throws Exception {
         preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
-        //TestUtils.clearOutputDir();
+        TestUtils.clearOutputDir();
     }
 
     @Before
@@ -91,18 +91,18 @@ public class CoverageCounterTest {
      */
     @Test
     public void testCountStrand() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
 
 
         int expTot = 71;
-        int windowSize = 1;
+        int windowSize = 25;
 
         File wigFile = null;
         Genome genome = this.genome;
 
 
-        int[] countFlags = new int[]{0x01, 0x04, 0x08, 0xC, 0x1C, 0x05, 0x02};
-        int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, expTot};
+        int[] countFlags = new int[]{0x0, 0x01, 0x04, 0x08, 0xC, 0x1C, 0x05, 0x02};
+        int[] expectedTotal = new int[]{expTot, expTot, expTot, expTot, expTot, expTot, expTot, expTot};
 
         for (int ii = 0; ii < countFlags.length; ii++) {
             TestDataConsumer dc = new TestDataConsumer();
@@ -120,7 +120,7 @@ public class CoverageCounterTest {
     */
     @Test
     public void testStrandsConsistent() throws Exception {
-        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String ifile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
         int[] windowSizes = new int[]{10, 50, 101, 500, 999};
 
         File wigFile = null;//new File(TestUtils.DATA_DIR + "/out", "testStrandsConsistent.wig");
