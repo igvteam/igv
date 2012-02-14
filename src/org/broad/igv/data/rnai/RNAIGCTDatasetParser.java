@@ -27,12 +27,9 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
-import sun.net.idn.StringPrep;
 
-import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.zip.GZIPInputStream;

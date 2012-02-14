@@ -1,6 +1,5 @@
 package org.broad.igv.hic.tools;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.math.linear.OpenMapRealMatrix;
 import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.stat.correlation.PearsonsCorrelation;
