@@ -50,7 +50,7 @@ public class MageTabToIGVConverter {
     public static void convert(File inputFile, File outputFile, String probeResource,
                                int maxRecords, File tmpDir, Genome genome) throws IOException {
 
-        GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
+        GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource);
 
 
         BufferedReader reader = null;

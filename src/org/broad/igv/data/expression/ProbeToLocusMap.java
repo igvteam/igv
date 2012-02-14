@@ -45,6 +45,9 @@ import java.util.zip.GZIPInputStream;
  * SERVER_URL + "/igv/resources/probes/illumina_probe_gene_mapping.txt.gz";
  */
 public class ProbeToLocusMap {
+
+    enum Platform {Affymetrix, Agilient, Illumina, Methylation, Mirna, unknown}
+
     public static final String SERVER_URL = "http://www.broadinstitute.org";
 
     private static Logger log = Logger.getLogger(ProbeToLocusMap.class);
@@ -72,28 +75,18 @@ public class ProbeToLocusMap {
             SERVER_URL + "/igvdata/probes/meth/methylation_pobeToGene.tab.gz";
     private static String methylationLociMappingURL =
             SERVER_URL + "/igvdata/probes/meth/methylation_probeToLoci.mappings.txt.gz";
-    private static Map<String, String[]> rnaiMap;
+
     private static ProbeToLocusMap instance;
-    Map<String, Map<String, String[]>> probeMaps = new HashMap();
-    MappingUrlCache mappingUrlCache = new MappingUrlCache();
 
-    enum Platform {
+    private Map<String, Map<String, String[]>> probeMaps = new HashMap();
 
-        Affymetrix, Agilient, Illumina, Methylation, Mirna, unknown
-    }
+    private MappingUrlCache mappingUrlCache = new MappingUrlCache();
 
-    ;
 
-    /**
-     * Method description
-     *
-     * @return
-     */
     public static synchronized ProbeToLocusMap getInstance() {
         if (instance == null) {
             instance = new ProbeToLocusMap();
         }
-
         return instance;
     }
 
@@ -106,13 +99,7 @@ public class ProbeToLocusMap {
         }
     }
 
-    /**
-     * Method description
-     *
-     * @param urlString
-     * @param map
-     * @throws Exception
-     */
+
     public void loadMapping(String urlString, Map<String, String[]> map) {
         AsciiLineReader bufReader = null;
         InputStream is = null;
@@ -129,8 +116,7 @@ public class ProbeToLocusMap {
             bufReader = new AsciiLineReader(is);
             loadMapping(bufReader, map);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error loading probe mapping", e);
 
             throw new LoadResourceFromServerException(e.getMessage(), urlString, e.getClass().getSimpleName());
@@ -161,14 +147,12 @@ public class ProbeToLocusMap {
     }
 
     /**
-     * Method description
+     * Return the URL to the mapping file for the give genomeId and platform.
      *
+     * @param genomeId
+     * @param platform
      * @return
      */
-    public Map<String, String[]> getRNAiProbeMap() {
-        return rnaiMap;
-    }
-
     public String getMappingURL(String genomeId, Platform platform) {
 
         if (platform == Platform.unknown) {
@@ -287,11 +271,9 @@ public class ProbeToLocusMap {
         }
 
         String mappingURL = getMappingURL(genomeId, platform);
-
         if (mappingURL == null) {
             return null;
         }
-
         Map<String, String[]> pMap = probeMaps.get(mappingURL);
         if (pMap == null) {
             pMap = new HashMap(500000);
@@ -333,6 +315,5 @@ public class ProbeToLocusMap {
             cache.get(platform).put(genomeId, mappingUrl);
         }
     }
-
 
 }

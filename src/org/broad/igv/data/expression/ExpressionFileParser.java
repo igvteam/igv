@@ -107,7 +107,7 @@ public class ExpressionFileParser {
         this.type = determineType(resFile);
         this.genome = genome;
         longestProbeMap = new HashMap();
-        locusHelper = new GeneToLocusHelper(probeFile, genome);
+        locusHelper = new GeneToLocusHelper(probeFile);
 
     }
 

@@ -18,6 +18,9 @@
 
 package org.broad.igv.data.expression;
 
+import org.apache.log4j.Logger;
+import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
@@ -34,28 +37,38 @@ import java.util.*;
  */
 public class GeneToLocusHelper {
 
+    private static Logger log = Logger.getLogger(GeneToLocusHelper.class);
+
     static String LOCUS_START_DELIMITER = "|@";
     static String LOCUS_END_DELIMITER = "|";
 
-    Map<String, IGVFeature> probeLocusMap;
+    Map<String, List<Locus>> probeLocusMap;
 
-    public GeneToLocusHelper(String probeResource, Genome genome) throws IOException {
+    public GeneToLocusHelper(String probeResource) throws IOException {
 
+        if (probeResource == null || probeResource.trim().length() == 0) {
+             probeResource = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
+        }
         if (probeResource != null && probeResource.trim().length() > 0) {
-            BEDFileParser parser = new BEDFileParser(genome);
-            ResourceLocator rl = new ResourceLocator(probeResource);
-            BufferedReader reader = ParsingUtils.openBufferedReader(rl);
-            List<Feature> features = parser.loadFeatures(reader);
-            reader.close();
-            probeLocusMap = new HashMap(features.size() * 2);
-            for (Feature f : features) {
-                probeLocusMap.put(((IGVFeature) f).getName(), (IGVFeature) f);
-            }
+            loadProbeMap(probeResource);
         }
 
     }
 
+    /**
+     * Return a list of loci mapping to the given probe.
+     *
+     * @param probeId     - the probe (or gene) ID
+     * @param description - optional description field.  Some formats allow encoding of lcous in description fiel
+     * @param genomeId    - the genome
+     * @return
+     */
     public List<Locus> getLoci(String probeId, String description, String genomeId) {
+
+
+        if (probeLocusMap != null) {
+            return probeLocusMap.get(probeId);
+        }
 
         // Search for locus in description string.  This relies on the special
         // IGV convention for specifying loci  (e.g  |@chrX:1000-2000|
@@ -75,7 +88,6 @@ public class GeneToLocusHelper {
             }
         }
 
-
         // Search for locus from the probe name itself.
         Locus locus = getLocus(probeId);
         if ((locus != null) && locus.isValid()) {
@@ -84,7 +96,6 @@ public class GeneToLocusHelper {
 
 
         // See if the probes can be mapped to genes
-
         String[] genes = ProbeToLocusMap.getInstance().getLociForProbe(probeId, genomeId);
         if (genes != null) {
             List<Locus> loci = new ArrayList(genes.length);
@@ -143,16 +154,6 @@ public class GeneToLocusHelper {
         if (locus.isValid()) {
             return locus;
         } else {
-
-            if (probeLocusMap != null) {
-                Feature f = probeLocusMap.get(geneOrLocusString);
-                if (f == null) {
-                    return null;
-                } else {
-                    return new Locus(f.getChr(), f.getStart(), f.getEnd());
-                }
-            }
-
             // Maybe its a gene or feature
             Feature gene = FeatureDB.getFeature(geneOrLocusString);
             if (gene != null) {
@@ -161,4 +162,51 @@ public class GeneToLocusHelper {
         }
         return null;
     }
+
+
+    private void loadProbeMap(String probeResource) {
+
+        BufferedReader reader = null;
+        try {
+            probeLocusMap = new HashMap<String, List<Locus>>(50000);
+            int maxErrors = 10;
+            int errorCount = 0;
+            reader = ParsingUtils.openBufferedReader(probeResource);
+            String nextLine;
+            while ((nextLine = reader.readLine()) != null) {
+                if (nextLine.startsWith("#") || nextLine.startsWith("browser") || nextLine.startsWith("track")) {
+                    continue;
+                }
+                String[] tokens = Globals.tabPattern.split(nextLine);
+                if (tokens.length > 3) {
+                    try {
+                        String chr = tokens[0];
+                        int start = (int) Double.parseDouble(tokens[1]);
+                        int end = (int) Double.parseDouble(tokens[2]);
+                        String probe = tokens[3];
+                        Locus locus = new Locus(chr, start, end);
+                        probeLocusMap.put(probe, Arrays.asList(locus));
+                    } catch (NumberFormatException e) {
+                        log.info("Skipping line: " + nextLine);
+                        errorCount++;
+                        if (errorCount > maxErrors) {
+                            probeLocusMap = null;
+                            log.info("Too many errors.  Aborting.");
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+    }
+
 }

@@ -138,7 +138,11 @@ public class PreferenceManager implements PropertyManager {
     //final public static String CHECKED_RESOURCES_KEY = "CHECKED_RESOURCES_KEY";
     final public static String DEFINE_GENOME_INPUT_DIRECTORY_KEY = "DEFINE_GENOME_INPUT_DIRECTORY_KEY";
     final public static String MAF_SPECIES_KEY = "MAF_SPECIES_KEY";
+
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
+    final public static String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
+
+
     final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
     final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
     public static final String SHOW_EXPAND_ICON = "SHOW_EXPAND_ICON";
@@ -752,7 +756,7 @@ public class PreferenceManager implements PropertyManager {
                 return cs;
 
             case DNA_METHYLATION:
-                cs = new ContinuousColorScale(0.0, 1, Color.lightGray,  Color.RED.darker());
+                cs = new ContinuousColorScale(0.0, 1, Color.lightGray, Color.RED.darker());
                 cs.setNoDataColor(Color.WHITE);
                 return cs;
 
@@ -895,6 +899,8 @@ public class PreferenceManager implements PropertyManager {
 
 
         defaultValues.put(PROBE_MAPPING_KEY, "false");
+        defaultValues.put(PROBE_MAPPING_FILE, null);
+
         defaultValues.put(SHOW_REGION_BARS, "false");
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");
         defaultValues.put(USE_BYTE_RANGE, "true");
@@ -1009,18 +1015,17 @@ public class PreferenceManager implements PropertyManager {
 
         String defaultDataURL = DEFAULT_DATA_URL;
         Properties properties = new Properties();
-          try {
-              properties.load(AboutDialog.class.getResourceAsStream("/resources/about.properties"));
-              String tmp = properties.getProperty("master-resource-url");
-              if (tmp != null && !tmp.startsWith("@")) {
-                  defaultDataURL = tmp;
-              }
-          } catch (IOException e) {
-             log.error("Error reading dataURL property", e);
-          }
+        try {
+            properties.load(AboutDialog.class.getResourceAsStream("/resources/about.properties"));
+            String tmp = properties.getProperty("master-resource-url");
+            if (tmp != null && !tmp.startsWith("@")) {
+                defaultDataURL = tmp;
+            }
+        } catch (IOException e) {
+            log.error("Error reading dataURL property", e);
+        }
 
         defaultValues.put(DATA_SERVER_URL_KEY, defaultDataURL);
-
 
 
     }

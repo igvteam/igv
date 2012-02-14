@@ -57,7 +57,7 @@ public class GCTtoIGVConverter {
 
         ExpressionFileParser.FileType type = ExpressionFileParser.determineType(resourceLocator);
 
-        GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource, genome);
+        GeneToLocusHelper locusHelper = new GeneToLocusHelper(probeResource);
 
 
         BufferedReader reader = null;

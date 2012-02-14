@@ -27,9 +27,12 @@ import org.broad.igv.util.HttpUtils;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.readers.AsciiLineReader;
+import sun.net.idn.StringPrep;
 
+import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
@@ -45,8 +48,8 @@ public class RNAIGCTDatasetParser {
     private ResourceLocator dataFileLocator;
     private int dataStartColumn = 2;
     private int descriptionColumn = 1;
-    private final String RNAI_MAPPING_FILE = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
     Genome genome;
+
 
     /**
      * Constructs ...
@@ -94,31 +97,8 @@ public class RNAIGCTDatasetParser {
                 columnHeadings[i] = heading;
             }
 
-            Map<String, String[]> rnaiProbeMap = ProbeToLocusMap.getInstance().getRNAiProbeMap();
-            URL url = new URL(RNAI_MAPPING_FILE);
 
-            probeMappingStream = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(url));
-            if (probeMappingStream == null) {
-                log.error("Could not retrieve probe mapping file: " + RNAI_MAPPING_FILE);
-                return null;
-            }
-
-            if (rnaiProbeMap == null || rnaiProbeMap.isEmpty()) // load RNAi probe mappings
-            {
-                AsciiLineReader br = null;
-                try {
-                    br = new AsciiLineReader(probeMappingStream);
-                    rnaiProbeMap = new HashMap();
-                    ProbeToLocusMap.getInstance().loadMapping(br, rnaiProbeMap);
-                } catch (Exception e) {
-                    throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_FILE, e.getClass().getSimpleName());
-                }
-                finally {
-                    if (br != null) {
-                        br.close();
-                    }
-                }
-            }
+            Map<String, String[]> rnaiProbeMap = getProbeMap();
 
             HashMap<String, HashMap<String, Float>> sampleGeneScoreMap = new HashMap();
             while ((nextLine = reader.readLine()) != null) {
@@ -228,5 +208,32 @@ public class RNAIGCTDatasetParser {
             dataSources.add(ds);
         }
         return dataSources;
+    }
+
+
+    private final static String RNAI_MAPPING_FILE = "http://www.broadinstitute.org/igv/resources/probes/rnai/RNAI_probe_mapping.txt.gz";
+    private static Map<String, String[]> rnaiProbeMap = null;
+
+    private synchronized static Map<String, String[]> getProbeMap() throws IOException {
+        if (rnaiProbeMap == null) {
+            rnaiProbeMap = Collections.synchronizedMap(new HashMap<String, String[]>(20000));
+            URL url = new URL(RNAI_MAPPING_FILE);
+
+            InputStream probeMappingStream = null;
+            try {
+                probeMappingStream = new GZIPInputStream(HttpUtils.getInstance().openConnectionStream(url));
+                AsciiLineReader br = new AsciiLineReader(probeMappingStream);
+
+                ProbeToLocusMap.getInstance().loadMapping(br, rnaiProbeMap);
+            } catch (Exception e) {
+                throw new LoadResourceFromServerException(e.getMessage(), RNAI_MAPPING_FILE, e.getClass().getSimpleName());
+            } finally {
+                if (probeMappingStream != null) {
+                    probeMappingStream.close();
+                }
+            }
+        }
+
+        return rnaiProbeMap;
     }
 }
