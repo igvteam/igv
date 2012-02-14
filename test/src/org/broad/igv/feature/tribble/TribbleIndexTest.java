@@ -26,10 +26,10 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broadinstitute.sting.utils.codecs.vcf.VCFCodec;
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -43,24 +43,27 @@ public class TribbleIndexTest {
     IgvTools igvTools = new IgvTools();
 
 
-    @Test
     /**
-     * Test linear  index
-     *
+     * chr2	1	200000000	LONG_FEATURE
+     * ...
      * chr2	179098961	179380395	Hs.134602
      * chr2	179209546	179287210	Hs.620337
      * chr2	179266309	179266748	Hs.609465
      * chr2	179296428	179300012	Hs.623987
      * chr2	179302952	179303488	Hs.594545
-     *
      */
+
+    @Test
     public void testLinearIndex() throws Exception {
-        //chr2:179,222,066-179,262,059<- CONTAINS TTN
+
         String bedFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
         String chr = "chr2";
         int start = 179266309 - 1;
         int end = 179303488 + 1;
-        int expectedCount = 5;
+        int expectedCount = 6;
+
+        Set<String> expectedNames = new HashSet<String>(Arrays.asList("Hs.134602", "Hs.620337", "Hs.609465", "Hs.623987",
+                "Hs.594545", "LONG_FEATURE"));
 
         // Interval index
         TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 500);
@@ -69,9 +72,9 @@ public class TribbleIndexTest {
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
         int countInterval = 0;
         while (iter.hasNext()) {
-            BasicFeature feat = iter.next();
-            String tmp = "" + feat.getStart() + " " + feat.getEnd();
-            assertTrue(tmp, feat.getStart() <= end && feat.getEnd() >= (start - 1));
+            BasicFeature feature = iter.next();
+            Assert.assertTrue(feature.getEnd() >= start && feature.getStart() <= end);
+            Assert.assertTrue(expectedNames.contains(feature.getName()));
             countInterval++;
         }
 
@@ -95,23 +98,25 @@ public class TribbleIndexTest {
         String chr = "chr2";
         int start = 179266309 - 1;
         int end = 179303488 + 1;
-        int expectedCount = 5;
+        int expectedCount = 6;
+
+        Set<String> expectedNames = new HashSet<String>(Arrays.asList("Hs.134602", "Hs.620337", "Hs.609465", "Hs.623987",
+                "Hs.594545", "LONG_FEATURE"));
 
         // Interval index
-        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 5);
+        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 1);
 
         AbstractFeatureReader bfr = AbstractFeatureReader.getFeatureReader(bedFile, new IGVBEDCodec());
         Iterator<BasicFeature> iter = bfr.query(chr, start, end);
         int countInterval = 0;
         while (iter.hasNext()) {
-            BasicFeature feat = iter.next();
-            String tmp = "" + feat.getStart() + " " + feat.getEnd();
-            assertTrue(tmp, feat.getStart() <= end && feat.getEnd() >= (start - 1));
+            BasicFeature feature = iter.next();
+            Assert.assertTrue(feature.getEnd() >= start && feature.getStart() <= end);
+            Assert.assertTrue(expectedNames.contains(feature.getName()));
             countInterval++;
         }
 
         assertEquals(expectedCount, countInterval);
-
     }
 
     @Test

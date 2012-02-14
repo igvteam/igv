@@ -126,7 +126,7 @@ public class TestBEDCodecs {
         }
 
         // Interval index
-        TestUtils.createIndex(bedFile, IgvTools.INTERVAL_INDEX, 100);
+        TestUtils.createIndex(bedFile, IgvTools.LINEAR_INDEX, 10000);
 
 
         String chr = "chr2";
