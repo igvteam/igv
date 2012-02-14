@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.*;
@@ -61,10 +63,14 @@ public class TrackLoaderTest {
         assertTrue(found_ex);
     }
 
-    public List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
+    private List<Track> tstLoadFi(String filepath, Integer expected_tracks) throws Exception {
+        Genome genome = TestUtils.loadGenome();
+        return tstLoadFi(filepath, expected_tracks, genome);
+    }
+
+    private List<Track> tstLoadFi(String filepath, Integer expected_tracks, Genome genome) throws Exception {
         ResourceLocator locator = new ResourceLocator(filepath);
 
-        Genome genome = TestUtils.loadGenome();
         List<Track> tracks = trackLoader.load(locator, genome);
         if (expected_tracks != null) {
             assertEquals(expected_tracks.intValue(), tracks.size());
@@ -84,6 +90,36 @@ public class TrackLoaderTest {
             assertNotNull(feat);
         }
 
+    }
+
+    private static String[] filenames = new String[]{"/bb/chr21.refseq.bb", "/bed/MT_test.bed", "/bed/Unigene.sample.bed",
+            "/bed/test.bed", "/cn/HindForGISTIC.hg16.cn", "/folder with spaces/test.wig",
+            "/gct/igv_test2.gct", "/gct/affy_human_mod.gct", "/gff/gene.gff3", "/igv/MIP_44.cn",//"/gc/chr1.txt",
+            "/maf/TCGA_GBM_Level3_Somatic_Mutations_08.28.2008.maf.gz", "/psl/fishBlat.psl", "/sam/test_2.sam",
+            "/seg/canFam2_hg18.seg", "/wig/test.wig"};
+
+    @Test
+    public void testFilesHeadless() throws Exception {
+        Genome genome = TestUtils.loadGenome();
+        for (String finame : filenames) {
+            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome);
+        }
+    }
+
+    @Test
+    public void testFilesHeaded() throws Exception {
+        TestUtils.startGUI();
+
+        String ex_filename = "/vcf/example4-last-gsnap-2_fixed.vcf";
+        Genome genome = TestUtils.loadGenome();
+        List<String> finames = new ArrayList<String>(Arrays.asList(filenames));
+
+        finames.add(ex_filename);
+
+        for (String finame : finames) {
+            tstLoadFi(TestUtils.DATA_DIR + finame, null, genome);
+        }
+        TestUtils.stopGUI();
     }
 
 

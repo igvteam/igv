@@ -38,7 +38,10 @@ import org.broad.igv.ui.InsertSizeSettingsDialog;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
 import org.broad.igv.ui.event.AlignmentTrackEventListener;
-import org.broad.igv.ui.panel.*;
+import org.broad.igv.ui.panel.DataPanel;
+import org.broad.igv.ui.panel.FrameManager;
+import org.broad.igv.ui.panel.IGVPopupMenu;
+import org.broad.igv.ui.panel.ReferenceFrame;
 import org.broad.igv.ui.util.FileDialogUtils;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.ui.util.UIUtilities;
@@ -168,7 +171,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         renderOptions = new RenderOptions();
 
         // Register track
-        IGV.getInstance().addAlignmentTrackEventListener(this);
+        if (!Globals.isHeadless()) {
+            IGV.getInstance().addAlignmentTrackEventListener(this);
+        }
 
     }
 

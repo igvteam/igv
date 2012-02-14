@@ -61,21 +61,20 @@ public class AlignmentDataManager {
     Map<String, PEStats> peStats;
 
 
-    public AlignmentDataManager(ResourceLocator locator) throws IOException {
+    public AlignmentDataManager(ResourceLocator locator, Genome genome) throws IOException {
 
         PreferenceManager prefs = PreferenceManager.getInstance();
         maxLevels = prefs.getAsInt(PreferenceManager.SAM_MAX_LEVELS);
         reader = new CachingQueryReader(AlignmentReaderFactory.getReader(locator));
         peStats = new HashMap();
-        initChrMap();
+        initChrMap(genome);
     }
 
     /**
      * Create an alias -> chromosome lookup map.  Enable loading BAM files that use alternative names for chromosomes,
      * provided the alias has been defined  (e.g. 1 -> chr1,  etc).
      */
-    private void initChrMap() {
-        Genome genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
+    private void initChrMap(Genome genome) {
         if (genome != null) {
             Set<String> seqNames = reader.getSequenceNames();
             if (seqNames != null) {

@@ -63,12 +63,13 @@ public class TestUtils {
      * @throws IOException
      */
     public static IGV startGUI() throws IOException {
+        Globals.setHeadless(false);
+        Globals.setTesting(true);
         return startGUI(dataFileName);
     }
 
     /**
-     * This closes the IGV window. Rather, is supposed to.
-     * Doesn't seem to work.
+     * This closes the IGV window.
      */
     public static void stopGUI() {
         IGV.getMainFrame().setVisible(false);

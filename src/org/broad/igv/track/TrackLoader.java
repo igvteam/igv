@@ -31,7 +31,10 @@ import org.broad.igv.data.rnai.RNAIGCTDatasetParser;
 import org.broad.igv.data.rnai.RNAIGeneScoreParser;
 import org.broad.igv.data.rnai.RNAIHairpinParser;
 import org.broad.igv.data.seg.*;
-import org.broad.igv.dev.affective.*;
+import org.broad.igv.dev.affective.AffectiveAnnotationParser;
+import org.broad.igv.dev.affective.AffectiveAnnotationTrack;
+import org.broad.igv.dev.affective.AffectiveUtils;
+import org.broad.igv.dev.affective.Annotation;
 import org.broad.igv.dev.db.SampleInfoSQLReader;
 import org.broad.igv.dev.db.SegmentedSQLReader;
 import org.broad.igv.exceptions.DataLoadException;
@@ -924,7 +927,8 @@ public class TrackLoader {
                         "<br>Load the SAM or BAM file directly. ");
                 return;
             }
-            AlignmentDataManager dataManager = new AlignmentDataManager(locator);
+
+            AlignmentDataManager dataManager = new AlignmentDataManager(locator, genome);
 
             // Check that alignments we loaded actually match some data.  Many BAM files will contain some sequences
             // not represented in the genome, buf if there are no matches warn the user.
