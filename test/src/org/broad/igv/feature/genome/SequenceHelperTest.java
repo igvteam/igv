@@ -25,7 +25,10 @@ package org.broad.igv.feature.genome;
 
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 
@@ -50,15 +53,10 @@ public class SequenceHelperTest {
         useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
-    }
-
     @Before
     public void setUp() {
         //Web requests don't seem to work with this false
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
+        preferenceManager.override(PreferenceManager.USE_BYTE_RANGE, "" + true);
     }
 
     @After
@@ -132,9 +130,6 @@ public class SequenceHelperTest {
      */
     @Test
     public void testRangeService() {
-        PreferenceManager preferenceManager = PreferenceManager.getInstance();
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, false);
-
         seqPath = "http://igvdata.broadinstitute.org/genomes/seq/hg18/";
         readEGFRSequence();
 

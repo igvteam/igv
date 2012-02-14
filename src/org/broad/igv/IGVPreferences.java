@@ -47,6 +47,10 @@ public class IGVPreferences {
 
     static Hashtable<String, String> userPreferences = null;
 
+    public static final String DEFAULT_PREF_NAME = "prefs.properties";
+    private static String pref_name = DEFAULT_PREF_NAME;
+
+
     public void put(String key, String value) {
 
         // Remove from session only, explicitly setting this overrides
@@ -95,16 +99,13 @@ public class IGVPreferences {
 
     }
 
-    /**
-     * Load user preferences.
-     */
-    private synchronized void loadUserPreferences() {
+    synchronized void loadUserPreferences() {
         userPreferences = new Hashtable();
         File rootDir = Globals.getIgvDirectory();
         if (!rootDir.exists()) {
             rootDir.mkdir();
         }
-        File prefFile = new File(rootDir, "prefs.properties");
+        File prefFile = new File(rootDir, DEFAULT_PREF_NAME);
 
         if (prefFile.exists()) {
             String prefFileName = prefFile.getAbsolutePath();
@@ -131,11 +132,11 @@ public class IGVPreferences {
     private void load(String prefFileName, boolean override) {
 
         if (prefFileName.contains("=")) {
-            String [] kvPairs = prefFileName.split(",");
-            for(String kvPair : kvPairs) {
-                String [] kv = kvPair.split("=");
-                if(kv.length == 2) {
-                   override(kv[0], kv[1], override);
+            String[] kvPairs = prefFileName.split(",");
+            for (String kvPair : kvPairs) {
+                String[] kv = kvPair.split("=");
+                if (kv.length == 2) {
+                    override(kv[0], kv[1], override);
                 }
             }
 
@@ -167,7 +168,7 @@ public class IGVPreferences {
         }
     }
 
-    private void override( String key, String value, boolean override) {
+    private void override(String key, String value, boolean override) {
         if (!value.equals("null")) {
             if (override) {
                 log.info("Overriding preference: " + key + "=" + value);
@@ -183,6 +184,10 @@ public class IGVPreferences {
     }
 
     private synchronized void storePreferences() {
+        storePreferences(pref_name);
+    }
+
+    private synchronized void storePreferences(String filename) {
 
         if (userPreferences != null) {
             PrintWriter pw = null;
@@ -191,7 +196,7 @@ public class IGVPreferences {
                 if (!rootDir.exists()) {
                     rootDir.mkdir();
                 }
-                File prefFile = new File(rootDir, "prefs.properties");
+                File prefFile = new File(rootDir, filename);
                 pw = new PrintWriter(new BufferedWriter(new FileWriter(prefFile)));
                 for (Map.Entry<String, String> entry : userPreferences.entrySet()) {
                     pw.print(entry.getKey());
@@ -207,5 +212,9 @@ public class IGVPreferences {
             }
 
         }
+    }
+
+    void setPrefFileName(String s) {
+        this.pref_name = s;
     }
 }

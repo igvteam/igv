@@ -30,18 +30,18 @@ import org.broad.igv.track.TrackType;
 import org.broad.igv.ui.AboutDialog;
 import org.broad.igv.ui.UIConstants;
 import org.broad.igv.ui.color.ColorTable;
-import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.color.ColorUtilities;
+import org.broad.igv.ui.color.PaletteColorTable;
 import org.broad.igv.ui.util.PropertyManager;
 import org.broad.igv.util.HttpUtils;
-
-import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+
+import static org.broad.igv.ui.util.UIUtilities.getcommaSeparatedRGBString;
 
 /**
  * Manages user preferences.
@@ -141,7 +141,7 @@ public class PreferenceManager implements PropertyManager {
 
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
     final public static String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
-   final public static String  USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
+    final public static String USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
 
     final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
     final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
@@ -214,9 +214,9 @@ public class PreferenceManager implements PropertyManager {
 
     /**
      * Cache of preference values.  Profiling reveals that Preferences.get()
-     * is taking huge amounts of time.  There are hundereds of thousands of
+     * is taking huge amounts of time.  There are hundreds of thousands of
      * calls to this to get the track height,  this is possibly a bad design
-     * decision, however caching the preference values solves the peformance
+     * decision, however caching the preference values solves the performance
      * problem for now.
      */
     private Map<String, Boolean> booleanCache = new Hashtable();
@@ -1031,4 +1031,13 @@ public class PreferenceManager implements PropertyManager {
 
     }
 
+    /**
+     * Set an alternate preference file. Mainly for testing.
+     *
+     * @param s
+     */
+    public void setPrefsFile(String s) {
+        this.preferences.setPrefFileName(s);
+        this.preferences.loadUserPreferences();
+    }
 }

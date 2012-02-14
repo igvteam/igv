@@ -1,4 +1,4 @@
-chr start end name
+#chr start end name
 mychr1 100000 150000 AAAA
 mychr1 1000000 1500000 BBB
 mychr1 2000000 2050000 CCC

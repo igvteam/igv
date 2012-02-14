@@ -19,6 +19,7 @@
 package org.broad.igv.util;
 
 import org.broad.igv.Globals;
+import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.tools.IgvTools;
 import org.broad.igv.ui.IGV;
@@ -48,24 +49,17 @@ public class TestUtils {
         LARGE_DATA_DIR = System.getProperty(LARGE_DATA_DIR_KEY, LARGE_DATA_DIR);
     }
 
-    public static void setUpHeadless() {
-        Globals.setHeadless(true);
+    private static void setUpTestEnvironment() {
         Globals.setTesting(true);
+        PreferenceManager.getInstance().setPrefsFile("testproperties.prefs");
         Globals.READ_TIMEOUT = 60 * 1000;
         Globals.CONNECT_TIMEOUT = 60 * 1000;
         FTPClient.READ_TIMEOUT = 60 * 1000;
     }
 
-    /**
-     * Start GUI with default genome file
-     *
-     * @return
-     * @throws IOException
-     */
-    public static IGV startGUI() throws IOException {
-        Globals.setHeadless(false);
-        Globals.setTesting(true);
-        return startGUI(dataFileName);
+    public static void setUpHeadless() {
+        Globals.setHeadless(true);
+        setUpTestEnvironment();
     }
 
     /**
@@ -76,6 +70,18 @@ public class TestUtils {
         IGV.getMainFrame().dispose();
     }
 
+
+    /**
+     * Start GUI with default genome file
+     *
+     * @return
+     * @throws IOException
+     */
+    public static IGV startGUI() throws IOException {
+        return startGUI(dataFileName);
+    }
+
+
     /**
      * Load a gui with the specified genome file.
      * No genome is loaded if null
@@ -85,8 +91,7 @@ public class TestUtils {
      * @throws IOException
      */
     public static IGV startGUI(String genomeFile) throws IOException {
-        Globals.setHeadless(false);
-        Globals.setTesting(true);
+        setUpTestEnvironment();
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Main.open(frame);

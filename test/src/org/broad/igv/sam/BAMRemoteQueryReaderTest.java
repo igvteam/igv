@@ -28,7 +28,6 @@ import org.broad.igv.PreferenceManager;
 import org.broad.igv.sam.reader.BAMWebserviceReader;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,18 +53,12 @@ public class BAMRemoteQueryReaderTest {
         Globals.READ_TIMEOUT = 5 * 30 * 1000;
         Globals.CONNECT_TIMEOUT = 5 * 30 * 1000;
         preferenceManager = PreferenceManager.getInstance();
-        useByteRange = preferenceManager.getAsBoolean(PreferenceManager.USE_BYTE_RANGE);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, useByteRange);
     }
 
     @Before
     public void setUp() {
         //Web requests don't seem to work with this false
-        preferenceManager.put(PreferenceManager.USE_BYTE_RANGE, true);
+        preferenceManager.override(PreferenceManager.USE_BYTE_RANGE, "" + true);
     }
 
     /**
@@ -83,7 +76,7 @@ public class BAMRemoteQueryReaderTest {
          * */
 
         String path = "/1KG/prod/data/HG00099/alignment/HG00099.chrom20.SOLID.bfast.GBR.low_coverage.20101123.bam";
-        String serverURL = "http://www.broadinstitute.org/igvdata";
+        String serverURL = "http://www.broadinstitute.org/igvdata/";
         String fullpath = serverURL + path;
         String chr = "chr1";
         int start = 50542554; //557000;  //
@@ -101,7 +94,7 @@ public class BAMRemoteQueryReaderTest {
     @Test
     public void testQuery2() {
         String path = "/1KG/DCC_merged/freeze4/NA12878.ceu.daughter.bam";
-        String serverURL = "http://www.broadinstitute.org/igvdata";
+        String serverURL = "http://www.broadinstitute.org/igvdata/";
 
         String chr = "1";
         int start = 713700;
