@@ -3842,11 +3842,11 @@
              <class>org.jdesktop.layout.GroupLayout</class> 
              <void method="setProperty"> 
               <string>$horizontalGroup</string> 
-              <string>par l {seq {par l {seq l {space :p:45:p, par l {comp expMapToLociCB::l:p::p, comp expMapToGeneCB::l:p::p}}, seq l {space :::p, par l {seq {space :24:24:24, comp jLabel21:::p:497:p}, comp jLabel24::l:p::p}}, seq l {space :::p, comp label21:::p::p}, seq l {space :p:49:p, par l {seq l {comp probeMappingFileTextField:::p:581:p, space u:::p, comp probeMappingBrowseButton:::p::p}, comp label22::l:p::p}}}, space ::26:x}}</string> 
+              <string>par l {seq {par l {seq {space :p:45:p, par l {comp probeMappingFileTextField::l:p:581:p, comp label22::l:p::p, comp expMapToGeneCB::l:p::p, comp expMapToLociCB::l:p::p}, space u:::p, comp probeMappingBrowseButton:::p::p}, seq l {space :::p, par l {seq {space :24:24:24, comp jLabel21:::p:497:p}, comp jLabel24::l:p::p, comp useProbeMappingCB::l:p::p}}}, space ::30:x}}</string> 
              </void> 
              <void method="setProperty"> 
               <string>$verticalGroup</string> 
-              <string>par l {seq l {space :::p, comp jLabel24:::p::p, space :::p, comp jLabel21:::p:44:p, space :::p, comp expMapToLociCB:::p::p, space :p:14:p, comp expMapToGeneCB:::p::p, space :p:65:p, comp label21:::p::p, space :p:34:p, comp label22:::p::p, space s:::p, par c {comp probeMappingFileTextField::c:p::p, comp probeMappingBrowseButton::c:p::p}, space ::140:x}}</string> 
+              <string>par l {seq l {space :::p, comp jLabel24:::p::p, space :::p, comp jLabel21:::p:44:p, space :::p, comp expMapToLociCB:::p::p, space :p:14:p, comp expMapToGeneCB:::p::p, space :p:95:p, comp useProbeMappingCB:::p::p, space s:::p, comp label22:::p::p, space s:::p, par c {comp probeMappingFileTextField::c:p::p, comp probeMappingBrowseButton::c:p::p}, space ::119:x}}</string> 
              </void> 
             </object> 
             <void property="name"> 
@@ -3930,18 +3930,6 @@
             </void> 
             <void method="add"> 
              <object class="com.jformdesigner.model.FormComponent"> 
-              <string>javax.swing.JLabel</string> 
-              <void method="setProperty"> 
-               <string>text</string> 
-               <string>Probe mapping file:</string> 
-              </void> 
-              <void property="name"> 
-               <string>label21</string> 
-              </void> 
-             </object> 
-            </void> 
-            <void method="add"> 
-             <object class="com.jformdesigner.model.FormComponent"> 
               <string>javax.swing.JTextField</string> 
               <void property="name"> 
                <string>probeMappingFileTextField</string> 
@@ -3969,7 +3957,7 @@
               <string>javax.swing.JLabel</string> 
               <void method="setProperty"> 
                <string>text</string> 
-               <string>&lt;html&gt;&lt;i&gt;File path or URL to map or location to probe in BED format.</string> 
+               <string>&lt;html&gt;&lt;i&gt;File path or URL to BED file containing genomic locations of probes.</string> 
               </void> 
               <void property="name"> 
                <string>label22</string> 
@@ -3991,6 +3979,26 @@
                 <string>java.awt.event.ActionListener</string> 
                 <string>actionPerformed</string> 
                 <string>probeMappingBrowseButtonActionPerformed</string> 
+                <boolean>true</boolean> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="add"> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>javax.swing.JCheckBox</string> 
+              <void method="setProperty"> 
+               <string>text</string> 
+               <string>Use probe mapping file</string> 
+              </void> 
+              <void property="name"> 
+               <string>useProbeMappingCB</string> 
+              </void> 
+              <void method="addEvent"> 
+               <object class="com.jformdesigner.model.FormEvent"> 
+                <string>java.awt.event.ActionListener</string> 
+                <string>actionPerformed</string> 
+                <string>useProbeMappingCBActionPerformed</string> 
                 <boolean>true</boolean> 
                </object> 
               </void> 

@@ -141,7 +141,7 @@ public class PreferenceManager implements PropertyManager {
 
     final public static String PROBE_MAPPING_KEY = "PROBE_MAPPING_KEY";
     final public static String PROBE_MAPPING_FILE = "PROBE_MAPPING_FILE";
-
+   final public static String  USE_PROBE_MAPPING_FILE = "USE_PROBE_MAPPING_FILE";
 
     final public static String SEARCH_ZOOM = "SEARCH_ZOOM";
     final public static String NORMALIZE_COVERAGE = "NORMALIZE_COVERAGE";
@@ -900,6 +900,7 @@ public class PreferenceManager implements PropertyManager {
 
         defaultValues.put(PROBE_MAPPING_KEY, "false");
         defaultValues.put(PROBE_MAPPING_FILE, null);
+        defaultValues.put(USE_PROBE_MAPPING_FILE, "false");
 
         defaultValues.put(SHOW_REGION_BARS, "false");
         defaultValues.put(JOIN_ADJACENT_SEGMENTS_KEY, "false");

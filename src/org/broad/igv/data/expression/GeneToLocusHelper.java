@@ -46,11 +46,17 @@ public class GeneToLocusHelper {
 
     public GeneToLocusHelper(String probeResource) throws IOException {
 
-        if (probeResource == null || probeResource.trim().length() == 0) {
-             probeResource = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
-        }
         if (probeResource != null && probeResource.trim().length() > 0) {
             loadProbeMap(probeResource);
+        }
+
+        // If not probe file is supplied,  see if there is a user default.  Only do this if the custom file option
+        // is set and a probe mapping file has been supplied.
+        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE)) {
+            String userMappingFile = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
+            if (userMappingFile != null && userMappingFile.trim().length() > 0) {
+                loadProbeMap(userMappingFile);
+            }
         }
 
     }
