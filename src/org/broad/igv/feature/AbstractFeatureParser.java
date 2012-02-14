@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author jrobinso
@@ -128,6 +129,20 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
 
         FeatureCollectionSource source = new FeatureCollectionSource(features, genome);
+
+        //Load into FeatureDB for searching
+        if (IGV.hasInstance() || Globals.isTesting()) {
+            Set<String> chrs = source.getChrs();
+            for (String chr : chrs) {
+                List<Feature> feats = source.getFeatures(chr);
+                for (Feature f : feats) {
+                    if (f instanceof NamedFeature) {
+                        FeatureDB.addFeature((NamedFeature) f);
+                    }
+                }
+            }
+        }
+
         FeatureTrack track = new FeatureTrack(locator, source);
         track.setName(locator.getTrackName());
         track.setRendererClass(IGVFeatureRenderer.class);
@@ -139,6 +154,7 @@ public abstract class AbstractFeatureParser implements FeatureParser {
 
         List<FeatureTrack> tracks = new ArrayList();
         tracks.add(track);
+
         return tracks;
     }
 

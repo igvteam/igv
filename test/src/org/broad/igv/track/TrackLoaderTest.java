@@ -1,17 +1,18 @@
 package org.broad.igv.track;
 
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.FeatureDB;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
+import org.broad.tribble.Feature;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 
 /**
@@ -72,6 +73,17 @@ public class TrackLoaderTest {
         assertEquals(locator, track.getResourceLocator());
 
         return tracks;
+    }
+
+    @Test
+    public void testBEDLoadsAliases() throws Exception {
+        tstLoadFi(TestUtils.DATA_DIR + "/bed/canFam2_alias.bed", 1);
+        String[] aliases = new String[]{"AAAA", "BBB", "CCC"};
+        for (String alias : aliases) {
+            Feature feat = FeatureDB.getFeature(alias);
+            assertNotNull(feat);
+        }
+
     }
 
 

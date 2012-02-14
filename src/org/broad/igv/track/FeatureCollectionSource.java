@@ -82,10 +82,6 @@ public class FeatureCollectionSource implements FeatureSource {
                 coverageData.getSummaryScoresForRange(chr, startLocation, endLocation, zoom);
     }
 
-    public List<Feature> getFeatureList(String chr) {
-        return featureMap.get(chr);
-    }
-
     public Iterator<Feature> getFeatures(String chr, int start, int end) {
 
         List<Feature> features = featureMap.get(chr);
@@ -98,6 +94,10 @@ public class FeatureCollectionSource implements FeatureSource {
 
     public List<Feature> getFeatures(String chr) {
         return featureMap.get(chr);
+    }
+
+    public Set<String> getChrs() {
+        return featureMap.keySet();
     }
 
     public int getFeatureWindowSize() {
