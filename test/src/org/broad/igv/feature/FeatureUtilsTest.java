@@ -98,70 +98,12 @@ public class FeatureUtilsTest {
     }
 
     /**
-     * Test of divideByChromosome method, of class FeatureUtils.
-     */
-    //@Test
-    public void testDivideByChromosome() {
-        System.out.println("divideByChromosome");
-        List<IGVFeature> features = null;
-        Map<String, List<IGVFeature>> expResult = null;
-        Map<String, List<IGVFeature>> result = FeatureUtils.divideByChromosome(features);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of segreateFeatures method, of class FeatureUtils.
-     */
-    //@Test
-    public void testSegreateFeatures() {
-        System.out.println("segreateFeatures");
-        List<IGVFeature> features = null;
-        double scale = 0.0;
-        List<List<IGVFeature>> expResult = null;
-        List<List<IGVFeature>> result = FeatureUtils.segreateFeatures(features, scale);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of sortFeatureList method, of class FeatureUtils.
-     */
-    //@Test
-    public void testSortFeatureList() {
-        System.out.println("sortFeatureList");
-        List<? extends LocusScore> features = null;
-        FeatureUtils.sortFeatureList(features);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getFeatureAt method, of class FeatureUtils.
-     */
-    //@Test
-    public void testGetFeatureAt() {
-        System.out.println("getFeatureAt");
-        double position = 0.0;
-        double minWidth = 0.0;
-        List<? extends LocusScore> features = null;
-        LocusScore expResult = null;
-        LocusScore result = (LocusScore) FeatureUtils.getFeatureAt(position, 0, features);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
      * Test of getAllFeaturesAt method, of class FeatureUtils.
      * <p/>
      * Queries the test list for features at position 500.
      */
     @Test
     public void testGetAllFeaturesAt() {
-        System.out.println("getFeatureAt");
         int position = 500;
         int maxLength = 100;
 

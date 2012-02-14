@@ -158,8 +158,6 @@ public class TDFReadWriteTest {
         writer.writeTile(dsName, tileNumber, tile);
         writer.closeFile();
 
-        TDFUtils.dumpDatasets(testFile.getAbsolutePath());
-
         TDFReader reader = TDFReader.getReader(testFile.getAbsolutePath());
 
         TDFDataset ds = reader.getDataset(dsName);

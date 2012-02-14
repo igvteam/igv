@@ -64,9 +64,6 @@ public class GobyAlignmentQueryReaderTest {
         String thmFile = TestUtils.DATA_DIR + "/goby/GDFQPGI-pickrellNA18486_yale.tmh";
         GobyAlignmentQueryReader reader = new GobyAlignmentQueryReader(thmFile);
         Set<String> seqs = reader.getSequenceNames();
-        for (String name : seqs) {
-            System.out.printf("\"" + name + "\", ");
-        }
         assertEquals(expectedSequences.size(), seqs.size());
         for (String s : seqs) {
             assertTrue(expectedSequences.contains(s));

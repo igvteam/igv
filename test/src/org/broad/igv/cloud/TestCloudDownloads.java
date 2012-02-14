@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -47,28 +48,18 @@ public class TestCloudDownloads {
         String broadURL = "http://www.broadinstitute.org/igvdata/annotations/seq/hg18/chr1.txt";
         String s3URL = "http://igv.broadinstitute.org/genomes/seq/hg18/chr1.txt";
         String cfURL = "http://igvdata.broadinstitute.org/genomes/seq/hg18/chr1.txt";
-        int nTries = 3;
 
-        //System.out.println("# bytes\tBroad\tS3\tCloudFront");
         int size = 100000;
         int start = Math.max(1, (int) (Math.random() * 2000000));
-        //System.out.print(String.valueOf(size));
-        int bytes = 0;
         for (String url : Arrays.asList(broadURL, s3URL, cfURL)) {
-            long averageTime = 0;
-            for (int i = 0; i < nTries; i++) {
-                long t0 = System.currentTimeMillis();
-                bytes += readByteRange(url, start, start + size);
-                long dt = System.currentTimeMillis() - t0;
-                averageTime += dt;
-            }
-            averageTime /= nTries;
+            final int nBytes = readByteRange(url, start, start + (size - 1));
+            assertEquals(size, nBytes);
         }
 
-        assertTrue("Did not get any data", bytes > 0);
 
 
     }
+
 
     public int readByteRange(String urlString, int start, int end) throws IOException {
 
@@ -87,6 +78,7 @@ public class TestCloudDownloads {
         //System.out.println("Read " + n + " bytes");
 
         is.close();
+
         return n;
     }
 

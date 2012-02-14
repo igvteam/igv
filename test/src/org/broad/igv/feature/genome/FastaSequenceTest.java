@@ -33,12 +33,16 @@ import static org.junit.Assert.assertEquals;
 public class FastaSequenceTest {
 
 
+    /**
+     * Compare a direct read of sequence from a file vs a read from and indexed fasta for the same interval.
+     *
+     * @throws Exception
+     */
     @Test
     public void testReadSequence() throws Exception {
 
         String path = "http://www.broadinstitute.org/igvdata/test/fasta/ci2_test.fa";
-        String chr02qSeqPath = "http://www.broadinstitute.org/igvdata/test/fasta/chr02q.txt";
-        FastaSequence sequence = new FastaSequence(path);
+        String chr02qSeqPath = "http://www.broadinstitute.org/igvdata/test/fasta/";
 
         String chr = "chr02q";
         int start = 3531385;
@@ -47,12 +51,12 @@ public class FastaSequenceTest {
 
         // TAATTTTTACGTCTTATTTAAACACATATAATGAATAGGT;
         Sequence igvSequence = new IGVSequence(chr02qSeqPath);
-        byte[] expectedBytes = sequence.readSequence(chr, start, end);
+        byte[] expectedBytes = igvSequence.readSequence(chr, start, end);
         String expectedSequence = new String(expectedBytes);
 
+        FastaSequence sequence = new FastaSequence(path);
         byte[] bytes = sequence.readSequence(chr, start, end);
         String seq = new String(bytes);
-        System.out.println(seq);
         assertEquals(expectedSequence, seq);
     }
 
@@ -92,6 +96,8 @@ public class FastaSequenceTest {
 
     }
 
+
+    // TODO -- add some insertions, what are we testing?
     @Test
     public void testPaddedReference2() throws Exception {
 
@@ -105,14 +111,14 @@ public class FastaSequenceTest {
         byte[] bytes = sequence.readSequence(chr, start, end);
 
         for (int i = 60; i < 100; i++) {
-            System.out.println(i + "  " + (char) bytes[i]);
+
         }
 
         FastaSequence s = new FastaSequence(fasta);
         SequenceHelper sequenceHelper = new SequenceHelper(s);
         bytes = sequenceHelper.getSequence(chr, start, end, end);
         for (int i = 60; i < 100; i++) {
-            System.out.println(i + "  " + (char) bytes[i]);
+             // ?????? Not sure what to test here
         }
 
     }

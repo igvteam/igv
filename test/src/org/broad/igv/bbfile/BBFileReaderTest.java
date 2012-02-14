@@ -23,6 +23,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author jrobinso
  * @date Jun 19, 2011
@@ -30,34 +34,14 @@ import java.io.IOException;
 public class BBFileReaderTest {
 
 
-    public static BBFileReader openReader(String path) throws IOException {
-
-        // time the B+/R+ chromosome an zoom level tree construction
-        long time = System.currentTimeMillis(), time_prev = time;
-
-        BBFileReader bbReader = new BBFileReader(path);
-
-        // get the time mark
-        time = System.currentTimeMillis();
-        System.out.println("B+/R+/Zoom tree build = " + (time - time_prev) + " ms");
-
-        // check file type
-        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
-        if (bbReader.isBigBedFile())
-            System.out.println("BBFileReader header indicates a BigBed file type\n");
-        else if (bbReader.isBigWigFile())
-            System.out.println("BBFileReader header indicates a BigWig file type\n");
-        else
-            System.out.println("BBFileReader was not able to identify file type\n");
-
-        return bbReader;
-    }
-
     @Test
     public void testBigBed() throws IOException {
 
         String path = TestUtils.DATA_DIR + "/bb/chr21.refseq.bb";
-        BBFileReader bbReader = openReader(path);
+        BBFileReader bbReader = new BBFileReader(path);
+
+        BBFileHeader bbFileHdr = bbReader.getBBFileHeader();
+        assertTrue(bbFileHdr.isBigBed());
 
         String chr = "chr21";
         int start = 26490012;
@@ -65,27 +49,23 @@ public class BBFileReaderTest {
 
 
         for (BBZoomLevelHeader header : bbReader.getZoomLevels().getZoomLevelHeaders()) {
+            assertNotNull(header);
 
-            header.print();
-        }
+            ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(header.getZoomLevel(), chr, start, chr, end, false);
 
+            while (zlIter.hasNext()) {
+                ZoomDataRecord rec = zlIter.next();
+                int n = rec.getBasesCovered();
+                if (n > 0) {
+                    assertEquals(chr, rec.getChromName());
+                    assertTrue(rec.getChromEnd() >= start && rec.getChromStart() <= end);
+                }
 
-        ///end = 100000;
-        ZoomLevelIterator zlIter = bbReader.getZoomLevelIterator(3, chr, start, chr, end, false);
-
-        while (zlIter.hasNext()) {
-            ZoomDataRecord rec = zlIter.next();
-            int n = rec.getBasesCovered();
-            if (n > 0) {
-                System.out.println("Base covered = " + n);
-                double mean = rec.getSumData() / n;
-                System.out.println(rec.getChromName() + "\t" + rec.getChromStart() + "\t" + rec.getChromEnd() +
-                        "\t" + mean);
             }
-
         }
 
 
     }
+
 
 }
