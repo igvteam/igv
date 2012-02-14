@@ -176,7 +176,7 @@ public class IGVDatasetParser {
             int skipColumns = hasCalls ? 2 : 1;
 
             // BufferedReader reader = ParsingUtils.openBufferedReader(dataResourceLocator);
-            is = ParsingUtils.openInputStream(dataResourceLocator);
+            is = ParsingUtils.openInputStreamGZ(dataResourceLocator);
             reader = new AsciiLineReader(is);
 
             // Infer datatype from extension.  This can be overriden in the

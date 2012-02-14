@@ -60,7 +60,7 @@ public class FeatureIndex {
 
         InputStream is = null;
         try {
-            is = ParsingUtils.openInputStream(new ResourceLocator(path));
+            is = ParsingUtils.openInputStreamGZ(new ResourceLocator(path));
             chrIndeces = new LinkedHashMap();
             read(is);
         } catch (IOException ex) {

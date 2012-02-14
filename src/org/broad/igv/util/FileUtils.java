@@ -321,7 +321,7 @@ public class FileUtils {
         InputStream in = null;
         CharsetDecoder d = Charset.forName("US-ASCII").newDecoder();
         try {
-            in = ParsingUtils.openInputStream(loc);
+            in = ParsingUtils.openInputStreamGZ(loc);
 
             byte[] bytes = new byte[1024]; //do a peek
             int nBytes = in.read(bytes);

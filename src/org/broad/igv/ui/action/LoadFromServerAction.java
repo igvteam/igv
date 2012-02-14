@@ -77,7 +77,7 @@ public class LoadFromServerAction extends MenuAction {
             InputStream is = null;
             LinkedHashSet<String> nodeURLs = null;
             try {
-                is = ParsingUtils.openInputStream(new ResourceLocator(genomeURL));
+                is = ParsingUtils.openInputStreamGZ(new ResourceLocator(genomeURL));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
                 nodeURLs = getResourceUrls(bufferedReader);
             } catch (IOException e) {
@@ -145,7 +145,7 @@ public class LoadFromServerAction extends MenuAction {
                     InputStream is = null;
                     Document xmlDocument = null;
                     try {
-                        is = ParsingUtils.openInputStream(new ResourceLocator(url));
+                        is = ParsingUtils.openInputStreamGZ(new ResourceLocator(url));
                         xmlDocument = Utilities.createDOMDocumentFromXmlStream(is);
                     } catch (java.net.SocketTimeoutException e) {
                         xmlParsingError = true;

@@ -70,7 +70,7 @@ public class IGVTest {
     public void testSorts() throws Exception {
         String sessionPath = TestUtils.DATA_DIR + "/sessions/BRCA_loh2.xml";
 
-        InputStream inputStream = new BufferedInputStream(ParsingUtils.openInputStream(new ResourceLocator(sessionPath)));
+        InputStream inputStream = new BufferedInputStream(ParsingUtils.openInputStreamGZ(new ResourceLocator(sessionPath)));
         final SessionReader sessionReader = new IGVSessionReader(igv);
         sessionReader.loadSession(inputStream, igv.getSession(), sessionPath);
 

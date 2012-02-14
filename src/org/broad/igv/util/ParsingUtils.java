@@ -64,23 +64,29 @@ public class ParsingUtils {
     }
 
     public static BufferedReader openBufferedReader(ResourceLocator locator) throws IOException {
-        InputStream stream = openInputStream(locator);
+        InputStream stream = openInputStreamGZ(locator);
         return new BufferedReader(new InputStreamReader(stream));
 
     }
 
 
     public static AsciiLineReader openAsciiReader(ResourceLocator locator) throws IOException {
-        InputStream stream = openInputStream(locator);
+        InputStream stream = openInputStreamGZ(locator);
         return new AsciiLineReader(stream);
 
     }
 
     public static InputStream openInputStream(String path) throws IOException {
-        return openInputStream(new ResourceLocator(path));
+        return openInputStreamGZ(new ResourceLocator(path));
     }
 
-    public static InputStream openInputStream(ResourceLocator locator) throws IOException {
+    /**
+     * Open an InputStream on the resource.  Wrap it in a GZIPInputStream if neccessary.
+     * @param locator
+     * @return
+     * @throws IOException
+     */
+    public static InputStream openInputStreamGZ(ResourceLocator locator) throws IOException {
 
         if (locator.getServerURL() != null) {
             // Use IGV webservice to fetch content

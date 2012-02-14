@@ -56,7 +56,7 @@ public class FeatureDirSource implements FeatureSource {
         setRootDir(locator.getPath());
 
         fileMap = new Properties();
-        InputStream propStream = ParsingUtils.openInputStream(locator);
+        InputStream propStream = ParsingUtils.openInputStreamGZ(locator);
         fileMap.load(propStream);
         propStream.close();
 

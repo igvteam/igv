@@ -83,7 +83,7 @@ public class NetworkAnnotator {
     public boolean loadNetwork(String path) {
         String error = null;
         try {
-            InputStream cbioStream = ParsingUtils.openInputStream(new ResourceLocator(path));
+            InputStream cbioStream = ParsingUtils.openInputStreamGZ(new ResourceLocator(path));
             Document document = Utilities.createDOMDocumentFromXmlStream(cbioStream);
             this.document = document;
             this.graph = document.getElementsByTagName("graph").item(0);
