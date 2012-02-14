@@ -42,48 +42,9 @@
 
     <!-- Create class path for manifest -->
     <path id="@jars">
-
-        <pathelement path="${lib.dir}AbsoluteLayout.jar"/>
-        <pathelement path="${lib.dir}batik-bridge.jar"/>
-        <pathelement path="${lib.dir}batik-codec.jar"/>
-        <pathelement path="${lib.dir}batik-awt-util.jar"/>
-        <pathelement path="${lib.dir}batik-css.jar"/>
-        <pathelement path="${lib.dir}batik-dom.jar"/>
-        <pathelement path="${lib.dir}batik-ext.jar"/>
-        <pathelement path="${lib.dir}batik-gui-util.jar"/>
-        <pathelement path="${lib.dir}batik-gvt.jar"/>
-        <pathelement path="${lib.dir}batik-parser.jar"/>
-        <pathelement path="${lib.dir}batik-svg-dom.jar"/>
-        <pathelement path="${lib.dir}batik-svggen.jar"/>
-        <pathelement path="${lib.dir}batik-transcoder.jar"/>
-        <pathelement path="${lib.dir}batik-util.jar"/>
-        <pathelement path="${lib.dir}batik-xml.jar"/>
-        <pathelement path="${lib.dir}commons-logging-1.1.1.jar"/>
-        <pathelement path="${lib.dir}commons-math-2.2.jar"/>
-        <pathelement path="${lib.dir}concurrent.jar"/>
-        <pathelement path="${lib.dir}goby-io-igv.jar"/>
-        <pathelement path="${lib.dir}jargs.jar"/>
-        <pathelement path="${lib.dir}jide-action.jar"/>
-        <pathelement path="${lib.dir}jide-common.jar"/>
-        <pathelement path="${lib.dir}jide-components.jar"/>
-        <pathelement path="${lib.dir}jide-dialogs.jar"/>
-        <pathelement path="${lib.dir}jide-dock.jar"/>
-        <pathelement path="${lib.dir}jide-grids.jar"/>
-        <pathelement path="${lib.dir}jgrapht-jdk1.6.jar"/>
-        <pathelement path="${lib.dir}jlfgr-1_0.jar"/>
-        <pathelement path="${lib.dir}junit-4.5.jar"/>
-        <pathelement path="${lib.dir}log4j-1.2.15.jar"/>
-        <pathelement path="${lib.dir}mysql-connector-java-3.1.14-bin.jar"/>
-        <pathelement path="${lib.dir}sam-1.62.jar"/>
-        <pathelement path="${lib.dir}swing-layout-1.0.jar"/>
-        <pathelement path="${lib.dir}tribble-0.1.jar"/>
-        <pathelement path="${lib.dir}vcf.jar"/>
-        <pathelement path="${lib.dir}xml-apis-ext-1.3.04"/>
-        <pathelement path="${lib.dir}xml-apis-1.3.04.jar"/>
-        <pathelement path="${lib.dir}Jama-1.0.2.jar"/>
-        <pathelement path="${lib.dir}jcommon-1.0.16.jar"/>
-        <pathelement path="${lib.dir}jfreechart-1.0.13.jar"/>
-        <pathelement path="${lib.dir}commons-httpclient-3.1.jar"/>
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
     </path>
 
     <!-- Clean all generated artifacts -->
