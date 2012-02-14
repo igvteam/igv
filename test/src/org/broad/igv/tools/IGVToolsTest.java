@@ -49,7 +49,6 @@ import java.util.List;
 
 import static junit.framework.Assert.*;
 
-
 public class IGVToolsTest {
 
     IgvTools igvTools;
@@ -121,17 +120,17 @@ public class IGVToolsTest {
     public void testIntervalIndex33() throws Exception {
         String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v3.3.genotypes.head.vcf";
         FeatureCodec codec = new VCF3Codec();
-        testIntervalIndex(testFile, codec);
+        tstIntervalIndex(testFile, codec);
     }
 
     @Test
     public void testIntervalIndex40() throws Exception {
         String testFile = TestUtils.LARGE_DATA_DIR + "/CEU.SRP000032.2010_03_v4.0.genotypes.head.vcf";
         FeatureCodec codec = new VCFCodec();
-        testIntervalIndex(testFile, codec);
+        tstIntervalIndex(testFile, codec);
     }
 
-    public void testIntervalIndex(String testFile, FeatureCodec codec) throws IOException {
+    private void tstIntervalIndex(String testFile, FeatureCodec codec) throws IOException {
 
         // Create an interval tree index with 5 features per interval
         File indexFile = new File(testFile + ".idx");
@@ -232,7 +231,7 @@ public class IGVToolsTest {
     }
 
     public void tstCount(String outputBase, String outputExt, String chr, int start, int end) throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.bed";
+        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
