@@ -3,9 +3,12 @@ package org.broad.igv.data.seg;
 import org.broad.igv.feature.LocusScore;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
+import org.junit.Ignore;
 
-import java.awt.image.SampleModel;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +18,7 @@ import java.util.Set;
  * @author Jim Robinson
  * @date 10/15/11
  */
+@Ignore
 public class DBSegUtils {
 
     public static void main(String[] args) throws IOException {
@@ -91,7 +95,7 @@ public class DBSegUtils {
 
     static Map<String, String> loadSampleMappings(String file) throws IOException {
 
-        BufferedReader reader = ParsingUtils. openBufferedReader(file);
+        BufferedReader reader = ParsingUtils.openBufferedReader(file);
         Map<String, String> map = new HashMap<String, String>();
         String nextLine;
         while ((nextLine = reader.readLine()) != null) {
