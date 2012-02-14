@@ -66,6 +66,12 @@ public class TestUtils {
      * This closes the IGV window.
      */
     public static void stopGUI() {
+        try {
+            IGV igv = IGV.getInstance();
+        } catch (RuntimeException e) {
+            return;
+        }
+
         IGV.getMainFrame().setVisible(false);
         IGV.getMainFrame().dispose();
     }
@@ -92,10 +98,19 @@ public class TestUtils {
      */
     public static IGV startGUI(String genomeFile) throws IOException {
         setUpTestEnvironment();
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Main.open(frame);
-        IGV igv = IGV.getInstance();
+        IGV igv;
+        //If IGV is already open, we get the instance.
+        try {
+            igv = IGV.getInstance();
+            IGV.getMainFrame().setVisible(true);
+            System.out.println("Using old IGV");
+        } catch (RuntimeException e) {
+            JFrame frame = new JFrame();
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            Main.open(frame);
+            System.out.println("Started new IGV");
+            igv = IGV.getInstance();
+        }
         if (genomeFile != null) {
             igv.loadGenome(genomeFile, null);
         }

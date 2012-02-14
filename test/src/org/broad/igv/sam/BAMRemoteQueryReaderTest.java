@@ -30,6 +30,7 @@ import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author jrobinso
  */
+@Ignore
 public class BAMRemoteQueryReaderTest {
 
     public BAMRemoteQueryReaderTest() {

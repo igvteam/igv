@@ -6,6 +6,7 @@ import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.igv.util.TestUtils;
 import org.broad.tribble.Feature;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +30,11 @@ public class TrackLoaderTest {
     public void setUp() throws Exception {
         TestUtils.setUpHeadless();
         trackLoader = new TrackLoader();
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+        TestUtils.stopGUI();
     }
 
     @Test
