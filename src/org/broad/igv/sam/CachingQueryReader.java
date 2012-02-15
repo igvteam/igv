@@ -586,7 +586,6 @@ public class CachingQueryReader {
             if (record.getStart() > e1) {
                 emptyBucket();
                 e1 = record.getEnd();
-                System.out.println(ignoredCount);
                 ignoredCount = 0;
             } else {
                 e1 = Math.min(e1, record.getEnd());
