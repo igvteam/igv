@@ -221,17 +221,25 @@ public class IGVToolsTest {
 
     @Test
     public void testCountTDF() throws Exception {
-        tstCount("testtdf", "tdf", null, -1, -1);
+        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        tstCount(inputFile, "testtdf", "tdf", null, -1, -1);
     }
 
     @Test
     public void testCountWIG() throws Exception {
-        tstCount("testwig", "wig", null, -1, -1);
-        tstCount("testwig", "wig", "chr2", 178709699, 179008373);
+        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+        tstCount(inputFile, "testwig", "wig", null, -1, -1);
+        tstCount(inputFile, "testwig", "wig", "chr2", 178709699, 179008373);
     }
 
-    public void tstCount(String outputBase, String outputExt, String chr, int start, int end) throws Exception {
-        String inputFile = TestUtils.DATA_DIR + "/bed/Unigene.sample.sorted.bed";
+    @Test
+    public void testCountSAM() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "/sam/test_2.sam";
+        tstCount(inputFile, "testwig", "wig", null, -1, -1);
+    }
+
+    public void tstCount(String inputFile, String outputBase, String outputExt,
+                         String chr, int start, int end) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
         String genome = TestUtils.DATA_DIR + "/genomes/hg18.unittest.genome";
 
