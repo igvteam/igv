@@ -517,7 +517,7 @@ public class HttpUtils {
      * @return
      * @throws java.io.IOException
      */
-    private synchronized HttpURLConnection openConnection(
+    private HttpURLConnection openConnection(
             URL url, Map<String, String> requestProperties, String method, int redirectCount) throws IOException {
 
         boolean useProxy = proxySettings != null && proxySettings.useProxy && proxySettings.proxyHost != null &&
