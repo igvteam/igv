@@ -50,6 +50,17 @@
     <target name="compile" depends="init">
         <delete dir="${tmp.dir}"/>
         <mkdir dir="${tmp.dir}"/>
+
+        <!-- Copy resource files to the tmp directory (.txt files, etc) -->
+        <copy todir="${tmp.dir}" overwrite="true">
+            <fileset dir="${src.dir}">
+                <exclude name="**/*.form"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.svn"/>
+                <exclude name="**/manifest.mf"/>
+            </fileset>
+        </copy>
+
         <javac debug="true" defaultexcludes="false" deprecation="true"
                destdir="${tmp.dir}" optimize="false" proceed="false"
                srcdir="src">
