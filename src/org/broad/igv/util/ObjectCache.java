@@ -26,7 +26,10 @@
  */
 package org.broad.igv.util;
 
+import org.broad.igv.sam.Alignment;
+
 import java.lang.ref.SoftReference;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
@@ -74,6 +77,10 @@ public class ObjectCache<K, V> {
         return image;
     }
 
+    public Collection<K> getKeys() {
+        return map.keySet();
+    }
+
     public void remove(K key) {
         map.remove(key);
     }
@@ -101,4 +108,5 @@ public class ObjectCache<K, V> {
     public void setMaxSize(int maxSize) {
         this.maxSize = maxSize;
     }
+
 }

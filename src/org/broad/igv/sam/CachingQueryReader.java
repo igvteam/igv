@@ -33,6 +33,7 @@ import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.util.MessageUtils;
 import org.broad.igv.util.LRUCache;
+import org.broad.igv.util.ObjectCache;
 import org.broad.igv.util.RuntimeUtils;
 
 import java.io.IOException;
@@ -222,7 +223,7 @@ public class CachingQueryReader {
     private boolean loadTiles(String chr, List<AlignmentTile> tiles, Map<String, PEStats> peStats) {
 
         //assert (tiles.size() > 0);
-        if(corruptIndex) {
+        if (corruptIndex) {
             return false;
         }
 
@@ -249,8 +250,8 @@ public class CachingQueryReader {
         int alignmentCount = 0;
         WeakReference<CachingQueryReader> ref = new WeakReference(this);
         try {
-            Map<String, Alignment> mappedMates = new HashMap(1000);
-            Map<String, Alignment> unmappedMates = new HashMap(1000);
+            ObjectCache<String, Alignment> mappedMates = new ObjectCache<String, Alignment>(1000);
+            ObjectCache<String, Alignment> unmappedMates = new ObjectCache<String, Alignment>(1000);
 
 
             activeReaders.add(ref);
@@ -266,6 +267,7 @@ public class CachingQueryReader {
                 Alignment record = iter.next();
 
                 // Set mate seqeunce of unmapped mates
+                // Put a limit on the total size of this collection.
                 String readName = record.getReadName();
                 if (record.isPaired()) {
                     pairedEnd = true;
@@ -337,6 +339,7 @@ public class CachingQueryReader {
                     stats.update(record);
                 }
             }
+            // End iteration over alignments
 
             // Compute peStats
             if (peStats != null) {
@@ -349,7 +352,8 @@ public class CachingQueryReader {
             }
 
             // Clean up any remaining unmapped mate seqeunces
-            for (Alignment mappedMate : mappedMates.values()) {
+            for (String mappedMateName : mappedMates.getKeys()) {
+                Alignment mappedMate = mappedMates.get(mappedMateName);
                 Alignment mate = unmappedMates.get(mappedMate.getReadName());
                 if (mate != null) {
                     mappedMate.setMateSequence(mate.getReadSequence());
@@ -365,16 +369,14 @@ public class CachingQueryReader {
 
             return true;
 
-        } catch(java.nio.BufferUnderflowException e) {
+        } catch (java.nio.BufferUnderflowException e) {
             // This almost always indicates a corrupt BAM index, or less frequently a corrupt bam file
             corruptIndex = true;
             MessageUtils.showMessage("<html>Error encountered querying alignments: " + e.toString() +
                     "<br>This is often caused by a corrupt index file.");
             return false;
 
-        }
-
-        catch (Throwable e) {
+        } catch (Throwable e) {
 
             log.error("Error loading alignment data", e);
             throw new DataLoadException("", "Error: " + e.toString());
@@ -514,7 +516,9 @@ public class CachingQueryReader {
         private AlignmentCounts counts;
 
         int maxDepth;
-        int e1;
+        int maxBucketSize;
+        int e1 = -1;  // End position of current samplin bucket
+
         //int depthCount;
 
         private Map<String, Alignment> currentBucket;
@@ -538,12 +542,22 @@ public class CachingQueryReader {
                 this.counts = new DenseAlignmentCounts(start, end);
             }
 
+            // Set the max depth, and the max depth of the sampling bucket.
             this.maxDepth = Math.max(1, maxDepth);
-            e1 = -1;
+            if(maxDepth < 1000) {
+                maxBucketSize = 10*maxDepth;
+            }
+            else if(maxDepth < 10000) {
+                maxBucketSize = 5 * maxDepth;
+            }
+            else {
+                maxBucketSize = 2 * maxDepth;
+            }
 
-            currentBucket = new HashMap((int) (3 * maxDepth));
-            currentMates = new HashMap((int) (3 * maxDepth));
-            pairedReadNames = new HashSet(5 * maxDepth);
+
+            currentBucket = new HashMap(maxBucketSize);
+            currentMates = new HashMap(maxBucketSize);
+            pairedReadNames = new HashSet(maxDepth);
             overflows = new LinkedList<Alignment>();
         }
 
@@ -566,15 +580,24 @@ public class CachingQueryReader {
          *
          * @param record
          */
+        int ignoredCount = 0;
         public void addRecord(Alignment record) {
 
             if (record.getStart() > e1) {
                 emptyBucket();
                 e1 = record.getEnd();
+                System.out.println(ignoredCount);
+                ignoredCount = 0;
             } else {
                 e1 = Math.min(e1, record.getEnd());
             }
 
+            counts.incCounts(record);
+
+            if(currentBucket.size() > maxBucketSize) {
+                ignoredCount++;
+                return;
+            }
             final String readName = record.getReadName();
             if (!currentBucket.containsKey(readName)) {
                 currentBucket.put(readName, record);
@@ -583,7 +606,6 @@ public class CachingQueryReader {
             } else {
                 overflows.add(record);
             }
-            counts.incCounts(record);
 
         }
 

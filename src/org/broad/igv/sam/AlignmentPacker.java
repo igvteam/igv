@@ -41,7 +41,6 @@ public class AlignmentPacker {
      * Minimum gap between the end of one alignment and start of another.
      */
     public static final int MIN_ALIGNMENT_SPACING = 5;
-    private static final int MAX_ROWS = 100000;
     private Comparator lengthComparator;
 
     public AlignmentPacker() {
