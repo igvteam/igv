@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.TestUtils;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.AbstractFeatureReader;
@@ -45,7 +46,8 @@ public class CachingFeatureReaderTest {
 
     @Before
     public void setUp() throws IOException {
-        FeatureCodec codec = CodecFactory.getCodec(path);
+        Genome genome = null; // <= don't do chromosome alias conversion
+        FeatureCodec codec = CodecFactory.getCodec(path, null);
         baseReader = AbstractFeatureReader.getFeatureReader(path, codec);
         cacheReader = new CachingFeatureReader(baseReader);
 

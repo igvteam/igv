@@ -21,6 +21,7 @@ package org.broad.igv.peaks;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.UCSCCodec;
 import org.broad.igv.util.ParsingUtils;
 
@@ -36,6 +37,12 @@ import java.awt.*;
  */
 public class PeakCodec extends UCSCCodec {
 
+    Genome genome;
+
+    public PeakCodec(Genome genome) {
+        this.genome = genome;
+    }
+
     // Declare a static array once, to be reused.
 
     public Peak decode(String nextLine) {
@@ -48,7 +55,8 @@ public class PeakCodec extends UCSCCodec {
         int tokenCount = ParsingUtils.splitWhitespace(nextLine, tokens);
 
         String[] tokens = nextLine.split("\t");
-        String chr = tokens[0];
+        String chrToken = tokens[0];
+        String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
         int start = Integer.parseInt(tokens[1]);
         int end = Integer.parseInt(tokens[2]);
         String name = tokens[3];

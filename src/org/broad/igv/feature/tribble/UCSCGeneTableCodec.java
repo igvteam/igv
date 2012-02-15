@@ -36,7 +36,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
     private Type type;
 
 
-    public UCSCGeneTableCodec(Genome genome, Type type) {
+    public UCSCGeneTableCodec(Type type, Genome genome) {
 
         this.genome = genome;
         this.type = type;
@@ -90,6 +90,7 @@ public class UCSCGeneTableCodec extends UCSCCodec {
 
         String chrToken = tokens[chrColumn].trim();
         String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
+
         int start = Integer.parseInt(tokens[startColumn]) - startBase;
         int end = Integer.parseInt(tokens[endColumn]);
         String strandString = tokens[strandColumn];

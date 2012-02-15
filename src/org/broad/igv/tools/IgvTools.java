@@ -952,7 +952,8 @@ public class IgvTools {
             return;
         }
 
-        FeatureCodec codec = CodecFactory.getCodec(ifile);
+        Genome genome = null;  // <= don't do chromosome conversion
+        FeatureCodec codec = CodecFactory.getCodec(ifile, genome);
         if (codec != null) {
             try {
                 createTribbleIndex(ifile, new File(outputFileName), indexType, binSize, codec);

@@ -47,9 +47,9 @@ public class CodecFactory {
      * @param path the path (file or URL) to the feature rile.
      */
 
-    public static FeatureCodec getCodec(String path) {
-        return getCodec(path, null);
-    }
+//    public static FeatureCodec getCodec(String path) {
+//        return getCodec(path, null);
+//    }
 
 
     public static FeatureCodec getCodec(String path, Genome genome) {
@@ -61,30 +61,30 @@ public class CodecFactory {
         }
 
         if (fn.endsWith(".vcf4")) {
-            return new VCFWrapperCodec(new VCFCodec());
+            return new VCFWrapperCodec(new VCFCodec(), genome);
         } else if (fn.endsWith(".vcf")) {
-            return new VCFWrapperCodec(getVCFCodec(path));
+            return new VCFWrapperCodec(getVCFCodec(path), genome);
         } else if (fn.endsWith(".bed")) {
-            return new IGVBEDCodec();
+            return new IGVBEDCodec(genome);
         } else if (fn.contains("refflat")) {
-            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.REFFLAT);
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.REFFLAT, genome);
         } else if (fn.contains("genepred") || fn.contains("ensgene") || fn.contains("refgene")) {
-            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.GENEPRED);
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.GENEPRED, genome);
         } else if (fn.contains("ucscgene")) {
-            return new UCSCGeneTableCodec(genome, UCSCGeneTableCodec.Type.UCSCGENE);
+            return new UCSCGeneTableCodec(UCSCGeneTableCodec.Type.UCSCGENE, genome);
         } else if (fn.endsWith(".repmask")) {
-            return new REPMaskCodec();
+            return new REPMaskCodec(genome);
         } else if (fn.endsWith(".gff3") || fn.endsWith(".gvf")) {
-            return new GFFCodec(GFFCodec.Version.GFF3);
+            return new GFFCodec(GFFCodec.Version.GFF3, genome);
         } else if (fn.endsWith(".gff") || fn.endsWith(".gtf")) {
-            return new GFFCodec();
+            return new GFFCodec(genome);
             //} else if (fn.endsWith(".sam")) {
             //return new SAMCodec();
         } else if (fn.endsWith(".psl") || fn.endsWith(".pslx")) {
-            return new PSLCodec();
+            return new PSLCodec(genome);
 
         } else if (fn.endsWith(".peak")) {
-            return new PeakCodec();
+            return new PeakCodec(genome);
 
         } else {
             return null;

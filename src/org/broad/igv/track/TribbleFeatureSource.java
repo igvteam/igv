@@ -65,7 +65,7 @@ public class TribbleFeatureSource implements org.broad.igv.track.FeatureSource {
 
     public TribbleFeatureSource(String path, Genome genome) throws IOException {
 
-        FeatureCodec codec = CodecFactory.getCodec(path);
+        FeatureCodec codec = CodecFactory.getCodec(path, genome);
         this.genome = genome;
         isVCF = codec.getClass() == VCFWrapperCodec.class;
         featureClass = codec.getFeatureType();

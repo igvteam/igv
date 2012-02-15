@@ -19,6 +19,7 @@
 package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.*;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.tribble.util.ParsingUtils;
 
@@ -42,12 +43,15 @@ public class IGVBEDCodec extends UCSCCodec {
 
     boolean gffTags = false;
     GFFParser.GFF3Helper tagHelper = new GFFParser.GFF3Helper();
+    Genome genome;
+
 
     public IGVBEDCodec() {
+        this.genome = null;
     }
 
-    public IGVBEDCodec(boolean gffTags) {
-        this.gffTags = gffTags;
+    public IGVBEDCodec(Genome genome) {
+        this.genome = genome;
     }
 
     public BasicFeature decode(String nextLine) {
@@ -70,7 +74,9 @@ public class IGVBEDCodec extends UCSCCodec {
             return null;
         }
 
-        String chr = tokens[0];
+        String c = tokens[0];
+        String chr = genome == null ? c : genome.getChromosomeAlias(c);
+
         int start = Integer.parseInt(tokens[1]) - startBase;
 
         int end = start + 1;

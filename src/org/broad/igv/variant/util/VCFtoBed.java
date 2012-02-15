@@ -18,6 +18,7 @@
 
 package org.broad.igv.variant.util;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.tribble.AbstractFeatureReader;
 import org.broad.tribble.FeatureCodec;
@@ -49,7 +50,8 @@ public class VCFtoBed {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new BufferedWriter(new FileWriter(bedFile)));
-            FeatureCodec codec = CodecFactory.getCodec(vcfFile);
+            Genome genome = null; // Don't do alias converting
+            FeatureCodec codec = CodecFactory.getCodec(vcfFile, genome);
             boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
             basicReader = AbstractFeatureReader.getFeatureReader(vcfFile, codec, true);
 

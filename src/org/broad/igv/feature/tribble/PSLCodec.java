@@ -21,6 +21,7 @@ package org.broad.igv.feature.tribble;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Exon;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.tribble.Feature;
 
@@ -29,6 +30,16 @@ import org.broad.tribble.Feature;
  * @date Aug 5, 2010
  */
 public class PSLCodec extends UCSCCodec {
+
+    Genome genome;
+
+
+    public PSLCodec() {
+    }
+
+    public PSLCodec(Genome genome) {
+        this.genome = genome;
+    }
 
     public Feature decode(String line) {
 
@@ -45,7 +56,8 @@ public class PSLCodec extends UCSCCodec {
                 return null;
             }
             int tSize = Integer.parseInt(tokens[14]);
-            String chr = tokens[13];
+            String chrToken = tokens[13];
+            String chr = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
             int start = Integer.parseInt(tokens[15]); // IS PSL 1 or ZERO based,  closed or open?
 
             String strandString = tokens[8];

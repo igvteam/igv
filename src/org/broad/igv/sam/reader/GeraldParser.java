@@ -25,6 +25,7 @@ package org.broad.igv.sam.reader;
 import net.sf.samtools.SAMRecord;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentUtils;
 import org.broad.igv.sam.GeraldAlignment;
 import org.broad.igv.sam.ReadMate;
@@ -74,7 +75,10 @@ public class GeraldParser implements AlignmentParser {
     public static final byte G = 'G';
     public static final byte T = 'T';
 
+    Genome genome;
+
     public GeraldParser() {
+        //this.genome = genome;
         //   genome = IGV.getInstance().getGenomeManager().getCurrentGenome();
     }
 
@@ -173,8 +177,8 @@ public class GeraldParser implements AlignmentParser {
             loadChrMap();
         }
         String chr = seqChrMap.containsKey(seq) ? seqChrMap.get(seq) : seq;
-        return chr;
-        //return genome == null ? chr : genome.getChromosomeAlias(chr);
+
+        return genome == null ? chr : genome.getChromosomeAlias(chr);
 
     }
 

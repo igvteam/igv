@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.exceptions.DataLoadException;
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.ui.color.ColorUtilities;
 import org.broad.igv.util.ParsingUtils;
@@ -77,12 +78,16 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
 
     String[] tokens = new String[10];
 
-    public GFFCodec() {
+    Genome genome;
+
+    public GFFCodec(Genome genome) {
         // Assume GFF2 until shown otherwise
         helper = new GFF2Helper();
+        this.genome = genome;
     }
 
-    public GFFCodec(Version version) {
+    public GFFCodec(Version version, Genome genome) {
+        this.genome = genome;
         if (version == Version.GFF2) {
             helper = new GFF2Helper();
         } else {
@@ -176,7 +181,8 @@ public class GFFCodec implements org.broad.tribble.FeatureCodec {
         String featureType = new String(tokens[2].trim());
 
 
-        String chromosome = tokens[0];  //genome.getChromosomeAlias(tokens[0]);
+        String chrToken = tokens[0];  //genome.getChromosomeAlias(tokens[0]);
+        String chromosome = genome == null ? chrToken : genome.getChromosomeAlias(chrToken);
 
         // GFF coordinates are 1-based inclusive (length = end - start + 1)
         // IGV (UCSC) coordinates are 0-based exclusive.  Adjust start and end accordingly

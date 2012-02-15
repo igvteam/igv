@@ -20,6 +20,7 @@ package org.broad.igv.sam.reader;
 
 
 import org.broad.igv.feature.BasicFeature;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.FeatureWrappedAlignment;
 import org.broad.igv.feature.tribble.PSLCodec;
@@ -38,7 +39,7 @@ public class PSLAlignmentParser implements AlignmentParser {
     PSLCodec codec;
 
     public PSLAlignmentParser() {
-        codec = new PSLCodec();
+        codec = new PSLCodec(); //genome);
     }
 
     public Alignment readNextRecord(AsciiLineReader reader) throws IOException {

@@ -18,6 +18,7 @@
 
 package org.broad.igv.feature.tribble;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.variant.vcf.VCFVariant;
 import org.broad.tribble.Feature;
 import org.broad.tribble.FeatureCodec;
@@ -31,9 +32,11 @@ import org.broadinstitute.sting.utils.variantcontext.VariantContext;
 public class VCFWrapperCodec implements FeatureCodec {
 
     FeatureCodec wrappedCodec;
+    Genome genome;
 
-    public VCFWrapperCodec(FeatureCodec wrappedCodec) {
-       this.wrappedCodec = wrappedCodec;
+    public VCFWrapperCodec(FeatureCodec wrappedCodec, Genome genome) {
+        this.wrappedCodec = wrappedCodec;
+        this.genome = genome;
     }
 
     public Feature decodeLoc(String line) {
@@ -42,7 +45,9 @@ public class VCFWrapperCodec implements FeatureCodec {
 
     public Feature decode(String line) {
         VariantContext vc = (VariantContext) wrappedCodec.decode(line);
-        return vc == null ? null : new VCFVariant(vc);
+        String chr = genome == null ? vc.getChr() : genome.getChromosomeAlias(vc.getChr());
+        return vc == null ? null : new VCFVariant(vc, chr);
+
     }
 
     public Class getFeatureType() {

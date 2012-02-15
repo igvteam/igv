@@ -20,6 +20,7 @@ package org.broad.igv.feature.tribble;
 
 import org.broad.igv.feature.BasicFeature;
 import org.broad.igv.feature.Strand;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.track.TrackProperties;
 import org.broad.igv.track.TrackType;
 import org.broad.igv.util.ParsingUtils;
@@ -39,6 +40,11 @@ public class REPMaskCodec implements FeatureCodec {
     String[] tokens = new String[15];
     int startBase = 0;
     FeatureFileHeader header;
+    Genome genome;
+
+    public REPMaskCodec(Genome genome) {
+        this.genome = genome;
+    }
 
     public Object readHeader(LineReader reader) {
 
@@ -110,7 +116,7 @@ public class REPMaskCodec implements FeatureCodec {
             return null;
         }
 
-        String chr = tokens[0];  //genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
+        String chr = genome == null ? tokens[0] : genome.getChromosomeAlias(tokens[0]);
         int start = Integer.parseInt(tokens[1]) - startBase;
 
         int end = start + 1;

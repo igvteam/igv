@@ -26,6 +26,7 @@ import net.sf.samtools.SAMFileHeader;
 import org.broad.igv.exceptions.DataLoadException;
 import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.Alignment;
 import org.broad.igv.sam.EmptyAlignmentIterator;
 import org.broad.tribble.readers.AsciiLineReader;
@@ -49,8 +50,10 @@ public class GeraldReader implements AlignmentReader {
     FeatureIndex featureIndex;
     FileInputStream is;
     AlignmentParser parser;
+    Genome genome;
 
     public GeraldReader(String alignmentFile, boolean requireIndex) {
+        this.genome = genome;
         this.alignmentFile = alignmentFile;
         parser = getParserFor(alignmentFile);
         try {

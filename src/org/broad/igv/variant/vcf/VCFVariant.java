@@ -37,8 +37,11 @@ public class VCFVariant implements Variant {
     private ZygosityCount zygosityCount;
     private boolean isIndel;
 
-    public VCFVariant(VariantContext variantContext) {
+    String chr;   // <= might override what's in file from chr alias table
+
+    public VCFVariant(VariantContext variantContext, String chr) {
         this.variantContext = variantContext;
+        this.chr = chr;
         isIndel = variantContext.getType() == VariantContext.Type.INDEL;
         init();
     }
@@ -149,7 +152,7 @@ public class VCFVariant implements Variant {
     }
 
     public String getChr() {
-        return variantContext.getChr();
+        return chr;
     }
 
     public int getStart() {

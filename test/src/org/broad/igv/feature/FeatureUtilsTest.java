@@ -22,6 +22,7 @@
  */
 package org.broad.igv.feature;
 
+import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.feature.tribble.CodecFactory;
 import org.broad.igv.track.WindowFunction;
 import org.broad.igv.util.TestUtils;
@@ -77,7 +78,8 @@ public class FeatureUtilsTest {
     @Test
     public void testFeatureLookupInSmallVCF() throws IOException {
         String vcfFile = TestUtils.DATA_DIR + "/vcf/example4-last-gsnap-2_fixed.vcf";
-        FeatureCodec codec = CodecFactory.getCodec(vcfFile);
+        Genome genome = null; // <= Don't do chromosome conversion
+        FeatureCodec codec = CodecFactory.getCodec(vcfFile, genome);
         boolean isVCF = codec.getClass().isAssignableFrom(VCFCodec.class);
         AbstractFeatureReader basicReader = AbstractFeatureReader.getFeatureReader(vcfFile, codec, true);
         CloseableTribbleIterator it = basicReader.iterator();
