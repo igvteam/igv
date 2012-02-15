@@ -21,6 +21,7 @@ import net.sf.samtools.util.CloseableIterator;
 import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.feature.genome.Genome;
 import org.broad.igv.sam.AlignmentTrack.SortOption;
 import org.broad.igv.sam.reader.AlignmentReaderFactory;
@@ -53,6 +54,7 @@ public class AlignmentDataManager {
     private boolean isLoading = false;
     private CachingQueryReader reader;
     private CoverageTrack coverageTrack;
+    private SpliceJunctionFinderTrack spliceJunctionTrack;
     private int maxLevels;
 
 
@@ -114,6 +116,11 @@ public class AlignmentDataManager {
 
     public void setCoverageTrack(CoverageTrack coverageTrack) {
         this.coverageTrack = coverageTrack;
+    }
+
+
+    public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
+        this.spliceJunctionTrack = spliceJunctionTrack;
     }
 
     /**
@@ -310,8 +317,10 @@ public class AlignmentDataManager {
                     String sequence = chrMappings.containsKey(chr) ? chrMappings.get(chr) : chr;
 
                     List<AlignmentCounts> counts = new ArrayList();
+                    List<SpliceJunctionFeature> spliceJunctions = new ArrayList<SpliceJunctionFeature>();
 
-                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, maxLevels, peStats);
+                    iter = reader.query(sequence, intervalStart, intervalEnd, counts, spliceJunctions,
+                            maxLevels, peStats);
 
                     final AlignmentPacker alignmentPacker = new AlignmentPacker();
 
@@ -319,7 +328,8 @@ public class AlignmentDataManager {
                             intervalEnd, viewAsPairs, groupByOption, tag, maxLevels);
 
                     AlignmentInterval loadedInterval = new AlignmentInterval(chr, intervalStart, intervalEnd,
-                            alignmentRows, counts);
+                            alignmentRows, counts, spliceJunctions);
+
                     loadedIntervalMap.put(context.getReferenceFrame().getName(), loadedInterval);
 
 
@@ -410,24 +420,11 @@ public class AlignmentDataManager {
         return loadedIntervalMap.values();
     }
 
-    public boolean isLoading() {
-        return isLoading;
-    }
 
     public void updatePEStats(AlignmentTrack.RenderOptions renderOptions) {
         if (this.peStats != null) {
             for (PEStats stats : peStats.values()) {
                 stats.compute(renderOptions.getMinInsertSizePercentile(), renderOptions.getMaxInsertSizePercentile());
-            }
-        }
-    }
-
-    public void updateSpliceJunctions() {
-        final Collection<AlignmentInterval> loadedIntervals = getLoadedIntervals();
-        if (loadedIntervals != null) {
-            for (AlignmentInterval interval : loadedIntervals) {
-                interval.resetSpliceJunctions();
-
             }
         }
     }

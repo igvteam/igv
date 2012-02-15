@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.exceptions.DataLoadException;
+import org.broad.igv.feature.SpliceJunctionFeature;
 import org.broad.igv.sam.reader.AlignmentReader;
 import org.broad.igv.sam.reader.ReadGroupFilter;
 import org.broad.igv.ui.IGV;
@@ -137,7 +138,9 @@ public class CachingQueryReader {
         return reader.hasIndex();
     }
 
-    public CloseableIterator<Alignment> query(String sequence, int start, int end, List<AlignmentCounts> counts,
+    public CloseableIterator<Alignment> query(String sequence, int start, int end,
+                                              List<AlignmentCounts> counts,
+                                              List<SpliceJunctionFeature> spliceJunctionFeatures,
                                               int maxReadDepth, Map<String, PEStats> peStats) {
 
         // Get the tiles covering this interval
@@ -160,9 +163,16 @@ public class CachingQueryReader {
 
         List<Alignment> alignments = new ArrayList(recordCount);
         alignments.addAll(tiles.get(0).getOverlappingRecords());
+
+        List<SpliceJunctionFeature> tmp = tiles.get(0).getOverlappingSpliceJunctionFeatures();
+        if (tmp != null) spliceJunctionFeatures.addAll(tmp);
+
         for (AlignmentTile t : tiles) {
             alignments.addAll(t.getContainedRecords());
             counts.add(t.getCounts());
+
+            tmp = t.getContainedSpliceJunctionFeatures();
+            if (tmp != null) spliceJunctionFeatures.addAll(tmp);
         }
 
         return new TiledIterator(start, end, alignments);
@@ -508,12 +518,15 @@ public class CachingQueryReader {
     public static class AlignmentTile {
 
         private boolean loaded = false;
-        private List<Alignment> containedRecords;
         private int end;
-        private List<Alignment> overlappingRecords;
         private int start;
         private int tileNumber;
         private AlignmentCounts counts;
+        private List<Alignment> containedRecords;
+        private List<Alignment> overlappingRecords;
+        private List<SpliceJunctionFeature> containedSpliceJunctionFeatures;
+        private List<SpliceJunctionFeature> overlappingSpliceJunctionFeatures;
+        private SpliceJunctionHelper spliceJunctionHelper;
 
         int maxDepth;
         int maxBucketSize;
@@ -544,14 +557,19 @@ public class CachingQueryReader {
 
             // Set the max depth, and the max depth of the sampling bucket.
             this.maxDepth = Math.max(1, maxDepth);
-            if(maxDepth < 1000) {
-                maxBucketSize = 10*maxDepth;
-            }
-            else if(maxDepth < 10000) {
+            if (maxDepth < 1000) {
+                maxBucketSize = 10 * maxDepth;
+            } else if (maxDepth < 10000) {
                 maxBucketSize = 5 * maxDepth;
-            }
-            else {
+            } else {
                 maxBucketSize = 2 * maxDepth;
+            }
+
+            // TODO -- only if splice junctions are on
+            if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK)) {
+                containedSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
+                overlappingSpliceJunctionFeatures = new ArrayList<SpliceJunctionFeature>(100);
+                spliceJunctionHelper = new SpliceJunctionHelper();
             }
 
 
@@ -580,7 +598,8 @@ public class CachingQueryReader {
          *
          * @param record
          */
-        int ignoredCount = 0;
+        int ignoredCount = 0;    // <= just for debugging
+
         public void addRecord(Alignment record) {
 
             if (record.getStart() > e1) {
@@ -593,7 +612,11 @@ public class CachingQueryReader {
 
             counts.incCounts(record);
 
-            if(currentBucket.size() > maxBucketSize) {
+            if (spliceJunctionHelper != null) {
+                spliceJunctionHelper.addAlignment(record);
+            }
+
+            if (currentBucket.size() > maxBucketSize) {
                 ignoredCount++;
                 return;
             }
@@ -712,11 +735,37 @@ public class CachingQueryReader {
                 currentMates = null;
                 pairedReadNames = null;
                 overflows = null;
+                finalizeSpliceJunctions();
             }
         }
 
         public AlignmentCounts getCounts() {
             return counts;
+        }
+
+
+        private void finalizeSpliceJunctions() {
+            if (spliceJunctionHelper != null) {
+                spliceJunctionHelper.finish();
+                List<SpliceJunctionFeature> features = spliceJunctionHelper.getFeatures();
+                for (SpliceJunctionFeature f : features) {
+                    if (f.getStart() >= start) {
+                        containedSpliceJunctionFeatures.add(f);
+                    } else {
+                        overlappingSpliceJunctionFeatures.add(f);
+                    }
+                }
+            }
+            spliceJunctionHelper = null;
+        }
+
+
+        public List<SpliceJunctionFeature> getContainedSpliceJunctionFeatures() {
+            return containedSpliceJunctionFeatures;
+        }
+
+        public List<SpliceJunctionFeature> getOverlappingSpliceJunctionFeatures() {
+            return overlappingSpliceJunctionFeatures;
         }
     }
 

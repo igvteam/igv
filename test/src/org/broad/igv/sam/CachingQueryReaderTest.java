@@ -114,7 +114,8 @@ public class CachingQueryReaderTest {
 
         reader = AlignmentReaderFactory.getReader(loc);
         CachingQueryReader cachingReader = new CachingQueryReader(reader);
-        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end, new ArrayList(), 100, null);
+        CloseableIterator<Alignment> cachingIter = cachingReader.query(sequence, start, end,
+                new ArrayList(), new ArrayList(), 100, null);
         List<Alignment> result = new ArrayList();
 
         while (cachingIter.hasNext()) {

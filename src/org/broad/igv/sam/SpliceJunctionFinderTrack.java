@@ -26,7 +26,8 @@ import org.apache.log4j.Logger;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
-import org.broad.igv.renderer.SpliceJunctionRenderer;
+import org.broad.igv.renderer.*;
+import org.broad.igv.renderer.FeatureRenderer;
 import org.broad.igv.track.*;
 import org.broad.igv.ui.IGV;
 import org.broad.igv.ui.event.AlignmentTrackEvent;
@@ -34,7 +35,6 @@ import org.broad.igv.ui.event.AlignmentTrackEventListener;
 import org.broad.igv.ui.panel.DataPanel;
 import org.broad.igv.ui.panel.IGVPopupMenu;
 import org.broad.igv.ui.panel.ReferenceFrame;
-import org.broad.igv.renderer.DataRange;
 import org.broad.igv.util.ResourceLocator;
 
 import javax.swing.*;
@@ -72,6 +72,9 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         // Register track
         IGV.getInstance().addAlignmentTrackEventListener(this);
     }
+
+
+
 
 
     @Override
@@ -142,6 +145,7 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         }
     }
 
+
     @Override
     public boolean handleDataClick(TrackClickEvent te) {
         boolean result = super.handleDataClick(te);
@@ -155,7 +159,6 @@ public class SpliceJunctionFinderTrack extends FeatureTrack implements Alignment
         switch (type) {
             case SPLICE_JUNCTION:
                 packedFeaturesMap.clear();
-                dataManager.updateSpliceJunctions();
         }
 
     }

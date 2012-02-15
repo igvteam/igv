@@ -45,11 +45,11 @@ public class AlignmentInterval extends Locus {
     private int maxCount = 0;
     private List<AlignmentCounts> counts;
     private LinkedHashMap<String, List<Row>> groupedAlignmentRows;
-    private List<SpliceJunctionFeature> spliceJunctions = null;
+    private List<SpliceJunctionFeature> spliceJunctions;
 
 
     public AlignmentInterval(String chr, int start, int end, LinkedHashMap<String, List<Row>> groupedAlignmentRows,
-                             List<AlignmentCounts> counts) {
+                             List<AlignmentCounts> counts, List<SpliceJunctionFeature> spliceJunctions) {
 
         super(chr, start, end);
         this.groupedAlignmentRows = groupedAlignmentRows;
@@ -59,6 +59,8 @@ public class AlignmentInterval extends Locus {
         for (AlignmentCounts c : counts) {
             maxCount = Math.max(maxCount, c.getMaxCount());
         }
+
+        this.spliceJunctions = spliceJunctions;
 
         // Force caclulation of splice junctions
         boolean showSpliceJunctionTrack = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.SAM_SHOW_JUNCTION_TRACK);
@@ -251,20 +253,8 @@ public class AlignmentInterval extends Locus {
     }
 
     public List<SpliceJunctionFeature> getSpliceJunctions() throws IOException {
-        if (spliceJunctions == null) {
-            spliceJunctions = SpliceJunctionHelper.computeFeatures(getAlignmentIterator());
-        }
         return spliceJunctions;
     }
-
-
-    /**
-     * Set spliceJunctions to null, which will force a recalculation if/when they are needed again.
-     */
-    public void resetSpliceJunctions() {
-        spliceJunctions = null;
-    }
-
 
     public static class Row {
         int nextIdx;

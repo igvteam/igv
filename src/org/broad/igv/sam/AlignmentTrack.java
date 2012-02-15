@@ -188,7 +188,9 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
 
     public void setSpliceJunctionTrack(SpliceJunctionFinderTrack spliceJunctionTrack) {
         this.spliceJunctionTrack = spliceJunctionTrack;
+        dataManager.setSpliceJunctionTrack(spliceJunctionTrack);
     }
+
 
     public SpliceJunctionFinderTrack getSpliceJunctionTrack() {
         return spliceJunctionTrack;
@@ -543,6 +545,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
                 visibilityWindowChanged();
                 break;
             case RELOAD:
+            case SPLICE_JUNCTION:
                 clearCaches();
                 break;
         }
