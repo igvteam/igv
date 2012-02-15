@@ -237,14 +237,6 @@ public class IGVSessionReader implements SessionReader {
             return getText();
         }
 
-        static public SessionAttribute findEnum(String value) {
-
-            if (value == null) {
-                return null;
-            } else {
-                return SessionAttribute.valueOf(value);
-            }
-        }
     }
 
 
@@ -270,7 +262,7 @@ public class IGVSessionReader implements SessionReader {
         try {
             document = Utilities.createDOMDocumentFromXmlStream(inputStream);
         } catch (Exception e) {
-            log.error("Session Management Error", e);
+            log.error("Load session error", e);
             throw new RuntimeException(e);
         }
 
@@ -287,8 +279,8 @@ public class IGVSessionReader implements SessionReader {
 
         processRootNode(session, nodes.item(0), additionalInformation);
 
-        // Add tracks not explicitly set in file.  It is legal to define sessions with the DataFile section only (no
-        // Panel or Track elements).
+        // Add tracks not explicitly allocated to panels.  It is legal to define sessions with the Resources
+        // section only (no Panel or Track elements).
         addLeftoverTracks(trackDictionary.values());
 
         if (session.getGroupTracksBy() != null && session.getGroupTracksBy().length() > 0) {

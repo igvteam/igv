@@ -156,7 +156,34 @@ public class GenomeManager {
                 }
                 String id = fastaPath;
                 String name = (new File(fastaPath)).getName();
+
                 currentGenome = new GenomeImpl(id, name, fastaPath, true);
+
+                // Hack for illumina demo -- load the cytoband file
+//                File fastaFile = new File(fastaIndexPath);
+//                File cytobandFile = new File(fastaFile.getParent(), "b37_cytoband.txt");
+//                if (cytobandFile.exists()) {
+//
+//                    BufferedReader reader = new BufferedReader(new FileReader(cytobandFile));
+//                    LinkedHashMap<String, Chromosome> chromMap = CytoBandFileParser.loadData(reader);
+//                    currentGenome.setChromosomeMap(chromMap, true);
+//                    reader.close();
+//                }
+//                File aliasFile = new File(fastaFile.getParent(), "b37_alias.tab");
+//                if(aliasFile.exists()) {
+//                    Map<String, String> aliases = loadAliasFile(genomeDescriptor);
+//                    if (aliases != null) currentGenome.addChrAliases(aliases);
+//                }
+//
+//                File geneFile = new File(fastaFile.getParent(), "refGene.txt");
+//                if (geneFile.exists()) {
+//                    AsciiLineReader reader = new AsciiLineReader(new FileInputStream(geneFile));
+//                    IGV.getInstance().createGeneTrack(currentGenome, reader,
+//                            geneFile.getAbsolutePath(), "Refseq genes", null);
+//                    reader.close();
+//                }
+//
+
                 log.info("Genome loaded.  id= " + id);
                 if (!Globals.isHeadless()) {
                     IGV.getInstance().createGeneTrack(currentGenome, null, null, null, null);
@@ -172,9 +199,14 @@ public class GenomeManager {
 
             return currentGenome;
 
-        } catch (SocketException e) {
+        } catch (
+                SocketException e
+                )
+
+        {
             throw new GenomeServerException("Server connection error", e);
         }
+
     }
 
     private void updateGeneTrack(GenomeDescriptor genomeDescriptor) throws IOException {

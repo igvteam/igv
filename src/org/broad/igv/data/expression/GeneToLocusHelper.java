@@ -23,6 +23,8 @@ import org.broad.igv.Globals;
 import org.broad.igv.PreferenceManager;
 import org.broad.igv.feature.*;
 import org.broad.igv.feature.genome.Genome;
+import org.broad.igv.session.Session;
+import org.broad.igv.ui.IGV;
 import org.broad.igv.util.ParsingUtils;
 import org.broad.igv.util.ResourceLocator;
 import org.broad.tribble.Feature;
@@ -44,16 +46,23 @@ public class GeneToLocusHelper {
 
     Map<String, List<Locus>> probeLocusMap;
 
+    /**
+     * Create an instance and loaded the supplied probe mapping file.
+     *
+     * @param probeResource - file path or URL to a bed file containing the probe mappings.  CAN BE NULL.
+     * @throws IOException
+     */
     public GeneToLocusHelper(String probeResource) throws IOException {
 
         if (probeResource != null && probeResource.trim().length() > 0) {
             loadProbeMap(probeResource);
         }
 
-        // If not probe file is supplied,  see if there is a user default.  Only do this if the custom file option
+        // If a probe file is supplied,  see if there is a user default.  Only do this if the custom file option
         // is set and a probe mapping file has been supplied.
-        if (PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE)) {
-            String userMappingFile = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
+        Session session = IGV.getInstance().getSession();
+        if (session.getPreferenceAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE)) {
+            String userMappingFile = session.getPreference(PreferenceManager.PROBE_MAPPING_FILE);
             if (userMappingFile != null && userMappingFile.trim().length() > 0) {
                 loadProbeMap(userMappingFile);
             }

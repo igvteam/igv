@@ -146,13 +146,33 @@ public class Session {
         }
     }
 
+
+    public boolean getPreferenceAsBoolean(String key) {
+        if (preferences.containsKey(key)) {
+            try {
+                return Boolean.parseBoolean(preferences.get(key));
+            } catch (Exception e) {
+                log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
+            }
+        }
+        return PreferenceManager.getInstance().getAsBoolean(key);
+
+    }
+
+    public String getPreference(String key) {
+        if (preferences.containsKey(key)) {
+            return (preferences.get(key));
+        } else {
+            return PreferenceManager.getInstance().get(key);
+        }
+    }
+
     public boolean getOverlayMutationTracks() {
         final String key = PreferenceManager.OVERLAY_MUTATION_TRACKS;
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
@@ -165,8 +185,7 @@ public class Session {
         if (preferences.containsKey(key)) {
             try {
                 return Boolean.parseBoolean(preferences.get(key));
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Error converting boolean preference " + key + "=" + preferences.get(key));
             }
         }
@@ -191,6 +210,7 @@ public class Session {
         }
         return PreferenceManager.getInstance().get(PreferenceManager.TRACK_ATTRIBUTE_NAME_KEY);
     }
+
 
     public String getLocusString() {
         if (getReferenceFrame().getChrName().equals(Globals.CHR_ALL)) {
