@@ -53,7 +53,7 @@ public class TribbleFeatureReaderTest {
     static AbstractFeatureReader<VariantContext> bfr;
 
     @BeforeClass
-    public static void setUp() throws IOException {
+    public static void setUpClass() throws IOException {
         File idxFile = new File(testFile + ".idx");
         FeatureCodec codec = new VCFCodec();
         createIndex(idxFile, codec);
@@ -62,7 +62,7 @@ public class TribbleFeatureReaderTest {
     }
 
     @AfterClass
-    public static void tearDown() throws IOException {
+    public static void tearDownClass() throws IOException {
         bfr.close();
     }
 
@@ -120,6 +120,7 @@ public class TribbleFeatureReaderTest {
                 stream.close();
             }
         }
+        idxFile.deleteOnExit();
 
     }
 }
