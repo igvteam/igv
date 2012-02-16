@@ -238,6 +238,12 @@ public class IGVToolsTest {
         tstCount(inputFile, "testwig", "wig", null, -1, -1);
     }
 
+    @Test
+    public void testCountBAM() throws Exception {
+        String inputFile = TestUtils.DATA_DIR + "/bam/NA12878.SLX.sample.bam";
+        tstCount(inputFile, "testwig", "wig", null, -1, -1);
+    }
+
     public void tstCount(String inputFile, String outputBase, String outputExt,
                          String chr, int start, int end) throws Exception {
         String outputFile = TestUtils.DATA_DIR + "/out/" + outputBase + "_";
