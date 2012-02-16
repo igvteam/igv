@@ -88,7 +88,7 @@ public abstract class UCSCCodec implements org.broad.tribble.FeatureCodec {
             ParsingUtils.parseTrackLine(line, tp);
             header.setTrackProperties(tp);
             gffTags = tp.isGffTags();
-        } else if (line.startsWith("#gffTags")) {
+        } else if (line.startsWith("#gffTags") || line.startsWith("##gffTags")) {
             gffTags = true;
         } else {
             return false;
