@@ -60,9 +60,18 @@ public class GeneToLocusHelper {
 
         // If a probe file is supplied,  see if there is a user default.  Only do this if the custom file option
         // is set and a probe mapping file has been supplied.
-        Session session = IGV.getInstance().getSession();
-        if (session.getPreferenceAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE)) {
-            String userMappingFile = session.getPreference(PreferenceManager.PROBE_MAPPING_FILE);
+        boolean use_probe_mf;
+        String userMappingFile;
+        if (!Globals.isHeadless()){
+            Session session = IGV.getInstance().getSession();
+            use_probe_mf = session.getPreferenceAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE);
+            userMappingFile = session.getPreference(PreferenceManager.PROBE_MAPPING_FILE);
+        }else{
+            use_probe_mf = PreferenceManager.getInstance().getAsBoolean(PreferenceManager.USE_PROBE_MAPPING_FILE);
+            userMappingFile = PreferenceManager.getInstance().get(PreferenceManager.PROBE_MAPPING_FILE);
+        }
+        
+        if (use_probe_mf) {
             if (userMappingFile != null && userMappingFile.trim().length() > 0) {
                 loadProbeMap(userMappingFile);
             }

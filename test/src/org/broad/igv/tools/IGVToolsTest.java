@@ -66,7 +66,7 @@ public class IGVToolsTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        //TestUtils.clearOutputDir();
+        TestUtils.clearOutputDir();
     }
 
     @Test
