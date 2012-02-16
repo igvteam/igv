@@ -54,6 +54,10 @@ public class IGVBEDCodec extends UCSCCodec {
         this.genome = genome;
     }
 
+    public void setGffTags(boolean gffTags) {
+        this.gffTags = gffTags;
+    }
+
     public BasicFeature decode(String nextLine) {
 
         if (nextLine.trim().length() == 0) {
@@ -251,6 +255,7 @@ public class IGVBEDCodec extends UCSCCodec {
                 // mRNA<br>ID = LOC_Os01g01010.2<br>Name = LOC_Os01g01010.2<br>Parent = LOC_Os01g01010<br>
                 //ID=LOC_Os01g01010.1:exon_1;Parent=LOC_Os01g01010.1
                 String[] attrs = BR_PATTERN.split(feature.getDescription());
+                buffer.append("\"");
                 for (String att : attrs) {
                     String [] kv = EQ_PATTERN.split(att,2);
                     if(kv.length > 1) {
@@ -261,6 +266,7 @@ public class IGVBEDCodec extends UCSCCodec {
                         buffer.append(";");
                     }
                 }
+                buffer.append("\"");
             } else {
                 buffer.append(feature.getName());
             }
