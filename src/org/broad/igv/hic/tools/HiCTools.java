@@ -41,8 +41,9 @@ public class HiCTools {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length < 3) {
-            System.out.println("Usage: hictools <command> <inputFile> <outputFile>");
+        if (args.length < 4 )  {
+            System.out.println("Usage: hictools pre <inputFile> <outputFile> <genomeID>");
+            System.exit(0);
         }
 
         Globals.setHeadless(true);
