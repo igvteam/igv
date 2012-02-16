@@ -69,9 +69,9 @@ public class AlignmentRenderer implements FeatureRenderer {
     //public static final Color negStrandColor = new Color(150, 150, 200);
     // public static final Color posStrandColor = new Color(200, 150, 150);
 
-    private static ColorTable readGroupColors;
-    private static ColorTable sampleColors;
-    private static ColorTable tagValueColors;
+    private ColorTable readGroupColors;
+    private ColorTable sampleColors;
+    private ColorTable tagValueColors;
 
     private static final Color LR_COLOR = grey1; // "Normal" alignment color
     private static final Color RL_COLOR = new Color(0, 150, 0);
@@ -86,6 +86,7 @@ public class AlignmentRenderer implements FeatureRenderer {
 
 
     PreferenceManager prefs;
+    private static AlignmentRenderer instance;
 
     static {
         nucleotideColors = new HashMap();
@@ -165,14 +166,20 @@ public class AlignmentRenderer implements FeatureRenderer {
     }
 
 
-    public AlignmentRenderer() {
-        this.prefs = PreferenceManager.getInstance();
-        if (readGroupColors == null) {
-            initializeTagColors();
+    public static FeatureRenderer getInstance() {
+        if (instance == null) {
+            instance = new AlignmentRenderer();
         }
+        return instance;
     }
 
-    private static synchronized void initializeTagColors() {
+
+    private AlignmentRenderer() {
+        this.prefs = PreferenceManager.getInstance();
+        initializeTagColors();
+    }
+
+    private void initializeTagColors() {
         ColorPalette palette = ColorUtilities.getPalette("Pastel 1");  // TODO let user choose
         readGroupColors = new PaletteColorTable(palette);
         sampleColors = new PaletteColorTable(palette);

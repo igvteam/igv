@@ -159,7 +159,7 @@ public class AlignmentTrack extends AbstractTrack implements AlignmentTrackEvent
         float maxRange = prefs.getAsFloat(PreferenceManager.SAM_MAX_VISIBLE_RANGE);
         minVisibleScale = (maxRange * 1000) / 700;
 
-        renderer = new AlignmentRenderer();
+        renderer = AlignmentRenderer.getInstance();
 
         this.setDisplayMode(DisplayMode.EXPANDED);
 
